@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import Logo from '@/components/common/Logo';
 import { CustomButton } from '@/components/ui/custom-button';
 import BlurBackground from '@/components/ui/blur-background';
+import { useAuth } from '@/contexts/AuthProvider';
 import { 
   ChevronRight, ArrowRight, Dog, PawPrint, 
   Users, FileText, BarChart3, Globe, Database, ShieldCheck 
@@ -13,6 +13,7 @@ import {
 const Index: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -108,22 +109,35 @@ const Index: React.FC = () => {
             </nav>
 
             <div className="flex items-center gap-2">
-              <Link to="/dashboard">
-                <CustomButton
-                  variant="outline"
-                  size="sm"
-                >
-                  Log in
-                </CustomButton>
-              </Link>
-              <Link to="/dashboard">
-                <CustomButton
-                  variant="primary"
-                  size="sm"
-                >
-                  Get Started
-                </CustomButton>
-              </Link>
+              {user ? (
+                <Link to="/dashboard">
+                  <CustomButton
+                    variant="primary"
+                    size="sm"
+                  >
+                    Dashboard
+                  </CustomButton>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <CustomButton
+                      variant="outline"
+                      size="sm"
+                    >
+                      Log in
+                    </CustomButton>
+                  </Link>
+                  <Link to="/auth">
+                    <CustomButton
+                      variant="primary"
+                      size="sm"
+                    >
+                      Get Started
+                    </CustomButton>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -159,13 +173,13 @@ const Index: React.FC = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
-            <Link to="/dashboard">
+            <Link to={user ? "/dashboard" : "/auth"}>
               <CustomButton
                 size="lg"
                 icon={<ArrowRight size={18} />}
                 iconPosition="right"
               >
-                Start Free Trial
+                {user ? "Go to Dashboard" : "Start Free Trial"}
               </CustomButton>
             </Link>
             <Link to="#features">

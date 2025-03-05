@@ -1,9 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import Logo from './Logo';
-import { MenuIcon, X, User } from 'lucide-react';
+import { MenuIcon, X, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthProvider';
+import { CustomButton } from '@/components/ui/custom-button';
+import { useToast } from '@/hooks/use-toast';
 
 const navLinks = [
   { name: 'Dashboard', path: '/dashboard' },
@@ -18,6 +21,9 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +37,15 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out."
+    });
+    navigate('/');
+  };
 
   return (
     <header className={cn(
@@ -68,9 +83,32 @@ const Navbar: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-full bg-white/80 hover:bg-white shadow-subtle border border-slate-200 transition-all hover:scale-105">
-              <User size={18} className="text-slate-600" />
-            </button>
+            {user ? (
+              <>
+                <div className="hidden md:block">
+                  <CustomButton 
+                    variant="outline" 
+                    size="sm" 
+                    icon={<LogOut size={16} />}
+                    onClick={handleSignOut}
+                  >
+                    Sign Out
+                  </CustomButton>
+                </div>
+                <Link to="/profile" className="p-2 rounded-full bg-white/80 hover:bg-white shadow-subtle border border-slate-200 transition-all hover:scale-105">
+                  <User size={18} className="text-slate-600" />
+                </Link>
+              </>
+            ) : (
+              <Link to="/auth" className="hidden md:block">
+                <CustomButton
+                  variant="primary"
+                  size="sm"
+                >
+                  Sign In
+                </CustomButton>
+              </Link>
+            )}
             
             {/* Mobile menu button */}
             <button
@@ -110,6 +148,24 @@ const Navbar: React.FC = () => {
               {link.name}
             </Link>
           ))}
+          
+          {user ? (
+            <button
+              onClick={handleSignOut}
+              className="mt-4 py-4 px-4 text-lg text-red-500 flex items-center"
+            >
+              <LogOut size={18} className="mr-2" />
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              className="mt-4 py-4 px-4 text-lg text-primary flex items-center"
+            >
+              <User size={18} className="mr-2" />
+              Sign In
+            </Link>
+          )}
         </nav>
       </div>
     </header>

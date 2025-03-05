@@ -9,30 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      breeders: {
+      breeder_profiles: {
         Row: {
-          created_at: string | null
+          business_name: string | null
+          created_at: string
           email: string
-          first_name: string
+          first_name: string | null
           id: string
-          last_name: string
+          last_name: string | null
+          profile_image_url: string | null
           role: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          business_name?: string | null
+          created_at?: string
           email: string
-          first_name: string
-          id?: string
-          last_name: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          profile_image_url?: string | null
           role?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          business_name?: string | null
+          created_at?: string
           email?: string
-          first_name?: string
+          first_name?: string | null
           id?: string
-          last_name?: string
+          last_name?: string | null
+          profile_image_url?: string | null
           role?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -77,13 +86,6 @@ export type Database = {
           signed?: boolean | null
         }
         Relationships: [
-          {
-            foreignKeyName: "contracts_breeder_id_fkey"
-            columns: ["breeder_id"]
-            isOneToOne: false
-            referencedRelation: "breeders"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "contracts_customer_id_fkey"
             columns: ["customer_id"]
@@ -167,15 +169,7 @@ export type Database = {
           owner_id?: string | null
           photo_url?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "dogs_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "breeders"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       health_records: {
         Row: {
@@ -246,15 +240,7 @@ export type Database = {
           license_number?: string | null
           license_type?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "licenses_breeder_id_fkey"
-            columns: ["breeder_id"]
-            isOneToOne: false
-            referencedRelation: "breeders"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       litters: {
         Row: {
@@ -437,13 +423,6 @@ export type Database = {
           transaction_type?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "transactions_breeder_id_fkey"
-            columns: ["breeder_id"]
-            isOneToOne: false
-            referencedRelation: "breeders"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "transactions_dog_id_fkey"
             columns: ["dog_id"]
