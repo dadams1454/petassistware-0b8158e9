@@ -11,7 +11,10 @@ export type Database = {
     Tables: {
       breeder_profiles: {
         Row: {
+          breeding_experience: string | null
+          business_details: string | null
           business_name: string | null
+          business_overview: string | null
           created_at: string
           email: string
           first_name: string | null
@@ -22,7 +25,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          breeding_experience?: string | null
+          business_details?: string | null
           business_name?: string | null
+          business_overview?: string | null
           created_at?: string
           email: string
           first_name?: string | null
@@ -33,7 +39,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          breeding_experience?: string | null
+          business_details?: string | null
           business_name?: string | null
+          business_overview?: string | null
           created_at?: string
           email?: string
           first_name?: string | null
