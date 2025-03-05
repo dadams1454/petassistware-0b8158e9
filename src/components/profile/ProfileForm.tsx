@@ -20,12 +20,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Upload } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Define the form schema
+// Enhanced form schema to include business info
 const profileSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
   business_name: z.string().optional(),
   profile_image_url: z.string().optional(),
+  business_overview: z.string().optional(),
+  breeding_experience: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -37,6 +39,7 @@ interface ProfileFormProps {
 const ProfileForm: React.FC<ProfileFormProps> = ({ userId }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isBusinessInfoLoading, setIsBusinessInfoLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
   // Initialize form
@@ -47,6 +50,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ userId }) => {
       last_name: '',
       business_name: '',
       profile_image_url: '',
+      business_overview: '',
+      breeding_experience: '',
     },
   });
 
@@ -69,6 +74,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ userId }) => {
             last_name: data.last_name || '',
             business_name: data.business_name || '',
             profile_image_url: data.profile_image_url || '',
+            business_overview: data.business_overview || '',
+            breeding_experience: data.breeding_experience || '',
           });
         }
       } catch (error) {
@@ -99,12 +106,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ userId }) => {
       const file = e.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}-avatar.${fileExt}`;
-      
-      // Create bucket if it doesn't exist (this will fail silently if it exists)
-      await supabase.storage.createBucket('profile-images', {
-        public: true,
-        fileSizeLimit: 1024 * 1024 * 2, // 2MB
-      });
       
       // Upload the image
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -172,6 +173,38 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ userId }) => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle business info submission
+  const handleBusinessInfoSubmit = async () => {
+    try {
+      setIsBusinessInfoLoading(true);
+      
+      const { error } = await supabase
+        .from('breeder_profiles')
+        .update({
+          business_overview: form.getValues('business_overview'),
+          breeding_experience: form.getValues('breeding_experience'),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Success',
+        description: 'Your business information has been updated successfully!',
+      });
+    } catch (error) {
+      console.error('Error updating business info:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update business information. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBusinessInfoLoading(false);
     }
   };
 
@@ -299,39 +332,53 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ userId }) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium mb-1">Business Overview</h3>
-              <Textarea 
-                placeholder="Share information about your breeding program..."
-                className="h-32" 
+          <Form {...form}>
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="business_overview"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Business Overview</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Share information about your breeding program..."
+                        className="h-32" 
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                This feature is coming soon. You will be able to add details about your breeding program.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-medium mb-1">Breeding Experience</h3>
-              <div className="flex gap-2 items-center">
-                <Input placeholder="Years" disabled />
-                <span className="text-muted-foreground">years</span>
+              
+              <FormField
+                control={form.control}
+                name="breeding_experience"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Breeding Experience (years)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter years of experience" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="pt-4">
+                <CustomButton 
+                  variant="primary" 
+                  fullWidth 
+                  isLoading={isBusinessInfoLoading}
+                  onClick={handleBusinessInfoSubmit}
+                  type="button"
+                >
+                  Update Business Info
+                </CustomButton>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                This feature is coming soon. You will be able to showcase your experience.
-              </p>
             </div>
-            
-            <div className="pt-4">
-              <CustomButton 
-                variant="outline" 
-                fullWidth 
-                disabled
-              >
-                Update Business Info (Coming Soon)
-              </CustomButton>
-            </div>
-          </div>
+          </Form>
         </CardContent>
       </Card>
     </div>
