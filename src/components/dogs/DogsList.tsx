@@ -1,0 +1,108 @@
+
+import React from 'react';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+
+interface DogsListProps {
+  dogs: any[];
+  onView: (dog: any) => void;
+  onEdit: (dog: any) => void;
+  onDelete: (dogId: string) => void;
+}
+
+const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
+  if (dogs.length === 0) {
+    return (
+      <div className="text-center p-8 bg-muted rounded-lg">
+        <h3 className="font-medium text-lg mb-2">No dogs found</h3>
+        <p className="text-muted-foreground">
+          You haven't added any dogs yet. Click the "Add Dog" button to get started.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {dogs.map((dog) => (
+        <Card key={dog.id} className="overflow-hidden">
+          <CardHeader className="p-0 h-48 relative">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div 
+              className="h-full w-full bg-muted"
+              style={{
+                backgroundImage: dog.photo_url ? `url(${dog.photo_url})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              {!dog.photo_url && (
+                <div className="flex items-center justify-center h-full">
+                  <span className="text-4xl">🐾</span>
+                </div>
+              )}
+            </div>
+            <div className="absolute bottom-4 left-4 right-4">
+              <h3 className="text-xl font-semibold text-white">{dog.name}</h3>
+              <p className="text-white/80">{dog.breed}</p>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {dog.gender && (
+                <div>
+                  <span className="text-muted-foreground">Gender:</span> {dog.gender}
+                </div>
+              )}
+              {dog.birthdate && (
+                <div>
+                  <span className="text-muted-foreground">Age:</span>{' '}
+                  {format(new Date(dog.birthdate), 'PPP')}
+                </div>
+              )}
+              {dog.color && (
+                <div>
+                  <span className="text-muted-foreground">Color:</span> {dog.color}
+                </div>
+              )}
+              {dog.weight && (
+                <div>
+                  <span className="text-muted-foreground">Weight:</span> {dog.weight} kg
+                </div>
+              )}
+            </div>
+            {dog.pedigree && (
+              <div className="mt-3">
+                <Badge variant="outline" className="bg-primary/10">Pedigree</Badge>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-between p-4 pt-0">
+            <Button variant="ghost" size="sm" onClick={() => onView(dog)}>
+              <Eye className="h-4 w-4 mr-1" /> View
+            </Button>
+            <div className="space-x-1">
+              <Button variant="ghost" size="sm" onClick={() => onEdit(dog)}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => onDelete(dog.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+export default DogsList;

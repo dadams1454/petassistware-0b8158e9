@@ -148,35 +148,50 @@ export type Database = {
         Row: {
           birthdate: string | null
           breed: string
+          color: string | null
           created_at: string | null
           gender: string | null
           id: string
           microchip_number: string | null
           name: string
+          notes: string | null
           owner_id: string | null
+          pedigree: boolean | null
           photo_url: string | null
+          registration_number: string | null
+          weight: number | null
         }
         Insert: {
           birthdate?: string | null
           breed: string
+          color?: string | null
           created_at?: string | null
           gender?: string | null
           id?: string
           microchip_number?: string | null
           name: string
+          notes?: string | null
           owner_id?: string | null
+          pedigree?: boolean | null
           photo_url?: string | null
+          registration_number?: string | null
+          weight?: number | null
         }
         Update: {
           birthdate?: string | null
           breed?: string
+          color?: string | null
           created_at?: string | null
           gender?: string | null
           id?: string
           microchip_number?: string | null
           name?: string
+          notes?: string | null
           owner_id?: string | null
+          pedigree?: boolean | null
           photo_url?: string | null
+          registration_number?: string | null
+          weight?: number | null
         }
         Relationships: []
       }
