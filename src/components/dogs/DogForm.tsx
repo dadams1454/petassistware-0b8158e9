@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -87,6 +86,7 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
 
       const dogData = {
         ...values,
+        birthdate: values.birthdate ? values.birthdate.toISOString().split('T')[0] : null,
         owner_id: user.id,
       };
 
