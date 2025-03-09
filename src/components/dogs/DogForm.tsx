@@ -141,7 +141,7 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
   const incrementWeight = () => {
     const currentWeight = form.getValues("weight");
     const newWeight = currentWeight ? parseFloat(currentWeight) + 0.1 : 0.1;
-    form.setValue("weight", newWeight.toFixed(1));
+    form.setValue("weight", newWeight.toFixed(1).toString());
   };
 
   // Function to decrement weight
@@ -150,7 +150,7 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     if (!currentWeight) return;
     
     const newWeight = Math.max(0, parseFloat(currentWeight) - 0.1);
-    form.setValue("weight", newWeight.toFixed(1));
+    form.setValue("weight", newWeight.toFixed(1).toString());
   };
 
   return (
@@ -238,6 +238,7 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
                         date > new Date() || date < new Date("1900-01-01")
                       }
                       initialFocus
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
