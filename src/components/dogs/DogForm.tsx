@@ -19,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -39,6 +39,7 @@ const dogFormSchema = z.object({
   name: z.string().min(1, { message: 'Dog name is required' }),
   breed: z.string().min(1, { message: 'Breed is required' }),
   birthdate: z.date().optional().nullable(),
+  birthdateStr: z.string().optional(),
   gender: z.string().optional(),
   color: z.string().optional(),
   weight: z.string().optional().transform(val => val ? parseFloat(val) : null),
@@ -66,6 +67,7 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     name: dog?.name || '',
     breed: dog?.breed || '',
     birthdate: dog?.birthdate ? new Date(dog.birthdate) : null,
+    birthdateStr: dog?.birthdate ? format(new Date(dog.birthdate), 'MM/dd/yyyy') : '',
     gender: dog?.gender || '',
     color: dog?.color || '',
     weight: dog?.weight?.toString() || '',
@@ -85,11 +87,21 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     mutationFn: async (values: DogFormValues) => {
       if (!user) throw new Error('You must be logged in');
 
+      // Convert date string to Date object if provided
+      let birthdate = values.birthdate;
+      if (!birthdate && values.birthdateStr) {
+        try {
+          birthdate = parse(values.birthdateStr, 'MM/dd/yyyy', new Date());
+        } catch (e) {
+          console.error("Date parsing error:", e);
+        }
+      }
+
       // Ensure required fields are present for Supabase
       const dogData = {
         name: values.name,          // Required field
         breed: values.breed,        // Required field
-        birthdate: values.birthdate ? values.birthdate.toISOString().split('T')[0] : null,
+        birthdate: birthdate ? birthdate.toISOString().split('T')[0] : null,
         gender: values.gender,
         color: values.color,
         weight: values.weight,
@@ -153,6 +165,33 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     form.setValue("weight", newWeight.toFixed(1).toString());
   };
 
+  // Update date when calendar changes
+  const handleCalendarSelect = (date: Date | undefined) => {
+    form.setValue("birthdate", date || null);
+    if (date) {
+      form.setValue("birthdateStr", format(date, 'MM/dd/yyyy'));
+    }
+  };
+
+  // Update calendar when date string changes
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateStr = e.target.value;
+    form.setValue("birthdateStr", dateStr);
+    
+    try {
+      if (dateStr) {
+        const parsedDate = parse(dateStr, 'MM/dd/yyyy', new Date());
+        if (!isNaN(parsedDate.getTime())) {
+          form.setValue("birthdate", parsedDate);
+        }
+      } else {
+        form.setValue("birthdate", null);
+      }
+    } catch (error) {
+      console.error("Error parsing date:", error);
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -213,35 +252,44 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Birthdate</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
+                <div className="flex space-x-2">
+                  <FormField
+                    control={form.control}
+                    name="birthdateStr"
+                    render={({ field: dateStrField }) => (
+                      <FormControl>
+                        <Input 
+                          placeholder="MM/DD/YYYY" 
+                          value={dateStrField.value || ''}
+                          onChange={handleDateInputChange}
+                        />
+                      </FormControl>
+                    )}
+                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                        type="button"
+                        className="px-2"
                       >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        <CalendarIcon className="h-4 w-4" />
                       </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-50" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value || undefined}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 z-50" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value || undefined}
+                        onSelect={handleCalendarSelect}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
