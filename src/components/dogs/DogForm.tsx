@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -84,9 +85,19 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     mutationFn: async (values: DogFormValues) => {
       if (!user) throw new Error('You must be logged in');
 
+      // Ensure required fields are present for Supabase
       const dogData = {
-        ...values,
+        name: values.name,          // Required field
+        breed: values.breed,        // Required field
         birthdate: values.birthdate ? values.birthdate.toISOString().split('T')[0] : null,
+        gender: values.gender,
+        color: values.color,
+        weight: values.weight,
+        microchip_number: values.microchip_number,
+        registration_number: values.registration_number,
+        pedigree: values.pedigree,
+        notes: values.notes,
+        photo_url: values.photo_url,
         owner_id: user.id,
       };
 
