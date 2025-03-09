@@ -18,6 +18,7 @@ import DatePicker from './form/DatePicker';
 import WeightInput from './form/WeightInput';
 import CheckboxInput from './form/CheckboxInput';
 import TextareaInput from './form/TextareaInput';
+import PhotoUpload from './form/PhotoUpload';
 
 const dogFormSchema = z.object({
   name: z.string().min(1, { message: 'Dog name is required' }),
@@ -198,12 +199,13 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
             placeholder="Registration number" 
           />
           
-          <TextInput 
-            form={form} 
-            name="photo_url" 
-            label="Photo URL" 
-            placeholder="Photo URL" 
-          />
+          <div className="md:col-span-2">
+            <PhotoUpload
+              form={form}
+              name="photo_url"
+              label="Dog Photo"
+            />
+          </div>
           
           <CheckboxInput 
             form={form} 
