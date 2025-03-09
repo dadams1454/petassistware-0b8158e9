@@ -36,53 +36,54 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
 
   try {
     // Get dogs count
-    const dogsResult = await supabase
+    const { count: dogsCount, error: dogsError } = await supabase
       .from('dogs')
       .select('*', { count: 'exact', head: true })
       .eq('owner_id', user.id);
     
-    if (dogsResult.error) throw dogsResult.error;
-    const dogsCount = dogsResult.count || 0;
+    if (dogsError) throw dogsError;
 
     // Get active litters count
-    const littersResult = await supabase
+    const { count: littersCount, error: littersError } = await supabase
       .from('litters')
       .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id);
     
-    if (littersResult.error) throw littersResult.error;
-    const littersCount = littersResult.count || 0;
+    if (littersError) throw littersError;
 
     // Get reservations count
-    const reservationsResult = await supabase
+    const { count: reservationsCount, error: reservationsError } = await supabase
       .from('reservations')
       .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
-    if (reservationsResult.error) throw reservationsResult.error;
-    const reservationsCount = reservationsResult.count || 0;
+    if (reservationsError) throw reservationsError;
 
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const transactionsResult = await supabase
+    // Explicitly type the transaction data to avoid deep type instantiation
+    type TransactionData = { amount: number }[];
+    
+    const { data, error: transactionsError } = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
-
-    if (transactionsResult.error) throw transactionsResult.error;
     
-    const transactions = transactionsResult.data || [];
+    if (transactionsError) throw transactionsError;
+    
+    // Cast data to TransactionData to avoid TypeScript issues
+    const transactions = (data || []) as TransactionData;
     const revenue = transactions.reduce((sum, transaction) => sum + Number(transaction.amount), 0);
 
     return {
-      dogsCount,
-      littersCount,
-      reservationsCount,
+      dogsCount: dogsCount || 0,
+      littersCount: littersCount || 0,
+      reservationsCount: reservationsCount || 0,
       revenue
     };
   } catch (error) {
