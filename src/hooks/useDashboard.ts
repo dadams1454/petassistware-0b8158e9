@@ -18,6 +18,9 @@ export const useDashboard = () => {
     queryFn: getDashboardStats,
     enabled: !!user,
     refetchInterval: 60000, // Refetch every minute
+    onSuccess: (data) => {
+      console.log('Dashboard stats loaded successfully', data);
+    },
     onError: (error: Error) => {
       console.error('Error fetching dashboard stats:', error);
       toast({

@@ -1,8 +1,36 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
+// Types to properly define the return structure
+interface DashboardStats {
+  dogsCount: number;
+  littersCount: number;
+  reservationsCount: number;
+  revenue: number;
+}
+
+type Event = {
+  id: string;
+  breeder_id: string;
+  title: string;
+  description: string;
+  event_date: string;
+  event_type: string;
+  status: string;
+  created_at: string;
+};
+
+type Activity = {
+  id: string;
+  breeder_id: string;
+  title: string;
+  description: string;
+  activity_type: string;
+  created_at: string;
+};
+
 // Get dashboard statistics
-export const getDashboardStats = async () => {
+export const getDashboardStats = async (): Promise<DashboardStats> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
@@ -60,7 +88,7 @@ export const getDashboardStats = async () => {
 };
 
 // Get upcoming events
-export const getUpcomingEvents = async () => {
+export const getUpcomingEvents = async (): Promise<Event[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
@@ -84,7 +112,7 @@ export const getUpcomingEvents = async () => {
 };
 
 // Get recent activities
-export const getRecentActivities = async () => {
+export const getRecentActivities = async (): Promise<Activity[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
