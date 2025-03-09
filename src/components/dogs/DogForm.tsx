@@ -26,7 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, MinusCircle, PlusCircle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -135,6 +135,22 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
 
   const onSubmit = (values: DogFormValues) => {
     createDogMutation.mutate(values);
+  };
+
+  // Function to increment weight
+  const incrementWeight = () => {
+    const currentWeight = form.getValues("weight");
+    const newWeight = currentWeight ? parseFloat(currentWeight) + 0.1 : 0.1;
+    form.setValue("weight", newWeight.toFixed(1));
+  };
+
+  // Function to decrement weight
+  const decrementWeight = () => {
+    const currentWeight = form.getValues("weight");
+    if (!currentWeight) return;
+    
+    const newWeight = Math.max(0, parseFloat(currentWeight) - 0.1);
+    form.setValue("weight", newWeight.toFixed(1));
   };
 
   return (
@@ -249,15 +265,37 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
             name="weight"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Weight</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="Weight"
-                    {...field}
-                  />
-                </FormControl>
+                <FormLabel>Weight (kg)</FormLabel>
+                <div className="flex items-center">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="icon" 
+                    className="rounded-r-none" 
+                    onClick={decrementWeight}
+                  >
+                    <MinusCircle size={16} />
+                  </Button>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      placeholder="Weight"
+                      {...field}
+                      className="rounded-none text-center"
+                    />
+                  </FormControl>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="icon" 
+                    className="rounded-l-none" 
+                    onClick={incrementWeight}
+                  >
+                    <PlusCircle size={16} />
+                  </Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
