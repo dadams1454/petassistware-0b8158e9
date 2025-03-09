@@ -35,7 +35,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Get dogs count
+    // Get dogs count - specify count only to avoid deep type instantiation
     const { count: dogsCount, error: dogsError } = await supabase
       .from('dogs')
       .select('*', { count: 'exact', head: true })
@@ -43,7 +43,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     
     if (dogsError) throw dogsError;
 
-    // Get active litters count
+    // Get active litters count - specify count only to avoid deep type instantiation
     const { count: littersCount, error: littersError } = await supabase
       .from('litters')
       .select('*', { count: 'exact', head: true })
@@ -51,7 +51,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     
     if (littersError) throw littersError;
 
-    // Get reservations count
+    // Get reservations count - specify count only to avoid deep type instantiation
     const { count: reservationsCount, error: reservationsError } = await supabase
       .from('reservations')
       .select('*', { count: 'exact', head: true })
