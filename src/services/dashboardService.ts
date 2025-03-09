@@ -35,59 +35,58 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Get dogs count - prevent deep instantiation by using count parameter only
-    const { count: dogsCount, error: dogsError } = await supabase
+    // Count dogs without selecting all columns
+    const dogsResult = await supabase
       .from('dogs')
       .select('id', { count: 'exact', head: true })
       .eq('owner_id', user.id);
     
-    if (dogsError) throw dogsError;
+    if (dogsResult.error) throw dogsResult.error;
+    const dogsCount = dogsResult.count || 0;
 
-    // Get active litters count - prevent deep instantiation by using count parameter only
-    const { count: littersCount, error: littersError } = await supabase
+    // Count litters without selecting all columns
+    const littersResult = await supabase
       .from('litters')
       .select('id', { count: 'exact', head: true })
       .eq('breeder_id', user.id);
     
-    if (littersError) throw littersError;
+    if (littersResult.error) throw littersResult.error;
+    const littersCount = littersResult.count || 0;
 
-    // Get reservations count - prevent deep instantiation by using count parameter only
-    const { count: reservationsCount, error: reservationsError } = await supabase
+    // Count reservations without selecting all columns
+    const reservationsResult = await supabase
       .from('reservations')
       .select('id', { count: 'exact', head: true })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
-    if (reservationsError) throw reservationsError;
+    if (reservationsResult.error) throw reservationsResult.error;
+    const reservationsCount = reservationsResult.count || 0;
 
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // Define a simple type to avoid complex type inference
-    interface TransactionAmountOnly {
-      amount: number;
-    }
-
-    // Use explicit column selection to limit type complexity
-    const { data, error: transactionsError } = await supabase
+    // Use a more straightforward approach for transactions query
+    const transactionsResult = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
     
-    if (transactionsError) throw transactionsError;
+    if (transactionsResult.error) throw transactionsResult.error;
     
-    // Handle data safely with explicit typing
-    const transactions = (data || []) as TransactionAmountOnly[];
+    // Calculate revenue
+    type TransactionWithAmount = { amount: number };
+    const transactions = transactionsResult.data as TransactionWithAmount[];
     const revenue = transactions.reduce((sum, transaction) => 
       sum + Number(transaction.amount), 0);
 
     return {
-      dogsCount: dogsCount || 0,
-      littersCount: littersCount || 0,
-      reservationsCount: reservationsCount || 0,
+      dogsCount,
+      littersCount,
+      reservationsCount,
       revenue
     };
   } catch (error) {
