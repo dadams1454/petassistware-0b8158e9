@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,32 +8,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { format, parse } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon, MinusCircle, PlusCircle } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Form } from '@/components/ui/form';
+import { parse } from 'date-fns';
+
+// Import new form components
+import TextInput from './form/TextInput';
+import SelectInput from './form/SelectInput';
+import DatePicker from './form/DatePicker';
+import WeightInput from './form/WeightInput';
+import CheckboxInput from './form/CheckboxInput';
+import TextareaInput from './form/TextareaInput';
 
 const dogFormSchema = z.object({
   name: z.string().min(1, { message: 'Dog name is required' }),
@@ -66,7 +51,7 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     name: dog?.name || '',
     breed: dog?.breed || '',
     birthdate: dog?.birthdate ? new Date(dog.birthdate) : null,
-    birthdateStr: dog?.birthdate ? format(new Date(dog.birthdate), 'MM/dd/yyyy') : '',
+    birthdateStr: dog?.birthdate ? new Date(dog.birthdate).toLocaleDateString('en-US') : '',
     gender: dog?.gender || '',
     color: dog?.color || '',
     weight: dog?.weight?.toString() || '',
@@ -146,282 +131,92 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     createDogMutation.mutate(values);
   };
 
-  const incrementWeight = () => {
-    const currentWeight = form.getValues("weight");
-    const currentWeightNum = currentWeight ? parseFloat(currentWeight) : 0;
-    const newWeight = currentWeightNum + 0.1;
-    form.setValue("weight", newWeight.toFixed(1));
-  };
-
-  const decrementWeight = () => {
-    const currentWeight = form.getValues("weight");
-    if (!currentWeight) return;
-    
-    const currentWeightNum = parseFloat(currentWeight);
-    const newWeight = Math.max(0, currentWeightNum - 0.1);
-    form.setValue("weight", newWeight.toFixed(1));
-  };
-
-  const handleCalendarSelect = (date: Date | undefined) => {
-    form.setValue("birthdate", date || null);
-    if (date) {
-      form.setValue("birthdateStr", format(date, 'MM/dd/yyyy'));
-    }
-  };
-
-  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const dateStr = e.target.value;
-    form.setValue("birthdateStr", dateStr);
-    
-    try {
-      if (dateStr) {
-        const parsedDate = parse(dateStr, 'MM/dd/yyyy', new Date());
-        if (!isNaN(parsedDate.getTime())) {
-          form.setValue("birthdate", parsedDate);
-        }
-      } else {
-        form.setValue("birthdate", null);
-      }
-    } catch (error) {
-      console.error("Error parsing date:", error);
-    }
-  };
+  // Gender options for the select input
+  const genderOptions = [
+    { value: 'Male', label: 'Male' },
+    { value: 'Female', label: 'Female' }
+  ];
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name*</FormLabel>
-                <FormControl>
-                  <Input placeholder="Dog name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          <TextInput 
+            form={form} 
+            name="name" 
+            label="Name" 
+            placeholder="Dog name" 
+            required={true} 
           />
-
-          <FormField
-            control={form.control}
-            name="breed"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Breed*</FormLabel>
-                <FormControl>
-                  <Input placeholder="Breed" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          
+          <TextInput 
+            form={form} 
+            name="breed" 
+            label="Breed" 
+            placeholder="Breed" 
+            required={true} 
           />
-
-          <FormField
-            control={form.control}
-            name="gender"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Gender</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+          
+          <SelectInput 
+            form={form} 
+            name="gender" 
+            label="Gender" 
+            options={genderOptions} 
+            placeholder="Select gender" 
           />
-
-          <FormField
-            control={form.control}
-            name="birthdate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Birthdate</FormLabel>
-                <div className="flex space-x-2">
-                  <FormField
-                    control={form.control}
-                    name="birthdateStr"
-                    render={({ field: dateStrField }) => (
-                      <FormControl>
-                        <Input 
-                          placeholder="MM/DD/YYYY" 
-                          value={dateStrField.value || ''}
-                          onChange={handleDateInputChange}
-                        />
-                      </FormControl>
-                    )}
-                  />
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        className="px-2"
-                      >
-                        <CalendarIcon className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-50" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value || undefined}
-                        onSelect={handleCalendarSelect}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+          
+          <DatePicker 
+            form={form} 
+            name="birthdate" 
+            label="Birthdate" 
           />
-
-          <FormField
-            control={form.control}
-            name="color"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Color</FormLabel>
-                <FormControl>
-                  <Input placeholder="Color" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          
+          <TextInput 
+            form={form} 
+            name="color" 
+            label="Color" 
+            placeholder="Color" 
           />
-
-          <FormField
-            control={form.control}
-            name="weight"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Weight (kg)</FormLabel>
-                <div className="flex items-center">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="icon" 
-                    className="rounded-r-none" 
-                    onClick={decrementWeight}
-                  >
-                    <MinusCircle size={16} />
-                  </Button>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      placeholder="Weight"
-                      {...field}
-                      className="rounded-none text-center"
-                    />
-                  </FormControl>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="icon" 
-                    className="rounded-l-none" 
-                    onClick={incrementWeight}
-                  >
-                    <PlusCircle size={16} />
-                  </Button>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+          
+          <WeightInput 
+            form={form} 
+            name="weight" 
+            label="Weight (kg)" 
           />
-
-          <FormField
-            control={form.control}
-            name="microchip_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Microchip Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="Microchip number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          
+          <TextInput 
+            form={form} 
+            name="microchip_number" 
+            label="Microchip Number" 
+            placeholder="Microchip number" 
           />
-
-          <FormField
-            control={form.control}
-            name="registration_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Registration Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="Registration number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          
+          <TextInput 
+            form={form} 
+            name="registration_number" 
+            label="Registration Number" 
+            placeholder="Registration number" 
           />
-
-          <FormField
-            control={form.control}
-            name="photo_url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Photo URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="Photo URL" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          
+          <TextInput 
+            form={form} 
+            name="photo_url" 
+            label="Photo URL" 
+            placeholder="Photo URL" 
           />
-
-          <FormField
-            control={form.control}
-            name="pedigree"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Has Pedigree</FormLabel>
-                </div>
-              </FormItem>
-            )}
+          
+          <CheckboxInput 
+            form={form} 
+            name="pedigree" 
+            label="Has Pedigree" 
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Additional notes about the dog"
-                  className="min-h-24"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <TextareaInput 
+          form={form} 
+          name="notes" 
+          label="Notes" 
+          placeholder="Additional notes about the dog" 
         />
 
         <div className="flex justify-end space-x-2 pt-4">
