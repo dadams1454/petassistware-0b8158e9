@@ -2,32 +2,32 @@
 import { supabase } from '@/integrations/supabase/client';
 
 // Types to properly define the return structure
-interface DashboardStats {
+export interface DashboardStats {
   dogsCount: number;
   littersCount: number;
   reservationsCount: number;
   revenue: number;
 }
 
-type Event = {
+export interface Event {
   id: string;
   breeder_id: string;
   title: string;
-  description: string;
+  description: string | null;
   event_date: string;
   event_type: string;
   status: string;
   created_at: string;
-};
+}
 
-type Activity = {
+export interface Activity {
   id: string;
   breeder_id: string;
   title: string;
-  description: string;
+  description: string | null;
   activity_type: string;
   created_at: string;
-};
+}
 
 // Get dashboard statistics
 export const getDashboardStats = async (): Promise<DashboardStats> => {

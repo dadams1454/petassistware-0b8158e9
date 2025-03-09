@@ -18,16 +18,18 @@ export const useDashboard = () => {
     queryFn: getDashboardStats,
     enabled: !!user,
     refetchInterval: 60000, // Refetch every minute
-    onSuccess: (data) => {
-      console.log('Dashboard stats loaded successfully', data);
-    },
-    onError: (error: Error) => {
-      console.error('Error fetching dashboard stats:', error);
-      toast({
-        title: 'Error fetching dashboard statistics',
-        description: 'Please try again later',
-        variant: 'destructive'
-      });
+    meta: {
+      onSuccess: (data) => {
+        console.log('Dashboard stats loaded successfully', data);
+      },
+      onError: (error: Error) => {
+        console.error('Error fetching dashboard stats:', error);
+        toast({
+          title: 'Error fetching dashboard statistics',
+          description: 'Please try again later',
+          variant: 'destructive'
+        });
+      }
     }
   });
 
@@ -37,13 +39,15 @@ export const useDashboard = () => {
     queryFn: getUpcomingEvents,
     enabled: !!user,
     refetchInterval: 60000, // Refetch every minute
-    onError: (error: Error) => {
-      console.error('Error fetching upcoming events:', error);
-      toast({
-        title: 'Error fetching upcoming events',
-        description: 'Please try again later',
-        variant: 'destructive'
-      });
+    meta: {
+      onError: (error: Error) => {
+        console.error('Error fetching upcoming events:', error);
+        toast({
+          title: 'Error fetching upcoming events',
+          description: 'Please try again later',
+          variant: 'destructive'
+        });
+      }
     }
   });
 
@@ -53,13 +57,15 @@ export const useDashboard = () => {
     queryFn: getRecentActivities,
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
-    onError: (error: Error) => {
-      console.error('Error fetching recent activities:', error);
-      toast({
-        title: 'Error fetching recent activities',
-        description: 'Please try again later',
-        variant: 'destructive'
-      });
+    meta: {
+      onError: (error: Error) => {
+        console.error('Error fetching recent activities:', error);
+        toast({
+          title: 'Error fetching recent activities',
+          description: 'Please try again later',
+          variant: 'destructive'
+        });
+      }
     }
   });
 
