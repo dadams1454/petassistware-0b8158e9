@@ -36,49 +36,53 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
 
   try {
     // Get dogs count
-    const { count: dogsCount, error: dogsError } = await supabase
+    const dogsResult = await supabase
       .from('dogs')
       .select('*', { count: 'exact', head: true })
       .eq('owner_id', user.id);
-
-    if (dogsError) throw dogsError;
+    
+    if (dogsResult.error) throw dogsResult.error;
+    const dogsCount = dogsResult.count || 0;
 
     // Get active litters count
-    const { count: littersCount, error: littersError } = await supabase
+    const littersResult = await supabase
       .from('litters')
       .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id);
-
-    if (littersError) throw littersError;
+    
+    if (littersResult.error) throw littersResult.error;
+    const littersCount = littersResult.count || 0;
 
     // Get reservations count
-    const { count: reservationsCount, error: reservationsError } = await supabase
+    const reservationsResult = await supabase
       .from('reservations')
       .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
-
-    if (reservationsError) throw reservationsError;
+    
+    if (reservationsResult.error) throw reservationsResult.error;
+    const reservationsCount = reservationsResult.count || 0;
 
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const { data: transactions, error: transactionsError } = await supabase
+    const transactionsResult = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
 
-    if (transactionsError) throw transactionsError;
-
-    const revenue = transactions?.reduce((sum, transaction) => sum + Number(transaction.amount), 0) || 0;
+    if (transactionsResult.error) throw transactionsResult.error;
+    
+    const transactions = transactionsResult.data || [];
+    const revenue = transactions.reduce((sum, transaction) => sum + Number(transaction.amount), 0);
 
     return {
-      dogsCount: dogsCount || 0,
-      littersCount: littersCount || 0,
-      reservationsCount: reservationsCount || 0,
+      dogsCount,
+      littersCount,
+      reservationsCount,
       revenue
     };
   } catch (error) {
@@ -97,7 +101,7 @@ export const getUpcomingEvents = async (): Promise<Event[]> => {
 
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('id, breeder_id, title, description, event_date, event_type, status, created_at')
       .eq('breeder_id', user.id)
       .gte('event_date', today)
       .order('event_date', { ascending: true })
@@ -119,7 +123,7 @@ export const getRecentActivities = async (): Promise<Activity[]> => {
   try {
     const { data, error } = await supabase
       .from('activities')
-      .select('*')
+      .select('id, breeder_id, title, description, activity_type, created_at')
       .eq('breeder_id', user.id)
       .order('created_at', { ascending: false })
       .limit(5);
