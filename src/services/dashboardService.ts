@@ -35,26 +35,26 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Get dogs count - specify columns to avoid deep type instantiation
+    // Get dogs count with explicit count parameter
     const { count: dogsCount, error: dogsError } = await supabase
       .from('dogs')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('owner_id', user.id);
     
     if (dogsError) throw dogsError;
 
-    // Get active litters count - specify columns to avoid deep type instantiation
+    // Get active litters count with explicit count parameter
     const { count: littersCount, error: littersError } = await supabase
       .from('litters')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id);
     
     if (littersError) throw littersError;
 
-    // Get reservations count - specify columns to avoid deep type instantiation
+    // Get reservations count with explicit count parameter
     const { count: reservationsCount, error: reservationsError } = await supabase
       .from('reservations')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
@@ -64,8 +64,13 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // Explicitly define the transactions query to return only the amount column
-    const { data: transactionsData, error: transactionsError } = await supabase
+    // Define a simple transaction type to avoid deep type instantiation
+    interface TransactionAmount {
+      amount: number;
+    }
+
+    // Use a simple query that only selects the amount column
+    const { data, error: transactionsError } = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
@@ -74,9 +79,10 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     
     if (transactionsError) throw transactionsError;
     
-    // Calculate revenue from transactions data
-    const revenue = transactionsData?.reduce((sum, transaction) => 
-      sum + Number(transaction.amount), 0) || 0;
+    // Calculate revenue with proper type handling
+    const transactions = data as TransactionAmount[] || [];
+    const revenue = transactions.reduce((sum, transaction) => 
+      sum + Number(transaction.amount), 0);
 
     return {
       dogsCount: dogsCount || 0,
