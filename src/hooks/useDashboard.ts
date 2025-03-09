@@ -18,8 +18,8 @@ export const useDashboard = () => {
     queryFn: getDashboardStats,
     enabled: !!user,
     refetchInterval: 60000, // Refetch every minute
-    onSettled: (data, error) => {
-      if (error) {
+    meta: {
+      onError: (error: Error) => {
         console.error('Error fetching dashboard stats:', error);
         toast({
           title: 'Error fetching dashboard statistics',
@@ -36,8 +36,8 @@ export const useDashboard = () => {
     queryFn: getUpcomingEvents,
     enabled: !!user,
     refetchInterval: 60000, // Refetch every minute
-    onSettled: (data, error) => {
-      if (error) {
+    meta: {
+      onError: (error: Error) => {
         console.error('Error fetching upcoming events:', error);
         toast({
           title: 'Error fetching upcoming events',
@@ -54,8 +54,8 @@ export const useDashboard = () => {
     queryFn: getRecentActivities,
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
-    onSettled: (data, error) => {
-      if (error) {
+    meta: {
+      onError: (error: Error) => {
         console.error('Error fetching recent activities:', error);
         toast({
           title: 'Error fetching recent activities',
