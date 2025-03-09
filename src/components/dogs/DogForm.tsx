@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -87,7 +86,6 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     mutationFn: async (values: DogFormValues) => {
       if (!user) throw new Error('You must be logged in');
 
-      // Convert date string to Date object if provided
       let birthdate = values.birthdate;
       if (!birthdate && values.birthdateStr) {
         try {
@@ -97,10 +95,9 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
         }
       }
 
-      // Ensure required fields are present for Supabase
       const dogData = {
-        name: values.name,          // Required field
-        breed: values.breed,        // Required field
+        name: values.name,
+        breed: values.breed,
         birthdate: birthdate ? birthdate.toISOString().split('T')[0] : null,
         gender: values.gender,
         color: values.color,
@@ -149,23 +146,22 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     createDogMutation.mutate(values);
   };
 
-  // Function to increment weight
   const incrementWeight = () => {
     const currentWeight = form.getValues("weight");
-    const newWeight = currentWeight ? parseFloat(currentWeight) + 0.1 : 0.1;
-    form.setValue("weight", newWeight.toFixed(1).toString());
+    const currentWeightNum = currentWeight ? parseFloat(currentWeight) : 0;
+    const newWeight = currentWeightNum + 0.1;
+    form.setValue("weight", newWeight.toFixed(1));
   };
 
-  // Function to decrement weight
   const decrementWeight = () => {
     const currentWeight = form.getValues("weight");
     if (!currentWeight) return;
     
-    const newWeight = Math.max(0, parseFloat(currentWeight) - 0.1);
-    form.setValue("weight", newWeight.toFixed(1).toString());
+    const currentWeightNum = parseFloat(currentWeight);
+    const newWeight = Math.max(0, currentWeightNum - 0.1);
+    form.setValue("weight", newWeight.toFixed(1));
   };
 
-  // Update date when calendar changes
   const handleCalendarSelect = (date: Date | undefined) => {
     form.setValue("birthdate", date || null);
     if (date) {
@@ -173,7 +169,6 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     }
   };
 
-  // Update calendar when date string changes
   const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const dateStr = e.target.value;
     form.setValue("birthdateStr", dateStr);
