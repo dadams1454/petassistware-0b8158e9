@@ -57,7 +57,7 @@ const Logo: React.FC<LogoProps> = ({
         sizes[size], 
         colors[variant]
       )}>
-        BreedElite
+        Pet Assist Ware
       </span>
     </div>
   );
