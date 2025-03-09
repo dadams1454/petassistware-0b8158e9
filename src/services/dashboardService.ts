@@ -35,26 +35,26 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Get dogs count with explicit count parameter
+    // Get dogs count - prevent deep instantiation by using count parameter only
     const { count: dogsCount, error: dogsError } = await supabase
       .from('dogs')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('owner_id', user.id);
     
     if (dogsError) throw dogsError;
 
-    // Get active litters count with explicit count parameter
+    // Get active litters count - prevent deep instantiation by using count parameter only
     const { count: littersCount, error: littersError } = await supabase
       .from('litters')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('breeder_id', user.id);
     
     if (littersError) throw littersError;
 
-    // Get reservations count with explicit count parameter
+    // Get reservations count - prevent deep instantiation by using count parameter only
     const { count: reservationsCount, error: reservationsError } = await supabase
       .from('reservations')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
@@ -64,12 +64,12 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // Define a simple transaction type to avoid deep type instantiation
-    interface TransactionAmount {
+    // Define a simple type to avoid complex type inference
+    interface TransactionAmountOnly {
       amount: number;
     }
 
-    // Use a simple query that only selects the amount column
+    // Use explicit column selection to limit type complexity
     const { data, error: transactionsError } = await supabase
       .from('transactions')
       .select('amount')
@@ -79,8 +79,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     
     if (transactionsError) throw transactionsError;
     
-    // Calculate revenue with proper type handling
-    const transactions = data as TransactionAmount[] || [];
+    // Handle data safely with explicit typing
+    const transactions = (data || []) as TransactionAmountOnly[];
     const revenue = transactions.reduce((sum, transaction) => 
       sum + Number(transaction.amount), 0);
 
