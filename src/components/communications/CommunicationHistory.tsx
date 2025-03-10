@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Mail, MessageSquare, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, CustomerCommunicationsRow } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import ViewCommunicationDialog from './ViewCommunicationDialog';
 
@@ -26,7 +26,8 @@ const CommunicationHistory: React.FC = () => {
   const { data: communications, isLoading, error } = useQuery({
     queryKey: ['customer-communications'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // We need to cast this as any since the table isn't in the generated types yet
+      const { data, error } = await (supabase as any)
         .from('customer_communications')
         .select(`
           *,
@@ -39,21 +40,21 @@ const CommunicationHistory: React.FC = () => {
         .order('sent_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as CustomerCommunicationsRow[];
     }
   });
 
   if (error) {
     toast({
       title: "Error loading communications",
-      description: error.message,
+      description: (error as Error).message,
       variant: "destructive"
     });
   }
 
   const filteredCommunications = communications?.filter(comm => {
     const searchLower = searchTerm.toLowerCase();
-    const customerName = `${comm.customers?.first_name} ${comm.customers?.last_name}`.toLowerCase();
+    const customerName = comm.customers ? `${comm.customers.first_name} ${comm.customers.last_name}`.toLowerCase() : '';
     const content = comm.content?.toLowerCase() || '';
     const subject = comm.subject?.toLowerCase() || '';
     

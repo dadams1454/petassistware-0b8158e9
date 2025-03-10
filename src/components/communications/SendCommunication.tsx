@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -24,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, CommunicationTemplatesRow } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CustomerSelector from './CustomerSelector';
 import VariableHelp from './VariableHelp';
@@ -51,13 +50,14 @@ const SendCommunication: React.FC = () => {
   const { data: templates } = useQuery({
     queryKey: ['communication-templates'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Cast as any since the table isn't in the generated types yet
+      const { data, error } = await (supabase as any)
         .from('communication_templates')
         .select('*')
         .order('name', { ascending: true });
       
       if (error) throw error;
-      return data;
+      return data as CommunicationTemplatesRow[];
     }
   });
 
@@ -149,7 +149,8 @@ const SendCommunication: React.FC = () => {
     // Here you'd normally send the communication via an API
     // For now we'll just create a record in the database
     try {
-      const { error } = await supabase
+      // Cast as any since the table isn't in the generated types yet
+      const { error } = await (supabase as any)
         .from('customer_communications')
         .insert([{
           customer_id: values.customer_id,
@@ -187,16 +188,15 @@ const SendCommunication: React.FC = () => {
     setSelectedCustomer(customer);
   };
 
-  const handlePuppySelected = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.value;
-    setValue('puppy_id', id);
+  const handlePuppyChange = (value: string) => {
+    setValue('puppy_id', value);
     
-    if (!id) {
+    if (!value) {
       setSelectedPuppy(null);
       return;
     }
     
-    const puppy = puppies.find(p => p.id === id);
+    const puppy = puppies.find(p => p.id === value);
     setSelectedPuppy(puppy);
   };
 
@@ -225,10 +225,13 @@ const SendCommunication: React.FC = () => {
                   <FormField
                     control={form.control}
                     name="puppy_id"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Puppy (Optional)</FormLabel>
-                        <Select onValueChange={handlePuppySelected}>
+                        <Select 
+                          value={field.value}
+                          onValueChange={handlePuppyChange}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a puppy" />

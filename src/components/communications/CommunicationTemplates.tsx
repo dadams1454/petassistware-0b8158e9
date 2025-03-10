@@ -15,7 +15,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, CommunicationTemplatesRow } from '@/integrations/supabase/client';
 import TemplateDialog from './TemplateDialog';
 import DeleteTemplateDialog from './DeleteTemplateDialog';
 
@@ -27,20 +27,21 @@ const CommunicationTemplates = () => {
   const { data: templates, isLoading, error, refetch } = useQuery({
     queryKey: ['communication-templates'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Cast as any since the table isn't in the generated types yet
+      const { data, error } = await (supabase as any)
         .from('communication_templates')
         .select('*')
         .order('name', { ascending: true });
       
       if (error) throw error;
-      return data;
+      return data as CommunicationTemplatesRow[];
     }
   });
 
   if (error) {
     toast({
       title: "Error loading templates",
-      description: error.message,
+      description: (error as Error).message,
       variant: "destructive"
     });
   }

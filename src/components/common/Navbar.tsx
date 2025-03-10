@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { 
   Home, 
   Dog as LucideDog, 
-  Paw, 
+  NotebookPen, 
   Users, 
   Calendar, 
   Menu, 
@@ -10,8 +11,9 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth } from '@/contexts/AuthProvider';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +21,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,7 +32,7 @@ const Navbar: React.FC = () => {
   const menuItems = [
     { label: 'Dashboard', path: '/dashboard', icon: <Home className="h-5 w-5" /> },
     { label: 'Dogs', path: '/dogs', icon: <LucideDog className="h-5 w-5" /> },
-    { label: 'Litters', path: '/litters', icon: <Paw className="h-5 w-5" /> },
+    { label: 'Litters', path: '/litters', icon: <NotebookPen className="h-5 w-5" /> },
     { label: 'Customers', path: '/customers', icon: <Users className="h-5 w-5" /> },
     { label: 'Communications', path: '/communications', icon: <MessageSquare className="h-5 w-5" /> },
     { label: 'Calendar', path: '/calendar', icon: <Calendar className="h-5 w-5" /> },

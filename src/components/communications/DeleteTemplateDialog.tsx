@@ -28,7 +28,8 @@ const DeleteTemplateDialog: React.FC<DeleteTemplateDialogProps> = ({
 }) => {
   const handleDelete = async () => {
     try {
-      const { error } = await supabase
+      // Cast as any since the table isn't in the generated types yet
+      const { error } = await (supabase as any)
         .from('communication_templates')
         .delete()
         .eq('id', template.id);

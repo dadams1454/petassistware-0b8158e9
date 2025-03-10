@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -72,7 +71,7 @@ const TemplateDialog: React.FC<TemplateDialogProps> = ({
   const onSubmit = async (values: TemplateFormValues) => {
     try {
       if (isEditing) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('communication_templates')
           .update({
             ...values,
@@ -87,7 +86,7 @@ const TemplateDialog: React.FC<TemplateDialogProps> = ({
           description: "Your communication template has been updated successfully."
         });
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('communication_templates')
           .insert([values]);
         
