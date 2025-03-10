@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   HoverCard,
@@ -7,7 +6,7 @@ import {
 } from '@/components/ui/hover-card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { HelpCircle, FileText, User, Dog } from 'lucide-react';
+import { HelpCircle, FileText, User, Dog, Mail, MessageSquare } from 'lucide-react';
 
 const VariableHelp: React.FC = () => {
   const customerVariables = [
