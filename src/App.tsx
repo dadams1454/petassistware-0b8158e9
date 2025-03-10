@@ -13,6 +13,8 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Profile from "./pages/Profile";
 import Dogs from "./pages/Dogs";
 import Calendar from "./pages/Calendar";
+import Litters from "./pages/Litters";
+import LitterDetail from "./pages/LitterDetail";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +38,16 @@ const App = () => (
             <Route path="/calendar" element={
               <ProtectedRoute>
                 <Calendar />
+              </ProtectedRoute>
+            } />
+            <Route path="/litters" element={
+              <ProtectedRoute>
+                <Litters />
+              </ProtectedRoute>
+            } />
+            <Route path="/litters/:id" element={
+              <ProtectedRoute>
+                <LitterDetail />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
