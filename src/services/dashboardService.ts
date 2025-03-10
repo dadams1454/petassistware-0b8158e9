@@ -35,18 +35,18 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Get all counts using separate simple queries to avoid type issues
-    const dogsQuery = await supabase
+    // Use simple, separate queries to avoid type inference issues
+    const { data: dogsData } = await supabase
       .from('dogs')
       .select('id')
       .eq('owner_id', user.id);
     
-    const littersQuery = await supabase
+    const { data: littersData } = await supabase
       .from('litters')
       .select('id')
       .eq('breeder_id', user.id);
     
-    const reservationsQuery = await supabase
+    const { data: reservationsData } = await supabase
       .from('reservations')
       .select('id')
       .eq('breeder_id', user.id)
@@ -56,7 +56,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const transactionsQuery = await supabase
+    const { data: transactionsData } = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
@@ -65,14 +65,14 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     
     // Calculate revenue safely
     let revenue = 0;
-    if (transactionsQuery.data && transactionsQuery.data.length > 0) {
-      revenue = transactionsQuery.data.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    if (transactionsData && transactionsData.length > 0) {
+      revenue = transactionsData.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
     }
 
     return {
-      dogsCount: dogsQuery.data?.length || 0,
-      littersCount: littersQuery.data?.length || 0,
-      reservationsCount: reservationsQuery.data?.length || 0,
+      dogsCount: dogsData?.length || 0,
+      littersCount: littersData?.length || 0,
+      reservationsCount: reservationsData?.length || 0,
       revenue
     };
   } catch (error) {
