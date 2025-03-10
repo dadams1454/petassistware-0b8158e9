@@ -1,26 +1,10 @@
 
 import React, { useState } from 'react';
-import { Edit, Trash2 } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogDescription,
-  DialogFooter 
-} from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import PuppyForm from './PuppyForm';
+import PuppiesTable from './puppies/PuppiesTable';
+import DeletePuppyDialog from './puppies/DeletePuppyDialog';
+import EditPuppyDialog from './puppies/EditPuppyDialog';
 
 interface PuppiesListProps {
   puppies: Puppy[];
@@ -76,106 +60,29 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
     }
   };
 
-  if (puppies.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">
-          No puppies have been added to this litter yet.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID/Name</TableHead>
-            <TableHead>Gender</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Microchip #</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {puppies.map((puppy) => (
-            <TableRow key={puppy.id}>
-              <TableCell className="font-medium">
-                {puppy.name || `Puppy ${puppy.id.substring(0, 4)}`}
-              </TableCell>
-              <TableCell>{puppy.gender || 'Unknown'}</TableCell>
-              <TableCell>
-                <span className={`px-2 py-1 text-xs rounded-full ${
-                  puppy.status === 'Available' 
-                    ? 'bg-green-100 text-green-800' 
-                    : puppy.status === 'Reserved' 
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : puppy.status === 'Sold'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {puppy.status || 'Unknown'}
-                </span>
-              </TableCell>
-              <TableCell>{puppy.microchip_number || 'Not chipped'}</TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEditPuppy(puppy)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive"
-                  onClick={() => setPuppyToDelete(puppy)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <PuppiesTable 
+        puppies={puppies} 
+        onEditPuppy={handleEditPuppy} 
+        onDeletePuppy={setPuppyToDelete} 
+      />
 
       {/* Edit Puppy Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Puppy</DialogTitle>
-          </DialogHeader>
-          {selectedPuppy && (
-            <PuppyForm 
-              initialData={selectedPuppy} 
-              litterId={litterId}
-              onSuccess={handleEditSuccess} 
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <EditPuppyDialog
+        puppy={selectedPuppy}
+        litterId={litterId}
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSuccess={handleEditSuccess}
+      />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!puppyToDelete} onOpenChange={(open) => !open && setPuppyToDelete(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this puppy? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPuppyToDelete(null)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeletePuppy}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeletePuppyDialog
+        puppy={puppyToDelete}
+        onClose={() => setPuppyToDelete(null)}
+        onConfirm={handleDeletePuppy}
+      />
     </div>
   );
 };
