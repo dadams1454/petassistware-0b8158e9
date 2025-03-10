@@ -60,7 +60,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
         price: data.price,
         signed: data.signed || false,
         notes: data.notes,
-        document_url: null // Adding the missing document_url property
+        document_url: null
       });
       
       toast.success('Contract created successfully');

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -14,7 +13,7 @@ export type Contract = Tables<'contracts'> & {
 
 export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'>;
 
-export const createContract = async (contract: Partial<ContractInsert>) => {
+export const createContract = async (contract: ContractInsert) => {
   const { data, error } = await supabase
     .from('contracts')
     .insert(contract)
