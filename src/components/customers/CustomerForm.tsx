@@ -57,11 +57,21 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
+      // Ensure required fields are non-optional when sending to the database
+      const customerData = {
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email || null,
+        phone: values.phone || null,
+        address: values.address || null,
+        notes: values.notes || null,
+      };
+
       if (customer) {
         // Update existing customer
         const { error } = await supabase
           .from('customers')
-          .update(values)
+          .update(customerData)
           .eq('id', customer.id);
         
         if (error) throw error;
@@ -73,7 +83,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         // Create new customer
         const { error } = await supabase
           .from('customers')
-          .insert(values);
+          .insert(customerData);
         
         if (error) throw error;
         toast({
