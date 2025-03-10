@@ -35,20 +35,20 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Use simple, separate queries to avoid type inference issues
-    const { data: dogsData } = await supabase
+    // Simplify queries to avoid type instantiation issues
+    const { count: dogsCount } = await supabase
       .from('dogs')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('owner_id', user.id);
     
-    const { data: littersData } = await supabase
+    const { count: littersCount } = await supabase
       .from('litters')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id);
     
-    const { data: reservationsData } = await supabase
+    const { count: reservationsCount } = await supabase
       .from('reservations')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
@@ -70,9 +70,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     }
 
     return {
-      dogsCount: dogsData?.length || 0,
-      littersCount: littersData?.length || 0,
-      reservationsCount: reservationsData?.length || 0,
+      dogsCount: dogsCount || 0,
+      littersCount: littersCount || 0,
+      reservationsCount: reservationsCount || 0,
       revenue
     };
   } catch (error) {

@@ -9,6 +9,7 @@ import { Event } from '@/services/dashboardService';
 interface UpcomingEventsProps {
   events: Event[];
   isLoading: boolean;
+  className?: string;
 }
 
 const formatEventDate = (dateStr: string): string => {
@@ -18,12 +19,12 @@ const formatEventDate = (dateStr: string): string => {
   return format(date, 'MMM d');
 };
 
-const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading }) => {
+const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading, className }) => {
   return (
     <DashboardCard
       title="Upcoming Events"
       icon={<Calendar size={18} />}
-      className="xl:col-span-2"
+      className={className}
     >
       {isLoading ? (
         <div className="flex justify-center items-center h-48">
@@ -37,9 +38,9 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading }) =>
           </p>
           <CustomButton 
             variant="outline" 
-            size="sm" 
-            icon={<PlusCircle size={16} />}
+            size="sm"
           >
+            <PlusCircle size={16} className="mr-2" />
             Add Event
           </CustomButton>
         </div>
@@ -80,10 +81,9 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading }) =>
           variant="ghost" 
           size="sm" 
           className="text-primary"
-          icon={<ChevronRight size={16} />}
-          iconPosition="right"
         >
           View Calendar
+          <ChevronRight size={16} className="ml-2" />
         </CustomButton>
       </div>
     </DashboardCard>
