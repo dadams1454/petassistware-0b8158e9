@@ -35,58 +35,53 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Count dogs without selecting all columns
-    const dogsResult = await supabase
+    // For dogs count, use a simpler approach without complex type inference
+    const { data: dogsData, error: dogsError, count: dogsCount } = await supabase
       .from('dogs')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact' })
       .eq('owner_id', user.id);
     
-    if (dogsResult.error) throw dogsResult.error;
-    const dogsCount = dogsResult.count || 0;
+    if (dogsError) throw dogsError;
 
-    // Count litters without selecting all columns
-    const littersResult = await supabase
+    // For litters count, use same approach
+    const { data: littersData, error: littersError, count: littersCount } = await supabase
       .from('litters')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact' })
       .eq('breeder_id', user.id);
     
-    if (littersResult.error) throw littersResult.error;
-    const littersCount = littersResult.count || 0;
+    if (littersError) throw littersError;
 
-    // Count reservations without selecting all columns
-    const reservationsResult = await supabase
+    // For reservations count
+    const { data: reservationsData, error: reservationsError, count: reservationsCount } = await supabase
       .from('reservations')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact' })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
-    if (reservationsResult.error) throw reservationsResult.error;
-    const reservationsCount = reservationsResult.count || 0;
+    if (reservationsError) throw reservationsError;
 
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // Use a more straightforward approach for transactions query
-    const transactionsResult = await supabase
+    // Use explicit typing for transactions
+    const { data: transactionsData, error: transactionsError } = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
     
-    if (transactionsResult.error) throw transactionsResult.error;
+    if (transactionsError) throw transactionsError;
     
-    // Calculate revenue
-    type TransactionWithAmount = { amount: number };
-    const transactions = transactionsResult.data as TransactionWithAmount[];
-    const revenue = transactions.reduce((sum, transaction) => 
+    // Calculate revenue with safe fallbacks
+    const revenue = (transactionsData || []).reduce((sum, transaction) => 
       sum + Number(transaction.amount), 0);
 
     return {
-      dogsCount,
-      littersCount,
-      reservationsCount,
+      dogsCount: dogsCount || 0,
+      littersCount: littersCount || 0,
+      reservationsCount: reservationsCount || 0,
       revenue
     };
   } catch (error) {
