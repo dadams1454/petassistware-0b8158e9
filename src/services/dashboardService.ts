@@ -35,52 +35,57 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Use count option directly instead of selecting all records
-    const { count: dogsCount, error: dogsError } = await supabase
+    // For dogs count
+    const dogsQuery = await supabase
       .from('dogs')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact' })
       .eq('owner_id', user.id);
+      
+    const dogsCount = dogsQuery.count || 0;
+    if (dogsQuery.error) throw dogsQuery.error;
     
-    if (dogsError) throw dogsError;
-    
-    const { count: littersCount, error: littersError } = await supabase
+    // For litters count
+    const littersQuery = await supabase
       .from('litters')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact' })
       .eq('breeder_id', user.id);
+      
+    const littersCount = littersQuery.count || 0;
+    if (littersQuery.error) throw littersQuery.error;
     
-    if (littersError) throw littersError;
-    
-    const { count: reservationsCount, error: reservationsError } = await supabase
+    // For reservations count
+    const reservationsQuery = await supabase
       .from('reservations')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact' })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
-    if (reservationsError) throw reservationsError;
+    const reservationsCount = reservationsQuery.count || 0;
+    if (reservationsQuery.error) throw reservationsQuery.error;
     
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const { data: transactionsData, error: transactionsError } = await supabase
+    const transactionsQuery = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
     
-    if (transactionsError) throw transactionsError;
+    if (transactionsQuery.error) throw transactionsQuery.error;
     
     // Calculate revenue safely
     let revenue = 0;
-    if (transactionsData && transactionsData.length > 0) {
-      revenue = transactionsData.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    if (transactionsQuery.data && transactionsQuery.data.length > 0) {
+      revenue = transactionsQuery.data.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
     }
 
     return {
-      dogsCount: dogsCount || 0,
-      littersCount: littersCount || 0,
-      reservationsCount: reservationsCount || 0,
+      dogsCount,
+      littersCount,
+      reservationsCount,
       revenue
     };
   } catch (error) {
