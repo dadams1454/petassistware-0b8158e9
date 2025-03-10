@@ -72,7 +72,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onEdit, onDelete }) 
             <div className="flex items-center gap-2">
               <Repeat className="h-4 w-4 text-slate-400" />
               <p className="text-base">
-                {formatRecurrencePattern(event.recurrence_pattern)}
+                {formatRecurrencePattern(event.recurrence_pattern || 'none')}
                 {event.recurrence_end_date && (
                   <span className="text-sm text-slate-500 ml-1">
                     (until {format(new Date(event.recurrence_end_date), 'MMMM d, yyyy')})

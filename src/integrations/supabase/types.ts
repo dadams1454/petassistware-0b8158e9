@@ -230,6 +230,9 @@ export type Database = {
           event_date: string
           event_type: string
           id: string
+          is_recurring: boolean | null
+          recurrence_end_date: string | null
+          recurrence_pattern: string | null
           status: string
           title: string
         }
@@ -240,6 +243,9 @@ export type Database = {
           event_date: string
           event_type: string
           id?: string
+          is_recurring?: boolean | null
+          recurrence_end_date?: string | null
+          recurrence_pattern?: string | null
           status?: string
           title: string
         }
@@ -250,6 +256,9 @@ export type Database = {
           event_date?: string
           event_type?: string
           id?: string
+          is_recurring?: boolean | null
+          recurrence_end_date?: string | null
+          recurrence_pattern?: string | null
           status?: string
           title?: string
         }

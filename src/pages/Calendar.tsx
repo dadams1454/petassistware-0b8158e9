@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import MainLayout from '@/layouts/MainLayout';
@@ -340,7 +341,7 @@ const CalendarPage = () => {
                           <div className="flex items-center gap-2">
                             <h3 className="font-medium">{event.title}</h3>
                             {event.is_recurring && (
-                              <Repeat size={16} className="text-slate-400" title="Recurring Event" />
+                              <Repeat size={16} className="text-slate-400" aria-label="Recurring Event" />
                             )}
                           </div>
                           {event.description && (
