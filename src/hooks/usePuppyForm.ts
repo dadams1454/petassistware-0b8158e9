@@ -41,12 +41,16 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
       // Format gender properly (capitalize first letter)
       const formattedGender = data.gender ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1).toLowerCase() : null;
       
-      // Parse sale price to number or null
+      // Parse sale price to number or null - fixing the type error
       let salePrice = null;
-      if (data.sale_price !== null && data.sale_price !== '') {
-        const price = Number(data.sale_price);
-        if (!isNaN(price)) {
-          salePrice = price;
+      if (data.sale_price !== null && data.sale_price !== undefined) {
+        // Convert to string first to safely check for empty string
+        const priceStr = String(data.sale_price);
+        if (priceStr.trim() !== '') {
+          const price = Number(priceStr);
+          if (!isNaN(price)) {
+            salePrice = price;
+          }
         }
       }
       
