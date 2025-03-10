@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   HoverCard,
@@ -14,6 +15,8 @@ const VariableHelp: React.FC = () => {
     { name: '{{customer_first_name}}', description: 'First name of the customer', example: 'John' },
     { name: '{{customer_email}}', description: 'Email address of the customer', example: 'john@example.com' },
     { name: '{{customer_phone}}', description: 'Phone number of the customer', example: '(555) 123-4567' },
+    { name: '{{customer_type}}', description: 'Customer type (new or returning)', example: 'New Customer' },
+    { name: '{{customer_since}}', description: 'When customer relationship began', example: 'June 2023' },
   ];
 
   const puppyVariables = [

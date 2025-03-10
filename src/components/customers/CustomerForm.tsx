@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
@@ -27,6 +34,8 @@ const formSchema = z.object({
   phone: z.string().optional(),
   address: z.string().optional(),
   notes: z.string().optional(),
+  customer_type: z.enum(["new", "returning"]).default("new"),
+  customer_since: z.string().optional(),
 });
 
 interface CustomerFormProps {
@@ -51,20 +60,33 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       phone: customer?.phone || '',
       address: customer?.address || '',
       notes: customer?.notes || '',
+      customer_type: (customer?.metadata as any)?.customer_type || 'new',
+      customer_since: (customer?.metadata as any)?.customer_since || '',
     },
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
+      // Extract metadata fields
+      const { customer_type, customer_since, ...otherFields } = values;
+      
+      // Create metadata object
+      const metadata = {
+        customer_type,
+        customer_since: customer_since || new Date().toISOString().split('T')[0],
+      };
+      
       // Ensure required fields are non-optional when sending to the database
       const customerData = {
+        ...otherFields,
         first_name: values.first_name,
         last_name: values.last_name,
         email: values.email || null,
         phone: values.phone || null,
         address: values.address || null,
         notes: values.notes || null,
+        metadata,
       };
 
       if (customer) {
@@ -178,6 +200,51 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             </FormItem>
           )}
         />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="customer_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Customer Type</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select customer type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="new">New Customer</SelectItem>
+                    <SelectItem value="returning">Returning Customer</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="customer_since"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Customer Since</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="date" 
+                    {...field}
+                    value={field.value || ''}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}

@@ -12,7 +12,8 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Mail, Phone } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, Mail, Phone, User } from 'lucide-react';
 import CustomerDialog from './CustomerDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -41,6 +42,26 @@ const CustomersList: React.FC<CustomersListProps> = ({
     );
   });
 
+  // Helper to get customer type
+  const getCustomerType = (customer: Customer) => {
+    if (!customer.metadata) return 'new';
+    return (customer.metadata as any)?.customer_type || 'new';
+  };
+
+  // Helper to get formatted customer since date
+  const getCustomerSince = (customer: Customer) => {
+    if (!customer.metadata) return '';
+    const since = (customer.metadata as any)?.customer_since;
+    if (!since) return '';
+    
+    // Format date if it exists (could enhance this with date-fns)
+    try {
+      return new Date(since).toLocaleDateString();
+    } catch (e) {
+      return since;
+    }
+  };
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -66,6 +87,7 @@ const CustomersList: React.FC<CustomersListProps> = ({
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Contact Information</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Address</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -73,7 +95,7 @@ const CustomersList: React.FC<CustomersListProps> = ({
             <TableBody>
               {filteredCustomers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                     {searchTerm ? "No customers match your search" : "No customers found"}
                   </TableCell>
                 </TableRow>
@@ -95,6 +117,19 @@ const CustomersList: React.FC<CustomersListProps> = ({
                           <div className="flex items-center space-x-2">
                             <Phone className="h-4 w-4 text-muted-foreground" />
                             <span>{customer.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col space-y-1">
+                        <Badge variant={getCustomerType(customer) === 'new' ? 'default' : 'secondary'}>
+                          {getCustomerType(customer) === 'new' ? 'New Customer' : 'Returning Customer'}
+                        </Badge>
+                        {getCustomerSince(customer) && (
+                          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                            <User className="h-3 w-3" />
+                            <span>Since {getCustomerSince(customer)}</span>
                           </div>
                         )}
                       </div>
