@@ -35,64 +35,44 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Using manual count approach to avoid type inference issues
-    let dogsCount = 0;
-    const { data: dogsData } = await supabase
+    // Get all counts using separate simple queries to avoid type issues
+    const dogsQuery = await supabase
       .from('dogs')
       .select('id')
       .eq('owner_id', user.id);
     
-    if (dogsData) {
-      dogsCount = dogsData.length;
-    }
-    
-    // Manual count for litters
-    let littersCount = 0;
-    const { data: littersData } = await supabase
+    const littersQuery = await supabase
       .from('litters')
       .select('id')
       .eq('breeder_id', user.id);
     
-    if (littersData) {
-      littersCount = littersData.length;
-    }
-    
-    // Manual count for reservations
-    let reservationsCount = 0;
-    const { data: reservationsData } = await supabase
+    const reservationsQuery = await supabase
       .from('reservations')
       .select('id')
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
-    if (reservationsData) {
-      reservationsCount = reservationsData.length;
-    }
-    
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // Using a simpler approach for transactions
-    let revenue = 0;
-    const { data: transactions } = await supabase
+    const transactionsQuery = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
     
-    // Sum transactions manually
-    if (transactions && transactions.length > 0) {
-      revenue = transactions.reduce((sum, tx) => {
-        return sum + (Number(tx.amount) || 0);
-      }, 0);
+    // Calculate revenue safely
+    let revenue = 0;
+    if (transactionsQuery.data && transactionsQuery.data.length > 0) {
+      revenue = transactionsQuery.data.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
     }
 
     return {
-      dogsCount,
-      littersCount,
-      reservationsCount,
+      dogsCount: dogsQuery.data?.length || 0,
+      littersCount: littersQuery.data?.length || 0,
+      reservationsCount: reservationsQuery.data?.length || 0,
       revenue
     };
   } catch (error) {
