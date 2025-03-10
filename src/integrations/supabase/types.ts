@@ -340,7 +340,12 @@ export type Database = {
           birth_date: string
           created_at: string | null
           dam_id: string | null
+          documents_url: string | null
+          expected_go_home_date: string | null
+          female_count: number | null
           id: string
+          litter_name: string | null
+          male_count: number | null
           notes: string | null
           puppy_count: number | null
           sire_id: string | null
@@ -349,7 +354,12 @@ export type Database = {
           birth_date: string
           created_at?: string | null
           dam_id?: string | null
+          documents_url?: string | null
+          expected_go_home_date?: string | null
+          female_count?: number | null
           id?: string
+          litter_name?: string | null
+          male_count?: number | null
           notes?: string | null
           puppy_count?: number | null
           sire_id?: string | null
@@ -358,7 +368,12 @@ export type Database = {
           birth_date?: string
           created_at?: string | null
           dam_id?: string | null
+          documents_url?: string | null
+          expected_go_home_date?: string | null
+          female_count?: number | null
           id?: string
+          litter_name?: string | null
+          male_count?: number | null
           notes?: string | null
           puppy_count?: number | null
           sire_id?: string | null

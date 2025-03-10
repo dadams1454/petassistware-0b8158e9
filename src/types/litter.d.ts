@@ -26,8 +26,13 @@ interface Litter {
   dam_id?: string | null;
   sire_id?: string | null;
   birth_date: string;
+  expected_go_home_date?: string | null;
+  litter_name?: string | null;
   puppy_count?: number | null;
+  male_count?: number | null;
+  female_count?: number | null;
   notes?: string | null;
+  documents_url?: string | null;
   created_at?: string;
   
   // Joined data
@@ -40,6 +45,11 @@ interface NewLitter {
   dam_id: string | null;
   sire_id: string | null;
   birth_date: string;
+  expected_go_home_date?: string | null;
+  litter_name?: string | null;
   puppy_count?: number | null;
+  male_count?: number | null;
+  female_count?: number | null;
   notes?: string | null;
+  documents_url?: string | null;
 }
