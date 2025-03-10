@@ -47,7 +47,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({ form }) => {
   return (
     <div className="relative">
       <Select 
-        onValueChange={(value) => form.setValue('customer_id', value)} 
+        onValueChange={(value) => form.setValue('customer_id', value, { shouldValidate: true })} 
         defaultValue={form.getValues('customer_id') || ""}
         disabled={loading}
       >

@@ -23,7 +23,7 @@ export type Contract = Tables<'contracts'> & {
 
 export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'>;
 
-export const createContract = async (contract: ContractInsert) => {
+export const createContract = async (contract: Partial<ContractInsert>) => {
   // Add the breeder_id if user is logged in
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {

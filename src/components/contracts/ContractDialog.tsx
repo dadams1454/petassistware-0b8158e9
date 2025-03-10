@@ -36,7 +36,10 @@ const ContractDialog: React.FC<ContractDialogProps> = ({
         contract_type: data.contract_type,
         price: data.price,
         notes: data.notes,
-        signed: false
+        signed: false,
+        // Add the missing properties
+        document_url: null, // This can be null as per the type definition
+        // breeder_id will be added by the service function
       });
       
       setOpen(false);

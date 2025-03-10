@@ -31,9 +31,11 @@ const formSchema = z.object({
   template_id: z.string().optional(),
 });
 
+export type ContractFormData = z.infer<typeof formSchema>;
+
 export interface ContractFormProps {
   puppyId: string;
-  onSubmit: (data: z.infer<typeof formSchema>) => void;
+  onSubmit: (data: ContractFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -47,7 +49,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<ContractFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       contract_date: new Date().toISOString().split('T')[0],
@@ -83,12 +85,12 @@ const ContractForm: React.FC<ContractFormProps> = ({
   };
   
   const handleGeneratePreview = async () => {
-    if (!form.watch('customer_id') || !puppyId) return;
+    if (!form.getValues('customer_id') || !puppyId) return;
     
     const { data: customer } = await supabase
       .from('customers')
       .select('*')
-      .eq('id', form.watch('customer_id'))
+      .eq('id', form.getValues('customer_id'))
       .single();
       
     const { data: breederProfile } = await supabase
@@ -105,10 +107,10 @@ const ContractForm: React.FC<ContractFormProps> = ({
       customerName: `${customer.first_name} ${customer.last_name}`,
       puppyName: puppy.name,
       puppyDob: puppy.birth_date,
-      salePrice: form.watch('price'),
-      contractDate: form.watch('contract_date'),
+      salePrice: form.getValues('price'),
+      contractDate: form.getValues('contract_date'),
       microchipNumber: puppy.microchip_number,
-      paymentTerms: form.watch('payment_terms')
+      paymentTerms: form.getValues('payment_terms')
     };
     
     // Import dynamically to avoid issues
@@ -276,7 +278,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
               <div className="flex gap-2">
                 <GenerateContractButton 
                   puppyId={puppyId}
-                  customerId={form.watch('customer_id')}
+                  customerId={form.getValues('customer_id')}
                 />
                 <Button type="button" onClick={handleSubmitContract} disabled={isLoading}>
                   Save Contract
