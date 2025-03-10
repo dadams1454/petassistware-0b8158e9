@@ -2,52 +2,13 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
 import { CustomButton } from '@/components/ui/custom-button';
 import { supabase } from '@/integrations/supabase/client';
-import TextInput from '@/components/dogs/form/TextInput';
-import SelectInput from '@/components/dogs/form/SelectInput';
-import TextareaInput from '@/components/dogs/form/TextareaInput';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DatePicker from '@/components/dogs/form/DatePicker';
-import WeightInput from '@/components/dogs/form/WeightInput';
-import PhotoUpload from '@/components/dogs/form/PhotoUpload';
-
-interface PuppyFormData {
-  name: string | null;
-  gender: string | null;
-  status: string;
-  color: string | null;
-  birth_date: Date | null;
-  birth_weight: string | null;
-  current_weight: string | null;
-  microchip_number: string | null;
-  sale_price: number | null;
-  deworming_dates: string | null;
-  vaccination_dates: string | null;
-  vet_check_dates: string | null;
-  notes: string | null;
-  photo_url: string | null;
-}
-
-interface PuppyFormProps {
-  litterId: string;
-  initialData?: Puppy;
-  onSuccess: () => void;
-}
-
-const genderOptions = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-];
-
-const statusOptions = [
-  { value: 'Available', label: 'Available' },
-  { value: 'Reserved', label: 'Reserved' },
-  { value: 'Sold', label: 'Sold' },
-  { value: 'Retained', label: 'Retained' },
-  { value: 'Deceased', label: 'Deceased' },
-];
+import BasicInfoTab from './puppies/BasicInfoTab';
+import WeightsTab from './puppies/WeightsTab';
+import HealthTab from './puppies/HealthTab';
+import { PuppyFormData, PuppyFormProps } from './puppies/types';
 
 const PuppyForm: React.FC<PuppyFormProps> = ({ 
   litterId, 
@@ -120,119 +81,15 @@ const PuppyForm: React.FC<PuppyFormProps> = ({
           </TabsList>
           
           <TabsContent value="basic" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextInput 
-                form={form} 
-                name="name" 
-                label="Name" 
-                placeholder="Puppy name (optional)" 
-              />
-              
-              <SelectInput 
-                form={form} 
-                name="gender" 
-                label="Sex" 
-                options={genderOptions} 
-                placeholder="Select gender" 
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DatePicker
-                form={form}
-                name="birth_date"
-                label="Birth Date"
-              />
-              
-              <TextInput 
-                form={form} 
-                name="color" 
-                label="Color" 
-                placeholder="Puppy's color markings" 
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectInput 
-                form={form} 
-                name="status" 
-                label="Status" 
-                options={statusOptions} 
-              />
-              
-              <TextInput 
-                form={form} 
-                name="microchip_number" 
-                label="Microchip Number" 
-                placeholder="Enter microchip number" 
-              />
-            </div>
-
-            <TextInput 
-              form={form} 
-              name="sale_price" 
-              label="Sale Price" 
-              placeholder="Enter sale price" 
-            />
-
-            <PhotoUpload
-              form={form}
-              name="photo_url"
-              label="Puppy Photo"
-            />
+            <BasicInfoTab form={form} />
           </TabsContent>
           
           <TabsContent value="weights" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <WeightInput 
-                form={form} 
-                name="birth_weight" 
-                label="Birth Weight (oz)" 
-              />
-              
-              <WeightInput 
-                form={form} 
-                name="current_weight" 
-                label="Current Weight (oz)" 
-              />
-            </div>
-            
-            <div className="bg-muted p-4 rounded-md">
-              <p className="text-sm text-muted-foreground mb-2">
-                Note: This simplified form shows birth weight and current weight. For more detailed 
-                weight tracking over time, we'll be adding a dedicated weight history feature in a future update.
-              </p>
-            </div>
+            <WeightsTab form={form} />
           </TabsContent>
           
           <TabsContent value="health" className="space-y-4">
-            <TextareaInput
-              form={form}
-              name="deworming_dates"
-              label="Deworming Dates"
-              placeholder="Enter deworming dates and details (e.g., June 1 - Panacur, June 14 - Drontal)"
-            />
-            
-            <TextareaInput
-              form={form}
-              name="vaccination_dates"
-              label="Vaccination Dates"
-              placeholder="Enter vaccination dates and details (e.g., June 28 - DHPP, July 12 - DHPP Booster)"
-            />
-            
-            <TextareaInput
-              form={form}
-              name="vet_check_dates"
-              label="Vet Check Dates"
-              placeholder="Enter vet check dates and findings"
-            />
-            
-            <TextareaInput
-              form={form}
-              name="notes"
-              label="Additional Notes"
-              placeholder="Any other health information or general notes about the puppy"
-            />
+            <HealthTab form={form} />
           </TabsContent>
         </Tabs>
 
