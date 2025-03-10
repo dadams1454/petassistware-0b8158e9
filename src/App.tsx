@@ -18,6 +18,7 @@ import LitterDetail from "./pages/LitterDetail";
 import AddLitter from "./pages/AddLitter";
 import Customers from "./pages/Customers";
 import Communications from "./pages/Communications";
+import WelpingPage from "./pages/WelpingPage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ function App() {
                 <Route path="/litters" element={<Litters />} />
                 <Route path="/litters/new" element={<AddLitter />} />
                 <Route path="/litters/:id" element={<LitterDetail />} />
+                <Route path="/welping/:id" element={<WelpingPage />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>
               
