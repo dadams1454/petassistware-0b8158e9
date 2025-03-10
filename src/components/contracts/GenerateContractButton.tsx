@@ -2,7 +2,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { FileDown, Loader2 } from 'lucide-react';
+import { FileDown } from 'lucide-react';
 import { generateContractHTML, downloadContract } from '@/utils/contractGenerator';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,13 +17,9 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
   customerId,
   className 
 }) => {
-  const [isGenerating, setIsGenerating] = React.useState(false);
-  
-  const { data: puppy, isLoading: isPuppyLoading } = useQuery({
+  const { data: puppy } = useQuery({
     queryKey: ['puppy', puppyId],
     queryFn: async () => {
-      if (!puppyId) return null;
-      
       const { data, error } = await supabase
         .from('puppies')
         .select('*, litters(*)')
@@ -32,15 +28,12 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
       
       if (error) throw error;
       return data;
-    },
-    enabled: !!puppyId
+    }
   });
 
-  const { data: customer, isLoading: isCustomerLoading } = useQuery({
+  const { data: customer } = useQuery({
     queryKey: ['customer', customerId],
     queryFn: async () => {
-      if (!customerId) return null;
-      
       const { data, error } = await supabase
         .from('customers')
         .select('*')
@@ -49,11 +42,10 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
       
       if (error) throw error;
       return data;
-    },
-    enabled: !!customerId
+    }
   });
 
-  const { data: breederProfile, isLoading: isBreederLoading } = useQuery({
+  const { data: breederProfile } = useQuery({
     queryKey: ['breederProfile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -70,50 +62,33 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
     }
   });
 
-  const handleGenerateContract = async () => {
+  const handleGenerateContract = () => {
     if (!puppy || !customer || !breederProfile) return;
-    
-    setIsGenerating(true);
-    
-    try {
-      const contractData = {
-        breederName: `${breederProfile.first_name} ${breederProfile.last_name}`,
-        breederBusinessName: breederProfile.business_name || 'Not specified',
-        customerName: `${customer.first_name} ${customer.last_name}`,
-        puppyName: puppy.name,
-        puppyDob: puppy.birth_date,
-        salePrice: puppy.sale_price,
-        contractDate: new Date().toISOString(),
-        microchipNumber: puppy.microchip_number,
-        paymentTerms: "Full payment due at pickup"
-      };
 
-      const contractHtml = generateContractHTML(contractData);
-      const filename = `${customer.last_name}_${puppy.name || 'Puppy'}_Contract.html`;
-      downloadContract(contractHtml, filename);
-    } catch (error) {
-      console.error('Error generating contract:', error);
-    } finally {
-      setIsGenerating(false);
-    }
+    const contractData = {
+      breederName: `${breederProfile.first_name} ${breederProfile.last_name}`,
+      breederBusinessName: breederProfile.business_name || 'Not specified',
+      customerName: `${customer.first_name} ${customer.last_name}`,
+      puppyName: puppy.name,
+      puppyDob: puppy.birth_date,
+      salePrice: puppy.sale_price,
+      contractDate: new Date().toISOString(),
+      microchipNumber: puppy.microchip_number
+    };
+
+    const contractHtml = generateContractHTML(contractData);
+    const filename = `${customer.last_name}_${puppy.name || 'Puppy'}_Contract.html`;
+    downloadContract(contractHtml, filename);
   };
-
-  const isLoading = isPuppyLoading || isCustomerLoading || isBreederLoading || isGenerating;
-  const isDisabled = !puppy || !customer || !breederProfile || isLoading;
 
   return (
     <Button 
       onClick={handleGenerateContract}
       className={className}
-      disabled={isDisabled}
-      variant="outline"
+      disabled={!puppy || !customer || !breederProfile}
     >
-      {isLoading ? (
-        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-      ) : (
-        <FileDown className="w-4 h-4 mr-2" />
-      )}
-      Download Contract
+      <FileDown className="w-4 h-4 mr-2" />
+      Generate Contract
     </Button>
   );
 };

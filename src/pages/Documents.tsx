@@ -7,7 +7,7 @@ import ContractDialog from '@/components/contracts/ContractDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { useLocation } from 'react-router-dom';
 import { CustomButton } from '@/components/ui/custom-button';
-import { Plus, FileText } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 const Documents = () => {
   const { toast } = useToast();
@@ -59,18 +59,9 @@ const Documents = () => {
         </TabsContent>
         <TabsContent value="templates" className="mt-4">
           <div className="p-6 text-center border border-dashed rounded-lg border-slate-200 dark:border-slate-700">
-            <FileText className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-600 mb-2" />
-            <h3 className="text-lg font-medium">Contract Templates</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-              Create reusable contract templates to quickly generate standard agreements for your breeding business.
+            <p className="text-slate-500 dark:text-slate-400">
+              Template management coming soon
             </p>
-            <CustomButton 
-              variant="outline" 
-              className="mt-4"
-              icon={<Plus size={16} />}
-            >
-              Create Template
-            </CustomButton>
           </div>
         </TabsContent>
       </Tabs>

@@ -10,8 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { Loader2, Plus } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Loader2 } from 'lucide-react';
 
 type Customer = Tables<'customers'>;
 
@@ -45,47 +44,29 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({ form }) => {
   }, []);
 
   return (
-    <div className="relative">
-      <Select 
-        onValueChange={(value) => form.setValue('customer_id', value, { shouldValidate: true })} 
-        defaultValue={form.getValues('customer_id') || ""}
-        disabled={loading}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder={loading ? "Loading customers..." : "Select customer"} />
-        </SelectTrigger>
-        <SelectContent>
-          {loading ? (
-            <div className="flex items-center justify-center p-2">
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              <span>Loading...</span>
-            </div>
-          ) : (
-            <>
-              {customers.map((customer) => (
-                <SelectItem key={customer.id} value={customer.id}>
-                  {customer.first_name} {customer.last_name}
-                </SelectItem>
-              ))}
-              {customers.length === 0 && (
-                <div className="text-center p-2 text-sm text-muted-foreground">
-                  No customers found
-                </div>
-              )}
-            </>
-          )}
-        </SelectContent>
-      </Select>
-      <Button 
-        className="absolute -right-10 top-0" 
-        variant="outline" 
-        size="icon"
-        type="button"
-        title="Add new customer"
-      >
-        <Plus className="h-4 w-4" />
-      </Button>
-    </div>
+    <Select 
+      onValueChange={(value) => form.setValue('customer_id', value)} 
+      defaultValue={form.getValues('customer_id')}
+      disabled={loading}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder={loading ? "Loading customers..." : "Select customer"} />
+      </SelectTrigger>
+      <SelectContent>
+        {loading ? (
+          <div className="flex items-center justify-center p-2">
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <span>Loading...</span>
+          </div>
+        ) : (
+          customers.map((customer) => (
+            <SelectItem key={customer.id} value={customer.id}>
+              {customer.first_name} {customer.last_name}
+            </SelectItem>
+          ))
+        )}
+      </SelectContent>
+    </Select>
   );
 };
 
