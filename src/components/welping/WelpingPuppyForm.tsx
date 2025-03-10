@@ -9,6 +9,7 @@ import TextInput from '@/components/dogs/form/TextInput';
 import SelectInput from '@/components/dogs/form/SelectInput';
 import WeightInput from '@/components/dogs/form/WeightInput';
 import TextareaInput from '@/components/dogs/form/TextareaInput';
+import { format } from 'date-fns';
 
 interface WelpingPuppyFormProps {
   litterId: string;
@@ -20,6 +21,7 @@ interface WelpingPuppyFormData {
   gender: string;
   color: string;
   birth_weight: string;
+  birth_time: string;
   notes: string;
 }
 
@@ -29,12 +31,16 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Get current time for default value
+  const currentTime = format(new Date(), 'HH:mm');
+  
   const form = useForm<WelpingPuppyFormData>({
     defaultValues: {
       name: '',
       gender: '',
       color: '',
       birth_weight: '',
+      birth_time: currentTime,
       notes: ''
     }
   });
@@ -43,15 +49,24 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
     setIsSubmitting(true);
     try {
       // Prepare data for database
+      const now = new Date();
+      const [hours, minutes] = data.birth_time.split(':').map(Number);
+      
+      // Set time on today's date
+      const birthDateTime = new Date(now);
+      birthDateTime.setHours(hours, minutes, 0, 0);
+      
       const puppyData = {
         name: data.name || null,
         gender: data.gender ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1).toLowerCase() : null,
         color: data.color || null,
         birth_weight: data.birth_weight || null,
+        birth_time: data.birth_time || null,
         notes: data.notes || null,
-        birth_date: new Date().toISOString().split('T')[0], // Today's date
+        birth_date: now.toISOString().split('T')[0], // Today's date
         status: 'Available', // Default status
-        litter_id: litterId
+        litter_id: litterId,
+        created_at: birthDateTime.toISOString() // Use birth date/time for created_at to sort by birth order
       };
 
       // Insert the puppy record
@@ -110,6 +125,17 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
             name="birth_weight"
             label="Birth Weight (oz)"
           />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TextInput
+            form={form}
+            name="birth_time"
+            label="Birth Time"
+            type="time"
+          />
+          
+          <div className="md:col-span-1"></div>
         </div>
         
         <TextareaInput

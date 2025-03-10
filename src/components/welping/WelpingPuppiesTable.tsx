@@ -40,11 +40,13 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
       <TableBody>
         {puppies.map((puppy, index) => (
           <TableRow key={puppy.id}>
-            {/* Time of Birth (Using created_at as proxy) */}
+            {/* Birth Time */}
             <TableCell className="font-medium whitespace-nowrap">
-              {puppy.created_at 
-                ? format(new Date(puppy.created_at), 'h:mm a') 
-                : 'Unknown'}
+              {puppy.birth_time 
+                ? puppy.birth_time 
+                : puppy.created_at 
+                  ? format(new Date(puppy.created_at), 'h:mm a') 
+                  : 'Unknown'}
             </TableCell>
             
             {/* ID/Color */}
