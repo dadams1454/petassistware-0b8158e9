@@ -1,6 +1,12 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
+import { 
+  CheckCircle, 
+  Clock, 
+  DollarSign, 
+  Heart, 
+  XCircle 
+} from 'lucide-react';
 
 interface PuppyStatusBadgeProps {
   status: string | null;
@@ -24,8 +30,26 @@ const PuppyStatusBadge: React.FC<PuppyStatusBadgeProps> = ({ status }) => {
     }
   };
 
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'Available':
+        return <CheckCircle className="h-3.5 w-3.5 mr-1" />;
+      case 'Reserved':
+        return <Clock className="h-3.5 w-3.5 mr-1" />;
+      case 'Sold':
+        return <DollarSign className="h-3.5 w-3.5 mr-1" />;
+      case 'Retained':
+        return <Heart className="h-3.5 w-3.5 mr-1" />;
+      case 'Deceased':
+        return <XCircle className="h-3.5 w-3.5 mr-1" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getVariant()}`}>
+      {getStatusIcon()}
       {status || 'Unknown'}
     </div>
   );

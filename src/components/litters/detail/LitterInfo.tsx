@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, differenceInWeeks, differenceInDays } from 'date-fns';
-import { Circle, Calendar, Info } from 'lucide-react';
+import { Circle, Calendar, Info, Users, Heart, Dog, MessageSquare } from 'lucide-react';
 import DashboardCard from '@/components/dashboard/DashboardCard';
 
 interface LitterInfoProps {
@@ -57,7 +57,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
         {/* Puppy Count and Gender Breakdown */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-primary">
-            <Info className="h-5 w-5" />
+            <Users className="h-5 w-5" />
             <h3 className="font-medium">Puppy Information</h3>
           </div>
           <div className="grid grid-cols-2 gap-4 pl-7">
@@ -92,7 +92,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
         {/* Parents Information */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-primary">
-            <Info className="h-5 w-5" />
+            <Dog className="h-5 w-5" />
             <h3 className="font-medium">Parents</h3>
           </div>
           <div className="pl-7 space-y-3">
@@ -111,7 +111,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
         {litter.notes && (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-primary">
-              <Info className="h-5 w-5" />
+              <MessageSquare className="h-5 w-5" />
               <h3 className="font-medium">Additional Notes</h3>
             </div>
             <div className="pl-7">

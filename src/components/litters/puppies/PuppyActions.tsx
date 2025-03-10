@@ -11,21 +11,24 @@ interface PuppyActionsProps {
 
 const PuppyActions: React.FC<PuppyActionsProps> = ({ puppy, onEdit, onDelete }) => {
   return (
-    <div className="flex justify-end">
+    <div className="flex justify-end gap-2">
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
+        className="flex items-center gap-1.5"
         onClick={() => onEdit(puppy)}
       >
-        <Edit className="h-4 w-4" />
+        <Edit className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Edit</span>
       </Button>
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
-        className="text-destructive"
+        className="flex items-center gap-1.5 text-destructive hover:bg-destructive/10"
         onClick={() => onDelete(puppy)}
       >
-        <Trash2 className="h-4 w-4" />
+        <Trash2 className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Delete</span>
       </Button>
     </div>
   );

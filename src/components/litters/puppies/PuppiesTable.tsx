@@ -13,7 +13,17 @@ import { Badge } from '@/components/ui/badge';
 import PuppyStatusBadge from './PuppyStatusBadge';
 import PuppyActions from './PuppyActions';
 import { format } from 'date-fns';
-import { Image, Info, Calendar } from 'lucide-react';
+import { 
+  Image, 
+  Info, 
+  Calendar, 
+  Weight, 
+  Male, 
+  Female, 
+  Palette, 
+  Scan, 
+  CircleDollarSign
+} from 'lucide-react';
 
 interface PuppiesTableProps {
   puppies: Puppy[];
@@ -26,6 +36,16 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
   onEditPuppy, 
   onDeletePuppy 
 }) => {
+  // Helper to render gender icon
+  const renderGenderIcon = (gender: string | null) => {
+    if (gender === 'Male') {
+      return <Male className="h-3.5 w-3.5 text-blue-500 mr-1" />;
+    } else if (gender === 'Female') {
+      return <Female className="h-3.5 w-3.5 text-pink-500 mr-1" />;
+    }
+    return null;
+  };
+
   if (puppies.length === 0) {
     return (
       <div className="text-center py-8">
@@ -81,17 +101,24 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
                     <Calendar className="h-3.5 w-3.5" />
                     {puppy.birth_date ? format(new Date(puppy.birth_date), 'MMM d, yyyy') : 'N/A'}
                   </div>
+                  {puppy.sale_price && (
+                    <div className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                      <CircleDollarSign className="h-3.5 w-3.5" />
+                      ${puppy.sale_price}
+                    </div>
+                  )}
                 </TableCell>
                 
                 {/* Details */}
                 <TableCell>
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5 text-sm">
-                      <Badge variant={puppy.gender === 'Male' ? 'default' : 'secondary'} className="h-2 w-2 p-0 rounded-full" />
+                      {renderGenderIcon(puppy.gender)}
                       <span>{puppy.gender || 'Unknown'}</span>
                     </div>
                     {puppy.color && (
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground flex items-center gap-1.5">
+                        <Palette className="h-3.5 w-3.5" />
                         {puppy.color}
                       </div>
                     )}
@@ -102,12 +129,14 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
                 <TableCell>
                   <div className="space-y-1">
                     {puppy.birth_weight && (
-                      <div className="text-sm">
+                      <div className="text-sm flex items-center gap-1">
+                        <Weight className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-muted-foreground">Birth:</span> {puppy.birth_weight} oz
                       </div>
                     )}
                     {puppy.current_weight && (
-                      <div className="text-sm">
+                      <div className="text-sm flex items-center gap-1">
+                        <Weight className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-muted-foreground">Current:</span> {puppy.current_weight} oz
                       </div>
                     )}
@@ -121,7 +150,10 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
                 <TableCell>
                   {puppy.microchip_number ? (
                     <div className="text-sm">
-                      <div className="text-muted-foreground">Microchip:</div>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Scan className="h-3.5 w-3.5" />
+                        Microchip:
+                      </div>
                       <div className="font-mono">{puppy.microchip_number}</div>
                     </div>
                   ) : (
@@ -192,12 +224,19 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
                   </div>
                   <div className="space-y-1 text-sm">
                     <div className="flex items-center gap-1.5">
-                      <Badge variant={puppy.gender === 'Male' ? 'default' : 'secondary'} className="h-2 w-2 p-0 rounded-full" />
+                      {renderGenderIcon(puppy.gender)}
                       <span>{puppy.gender || 'Unknown'}</span>
                     </div>
                     {puppy.color && (
-                      <div className="text-muted-foreground">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Palette className="h-3.5 w-3.5" />
                         {puppy.color}
+                      </div>
+                    )}
+                    {puppy.sale_price && (
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <CircleDollarSign className="h-3.5 w-3.5" />
+                        ${puppy.sale_price}
                       </div>
                     )}
                   </div>
@@ -205,7 +244,10 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
                 
                 {/* Weights */}
                 <div>
-                  <div className="text-sm font-medium mb-1">Weights</div>
+                  <div className="flex items-center gap-1 text-sm font-medium mb-1">
+                    <Weight className="h-4 w-4" />
+                    <span>Weights</span>
+                  </div>
                   <div className="space-y-1">
                     {puppy.birth_weight && (
                       <div className="text-sm">
@@ -227,7 +269,10 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
               {/* Identification */}
               {puppy.microchip_number && (
                 <div className="mt-3 pt-3 border-t">
-                  <div className="text-sm font-medium mb-1">Microchip</div>
+                  <div className="flex items-center gap-1 text-sm font-medium mb-1">
+                    <Scan className="h-4 w-4" />
+                    <span>Microchip</span>
+                  </div>
                   <div className="text-sm font-mono">{puppy.microchip_number}</div>
                 </div>
               )}
