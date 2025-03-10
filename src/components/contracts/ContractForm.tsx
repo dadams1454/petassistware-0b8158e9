@@ -59,7 +59,8 @@ const ContractForm: React.FC<ContractFormProps> = ({
         customer_id: data.customer_id,
         price: data.price,
         signed: data.signed || false,
-        notes: data.notes
+        notes: data.notes,
+        document_url: null // Adding the missing document_url property
       });
       
       toast.success('Contract created successfully');

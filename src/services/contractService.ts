@@ -2,10 +2,19 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 
-export type Contract = Tables<'contracts'>;
-export type ContractInsert = Tables<'contracts'>;
+export type Contract = Tables<'contracts'> & {
+  customer?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string | null;
+    phone: string | null;
+  } | null;
+};
 
-export const createContract = async (contract: Omit<ContractInsert, 'id' | 'created_at'>) => {
+export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'>;
+
+export const createContract = async (contract: Partial<ContractInsert>) => {
   const { data, error } = await supabase
     .from('contracts')
     .insert(contract)
@@ -25,7 +34,7 @@ export const getContractsByPuppyId = async (puppyId: string) => {
     .from('contracts')
     .select(`
       *,
-      customer:customers(*)
+      customer:customers(id, first_name, last_name, email, phone)
     `)
     .eq('puppy_id', puppyId);
 
@@ -34,7 +43,7 @@ export const getContractsByPuppyId = async (puppyId: string) => {
     throw error;
   }
 
-  return data;
+  return data as Contract[];
 };
 
 export const getContractById = async (id: string) => {
@@ -42,7 +51,7 @@ export const getContractById = async (id: string) => {
     .from('contracts')
     .select(`
       *,
-      customer:customers(*),
+      customer:customers(id, first_name, last_name, email, phone),
       puppy:puppies(*)
     `)
     .eq('id', id)
@@ -53,5 +62,5 @@ export const getContractById = async (id: string) => {
     throw error;
   }
 
-  return data;
+  return data as Contract;
 };
