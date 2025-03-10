@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ViewIcon, LayoutGrid, LayoutList } from 'lucide-react';
+import { ViewIcon, LayoutGrid, LayoutList, Plus } from 'lucide-react';
 import PuppyTableView from './table/PuppyTableView';
 import PuppyCardView from './card/PuppyCardView';
 import PuppyFilters from './filters/PuppyFilters';
@@ -10,12 +10,14 @@ interface PuppiesTableProps {
   puppies: Puppy[];
   onEditPuppy: (puppy: Puppy) => void;
   onDeletePuppy: (puppy: Puppy) => void;
+  onAddPuppy?: () => void;
 }
 
 const PuppiesTable: React.FC<PuppiesTableProps> = ({ 
   puppies, 
   onEditPuppy, 
-  onDeletePuppy 
+  onDeletePuppy,
+  onAddPuppy
 }) => {
   const [viewMode, setViewMode] = useState<'table' | 'card'>('card');
   const [filters, setFilters] = useState({
@@ -75,10 +77,19 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
 
   if (puppies.length === 0) {
     return (
-      <div className="text-center py-8 bg-muted/20 rounded-lg">
-        <p className="text-muted-foreground">
+      <div className="text-center py-12 bg-muted/20 rounded-lg border border-dashed border-muted-foreground/50">
+        <p className="text-muted-foreground mb-4">
           No puppies have been added to this litter yet.
         </p>
+        {onAddPuppy && (
+          <Button 
+            onClick={onAddPuppy} 
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            Add First Puppy
+          </Button>
+        )}
       </div>
     );
   }
@@ -87,9 +98,23 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
     <div className="space-y-4">
       {/* Top Bar - Filters & View Toggle */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center bg-muted/10 p-4 rounded-lg">
-        {/* Results Count */}
-        <div className="text-sm font-medium">
-          Showing {filteredPuppies.length} of {puppies.length} puppies
+        <div className="flex items-center gap-3 w-full justify-between sm:justify-start sm:w-auto">
+          {/* Results Count */}
+          <div className="text-sm font-medium">
+            Showing {filteredPuppies.length} of {puppies.length} puppies
+          </div>
+          
+          {/* Add Puppy Button */}
+          {onAddPuppy && (
+            <Button 
+              onClick={onAddPuppy} 
+              size="sm"
+              className="gap-1.5 whitespace-nowrap"
+            >
+              <Plus className="h-4 w-4" />
+              Add Puppy
+            </Button>
+          )}
         </div>
         
         {/* View Toggle */}
@@ -150,7 +175,17 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
           </>
         ) : (
           <div className="text-center py-8 bg-muted/20 rounded-lg border">
-            <p className="text-muted-foreground">No puppies match your filters</p>
+            <p className="text-muted-foreground mb-4">No puppies match your filters</p>
+            {onAddPuppy && (
+              <Button 
+                onClick={onAddPuppy} 
+                variant="outline"
+                className="gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                Add New Puppy
+              </Button>
+            )}
           </div>
         )}
       </div>
