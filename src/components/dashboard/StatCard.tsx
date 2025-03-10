@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { ArrowUp, ArrowDown, Loader2 } from 'lucide-react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface StatCardProps {
   className?: string;
@@ -12,7 +12,6 @@ interface StatCardProps {
   changeText?: string;
   trend?: 'up' | 'down' | 'neutral';
   textColor?: string;
-  isLoading?: boolean;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -24,7 +23,6 @@ const StatCard: React.FC<StatCardProps> = ({
   changeText,
   trend = 'neutral',
   textColor,
-  isLoading = false,
 }) => {
   const trendColors = {
     up: 'text-green-600 bg-green-50 dark:bg-green-900/20',
@@ -46,20 +44,14 @@ const StatCard: React.FC<StatCardProps> = ({
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             {title}
           </p>
-          {isLoading ? (
-            <div className="mt-2 h-8 flex items-center">
-              <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
-            </div>
-          ) : (
-            <h3 
-              className={cn(
-                'mt-2 text-2xl font-semibold tracking-tight',
-                textColor || 'text-slate-800 dark:text-white'
-              )}
-            >
-              {value}
-            </h3>
-          )}
+          <h3 
+            className={cn(
+              'mt-2 text-2xl font-semibold tracking-tight',
+              textColor || 'text-slate-800 dark:text-white'
+            )}
+          >
+            {value}
+          </h3>
         </div>
         {icon && (
           <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
@@ -68,7 +60,7 @@ const StatCard: React.FC<StatCardProps> = ({
         )}
       </div>
 
-      {!isLoading && (change !== undefined || changeText) && (
+      {(change !== undefined || changeText) && (
         <div className="mt-3 flex items-center">
           {change !== undefined && (
             <div 

@@ -1,7 +1,6 @@
 
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Slot } from "@radix-ui/react-slot";
 
 interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
@@ -10,7 +9,6 @@ interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   isLoading?: boolean;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
-  asChild?: boolean;
 }
 
 const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
@@ -22,7 +20,6 @@ const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
     isLoading = false,
     icon,
     iconPosition = 'left',
-    asChild = false,
     children, 
     ...props 
   }, ref) => {
@@ -69,10 +66,8 @@ const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
       </svg>
     );
 
-    const Comp = asChild ? Slot : "button";
-
     return (
-      <Comp
+      <button
         className={cn(
           baseStyles,
           variantStyles[variant],
@@ -97,7 +92,7 @@ const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
         {!isLoading && icon && iconPosition === 'right' && (
           <span className="ml-2">{icon}</span>
         )}
-      </Comp>
+      </button>
     );
   }
 );

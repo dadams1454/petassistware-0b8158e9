@@ -9,33 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      activities: {
-        Row: {
-          activity_type: string
-          breeder_id: string
-          created_at: string
-          description: string | null
-          id: string
-          title: string
-        }
-        Insert: {
-          activity_type: string
-          breeder_id: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          title: string
-        }
-        Update: {
-          activity_type?: string
-          breeder_id?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          title?: string
-        }
-        Relationships: []
-      }
       breeder_profiles: {
         Row: {
           breeding_experience: string | null
@@ -219,39 +192,6 @@ export type Database = {
           photo_url?: string | null
           registration_number?: string | null
           weight?: number | null
-        }
-        Relationships: []
-      }
-      events: {
-        Row: {
-          breeder_id: string
-          created_at: string
-          description: string | null
-          event_date: string
-          event_type: string
-          id: string
-          status: string
-          title: string
-        }
-        Insert: {
-          breeder_id: string
-          created_at?: string
-          description?: string | null
-          event_date: string
-          event_type: string
-          id?: string
-          status?: string
-          title: string
-        }
-        Update: {
-          breeder_id?: string
-          created_at?: string
-          description?: string | null
-          event_date?: string
-          event_type?: string
-          id?: string
-          status?: string
-          title?: string
         }
         Relationships: []
       }

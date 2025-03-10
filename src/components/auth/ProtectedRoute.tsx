@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 
@@ -11,7 +11,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  // If authentication is still loading, show a loading spinner
+  // If authentication is still loading, you might want to show a loading spinner
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
