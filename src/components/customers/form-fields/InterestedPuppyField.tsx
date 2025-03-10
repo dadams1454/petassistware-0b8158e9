@@ -32,11 +32,11 @@ const InterestedPuppyField = () => {
     const fetchPuppies = async () => {
       setIsLoading(true);
       try {
-        // Only fetch puppies with 'Available' status now
+        // Fetch puppies with 'Available' or 'Reserved' status
         const { data, error } = await supabase
           .from('puppies')
           .select('*')
-          .eq('status', 'Available')
+          .in('status', ['Available', 'Reserved'])
           .order('created_at', { ascending: false });
         
         if (error) throw error;
@@ -104,7 +104,11 @@ const InterestedPuppyField = () => {
                 <SelectItem value="none" disabled>No available puppies found</SelectItem>
               ) : (
                 puppies.map((puppy) => (
-                  <SelectItem key={puppy.id} value={puppy.id}>
+                  <SelectItem 
+                    key={puppy.id} 
+                    value={puppy.id} 
+                    disabled={puppy.status === 'Reserved' && puppy.id !== field.value}
+                  >
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2 font-medium">
                         {puppy.name || `Puppy #${puppy.id.substring(0, 8)}`}
