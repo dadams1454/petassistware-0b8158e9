@@ -33,21 +33,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import CustomerSelector from '../communications/CustomerSelector';
 import { Customer } from '../customers/types/customer';
+import { WaitlistEntry } from './types';
 
 interface WaitlistEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   litterId: string;
-  entry?: {
-    id: string;
-    customer_id: string;
-    notes: string | null;
-    preferences: {
-      gender_preference?: 'Male' | 'Female' | null;
-      color_preference?: string | null;
-    };
-    customers: Customer;
-  } | null;
+  entry?: WaitlistEntry | null;
   onSuccess: () => void;
 }
 
@@ -125,8 +117,10 @@ const WaitlistEntryDialog: React.FC<WaitlistEntryDialogProps> = ({
   }, [entry, form]);
 
   const handleCustomerSelected = (customer: Customer) => {
-    form.setValue('customer_id', customer.id);
-    setSelectedCustomer(customer);
+    if (customer && customer.id) {
+      form.setValue('customer_id', customer.id);
+      setSelectedCustomer(customer);
+    }
   };
 
   const onSubmit = async (values: WaitlistFormValues) => {

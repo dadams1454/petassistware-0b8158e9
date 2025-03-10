@@ -25,7 +25,11 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
       </TabsList>
       
       <TabsContent value="puppies" className="mt-6">
-        <PuppiesList litterId={litterId} />
+        <PuppiesList 
+          litterId={litterId} 
+          puppies={[]} 
+          onRefresh={() => {}} 
+        />
       </TabsContent>
       
       <TabsContent value="waitlist" className="mt-6">
