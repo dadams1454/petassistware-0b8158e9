@@ -20,7 +20,9 @@ const MainContent: React.FC<MainContentProps> = ({
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
       {/* Upcoming Events Card */}
-      <UpcomingEvents events={events} isLoading={isEventsLoading} />
+      <div className="xl:col-span-2">
+        <UpcomingEvents events={events} isLoading={isEventsLoading} />
+      </div>
 
       {/* Recent Activities Card */}
       <div className="h-full">
