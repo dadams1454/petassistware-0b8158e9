@@ -27,7 +27,10 @@ export const fetchEvents = async (): Promise<Event[]> => {
       description: event.description,
       event_date: event.event_date,
       status: validateEventStatus(event.status),
-      event_type: event.event_type
+      event_type: event.event_type,
+      is_recurring: event.is_recurring || false,
+      recurrence_pattern: event.recurrence_pattern || 'none',
+      recurrence_end_date: event.recurrence_end_date || null
     }));
     
     return events;
@@ -49,6 +52,9 @@ export const createEvent = async (eventData: NewEvent): Promise<Event> => {
           event_date: eventData.event_date,
           status: eventData.status,
           event_type: eventData.event_type,
+          is_recurring: eventData.is_recurring || false,
+          recurrence_pattern: eventData.recurrence_pattern || 'none',
+          recurrence_end_date: eventData.recurrence_end_date || null,
           breeder_id: (await supabase.auth.getUser()).data.user?.id
         }
       ])
@@ -68,7 +74,10 @@ export const createEvent = async (eventData: NewEvent): Promise<Event> => {
       description: data.description,
       event_date: data.event_date,
       status: validateEventStatus(data.status),
-      event_type: data.event_type
+      event_type: data.event_type,
+      is_recurring: data.is_recurring || false,
+      recurrence_pattern: data.recurrence_pattern || 'none',
+      recurrence_end_date: data.recurrence_end_date || null
     };
     
     return event;
@@ -88,7 +97,10 @@ export const updateEvent = async (eventData: Event): Promise<Event> => {
         description: eventData.description,
         event_date: eventData.event_date,
         status: eventData.status,
-        event_type: eventData.event_type
+        event_type: eventData.event_type,
+        is_recurring: eventData.is_recurring || false,
+        recurrence_pattern: eventData.recurrence_pattern || 'none',
+        recurrence_end_date: eventData.recurrence_end_date || null
       })
       .eq('id', eventData.id)
       .select()
@@ -107,7 +119,10 @@ export const updateEvent = async (eventData: Event): Promise<Event> => {
       description: data.description,
       event_date: data.event_date,
       status: validateEventStatus(data.status),
-      event_type: data.event_type
+      event_type: data.event_type,
+      is_recurring: data.is_recurring || false,
+      recurrence_pattern: data.recurrence_pattern || 'none',
+      recurrence_end_date: data.recurrence_end_date || null
     };
     
     return event;

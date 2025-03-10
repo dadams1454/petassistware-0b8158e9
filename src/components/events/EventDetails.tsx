@@ -3,7 +3,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Event, EVENT_COLORS } from '@/pages/Calendar';
-import { Calendar, Pencil, Trash2 } from 'lucide-react';
+import { Calendar, Pencil, Trash2, Repeat } from 'lucide-react';
 
 interface EventDetailsProps {
   event: Event;
@@ -18,6 +18,19 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onEdit, onDelete }) 
   };
 
   const { bg, text } = getEventTypeStyle(event.event_type);
+
+  // Format recurrence pattern for display
+  const formatRecurrencePattern = (pattern: string) => {
+    const patterns: Record<string, string> = {
+      'daily': 'Daily',
+      'weekly': 'Weekly',
+      'biweekly': 'Every two weeks',
+      'monthly': 'Monthly',
+      'quarterly': 'Every three months',
+      'yearly': 'Yearly'
+    };
+    return patterns[pattern] || pattern;
+  };
 
   return (
     <div className="space-y-4">
@@ -52,6 +65,23 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onEdit, onDelete }) 
             </span>
           </div>
         </div>
+
+        {event.is_recurring && (
+          <div>
+            <h3 className="text-sm font-medium text-slate-500">Recurrence</h3>
+            <div className="flex items-center gap-2">
+              <Repeat className="h-4 w-4 text-slate-400" />
+              <p className="text-base">
+                {formatRecurrencePattern(event.recurrence_pattern)}
+                {event.recurrence_end_date && (
+                  <span className="text-sm text-slate-500 ml-1">
+                    (until {format(new Date(event.recurrence_end_date), 'MMMM d, yyyy')})
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div>
           <h3 className="text-sm font-medium text-slate-500">Status</h3>

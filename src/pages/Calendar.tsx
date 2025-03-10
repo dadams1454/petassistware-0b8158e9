@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import MainLayout from '@/layouts/MainLayout';
@@ -14,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Calendar as CalendarIcon, Filter, Plus, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Filter, Plus, Repeat } from 'lucide-react';
 import EventForm from '@/components/events/EventForm';
 import EventDetails from '@/components/events/EventDetails';
 import { fetchEvents, createEvent, updateEvent, deleteEvent } from '@/services/eventService';
@@ -34,6 +33,9 @@ export type Event = {
   event_date: string;
   status: 'upcoming' | 'planned' | 'completed' | 'cancelled';
   event_type: string;
+  is_recurring?: boolean;
+  recurrence_pattern?: string;
+  recurrence_end_date?: string | null;
 };
 
 export type NewEvent = Omit<Event, 'id'> & { id?: string };
@@ -201,6 +203,19 @@ const CalendarPage = () => {
     return EVENT_COLORS[eventType] || EVENT_COLORS['Other'];
   };
 
+  // Format recurrence pattern for display
+  const formatRecurrencePattern = (pattern: string) => {
+    const patterns: Record<string, string> = {
+      'daily': 'Daily',
+      'weekly': 'Weekly',
+      'biweekly': 'Every two weeks',
+      'monthly': 'Monthly',
+      'quarterly': 'Every three months',
+      'yearly': 'Yearly'
+    };
+    return patterns[pattern] || pattern;
+  };
+
   return (
     <MainLayout>
       <div className="container py-6">
@@ -321,10 +336,20 @@ const CalendarPage = () => {
                       onClick={() => handleViewEvent(event)}
                     >
                       <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-medium">{event.title}</h3>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">{event.title}</h3>
+                            {event.is_recurring && (
+                              <Repeat size={16} className="text-slate-400" title="Recurring Event" />
+                            )}
+                          </div>
                           {event.description && (
                             <p className="text-sm text-slate-600 mt-1">{event.description}</p>
+                          )}
+                          {event.is_recurring && (
+                            <p className="text-xs text-slate-500 mt-1">
+                              Recurs: {formatRecurrencePattern(event.recurrence_pattern || 'none')}
+                            </p>
                           )}
                         </div>
                         <span className={`inline-block px-2 py-1 text-xs rounded-full ${

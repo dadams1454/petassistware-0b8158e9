@@ -24,12 +24,25 @@ import {
 import { EVENT_TYPES, NewEvent } from '@/pages/Calendar';
 import DatePicker from '@/components/dogs/form/DatePicker';
 import { format } from 'date-fns';
+import { Repeat } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface EventFormProps {
   onSubmit: (data: NewEvent) => void;
   initialData?: NewEvent;
   defaultDate?: Date;
 }
+
+const RECURRENCE_OPTIONS = [
+  'none',
+  'daily',
+  'weekly',
+  'biweekly',
+  'monthly',
+  'quarterly',
+  'yearly'
+];
 
 const eventSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -40,6 +53,9 @@ const eventSchema = z.object({
   event_dateStr: z.string().optional(),
   status: z.enum(['upcoming', 'planned', 'completed', 'cancelled']),
   event_type: z.string().min(1, 'Event type is required'),
+  is_recurring: z.boolean().default(false),
+  recurrence_pattern: z.string().default('none'),
+  recurrence_end_date: z.date().optional().nullable(),
 });
 
 const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDate }) => {
@@ -54,11 +70,23 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
         : defaultDate ? format(defaultDate, 'MM/dd/yyyy') : '',
       status: initialData?.status || 'upcoming',
       event_type: initialData?.event_type || '',
+      is_recurring: initialData?.is_recurring || false,
+      recurrence_pattern: initialData?.recurrence_pattern || 'none',
+      recurrence_end_date: initialData?.recurrence_end_date 
+        ? new Date(initialData.recurrence_end_date) 
+        : null,
     },
   });
 
+  const isRecurring = form.watch('is_recurring');
+  
   const handleSubmit = (data: z.infer<typeof eventSchema>) => {
     const formattedDate = format(data.event_date, 'yyyy-MM-dd');
+    let formattedEndDate = null;
+    
+    if (data.is_recurring && data.recurrence_end_date) {
+      formattedEndDate = format(data.recurrence_end_date, 'yyyy-MM-dd');
+    }
     
     onSubmit({
       id: initialData?.id,
@@ -67,6 +95,9 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
       event_date: formattedDate,
       status: data.status,
       event_type: data.event_type,
+      is_recurring: data.is_recurring,
+      recurrence_pattern: data.is_recurring ? data.recurrence_pattern : 'none',
+      recurrence_end_date: formattedEndDate,
     });
   };
 
@@ -167,6 +198,71 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
             </FormItem>
           )}
         />
+
+        <div className="space-y-4 pt-2 border-t border-slate-200 mt-2">
+          <div className="flex items-center space-x-2">
+            <FormField
+              control={form.control}
+              name="is_recurring"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                  <FormControl>
+                    <Switch 
+                      checked={field.value} 
+                      onCheckedChange={field.onChange} 
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="flex items-center">
+                      <Repeat className="h-4 w-4 mr-2" />
+                      Recurring Event
+                    </FormLabel>
+                  </div>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {isRecurring && (
+            <div className="space-y-4 pl-4 border-l-2 border-slate-200">
+              <FormField
+                control={form.control}
+                name="recurrence_pattern"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Recurrence Pattern</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select recurrence pattern" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="quarterly">Quarterly</SelectItem>
+                        <SelectItem value="yearly">Yearly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DatePicker
+                form={form}
+                name="recurrence_end_date"
+                label="End Date (Optional)"
+                description="Leave empty for indefinite recurrence"
+              />
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-end space-x-2 pt-4">
           <Button type="submit" className="w-full md:w-auto">
