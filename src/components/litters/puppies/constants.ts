@@ -1,7 +1,7 @@
 
 export const genderOptions = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
+  { value: 'Male', label: 'Male' },
+  { value: 'Female', label: 'Female' },
 ];
 
 export const statusOptions = [

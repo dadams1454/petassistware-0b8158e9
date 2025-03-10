@@ -38,17 +38,29 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
     try {
       console.log('Submitting puppy data:', data);
       
+      // Format gender properly (capitalize first letter)
+      const formattedGender = data.gender ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1).toLowerCase() : null;
+      
+      // Parse sale price to number or null
+      let salePrice = null;
+      if (data.sale_price !== null && data.sale_price !== '') {
+        const price = Number(data.sale_price);
+        if (!isNaN(price)) {
+          salePrice = price;
+        }
+      }
+      
       // Clean up the data to remove any fields that don't exist in the database schema
       const puppyData = {
         name: data.name || null,
-        gender: data.gender || null,
+        gender: formattedGender,
         status: data.status,
         color: data.color || null,
         birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
         birth_weight: data.birth_weight || null,
         current_weight: data.current_weight || null,
         microchip_number: data.microchip_number || null,
-        sale_price: data.sale_price,
+        sale_price: salePrice,
         deworming_dates: data.deworming_dates || null,
         vaccination_dates: data.vaccination_dates || null,
         vet_check_dates: data.vet_check_dates || null,
