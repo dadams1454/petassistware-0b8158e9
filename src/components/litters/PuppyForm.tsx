@@ -18,8 +18,8 @@ interface PuppyFormData {
   status: string;
   microchip_number: string | null;
   sale_price: number | null;
-  birth_weight: number | null;
-  current_weight: number | null;
+  birth_weight: string | null;  // Changed to string to match database
+  current_weight: string | null;  // Changed to string to match database
   color: string | null;
   markings: string | null;
   notes: string | null;

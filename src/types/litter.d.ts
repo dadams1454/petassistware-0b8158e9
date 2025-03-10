@@ -20,12 +20,11 @@ interface Puppy {
   collar_color?: string | null;
   akc_number?: string | null;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;  // Make this optional to match the data structure
   sale_price?: number | null;
   photo_url?: string | null;
-  // Add the missing properties
-  birth_weight?: string | null;
-  current_weight?: string | null;
+  birth_weight?: string | null;  // Keep as string to match form data
+  current_weight?: string | null;  // Keep as string to match form data
   color?: string | null;
   markings?: string | null;
   notes?: string | null;
@@ -33,16 +32,16 @@ interface Puppy {
 
 interface Litter {
   id: string;
-  breeder_id: string;
+  breeder_id?: string;  // Make this optional to match actual data
   sire_id?: string | null;
   dam_id?: string | null;
   birth_date: string;
-  whelp_date: string;
-  count: number;
+  whelp_date?: string;  // Make this optional to match actual data
+  count?: number;       // Make this optional to match actual data
   description?: string | null;
-  status: 'planned' | 'confirmed' | 'whelped' | 'weaned' | 'completed';
-  created_at: string;
-  updated_at: string;
+  status?: string;      // Make this optional to match actual data
+  created_at: string | null;
+  updated_at?: string;  // Make this optional to match actual data
   puppies?: Puppy[];
   sire?: Dog;
   dam?: Dog;
