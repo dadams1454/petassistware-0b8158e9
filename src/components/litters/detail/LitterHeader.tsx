@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { Edit, Calendar, Paw } from 'lucide-react';
+import { Edit, Calendar, Dog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DogCard from '@/components/dogs/DogDetails';
 import { Link } from 'react-router-dom';
@@ -54,7 +54,7 @@ const LitterHeader: React.FC<LitterHeaderProps> = ({ litter, sire, dam, onEditCl
             className="gap-1"
           >
             <Link to={`/welping/${litter.id}`}>
-              <Paw className="h-4 w-4" />
+              <Dog className="h-4 w-4" />
               Welping Session
             </Link>
           </Button>
