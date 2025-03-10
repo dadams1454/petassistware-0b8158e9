@@ -16,6 +16,7 @@ import Calendar from "./pages/Calendar";
 import Litters from "./pages/Litters";
 import LitterDetail from "./pages/LitterDetail";
 import AddLitter from "./pages/AddLitter";
+import Documents from "./pages/Documents";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,11 @@ const App = () => (
             <Route path="/litters/:id" element={
               <ProtectedRoute>
                 <LitterDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/documents" element={
+              <ProtectedRoute>
+                <Documents />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
