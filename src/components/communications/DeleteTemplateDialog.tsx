@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,11 +10,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { supabase, CommunicationTemplatesRow } from '@/integrations/supabase/client';
 
 interface DeleteTemplateDialogProps {
-  template: any;
+  template: CommunicationTemplatesRow;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
@@ -24,12 +24,14 @@ const DeleteTemplateDialog: React.FC<DeleteTemplateDialogProps> = ({
   template,
   open,
   onOpenChange,
-  onSuccess
+  onSuccess,
 }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
-      // Cast as any since the table isn't in the generated types yet
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('communication_templates')
         .delete()
         .eq('id', template.id);
@@ -38,7 +40,7 @@ const DeleteTemplateDialog: React.FC<DeleteTemplateDialogProps> = ({
       
       toast({
         title: "Template deleted",
-        description: "The communication template has been deleted."
+        description: "The template has been deleted successfully."
       });
       
       onSuccess();
@@ -48,6 +50,8 @@ const DeleteTemplateDialog: React.FC<DeleteTemplateDialogProps> = ({
         description: error.message,
         variant: "destructive"
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -57,14 +61,18 @@ const DeleteTemplateDialog: React.FC<DeleteTemplateDialogProps> = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete the template "{template.name}". 
+            This will permanently delete the template <strong>"{template.name}"</strong>.
             This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-            Delete
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive hover:bg-destructive/90"
+          >
+            {isDeleting ? "Deleting..." : "Delete Template"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -81,6 +81,36 @@ export type Database = {
         }
         Relationships: []
       }
+      communication_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          name: string
+          subject: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          name: string
+          subject?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          name?: string
+          subject?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           breeder_id: string | null
@@ -134,6 +164,47 @@ export type Database = {
             columns: ["puppy_id"]
             isOneToOne: false
             referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_communications: {
+        Row: {
+          content: string
+          created_at: string
+          customer_id: string
+          id: string
+          sent_at: string
+          status: string
+          subject: string | null
+          type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          sent_at?: string
+          status: string
+          subject?: string | null
+          type: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          sent_at?: string
+          status?: string
+          subject?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_communications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]

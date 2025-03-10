@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -27,6 +28,8 @@ import { supabase, CommunicationTemplatesRow } from '@/integrations/supabase/cli
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CustomerSelector from './CustomerSelector';
 import VariableHelp from './VariableHelp';
+import MessagePreview from './MessagePreview';
+import SmsCharacterCounter from './SmsCharacterCounter';
 
 const sendSchema = z.object({
   template_id: z.string().optional(),
@@ -41,17 +44,17 @@ const sendSchema = z.object({
 type SendFormValues = z.infer<typeof sendSchema>;
 
 const SendCommunication: React.FC = () => {
-  const [previewContent, setPreviewContent] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [selectedPuppy, setSelectedPuppy] = useState<any>(null);
   const [puppies, setPuppies] = useState<any[]>([]);
+  const [previewContent, setPreviewContent] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   // Fetch communication templates
   const { data: templates } = useQuery({
     queryKey: ['communication-templates'],
     queryFn: async () => {
-      // Cast as any since the table isn't in the generated types yet
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('communication_templates')
         .select('*')
         .order('name', { ascending: true });
@@ -146,25 +149,38 @@ const SendCommunication: React.FC = () => {
   }, [content, customMessage, selectedCustomer, selectedPuppy]);
 
   const onSubmit = async (values: SendFormValues) => {
-    // Here you'd normally send the communication via an API
-    // For now we'll just create a record in the database
+    if (!selectedCustomer) {
+      toast({
+        title: "Error",
+        description: "Please select a customer",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsSending(true);
+    
     try {
-      // Cast as any since the table isn't in the generated types yet
-      const { error } = await (supabase as any)
+      // Record the communication in our database
+      const { error } = await supabase
         .from('customer_communications')
         .insert([{
           customer_id: values.customer_id,
           type: values.type,
           subject: values.subject,
           content: previewContent,
-          status: 'sent' // In a real app, this would be 'pending' until sent
+          status: 'sent' // In a real app, this would be 'pending' until confirmed
         }]);
       
       if (error) throw error;
       
+      // In a real application, you would integrate with an email or SMS service here
+      // For example, using SendGrid for email or Twilio for SMS
+      
+      // Success notification
       toast({
         title: "Communication sent",
-        description: `Your ${values.type} has been sent successfully.`
+        description: `Your ${values.type} has been sent successfully to ${selectedCustomer.first_name} ${selectedCustomer.last_name}.`
       });
       
       // Reset form after sending
@@ -174,12 +190,17 @@ const SendCommunication: React.FC = () => {
         content: '',
         custom_message: ''
       });
+      
+      setSelectedCustomer(null);
+      setSelectedPuppy(null);
     } catch (error: any) {
       toast({
         title: "Error sending communication",
         description: error.message,
         variant: "destructive"
       });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -356,10 +377,15 @@ const SendCommunication: React.FC = () => {
                           <FormControl>
                             <Textarea 
                               placeholder="Type your message here..." 
-                              className="min-h-[250px]" 
+                              className="min-h-[200px]" 
                               {...field} 
                             />
                           </FormControl>
+                          {selectedType === 'sms' && field.value && (
+                            <div className="mt-1">
+                              <SmsCharacterCounter text={field.value} />
+                            </div>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -369,12 +395,17 @@ const SendCommunication: React.FC = () => {
                   </TabsContent>
                   
                   <TabsContent value="preview">
-                    <div className="border rounded-md p-4 min-h-[300px] bg-muted/30">
-                      <div className="text-sm font-medium mb-2">Preview:</div>
-                      <div className="whitespace-pre-wrap text-sm">
-                        {previewContent || "Your preview will appear here."}
+                    {previewContent ? (
+                      <MessagePreview 
+                        messageType={selectedType} 
+                        subject={selectedType === 'email' ? form.getValues('subject') : undefined}
+                        content={previewContent}
+                      />
+                    ) : (
+                      <div className="border rounded-md p-4 min-h-[300px] bg-muted/30 flex items-center justify-center">
+                        <p className="text-muted-foreground">Enter content to see preview</p>
                       </div>
-                    </div>
+                    )}
                   </TabsContent>
                 </Tabs>
                 
@@ -382,9 +413,9 @@ const SendCommunication: React.FC = () => {
                   <Button 
                     type="submit" 
                     className="w-full"
-                    disabled={!form.formState.isValid || !selectedCustomer}
+                    disabled={!form.formState.isValid || !selectedCustomer || isSending}
                   >
-                    Send {selectedType === 'email' ? 'Email' : 'SMS'}
+                    {isSending ? "Sending..." : `Send ${selectedType === 'email' ? 'Email' : 'SMS'}`}
                   </Button>
                 </div>
               </div>
