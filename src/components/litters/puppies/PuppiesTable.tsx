@@ -18,8 +18,8 @@ import {
   Info, 
   Calendar, 
   Weight, 
-  Mars, 
-  Venus, 
+  CircleUser,
+  Heart,
   Palette, 
   Scan, 
   CircleDollarSign
@@ -39,9 +39,9 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
   // Helper to render gender icon
   const renderGenderIcon = (gender: string | null) => {
     if (gender === 'Male') {
-      return <Mars className="h-3.5 w-3.5 text-blue-500 mr-1" />;
+      return <CircleUser className="h-3.5 w-3.5 text-blue-500 mr-1" />;
     } else if (gender === 'Female') {
-      return <Venus className="h-3.5 w-3.5 text-pink-500 mr-1" />;
+      return <Heart className="h-3.5 w-3.5 text-pink-500 mr-1" />;
     }
     return null;
   };
