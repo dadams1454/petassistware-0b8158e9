@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,15 +23,17 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-interface ContractFormProps {
+export interface ContractFormProps {
   puppyId: string;
   onSubmit: (data: z.infer<typeof formSchema>) => void;
+  onCancel: () => void;
   isLoading?: boolean;
 }
 
 const ContractForm: React.FC<ContractFormProps> = ({
   puppyId,
   onSubmit,
+  onCancel,
   isLoading
 }) => {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -54,8 +55,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
               <FormLabel>Customer</FormLabel>
               <FormControl>
                 <CustomerSelector
-                  value={field.value}
-                  onChange={field.onChange}
+                  form={form}
                 />
               </FormControl>
               <FormMessage />
@@ -96,16 +96,20 @@ const ContractForm: React.FC<ContractFormProps> = ({
         />
 
         <div className="flex justify-between items-center pt-4">
-          <Button type="submit" disabled={isLoading}>
-            Create Contract
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
           </Button>
-          
-          {form.watch('customer_id') && (
-            <GenerateContractButton 
-              puppyId={puppyId}
-              customerId={form.watch('customer_id')}
-            />
-          )}
+          <div className="flex gap-2">
+            <Button type="submit" disabled={isLoading}>
+              Create Contract
+            </Button>
+            {form.watch('customer_id') && (
+              <GenerateContractButton 
+                puppyId={puppyId}
+                customerId={form.watch('customer_id')}
+              />
+            )}
+          </div>
         </div>
       </form>
     </Form>
