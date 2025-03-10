@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,6 +37,18 @@ interface EventFormProps {
   defaultDate?: Date;
 }
 
+// Define a form data structure that uses Date objects internally
+interface EventFormData {
+  title: string;
+  description: string | null;
+  event_date: Date;
+  status: 'upcoming' | 'planned' | 'completed' | 'cancelled';
+  event_type: string;
+  is_recurring: boolean;
+  recurrence_pattern: string;
+  recurrence_end_date: Date | null;
+}
+
 const recurrenceOptions = [
   { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },
@@ -51,22 +63,25 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
     initialData?.is_recurring || false
   );
   
-  const form = useForm<NewEvent>({
+  // Convert string dates from initialData to Date objects for the form
+  const form = useForm<EventFormData>({
     defaultValues: {
       title: initialData?.title || '',
       description: initialData?.description || '',
-      event_date: initialData?.event_date ? new Date(initialData.event_date) : defaultDate || new Date(),
+      event_date: initialData?.event_date 
+        ? new Date(initialData.event_date) 
+        : defaultDate || new Date(),
       status: initialData?.status || 'planned',
       event_type: initialData?.event_type || 'Other',
       is_recurring: initialData?.is_recurring || false,
       recurrence_pattern: initialData?.recurrence_pattern || 'none',
       recurrence_end_date: initialData?.recurrence_end_date 
         ? new Date(initialData.recurrence_end_date) 
-        : undefined
+        : null
     }
   });
 
-  const handleSubmit = (data: NewEvent) => {
+  const handleSubmit = (data: EventFormData) => {
     // If not recurring, make sure recurrence fields are cleared
     if (!data.is_recurring) {
       data.recurrence_pattern = 'none';
@@ -74,11 +89,11 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
     }
 
     // Format dates as strings for the database
-    const formattedData = {
+    const formattedData: NewEvent = {
       ...data,
-      event_date: format(data.event_date as Date, 'yyyy-MM-dd'),
+      event_date: format(data.event_date, 'yyyy-MM-dd'),
       recurrence_end_date: data.recurrence_end_date 
-        ? format(data.recurrence_end_date as Date, 'yyyy-MM-dd')
+        ? format(data.recurrence_end_date, 'yyyy-MM-dd')
         : null
     };
 
@@ -90,7 +105,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
     form.setValue('is_recurring', checked);
     if (!checked) {
       form.setValue('recurrence_pattern', 'none');
-      form.setValue('recurrence_end_date', undefined);
+      form.setValue('recurrence_end_date', null);
     }
   };
 
@@ -144,7 +159,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
                         className="w-full pl-3 text-left font-normal"
                       >
                         {field.value ? (
-                          format(field.value as Date, 'PPP')
+                          format(field.value, 'PPP')
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -155,7 +170,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value as Date}
+                      selected={field.value}
                       onSelect={field.onChange}
                       initialFocus
                     />
@@ -278,7 +293,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
                             className="w-full pl-3 text-left font-normal"
                           >
                             {field.value ? (
-                              format(field.value as Date, 'PPP')
+                              format(field.value, 'PPP')
                             ) : (
                               <span>No end date</span>
                             )}
@@ -289,7 +304,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value as Date | undefined}
+                          selected={field.value || undefined}
                           onSelect={field.onChange}
                           initialFocus
                           fromDate={new Date()} // Can't select dates in the past
