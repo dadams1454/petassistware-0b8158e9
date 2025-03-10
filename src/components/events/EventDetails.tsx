@@ -2,7 +2,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Event } from '@/pages/Calendar';
+import { Event, EVENT_COLORS } from '@/pages/Calendar';
 import { Calendar, Pencil, Trash2 } from 'lucide-react';
 
 interface EventDetailsProps {
@@ -12,6 +12,13 @@ interface EventDetailsProps {
 }
 
 const EventDetails: React.FC<EventDetailsProps> = ({ event, onEdit, onDelete }) => {
+  // Get the color styling for the event type
+  const getEventTypeStyle = (eventType: string) => {
+    return EVENT_COLORS[eventType] || EVENT_COLORS['Other'];
+  };
+
+  const { bg, text } = getEventTypeStyle(event.event_type);
+
   return (
     <div className="space-y-4">
       <div className="space-y-4">
@@ -40,7 +47,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ event, onEdit, onDelete }) 
 
           <div>
             <h3 className="text-sm font-medium text-slate-500">Type</h3>
-            <p className="text-base">{event.event_type}</p>
+            <span className={`inline-block px-2 py-1 text-xs rounded-full ${bg} ${text}`}>
+              {event.event_type}
+            </span>
           </div>
         </div>
 

@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { NewEvent } from '@/pages/Calendar';
+import { EVENT_TYPES, NewEvent } from '@/pages/Calendar';
 import DatePicker from '@/components/dogs/form/DatePicker';
 import { format } from 'date-fns';
 
@@ -41,17 +41,6 @@ const eventSchema = z.object({
   status: z.enum(['upcoming', 'planned', 'completed', 'cancelled']),
   event_type: z.string().min(1, 'Event type is required'),
 });
-
-const EVENT_TYPES = [
-  'Breeding',
-  'Whelping',
-  'Vaccination',
-  'Vet Appointment',
-  'Show',
-  'Training',
-  'Grooming',
-  'Other'
-];
 
 const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDate }) => {
   const form = useForm<z.infer<typeof eventSchema>>({

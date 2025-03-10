@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import MainLayout from '@/layouts/MainLayout';
 import DashboardCard from '@/components/dashboard/DashboardCard';
@@ -12,12 +12,20 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Calendar as CalendarIcon, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Filter, Plus, X } from 'lucide-react';
 import EventForm from '@/components/events/EventForm';
 import EventDetails from '@/components/events/EventDetails';
 import { fetchEvents, createEvent, updateEvent, deleteEvent } from '@/services/eventService';
 import { format } from 'date-fns';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export type Event = {
   id: string;
@@ -30,11 +38,39 @@ export type Event = {
 
 export type NewEvent = Omit<Event, 'id'> & { id?: string };
 
+// Event type options
+export const EVENT_TYPES = [
+  'Breeding',
+  'Whelping',
+  'Vaccination',
+  'Vet Appointment',
+  'Show',
+  'Training',
+  'Grooming',
+  'Puppy Pickup',
+  'Other'
+];
+
+// Define event colors for different event types
+export const EVENT_COLORS: Record<string, { bg: string, text: string }> = {
+  'Breeding': { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' },
+  'Whelping': { bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-700 dark:text-pink-400' },
+  'Vaccination': { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400' },
+  'Vet Appointment': { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-700 dark:text-cyan-400' },
+  'Show': { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400' },
+  'Training': { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-700 dark:text-indigo-400' },
+  'Grooming': { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-700 dark:text-teal-400' },
+  'Puppy Pickup': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' },
+  'Other': { bg: 'bg-slate-100 dark:bg-slate-900/30', text: 'text-slate-700 dark:text-slate-400' }
+};
+
 const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [activeFilters, setActiveFilters] = useState<string[]>(EVENT_TYPES);
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   
   const queryClient = useQueryClient();
   
@@ -81,14 +117,19 @@ const CalendarPage = () => {
     }
   });
 
-  // Get events for the selected date
+  // Filter events based on active filters
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => activeFilters.includes(event.event_type));
+  }, [events, activeFilters]);
+
+  // Get events for the selected date from filtered events
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const eventsOnSelectedDate = events.filter(
+  const eventsOnSelectedDate = filteredEvents.filter(
     event => event.event_date.startsWith(selectedDateStr)
   );
 
-  // Find dates that have events
-  const eventDates = events.map(event => new Date(event.event_date));
+  // Find dates that have events (for calendar highlighting)
+  const eventDates = filteredEvents.map(event => new Date(event.event_date));
   
   const handleCreateEvent = () => {
     setIsCreating(true);
@@ -137,18 +178,100 @@ const CalendarPage = () => {
     setIsCreating(false);
   };
 
+  const toggleFilter = (eventType: string) => {
+    if (activeFilters.includes(eventType)) {
+      // Remove the filter if it's already active
+      setActiveFilters(activeFilters.filter(type => type !== eventType));
+    } else {
+      // Add the filter if it's not active
+      setActiveFilters([...activeFilters, eventType]);
+    }
+  };
+
+  const selectAllFilters = () => {
+    setActiveFilters([...EVENT_TYPES]);
+  };
+
+  const clearAllFilters = () => {
+    setActiveFilters([]);
+  };
+
+  // Function to get color styling for an event type
+  const getEventTypeStyle = (eventType: string) => {
+    return EVENT_COLORS[eventType] || EVENT_COLORS['Other'];
+  };
+
   return (
     <MainLayout>
       <div className="container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Event Calendar</h1>
-          <Button 
-            onClick={handleCreateEvent} 
-            className="flex items-center gap-2"
-          >
-            <Plus size={16} />
-            Add Event
-          </Button>
+          <div className="flex gap-2">
+            <Popover open={filterMenuOpen} onOpenChange={setFilterMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Filter size={16} />
+                  Filter
+                  {activeFilters.length < EVENT_TYPES.length && (
+                    <Badge variant="secondary" className="ml-1">
+                      {activeFilters.length}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4" align="end">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Filter By Event Type</h4>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-7 text-xs px-2"
+                        onClick={selectAllFilters}
+                      >
+                        Select All
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-7 text-xs px-2"
+                        onClick={clearAllFilters}
+                      >
+                        Clear All
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    {EVENT_TYPES.map(eventType => {
+                      const { bg, text } = getEventTypeStyle(eventType);
+                      return (
+                        <div key={eventType} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`filter-${eventType}`}
+                            checked={activeFilters.includes(eventType)}
+                            onCheckedChange={() => toggleFilter(eventType)}
+                          />
+                          <Label htmlFor={`filter-${eventType}`} className="flex items-center gap-2">
+                            <span className={`inline-block px-2 py-1 text-xs rounded-full ${bg} ${text}`}>
+                              {eventType}
+                            </span>
+                          </Label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button 
+              onClick={handleCreateEvent} 
+              className="flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Add Event
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -181,40 +304,49 @@ const CalendarPage = () => {
             title={selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'No date selected'}
             icon={<CalendarIcon size={18} />}
           >
-            {isLoading ? (
+            {activeFilters.length === 0 ? (
+              <div className="py-8 text-center text-slate-500">
+                No event types selected. Use the filter to display events.
+              </div>
+            ) : isLoading ? (
               <div className="py-4 text-center">Loading events...</div>
             ) : eventsOnSelectedDate.length > 0 ? (
               <div className="space-y-3">
-                {eventsOnSelectedDate.map(event => (
-                  <div 
-                    key={event.id}
-                    className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
-                    onClick={() => handleViewEvent(event)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-medium">{event.title}</h3>
-                        {event.description && (
-                          <p className="text-sm text-slate-600 mt-1">{event.description}</p>
-                        )}
+                {eventsOnSelectedDate.map(event => {
+                  const { bg, text } = getEventTypeStyle(event.event_type);
+                  return (
+                    <div 
+                      key={event.id}
+                      className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
+                      onClick={() => handleViewEvent(event)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-medium">{event.title}</h3>
+                          {event.description && (
+                            <p className="text-sm text-slate-600 mt-1">{event.description}</p>
+                          )}
+                        </div>
+                        <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                          event.status === 'upcoming' 
+                            ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
+                            : event.status === 'completed'
+                              ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : event.status === 'cancelled'
+                                ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}>
+                          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                        </span>
                       </div>
-                      <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                        event.status === 'upcoming' 
-                          ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
-                          : event.status === 'completed'
-                            ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                            : event.status === 'cancelled'
-                              ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                              : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      }`}>
-                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                      </span>
+                      <div className="mt-2 flex items-center">
+                        <span className={`inline-block px-2 py-1 text-xs rounded-full ${bg} ${text}`}>
+                          {event.event_type}
+                        </span>
+                      </div>
                     </div>
-                    <div className="mt-2 text-xs text-slate-500">
-                      Type: {event.event_type}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="py-8 text-center text-slate-500">
