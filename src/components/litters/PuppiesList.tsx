@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { DogIcon } from 'lucide-react';
+import { Paw } from 'lucide-react';
 
 import PuppiesTable from './puppies/PuppiesTable';
 import EditPuppyDialog from './puppies/EditPuppyDialog';
@@ -62,7 +63,7 @@ const PuppiesList = ({ puppies, litterId, onRefresh }: PuppiesListProps) => {
       {puppies.length === 0 ? (
         <div className="text-center py-12 border border-dashed rounded-lg">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <DogIcon className="h-8 w-8 text-primary" />
+            <Paw className="h-8 w-8 text-primary" />
           </div>
           <h3 className="text-lg font-medium">No Puppies Yet</h3>
           <p className="text-muted-foreground mb-4">
@@ -93,8 +94,9 @@ const PuppiesList = ({ puppies, litterId, onRefresh }: PuppiesListProps) => {
       {deletingPuppy && (
         <DeletePuppyDialog
           puppy={deletingPuppy}
-          onClose={() => setIsDeleteDialogOpen(false)}
-          onConfirm={handleDeleteSuccess}
+          isOpen={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onDelete={handleDeleteSuccess}
         />
       )}
 

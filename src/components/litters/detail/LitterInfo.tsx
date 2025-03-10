@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { format } from 'date-fns';
-import { CalendarCheck, Calendar, Dog as DogIcon, User as UserIcon } from 'lucide-react';
+import { CalendarCheck, Calendar, Male, Female, Scale, Paw } from 'lucide-react';
 import DashboardCard from '@/components/dashboard/DashboardCard';
 
 interface LitterInfoProps {
@@ -54,7 +55,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
 
         <div className="grid grid-cols-3 gap-4">
           <div className="flex items-center gap-2">
-            <DogIcon className="h-4 w-4 text-muted-foreground" />
+            <Paw className="h-4 w-4 text-muted-foreground" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">Puppies</p>
               <p>{actualPuppyCount}</p>
@@ -62,7 +63,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
           </div>
           
           <div className="flex items-center gap-2">
-            <UserIcon className="h-4 w-4 text-blue-500" />
+            <Male className="h-4 w-4 text-blue-500" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">Males</p>
               <p>{maleCount}</p>
@@ -70,7 +71,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
           </div>
           
           <div className="flex items-center gap-2">
-            <UserIcon className="h-4 w-4 text-pink-500" />
+            <Female className="h-4 w-4 text-pink-500" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">Females</p>
               <p>{femaleCount}</p>
@@ -83,7 +84,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
             {litter.dam?.photo_url ? (
               <img src={litter.dam.photo_url} alt={litter.dam.name} className="w-full h-full object-cover" />
             ) : (
-              <UserIcon className="h-6 w-6 text-pink-500" />
+              <Female className="h-6 w-6 text-pink-500" />
             )}
           </div>
           <div>
@@ -97,7 +98,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
             {litter.sire?.photo_url ? (
               <img src={litter.sire.photo_url} alt={litter.sire.name} className="w-full h-full object-cover" />
             ) : (
-              <UserIcon className="h-6 w-6 text-blue-500" />
+              <Male className="h-6 w-6 text-blue-500" />
             )}
           </div>
           <div>
