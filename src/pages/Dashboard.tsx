@@ -1,17 +1,156 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DashboardCard from '@/components/dashboard/DashboardCard';
 import StatCard from '@/components/dashboard/StatCard';
+import UpcomingEvents from '@/components/dashboard/UpcomingEvents';
 import RecentActivities from '@/components/dashboard/RecentActivities';
 import { CustomButton } from '@/components/ui/custom-button';
 import BlurBackground from '@/components/ui/blur-background';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Dog, Users, Calendar, PawPrint, DollarSign, 
   PlusCircle, BarChart3, ChevronRight, File
 } from 'lucide-react';
+import { 
+  fetchDashboardStats, 
+  fetchUpcomingEvents, 
+  fetchRecentActivities,
+  DashboardStats,
+  UpcomingEvent,
+  RecentActivity
+} from '@/services/dashboardService';
 
 const Dashboard: React.FC = () => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    dogCount: 0,
+    litterCount: 0,
+    reservationCount: 0,
+    recentRevenue: 0
+  });
+  const [events, setEvents] = useState<UpcomingEvent[]>([]);
+  const [activities, setActivities] = useState<RecentActivity[]>([]);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch all data in parallel
+        const [dashboardStats, upcomingEvents, recentActivities] = await Promise.all([
+          fetchDashboardStats(),
+          fetchUpcomingEvents(),
+          fetchRecentActivities()
+        ]);
+
+        setStats(dashboardStats);
+        setEvents(upcomingEvents);
+        setActivities(recentActivities);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, [toast]);
+
+  // Mock activities if none are found in the database
+  useEffect(() => {
+    if (!isLoading && activities.length === 0) {
+      const mockActivities: RecentActivity[] = [
+        {
+          id: '1',
+          type: 'litter',
+          title: 'New litter registered',
+          description: 'Newfoundland litter with 6 puppies',
+          createdAt: new Date(Date.now() - 7200000).toISOString() // 2 hours ago
+        },
+        {
+          id: '2',
+          type: 'sale',
+          title: 'Puppy reservation confirmed',
+          description: 'Male puppy #3 reserved by John Smith',
+          createdAt: new Date(Date.now() - 18000000).toISOString() // 5 hours ago
+        },
+        {
+          id: '3',
+          type: 'health',
+          title: 'Vaccinations updated',
+          description: 'Bella (dam) received annual vaccinations',
+          createdAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+        },
+        {
+          id: '4',
+          type: 'payment',
+          title: 'Payment received',
+          description: '$500 deposit for puppy reservation',
+          createdAt: new Date(Date.now() - 172800000).toISOString() // 2 days ago
+        },
+        {
+          id: '5',
+          type: 'document',
+          title: 'Contract generated',
+          description: 'Sale contract for Max (male, 10 weeks)',
+          createdAt: new Date(Date.now() - 172800000).toISOString() // 2 days ago
+        }
+      ];
+      setActivities(mockActivities);
+    }
+  }, [isLoading, activities]);
+
+  // Mock events if none are found in the database
+  useEffect(() => {
+    if (!isLoading && events.length === 0) {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const feb15 = new Date(today.getFullYear(), 1, 15);
+      const feb18 = new Date(today.getFullYear(), 1, 18);
+      
+      const mockEvents: UpcomingEvent[] = [
+        {
+          id: '1',
+          title: 'Veterinary Appointment',
+          description: 'Max - Annual checkup and vaccinations',
+          date: today.toISOString().split('T')[0],
+          status: 'upcoming'
+        },
+        {
+          id: '2',
+          title: 'Puppy Photoshoot',
+          description: 'Newfoundland litter (3 weeks old)',
+          date: tomorrow.toISOString().split('T')[0],
+          status: 'upcoming'
+        },
+        {
+          id: '3',
+          title: 'Expected Heat Cycle',
+          description: 'Bella - Monitor for breeding readiness',
+          date: feb15.toISOString().split('T')[0],
+          status: 'planned'
+        },
+        {
+          id: '4',
+          title: 'Puppy Go-Home Day',
+          description: 'Newfoundland litter - 3 puppies scheduled for pickup',
+          date: feb18.toISOString().split('T')[0],
+          status: 'planned'
+        }
+      ];
+      setEvents(mockEvents);
+    }
+  }, [isLoading, events]);
+
   return (
     <MainLayout>
       <div className="mb-6">
@@ -71,7 +210,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-6 mb-8">
         <StatCard
           title="Active Dogs"
-          value="12"
+          value={isLoading ? "Loading..." : stats.dogCount.toString()}
           icon={<Dog size={18} />}
           change={8.5}
           changeText="vs last month"
@@ -79,7 +218,7 @@ const Dashboard: React.FC = () => {
         />
         <StatCard
           title="Current Litters"
-          value="2"
+          value={isLoading ? "Loading..." : stats.litterCount.toString()}
           icon={<PawPrint size={18} />}
           change={0}
           changeText="same as last month"
@@ -87,7 +226,7 @@ const Dashboard: React.FC = () => {
         />
         <StatCard
           title="Reservations"
-          value="8"
+          value={isLoading ? "Loading..." : stats.reservationCount.toString()}
           icon={<Users size={18} />}
           change={33}
           changeText="vs last month"
@@ -95,7 +234,7 @@ const Dashboard: React.FC = () => {
         />
         <StatCard
           title="Revenue (Last 30 Days)"
-          value="$4,500"
+          value={isLoading ? "Loading..." : `$${stats.recentRevenue.toLocaleString()}`}
           icon={<DollarSign size={18} />}
           change={12.3}
           changeText="vs previous period"
@@ -112,57 +251,12 @@ const Dashboard: React.FC = () => {
           icon={<Calendar size={18} />}
           className="xl:col-span-2"
         >
-          <div className="space-y-4">
-            {[
-              { date: 'Today', title: 'Veterinary Appointment', description: 'Max - Annual checkup and vaccinations', status: 'upcoming' },
-              { date: 'Tomorrow', title: 'Puppy Photoshoot', description: 'Golden Retriever litter (3 weeks old)', status: 'upcoming' },
-              { date: 'Feb 15', title: 'Expected Heat Cycle', description: 'Bella - Monitor for breeding readiness', status: 'planned' },
-              { date: 'Feb 18', title: 'Puppy Go-Home Day', description: 'Labrador litter - 3 puppies scheduled for pickup', status: 'planned' },
-            ].map((event, index) => (
-              <div 
-                key={index} 
-                className="flex items-start p-3 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50"
-              >
-                <div className="min-w-[70px] text-sm font-medium text-primary">
-                  {event.date}
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                    {event.title}
-                  </h4>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    {event.description}
-                  </p>
-                </div>
-                <div className="ml-2">
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                    event.status === 'upcoming' 
-                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
-                      : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                  }`}>
-                    {event.status === 'upcoming' ? 'Soon' : 'Planned'}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-4 text-center">
-            <CustomButton 
-              variant="ghost" 
-              size="sm" 
-              className="text-primary"
-              icon={<ChevronRight size={16} />}
-              iconPosition="right"
-            >
-              View Calendar
-            </CustomButton>
-          </div>
+          <UpcomingEvents events={events} isLoading={isLoading} />
         </DashboardCard>
 
         {/* Recent Activities Card */}
         <DashboardCard className="h-full">
-          <RecentActivities />
+          <RecentActivities activities={activities} isLoading={isLoading} />
         </DashboardCard>
       </div>
 
