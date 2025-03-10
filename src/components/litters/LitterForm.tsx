@@ -10,6 +10,7 @@ import TextareaInput from '@/components/dogs/form/TextareaInput';
 import { CustomButton } from '@/components/ui/custom-button';
 import DogSelector from './form/DogSelector';
 import LitterDatePicker from './form/LitterDatePicker';
+import { toast } from '@/components/ui/use-toast';
 
 interface LitterFormData {
   dam_id: string | null;
@@ -40,8 +41,11 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess }) => {
   const handleSubmit = async (data: LitterFormData) => {
     setIsSubmitting(true);
     try {
-      const formattedData = {
+      // Process the data to handle "none" values
+      const processedData = {
         ...data,
+        dam_id: data.dam_id === "none" ? null : data.dam_id,
+        sire_id: data.sire_id === "none" ? null : data.sire_id,
         birth_date: data.birth_date.toISOString().split('T')[0]
       };
 
@@ -49,22 +53,37 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess }) => {
         // Update existing litter
         const { error } = await supabase
           .from('litters')
-          .update(formattedData)
+          .update(processedData)
           .eq('id', initialData.id);
 
         if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Litter updated successfully",
+        });
       } else {
         // Create new litter
         const { error } = await supabase
           .from('litters')
-          .insert(formattedData);
+          .insert(processedData);
 
         if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Litter created successfully",
+        });
       }
 
       onSuccess();
     } catch (error) {
       console.error('Error saving litter:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem saving the litter",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
