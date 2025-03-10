@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Home, 
@@ -25,7 +24,7 @@ import {
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { logout, user } = useAuth();
+  const { signOut, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -43,7 +42,7 @@ const Navbar: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await logout();
+    await signOut();
     navigate('/auth');
   };
 

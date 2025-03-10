@@ -45,7 +45,7 @@ const ContractsList: React.FC<ContractsListProps> = ({ puppyId }) => {
               )}
             </div>
             <Badge 
-              variant={contract.signed ? "success" : "default"}
+              variant={contract.signed ? "secondary" : "default"}
             >
               {contract.signed ? "Signed" : "Pending"}
             </Badge>

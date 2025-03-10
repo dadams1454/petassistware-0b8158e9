@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -34,7 +34,7 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               
               {/* Protected routes */}
-              <Route element={<ProtectedRoute />}>
+              <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dogs" element={<Dogs />} />
                 <Route path="/customers" element={<Customers />} />
