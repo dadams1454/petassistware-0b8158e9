@@ -7,7 +7,7 @@ import ContractDialog from '@/components/contracts/ContractDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { useLocation } from 'react-router-dom';
 import { CustomButton } from '@/components/ui/custom-button';
-import { Plus } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 
 const Documents = () => {
   const { toast } = useToast();
@@ -51,7 +51,10 @@ const Documents = () => {
 
       <Tabs defaultValue="contracts" className="w-full">
         <TabsList>
-          <TabsTrigger value="contracts">Contracts</TabsTrigger>
+          <TabsTrigger value="contracts" className="flex items-center gap-1">
+            <FileText size={16} />
+            <span>Contracts</span>
+          </TabsTrigger>
           <TabsTrigger value="templates">Templates</TabsTrigger>
         </TabsList>
         <TabsContent value="contracts" className="mt-4">
