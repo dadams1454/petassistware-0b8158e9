@@ -36,12 +36,23 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
   const handleSubmit = async (data: PuppyFormData) => {
     setIsSubmitting(true);
     try {
-      // Prepare the puppy data for database submission
+      // Clean up the data to remove any fields that don't exist in the database schema
       const puppyData = {
-        ...data,
-        litter_id: litterId,
-        // Format birth_date correctly as an ISO date string if it exists
+        name: data.name,
+        gender: data.gender,
+        status: data.status,
+        color: data.color,
         birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
+        birth_weight: data.birth_weight,
+        current_weight: data.current_weight,
+        microchip_number: data.microchip_number,
+        sale_price: data.sale_price,
+        deworming_dates: data.deworming_dates,
+        vaccination_dates: data.vaccination_dates,
+        vet_check_dates: data.vet_check_dates,
+        notes: data.notes,
+        photo_url: data.photo_url,
+        litter_id: litterId
       };
 
       if (initialData) {
