@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Male, Female, Filter } from 'lucide-react';
+import { Filter, User, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -35,9 +35,9 @@ const PuppyGenderFilter: React.FC<PuppyGenderFilterProps> = ({
   const getGenderIcon = (gender: string) => {
     switch (gender) {
       case 'Male':
-        return <Male className="h-4 w-4 text-blue-500" />;
+        return <User className="h-4 w-4 text-blue-500" />;
       case 'Female':
-        return <Female className="h-4 w-4 text-pink-500" />;
+        return <Heart className="h-4 w-4 text-pink-500" />;
       default:
         return null;
     }
