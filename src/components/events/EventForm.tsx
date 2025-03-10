@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { format, parse } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,50 +12,20 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
-import { NewEvent, EVENT_TYPES } from '@/pages/Calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { NewEvent } from '@/pages/Calendar';
+import { EventFormData, formatEventData } from './form/types';
+import EventDatePicker from './form/EventDatePicker';
+import EventTypeSelector from './form/EventTypeSelector';
+import StatusSelector from './form/StatusSelector';
+import RecurrenceOptions from './form/RecurrenceOptions';
 
 interface EventFormProps {
   onSubmit: (data: NewEvent) => void;
   initialData?: NewEvent;
   defaultDate?: Date;
 }
-
-// Define a form data structure that uses Date objects internally
-interface EventFormData {
-  title: string;
-  description: string | null;
-  event_date: Date;
-  status: 'upcoming' | 'planned' | 'completed' | 'cancelled';
-  event_type: string;
-  is_recurring: boolean;
-  recurrence_pattern: string;
-  recurrence_end_date: Date | null;
-}
-
-const recurrenceOptions = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Every two weeks' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Every three months' },
-  { value: 'yearly', label: 'Yearly' }
-];
 
 const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDate }) => {
   const [showRecurrenceOptions, setShowRecurrenceOptions] = useState(
@@ -89,14 +58,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
     }
 
     // Format dates as strings for the database
-    const formattedData: NewEvent = {
-      ...data,
-      event_date: format(data.event_date, 'yyyy-MM-dd'),
-      recurrence_end_date: data.recurrence_end_date 
-        ? format(data.recurrence_end_date, 'yyyy-MM-dd')
-        : null
-    };
-
+    const formattedData = formatEventData(data);
     onSubmit(formattedData);
   };
 
@@ -145,97 +107,11 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="event_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className="w-full pl-3 text-left font-normal"
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="event_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select event type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {EVENT_TYPES.map(type => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <EventDatePicker form={form} />
+          <EventTypeSelector form={form} />
         </div>
 
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="planned">Planned</SelectItem>
-                  <SelectItem value="upcoming">Upcoming</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <StatusSelector form={form} />
 
         {/* Recurring event options */}
         <div className="space-y-4">
@@ -249,73 +125,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
           </div>
 
           {showRecurrenceOptions && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6 border-l-2 border-slate-200">
-              <FormField
-                control={form.control}
-                name="recurrence_pattern"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Recurrence Pattern</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                      value={field.value || 'none'}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select pattern" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {recurrenceOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="recurrence_end_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>End Date (optional)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className="w-full pl-3 text-left font-normal"
-                          >
-                            {field.value ? (
-                              format(field.value, 'PPP')
-                            ) : (
-                              <span>No end date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value || undefined}
-                          onSelect={field.onChange}
-                          initialFocus
-                          fromDate={new Date()} // Can't select dates in the past
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <RecurrenceOptions form={form} />
           )}
         </div>
 
