@@ -18,6 +18,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { toast } from '@/components/ui/use-toast';
+import { Loader2 } from "lucide-react";
 
 type Puppy = Tables<'puppies'>;
 
@@ -30,12 +31,12 @@ const InterestedPuppyField = () => {
     const fetchPuppies = async () => {
       setIsLoading(true);
       try {
-        // Fetch puppies that don't have a status (available puppies)
+        // Fetch available puppies (status is either null or 'Available')
         const { data, error } = await supabase
           .from('puppies')
           .select('*')
-          .is('status', null)
-          .order('name');
+          .or('status.is.null,status.eq.Available')
+          .order('created_at', { ascending: false });
         
         if (error) throw error;
         setPuppies(data || []);
@@ -68,7 +69,14 @@ const InterestedPuppyField = () => {
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select a puppy (if applicable)" />
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading puppies...</span>
+                  </div>
+                ) : (
+                  <SelectValue placeholder="Select a puppy (if applicable)" />
+                )}
               </SelectTrigger>
             </FormControl>
             <SelectContent>
@@ -78,9 +86,18 @@ const InterestedPuppyField = () => {
               ) : (
                 puppies.map((puppy) => (
                   <SelectItem key={puppy.id} value={puppy.id}>
-                    {puppy.name || `Puppy ID: ${puppy.id.substring(0, 8)}`} 
-                    {puppy.color ? ` (${puppy.color})` : ''}
-                    {puppy.gender ? ` - ${puppy.gender}` : ''}
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {puppy.name || `Puppy #${puppy.id.substring(0, 8)}`}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {[
+                          puppy.color && `Color: ${puppy.color}`,
+                          puppy.gender && `Gender: ${puppy.gender}`,
+                          puppy.birth_date && `Born: ${new Date(puppy.birth_date).toLocaleDateString()}`
+                        ].filter(Boolean).join(' • ')}
+                      </span>
+                    </div>
                   </SelectItem>
                 ))
               )}
