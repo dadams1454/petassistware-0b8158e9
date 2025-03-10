@@ -1,14 +1,10 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Paw } from 'lucide-react';
-
+import { toast } from '@/components/ui/use-toast';
 import PuppiesTable from './puppies/PuppiesTable';
-import EditPuppyDialog from './puppies/EditPuppyDialog';
 import DeletePuppyDialog from './puppies/DeletePuppyDialog';
-import PuppyDetail from './puppies/PuppyDetail';
+import EditPuppyDialog from './puppies/EditPuppyDialog';
 
 interface PuppiesListProps {
   puppies: Puppy[];
@@ -16,99 +12,77 @@ interface PuppiesListProps {
   onRefresh: () => Promise<any>;
 }
 
-const PuppiesList = ({ puppies, litterId, onRefresh }: PuppiesListProps) => {
-  const { toast } = useToast();
-  const [editingPuppy, setEditingPuppy] = useState<Puppy | null>(null);
-  const [deletingPuppy, setDeletingPuppy] = useState<Puppy | null>(null);
-  const [viewingPuppy, setViewingPuppy] = useState<Puppy | null>(null);
+const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedPuppy, setSelectedPuppy] = useState<Puppy | null>(null);
+  const [puppyToDelete, setPuppyToDelete] = useState<Puppy | null>(null);
 
   const handleEditPuppy = (puppy: Puppy) => {
-    setEditingPuppy(puppy);
+    setSelectedPuppy(puppy);
     setIsEditDialogOpen(true);
-  };
-
-  const handleDeletePuppy = (puppy: Puppy) => {
-    setDeletingPuppy(puppy);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleViewPuppy = (puppy: Puppy) => {
-    setViewingPuppy(puppy);
-    setIsDetailDialogOpen(true);
-  };
-
-  const handleDeleteSuccess = async () => {
-    setIsDeleteDialogOpen(false);
-    await onRefresh();
-    toast({
-      title: "Puppy Deleted",
-      description: "The puppy has been removed from this litter.",
-    });
   };
 
   const handleEditSuccess = async () => {
     setIsEditDialogOpen(false);
+    setSelectedPuppy(null);
     await onRefresh();
     toast({
-      title: "Puppy Updated",
-      description: "The puppy information has been updated successfully.",
+      title: "Success!",
+      description: "Puppy updated successfully.",
     });
+  };
+
+  const handleDeletePuppy = async () => {
+    if (!puppyToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('puppies')
+        .delete()
+        .eq('id', puppyToDelete.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Puppy deleted",
+        description: "The puppy has been successfully deleted.",
+      });
+      
+      setPuppyToDelete(null);
+      await onRefresh();
+    } catch (error) {
+      console.error('Error deleting puppy:', error);
+      toast({
+        title: "Error",
+        description: "There was an error deleting the puppy.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
     <div>
-      {puppies.length === 0 ? (
-        <div className="text-center py-12 border border-dashed rounded-lg">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Paw className="h-8 w-8 text-primary" />
-          </div>
-          <h3 className="text-lg font-medium">No Puppies Yet</h3>
-          <p className="text-muted-foreground mb-4">
-            There are no puppies in this litter yet. Add your first puppy.
-          </p>
-        </div>
-      ) : (
-        <PuppiesTable 
-          puppies={puppies} 
-          onEditPuppy={handleEditPuppy}
-          onDeletePuppy={handleDeletePuppy}
-          onViewPuppy={handleViewPuppy}
-        />
-      )}
+      <PuppiesTable 
+        puppies={puppies} 
+        onEditPuppy={handleEditPuppy} 
+        onDeletePuppy={setPuppyToDelete} 
+      />
 
       {/* Edit Puppy Dialog */}
-      {editingPuppy && (
-        <EditPuppyDialog
-          puppy={editingPuppy}
-          litterId={litterId}
-          isOpen={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-          onSuccess={handleEditSuccess}
-        />
-      )}
+      <EditPuppyDialog
+        puppy={selectedPuppy}
+        litterId={litterId}
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSuccess={handleEditSuccess}
+      />
 
-      {/* Delete Puppy Dialog */}
-      {deletingPuppy && (
-        <DeletePuppyDialog
-          puppy={deletingPuppy}
-          isOpen={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-          onDelete={handleDeleteSuccess}
-        />
-      )}
-
-      {/* Puppy Detail Dialog */}
-      {viewingPuppy && (
-        <PuppyDetail
-          puppy={viewingPuppy}
-          litterId={litterId}
-          isOpen={isDetailDialogOpen}
-          onOpenChange={setIsDetailDialogOpen}
-        />
-      )}
+      {/* Delete Confirmation Dialog */}
+      <DeletePuppyDialog
+        puppy={puppyToDelete}
+        onClose={() => setPuppyToDelete(null)}
+        onConfirm={handleDeletePuppy}
+      />
     </div>
   );
 };
