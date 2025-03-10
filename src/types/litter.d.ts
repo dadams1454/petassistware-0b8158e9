@@ -22,6 +22,7 @@ interface Puppy {
   
   // New fields
   birth_date?: string | null;
+  birth_time?: string | null;
   color?: string | null;
   birth_weight?: string | null;
   current_weight?: string | null;
