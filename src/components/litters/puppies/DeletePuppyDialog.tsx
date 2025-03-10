@@ -24,7 +24,7 @@ const DeletePuppyDialog: React.FC<DeletePuppyDialogProps> = ({
   if (!puppy) return null;
 
   return (
-    <Dialog open={!!puppy} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirm Deletion</DialogTitle>

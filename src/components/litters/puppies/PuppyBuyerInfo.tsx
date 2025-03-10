@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +27,6 @@ interface PuppyBuyerInfoProps {
 
 const PuppyBuyerInfo: React.FC<PuppyBuyerInfoProps> = ({ puppy }) => {
   const [isEditing, setIsEditing] = useState(false);
-  // Demo data - in a real app, this would come from the database
   const [buyerInfo, setBuyerInfo] = useState<BuyerInfo | null>(
     puppy.status === 'Reserved' || puppy.status === 'Sold' ? {
       firstName: 'John',
@@ -56,7 +54,6 @@ const PuppyBuyerInfo: React.FC<PuppyBuyerInfoProps> = ({ puppy }) => {
   const handleSaveBuyerInfo = (data: BuyerInfo) => {
     setBuyerInfo(data);
     setIsEditing(false);
-    // In a real app, this would save to the database
   };
 
   return (
@@ -195,7 +192,7 @@ const PuppyBuyerInfo: React.FC<PuppyBuyerInfoProps> = ({ puppy }) => {
               <div>
                 <h3 className="font-medium">{buyerInfo.firstName} {buyerInfo.lastName}</h3>
                 <div className="flex items-center text-sm text-muted-foreground">
-                  <Badge variant={puppy.status === 'Sold' ? "success" : "secondary"}>
+                  <Badge variant={puppy.status === 'Sold' ? "secondary" : "outline"}>
                     {puppy.status}
                   </Badge>
                 </div>
