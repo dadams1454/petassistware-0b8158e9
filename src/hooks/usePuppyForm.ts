@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
 import { PuppyFormData } from '@/components/litters/puppies/types';
+import { toast } from '@/components/ui/use-toast';
 
 export interface UsePuppyFormProps {
   litterId: string;
@@ -35,9 +36,11 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
   const handleSubmit = async (data: PuppyFormData) => {
     setIsSubmitting(true);
     try {
+      // Prepare the puppy data for database submission
       const puppyData = {
         ...data,
         litter_id: litterId,
+        // Format birth_date correctly as an ISO date string if it exists
         birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
       };
 
@@ -58,9 +61,21 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
         if (error) throw error;
       }
 
+      toast({
+        title: initialData ? "Puppy Updated" : "Puppy Added",
+        description: initialData 
+          ? "The puppy information has been successfully updated." 
+          : "A new puppy has been successfully added to this litter.",
+      });
+      
       onSuccess();
     } catch (error) {
       console.error('Error saving puppy:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem saving the puppy information. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
