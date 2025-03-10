@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tables } from '@/integrations/supabase/types';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,13 +24,17 @@ import {
 } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import SelectInput from '../dogs/form/SelectInput'; 
 
 type Customer = Tables<'customers'> & {
   metadata?: {
     customer_type?: 'new' | 'returning';
     customer_since?: string;
+    interested_puppy_id?: string;
   }
 };
+
+type Puppy = Tables<'puppies'>;
 
 const formSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -41,6 +45,7 @@ const formSchema = z.object({
   notes: z.string().optional(),
   customer_type: z.enum(["new", "returning"]).default("new"),
   customer_since: z.string().optional(),
+  interested_puppy_id: z.string().optional().or(z.literal('')),
 });
 
 interface CustomerFormProps {
@@ -55,6 +60,29 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   onCancel,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [puppies, setPuppies] = useState<Puppy[]>([]);
+  
+  useEffect(() => {
+    const fetchPuppies = async () => {
+      const { data, error } = await supabase
+        .from('puppies')
+        .select('*')
+        .is('status', null)
+        .order('name');
+      
+      if (!error && data) {
+        setPuppies(data);
+      } else if (error) {
+        toast({
+          title: "Error fetching puppies",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    };
+    
+    fetchPuppies();
+  }, []);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,6 +95,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       notes: customer?.notes || '',
       customer_type: customer?.metadata?.customer_type || 'new',
       customer_since: customer?.metadata?.customer_since || '',
+      interested_puppy_id: customer?.metadata?.interested_puppy_id || '',
     },
   });
 
@@ -74,12 +103,13 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     setIsLoading(true);
     try {
       // Extract metadata fields
-      const { customer_type, customer_since, ...otherFields } = values;
+      const { customer_type, customer_since, interested_puppy_id, ...otherFields } = values;
       
       // Create metadata object
       const metadata = {
         customer_type,
         customer_since: customer_since || new Date().toISOString().split('T')[0],
+        interested_puppy_id: interested_puppy_id || null,
       };
       
       // Ensure required fields are non-optional when sending to the database
@@ -250,6 +280,37 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="interested_puppy_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Interested Puppy</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value || ''}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a puppy (if applicable)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="">No puppy selected</SelectItem>
+                  {puppies.map((puppy) => (
+                    <SelectItem key={puppy.id} value={puppy.id}>
+                      {puppy.name || `Puppy ID: ${puppy.id.substring(0, 8)}`} 
+                      {puppy.color ? ` (${puppy.color})` : ''}
+                      {puppy.gender ? ` - ${puppy.gender}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
