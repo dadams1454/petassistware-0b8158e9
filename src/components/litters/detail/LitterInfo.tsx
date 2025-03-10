@@ -8,6 +8,9 @@ interface LitterInfoProps {
 }
 
 const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
+  // Calculate the actual puppy count from the puppies array
+  const actualPuppyCount = litter.puppies?.length || 0;
+
   return (
     <DashboardCard className="lg:col-span-1" title="Litter Information">
       <div className="space-y-4">
@@ -18,7 +21,7 @@ const LitterInfo: React.FC<LitterInfoProps> = ({ litter }) => {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Puppy Count</p>
-            <p>{litter.puppy_count || 'Not specified'}</p>
+            <p>{actualPuppyCount} {actualPuppyCount === 1 ? 'puppy' : 'puppies'}</p>
           </div>
         </div>
 
