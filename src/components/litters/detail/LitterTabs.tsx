@@ -16,6 +16,12 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
   litterName = "Litter", 
   dogBreed 
 }) => {
+  // Create a function that returns a Promise to satisfy the type requirement
+  const handleRefresh = async (): Promise<any> => {
+    // This can be left empty as it's just to satisfy the type
+    return Promise.resolve();
+  };
+  
   return (
     <Tabs defaultValue="puppies" className="w-full mt-6">
       <TabsList className="grid w-full grid-cols-3">
@@ -28,7 +34,7 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
         <PuppiesList 
           litterId={litterId} 
           puppies={[]} 
-          onRefresh={() => {}} 
+          onRefresh={handleRefresh} 
         />
       </TabsContent>
       

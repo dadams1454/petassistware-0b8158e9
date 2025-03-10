@@ -17,7 +17,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MailIcon, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { Customer } from '../customers/types/customer';
-import { WaitlistEntry } from '../waitlist/WaitlistManager';
+import { WaitlistEntry } from '../waitlist/types';
 import CreateFollowUpDialog from './CreateFollowUpDialog';
 
 interface FollowUpItem {
