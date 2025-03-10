@@ -43,8 +43,9 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
 
         {customer ? (
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="view">Customer Details</TabsTrigger>
+              <TabsTrigger value="waitlist">Waitlist Status</TabsTrigger>
               <TabsTrigger value="edit">Edit Customer</TabsTrigger>
             </TabsList>
 
@@ -87,7 +88,9 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
                   <p className="text-sm whitespace-pre-wrap">{customer.notes}</p>
                 </div>
               )}
-              
+            </TabsContent>
+            
+            <TabsContent value="waitlist" className="mt-4">
               <CustomerWaitlistStatus customerId={customer.id} />
             </TabsContent>
 

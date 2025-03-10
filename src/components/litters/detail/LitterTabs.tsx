@@ -3,17 +3,18 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PuppiesList from '../PuppiesList';
 import WaitlistManager from '../../waitlist/WaitlistManager';
+import LitterTimeline from './LitterTimeline';
 
 interface LitterTabsProps {
   litterId: string;
   litterName?: string | null;
-  dogBreed?: string;
+  dogBreed?: string | null;
 }
 
 const LitterTabs: React.FC<LitterTabsProps> = ({ 
   litterId, 
   litterName = "Litter", 
-  dogBreed
+  dogBreed 
 }) => {
   return (
     <Tabs defaultValue="puppies" className="w-full mt-6">
@@ -24,7 +25,7 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
       </TabsList>
       
       <TabsContent value="puppies" className="mt-6">
-        <PuppiesList litterId={litterId} dogBreed={dogBreed} />
+        <PuppiesList litterId={litterId} />
       </TabsContent>
       
       <TabsContent value="waitlist" className="mt-6">
@@ -32,9 +33,7 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="timeline" className="mt-6">
-        <div className="text-center py-12 text-muted-foreground">
-          Timeline feature coming soon
-        </div>
+        <LitterTimeline litterId={litterId} />
       </TabsContent>
     </Tabs>
   );

@@ -1,18 +1,17 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
-import { renderGenderIcon } from '../litters/puppies/utils/puppyUtils';
 import WaitlistEntryDialog from './WaitlistEntryDialog';
+import WaitlistTable from './WaitlistTable';
 import { Customer } from '../customers/types/customer';
 
-interface WaitlistEntry {
+export interface WaitlistEntry {
   id: string;
   customer_id: string;
   litter_id: string;
@@ -44,11 +43,11 @@ const WaitlistManager: React.FC<WaitlistManagerProps> = ({ litterId, litterName 
         .from('waitlist')
         .select('*, customers(*)')
         .eq('litter_id', litterId)
-        .order('position', { ascending: true, nullsLast: true })
+        .order('position', { ascending: true })
         .order('requested_at', { ascending: true });
       
       if (error) throw error;
-      return data as WaitlistEntry[];
+      return data as unknown as WaitlistEntry[];
     }
   });
 
@@ -130,7 +129,7 @@ const WaitlistManager: React.FC<WaitlistManagerProps> = ({ litterId, litterName 
     }
   };
 
-  const handleEditNotes = (entry: WaitlistEntry) => {
+  const handleEditEntry = (entry: WaitlistEntry) => {
     setSelectedEntry(entry);
     setIsDialogOpen(true);
   };
@@ -162,333 +161,47 @@ const WaitlistManager: React.FC<WaitlistManagerProps> = ({ litterId, litterName 
               No customers on the waitlist yet. Add a customer to get started.
             </div>
           ) : (
-            <TabsContent value="all">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Preferences</TableHead>
-                    <TableHead>Requested</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {waitlistEntries?.map((entry, index) => (
-                    <TableRow key={entry.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-1">
-                          {entry.position || index + 1}
-                          <div className="flex flex-col gap-1 ml-1">
-                            <Button
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-5 w-5"
-                              onClick={() => handleUpdatePosition(entry, 'up')}
-                              disabled={index === 0}
-                            >
-                              ▲
-                            </Button>
-                            <Button
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-5 w-5"
-                              onClick={() => handleUpdatePosition(entry, 'down')}
-                              disabled={index === (waitlistEntries?.length || 0) - 1}
-                            >
-                              ▼
-                            </Button>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          {entry.customers?.first_name} {entry.customers?.last_name}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {entry.customers?.email || "No email"} | {entry.customers?.phone || "No phone"}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          {entry.preferences?.gender_preference && (
-                            <div className="flex items-center text-sm">
-                              {renderGenderIcon(entry.preferences.gender_preference)}
-                              Prefers {entry.preferences.gender_preference}
-                            </div>
-                          )}
-                          {entry.preferences?.color_preference && (
-                            <div className="text-sm">
-                              Color: {entry.preferences.color_preference}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(entry.requested_at), 'MMM d, yyyy')}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <span className={`
-                            inline-flex h-2 w-2 rounded-full mr-2
-                            ${entry.status === 'pending' ? 'bg-yellow-500' : ''}
-                            ${entry.status === 'contacted' ? 'bg-blue-500' : ''}
-                            ${entry.status === 'approved' ? 'bg-green-500' : ''}
-                            ${entry.status === 'declined' ? 'bg-red-500' : ''}
-                          `}></span>
-                          <span className="capitalize">{entry.status}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleUpdateStatus(entry, 'contacted')}
-                            disabled={entry.status === 'contacted'}
-                          >
-                            Contact
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleUpdateStatus(entry, 'approved')} 
-                            disabled={entry.status === 'approved'}
-                          >
-                            Approve
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleEditNotes(entry)}
-                          >
-                            Edit
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
+            <>
+              <TabsContent value="all">
+                <WaitlistTable 
+                  entries={waitlistEntries || []}
+                  onUpdateStatus={handleUpdateStatus}
+                  onUpdatePosition={handleUpdatePosition}
+                  onEditEntry={handleEditEntry}
+                />
+              </TabsContent>
+              
+              <TabsContent value="pending">
+                <WaitlistTable 
+                  entries={(waitlistEntries || []).filter(entry => entry.status === 'pending')}
+                  onUpdateStatus={handleUpdateStatus}
+                  onUpdatePosition={handleUpdatePosition}
+                  onEditEntry={handleEditEntry}
+                  showPositionControls={false}
+                />
+              </TabsContent>
+              
+              <TabsContent value="contacted">
+                <WaitlistTable 
+                  entries={(waitlistEntries || []).filter(entry => entry.status === 'contacted')}
+                  onUpdateStatus={handleUpdateStatus}
+                  onUpdatePosition={handleUpdatePosition}
+                  onEditEntry={handleEditEntry}
+                  showPositionControls={false}
+                />
+              </TabsContent>
+              
+              <TabsContent value="approved">
+                <WaitlistTable 
+                  entries={(waitlistEntries || []).filter(entry => entry.status === 'approved')}
+                  onUpdateStatus={handleUpdateStatus}
+                  onUpdatePosition={handleUpdatePosition}
+                  onEditEntry={handleEditEntry}
+                  showPositionControls={false}
+                />
+              </TabsContent>
+            </>
           )}
-          
-          <TabsContent value="pending">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">#</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Preferences</TableHead>
-                  <TableHead>Requested</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {waitlistEntries?.filter(entry => entry.status === 'pending').map((entry, index) => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="font-medium">{entry.position || index + 1}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">
-                        {entry.customers?.first_name} {entry.customers?.last_name}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {entry.customers?.email || "No email"} | {entry.customers?.phone || "No phone"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        {entry.preferences?.gender_preference && (
-                          <div className="flex items-center text-sm">
-                            {renderGenderIcon(entry.preferences.gender_preference)}
-                            Prefers {entry.preferences.gender_preference}
-                          </div>
-                        )}
-                        {entry.preferences?.color_preference && (
-                          <div className="text-sm">
-                            Color: {entry.preferences.color_preference}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(entry.requested_at), 'MMM d, yyyy')}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleUpdateStatus(entry, 'contacted')}
-                        >
-                          Contact
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleEditNotes(entry)}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {waitlistEntries?.filter(entry => entry.status === 'pending').length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                      No pending waitlist entries
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TabsContent>
-          
-          <TabsContent value="contacted">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">#</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Preferences</TableHead>
-                  <TableHead>Contacted On</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {waitlistEntries?.filter(entry => entry.status === 'contacted').map((entry, index) => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="font-medium">{entry.position || index + 1}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">
-                        {entry.customers?.first_name} {entry.customers?.last_name}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {entry.customers?.email || "No email"} | {entry.customers?.phone || "No phone"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        {entry.preferences?.gender_preference && (
-                          <div className="flex items-center text-sm">
-                            {renderGenderIcon(entry.preferences.gender_preference)}
-                            Prefers {entry.preferences.gender_preference}
-                          </div>
-                        )}
-                        {entry.preferences?.color_preference && (
-                          <div className="text-sm">
-                            Color: {entry.preferences.color_preference}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {entry.contacted_at ? format(new Date(entry.contacted_at), 'MMM d, yyyy') : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleUpdateStatus(entry, 'approved')}
-                        >
-                          Approve
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleUpdateStatus(entry, 'declined')}
-                        >
-                          Decline
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleEditNotes(entry)}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {waitlistEntries?.filter(entry => entry.status === 'contacted').length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                      No contacted waitlist entries
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TabsContent>
-          
-          <TabsContent value="approved">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">#</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Preferences</TableHead>
-                  <TableHead>Approved</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {waitlistEntries?.filter(entry => entry.status === 'approved').map((entry, index) => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="font-medium">{entry.position || index + 1}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">
-                        {entry.customers?.first_name} {entry.customers?.last_name}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {entry.customers?.email || "No email"} | {entry.customers?.phone || "No phone"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        {entry.preferences?.gender_preference && (
-                          <div className="flex items-center text-sm">
-                            {renderGenderIcon(entry.preferences.gender_preference)}
-                            Prefers {entry.preferences.gender_preference}
-                          </div>
-                        )}
-                        {entry.preferences?.color_preference && (
-                          <div className="text-sm">
-                            Color: {entry.preferences.color_preference}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {entry.contacted_at ? format(new Date(entry.contacted_at), 'MMM d, yyyy') : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleEditNotes(entry)}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {waitlistEntries?.filter(entry => entry.status === 'approved').length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                      No approved waitlist entries
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TabsContent>
         </Tabs>
       </CardContent>
       

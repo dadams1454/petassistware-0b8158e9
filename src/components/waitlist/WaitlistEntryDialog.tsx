@@ -157,14 +157,15 @@ const WaitlistEntryDialog: React.FC<WaitlistEntryDialogProps> = ({
         });
       } else {
         // Check if this customer is already on the waitlist for this litter
-        const { data: existingEntry } = await supabase
+        const { data: existingEntries, error: checkError } = await supabase
           .from('waitlist')
           .select('id')
           .eq('customer_id', values.customer_id)
-          .eq('litter_id', litterId)
-          .single();
+          .eq('litter_id', litterId);
         
-        if (existingEntry) {
+        if (checkError) throw checkError;
+        
+        if (existingEntries && existingEntries.length > 0) {
           toast({
             title: 'Customer already on waitlist',
             description: `${selectedCustomer?.first_name} ${selectedCustomer?.last_name} is already on the waitlist for this litter.`,
@@ -175,7 +176,7 @@ const WaitlistEntryDialog: React.FC<WaitlistEntryDialogProps> = ({
         }
         
         // Insert new entry
-        const { error } = await supabase
+        const { error: insertError } = await supabase
           .from('waitlist')
           .insert({
             customer_id: values.customer_id,
@@ -185,7 +186,7 @@ const WaitlistEntryDialog: React.FC<WaitlistEntryDialogProps> = ({
             status: 'pending',
           });
         
-        if (error) throw error;
+        if (insertError) throw insertError;
         
         toast({
           title: 'Added to waitlist',

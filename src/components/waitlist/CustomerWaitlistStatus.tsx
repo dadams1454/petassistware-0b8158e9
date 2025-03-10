@@ -39,7 +39,7 @@ const CustomerWaitlistStatus: React.FC<CustomerWaitlistStatusProps> = ({ custome
         .order('requested_at', { ascending: false });
       
       if (error) throw error;
-      return data as WaitlistEntry[];
+      return data as unknown as WaitlistEntry[];
     }
   });
 

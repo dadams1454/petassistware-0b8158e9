@@ -46,14 +46,6 @@ const LitterDetail = () => {
     });
   };
 
-  const handleAddPuppySuccess = async () => {
-    await refetch();
-    toast({
-      title: "Success!",
-      description: "Puppy added successfully.",
-    });
-  };
-
   if (isLoading) {
     return (
       <MainLayout>
@@ -82,12 +74,20 @@ const LitterDetail = () => {
       <div className="container mx-auto py-6 space-y-6">
         <LitterHeader 
           litter={litter} 
+          sire={litter.sire}
+          dam={litter.dam}
           onEditClick={() => setIsEditDialogOpen(true)} 
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <LitterInfo litter={litter} />
-          <LitterTabs litter={litter} onRefresh={refetch} />
+          <div className="lg:col-span-2">
+            <LitterTabs 
+              litterId={litter.id} 
+              litterName={litter.litter_name} 
+              dogBreed={litter.sire?.breed || litter.dam?.breed} 
+            />
+          </div>
         </div>
       </div>
 

@@ -645,6 +645,57 @@ export type Database = {
           },
         ]
       }
+      waitlist: {
+        Row: {
+          contacted_at: string | null
+          customer_id: string
+          id: string
+          litter_id: string
+          notes: string | null
+          position: number | null
+          preferences: Json | null
+          requested_at: string
+          status: string
+        }
+        Insert: {
+          contacted_at?: string | null
+          customer_id: string
+          id?: string
+          litter_id: string
+          notes?: string | null
+          position?: number | null
+          preferences?: Json | null
+          requested_at?: string
+          status?: string
+        }
+        Update: {
+          contacted_at?: string | null
+          customer_id?: string
+          id?: string
+          litter_id?: string
+          notes?: string | null
+          position?: number | null
+          preferences?: Json | null
+          requested_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_litter_id_fkey"
+            columns: ["litter_id"]
+            isOneToOne: false
+            referencedRelation: "litters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

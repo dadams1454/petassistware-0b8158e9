@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Edit } from 'lucide-react';
 
 interface LitterHeaderProps {
   litter: {
@@ -25,9 +27,10 @@ interface LitterHeaderProps {
   dam?: {
     name: string;
   } | null;
+  onEditClick?: () => void;
 }
 
-const LitterHeader: React.FC<LitterHeaderProps> = ({ litter, sire, dam }) => {
+const LitterHeader: React.FC<LitterHeaderProps> = ({ litter, sire, dam, onEditClick }) => {
   // Fetch waitlist count for this litter
   const { data: waitlistCount } = useQuery({
     queryKey: ['waitlist-count', litter.id],
@@ -74,24 +77,33 @@ const LitterHeader: React.FC<LitterHeaderProps> = ({ litter, sire, dam }) => {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-2 items-start">
-            <Badge variant="outline" className="text-sm px-3 py-1">
-              {litter.puppy_count || 0} Puppies
-            </Badge>
-            {litter.male_count !== null && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-800 hover:bg-blue-100 border-blue-200 text-sm px-3 py-1">
-                {litter.male_count} Males
+          <div className="flex items-start gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="text-sm px-3 py-1">
+                {litter.puppy_count || 0} Puppies
               </Badge>
-            )}
-            {litter.female_count !== null && (
-              <Badge variant="outline" className="bg-pink-50 text-pink-800 hover:bg-pink-100 border-pink-200 text-sm px-3 py-1">
-                {litter.female_count} Females
-              </Badge>
-            )}
-            {waitlistCount !== undefined && waitlistCount > 0 && (
-              <Badge variant="outline" className="bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-200 text-sm px-3 py-1">
-                {waitlistCount} on Waitlist
-              </Badge>
+              {litter.male_count !== null && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-800 hover:bg-blue-100 border-blue-200 text-sm px-3 py-1">
+                  {litter.male_count} Males
+                </Badge>
+              )}
+              {litter.female_count !== null && (
+                <Badge variant="outline" className="bg-pink-50 text-pink-800 hover:bg-pink-100 border-pink-200 text-sm px-3 py-1">
+                  {litter.female_count} Females
+                </Badge>
+              )}
+              {waitlistCount !== undefined && waitlistCount > 0 && (
+                <Badge variant="outline" className="bg-amber-50 text-amber-800 hover:bg-amber-100 border-amber-200 text-sm px-3 py-1">
+                  {waitlistCount} on Waitlist
+                </Badge>
+              )}
+            </div>
+            
+            {onEditClick && (
+              <Button variant="outline" size="sm" onClick={onEditClick}>
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
             )}
           </div>
         </div>
