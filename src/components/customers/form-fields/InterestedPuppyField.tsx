@@ -24,23 +24,30 @@ type Puppy = Tables<'puppies'>;
 const InterestedPuppyField = () => {
   const form = useFormContext();
   const [puppies, setPuppies] = useState<Puppy[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
     const fetchPuppies = async () => {
-      const { data, error } = await supabase
-        .from('puppies')
-        .select('*')
-        .is('status', null)
-        .order('name');
-      
-      if (!error && data) {
-        setPuppies(data);
-      } else if (error) {
+      setIsLoading(true);
+      try {
+        // Fetch puppies that don't have a status (available puppies)
+        const { data, error } = await supabase
+          .from('puppies')
+          .select('*')
+          .is('status', null)
+          .order('name');
+        
+        if (error) throw error;
+        setPuppies(data || []);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         toast({
           title: "Error fetching puppies",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -57,6 +64,7 @@ const InterestedPuppyField = () => {
           <Select
             onValueChange={field.onChange}
             defaultValue={field.value || "none"}
+            disabled={isLoading}
           >
             <FormControl>
               <SelectTrigger>
@@ -65,13 +73,17 @@ const InterestedPuppyField = () => {
             </FormControl>
             <SelectContent>
               <SelectItem value="none">No puppy selected</SelectItem>
-              {puppies.map((puppy) => (
-                <SelectItem key={puppy.id} value={puppy.id}>
-                  {puppy.name || `Puppy ID: ${puppy.id.substring(0, 8)}`} 
-                  {puppy.color ? ` (${puppy.color})` : ''}
-                  {puppy.gender ? ` - ${puppy.gender}` : ''}
-                </SelectItem>
-              ))}
+              {puppies.length === 0 && !isLoading ? (
+                <SelectItem value="none" disabled>No available puppies found</SelectItem>
+              ) : (
+                puppies.map((puppy) => (
+                  <SelectItem key={puppy.id} value={puppy.id}>
+                    {puppy.name || `Puppy ID: ${puppy.id.substring(0, 8)}`} 
+                    {puppy.color ? ` (${puppy.color})` : ''}
+                    {puppy.gender ? ` - ${puppy.gender}` : ''}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           <FormMessage />

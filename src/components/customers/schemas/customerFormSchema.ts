@@ -10,7 +10,7 @@ export const customerFormSchema = z.object({
   notes: z.string().optional(),
   customer_type: z.enum(["new", "returning"]).default("new"),
   customer_since: z.string().optional(),
-  interested_puppy_id: z.string().optional(),
+  interested_puppy_id: z.string().default("none"),
 });
 
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;

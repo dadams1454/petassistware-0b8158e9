@@ -51,6 +51,10 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
         interested_puppy_id: interested_puppy_id === 'none' ? null : interested_puppy_id,
       };
       
+      // Log values to help with debugging
+      console.log("Form values:", values);
+      console.log("Processed metadata:", metadata);
+      
       // Ensure required fields are non-optional when sending to the database
       const customerData = {
         ...otherFields,
@@ -95,6 +99,7 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
         description: errorMessage,
         variant: "destructive",
       });
+      console.error("Customer form error:", error);
     } finally {
       setIsLoading(false);
     }
