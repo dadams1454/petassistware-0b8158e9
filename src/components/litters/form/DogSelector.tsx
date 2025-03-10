@@ -16,7 +16,7 @@ interface DogSelectorProps {
   form: UseFormReturn<any>;
   name: string;
   label: string;
-  filterGender?: 'male' | 'female';
+  filterGender?: 'Male' | 'Female';
 }
 
 const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGender }) => {
@@ -33,10 +33,18 @@ const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGend
       
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching dogs:', error);
+        throw error;
+      }
+      
       return data || [];
     }
   });
+
+  // For debugging
+  console.log('DogSelector - Available dogs:', dogs);
+  console.log('DogSelector - Current value:', form.getValues(name));
 
   return (
     <FormField
@@ -47,7 +55,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGend
           <FormLabel>{label}</FormLabel>
           <Select 
             onValueChange={field.onChange} 
-            value={field.value ? field.value.toString() : "none"}
+            value={field.value || "none"}
             disabled={isLoading}
           >
             <FormControl>

@@ -52,14 +52,17 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
   const handleSubmit = async (data: LitterFormData) => {
     setIsSubmitting(true);
     try {
-      // Process the data to handle "none" values
+      // Debug logging
+      console.log('Submitting form with data:', data);
+      
+      // Process the data to handle null values
       const processedData = {
         ...data,
-        dam_id: data.dam_id === "none" ? null : data.dam_id,
-        sire_id: data.sire_id === "none" ? null : data.sire_id,
         birth_date: data.birth_date.toISOString().split('T')[0],
         expected_go_home_date: data.expected_go_home_date.toISOString().split('T')[0]
       };
+
+      console.log('Processed data for submission:', processedData);
 
       if (initialData) {
         // Update existing litter
@@ -141,14 +144,14 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
             form={form} 
             name="dam_id" 
             label="Dam (Mother)" 
-            filterGender="female" 
+            filterGender="Female" 
           />
           
           <DogSelector 
             form={form} 
             name="sire_id" 
             label="Sire (Father)" 
-            filterGender="male" 
+            filterGender="Male" 
           />
         </div>
 
