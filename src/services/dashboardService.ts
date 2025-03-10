@@ -40,57 +40,46 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // For dogs count - use count() to avoid type inference issues
-    const dogsResult = await supabase
+    // For dogs count - using a simpler approach to avoid type inference issues
+    const { count: dogsCount } = await supabase
       .from('dogs')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: false })
       .eq('owner_id', user.id);
     
-    if (dogsResult.error) throw dogsResult.error;
-    const dogsCount = dogsResult.count || 0;
-
-    // For litters count - use count() to avoid type inference issues
-    const littersResult = await supabase
+    // For litters count - using a simpler approach to avoid type inference issues
+    const { count: littersCount } = await supabase
       .from('litters')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: false })
       .eq('breeder_id', user.id);
     
-    if (littersResult.error) throw littersResult.error;
-    const littersCount = littersResult.count || 0;
-
     // For reservations count
-    const reservationsResult = await supabase
+    const { count: reservationsCount } = await supabase
       .from('reservations')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: false })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
-    if (reservationsResult.error) throw reservationsResult.error;
-    const reservationsCount = reservationsResult.count || 0;
-
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // Only select the amount column, use explicit typing
-    const { data, error } = await supabase
+    // Using a cleaner approach to get transaction data
+    const { data: transactions } = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
     
-    if (error) throw error;
-    
-    // Calculate revenue with explicit typing and safe fallbacks
-    const transactions = (data || []) as TransactionAmount[];
-    const revenue = transactions.reduce((sum, transaction) => 
-      sum + Number(transaction.amount), 0);
+    // Safely calculate revenue with explicit typing
+    const revenue = Array.isArray(transactions) 
+      ? transactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0)
+      : 0;
 
     return {
-      dogsCount,
-      littersCount,
-      reservationsCount,
+      dogsCount: dogsCount || 0,
+      littersCount: littersCount || 0,
+      reservationsCount: reservationsCount || 0,
       revenue
     };
   } catch (error) {
