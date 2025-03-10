@@ -27,15 +27,13 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Puppy</DialogTitle>
+          <DialogTitle>{puppy ? 'Edit Puppy' : 'Add New Puppy'}</DialogTitle>
         </DialogHeader>
-        {puppy && (
-          <PuppyForm 
-            initialData={puppy} 
-            litterId={litterId}
-            onSuccess={onSuccess} 
-          />
-        )}
+        <PuppyForm 
+          initialData={puppy} 
+          litterId={litterId}
+          onSuccess={onSuccess} 
+        />
       </DialogContent>
     </Dialog>
   );
