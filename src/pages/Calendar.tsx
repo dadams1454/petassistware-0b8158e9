@@ -2,30 +2,17 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import MainLayout from '@/layouts/MainLayout';
-import DashboardCard from '@/components/dashboard/DashboardCard';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Calendar as CalendarIcon, Filter, Plus, Repeat } from 'lucide-react';
-import EventForm from '@/components/events/EventForm';
-import EventDetails from '@/components/events/EventDetails';
+import { Plus } from 'lucide-react';
 import { fetchEvents, createEvent, updateEvent, deleteEvent } from '@/services/eventService';
 import { format } from 'date-fns';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+
+// Import the new components
+import CalendarSidebar from '@/components/calendar/CalendarSidebar';
+import EventList from '@/components/calendar/EventList';
+import EventTypeFilters from '@/components/calendar/EventTypeFilters';
+import EventDialog from '@/components/calendar/EventDialog';
 
 export type Event = {
   id: string;
@@ -199,87 +186,20 @@ const CalendarPage = () => {
     setActiveFilters([]);
   };
 
-  // Function to get color styling for an event type
-  const getEventTypeStyle = (eventType: string) => {
-    return EVENT_COLORS[eventType] || EVENT_COLORS['Other'];
-  };
-
-  // Format recurrence pattern for display
-  const formatRecurrencePattern = (pattern: string) => {
-    const patterns: Record<string, string> = {
-      'daily': 'Daily',
-      'weekly': 'Weekly',
-      'biweekly': 'Every two weeks',
-      'monthly': 'Monthly',
-      'quarterly': 'Every three months',
-      'yearly': 'Yearly'
-    };
-    return patterns[pattern] || pattern;
-  };
-
   return (
     <MainLayout>
       <div className="container py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Event Calendar</h1>
           <div className="flex gap-2">
-            <Popover open={filterMenuOpen} onOpenChange={setFilterMenuOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Filter size={16} />
-                  Filter
-                  {activeFilters.length < EVENT_TYPES.length && (
-                    <Badge variant="secondary" className="ml-1">
-                      {activeFilters.length}
-                    </Badge>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-4" align="end">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Filter By Event Type</h4>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-7 text-xs px-2"
-                        onClick={selectAllFilters}
-                      >
-                        Select All
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-7 text-xs px-2"
-                        onClick={clearAllFilters}
-                      >
-                        Clear All
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-3">
-                    {EVENT_TYPES.map(eventType => {
-                      const { bg, text } = getEventTypeStyle(eventType);
-                      return (
-                        <div key={eventType} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`filter-${eventType}`}
-                            checked={activeFilters.includes(eventType)}
-                            onCheckedChange={() => toggleFilter(eventType)}
-                          />
-                          <Label htmlFor={`filter-${eventType}`} className="flex items-center gap-2">
-                            <span className={`inline-block px-2 py-1 text-xs rounded-full ${bg} ${text}`}>
-                              {eventType}
-                            </span>
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <EventTypeFilters
+              activeFilters={activeFilters}
+              toggleFilter={toggleFilter}
+              selectAllFilters={selectAllFilters}
+              clearAllFilters={clearAllFilters}
+              filterMenuOpen={filterMenuOpen}
+              setFilterMenuOpen={setFilterMenuOpen}
+            />
             <Button 
               onClick={handleCreateEvent} 
               className="flex items-center gap-2"
@@ -291,132 +211,32 @@ const CalendarPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <DashboardCard className="md:col-span-1" noPadding={false}>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="w-full pointer-events-auto"
-              modifiers={{
-                hasEvent: (date) => 
-                  eventDates.some(eventDate => 
-                    eventDate.getDate() === date.getDate() && 
-                    eventDate.getMonth() === date.getMonth() && 
-                    eventDate.getFullYear() === date.getFullYear()
-                  )
-              }}
-              modifiersStyles={{
-                hasEvent: {
-                  fontWeight: 'bold',
-                  backgroundColor: 'rgb(243 244 246)',
-                  color: 'rgb(79 70 229)'
-                }
-              }}
-            />
-          </DashboardCard>
+          <CalendarSidebar 
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            eventDates={eventDates}
+          />
 
-          <DashboardCard 
-            className="md:col-span-2"
-            title={selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'No date selected'}
-            icon={<CalendarIcon size={18} />}
-          >
-            {activeFilters.length === 0 ? (
-              <div className="py-8 text-center text-slate-500">
-                No event types selected. Use the filter to display events.
-              </div>
-            ) : isLoading ? (
-              <div className="py-4 text-center">Loading events...</div>
-            ) : eventsOnSelectedDate.length > 0 ? (
-              <div className="space-y-3">
-                {eventsOnSelectedDate.map(event => {
-                  const { bg, text } = getEventTypeStyle(event.event_type);
-                  return (
-                    <div 
-                      key={event.id}
-                      className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
-                      onClick={() => handleViewEvent(event)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{event.title}</h3>
-                            {event.is_recurring && (
-                              <Repeat size={16} className="text-slate-400" aria-label="Recurring Event" />
-                            )}
-                          </div>
-                          {event.description && (
-                            <p className="text-sm text-slate-600 mt-1">{event.description}</p>
-                          )}
-                          {event.is_recurring && (
-                            <p className="text-xs text-slate-500 mt-1">
-                              Recurs: {formatRecurrencePattern(event.recurrence_pattern || 'none')}
-                            </p>
-                          )}
-                        </div>
-                        <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                          event.status === 'upcoming' 
-                            ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
-                            : event.status === 'completed'
-                              ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                              : event.status === 'cancelled'
-                                ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                        }`}>
-                          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex items-center">
-                        <span className={`inline-block px-2 py-1 text-xs rounded-full ${bg} ${text}`}>
-                          {event.event_type}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="py-8 text-center text-slate-500">
-                No events scheduled for this day
-              </div>
-            )}
-          </DashboardCard>
+          <EventList
+            selectedDate={selectedDate}
+            eventsOnSelectedDate={eventsOnSelectedDate}
+            activeFilters={activeFilters}
+            isLoading={isLoading}
+            onEventClick={handleViewEvent}
+          />
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>
-                {isCreating 
-                  ? (selectedEvent ? 'Edit Event' : 'Create New Event') 
-                  : 'Event Details'}
-              </DialogTitle>
-            </DialogHeader>
-            
-            {isCreating ? (
-              <EventForm 
-                onSubmit={handleSaveEvent} 
-                initialData={selectedEvent || undefined}
-                defaultDate={selectedDate}
-              />
-            ) : (
-              selectedEvent && (
-                <EventDetails 
-                  event={selectedEvent} 
-                  onEdit={handleEditEvent}
-                  onDelete={handleDeleteEvent}
-                />
-              )
-            )}
-            
-            {!isCreating && (
-              <DialogFooter>
-                <Button variant="outline" onClick={closeDialog}>
-                  Close
-                </Button>
-              </DialogFooter>
-            )}
-          </DialogContent>
-        </Dialog>
+        <EventDialog
+          dialogOpen={dialogOpen}
+          setDialogOpen={setDialogOpen}
+          isCreating={isCreating}
+          selectedEvent={selectedEvent}
+          selectedDate={selectedDate}
+          onSave={handleSaveEvent}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
+          onClose={closeDialog}
+        />
       </div>
     </MainLayout>
   );
