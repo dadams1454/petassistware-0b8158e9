@@ -3,14 +3,18 @@ import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { EVENT_TYPES } from '@/pages/Calendar';
-import { EventFormData } from './types';
+import { EventFormData, BREEDING_EVENT_TYPES } from './types';
 
 interface EventTypeSelectorProps {
   form: UseFormReturn<EventFormData>;
+  // If you want to use external event types instead of the default ones:
+  eventTypes?: string[];
 }
 
-const EventTypeSelector: React.FC<EventTypeSelectorProps> = ({ form }) => {
+const EventTypeSelector: React.FC<EventTypeSelectorProps> = ({ 
+  form, 
+  eventTypes = BREEDING_EVENT_TYPES 
+}) => {
   return (
     <FormField
       control={form.control}
@@ -28,7 +32,7 @@ const EventTypeSelector: React.FC<EventTypeSelectorProps> = ({ form }) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {EVENT_TYPES.map(type => (
+              {eventTypes.map(type => (
                 <SelectItem key={type} value={type}>
                   {type}
                 </SelectItem>

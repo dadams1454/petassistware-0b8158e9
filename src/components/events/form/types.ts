@@ -11,6 +11,8 @@ export interface EventFormData {
   is_recurring: boolean;
   recurrence_pattern: string;
   recurrence_end_date: Date | null;
+  associated_dog_id?: string | null; // Optional ID of associated dog
+  associated_litter_id?: string | null; // Optional ID of associated litter
 }
 
 // Helper function to convert form data to the NewEvent type
@@ -25,8 +27,33 @@ export const formatEventData = (data: EventFormData): NewEvent => {
     recurrence_pattern: data.recurrence_pattern,
     recurrence_end_date: data.recurrence_end_date 
       ? data.recurrence_end_date.toISOString().split('T')[0]
-      : null
+      : null,
+    // Only include these fields if they have values
+    ...(data.associated_dog_id && { associated_dog_id: data.associated_dog_id }),
+    ...(data.associated_litter_id && { associated_litter_id: data.associated_litter_id })
   };
   
   return formattedData;
 };
+
+// Breeding-specific event types
+export const BREEDING_EVENT_TYPES = [
+  'Heat Cycle',
+  'Breeding Date',
+  'Pregnancy Confirmation',
+  'Whelping Due Date',
+  'Whelping Day',
+  'Puppy Checkup',
+  'Vaccination',
+  'Deworming',
+  'Microchipping',
+  'AKC Registration',
+  'Puppy Selection',
+  'Puppy Go Home Day',
+  'Health Testing',
+  'Grooming',
+  'Show/Competition',
+  'Veterinary Appointment',
+  'Training Session',
+  'Other'
+];

@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import DashboardCard from '@/components/dashboard/DashboardCard';
 import StatCard from '@/components/dashboard/StatCard';
@@ -10,7 +11,8 @@ import BlurBackground from '@/components/ui/blur-background';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   Dog, Users, Calendar, PawPrint, DollarSign, 
-  PlusCircle, BarChart3, ChevronRight, File
+  PlusCircle, BarChart3, ChevronRight, File,
+  UtensilsCrossed
 } from 'lucide-react';
 import { 
   fetchDashboardStats, 
@@ -23,6 +25,7 @@ import {
 
 const Dashboard: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     dogCount: 0,
@@ -62,6 +65,43 @@ const Dashboard: React.FC = () => {
 
     loadDashboardData();
   }, [toast]);
+
+  // Quick action handlers
+  const handleNewLitter = () => {
+    // Navigate to the litters page with a query param to open the add dialog
+    navigate('/litters?action=add');
+    toast({
+      title: "New Litter",
+      description: "Redirecting to create a new litter...",
+    });
+  };
+
+  const handleAddDog = () => {
+    // Navigate to dogs page with a query param to open the add dialog
+    navigate('/dogs?action=add');
+    toast({
+      title: "Add Dog",
+      description: "Redirecting to add a new dog...",
+    });
+  };
+
+  const handleCreateContract = () => {
+    // Navigate to documents page with a query param to open the contract creator
+    navigate('/documents?action=create-contract');
+    toast({
+      title: "Create Contract",
+      description: "Redirecting to contract creation...",
+    });
+  };
+
+  const handleCreateEvent = () => {
+    // Navigate to calendar page with a query param to create an event
+    navigate('/calendar?action=create');
+    toast({
+      title: "Create Event",
+      description: "Redirecting to create a new event...",
+    });
+  };
 
   // Mock activities if none are found in the database
   useEffect(() => {
@@ -185,6 +225,7 @@ const Dashboard: React.FC = () => {
               variant="primary" 
               size="sm" 
               icon={<PlusCircle size={16} />}
+              onClick={handleNewLitter}
             >
               New Litter
             </CustomButton>
@@ -192,6 +233,7 @@ const Dashboard: React.FC = () => {
               variant="outline" 
               size="sm" 
               icon={<PlusCircle size={16} />}
+              onClick={handleAddDog}
             >
               Add Dog
             </CustomButton>
@@ -199,8 +241,17 @@ const Dashboard: React.FC = () => {
               variant="outline" 
               size="sm" 
               icon={<File size={16} />}
+              onClick={handleCreateContract}
             >
               Create Contract
+            </CustomButton>
+            <CustomButton 
+              variant="outline" 
+              size="sm" 
+              icon={<Calendar size={16} />}
+              onClick={handleCreateEvent}
+            >
+              Add Event
             </CustomButton>
           </div>
         </div>
