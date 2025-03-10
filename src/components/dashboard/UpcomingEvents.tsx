@@ -3,6 +3,7 @@ import React from 'react';
 import { UpcomingEvent } from '@/services/dashboardService';
 import { CustomButton } from '@/components/ui/custom-button';
 import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface UpcomingEventsProps {
   events: UpcomingEvent[];
@@ -67,15 +68,17 @@ const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, isLoading = fal
       ))}
       
       <div className="mt-4 text-center">
-        <CustomButton 
-          variant="ghost" 
-          size="sm" 
-          className="text-primary"
-          icon={<ChevronRight size={16} />}
-          iconPosition="right"
-        >
-          View Calendar
-        </CustomButton>
+        <Link to="/calendar">
+          <CustomButton 
+            variant="ghost" 
+            size="sm" 
+            className="text-primary"
+            icon={<ChevronRight size={16} />}
+            iconPosition="right"
+          >
+            View Calendar
+          </CustomButton>
+        </Link>
       </div>
     </div>
   );

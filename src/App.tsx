@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Profile from "./pages/Profile";
 import Dogs from "./pages/Dogs";
+import Calendar from "./pages/Calendar";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,11 @@ const App = () => (
             } />
             <Route path="/profile" element={<Profile />} />
             <Route path="/dogs" element={<Dogs />} />
+            <Route path="/calendar" element={
+              <ProtectedRoute>
+                <Calendar />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
