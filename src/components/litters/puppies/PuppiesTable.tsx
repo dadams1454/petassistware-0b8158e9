@@ -1,5 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { ViewIcon, LayoutGrid, LayoutList } from 'lucide-react';
 import PuppyTableView from './table/PuppyTableView';
 import PuppyCardView from './card/PuppyCardView';
 import PuppyFilters from './filters/PuppyFilters';
@@ -15,6 +17,7 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
   onEditPuppy, 
   onDeletePuppy 
 }) => {
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('card');
   const [filters, setFilters] = useState({
     search: '',
     status: [] as string[],
@@ -72,7 +75,7 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
 
   if (puppies.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-8 bg-muted/20 rounded-lg">
         <p className="text-muted-foreground">
           No puppies have been added to this litter yet.
         </p>
@@ -82,37 +85,71 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Filters Section */}
-      <PuppyFilters 
-        filters={filters} 
-        onFilterChange={handleFilterChange}
-        availableColors={availableColors}
-      />
-
-      {/* Results Count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {filteredPuppies.length} of {puppies.length} puppies
+      {/* Top Bar - Filters & View Toggle */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center bg-muted/10 p-4 rounded-lg">
+        {/* Results Count */}
+        <div className="text-sm font-medium">
+          Showing {filteredPuppies.length} of {puppies.length} puppies
+        </div>
+        
+        {/* View Toggle */}
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-muted-foreground mr-2">View:</span>
+          <div className="bg-muted/20 rounded-md p-1 flex">
+            <Button 
+              variant={viewMode === 'card' ? 'secondary' : 'ghost'} 
+              size="sm"
+              onClick={() => setViewMode('card')}
+              className="h-8 px-2"
+            >
+              <LayoutGrid className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Cards</span>
+            </Button>
+            <Button 
+              variant={viewMode === 'table' ? 'secondary' : 'ghost'} 
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="h-8 px-2"
+            >
+              <LayoutList className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Table</span>
+            </Button>
+          </div>
+        </div>
       </div>
-      
-      {/* Desktop View - Table */}
-      <div className="hidden md:block overflow-x-auto rounded-lg border">
-        <PuppyTableView 
-          puppies={filteredPuppies} 
-          onEditPuppy={onEditPuppy} 
-          onDeletePuppy={onDeletePuppy} 
+
+      {/* Filters Section */}
+      <div className="bg-card p-4 rounded-lg border shadow-sm">
+        <PuppyFilters 
+          filters={filters} 
+          onFilterChange={handleFilterChange}
+          availableColors={availableColors}
         />
       </div>
       
-      {/* Mobile View - Cards */}
-      <div className="md:hidden space-y-4">
+      {/* Content Section */}
+      <div className="mt-6">
         {filteredPuppies.length > 0 ? (
-          <PuppyCardView 
-            puppies={filteredPuppies} 
-            onEditPuppy={onEditPuppy} 
-            onDeletePuppy={onDeletePuppy} 
-          />
+          <>
+            {/* Display based on view mode */}
+            {viewMode === 'table' ? (
+              <div className="rounded-lg border overflow-hidden">
+                <PuppyTableView 
+                  puppies={filteredPuppies} 
+                  onEditPuppy={onEditPuppy} 
+                  onDeletePuppy={onDeletePuppy} 
+                />
+              </div>
+            ) : (
+              <PuppyCardView 
+                puppies={filteredPuppies} 
+                onEditPuppy={onEditPuppy} 
+                onDeletePuppy={onDeletePuppy} 
+              />
+            )}
+          </>
         ) : (
-          <div className="text-center py-4 border rounded-md">
+          <div className="text-center py-8 bg-muted/20 rounded-lg border">
             <p className="text-muted-foreground">No puppies match your filters</p>
           </div>
         )}
