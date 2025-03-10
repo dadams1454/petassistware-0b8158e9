@@ -7,10 +7,6 @@ import { CustomButton } from '@/components/ui/custom-button';
 import { supabase } from '@/integrations/supabase/client';
 import TextInput from '@/components/dogs/form/TextInput';
 import SelectInput from '@/components/dogs/form/SelectInput';
-import TextareaInput from '@/components/dogs/form/TextareaInput';
-import DatePicker from '@/components/dogs/form/DatePicker';
-import PhotoUpload from '@/components/dogs/form/PhotoUpload';
-import { toast } from '@/components/ui/use-toast';
 
 interface PuppyFormData {
   name: string | null;
@@ -18,20 +14,12 @@ interface PuppyFormData {
   status: string;
   microchip_number: string | null;
   sale_price: number | null;
-  birth_weight: string | null;  // Changed to string to match database
-  current_weight: string | null;  // Changed to string to match database
-  color: string | null;
-  markings: string | null;
-  notes: string | null;
-  photo_url: string | null;
-  reservation_date: Date | null;
 }
 
 interface PuppyFormProps {
   litterId: string;
   initialData?: Puppy;
   onSuccess: () => void;
-  onCancel?: () => void;
 }
 
 const genderOptions = [
@@ -50,8 +38,7 @@ const statusOptions = [
 const PuppyForm: React.FC<PuppyFormProps> = ({ 
   litterId, 
   initialData, 
-  onSuccess,
-  onCancel
+  onSuccess 
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,63 +49,37 @@ const PuppyForm: React.FC<PuppyFormProps> = ({
       status: initialData?.status || 'Available',
       microchip_number: initialData?.microchip_number || null,
       sale_price: initialData?.sale_price || null,
-      birth_weight: initialData?.birth_weight || null,
-      current_weight: initialData?.current_weight || null,
-      color: initialData?.color || null,
-      markings: initialData?.markings || null,
-      notes: initialData?.notes || null,
-      photo_url: initialData?.photo_url || null,
-      reservation_date: initialData?.reservation_date ? new Date(initialData.reservation_date) : null,
     }
   });
 
   const handleSubmit = async (data: PuppyFormData) => {
     setIsSubmitting(true);
     try {
-      // Process dates
-      const processedData = {
+      const puppyData = {
         ...data,
         litter_id: litterId,
-        reservation_date: data.reservation_date ? data.reservation_date.toISOString().split('T')[0] : null
       };
-
-      console.log('Submitting puppy data:', processedData);
 
       if (initialData) {
         // Update existing puppy
         const { error } = await supabase
           .from('puppies')
-          .update(processedData)
+          .update(puppyData)
           .eq('id', initialData.id);
 
         if (error) throw error;
-        
-        toast({
-          title: "Success",
-          description: "Puppy updated successfully",
-        });
       } else {
         // Create new puppy
         const { error } = await supabase
           .from('puppies')
-          .insert(processedData);
+          .insert(puppyData);
 
         if (error) throw error;
-        
-        toast({
-          title: "Success",
-          description: "Puppy added successfully",
-        });
       }
 
       onSuccess();
     } catch (error) {
       console.error('Error saving puppy:', error);
-      toast({
-        title: "Error",
-        description: "There was a problem saving the puppy",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -160,77 +121,14 @@ const PuppyForm: React.FC<PuppyFormProps> = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextInput 
-            form={form} 
-            name="birth_weight" 
-            label="Birth Weight (oz)" 
-            placeholder="Weight at birth" 
-          />
-          
-          <TextInput 
-            form={form} 
-            name="current_weight" 
-            label="Current Weight (lbs)" 
-            placeholder="Current weight" 
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextInput 
-            form={form} 
-            name="color" 
-            label="Color" 
-            placeholder="Coat color" 
-          />
-          
-          <TextInput 
-            form={form} 
-            name="markings" 
-            label="Markings" 
-            placeholder="Distinctive markings" 
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextInput 
-            form={form} 
-            name="sale_price" 
-            label="Sale Price" 
-            placeholder="Enter sale price" 
-          />
-          
-          <DatePicker 
-            form={form} 
-            name="reservation_date" 
-            label="Reservation Date" 
-          />
-        </div>
-
-        <PhotoUpload 
+        <TextInput 
           form={form} 
-          name="photo_url" 
-          label="Puppy Photo" 
-        />
-
-        <TextareaInput 
-          form={form} 
-          name="notes" 
-          label="Notes" 
-          placeholder="Additional notes about this puppy" 
+          name="sale_price" 
+          label="Sale Price" 
+          placeholder="Enter sale price" 
         />
 
         <div className="flex justify-end space-x-2 pt-4">
-          {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-          )}
           <CustomButton
             type="submit"
             variant="primary"

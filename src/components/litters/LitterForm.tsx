@@ -2,13 +2,15 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import TextInput from '@/components/dogs/form/TextInput';
+import TextareaInput from '@/components/dogs/form/TextareaInput';
+import { CustomButton } from '@/components/ui/custom-button';
+import DogSelector from './form/DogSelector';
+import LitterDatePicker from './form/LitterDatePicker';
 import { toast } from '@/components/ui/use-toast';
-import LitterBasicInfo from './form/LitterBasicInfo';
-import LitterParents from './form/LitterParents';
-import LitterDates from './form/LitterDates';
-import LitterAdditionalInfo from './form/LitterAdditionalInfo';
-import FormActions from './form/FormActions';
+import PhotoUpload from '@/components/dogs/form/PhotoUpload';
 
 interface LitterFormData {
   litter_name: string;
@@ -105,15 +107,101 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <LitterBasicInfo form={form} />
-        <LitterParents form={form} />
-        <LitterDates form={form} />
-        <LitterAdditionalInfo form={form} />
-        <FormActions 
-          isSubmitting={isSubmitting} 
-          onCancel={onCancel} 
-          isEdit={!!initialData} 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TextInput 
+            form={form} 
+            name="litter_name" 
+            label="Litter Name/ID" 
+            placeholder="Enter a name or ID for this litter" 
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextInput 
+              form={form} 
+              name="puppy_count" 
+              label="Total Puppies" 
+              placeholder="Number of puppies" 
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <TextInput 
+                form={form} 
+                name="male_count" 
+                label="Males" 
+                placeholder="Male count" 
+              />
+              <TextInput 
+                form={form} 
+                name="female_count" 
+                label="Females" 
+                placeholder="Female count" 
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <DogSelector 
+            form={form} 
+            name="dam_id" 
+            label="Dam (Mother)" 
+            filterGender="Female" 
+          />
+          
+          <DogSelector 
+            form={form} 
+            name="sire_id" 
+            label="Sire (Father)" 
+            filterGender="Male" 
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <LitterDatePicker 
+            form={form}
+            name="birth_date"
+            label="Birth Date" 
+          />
+          
+          <LitterDatePicker 
+            form={form}
+            name="expected_go_home_date"
+            label="Expected Go-Home Date" 
+          />
+        </div>
+
+        <TextareaInput 
+          form={form} 
+          name="notes" 
+          label="Notes" 
+          placeholder="Enter any notes about this litter" 
         />
+
+        <PhotoUpload 
+          form={form} 
+          name="documents_url" 
+          label="Litter Documents (Health records, pedigrees, etc.)" 
+        />
+
+        <div className="flex justify-end space-x-2 pt-4">
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+          )}
+          <CustomButton
+            type="submit"
+            variant="primary"
+            isLoading={isSubmitting}
+            fullWidth={false}
+          >
+            {initialData ? 'Update Litter' : 'Create Litter'}
+          </CustomButton>
+        </div>
       </form>
     </Form>
   );

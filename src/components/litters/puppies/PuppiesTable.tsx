@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -48,9 +47,7 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
         {puppies.map((puppy) => (
           <TableRow key={puppy.id}>
             <TableCell className="font-medium">
-              <Link to={`/puppies/${puppy.id}`} className="text-blue-600 hover:underline">
-                {puppy.name || `Puppy ${puppy.id.substring(0, 4)}`}
-              </Link>
+              {puppy.name || `Puppy ${puppy.id.substring(0, 4)}`}
             </TableCell>
             <TableCell>{puppy.gender || 'Unknown'}</TableCell>
             <TableCell>
