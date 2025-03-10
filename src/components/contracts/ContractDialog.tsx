@@ -12,12 +12,14 @@ import ContractForm from './ContractForm';
 interface ContractDialogProps {
   trigger: React.ReactNode;
   puppyId?: string;
+  customerId?: string;
   onSuccess?: () => void;
 }
 
 const ContractDialog: React.FC<ContractDialogProps> = ({
   trigger,
   puppyId,
+  customerId,
   onSuccess
 }) => {
   const [open, setOpen] = React.useState(false);
@@ -35,8 +37,9 @@ const ContractDialog: React.FC<ContractDialogProps> = ({
           <DialogTitle>Create New Contract</DialogTitle>
         </DialogHeader>
         <ContractForm
-          puppyId={puppyId || ''}
-          onSubmit={handleSuccess}
+          puppyId={puppyId}
+          customerId={customerId}
+          onSuccess={handleSuccess}
           onCancel={() => setOpen(false)}
         />
       </DialogContent>

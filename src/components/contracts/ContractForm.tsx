@@ -24,17 +24,15 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-export interface ContractFormProps {
+interface ContractFormProps {
   puppyId: string;
   onSubmit: (data: z.infer<typeof formSchema>) => void;
-  onCancel: () => void;
   isLoading?: boolean;
 }
 
 const ContractForm: React.FC<ContractFormProps> = ({
   puppyId,
   onSubmit,
-  onCancel,
   isLoading
 }) => {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -56,7 +54,8 @@ const ContractForm: React.FC<ContractFormProps> = ({
               <FormLabel>Customer</FormLabel>
               <FormControl>
                 <CustomerSelector
-                  form={form}
+                  value={field.value}
+                  onChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
@@ -97,20 +96,16 @@ const ContractForm: React.FC<ContractFormProps> = ({
         />
 
         <div className="flex justify-between items-center pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+          <Button type="submit" disabled={isLoading}>
+            Create Contract
           </Button>
-          <div className="flex gap-2">
-            <Button type="submit" disabled={isLoading}>
-              Create Contract
-            </Button>
-            {form.watch('customer_id') && (
-              <GenerateContractButton 
-                puppyId={puppyId}
-                customerId={form.watch('customer_id')}
-              />
-            )}
-          </div>
+          
+          {form.watch('customer_id') && (
+            <GenerateContractButton 
+              puppyId={puppyId}
+              customerId={form.watch('customer_id')}
+            />
+          )}
         </div>
       </form>
     </Form>
