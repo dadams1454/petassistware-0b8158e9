@@ -56,7 +56,7 @@ const InterestedPuppyField = () => {
           <FormLabel>Interested Puppy</FormLabel>
           <Select
             onValueChange={field.onChange}
-            defaultValue={field.value || ''}
+            defaultValue={field.value || "none"}
           >
             <FormControl>
               <SelectTrigger>
@@ -64,7 +64,7 @@ const InterestedPuppyField = () => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="">No puppy selected</SelectItem>
+              <SelectItem value="none">No puppy selected</SelectItem>
               {puppies.map((puppy) => (
                 <SelectItem key={puppy.id} value={puppy.id}>
                   {puppy.name || `Puppy ID: ${puppy.id.substring(0, 8)}`} 

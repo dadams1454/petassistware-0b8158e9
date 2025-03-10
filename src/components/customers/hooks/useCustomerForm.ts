@@ -34,7 +34,7 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       notes: customer?.notes || '',
       customer_type: customer?.metadata?.customer_type || 'new',
       customer_since: customer?.metadata?.customer_since || '',
-      interested_puppy_id: customer?.metadata?.interested_puppy_id || '',
+      interested_puppy_id: customer?.metadata?.interested_puppy_id || 'none',
     },
   });
 
@@ -48,7 +48,7 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       const metadata = {
         customer_type,
         customer_since: customer_since || new Date().toISOString().split('T')[0],
-        interested_puppy_id: interested_puppy_id || null,
+        interested_puppy_id: interested_puppy_id === 'none' ? null : interested_puppy_id,
       };
       
       // Ensure required fields are non-optional when sending to the database
