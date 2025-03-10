@@ -30,14 +30,15 @@ const ContractDialog: React.FC<ContractDialogProps> = ({
     setIsSubmitting(true);
     try {
       await createContract({
-        contract_date: data.contract_date,
         puppy_id: puppyId,
         customer_id: data.customer_id,
+        contract_date: data.contract_date,
         contract_type: data.contract_type,
         price: data.price,
         notes: data.notes,
         signed: false,
-        document_url: null,
+        // Add the missing properties
+        document_url: null, // This can be null as per the type definition
         // breeder_id will be added by the service function
       });
       

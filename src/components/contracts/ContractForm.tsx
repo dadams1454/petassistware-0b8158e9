@@ -21,7 +21,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Define the form schema
 const formSchema = z.object({
   customer_id: z.string().min(1, "Customer is required"),
   contract_date: z.string().min(1, "Contract date is required"),
@@ -32,20 +31,11 @@ const formSchema = z.object({
   template_id: z.string().optional(),
 });
 
-// Define the type directly from the schema to avoid circular references
-export type ContractFormValues = {
-  customer_id: string;
-  contract_date: string;
-  contract_type: string;
-  price: number;
-  notes?: string;
-  payment_terms?: string;
-  template_id?: string;
-};
+export type ContractFormData = z.infer<typeof formSchema>;
 
 export interface ContractFormProps {
   puppyId: string;
-  onSubmit: (data: ContractFormValues) => void;
+  onSubmit: (data: ContractFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -59,7 +49,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   
-  const form = useForm<ContractFormValues>({
+  const form = useForm<ContractFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       contract_date: new Date().toISOString().split('T')[0],
