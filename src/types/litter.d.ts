@@ -19,6 +19,16 @@ interface Puppy {
   sale_price?: number | null;
   reservation_date?: string | null;
   created_at?: string;
+  
+  // New fields
+  birth_date?: string | null;
+  color?: string | null;
+  birth_weight?: string | null;
+  current_weight?: string | null;
+  deworming_dates?: string | null;
+  vaccination_dates?: string | null;
+  vet_check_dates?: string | null;
+  notes?: string | null;
 }
 
 interface Litter {

@@ -397,40 +397,64 @@ export type Database = {
       }
       puppies: {
         Row: {
+          birth_date: string | null
+          birth_weight: string | null
+          color: string | null
           created_at: string | null
+          current_weight: string | null
+          deworming_dates: string | null
           gender: string | null
           id: string
           litter_id: string | null
           microchip_number: string | null
           name: string | null
+          notes: string | null
           photo_url: string | null
           reservation_date: string | null
           sale_price: number | null
           status: string | null
+          vaccination_dates: string | null
+          vet_check_dates: string | null
         }
         Insert: {
+          birth_date?: string | null
+          birth_weight?: string | null
+          color?: string | null
           created_at?: string | null
+          current_weight?: string | null
+          deworming_dates?: string | null
           gender?: string | null
           id?: string
           litter_id?: string | null
           microchip_number?: string | null
           name?: string | null
+          notes?: string | null
           photo_url?: string | null
           reservation_date?: string | null
           sale_price?: number | null
           status?: string | null
+          vaccination_dates?: string | null
+          vet_check_dates?: string | null
         }
         Update: {
+          birth_date?: string | null
+          birth_weight?: string | null
+          color?: string | null
           created_at?: string | null
+          current_weight?: string | null
+          deworming_dates?: string | null
           gender?: string | null
           id?: string
           litter_id?: string | null
           microchip_number?: string | null
           name?: string | null
+          notes?: string | null
           photo_url?: string | null
           reservation_date?: string | null
           sale_price?: number | null
           status?: string | null
+          vaccination_dates?: string | null
+          vet_check_dates?: string | null
         }
         Relationships: [
           {
