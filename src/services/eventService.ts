@@ -2,6 +2,14 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Event, NewEvent } from '@/pages/Calendar';
 
+// Helper function to validate event status
+const validateEventStatus = (status: string): 'upcoming' | 'planned' | 'completed' | 'cancelled' => {
+  const validStatuses = ['upcoming', 'planned', 'completed', 'cancelled'];
+  return validStatuses.includes(status) 
+    ? status as 'upcoming' | 'planned' | 'completed' | 'cancelled' 
+    : 'planned'; // Default to 'planned' if invalid status
+};
+
 // Function to fetch all events
 export const fetchEvents = async (): Promise<Event[]> => {
   try {
@@ -12,7 +20,17 @@ export const fetchEvents = async (): Promise<Event[]> => {
     
     if (error) throw error;
     
-    return data || [];
+    // Convert database events to application events with validated status
+    const events: Event[] = (data || []).map(event => ({
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      event_date: event.event_date,
+      status: validateEventStatus(event.status),
+      event_type: event.event_type
+    }));
+    
+    return events;
   } catch (error) {
     console.error('Error fetching events:', error);
     return [];
@@ -43,7 +61,17 @@ export const createEvent = async (eventData: NewEvent): Promise<Event> => {
       throw new Error('Failed to create event');
     }
     
-    return data;
+    // Convert database event to application event with validated status
+    const event: Event = {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      event_date: data.event_date,
+      status: validateEventStatus(data.status),
+      event_type: data.event_type
+    };
+    
+    return event;
   } catch (error) {
     console.error('Error creating event:', error);
     throw error;
@@ -72,7 +100,17 @@ export const updateEvent = async (eventData: Event): Promise<Event> => {
       throw new Error('Failed to update event');
     }
     
-    return data;
+    // Convert database event to application event with validated status
+    const event: Event = {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      event_date: data.event_date,
+      status: validateEventStatus(data.status),
+      event_type: data.event_type
+    };
+    
+    return event;
   } catch (error) {
     console.error('Error updating event:', error);
     throw error;
