@@ -87,7 +87,8 @@ const FollowUpManager = () => {
               </TabsContent>
             </>
           )}
-        </CardContent>
+        </Tabs>
+      </CardContent>
       
       <CardFooter className="border-t pt-6 flex justify-between">
         <p className="text-sm text-muted-foreground">
@@ -109,4 +110,3 @@ const FollowUpManager = () => {
 };
 
 export default FollowUpManager;
-
