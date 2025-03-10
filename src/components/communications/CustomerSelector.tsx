@@ -17,18 +17,21 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
+import { Customer } from '../customers/types/customer';
 
 interface CustomerSelectorProps {
-  onCustomerSelected: (customer: any) => void;
-  defaultValue?: string;
+  onCustomerSelected: (customer: Customer) => void;
+  defaultValue?: Customer | null;
+  disabled?: boolean;
 }
 
 const CustomerSelector: React.FC<CustomerSelectorProps> = ({ 
   onCustomerSelected,
-  defaultValue
+  defaultValue,
+  disabled = false
 }) => {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(defaultValue || '');
+  const [value, setValue] = useState<string>(defaultValue?.id || '');
 
   const { data: customers, isLoading } = useQuery({
     queryKey: ['customers-for-selector'],
@@ -39,15 +42,16 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
         .order('last_name', { ascending: true });
       
       if (error) throw error;
-      return data;
+      return data as Customer[];
     }
   });
 
   // If a default value is provided, select that customer initially
   useEffect(() => {
     if (defaultValue && customers) {
-      const selectedCustomer = customers.find(c => c.id === defaultValue);
+      const selectedCustomer = customers.find(c => c.id === defaultValue.id);
       if (selectedCustomer) {
+        setValue(selectedCustomer.id);
         onCustomerSelected(selectedCustomer);
       }
     }
@@ -73,6 +77,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          disabled={disabled}
         >
           {value && customers
             ? customers.find((customer) => customer.id === value)

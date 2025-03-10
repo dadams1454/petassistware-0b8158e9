@@ -1,12 +1,10 @@
 
 import React, { useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -31,75 +29,70 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import CustomerSelector from './CustomerSelector';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
 import { Customer } from '../customers/types/customer';
-
-interface CreateFollowUpDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  customer: Customer | null;
-  onSuccess: () => void;
-}
 
 const followUpFormSchema = z.object({
   customer_id: z.string().min(1, 'Please select a customer'),
-  followup_type: z.enum(['waitlist', 'customer', 'manual']),
+  type: z.enum(['email', 'call', 'text', 'in-person']),
   due_date: z.date(),
-  notes: z.string().min(1, 'Please enter follow-up notes'),
+  notes: z.string().min(1, 'Please enter some notes'),
 });
 
 type FollowUpFormValues = z.infer<typeof followUpFormSchema>;
 
+interface CreateFollowUpDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  customer?: Customer | null;
+  onSuccess: () => void;
+}
+
 const CreateFollowUpDialog: React.FC<CreateFollowUpDialogProps> = ({
   open,
   onOpenChange,
-  customer,
+  customer: initialCustomer,
   onSuccess,
 }) => {
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(customer);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(initialCustomer || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FollowUpFormValues>({
     resolver: zodResolver(followUpFormSchema),
     defaultValues: {
-      customer_id: customer?.id || '',
-      followup_type: 'manual',
-      due_date: new Date(new Date().setDate(new Date().getDate() + 7)),
+      customer_id: initialCustomer?.id || '',
+      type: 'email',
+      due_date: new Date(),
       notes: '',
     },
   });
 
   const handleCustomerSelected = (customer: Customer) => {
-    form.setValue('customer_id', customer.id);
     setSelectedCustomer(customer);
+    form.setValue('customer_id', customer.id);
   };
 
   const onSubmit = async (values: FollowUpFormValues) => {
     setIsSubmitting(true);
     
     try {
-      // In a real implementation, you would save this to a follow_ups table
-      console.log('Creating follow-up:', values);
+      console.log('Follow-up values:', values);
       
-      // For this example, we'll just show a success message
-      setTimeout(() => {
-        toast({
-          title: 'Follow-up created',
-          description: `Follow-up scheduled for ${selectedCustomer?.first_name} ${selectedCustomer?.last_name} on ${format(values.due_date, 'MMM d, yyyy')}.`,
-        });
-        
-        onSuccess();
-        onOpenChange(false);
-        setIsSubmitting(false);
-      }, 1000);
+      // In a real implementation, you would insert into a follow_ups table
+      // For demonstration, just show a toast
+      toast({
+        title: 'Follow-up created',
+        description: `Added follow-up for ${selectedCustomer?.first_name} ${selectedCustomer?.last_name}.`
+      });
+      
+      onSuccess();
+      onOpenChange(false);
     } catch (error) {
       console.error('Error creating follow-up:', error);
       toast({
@@ -107,6 +100,7 @@ const CreateFollowUpDialog: React.FC<CreateFollowUpDialogProps> = ({
         description: 'There was a problem creating the follow-up.',
         variant: 'destructive',
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -132,6 +126,7 @@ const CreateFollowUpDialog: React.FC<CreateFollowUpDialogProps> = ({
                   <CustomerSelector 
                     onCustomerSelected={handleCustomerSelected}
                     defaultValue={selectedCustomer}
+                    disabled={!!initialCustomer}
                   />
                   <FormMessage />
                 </FormItem>
@@ -140,20 +135,24 @@ const CreateFollowUpDialog: React.FC<CreateFollowUpDialogProps> = ({
             
             <FormField
               control={form.control}
-              name="followup_type"
+              name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Follow-Up Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
+                        <SelectValue placeholder="Select follow-up type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="waitlist">Waitlist</SelectItem>
-                      <SelectItem value="customer">Customer</SelectItem>
-                      <SelectItem value="manual">Manual</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="call">Phone Call</SelectItem>
+                      <SelectItem value="text">Text Message</SelectItem>
+                      <SelectItem value="in-person">In-Person</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -171,11 +170,8 @@ const CreateFollowUpDialog: React.FC<CreateFollowUpDialogProps> = ({
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
+                          variant="outline"
+                          className="pl-3 text-left font-normal"
                         >
                           {field.value ? (
                             format(field.value, "PPP")
@@ -191,9 +187,6 @@ const CreateFollowUpDialog: React.FC<CreateFollowUpDialogProps> = ({
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) =>
-                          date < new Date(new Date().setDate(new Date().getDate() - 1))
-                        }
                         initialFocus
                       />
                     </PopoverContent>
@@ -211,7 +204,7 @@ const CreateFollowUpDialog: React.FC<CreateFollowUpDialogProps> = ({
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter details about this follow-up..."
+                      placeholder="Add details about the follow-up..."
                       {...field}
                     />
                   </FormControl>
