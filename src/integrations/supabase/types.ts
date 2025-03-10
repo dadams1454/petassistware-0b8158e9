@@ -217,6 +217,7 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          metadata: Json | null
           notes: string | null
           phone: string | null
         }
@@ -227,6 +228,7 @@ export type Database = {
           first_name: string
           id?: string
           last_name: string
+          metadata?: Json | null
           notes?: string | null
           phone?: string | null
         }
@@ -237,6 +239,7 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
+          metadata?: Json | null
           notes?: string | null
           phone?: string | null
         }

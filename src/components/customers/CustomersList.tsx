@@ -17,7 +17,12 @@ import { Search, Mail, Phone, User } from 'lucide-react';
 import CustomerDialog from './CustomerDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type Customer = Tables<'customers'>;
+type Customer = Tables<'customers'> & {
+  metadata?: {
+    customer_type?: 'new' | 'returning';
+    customer_since?: string;
+  }
+};
 
 interface CustomersListProps {
   customers: Customer[];
@@ -45,13 +50,13 @@ const CustomersList: React.FC<CustomersListProps> = ({
   // Helper to get customer type
   const getCustomerType = (customer: Customer) => {
     if (!customer.metadata) return 'new';
-    return (customer.metadata as any)?.customer_type || 'new';
+    return customer.metadata?.customer_type || 'new';
   };
 
   // Helper to get formatted customer since date
   const getCustomerSince = (customer: Customer) => {
     if (!customer.metadata) return '';
-    const since = (customer.metadata as any)?.customer_since;
+    const since = customer.metadata?.customer_since;
     if (!since) return '';
     
     // Format date if it exists (could enhance this with date-fns)

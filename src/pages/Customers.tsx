@@ -10,7 +10,12 @@ import CustomersList from '@/components/customers/CustomersList';
 import CustomerDialog from '@/components/customers/CustomerDialog';
 import { toast } from '@/components/ui/use-toast';
 
-type Customer = Tables<'customers'>;
+type Customer = Tables<'customers'> & {
+  metadata?: {
+    customer_type?: 'new' | 'returning';
+    customer_since?: string;
+  }
+};
 
 const Customers = () => {
   const { data: customers, isLoading, error, refetch } = useQuery({

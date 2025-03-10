@@ -25,7 +25,12 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
-type Customer = Tables<'customers'>;
+type Customer = Tables<'customers'> & {
+  metadata?: {
+    customer_type?: 'new' | 'returning';
+    customer_since?: string;
+  }
+};
 
 const formSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -60,8 +65,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       phone: customer?.phone || '',
       address: customer?.address || '',
       notes: customer?.notes || '',
-      customer_type: (customer?.metadata as any)?.customer_type || 'new',
-      customer_since: (customer?.metadata as any)?.customer_since || '',
+      customer_type: customer?.metadata?.customer_type || 'new',
+      customer_since: customer?.metadata?.customer_since || '',
     },
   });
 

@@ -10,7 +10,12 @@ import {
 } from '@/components/ui/dialog';
 import CustomerForm from './CustomerForm';
 
-type Customer = Tables<'customers'>;
+type Customer = Tables<'customers'> & {
+  metadata?: {
+    customer_type?: 'new' | 'returning';
+    customer_since?: string;
+  }
+};
 
 interface CustomerDialogProps {
   trigger: React.ReactNode;
