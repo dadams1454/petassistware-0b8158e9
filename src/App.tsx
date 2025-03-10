@@ -15,6 +15,7 @@ import Dogs from "./pages/Dogs";
 import Calendar from "./pages/Calendar";
 import Litters from "./pages/Litters";
 import LitterDetail from "./pages/LitterDetail";
+import AddLitter from "./pages/AddLitter";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,11 @@ const App = () => (
             <Route path="/litters" element={
               <ProtectedRoute>
                 <Litters />
+              </ProtectedRoute>
+            } />
+            <Route path="/litters/new" element={
+              <ProtectedRoute>
+                <AddLitter />
               </ProtectedRoute>
             } />
             <Route path="/litters/:id" element={

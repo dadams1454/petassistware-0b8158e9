@@ -10,9 +10,10 @@ import DashboardCard from '@/components/dashboard/DashboardCard';
 import LittersList from '@/components/litters/LittersList';
 import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Litters = () => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedLitter, setSelectedLitter] = useState<Litter | null>(null);
 
@@ -34,15 +35,6 @@ const Litters = () => {
       return data || [];
     }
   });
-
-  const handleCreateSuccess = async () => {
-    setIsCreateDialogOpen(false);
-    await refetch();
-    toast({
-      title: "Success!",
-      description: "Litter created successfully.",
-    });
-  };
 
   const handleEditSuccess = async () => {
     setIsEditDialogOpen(false);
@@ -69,7 +61,7 @@ const Litters = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Litters</h1>
           <Button 
-            onClick={() => setIsCreateDialogOpen(true)}
+            onClick={() => navigate('/litters/new')}
             className="flex items-center gap-2"
           >
             <PlusCircle className="h-4 w-4" />
@@ -95,16 +87,6 @@ const Litters = () => {
           )}
         </DashboardCard>
       </div>
-
-      {/* Create Litter Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Create New Litter</DialogTitle>
-          </DialogHeader>
-          <LitterForm onSuccess={handleCreateSuccess} />
-        </DialogContent>
-      </Dialog>
 
       {/* Edit Litter Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

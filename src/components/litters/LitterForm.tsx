@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useQuery } from '@tanstack/react-query';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,9 +22,10 @@ interface LitterFormData {
 interface LitterFormProps {
   initialData?: Litter;
   onSuccess: () => void;
+  onCancel?: () => void;
 }
 
-const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess }) => {
+const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<LitterFormData>({
@@ -127,6 +127,16 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess }) => {
         />
 
         <div className="flex justify-end space-x-2 pt-4">
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+          )}
           <CustomButton
             type="submit"
             variant="primary"

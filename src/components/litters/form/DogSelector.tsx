@@ -47,7 +47,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGend
           <FormLabel>{label}</FormLabel>
           <Select 
             onValueChange={field.onChange} 
-            value={field.value ? field.value.toString() : undefined}
+            value={field.value ? field.value.toString() : "none"}
             disabled={isLoading}
           >
             <FormControl>
@@ -56,7 +56,6 @@ const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGend
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {/* Changed from empty string to "none" to avoid error */}
               <SelectItem value="none">None Selected</SelectItem>
               {dogs?.map(dog => (
                 <SelectItem key={dog.id} value={dog.id}>
