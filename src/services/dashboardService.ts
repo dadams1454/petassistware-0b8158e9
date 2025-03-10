@@ -29,41 +29,52 @@ export interface Activity {
   created_at: string;
 }
 
-// Simpler interface for transaction amounts only
-interface TransactionAmount {
-  amount: number;
-}
-
 // Get dashboard statistics
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // For dogs count - using a simpler approach to avoid type inference issues
-    const { count: dogsCount } = await supabase
+    // Using manual count approach to avoid type inference issues
+    let dogsCount = 0;
+    const { data: dogsData } = await supabase
       .from('dogs')
-      .select('*', { count: 'exact', head: false })
+      .select('id')
       .eq('owner_id', user.id);
     
-    // For litters count - using a simpler approach to avoid type inference issues
-    const { count: littersCount } = await supabase
+    if (dogsData) {
+      dogsCount = dogsData.length;
+    }
+    
+    // Manual count for litters
+    let littersCount = 0;
+    const { data: littersData } = await supabase
       .from('litters')
-      .select('*', { count: 'exact', head: false })
+      .select('id')
       .eq('breeder_id', user.id);
     
-    // For reservations count
-    const { count: reservationsCount } = await supabase
+    if (littersData) {
+      littersCount = littersData.length;
+    }
+    
+    // Manual count for reservations
+    let reservationsCount = 0;
+    const { data: reservationsData } = await supabase
       .from('reservations')
-      .select('*', { count: 'exact', head: false })
+      .select('id')
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
+    
+    if (reservationsData) {
+      reservationsCount = reservationsData.length;
+    }
     
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // Using a cleaner approach to get transaction data
+    // Using a simpler approach for transactions
+    let revenue = 0;
     const { data: transactions } = await supabase
       .from('transactions')
       .select('amount')
@@ -71,15 +82,17 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
     
-    // Safely calculate revenue with explicit typing
-    const revenue = Array.isArray(transactions) 
-      ? transactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0)
-      : 0;
+    // Sum transactions manually
+    if (transactions && transactions.length > 0) {
+      revenue = transactions.reduce((sum, tx) => {
+        return sum + (Number(tx.amount) || 0);
+      }, 0);
+    }
 
     return {
-      dogsCount: dogsCount || 0,
-      littersCount: littersCount || 0,
-      reservationsCount: reservationsCount || 0,
+      dogsCount,
+      littersCount,
+      reservationsCount,
       revenue
     };
   } catch (error) {
