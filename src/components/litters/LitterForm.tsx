@@ -10,13 +10,19 @@ import { CustomButton } from '@/components/ui/custom-button';
 import DogSelector from './form/DogSelector';
 import LitterDatePicker from './form/LitterDatePicker';
 import { toast } from '@/components/ui/use-toast';
+import PhotoUpload from '@/components/dogs/form/PhotoUpload';
 
 interface LitterFormData {
+  litter_name: string;
   dam_id: string | null;
   sire_id: string | null;
   birth_date: Date;
+  expected_go_home_date: Date;
   puppy_count: number | null;
+  male_count: number | null;
+  female_count: number | null;
   notes: string | null;
+  documents_url: string | null;
 }
 
 interface LitterFormProps {
@@ -30,11 +36,16 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
 
   const form = useForm<LitterFormData>({
     defaultValues: {
+      litter_name: initialData?.litter_name || '',
       dam_id: initialData?.dam_id || null,
       sire_id: initialData?.sire_id || null,
       birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : new Date(),
+      expected_go_home_date: initialData?.expected_go_home_date ? new Date(initialData.expected_go_home_date) : new Date(Date.now() + 8 * 7 * 24 * 60 * 60 * 1000), // Default to 8 weeks from now
       puppy_count: initialData?.puppy_count || null,
-      notes: initialData?.notes || null
+      male_count: initialData?.male_count || null,
+      female_count: initialData?.female_count || null,
+      notes: initialData?.notes || null,
+      documents_url: initialData?.documents_url || null
     }
   });
 
@@ -46,7 +57,8 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
         ...data,
         dam_id: data.dam_id === "none" ? null : data.dam_id,
         sire_id: data.sire_id === "none" ? null : data.sire_id,
-        birth_date: data.birth_date.toISOString().split('T')[0]
+        birth_date: data.birth_date.toISOString().split('T')[0],
+        expected_go_home_date: data.expected_go_home_date.toISOString().split('T')[0]
       };
 
       if (initialData) {
@@ -93,6 +105,38 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TextInput 
+            form={form} 
+            name="litter_name" 
+            label="Litter Name/ID" 
+            placeholder="Enter a name or ID for this litter" 
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextInput 
+              form={form} 
+              name="puppy_count" 
+              label="Total Puppies" 
+              placeholder="Number of puppies" 
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <TextInput 
+                form={form} 
+                name="male_count" 
+                label="Males" 
+                placeholder="Male count" 
+              />
+              <TextInput 
+                form={form} 
+                name="female_count" 
+                label="Females" 
+                placeholder="Female count" 
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <DogSelector 
             form={form} 
             name="dam_id" 
@@ -109,13 +153,16 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <LitterDatePicker form={form} />
+          <LitterDatePicker 
+            form={form}
+            name="birth_date"
+            label="Birth Date" 
+          />
           
-          <TextInput 
-            form={form} 
-            name="puppy_count" 
-            label="Puppy Count" 
-            placeholder="Enter number of puppies" 
+          <LitterDatePicker 
+            form={form}
+            name="expected_go_home_date"
+            label="Expected Go-Home Date" 
           />
         </div>
 
@@ -124,6 +171,12 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
           name="notes" 
           label="Notes" 
           placeholder="Enter any notes about this litter" 
+        />
+
+        <PhotoUpload 
+          form={form} 
+          name="documents_url" 
+          label="Litter Documents (Health records, pedigrees, etc.)" 
         />
 
         <div className="flex justify-end space-x-2 pt-4">

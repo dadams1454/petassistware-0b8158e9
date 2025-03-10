@@ -14,16 +14,18 @@ import { UseFormReturn } from 'react-hook-form';
 
 interface LitterDatePickerProps {
   form: UseFormReturn<any>;
+  name: string;
+  label: string;
 }
 
-const LitterDatePicker: React.FC<LitterDatePickerProps> = ({ form }) => {
+const LitterDatePicker: React.FC<LitterDatePickerProps> = ({ form, name, label }) => {
   return (
     <FormField
       control={form.control}
-      name="birth_date"
+      name={name}
       render={({ field }) => (
         <FormItem className="flex flex-col">
-          <FormLabel>Birth Date</FormLabel>
+          <FormLabel>{label}</FormLabel>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
@@ -54,8 +56,8 @@ const LitterDatePicker: React.FC<LitterDatePickerProps> = ({ form }) => {
                     : field.value
                 }
                 onSelect={field.onChange}
-                disabled={(date) => date > new Date()}
                 initialFocus
+                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
