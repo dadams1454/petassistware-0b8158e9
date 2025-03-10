@@ -32,7 +32,12 @@ const LitterDatePicker: React.FC<LitterDatePickerProps> = ({ form }) => {
                   className="w-full pl-3 text-left font-normal"
                 >
                   {field.value ? (
-                    format(field.value, 'PPP')
+                    format(
+                      typeof field.value === 'string' 
+                        ? new Date(field.value) 
+                        : field.value, 
+                      'PPP'
+                    )
                   ) : (
                     <span>Pick a date</span>
                   )}
@@ -43,7 +48,11 @@ const LitterDatePicker: React.FC<LitterDatePickerProps> = ({ form }) => {
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={field.value}
+                selected={
+                  typeof field.value === 'string' 
+                    ? new Date(field.value) 
+                    : field.value
+                }
                 onSelect={field.onChange}
                 disabled={(date) => date > new Date()}
                 initialFocus

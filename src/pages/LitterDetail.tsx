@@ -26,12 +26,13 @@ const LitterDetail = () => {
     queryFn: async () => {
       if (!id) throw new Error('Litter ID is required');
       
+      // Specify the explicit foreign key references in the query
       const { data, error } = await supabase
         .from('litters')
         .select(`
           *,
-          dam:dam_id(id, name, breed, photo_url),
-          sire:sire_id(id, name, breed, photo_url),
+          dam:dogs!litters_dam_id_fkey(id, name, breed, photo_url),
+          sire:dogs!litters_sire_id_fkey(id, name, breed, photo_url),
           puppies(*)
         `)
         .eq('id', id)

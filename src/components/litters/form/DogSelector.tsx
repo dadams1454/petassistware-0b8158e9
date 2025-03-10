@@ -47,7 +47,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGend
           <FormLabel>{label}</FormLabel>
           <Select 
             onValueChange={field.onChange} 
-            value={field.value || ""}
+            value={field.value ? field.value.toString() : ""}
             disabled={isLoading}
           >
             <FormControl>
