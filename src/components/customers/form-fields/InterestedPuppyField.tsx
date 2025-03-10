@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { toast } from '@/components/ui/use-toast';
 import { Loader2 } from "lucide-react";
+import PuppyStatusBadge from "@/components/litters/puppies/PuppyStatusBadge";
 
 type Puppy = Tables<'puppies'>;
 
@@ -31,14 +32,32 @@ const InterestedPuppyField = () => {
     const fetchPuppies = async () => {
       setIsLoading(true);
       try {
-        // Fetch available puppies (status is either null or 'Available')
+        // Only fetch puppies with 'Available' status now
         const { data, error } = await supabase
           .from('puppies')
           .select('*')
-          .or('status.is.null,status.eq.Available')
+          .eq('status', 'Available')
           .order('created_at', { ascending: false });
         
         if (error) throw error;
+        
+        // If we have a currently selected puppy that's not in the fetched list,
+        // we need to fetch it separately to include it in the options
+        const currentPuppyId = form.getValues('interested_puppy_id');
+        if (currentPuppyId && currentPuppyId !== 'none' && !data?.find(p => p.id === currentPuppyId)) {
+          const { data: currentPuppy, error: puppyError } = await supabase
+            .from('puppies')
+            .select('*')
+            .eq('id', currentPuppyId)
+            .single();
+          
+          if (!puppyError && currentPuppy) {
+            // Add the currently selected puppy to the options
+            setPuppies([...data, currentPuppy]);
+            return;
+          }
+        }
+        
         setPuppies(data || []);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -53,7 +72,7 @@ const InterestedPuppyField = () => {
     };
     
     fetchPuppies();
-  }, []);
+  }, [form]);
 
   return (
     <FormField
@@ -87,9 +106,10 @@ const InterestedPuppyField = () => {
                 puppies.map((puppy) => (
                   <SelectItem key={puppy.id} value={puppy.id}>
                     <div className="flex flex-col">
-                      <span className="font-medium">
+                      <div className="flex items-center gap-2 font-medium">
                         {puppy.name || `Puppy #${puppy.id.substring(0, 8)}`}
-                      </span>
+                        <PuppyStatusBadge status={puppy.status} />
+                      </div>
                       <span className="text-sm text-muted-foreground">
                         {[
                           puppy.color && `Color: ${puppy.color}`,

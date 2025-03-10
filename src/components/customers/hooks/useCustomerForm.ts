@@ -44,6 +44,9 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       // Extract metadata fields
       const { customer_type, customer_since, interested_puppy_id, ...otherFields } = values;
       
+      // Get previous puppy id from existing customer if updating
+      const previousPuppyId = customer?.metadata?.interested_puppy_id || null;
+      
       // Create metadata object
       const metadata = {
         customer_type,
@@ -67,30 +70,73 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
         metadata,
       };
 
-      if (customer) {
-        // Update existing customer
-        const { error } = await supabase
-          .from('customers')
-          .update(customerData)
-          .eq('id', customer.id);
+      // Determine if the puppy interest changed
+      const puppyInterestChanged = 
+        (previousPuppyId || 'none') !== (interested_puppy_id || 'none');
+
+      // Transaction to update customer and handle puppy status
+      const updateCustomerAndPuppies = async () => {
+        // Step 1: Update or create customer
+        let customerId;
         
-        if (error) throw error;
-        toast({
-          title: "Customer updated",
-          description: `${values.first_name} ${values.last_name} has been updated.`,
-        });
-      } else {
-        // Create new customer
-        const { error } = await supabase
-          .from('customers')
-          .insert(customerData);
-        
-        if (error) throw error;
-        toast({
-          title: "Customer added",
-          description: `${values.first_name} ${values.last_name} has been added.`,
-        });
-      }
+        if (customer) {
+          // Update existing customer
+          const { error } = await supabase
+            .from('customers')
+            .update(customerData)
+            .eq('id', customer.id);
+          
+          if (error) throw error;
+          customerId = customer.id;
+        } else {
+          // Create new customer
+          const { data, error } = await supabase
+            .from('customers')
+            .insert(customerData)
+            .select('id')
+            .single();
+          
+          if (error) throw error;
+          customerId = data.id;
+        }
+
+        // Step 2: Handle puppy status updates if puppy interest changed
+        if (puppyInterestChanged) {
+          // If there was a previous puppy, set it back to Available
+          if (previousPuppyId && previousPuppyId !== 'none') {
+            const { error: resetError } = await supabase
+              .from('puppies')
+              .update({ status: 'Available' })
+              .eq('id', previousPuppyId);
+            
+            if (resetError) console.error("Error resetting previous puppy status:", resetError);
+          }
+          
+          // If a new puppy is selected, set it to Reserved
+          if (interested_puppy_id && interested_puppy_id !== 'none') {
+            const { error: reserveError } = await supabase
+              .from('puppies')
+              .update({ 
+                status: 'Reserved',
+                reservation_date: new Date().toISOString().split('T')[0]
+              })
+              .eq('id', interested_puppy_id);
+            
+            if (reserveError) console.error("Error updating puppy status:", reserveError);
+          }
+        }
+
+        return customerId;
+      };
+      
+      // Execute the transaction logic
+      await updateCustomerAndPuppies();
+
+      toast({
+        title: customer ? "Customer updated" : "Customer added",
+        description: `${values.first_name} ${values.last_name} has been ${customer ? 'updated' : 'added'}.`,
+      });
+      
       onSubmitSuccess();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
