@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
@@ -9,7 +10,7 @@ import Calendar from '@/pages/Calendar';
 import Litters from '@/pages/Litters';
 import AddLitter from '@/pages/AddLitter';
 import LitterDetail from '@/pages/LitterDetail';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import NotFound from '@/pages/NotFound';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import PuppyDetail from '@/pages/PuppyDetail';

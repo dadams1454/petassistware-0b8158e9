@@ -1,109 +1,130 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, CreditCard, CheckCircle, Paw } from 'lucide-react';
-import { format } from 'date-fns';
+import PuppyStatusBadge from './PuppyStatusBadge';
+import { Calendar, Weight, Dog, MessageSquare } from 'lucide-react';
 
 interface PuppyProfileProps {
   puppy: Puppy;
 }
 
 const PuppyProfile: React.FC<PuppyProfileProps> = ({ puppy }) => {
-  return (
-    <Card className="w-full overflow-hidden">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>{puppy.name || 'Unnamed Puppy'}</CardTitle>
-            <CardDescription>
-              {puppy.gender || 'Gender not specified'} • ID: {puppy.id.substring(0, 8)}
-            </CardDescription>
-          </div>
-          <Badge className={getStatusColor(puppy.status || 'Available')}>
-            {puppy.status || 'Available'}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {puppy.photo_url && (
-          <div className="w-full h-48 relative rounded-md overflow-hidden">
-            <img 
-              src={puppy.photo_url} 
-              alt={`Photo of ${puppy.name || 'puppy'}`}
-              className="object-cover w-full h-full"
-            />
-          </div>
-        )}
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ProfileItem 
-            icon={<Paw className="h-4 w-4 text-muted-foreground" />}
-            label="Microchip"
-            value={puppy.microchip_number || 'Not chipped yet'}
-          />
-          
-          {puppy.sale_price && (
-            <ProfileItem 
-              icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
-              label="Sale Price"
-              value={`$${puppy.sale_price}`}
-            />
-          )}
-          
-          {puppy.reservation_date && (
-            <ProfileItem 
-              icon={<CalendarIcon className="h-4 w-4 text-muted-foreground" />}
-              label="Reserved On"
-              value={format(new Date(puppy.reservation_date), 'MMM d, yyyy')}
-            />
-          )}
-          
-          {puppy.birth_weight && (
-            <ProfileItem 
-              icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
-              label="Birth Weight"
-              value={`${puppy.birth_weight} oz`}
-            />
-          )}
-        </div>
-
-        {puppy.notes && (
-          <div className="mt-4">
-            <h4 className="text-sm font-medium mb-1">Notes</h4>
-            <p className="text-sm text-muted-foreground">{puppy.notes}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-const ProfileItem = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) => (
-  <div className="flex items-center gap-2">
-    {icon}
-    <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium">{value}</p>
+  const renderDetailItem = (icon: React.ReactNode, label: string, value: string | React.ReactNode) => (
+    <div className="flex items-start space-x-2 mb-3">
+      <div className="text-primary mt-0.5">{icon}</div>
+      <div>
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="font-medium">{value}</p>
+      </div>
     </div>
-  </div>
-);
+  );
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Available':
-      return 'bg-green-100 text-green-800 hover:bg-green-100';
-    case 'Reserved':
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
-    case 'Sold':
-      return 'bg-purple-100 text-purple-800 hover:bg-purple-100';
-    case 'Retained':
-      return 'bg-amber-100 text-amber-800 hover:bg-amber-100';
-    case 'Deceased':
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
-    default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
-  }
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="col-span-1">
+          <CardHeader className="pb-2">
+            <h3 className="text-lg font-semibold">Basic Information</h3>
+          </CardHeader>
+          <CardContent>
+            {renderDetailItem(
+              <Calendar className="h-4 w-4" />,
+              "Created",
+              formatDate(puppy.created_at)
+            )}
+            
+            {renderDetailItem(
+              <Dog className="h-4 w-4" />,
+              "Gender",
+              <div className="flex items-center">
+                <span className="mr-2">{puppy.gender}</span>
+                {puppy.collar_color && (
+                  <Badge 
+                    style={{ backgroundColor: puppy.collar_color }}
+                    className="text-white"
+                  >
+                    {puppy.collar_color}
+                  </Badge>
+                )}
+              </div>
+            )}
+            
+            {renderDetailItem(
+              <Weight className="h-4 w-4" />,
+              "Birth Weight",
+              puppy.birth_weight ? `${puppy.birth_weight} g` : 'Not recorded'
+            )}
+            
+            {renderDetailItem(
+              <Weight className="h-4 w-4" />,
+              "Current Weight",
+              puppy.current_weight ? `${puppy.current_weight} g` : 'Not recorded'
+            )}
+            
+            {renderDetailItem(
+              <MessageSquare className="h-4 w-4" />,
+              "Notes",
+              puppy.notes ? (
+                <div className="prose prose-sm max-w-none">
+                  <p>{puppy.notes}</p>
+                </div>
+              ) : 'No notes'
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader className="pb-2">
+            <h3 className="text-lg font-semibold">Status & Registration</h3>
+          </CardHeader>
+          <CardContent>
+            {renderDetailItem(
+              <Dog className="h-4 w-4" />,
+              "Status",
+              <PuppyStatusBadge status={puppy.status} />
+            )}
+            
+            {renderDetailItem(
+              <Dog className="h-4 w-4" />,
+              "Microchip",
+              puppy.microchip_number || 'Not microchipped'
+            )}
+            
+            {renderDetailItem(
+              <Dog className="h-4 w-4" />,
+              "AKC #",
+              puppy.akc_number || 'Not registered'
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader className="pb-2">
+            <h3 className="text-lg font-semibold">Appearance</h3>
+          </CardHeader>
+          <CardContent>
+            {renderDetailItem(
+              <Dog className="h-4 w-4" />,
+              "Color",
+              puppy.color || 'Not specified'
+            )}
+            
+            {renderDetailItem(
+              <Dog className="h-4 w-4" />,
+              "Markings",
+              puppy.markings || 'Not specified'
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 };
 
 export default PuppyProfile;
