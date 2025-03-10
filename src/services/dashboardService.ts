@@ -35,33 +35,41 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (!user) throw new Error('User not authenticated');
 
   try {
-    // Simplify queries to avoid type instantiation issues
-    const { count: dogsCount } = await supabase
+    // Use count option directly instead of selecting all records
+    const { count: dogsCount, error: dogsError } = await supabase
       .from('dogs')
       .select('*', { count: 'exact', head: true })
       .eq('owner_id', user.id);
     
-    const { count: littersCount } = await supabase
+    if (dogsError) throw dogsError;
+    
+    const { count: littersCount, error: littersError } = await supabase
       .from('litters')
       .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id);
     
-    const { count: reservationsCount } = await supabase
+    if (littersError) throw littersError;
+    
+    const { count: reservationsCount, error: reservationsError } = await supabase
       .from('reservations')
       .select('*', { count: 'exact', head: true })
       .eq('breeder_id', user.id)
       .eq('status', 'Pending');
     
+    if (reservationsError) throw reservationsError;
+    
     // Get revenue for last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const { data: transactionsData } = await supabase
+    const { data: transactionsData, error: transactionsError } = await supabase
       .from('transactions')
       .select('amount')
       .eq('breeder_id', user.id)
       .eq('transaction_type', 'income')
       .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
+    
+    if (transactionsError) throw transactionsError;
     
     // Calculate revenue safely
     let revenue = 0;
