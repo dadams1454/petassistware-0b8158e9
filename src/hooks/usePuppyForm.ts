@@ -16,44 +16,48 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
 
   const form = useForm<PuppyFormData>({
     defaultValues: {
-      name: initialData?.name || null,
-      gender: initialData?.gender || null,
+      name: initialData?.name || '',
+      gender: initialData?.gender || '',
       status: initialData?.status || 'Available',
-      color: initialData?.color || null,
+      color: initialData?.color || '',
       birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
-      birth_weight: initialData?.birth_weight || null,
-      current_weight: initialData?.current_weight || null,
-      microchip_number: initialData?.microchip_number || null,
+      birth_weight: initialData?.birth_weight || '',
+      current_weight: initialData?.current_weight || '',
+      microchip_number: initialData?.microchip_number || '',
       sale_price: initialData?.sale_price || null,
-      deworming_dates: initialData?.deworming_dates || null,
-      vaccination_dates: initialData?.vaccination_dates || null,
-      vet_check_dates: initialData?.vet_check_dates || null,
-      notes: initialData?.notes || null,
-      photo_url: initialData?.photo_url || null,
+      deworming_dates: initialData?.deworming_dates || '',
+      vaccination_dates: initialData?.vaccination_dates || '',
+      vet_check_dates: initialData?.vet_check_dates || '',
+      notes: initialData?.notes || '',
+      photo_url: initialData?.photo_url || '',
     }
   });
 
   const handleSubmit = async (data: PuppyFormData) => {
     setIsSubmitting(true);
     try {
+      console.log('Submitting puppy data:', data);
+      
       // Clean up the data to remove any fields that don't exist in the database schema
       const puppyData = {
-        name: data.name,
-        gender: data.gender,
+        name: data.name || null,
+        gender: data.gender || null,
         status: data.status,
-        color: data.color,
+        color: data.color || null,
         birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
-        birth_weight: data.birth_weight,
-        current_weight: data.current_weight,
-        microchip_number: data.microchip_number,
+        birth_weight: data.birth_weight || null,
+        current_weight: data.current_weight || null,
+        microchip_number: data.microchip_number || null,
         sale_price: data.sale_price,
-        deworming_dates: data.deworming_dates,
-        vaccination_dates: data.vaccination_dates,
-        vet_check_dates: data.vet_check_dates,
-        notes: data.notes,
-        photo_url: data.photo_url,
+        deworming_dates: data.deworming_dates || null,
+        vaccination_dates: data.vaccination_dates || null,
+        vet_check_dates: data.vet_check_dates || null,
+        notes: data.notes || null,
+        photo_url: data.photo_url || null,
         litter_id: litterId
       };
+
+      console.log('Cleaned puppy data for submission:', puppyData);
 
       if (initialData) {
         // Update existing puppy
