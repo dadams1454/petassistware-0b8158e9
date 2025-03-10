@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -9,11 +10,26 @@ export type Contract = Tables<'contracts'> & {
     email: string | null;
     phone: string | null;
   } | null;
+  puppy?: {
+    id: string;
+    name: string | null;
+    birth_date: string | null;
+    microchip_number: string | null;
+    photo_url: string | null;
+    gender: string | null;
+    color: string | null;
+  } | null;
 };
 
 export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'>;
 
 export const createContract = async (contract: ContractInsert) => {
+  // Add the breeder_id if user is logged in
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    contract.breeder_id = user.id;
+  }
+  
   const { data, error } = await supabase
     .from('contracts')
     .insert(contract)
@@ -33,7 +49,8 @@ export const getContractsByPuppyId = async (puppyId: string) => {
     .from('contracts')
     .select(`
       *,
-      customer:customers(id, first_name, last_name, email, phone)
+      customer:customers(id, first_name, last_name, email, phone),
+      puppy:puppies(id, name, birth_date, microchip_number, photo_url, gender, color)
     `)
     .eq('puppy_id', puppyId);
 
@@ -51,7 +68,7 @@ export const getContractById = async (id: string) => {
     .select(`
       *,
       customer:customers(id, first_name, last_name, email, phone),
-      puppy:puppies(*)
+      puppy:puppies(id, name, birth_date, microchip_number, photo_url, gender, color)
     `)
     .eq('id', id)
     .single();
@@ -62,4 +79,24 @@ export const getContractById = async (id: string) => {
   }
 
   return data as Contract;
+};
+
+export const updateContract = async (id: string, updates: Partial<Tables<'contracts'>>) => {
+  const { data, error } = await supabase
+    .from('contracts')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating contract:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const markContractSigned = async (id: string) => {
+  return updateContract(id, { signed: true });
 };

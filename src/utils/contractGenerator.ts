@@ -10,6 +10,7 @@ export const generateContractHTML = (data: {
   salePrice: number | null;
   contractDate: string;
   microchipNumber: string | null;
+  paymentTerms?: string;
 }) => {
   const {
     breederName,
@@ -20,6 +21,7 @@ export const generateContractHTML = (data: {
     salePrice,
     contractDate,
     microchipNumber,
+    paymentTerms = "Full payment due at pickup",
   } = data;
 
   return `
@@ -42,12 +44,19 @@ export const generateContractHTML = (data: {
       </div>
 
       <div style="margin: 20px 0;">
+        <h2>Payment Terms</h2>
+        <p>${paymentTerms}</p>
+      </div>
+
+      <div style="margin: 20px 0;">
         <h2>Terms and Conditions</h2>
         <ol>
           <li>The Seller guarantees that the puppy is in good health at the time of sale.</li>
           <li>The Buyer agrees to provide proper care, including regular veterinary checkups.</li>
           <li>The Seller provides a health guarantee for genetic defects for 24 months from the date of birth.</li>
           <li>This puppy is being sold as a pet/companion animal.</li>
+          <li>The Buyer agrees to notify the Seller if they can no longer keep the puppy.</li>
+          <li>The Buyer agrees to spay/neuter the puppy by the age of 12 months unless otherwise agreed in writing.</li>
         </ol>
       </div>
 
@@ -75,3 +84,9 @@ export const downloadContract = (html: string, filename: string) => {
   document.body.removeChild(element);
 };
 
+// Generate a PDF version of the contract (future implementation)
+export const generatePdf = async (html: string) => {
+  // This would be implemented with a PDF generation library
+  // For now, we'll just download the HTML
+  return html;
+};
