@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { format, addDays } from 'date-fns';
 import TextInput from '../form/TextInput';
 import DatePicker from '../form/DatePicker';
 import SelectInput from '../form/SelectInput';
@@ -11,6 +12,8 @@ import WeightInput from '../form/WeightInput';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { genderOptions, breedOptions } from '../constants/formOptions';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Calendar } from 'lucide-react';
 
 interface DogFormSectionsProps {
   form: UseFormReturn<any>;
@@ -22,6 +25,10 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
   // Watch the gender to conditionally show breeding fields
   const gender = form.watch('gender');
   const isPregnant = form.watch('is_pregnant');
+  const lastHeatDate = form.watch('last_heat_date');
+
+  // Calculate next heat date (approximately 6 months after last heat)
+  const nextHeatDate = lastHeatDate ? addDays(lastHeatDate, 180) : null;
 
   // Function to handle litter number input
   const handleLitterNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,11 +114,22 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
             <Separator className="mb-4" />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DatePicker
-                form={form}
-                name="last_heat_date"
-                label="Last Heat Date"
-              />
+              <div className="space-y-1">
+                <DatePicker
+                  form={form}
+                  name="last_heat_date"
+                  label="Last Heat Date"
+                />
+                {nextHeatDate && !isPregnant && (
+                  <div className="flex items-center mt-1 text-xs">
+                    <Calendar className="h-3 w-3 mr-1 text-blue-600" />
+                    <span className="text-muted-foreground mr-1">Next heat:</span>
+                    <Badge variant="outline" className="font-normal text-blue-600 bg-blue-50">
+                      {format(nextHeatDate, 'MMM d, yyyy')}
+                    </Badge>
+                  </div>
+                )}
+              </div>
               
               <TextInput
                 form={form}
@@ -128,11 +146,22 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
               />
               
               {isPregnant && (
-                <DatePicker
-                  form={form}
-                  name="tie_date"
-                  label="Tie Date"
-                />
+                <div className="space-y-1">
+                  <DatePicker
+                    form={form}
+                    name="tie_date"
+                    label="Tie Date"
+                  />
+                  {form.watch('tie_date') && (
+                    <div className="flex items-center mt-1 text-xs">
+                      <Calendar className="h-3 w-3 mr-1 text-pink-600" />
+                      <span className="text-muted-foreground mr-1">Due date:</span>
+                      <Badge variant="outline" className="font-normal text-pink-600 bg-pink-50">
+                        {format(addDays(form.watch('tie_date'), 65), 'MMM d, yyyy')}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>

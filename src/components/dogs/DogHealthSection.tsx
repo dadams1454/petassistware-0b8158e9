@@ -18,7 +18,7 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
   // Calculate next heat date (approximately 6 months after last heat)
   const nextHeatDate = lastHeatDate ? addDays(lastHeatDate, 180) : null;
   
-  // Calculate due date (65 days after tie date)
+  // Calculate due date (63-65 days after tie date, we'll use 65 for safety)
   const dueDate = tieDate ? addDays(tieDate, 65) : null;
 
   return (
@@ -52,7 +52,7 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
             <Calendar className="h-3.5 w-3.5 mr-1" />
             <span className="text-muted-foreground">Next Heat:</span>
           </div>
-          <span>{format(nextHeatDate, 'PPP')}</span>
+          <span className="font-medium text-blue-600">{format(nextHeatDate, 'PPP')}</span>
         </div>
       )}
 

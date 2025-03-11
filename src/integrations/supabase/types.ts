@@ -253,6 +253,9 @@ export type Database = {
           created_at: string | null
           gender: string | null
           id: string
+          is_pregnant: boolean | null
+          last_heat_date: string | null
+          litter_number: number | null
           microchip_number: string | null
           name: string
           notes: string | null
@@ -260,6 +263,7 @@ export type Database = {
           pedigree: boolean | null
           photo_url: string | null
           registration_number: string | null
+          tie_date: string | null
           weight: number | null
         }
         Insert: {
@@ -269,6 +273,9 @@ export type Database = {
           created_at?: string | null
           gender?: string | null
           id?: string
+          is_pregnant?: boolean | null
+          last_heat_date?: string | null
+          litter_number?: number | null
           microchip_number?: string | null
           name: string
           notes?: string | null
@@ -276,6 +283,7 @@ export type Database = {
           pedigree?: boolean | null
           photo_url?: string | null
           registration_number?: string | null
+          tie_date?: string | null
           weight?: number | null
         }
         Update: {
@@ -285,6 +293,9 @@ export type Database = {
           created_at?: string | null
           gender?: string | null
           id?: string
+          is_pregnant?: boolean | null
+          last_heat_date?: string | null
+          litter_number?: number | null
           microchip_number?: string | null
           name?: string
           notes?: string | null
@@ -292,6 +303,7 @@ export type Database = {
           pedigree?: boolean | null
           photo_url?: string | null
           registration_number?: string | null
+          tie_date?: string | null
           weight?: number | null
         }
         Relationships: []
