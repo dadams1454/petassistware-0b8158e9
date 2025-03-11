@@ -10,6 +10,7 @@ import AddWelpingPuppyDialog from '@/components/welping/AddWelpingPuppyDialog';
 import WelpingProgressCard from '@/components/welping/WelpingProgressCard';
 import WelpingPuppiesList from '@/components/welping/WelpingPuppiesList';
 import LitterHeader from '@/components/litters/detail/LitterHeader';
+
 const WelpingPage = () => {
   const {
     id
@@ -18,6 +19,7 @@ const WelpingPage = () => {
   }>();
   const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
   const {
     data: litter,
     isLoading,
@@ -40,6 +42,7 @@ const WelpingPage = () => {
       return data;
     }
   });
+
   const handleAddPuppySuccess = async () => {
     setIsAddDialogOpen(false);
     await refetch();
@@ -48,6 +51,7 @@ const WelpingPage = () => {
       description: "Puppy recorded successfully."
     });
   };
+
   const handleFinishWelping = () => {
     navigate(`/litters/${id}`);
     toast({
@@ -55,6 +59,7 @@ const WelpingPage = () => {
       description: "You can now manage the litter in the puppies section."
     });
   };
+
   if (isLoading) {
     return <MainLayout>
         <div className="container mx-auto py-6">
@@ -62,6 +67,7 @@ const WelpingPage = () => {
         </div>
       </MainLayout>;
   }
+
   if (error || !litter) {
     console.error("Error loading litter:", error);
     return <MainLayout>
@@ -72,6 +78,7 @@ const WelpingPage = () => {
         </div>
       </MainLayout>;
   }
+
   const puppies = litter.puppies || [];
   return <MainLayout>
       <div className="container mx-auto py-6 space-y-6">
@@ -84,7 +91,7 @@ const WelpingPage = () => {
             </Button>
             <Button onClick={handleFinishWelping} variant="outline" className="flex items-center gap-2">
               <ArrowRight className="h-4 w-4" />
-              Finish Welping
+              Finish Whelping
             </Button>
           </div>
         </div>
@@ -100,8 +107,8 @@ const WelpingPage = () => {
         </div>
       </div>
 
-      {/* Add Welping Puppy Dialog */}
       <AddWelpingPuppyDialog litterId={litter.id} isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={handleAddPuppySuccess} />
     </MainLayout>;
 };
+
 export default WelpingPage;
