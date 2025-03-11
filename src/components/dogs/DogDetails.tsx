@@ -76,17 +76,15 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
             </div>
           )}
           
-          {/* Health section for female dogs */}
-          {dog.gender === 'Female' && (
-            <Card className="mt-4">
-              <CardHeader className="py-4">
-                <CardTitle className="text-base">Health & Breeding</CardTitle>
-              </CardHeader>
-              <CardContent className="py-0">
-                <DogHealthSection dog={dog} />
-              </CardContent>
-            </Card>
-          )}
+          {/* Health section for all dogs */}
+          <Card className="mt-4">
+            <CardHeader className="py-4">
+              <CardTitle className="text-base">Health {dog.gender === 'Female' ? '& Breeding' : ''}</CardTitle>
+            </CardHeader>
+            <CardContent className="py-0">
+              <DogHealthSection dog={dog} />
+            </CardContent>
+          </Card>
         </div>
       </div>
       
