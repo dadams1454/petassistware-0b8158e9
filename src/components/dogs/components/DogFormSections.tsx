@@ -2,118 +2,161 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import TextInput from '../form/TextInput';
-import SelectInput from '../form/SelectInput';
 import DatePicker from '../form/DatePicker';
-import WeightInput from '../form/WeightInput';
-import CheckboxInput from '../form/CheckboxInput';
+import SelectInput from '../form/SelectInput';
 import TextareaInput from '../form/TextareaInput';
+import CheckboxInput from '../form/CheckboxInput';
 import PhotoUpload from '../form/PhotoUpload';
-import { breedOptions, genderOptions } from '../constants/formOptions';
-import { DogFormValues } from '../schemas/dogFormSchema';
+import WeightInput from '../form/WeightInput';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { genderOptions, breedOptions } from '../constants/formOptions';
+import { Separator } from '@/components/ui/separator';
 
 interface DogFormSectionsProps {
-  form: UseFormReturn<DogFormValues>;
+  form: UseFormReturn<any>;
   watchBreed: string;
-  colorOptions: { value: string; label: string }[];
+  colorOptions: { value: string; label: string; }[];
 }
 
-const DogFormSections: React.FC<DogFormSectionsProps> = ({
-  form,
-  watchBreed,
-  colorOptions,
-}) => {
+const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProps) => {
+  // Watch the gender to conditionally show breeding fields
+  const gender = form.watch('gender');
+  const isPregnant = form.watch('is_pregnant');
+
   return (
-    <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <TextInput 
-          form={form} 
-          name="name" 
-          label="Name" 
-          placeholder="Dog name" 
-          required={true} 
-        />
-        
-        <SelectInput 
-          form={form} 
-          name="breed" 
-          label="Breed" 
-          options={breedOptions} 
-          placeholder="Select breed" 
-        />
-        
-        <SelectInput 
-          form={form} 
-          name="gender" 
-          label="Gender" 
-          options={genderOptions} 
-          placeholder="Select gender" 
-        />
-        
-        <DatePicker 
-          form={form} 
-          name="birthdate" 
-          label="Birthdate" 
-        />
-        
-        {watchBreed === 'Newfoundland' ? (
-          <SelectInput 
-            form={form} 
-            name="color" 
-            label="Color" 
-            options={colorOptions} 
-            placeholder="Select color" 
-          />
-        ) : (
-          <TextInput 
-            form={form} 
-            name="color" 
-            label="Color" 
-            placeholder="Color" 
-          />
-        )}
-        
-        <WeightInput 
-          form={form} 
-          name="weight" 
-          label="Weight (kg)" 
-        />
-        
-        <TextInput 
-          form={form} 
-          name="microchip_number" 
-          label="Microchip Number" 
-          placeholder="Microchip number" 
-        />
-        
-        <TextInput 
-          form={form} 
-          name="registration_number" 
-          label="Registration Number" 
-          placeholder="Registration number" 
-        />
-        
-        <div className="md:col-span-2">
-          <PhotoUpload
+    <Tabs defaultValue="basic">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="basic">Basic Information</TabsTrigger>
+        <TabsTrigger value="details">Details & Documentation</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="basic" className="space-y-4 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TextInput
             form={form}
-            name="photo_url"
-            label="Dog Photo"
+            name="name"
+            label="Dog Name"
+            placeholder="Enter dog's name"
+          />
+          
+          <SelectInput
+            form={form}
+            name="gender"
+            label="Gender"
+            options={genderOptions}
+            placeholder="Select gender"
+          />
+          
+          <DatePicker
+            form={form}
+            name="birthdate"
+            label="Date of Birth"
+          />
+          
+          <SelectInput
+            form={form}
+            name="breed"
+            label="Breed"
+            options={breedOptions}
+            placeholder="Select breed"
+          />
+          
+          <SelectInput
+            form={form}
+            name="color"
+            label="Color"
+            options={colorOptions}
+            placeholder="Select color"
+          />
+          
+          <WeightInput
+            form={form}
+            name="weight"
+            label="Weight (kg)"
           />
         </div>
         
-        <CheckboxInput 
-          form={form} 
-          name="pedigree" 
-          label="Has Pedigree" 
+        <PhotoUpload
+          form={form}
+          name="photo_url"
+          label="Dog Photo"
         />
-      </div>
 
-      <TextareaInput 
-        form={form} 
-        name="notes" 
-        label="Notes" 
-        placeholder="Additional notes about the dog" 
-      />
-    </>
+        {/* Breeding fields for female dogs */}
+        {gender === 'Female' && (
+          <div className="mt-6">
+            <h3 className="text-lg font-medium mb-4">Breeding Information</h3>
+            <Separator className="mb-4" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DatePicker
+                form={form}
+                name="last_heat_date"
+                label="Last Heat Date"
+              />
+              
+              <TextInput
+                form={form}
+                name="litter_number"
+                label="Litter Number (out of 4)"
+                type="number"
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  if (value >= 0 && value <= 4) {
+                    form.setValue('litter_number', value);
+                  }
+                }}
+              />
+              
+              <CheckboxInput
+                form={form}
+                name="is_pregnant"
+                label="Currently Pregnant"
+              />
+              
+              {isPregnant && (
+                <DatePicker
+                  form={form}
+                  name="tie_date"
+                  label="Tie Date"
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </TabsContent>
+      
+      <TabsContent value="details" className="space-y-4 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TextInput
+            form={form}
+            name="microchip_number"
+            label="Microchip Number"
+            placeholder="Enter microchip number"
+          />
+          
+          <TextInput
+            form={form}
+            name="registration_number"
+            label="Registration Number"
+            placeholder="Enter registration number"
+          />
+          
+          <CheckboxInput
+            form={form}
+            name="pedigree"
+            label="Pedigree"
+          />
+        </div>
+        
+        <TextareaInput
+          form={form}
+          name="notes"
+          label="Notes"
+          placeholder="Enter any additional notes about the dog"
+        />
+      </TabsContent>
+    </Tabs>
   );
 };
 

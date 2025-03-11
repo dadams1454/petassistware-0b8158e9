@@ -14,6 +14,11 @@ export const dogFormSchema = z.object({
   pedigree: z.boolean().default(false),
   notes: z.string().optional(),
   photo_url: z.string().optional(),
+  // Female dog breeding fields
+  is_pregnant: z.boolean().optional().default(false),
+  last_heat_date: z.date().optional().nullable(),
+  tie_date: z.date().optional().nullable(),
+  litter_number: z.number().optional().default(0),
 });
 
 export type DogFormValues = z.infer<typeof dogFormSchema>;

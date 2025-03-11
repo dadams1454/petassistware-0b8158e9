@@ -7,9 +7,9 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Pencil, Trash2, PawPrint } from 'lucide-react';
+import { Eye, Pencil, Trash2, PawPrint, Calendar, Baby } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { 
   Table, 
   TableHeader, 
@@ -18,6 +18,8 @@ import {
   TableBody,
   TableCell
 } from '@/components/ui/table';
+import { Separator } from '@/components/ui/separator';
+import DogHealthSection from './DogHealthSection';
 
 interface DogsListProps {
   dogs: any[];
@@ -125,6 +127,18 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
                 {dog.pedigree && (
                   <div className="mt-3">
                     <Badge variant="outline" className="bg-primary/10">Pedigree</Badge>
+                  </div>
+                )}
+                
+                {/* Health section for female dogs */}
+                {dog.gender === 'Female' && (
+                  <div className="mt-4">
+                    <Separator className="my-2" />
+                    <h4 className="font-medium text-sm mb-2 flex items-center">
+                      <Calendar className="h-3.5 w-3.5 mr-1 text-pink-500" />
+                      <span>Health & Breeding</span>
+                    </h4>
+                    <DogHealthSection dog={dog} />
                   </div>
                 )}
               </CardContent>
