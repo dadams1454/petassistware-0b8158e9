@@ -76,7 +76,7 @@ const WelpingPage = () => {
   return <MainLayout>
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="font-bold text-4xl">Welping Session</h1>
+          <h1 className="font-bold text-3xl">Whelping Session</h1>
           <div className="flex gap-3">
             <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
