@@ -33,6 +33,14 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
     }
   };
 
+  // Handle pregnancy status change
+  React.useEffect(() => {
+    if (!isPregnant) {
+      // Reset tie_date when not pregnant
+      form.setValue('tie_date', null);
+    }
+  }, [isPregnant, form]);
+
   return (
     <Tabs defaultValue="basic">
       <TabsList className="grid w-full grid-cols-2">

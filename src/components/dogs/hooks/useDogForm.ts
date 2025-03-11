@@ -45,6 +45,7 @@ export const useDogForm = (dog: any, onSuccess: () => void) => {
   const form = useForm<DogFormValues>({
     resolver: zodResolver(dogFormSchema),
     defaultValues,
+    mode: 'onChange', // Add this to validate on change
   });
 
   // Watch for breed changes
