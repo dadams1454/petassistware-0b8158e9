@@ -56,7 +56,7 @@ const VaccinationHistorySection: React.FC<VaccinationHistorySectionProps> = ({
   if (vaccinations.length === 0) {
     return (
       <div className="text-muted-foreground italic text-xs">
-        No vaccination information available
+        No vaccination history available. Add vaccinations using the form above.
       </div>
     );
   }

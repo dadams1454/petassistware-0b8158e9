@@ -5,6 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { useDogHealthVaccinations } from './hooks/useDogHealthVaccinations';
 import VaccinationHistorySection from './components/VaccinationHistorySection';
 import BreedingInfoSection from './components/BreedingInfoSection';
+import VaccinationManager from './components/VaccinationManager';
 
 interface DogHealthSectionProps {
   dog: any;
@@ -39,10 +40,17 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
 
   return (
     <div className="text-sm space-y-4">
+      {/* Vaccination management */}
+      <div className="space-y-2">
+        <VaccinationManager dogId={dog.id} />
+      </div>
+
+      <Separator className="my-2" />
+
       {/* Vaccination information */}
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <h4 className="font-semibold text-sm">Vaccination History</h4>
+          <h4 className="font-semibold text-sm">Vaccination Schedule</h4>
         </div>
         
         <VaccinationHistorySection 
