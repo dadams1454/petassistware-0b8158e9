@@ -28,16 +28,33 @@ const DatePicker = ({ form, name, label }: DatePickerProps) => {
   };
 
   const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const dateStr = e.target.value;
+    let dateStr = e.target.value;
+    
+    // Remove any non-digit characters
+    const digitsOnly = dateStr.replace(/\D/g, '');
+    
+    // Format with slashes
+    if (digitsOnly.length <= 2) {
+      // Just the month part
+      dateStr = digitsOnly;
+    } else if (digitsOnly.length <= 4) {
+      // Month and day part
+      dateStr = `${digitsOnly.substring(0, 2)}/${digitsOnly.substring(2)}`;
+    } else {
+      // Full date
+      dateStr = `${digitsOnly.substring(0, 2)}/${digitsOnly.substring(2, 4)}/${digitsOnly.substring(4, 8)}`;
+    }
+    
     form.setValue(`${name}Str`, dateStr);
     
     try {
-      if (dateStr) {
+      // Only try to parse when we have enough digits for a full date
+      if (digitsOnly.length >= 8) {
         const parsedDate = parse(dateStr, 'MM/dd/yyyy', new Date());
         if (!isNaN(parsedDate.getTime())) {
           form.setValue(`${name}`, parsedDate);
         }
-      } else {
+      } else if (dateStr === '') {
         form.setValue(`${name}`, null);
       }
     } catch (error) {
