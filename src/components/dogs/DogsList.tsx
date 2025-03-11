@@ -38,11 +38,18 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
     });
     
     const males = dogs.filter(dog => dog.gender === 'Male');
+    // Sort males by age (oldest first)
+    const sortedMales = [...males].sort((a, b) => {
+      if (!a.birthdate) return 1; // Dogs without birthdate go last
+      if (!b.birthdate) return -1;
+      return new Date(a.birthdate).getTime() - new Date(b.birthdate).getTime();
+    });
+    
     const unknown = dogs.filter(dog => !dog.gender);
     
     return {
       females: sortedFemales,
-      males,
+      males: sortedMales,
       unknown
     };
   }, [dogs]);
