@@ -19,6 +19,10 @@ export const dogFormSchema = z.object({
   last_heat_date: z.date().optional().nullable(),
   tie_date: z.date().optional().nullable(),
   litter_number: z.number().optional().default(0),
+  // Vaccination fields
+  last_vaccination_date: z.date().optional().nullable(),
+  vaccination_type: z.string().optional(),
+  vaccination_notes: z.string().optional(),
 });
 
 export type DogFormValues = z.infer<typeof dogFormSchema>;

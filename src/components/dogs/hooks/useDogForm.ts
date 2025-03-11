@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,6 +39,10 @@ export const useDogForm = (dog: any, onSuccess: () => void) => {
     last_heat_date: dog?.last_heat_date ? new Date(dog.last_heat_date) : null,
     tie_date: dog?.tie_date ? new Date(dog.tie_date) : null,
     litter_number: parseLitterNumber(dog?.litter_number),
+    // Vaccination fields
+    last_vaccination_date: dog?.last_vaccination_date ? new Date(dog.last_vaccination_date) : null,
+    vaccination_type: dog?.vaccination_type || '',
+    vaccination_notes: dog?.vaccination_notes || '',
   };
 
   const form = useForm<DogFormValues>({
@@ -103,6 +106,10 @@ export const useDogForm = (dog: any, onSuccess: () => void) => {
         last_heat_date: values.last_heat_date ? values.last_heat_date.toISOString().split('T')[0] : null,
         tie_date: values.tie_date ? values.tie_date.toISOString().split('T')[0] : null,
         litter_number: values.litter_number,
+        // Vaccination fields
+        last_vaccination_date: values.last_vaccination_date ? values.last_vaccination_date.toISOString().split('T')[0] : null,
+        vaccination_type: values.vaccination_type,
+        vaccination_notes: values.vaccination_notes,
       };
 
       const { data, error } = isEditing

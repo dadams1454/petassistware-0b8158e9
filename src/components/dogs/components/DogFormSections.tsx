@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { format, addDays } from 'date-fns';
@@ -13,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { genderOptions, breedOptions } from '../constants/formOptions';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Calendar } from 'lucide-react';
+import { Calendar, Syringe } from 'lucide-react';
 
 interface DogFormSectionsProps {
   form: UseFormReturn<any>;
@@ -26,9 +25,13 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
   const gender = form.watch('gender');
   const isPregnant = form.watch('is_pregnant');
   const lastHeatDate = form.watch('last_heat_date');
+  const lastVaccinationDate = form.watch('last_vaccination_date');
 
   // Calculate next heat date (approximately 6 months after last heat)
   const nextHeatDate = lastHeatDate ? addDays(lastHeatDate, 180) : null;
+  
+  // Calculate next vaccination date (approximately 1 year after last vaccination)
+  const nextVaccinationDate = lastVaccinationDate ? addDays(lastVaccinationDate, 365) : null;
 
   // Function to handle litter number input
   const handleLitterNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,8 +53,9 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
 
   return (
     <Tabs defaultValue="basic">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="basic">Basic Information</TabsTrigger>
+        <TabsTrigger value="health">Health</TabsTrigger>
         <TabsTrigger value="details">Details & Documentation</TabsTrigger>
       </TabsList>
       
@@ -106,8 +110,58 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
           name="photo_url"
           label="Dog Photo"
         />
+      </TabsContent>
+      
+      <TabsContent value="health" className="space-y-4 py-4">
+        <div className="mt-2">
+          <h3 className="text-lg font-medium mb-4">Vaccination Schedules</h3>
+          <Separator className="mb-4" />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <DatePicker
+                form={form}
+                name="last_vaccination_date"
+                label="Last Vaccination Date"
+              />
+              {nextVaccinationDate && (
+                <div className="flex items-center mt-1 text-xs">
+                  <Syringe className="h-3 w-3 mr-1 text-green-600" />
+                  <span className="text-muted-foreground mr-1">Next vaccination:</span>
+                  <Badge variant="outline" className="font-normal text-green-600 bg-green-50">
+                    {format(nextVaccinationDate, 'MMM d, yyyy')}
+                  </Badge>
+                </div>
+              )}
+            </div>
+            
+            <SelectInput
+              form={form}
+              name="vaccination_type"
+              label="Vaccination Type"
+              options={[
+                { value: 'rabies', label: 'Rabies' },
+                { value: 'distemper', label: 'Distemper' },
+                { value: 'parvovirus', label: 'Parvovirus' },
+                { value: 'adenovirus', label: 'Adenovirus' },
+                { value: 'leptospirosis', label: 'Leptospirosis' },
+                { value: 'bordetella', label: 'Bordetella' },
+                { value: 'lyme', label: 'Lyme Disease' },
+                { value: 'combo', label: 'Combo (DHPP)' }
+              ]}
+              placeholder="Select vaccination type"
+            />
+          </div>
+          
+          <TextareaInput
+            form={form}
+            name="vaccination_notes"
+            label="Vaccination Notes"
+            placeholder="Enter details about vaccinations"
+            className="mt-4"
+          />
+        </div>
 
-        {/* Breeding fields for female dogs */}
         {gender === 'Female' && (
           <div className="mt-6">
             <h3 className="text-lg font-medium mb-4">Breeding Information</h3>
