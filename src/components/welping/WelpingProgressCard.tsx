@@ -25,7 +25,7 @@ const WelpingProgressCard: React.FC<WelpingProgressCardProps> = ({
       <CardHeader className="pb-2">
         <CardTitle className="text-xl font-semibold flex items-center gap-2">
           <Layers className="h-5 w-5 text-primary" />
-          Welping Progress
+          Whelping Progress
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 pt-2">
