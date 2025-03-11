@@ -255,6 +255,7 @@ export type Database = {
           id: string
           is_pregnant: boolean | null
           last_heat_date: string | null
+          last_vaccination_date: string | null
           litter_number: number | null
           microchip_number: string | null
           name: string
@@ -264,6 +265,8 @@ export type Database = {
           photo_url: string | null
           registration_number: string | null
           tie_date: string | null
+          vaccination_notes: string | null
+          vaccination_type: string | null
           weight: number | null
         }
         Insert: {
@@ -275,6 +278,7 @@ export type Database = {
           id?: string
           is_pregnant?: boolean | null
           last_heat_date?: string | null
+          last_vaccination_date?: string | null
           litter_number?: number | null
           microchip_number?: string | null
           name: string
@@ -284,6 +288,8 @@ export type Database = {
           photo_url?: string | null
           registration_number?: string | null
           tie_date?: string | null
+          vaccination_notes?: string | null
+          vaccination_type?: string | null
           weight?: number | null
         }
         Update: {
@@ -295,6 +301,7 @@ export type Database = {
           id?: string
           is_pregnant?: boolean | null
           last_heat_date?: string | null
+          last_vaccination_date?: string | null
           litter_number?: number | null
           microchip_number?: string | null
           name?: string
@@ -304,6 +311,8 @@ export type Database = {
           photo_url?: string | null
           registration_number?: string | null
           tie_date?: string | null
+          vaccination_notes?: string | null
+          vaccination_type?: string | null
           weight?: number | null
         }
         Relationships: []
