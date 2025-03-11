@@ -4,6 +4,7 @@ export interface Vaccination {
   dog_id: string;
   vaccination_type: string;
   vaccination_date: Date | string | null;
+  vaccination_dateStr?: string;
   notes?: string;
   created_at?: Date | string;
 }

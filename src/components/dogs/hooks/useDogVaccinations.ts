@@ -39,9 +39,12 @@ export const useDogVaccinations = (dogId: string) => {
   // Add a new vaccination
   const addVaccinationMutation = useMutation({
     mutationFn: async (vaccination: Vaccination) => {
+      // Remove the vaccination_dateStr property as it's not needed in the database
+      const { vaccination_dateStr, ...vaccinationData } = vaccination;
+      
       // Ensure date is properly formatted as string for Supabase
       const formattedVaccination = {
-        ...vaccination,
+        ...vaccinationData,
         vaccination_date: typeof vaccination.vaccination_date === 'string' 
           ? vaccination.vaccination_date 
           : vaccination.vaccination_date instanceof Date

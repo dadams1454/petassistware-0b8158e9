@@ -27,6 +27,7 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
       dog_id: dogId,
       vaccination_type: '',
       vaccination_date: new Date(),
+      vaccination_dateStr: new Date().toLocaleDateString('en-US'), // Add this default value
       notes: '',
     }
   });
