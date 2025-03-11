@@ -7,7 +7,7 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Pencil, Trash2, Heart, CircleUser } from 'lucide-react';
+import { Eye, Pencil, Trash2, PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { 
@@ -136,8 +136,8 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
 
   return (
     <div>
-      {renderDogGroup(groupedDogs.females, "Females", <Heart className="h-5 w-5 text-pink-500" />)}
-      {renderDogGroup(groupedDogs.males, "Males", <CircleUser className="h-5 w-5 text-blue-500" />)}
+      {renderDogGroup(groupedDogs.females, "Females", <PawPrint className="h-5 w-5 text-pink-500" />)}
+      {renderDogGroup(groupedDogs.males, "Males", <PawPrint className="h-5 w-5 text-blue-500" />)}
       {renderDogGroup(groupedDogs.unknown, "Unspecified Gender", null)}
     </div>
   );
