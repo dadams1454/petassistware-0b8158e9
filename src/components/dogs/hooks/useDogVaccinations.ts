@@ -5,6 +5,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Vaccination } from '../types/vaccination';
 
+// Type to properly handle the Supabase response
+type VaccinationResponse = {
+  id: string;
+  dog_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  notes: string | null;
+  created_at: string;
+}
+
 export const useDogVaccinations = (dogId: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -18,7 +28,7 @@ export const useDogVaccinations = (dogId: string) => {
         .from('dog_vaccinations')
         .select('*')
         .eq('dog_id', dogId)
-        .order('vaccination_date', { ascending: false });
+        .order('vaccination_date', { ascending: false }) as { data: VaccinationResponse[] | null, error: any };
       
       if (error) throw error;
       return data || [];
@@ -32,10 +42,10 @@ export const useDogVaccinations = (dogId: string) => {
       const { data, error } = await supabase
         .from('dog_vaccinations')
         .insert(vaccination)
-        .select();
+        .select() as { data: VaccinationResponse[] | null, error: any };
       
       if (error) throw error;
-      return data[0];
+      return data?.[0];
     },
     onSuccess: () => {
       toast({
@@ -60,7 +70,7 @@ export const useDogVaccinations = (dogId: string) => {
       const { error } = await supabase
         .from('dog_vaccinations')
         .delete()
-        .eq('id', vaccinationId);
+        .eq('id', vaccinationId) as { error: any };
       
       if (error) throw error;
       return vaccinationId;

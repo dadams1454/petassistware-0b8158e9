@@ -18,6 +18,16 @@ interface DogHealthSectionProps {
   dog: any;
 }
 
+// Type to handle the Supabase response
+type VaccinationResponse = {
+  id: string;
+  dog_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  notes: string | null;
+  created_at: string;
+}
+
 const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
   const [vaccinations, setVaccinations] = useState<VaccinationDisplay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,15 +55,15 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
           .from('dog_vaccinations')
           .select('*')
           .eq('dog_id', dog.id)
-          .order('vaccination_date', { ascending: false });
+          .order('vaccination_date', { ascending: false }) as { data: VaccinationResponse[] | null, error: any };
         
         if (error) throw error;
         
         // Transform data to display format
-        const displayData: VaccinationDisplay[] = data.map(vax => ({
+        const displayData: VaccinationDisplay[] = (data || []).map(vax => ({
           type: getVaccinationTypeLabel(vax.vaccination_type),
           date: new Date(vax.vaccination_date),
-          notes: vax.notes,
+          notes: vax.notes || undefined,
           id: vax.id
         }));
         

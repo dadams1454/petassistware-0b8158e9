@@ -23,6 +23,16 @@ interface VaccinationsTabProps {
   dogId: string;
 }
 
+// Type for Supabase response
+type VaccinationRecord = {
+  id: string;
+  dog_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  notes: string | null;
+  created_at: string;
+}
+
 const VaccinationsTab: React.FC<VaccinationsTabProps> = ({ dogId }) => {
   const {
     vaccinations,
@@ -95,7 +105,7 @@ const VaccinationsTab: React.FC<VaccinationsTabProps> = ({ dogId }) => {
         </div>
       ) : vaccinations && vaccinations.length > 0 ? (
         <div className="space-y-4">
-          {vaccinations.map((vaccination) => (
+          {(vaccinations as unknown as VaccinationRecord[]).map((vaccination) => (
             <div 
               key={vaccination.id}
               className="p-4 border rounded-md bg-card hover:bg-muted/10 transition-colors"
