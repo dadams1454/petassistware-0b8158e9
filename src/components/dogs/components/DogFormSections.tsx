@@ -23,6 +23,16 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
   const gender = form.watch('gender');
   const isPregnant = form.watch('is_pregnant');
 
+  // Function to handle litter number input
+  const handleLitterNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (value >= 0 && value <= 4) {
+      form.setValue('litter_number', value);
+    } else {
+      form.setValue('litter_number', value < 0 ? 0 : 4);
+    }
+  };
+
   return (
     <Tabs defaultValue="basic">
       <TabsList className="grid w-full grid-cols-2">
@@ -100,14 +110,7 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
                 name="litter_number"
                 label="Litter Number (out of 4)"
                 type="number"
-                onChange={(e) => {
-                  const value = parseInt(e.target.value);
-                  if (value >= 0 && value <= 4) {
-                    form.setValue('litter_number', value);
-                  } else {
-                    form.setValue('litter_number', value < 0 ? 0 : 4);
-                  }
-                }}
+                onChange={handleLitterNumberChange}
               />
               
               <CheckboxInput
