@@ -19,6 +19,11 @@ interface WelpingPuppiesTableProps {
   onDeletePuppy: (puppy: Puppy) => void;
 }
 
+// Extended Puppy type to include birth_time which isn't in the main type yet
+interface WelpingPuppy extends Puppy {
+  birth_time?: string;
+}
+
 const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({ 
   puppies, 
   onEditPuppy, 
@@ -38,62 +43,67 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {puppies.map((puppy, index) => (
-          <TableRow key={puppy.id}>
-            {/* Birth Time */}
-            <TableCell className="font-medium whitespace-nowrap">
-              {(puppy as any).birth_time 
-                ? (puppy as any).birth_time 
-                : puppy.created_at 
-                  ? format(new Date(puppy.created_at), 'h:mm a') 
-                  : 'Unknown'}
-            </TableCell>
-            
-            {/* ID/Color */}
-            <TableCell>
-              <div className="font-medium">
-                {puppy.name || `#${index + 1}`}
-              </div>
-              {puppy.color && (
-                <div className="text-sm text-muted-foreground">{puppy.color}</div>
-              )}
-            </TableCell>
-            
-            {/* Gender */}
-            <TableCell>
-              <div className="flex items-center gap-1.5">
-                {renderGenderIcon(puppy.gender)}
-                <span>{puppy.gender || 'Unknown'}</span>
-              </div>
-            </TableCell>
-            
-            {/* Weight */}
-            <TableCell>
-              {puppy.birth_weight 
-                ? `${puppy.birth_weight} oz` 
-                : 'Not recorded'}
-            </TableCell>
-            
-            {/* Notes */}
-            <TableCell className="max-w-[200px] truncate">
-              {puppy.notes || '-'}
-            </TableCell>
-            
-            {/* Status */}
-            <TableCell>
-              <PuppyStatusBadge status={puppy.status} />
-            </TableCell>
-            
-            {/* Actions */}
-            <TableCell className="text-right">
-              <PuppyActions 
-                puppy={puppy} 
-                onEdit={onEditPuppy} 
-                onDelete={onDeletePuppy} 
-              />
-            </TableCell>
-          </TableRow>
-        ))}
+        {puppies.map((puppy, index) => {
+          // Use the extended type to access birth_time
+          const welpingPuppy = puppy as WelpingPuppy;
+          
+          return (
+            <TableRow key={puppy.id}>
+              {/* Birth Time */}
+              <TableCell className="font-medium whitespace-nowrap">
+                {welpingPuppy.birth_time 
+                  ? welpingPuppy.birth_time 
+                  : puppy.created_at 
+                    ? format(new Date(puppy.created_at), 'h:mm a') 
+                    : 'Unknown'}
+              </TableCell>
+              
+              {/* ID/Color */}
+              <TableCell>
+                <div className="font-medium">
+                  {puppy.name || `#${index + 1}`}
+                </div>
+                {puppy.color && (
+                  <div className="text-sm text-muted-foreground">{puppy.color}</div>
+                )}
+              </TableCell>
+              
+              {/* Gender */}
+              <TableCell>
+                <div className="flex items-center gap-1.5">
+                  {renderGenderIcon(puppy.gender)}
+                  <span>{puppy.gender || 'Unknown'}</span>
+                </div>
+              </TableCell>
+              
+              {/* Weight */}
+              <TableCell>
+                {puppy.birth_weight 
+                  ? `${puppy.birth_weight} oz` 
+                  : 'Not recorded'}
+              </TableCell>
+              
+              {/* Notes */}
+              <TableCell className="max-w-[200px] truncate">
+                {puppy.notes || '-'}
+              </TableCell>
+              
+              {/* Status */}
+              <TableCell>
+                <PuppyStatusBadge status={puppy.status} />
+              </TableCell>
+              
+              {/* Actions */}
+              <TableCell className="text-right">
+                <PuppyActions 
+                  puppy={puppy} 
+                  onEdit={onEditPuppy} 
+                  onDelete={onDeletePuppy} 
+                />
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

@@ -472,6 +472,7 @@ export type Database = {
       puppies: {
         Row: {
           birth_date: string | null
+          birth_time: string | null
           birth_weight: string | null
           color: string | null
           created_at: string | null
@@ -492,6 +493,7 @@ export type Database = {
         }
         Insert: {
           birth_date?: string | null
+          birth_time?: string | null
           birth_weight?: string | null
           color?: string | null
           created_at?: string | null
@@ -512,6 +514,7 @@ export type Database = {
         }
         Update: {
           birth_date?: string | null
+          birth_time?: string | null
           birth_weight?: string | null
           color?: string | null
           created_at?: string | null
