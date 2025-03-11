@@ -39,9 +39,20 @@ export const useDogVaccinations = (dogId: string) => {
   // Add a new vaccination
   const addVaccinationMutation = useMutation({
     mutationFn: async (vaccination: Vaccination) => {
+      // Ensure date is properly formatted as string for Supabase
+      const formattedVaccination = {
+        ...vaccination,
+        vaccination_date: typeof vaccination.vaccination_date === 'string' 
+          ? vaccination.vaccination_date 
+          : vaccination.vaccination_date instanceof Date
+            ? vaccination.vaccination_date.toISOString().split('T')[0]
+            : null,
+        created_at: new Date().toISOString()
+      };
+
       const { data, error } = await supabase
         .from('dog_vaccinations')
-        .insert(vaccination)
+        .insert(formattedVaccination)
         .select() as { data: VaccinationResponse[] | null, error: any };
       
       if (error) throw error;
