@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { format, addDays } from 'date-fns';
+import { format, addDays, isWithinInterval } from 'date-fns';
 import TextInput from '../form/TextInput';
 import DatePicker from '../form/DatePicker';
 import SelectInput from '../form/SelectInput';
@@ -12,7 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { genderOptions, breedOptions } from '../constants/formOptions';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Syringe } from 'lucide-react';
+import { Calendar, Syringe, AlertTriangle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface DogFormSectionsProps {
   form: UseFormReturn<any>;
@@ -32,6 +39,19 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
   
   // Calculate next vaccination date (approximately 1 year after last vaccination)
   const nextVaccinationDate = lastVaccinationDate ? addDays(lastVaccinationDate, 365) : null;
+
+  // Check for scheduling conflict between vaccination and heat cycle
+  const hasSchedulingConflict = React.useMemo(() => {
+    if (!nextVaccinationDate || !nextHeatDate || isPregnant || gender !== 'Female') return false;
+    
+    // Check if vaccination is due within 30 days before or after the next heat
+    const heatWindow = {
+      start: addDays(nextHeatDate, -30),
+      end: addDays(nextHeatDate, 30)
+    };
+    
+    return isWithinInterval(nextVaccinationDate, heatWindow);
+  }, [nextVaccinationDate, nextHeatDate, isPregnant, gender]);
 
   // Function to handle litter number input
   const handleLitterNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,9 +148,24 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
                 <div className="flex items-center mt-1 text-xs">
                   <Syringe className="h-3 w-3 mr-1 text-green-600" />
                   <span className="text-muted-foreground mr-1">Next vaccination:</span>
-                  <Badge variant="outline" className="font-normal text-green-600 bg-green-50">
+                  <Badge variant="outline" className={`font-normal ${hasSchedulingConflict ? "text-amber-600 bg-amber-50" : "text-green-600 bg-green-50"}`}>
                     {format(nextVaccinationDate, 'MMM d, yyyy')}
                   </Badge>
+                  
+                  {hasSchedulingConflict && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="ml-1.5">
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Warning: Next vaccination is due within 1 month of predicted heat cycle. Consider rescheduling.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
               )}
             </div>
@@ -178,9 +213,24 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
                   <div className="flex items-center mt-1 text-xs">
                     <Calendar className="h-3 w-3 mr-1 text-blue-600" />
                     <span className="text-muted-foreground mr-1">Next heat:</span>
-                    <Badge variant="outline" className="font-normal text-blue-600 bg-blue-50">
+                    <Badge variant="outline" className={`font-normal ${hasSchedulingConflict ? "text-amber-600 bg-amber-50" : "text-blue-600 bg-blue-50"}`}>
                       {format(nextHeatDate, 'MMM d, yyyy')}
                     </Badge>
+                    
+                    {hasSchedulingConflict && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="ml-1.5">
+                              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Warning: Heat cycle is predicted within 1 month of next vaccination. Consider rescheduling one of these.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
                 )}
               </div>

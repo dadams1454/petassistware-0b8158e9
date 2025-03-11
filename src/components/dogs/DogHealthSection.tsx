@@ -1,9 +1,14 @@
-
 import React from 'react';
-import { format, addDays } from 'date-fns';
-import { Baby, Calendar, Heart, Syringe, Shield } from 'lucide-react';
+import { format, addDays, differenceInDays, isWithinInterval } from 'date-fns';
+import { Baby, Calendar, Heart, Syringe, Shield, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface DogHealthSectionProps {
   dog: any;
@@ -27,6 +32,19 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
   
   // Calculate next vaccination date (approximately 1 year after last vaccination)
   const nextVaccinationDate = lastVaccinationDate ? addDays(lastVaccinationDate, 365) : null;
+
+  // Determine if there's a vaccination/heat scheduling conflict
+  const hasSchedulingConflict = React.useMemo(() => {
+    if (!nextVaccinationDate || !nextHeatDate || isPregnant) return false;
+    
+    // Check if vaccination is due within 30 days before or after the next heat
+    const heatWindow = {
+      start: addDays(nextHeatDate, -30),
+      end: addDays(nextHeatDate, 30)
+    };
+    
+    return isWithinInterval(nextVaccinationDate, heatWindow);
+  }, [nextVaccinationDate, nextHeatDate, isPregnant]);
 
   // Map vaccination type to human-readable name
   const getVaccinationTypeLabel = (type: string) => {
@@ -75,7 +93,26 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
               <Calendar className="h-3.5 w-3.5 mr-1" />
               <span className="text-muted-foreground">Next Due:</span>
             </div>
-            <span className="font-medium text-green-600">{format(nextVaccinationDate, 'PPP')}</span>
+            <div className="flex items-center">
+              <span className={`font-medium ${hasSchedulingConflict ? 'text-amber-600' : 'text-green-600'}`}>
+                {format(nextVaccinationDate, 'PPP')}
+              </span>
+              
+              {hasSchedulingConflict && dog.gender === 'Female' && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="ml-1.5">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>Warning: Next vaccination is due within 1 month of predicted heat cycle ({format(nextHeatDate, 'PPP')}). Consider rescheduling.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
           </div>
         )}
         
@@ -129,7 +166,24 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
                   <Calendar className="h-3.5 w-3.5 mr-1" />
                   <span className="text-muted-foreground">Next Heat:</span>
                 </div>
-                <span className="font-medium text-blue-600">{format(nextHeatDate, 'PPP')}</span>
+                <div className="flex items-center">
+                  <span className="font-medium text-blue-600">{format(nextHeatDate, 'PPP')}</span>
+                  
+                  {hasSchedulingConflict && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="ml-1.5">
+                            <AlertTriangle className="h-4 w-4 text-amber-500" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>Warning: Heat cycle is predicted within 1 month of next vaccination ({format(nextVaccinationDate, 'PPP')}). Consider rescheduling.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               </div>
             )}
 
