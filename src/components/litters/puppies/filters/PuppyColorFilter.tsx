@@ -33,6 +33,15 @@ const PuppyColorFilter: React.FC<PuppyColorFilterProps> = ({
     onChange([]);
   };
 
+  // Default Newfoundland colors if no colors are provided
+  const displayColors = availableColors.length > 0 ? availableColors : [
+    'Black 007',
+    'Brown 061',
+    'Gray 100',
+    'brown/white 063',
+    'black/white 202'
+  ];
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -51,27 +60,23 @@ const PuppyColorFilter: React.FC<PuppyColorFilterProps> = ({
       <PopoverContent className="w-56" align="start">
         <div className="space-y-4">
           <div className="font-medium">Puppy Color</div>
-          {availableColors.length > 0 ? (
-            <div className="space-y-2 max-h-[200px] overflow-y-auto">
-              {availableColors.map((color) => (
-                <div key={color} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`color-${color}`}
-                    checked={selectedColors.includes(color)}
-                    onCheckedChange={() => toggleColor(color)}
-                  />
-                  <label
-                    htmlFor={`color-${color}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {color}
-                  </label>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">No colors available</div>
-          )}
+          <div className="space-y-2 max-h-[200px] overflow-y-auto">
+            {displayColors.map((color) => (
+              <div key={color} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`color-${color}`}
+                  checked={selectedColors.includes(color)}
+                  onCheckedChange={() => toggleColor(color)}
+                />
+                <label
+                  htmlFor={`color-${color}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {color}
+                </label>
+              </div>
+            ))}
+          </div>
           {selectedColors.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearFilters} className="w-full">
               Clear Filters

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -47,6 +47,7 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const isEditing = !!dog;
+  const [colorOptions, setColorOptions] = useState<{value: string, label: string}[]>([]);
 
   const defaultValues: DogFormValues = {
     name: dog?.name || '',
@@ -67,6 +68,30 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     resolver: zodResolver(dogFormSchema),
     defaultValues,
   });
+
+  // Watch for breed changes
+  const watchBreed = form.watch('breed');
+
+  // Update color options when breed changes
+  useEffect(() => {
+    if (watchBreed === 'Newfoundland') {
+      setColorOptions([
+        { value: 'Black 007', label: 'Black 007' },
+        { value: 'Brown 061', label: 'Brown 061' },
+        { value: 'Gray 100', label: 'Gray 100' },
+        { value: 'brown/white 063', label: 'brown/white 063' },
+        { value: 'black/white 202', label: 'black/white 202' },
+      ]);
+
+      // Reset color if current selection is not in the Newfoundland colors
+      const currentColor = form.getValues('color');
+      if (currentColor && !['Black 007', 'Brown 061', 'Gray 100', 'brown/white 063', 'black/white 202'].includes(currentColor)) {
+        form.setValue('color', '');
+      }
+    } else {
+      setColorOptions([]);
+    }
+  }, [watchBreed, form]);
 
   const createDogMutation = useMutation({
     mutationFn: async (values: DogFormValues) => {
@@ -138,6 +163,16 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
     { value: 'Female', label: 'Female' }
   ];
 
+  // Standard breed options
+  const breedOptions = [
+    { value: 'Newfoundland', label: 'Newfoundland' },
+    { value: 'Labrador Retriever', label: 'Labrador Retriever' },
+    { value: 'Golden Retriever', label: 'Golden Retriever' },
+    { value: 'German Shepherd', label: 'German Shepherd' },
+    { value: 'Mixed Breed', label: 'Mixed Breed' },
+    { value: 'Other', label: 'Other' }
+  ];
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -150,11 +185,12 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
             required={true} 
           />
           
-          <TextInput 
+          <SelectInput 
             form={form} 
             name="breed" 
             label="Breed" 
-            placeholder="Breed" 
+            options={breedOptions} 
+            placeholder="Select breed" 
             required={true} 
           />
           
@@ -172,12 +208,22 @@ const DogForm = ({ dog, onSuccess, onCancel }: DogFormProps) => {
             label="Birthdate" 
           />
           
-          <TextInput 
-            form={form} 
-            name="color" 
-            label="Color" 
-            placeholder="Color" 
-          />
+          {watchBreed === 'Newfoundland' ? (
+            <SelectInput 
+              form={form} 
+              name="color" 
+              label="Color" 
+              options={colorOptions} 
+              placeholder="Select color" 
+            />
+          ) : (
+            <TextInput 
+              form={form} 
+              name="color" 
+              label="Color" 
+              placeholder="Color" 
+            />
+          )}
           
           <WeightInput 
             form={form} 

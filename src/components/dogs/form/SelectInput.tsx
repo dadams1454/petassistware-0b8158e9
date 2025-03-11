@@ -21,9 +21,10 @@ interface SelectInputProps {
   label: string;
   options: Option[];
   placeholder?: string;
+  disabled?: boolean;
 }
 
-const SelectInput = ({ form, name, label, options, placeholder }: SelectInputProps) => {
+const SelectInput = ({ form, name, label, options, placeholder, disabled }: SelectInputProps) => {
   return (
     <FormField
       control={form.control}
@@ -31,7 +32,7 @@ const SelectInput = ({ form, name, label, options, placeholder }: SelectInputPro
       render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder={placeholder || `Select ${label.toLowerCase()}`} />
