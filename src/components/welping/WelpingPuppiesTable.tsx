@@ -42,8 +42,8 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
           <TableRow key={puppy.id}>
             {/* Birth Time */}
             <TableCell className="font-medium whitespace-nowrap">
-              {puppy.birth_time 
-                ? puppy.birth_time 
+              {(puppy as any).birth_time 
+                ? (puppy as any).birth_time 
                 : puppy.created_at 
                   ? format(new Date(puppy.created_at), 'h:mm a') 
                   : 'Unknown'}
