@@ -19,6 +19,7 @@ export const useDogVaccinations = (dogId: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddingVaccination, setIsAddingVaccination] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Fetch vaccinations for a dog
   const { data: vaccinations, isLoading, error } = useQuery({
@@ -39,6 +40,24 @@ export const useDogVaccinations = (dogId: string) => {
   // Add a new vaccination
   const addVaccinationMutation = useMutation({
     mutationFn: async (vaccination: Vaccination) => {
+      setFormError(null);
+      
+      // Validate required fields
+      if (!vaccination.vaccination_type) {
+        throw new Error('Vaccination type is required');
+      }
+      
+      if (!vaccination.vaccination_date) {
+        throw new Error('Vaccination date is required');
+      }
+      
+      // Validate date is not in the future
+      const vaccDate = new Date(vaccination.vaccination_date);
+      const today = new Date();
+      if (vaccDate > today) {
+        throw new Error('Vaccination date cannot be in the future');
+      }
+      
       // Remove the vaccination_dateStr property as it's not needed in the database
       const { vaccination_dateStr, ...vaccinationData } = vaccination;
       
@@ -68,8 +87,10 @@ export const useDogVaccinations = (dogId: string) => {
       });
       queryClient.invalidateQueries({ queryKey: ['dogVaccinations', dogId] });
       setIsAddingVaccination(false);
+      setFormError(null);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
+      setFormError(error.message);
       toast({
         title: 'Error',
         description: `Failed to add vaccination: ${error.message}`,
@@ -96,7 +117,7 @@ export const useDogVaccinations = (dogId: string) => {
       });
       queryClient.invalidateQueries({ queryKey: ['dogVaccinations', dogId] });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
         description: `Failed to delete vaccination: ${error.message}`,
@@ -109,6 +130,7 @@ export const useDogVaccinations = (dogId: string) => {
     vaccinations,
     isLoading,
     error,
+    formError,
     isAddingVaccination,
     setIsAddingVaccination,
     addVaccination: addVaccinationMutation.mutate,

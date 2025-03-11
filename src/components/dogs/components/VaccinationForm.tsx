@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
@@ -8,6 +9,7 @@ import SelectInput from '../form/SelectInput';
 import DatePicker from '../form/DatePicker';
 import TextareaInput from '../form/TextareaInput';
 import { Vaccination } from '../types/vaccination';
+import { vaccinationFormSchema } from '../schemas/vaccinationFormSchema';
 
 interface VaccinationFormProps {
   dogId: string;
@@ -27,9 +29,10 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
       dog_id: dogId,
       vaccination_type: '',
       vaccination_date: new Date(),
-      vaccination_dateStr: new Date().toLocaleDateString('en-US'), // Add this default value
+      vaccination_dateStr: new Date().toLocaleDateString('en-US'),
       notes: '',
-    }
+    },
+    resolver: zodResolver(vaccinationFormSchema),
   });
 
   const handleSubmit = (data: Vaccination) => {
@@ -99,7 +102,7 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
           </Button>
           <Button 
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !form.formState.isValid}
           >
             {isSubmitting ? 'Saving...' : 'Save Vaccination'}
           </Button>
