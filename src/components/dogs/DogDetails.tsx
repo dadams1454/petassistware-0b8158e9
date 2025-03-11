@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Card, 
   CardContent, 
@@ -12,12 +13,15 @@ import {
   CardDescription
 } from '@/components/ui/card';
 import DogHealthSection from './DogHealthSection';
+import VaccinationsTab from './components/VaccinationsTab';
 
 interface DogDetailsProps {
   dog: any;
 }
 
 const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
+  const [activeTab, setActiveTab] = useState("overview");
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start">
@@ -75,9 +79,20 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
               <Badge variant="outline" className="bg-primary/10">Pedigree</Badge>
             </div>
           )}
-          
-          {/* Health section for all dogs */}
-          <Card className="mt-4">
+        </div>
+      </div>
+      
+      <Separator />
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
+          <TabsTrigger value="documentation">Documentation</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview">
+          <Card>
             <CardHeader className="py-4">
               <CardTitle className="text-base">Health {dog.gender === 'Female' ? '& Breeding' : ''}</CardTitle>
             </CardHeader>
@@ -85,39 +100,44 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
               <DogHealthSection dog={dog} />
             </CardContent>
           </Card>
-        </div>
-      </div>
-      
-      <Separator />
-      
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Documentation</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {dog.microchip_number && (
-            <div>
-              <span className="text-muted-foreground font-medium">Microchip Number:</span>{' '}
-              {dog.microchip_number}
-            </div>
-          )}
           
-          {dog.registration_number && (
-            <div>
-              <span className="text-muted-foreground font-medium">Registration Number:</span>{' '}
-              {dog.registration_number}
+          {dog.notes && (
+            <div className="mt-4">
+              <h3 className="text-lg font-medium mb-2">Notes</h3>
+              <p className="text-muted-foreground whitespace-pre-line">{dog.notes}</p>
             </div>
           )}
-        </div>
-      </div>
-      
-      {dog.notes && (
-        <>
-          <Separator />
-          <div>
-            <h3 className="text-lg font-medium mb-2">Notes</h3>
-            <p className="text-muted-foreground whitespace-pre-line">{dog.notes}</p>
+        </TabsContent>
+        
+        <TabsContent value="vaccinations">
+          <Card>
+            <CardContent className="py-6">
+              <VaccinationsTab dogId={dog.id} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="documentation">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Documentation</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {dog.microchip_number && (
+                <div>
+                  <span className="text-muted-foreground font-medium">Microchip Number:</span>{' '}
+                  {dog.microchip_number}
+                </div>
+              )}
+              
+              {dog.registration_number && (
+                <div>
+                  <span className="text-muted-foreground font-medium">Registration Number:</span>{' '}
+                  {dog.registration_number}
+                </div>
+              )}
+            </div>
           </div>
-        </>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

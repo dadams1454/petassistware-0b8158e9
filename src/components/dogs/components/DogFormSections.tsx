@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { format, addDays, isWithinInterval } from 'date-fns';
@@ -73,9 +72,10 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
 
   return (
     <Tabs defaultValue="basic">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="basic">Basic Information</TabsTrigger>
         <TabsTrigger value="health">Health</TabsTrigger>
+        <TabsTrigger value="breeding">Breeding</TabsTrigger>
         <TabsTrigger value="details">Details & Documentation</TabsTrigger>
       </TabsList>
       
@@ -134,71 +134,18 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
       
       <TabsContent value="health" className="space-y-4 py-4">
         <div className="mt-2">
-          <h3 className="text-lg font-medium mb-4">Vaccination Schedules</h3>
+          <h3 className="text-lg font-medium mb-4">Vaccination Information</h3>
           <Separator className="mb-4" />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <DatePicker
-                form={form}
-                name="last_vaccination_date"
-                label="Last Vaccination Date"
-              />
-              {nextVaccinationDate && (
-                <div className="flex items-center mt-1 text-xs">
-                  <Syringe className="h-3 w-3 mr-1 text-green-600" />
-                  <span className="text-muted-foreground mr-1">Next vaccination:</span>
-                  <Badge variant="outline" className={`font-normal ${hasSchedulingConflict ? "text-amber-600 bg-amber-50" : "text-green-600 bg-green-50"}`}>
-                    {format(nextVaccinationDate, 'MMM d, yyyy')}
-                  </Badge>
-                  
-                  {hasSchedulingConflict && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="ml-1.5">
-                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Warning: Next vaccination is due within 1 month of predicted heat cycle. Consider rescheduling.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-              )}
-            </div>
-            
-            <SelectInput
-              form={form}
-              name="vaccination_type"
-              label="Vaccination Type"
-              options={[
-                { value: 'rabies', label: 'Rabies' },
-                { value: 'distemper', label: 'Distemper' },
-                { value: 'parvovirus', label: 'Parvovirus' },
-                { value: 'adenovirus', label: 'Adenovirus' },
-                { value: 'leptospirosis', label: 'Leptospirosis' },
-                { value: 'bordetella', label: 'Bordetella' },
-                { value: 'lyme', label: 'Lyme Disease' },
-                { value: 'combo', label: 'Combo (DHPP)' }
-              ]}
-              placeholder="Select vaccination type"
-            />
-          </div>
-          
-          <TextareaInput
-            form={form}
-            name="vaccination_notes"
-            label="Vaccination Notes"
-            placeholder="Enter details about vaccinations"
-            className="mt-4"
-          />
+          <p className="text-sm text-muted-foreground mb-4">
+            Add vaccination information after saving the dog profile. Multiple vaccinations can be added in the dog details view.
+          </p>
         </div>
-
+      </TabsContent>
+      
+      <TabsContent value="breeding" className="space-y-4 py-4">
         {gender === 'Female' && (
-          <div className="mt-6">
+          <div className="mt-2">
             <h3 className="text-lg font-medium mb-4">Breeding Information</h3>
             <Separator className="mb-4" />
             
