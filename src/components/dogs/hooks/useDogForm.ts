@@ -15,6 +15,13 @@ export const useDogForm = (dog: any, onSuccess: () => void) => {
   const isEditing = !!dog;
   const [colorOptions, setColorOptions] = useState<{value: string, label: string}[]>([]);
 
+  // Parse litter_number to number if it exists
+  const parseLitterNumber = (value: any) => {
+    if (value === null || value === undefined) return 0;
+    const num = parseInt(String(value));
+    return isNaN(num) ? 0 : num;
+  };
+
   const defaultValues: DogFormValues = {
     name: dog?.name || '',
     breed: dog?.breed || '',
@@ -28,6 +35,11 @@ export const useDogForm = (dog: any, onSuccess: () => void) => {
     pedigree: dog?.pedigree || false,
     notes: dog?.notes || '',
     photo_url: dog?.photo_url || '',
+    // Female dog breeding fields
+    is_pregnant: dog?.is_pregnant || false,
+    last_heat_date: dog?.last_heat_date ? new Date(dog.last_heat_date) : null,
+    tie_date: dog?.tie_date ? new Date(dog.tie_date) : null,
+    litter_number: parseLitterNumber(dog?.litter_number),
   };
 
   const form = useForm<DogFormValues>({
@@ -85,6 +97,11 @@ export const useDogForm = (dog: any, onSuccess: () => void) => {
         notes: values.notes,
         photo_url: values.photo_url,
         owner_id: user.id,
+        // Female dog breeding fields
+        is_pregnant: values.is_pregnant,
+        last_heat_date: values.last_heat_date ? values.last_heat_date.toISOString().split('T')[0] : null,
+        tie_date: values.tie_date ? values.tie_date.toISOString().split('T')[0] : null,
+        litter_number: values.litter_number,
       };
 
       const { data, error } = isEditing

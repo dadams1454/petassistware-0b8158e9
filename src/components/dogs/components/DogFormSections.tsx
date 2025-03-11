@@ -104,6 +104,8 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
                   const value = parseInt(e.target.value);
                   if (value >= 0 && value <= 4) {
                     form.setValue('litter_number', value);
+                  } else {
+                    form.setValue('litter_number', value < 0 ? 0 : 4);
                   }
                 }}
               />
