@@ -30,11 +30,18 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
   // Group dogs by gender
   const groupedDogs = useMemo(() => {
     const females = dogs.filter(dog => dog.gender === 'Female');
+    // Sort females by age (oldest first)
+    const sortedFemales = [...females].sort((a, b) => {
+      if (!a.birthdate) return 1; // Dogs without birthdate go last
+      if (!b.birthdate) return -1;
+      return new Date(a.birthdate).getTime() - new Date(b.birthdate).getTime();
+    });
+    
     const males = dogs.filter(dog => dog.gender === 'Male');
     const unknown = dogs.filter(dog => !dog.gender);
     
     return {
-      females,
+      females: sortedFemales,
       males,
       unknown
     };
