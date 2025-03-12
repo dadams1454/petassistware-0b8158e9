@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Customer } from './types/customer';
 import CustomerForm from './CustomerForm';
 import CustomerWaitlistStatus from '../waitlist/CustomerWaitlistStatus';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CustomerDialogProps {
   trigger: React.ReactNode;
@@ -19,6 +21,24 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(customer ? 'view' : 'edit');
+
+  // Fetch puppy details if customer is interested in one
+  const { data: puppy } = useQuery({
+    queryKey: ['puppy', customer?.metadata?.interested_puppy_id],
+    queryFn: async () => {
+      if (!customer?.metadata?.interested_puppy_id) return null;
+      
+      const { data, error } = await supabase
+        .from('puppies')
+        .select('*, litters(litter_name)')
+        .eq('id', customer.metadata.interested_puppy_id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!customer?.metadata?.interested_puppy_id
+  });
 
   const handleSuccess = () => {
     if (onSuccess) {
@@ -81,6 +101,34 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
                   </p>
                 </div>
               </div>
+
+              {puppy && (
+                <div>
+                  <h3 className="font-semibold mb-2">Litter Information</h3>
+                  <div className="space-y-1 text-sm">
+                    <p>
+                      <span className="text-muted-foreground mr-2">Puppy Name:</span>
+                      {puppy.name || 'Unnamed'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground mr-2">Litter:</span>
+                      {(puppy.litters as any)?.litter_name || 'N/A'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground mr-2">Color:</span>
+                      {puppy.color || 'N/A'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground mr-2">Gender:</span>
+                      {puppy.gender || 'N/A'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground mr-2">Status:</span>
+                      {puppy.status || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {customer.notes && (
                 <div>
