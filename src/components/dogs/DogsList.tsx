@@ -80,14 +80,15 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
           {dogs.map((dog) => (
             <Card key={dog.id} className="overflow-hidden">
               <CardHeader className="p-0 h-48 relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
                 <div 
-                  className="h-full w-full bg-muted"
+                  className="h-full w-full bg-muted cursor-pointer"
                   style={{
                     backgroundImage: dog.photo_url ? `url(${dog.photo_url})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}
+                  onClick={() => onView(dog)}
                 >
                   {!dog.photo_url && (
                     <div className="flex items-center justify-center h-full">
@@ -95,7 +96,31 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
                     </div>
                   )}
                 </div>
-                <div className="absolute bottom-4 left-4 right-4">
+                
+                {/* Action buttons overlay */}
+                <div className="absolute top-2 right-2 z-20 flex space-x-1">
+                  <button 
+                    className="p-1.5 bg-white/90 hover:bg-white rounded-full text-slate-700 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(dog);
+                    }}
+                    aria-label="Edit dog"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button 
+                    className="p-1.5 bg-white/90 hover:bg-white rounded-full text-slate-700 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(dog.id);
+                    }}
+                    aria-label="Delete dog"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="absolute bottom-4 left-4 right-4 z-20">
                   <h3 className="text-xl font-semibold text-white">{dog.name}</h3>
                   <p className="text-white/80">{dog.breed}</p>
                 </div>
@@ -138,18 +163,14 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="flex justify-between p-4 pt-0">
-                <Button variant="ghost" size="sm" onClick={() => onView(dog)}>
-                  <Eye className="h-4 w-4 mr-1" /> View
+              <CardFooter className="p-4 pt-0">
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={() => onView(dog)}
+                >
+                  <Eye className="h-4 w-4 mr-2" /> View Details
                 </Button>
-                <div className="space-x-1">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(dog)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onDelete(dog.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
               </CardFooter>
             </Card>
           ))}
