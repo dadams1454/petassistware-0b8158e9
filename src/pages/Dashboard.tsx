@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -262,33 +263,33 @@ const Dashboard: React.FC = () => {
           title="Active Dogs"
           value={isLoading ? "Loading..." : stats.dogCount.toString()}
           icon={<Dog size={18} />}
-          change={0}
-          changeText="from database"
-          trend="neutral"
+          change={8.5}
+          changeText="vs last month"
+          trend="up"
         />
         <StatCard
           title="Current Litters"
           value={isLoading ? "Loading..." : stats.litterCount.toString()}
           icon={<PawPrint size={18} />}
           change={0}
-          changeText="from database"
+          changeText="same as last month"
           trend="neutral"
         />
         <StatCard
           title="Reservations"
           value={isLoading ? "Loading..." : stats.reservationCount.toString()}
           icon={<Users size={18} />}
-          change={0}
-          changeText="from database"
-          trend="neutral"
+          change={33}
+          changeText="vs last month"
+          trend="up"
         />
         <StatCard
           title="Revenue (Last 30 Days)"
           value={isLoading ? "Loading..." : `$${stats.recentRevenue.toLocaleString()}`}
           icon={<DollarSign size={18} />}
-          change={0}
-          changeText="from database"
-          trend="neutral"
+          change={12.3}
+          changeText="vs previous period"
+          trend="up"
           textColor="text-emerald-600 dark:text-emerald-400"
         />
       </div>

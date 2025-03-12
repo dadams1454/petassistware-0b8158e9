@@ -28,7 +28,7 @@ export interface RecentActivity {
 // Function to fetch dashboard statistics
 export const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    // Fetch dog count - this is what we're updating to work correctly
+    // Fetch dog count
     const { count: dogCount, error: dogError } = await supabase
       .from('dogs')
       .select('*', { count: 'exact', head: true });

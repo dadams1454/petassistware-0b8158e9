@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import TextInput from '@/components/dogs/form/TextInput';
 import SelectInput from '@/components/dogs/form/SelectInput';
@@ -16,56 +16,12 @@ import {
 } from 'lucide-react';
 import { genderOptions, statusOptions } from './constants';
 import { PuppyFormData } from './types';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 interface BasicInfoTabProps {
   form: UseFormReturn<PuppyFormData>;
-  litterId?: string;
 }
 
-const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
-  const [colorOptions, setColorOptions] = useState<{value: string, label: string}[]>([]);
-  const [isNewfoundland, setIsNewfoundland] = useState(false);
-
-  // Get litter data to determine the breed
-  const { data: litterData } = useQuery({
-    queryKey: ['litter-breed', litterId],
-    queryFn: async () => {
-      if (!litterId) return null;
-      
-      const { data, error } = await supabase
-        .from('litters')
-        .select(`
-          *,
-          dam:dogs!litters_dam_id_fkey(breed)
-        `)
-        .eq('id', litterId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!litterId
-  });
-
-  // Set up color options based on breed
-  useEffect(() => {
-    if (litterData?.dam?.breed === 'Newfoundland') {
-      setIsNewfoundland(true);
-      setColorOptions([
-        { value: 'Black 007', label: 'Black 007' },
-        { value: 'Brown 061', label: 'Brown 061' },
-        { value: 'Gray 100', label: 'Gray 100' },
-        { value: 'brown/white 063', label: 'brown/white 063' },
-        { value: 'black/white 202', label: 'black/white 202' },
-      ]);
-    } else {
-      setIsNewfoundland(false);
-      setColorOptions([]);
-    }
-  }, [litterData]);
-
+const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-3">
@@ -120,22 +76,12 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
             <Palette className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Color Markings</span>
           </div>
-          {isNewfoundland ? (
-            <SelectInput 
-              form={form} 
-              name="color" 
-              label="Color" 
-              options={colorOptions}
-              placeholder="Select color" 
-            />
-          ) : (
-            <TextInput 
-              form={form} 
-              name="color" 
-              label="Color" 
-              placeholder="Puppy's color markings" 
-            />
-          )}
+          <TextInput 
+            form={form} 
+            name="color" 
+            label="Color" 
+            placeholder="Puppy's color markings" 
+          />
         </div>
       </div>
 

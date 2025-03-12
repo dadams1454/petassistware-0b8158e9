@@ -21,19 +21,17 @@ interface SelectInputProps {
   label: string;
   options: Option[];
   placeholder?: string;
-  disabled?: boolean;
-  required?: boolean;
 }
 
-const SelectInput = ({ form, name, label, options, placeholder, disabled, required }: SelectInputProps) => {
+const SelectInput = ({ form, name, label, options, placeholder }: SelectInputProps) => {
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}{required && '*'}</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
+          <FormLabel>{label}</FormLabel>
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder={placeholder || `Select ${label.toLowerCase()}`} />

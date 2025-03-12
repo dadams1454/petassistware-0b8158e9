@@ -9,16 +9,15 @@ interface TextareaInputProps {
   name: string;
   label: string;
   placeholder?: string;
-  className?: string;
 }
 
-const TextareaInput = ({ form, name, label, placeholder, className }: TextareaInputProps) => {
+const TextareaInput = ({ form, name, label, placeholder }: TextareaInputProps) => {
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className={className}>
+        <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <Textarea

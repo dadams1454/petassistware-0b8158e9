@@ -10,19 +10,9 @@ interface TextInputProps {
   label: string;
   placeholder?: string;
   required?: boolean;
-  type?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const TextInput = ({ 
-  form, 
-  name, 
-  label, 
-  placeholder, 
-  required = false, 
-  type = 'text',
-  onChange 
-}: TextInputProps) => {
+const TextInput = ({ form, name, label, placeholder, required = false }: TextInputProps) => {
   return (
     <FormField
       control={form.control}
@@ -31,17 +21,7 @@ const TextInput = ({
         <FormItem>
           <FormLabel>{label}{required && '*'}</FormLabel>
           <FormControl>
-            <Input 
-              type={type} 
-              placeholder={placeholder || label} 
-              {...field} 
-              onChange={(e) => {
-                field.onChange(e);
-                if (onChange) {
-                  onChange(e);
-                }
-              }}
-            />
+            <Input placeholder={placeholder || label} {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>
