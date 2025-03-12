@@ -1,4 +1,6 @@
+
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -16,7 +18,9 @@ interface DogsListProps {
   onDelete: (dogId: string) => void;
 }
 
-const DogsList = ({ dogs, onEdit }: DogsListProps) => {
+const DogsList = ({ dogs }: DogsListProps) => {
+  const navigate = useNavigate();
+  
   // Group dogs by gender
   const groupedDogs = useMemo(() => {
     const females = dogs.filter(dog => dog.gender === 'Female');
@@ -55,6 +59,10 @@ const DogsList = ({ dogs, onEdit }: DogsListProps) => {
     );
   }
 
+  const handleDogClick = (dog: any) => {
+    navigate(`/dogs/${dog.id}`);
+  };
+
   const renderDogGroup = (dogs: any[], title: string, icon: React.ReactNode) => {
     if (dogs.length === 0) return null;
     
@@ -66,7 +74,7 @@ const DogsList = ({ dogs, onEdit }: DogsListProps) => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dogs.map((dog) => (
-            <Card key={dog.id} className="overflow-hidden cursor-pointer" onClick={() => onEdit(dog)}>
+            <Card key={dog.id} className="overflow-hidden cursor-pointer" onClick={() => handleDogClick(dog)}>
               <CardHeader className="p-0 h-48 relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
                 <div 
@@ -119,7 +127,6 @@ const DogsList = ({ dogs, onEdit }: DogsListProps) => {
                     </div>
                   )}
                 </div>
-                {/* Removed pedigree badge from here to clean up the UI */}
               </CardContent>
             </Card>
           ))}

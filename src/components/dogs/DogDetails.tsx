@@ -28,9 +28,10 @@ import { useQueryClient } from '@tanstack/react-query';
 
 interface DogDetailsProps {
   dog: any;
+  isFullPage?: boolean;
 }
 
-const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
+const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -38,7 +39,7 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start">
-        <div className="w-full sm:w-1/3 aspect-square relative rounded-lg overflow-hidden bg-muted">
+        <div className={`${isFullPage ? 'w-full sm:w-1/4' : 'w-full sm:w-1/3'} aspect-square relative rounded-lg overflow-hidden bg-muted`}>
           {dog.photo_url ? (
             <div 
               className="absolute inset-0 bg-cover bg-center"
@@ -107,7 +108,7 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
       
       <Separator />
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className={isFullPage ? "mt-8" : ""}>
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
@@ -178,6 +179,7 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
             onSuccess={() => {
               setIsEditDialogOpen(false);
               queryClient.invalidateQueries({ queryKey: ['dogs'] });
+              queryClient.invalidateQueries({ queryKey: ['dog', dog.id] });
               queryClient.invalidateQueries({ queryKey: ['allDogs'] });
             }}
             onCancel={() => setIsEditDialogOpen(false)}

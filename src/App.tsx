@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Profile from "./pages/Profile";
 import Dogs from "./pages/Dogs";
+import DogDetail from "./pages/DogDetail";
 import Calendar from "./pages/Calendar";
 import Litters from "./pages/Litters";
 import LitterDetail from "./pages/LitterDetail";
@@ -38,6 +39,7 @@ function App() {
               <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dogs" element={<Dogs />} />
+                <Route path="/dogs/:id" element={<DogDetail />} />
                 <Route path="/customers" element={<Customers />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/communications" element={<Communications />} />

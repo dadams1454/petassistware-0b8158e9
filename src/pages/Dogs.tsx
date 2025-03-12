@@ -5,11 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import MainLayout from '@/layouts/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthProvider';
 import DogForm from '@/components/dogs/DogForm';
 import DogsList from '@/components/dogs/DogsList';
-import DogDetails from '@/components/dogs/DogDetails';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +22,6 @@ const DogsPage = () => {
   const [selectedDog, setSelectedDog] = useState<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -88,11 +86,6 @@ const DogsPage = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleViewDog = (dog: any) => {
-    setSelectedDog(dog);
-    setIsViewDialogOpen(true);
-  };
-
   const handleDeleteDog = (dogId: string) => {
     if (window.confirm('Are you sure you want to delete this dog?')) {
       deleteDogMutation.mutate(dogId);
@@ -117,7 +110,7 @@ const DogsPage = () => {
           ) : (
             <DogsList 
               dogs={dogs || []}
-              onView={handleViewDog}
+              onView={() => {}} // We don't need this anymore as we navigate directly
               onEdit={handleEditDog}
               onDelete={handleDeleteDog}
             />
@@ -157,16 +150,6 @@ const DogsPage = () => {
                   onCancel={() => setIsEditDialogOpen(false)}
                 />
               )}
-            </DialogContent>
-          </Dialog>
-
-          {/* View Dog Dialog */}
-          <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Dog Details</DialogTitle>
-              </DialogHeader>
-              {selectedDog && <DogDetails dog={selectedDog} />}
             </DialogContent>
           </Dialog>
         </div>
