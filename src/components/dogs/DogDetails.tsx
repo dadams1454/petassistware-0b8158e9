@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import DogHealthSection from './DogHealthSection';
 import VaccinationsTab from './components/VaccinationsTab';
+import PedigreeTab from './components/tabs/PedigreeTab';
 
 interface DogDetailsProps {
   dog: any;
@@ -88,6 +88,7 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
+          <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
           <TabsTrigger value="documentation">Documentation</TabsTrigger>
         </TabsList>
         
@@ -115,6 +116,10 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
               <VaccinationsTab dogId={dog.id} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="pedigree">
+          <PedigreeTab dogId={dog.id} currentDog={dog} />
         </TabsContent>
         
         <TabsContent value="documentation">

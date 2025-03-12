@@ -245,6 +245,45 @@ export type Database = {
         }
         Relationships: []
       }
+      dog_relationships: {
+        Row: {
+          created_at: string | null
+          dog_id: string
+          id: string
+          related_dog_id: string
+          relationship_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          dog_id: string
+          id?: string
+          related_dog_id: string
+          relationship_type: string
+        }
+        Update: {
+          created_at?: string | null
+          dog_id?: string
+          id?: string
+          related_dog_id?: string
+          relationship_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dog_relationships_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dog_relationships_related_dog_id_fkey"
+            columns: ["related_dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dog_vaccinations: {
         Row: {
           created_at: string
