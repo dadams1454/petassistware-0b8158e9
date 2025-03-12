@@ -588,6 +588,7 @@ export type Database = {
           notes: string | null
           puppy_count: number | null
           sire_id: string | null
+          status: string | null
         }
         Insert: {
           birth_date: string
@@ -602,6 +603,7 @@ export type Database = {
           notes?: string | null
           puppy_count?: number | null
           sire_id?: string | null
+          status?: string | null
         }
         Update: {
           birth_date?: string
@@ -616,6 +618,7 @@ export type Database = {
           notes?: string | null
           puppy_count?: number | null
           sire_id?: string | null
+          status?: string | null
         }
         Relationships: [
           {

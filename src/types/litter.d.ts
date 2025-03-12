@@ -45,6 +45,7 @@ interface Litter {
   notes?: string | null;
   documents_url?: string | null;
   created_at?: string;
+  status?: string;
   
   // Joined data
   dam?: Dog | null;
