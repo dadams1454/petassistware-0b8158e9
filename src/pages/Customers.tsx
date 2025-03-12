@@ -11,7 +11,7 @@ import CustomerDialog from '@/components/customers/CustomerDialog';
 import { toast } from '@/components/ui/use-toast';
 import CustomerFilters from '@/components/customers/CustomerFilters';
 
-export type SortField = 'name' | 'date';
+export type SortField = 'name' | 'date' | 'litter';
 export type SortOrder = 'asc' | 'desc';
 export type CustomerFilter = {
   type: 'all' | 'new' | 'returning';
@@ -92,6 +92,12 @@ const Customers = () => {
         return sort.order === 'asc'
           ? dateA.localeCompare(dateB)
           : dateB.localeCompare(dateA);
+      } else if (sort.field === 'litter') {
+        const litterIdA = a.metadata?.interested_puppy_id || '';
+        const litterIdB = b.metadata?.interested_puppy_id || '';
+        return sort.order === 'asc'
+          ? litterIdA.localeCompare(litterIdB)
+          : litterIdB.localeCompare(litterIdA);
       }
       return 0;
     });

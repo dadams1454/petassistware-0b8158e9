@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { CustomerFilter, SortField, SortOrder } from '@/pages/Customers';
-import { ArrowDownAZ, ArrowUpAZ, Calendar, CalendarDays, Users } from 'lucide-react';
+import { ArrowDownAZ, ArrowUpAZ, Calendar, CalendarDays, Users, Layers } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -88,6 +88,10 @@ const CustomerFilters: React.FC<CustomerFiltersProps> = ({
                 <ToggleGroupItem value="date" aria-label="Sort by date">
                   <CalendarDays className="h-4 w-4 mr-1" />
                   Date
+                </ToggleGroupItem>
+                <ToggleGroupItem value="litter" aria-label="Sort by litter">
+                  <Layers className="h-4 w-4 mr-1" />
+                  Litter
                 </ToggleGroupItem>
               </ToggleGroup>
 
