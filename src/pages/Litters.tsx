@@ -20,13 +20,13 @@ const Litters = () => {
   const { data: litters, isLoading, error, refetch } = useQuery({
     queryKey: ['litters'],
     queryFn: async () => {
-      // Query the litters but specify the explicit foreign key references
+      // Query the litters with all needed information including dam/sire gender
       const { data, error } = await supabase
         .from('litters')
         .select(`
           *,
-          dam:dogs!litters_dam_id_fkey(id, name, breed),
-          sire:dogs!litters_sire_id_fkey(id, name, breed),
+          dam:dogs!litters_dam_id_fkey(id, name, breed, gender),
+          sire:dogs!litters_sire_id_fkey(id, name, breed, gender),
           puppies(*)
         `)
         .order('birth_date', { ascending: false });
