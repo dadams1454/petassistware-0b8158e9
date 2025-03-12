@@ -29,6 +29,11 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
   onEditPuppy, 
   onDeletePuppy 
 }) => {
+  // Sort puppies by birth time (assumed to be created_at)
+  const sortedPuppies = [...puppies].sort((a, b) => {
+    return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
+  });
+
   return (
     <Table>
       <TableHeader>
@@ -43,7 +48,7 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {puppies.map((puppy, index) => {
+        {sortedPuppies.map((puppy, index) => {
           // Use the extended type to access birth_time
           const welpingPuppy = puppy as WelpingPuppy;
           
@@ -61,7 +66,7 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
               {/* ID/Color */}
               <TableCell>
                 <div className="font-medium">
-                  {puppy.name || `#${index + 1}`}
+                  {puppy.name || `Puppy ${index + 1}`}
                 </div>
                 {puppy.color && (
                   <div className="text-sm text-muted-foreground">{puppy.color}</div>

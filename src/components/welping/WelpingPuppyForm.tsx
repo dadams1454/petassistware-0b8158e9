@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -10,6 +10,7 @@ import SelectInput from '@/components/dogs/form/SelectInput';
 import WeightInput from '@/components/dogs/form/WeightInput';
 import TextareaInput from '@/components/dogs/form/TextareaInput';
 import { format } from 'date-fns';
+import { colorOptions } from '@/components/litters/puppies/constants';
 
 interface WelpingPuppyFormProps {
   litterId: string;
@@ -30,13 +31,33 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
   onSuccess
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [puppyCount, setPuppyCount] = useState(0);
   
   // Get current time for default value
   const currentTime = format(new Date(), 'HH:mm');
   
+  useEffect(() => {
+    // Fetch existing puppies to determine the next puppy number
+    const fetchPuppyCount = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('puppies')
+          .select('id')
+          .eq('litter_id', litterId);
+        
+        if (error) throw error;
+        setPuppyCount(data?.length || 0);
+      } catch (error) {
+        console.error('Error fetching puppy count:', error);
+      }
+    };
+    
+    fetchPuppyCount();
+  }, [litterId]);
+  
   const form = useForm<WelpingPuppyFormData>({
     defaultValues: {
-      name: '',
+      name: `Puppy ${puppyCount + 1}`,
       gender: '',
       color: '',
       birth_weight: '',
@@ -45,15 +66,10 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
     }
   });
 
-  // Define standard color options for puppies
-  const colorOptions = [
-    { value: 'Black', label: 'Black' },
-    { value: 'Brown', label: 'Brown' },
-    { value: 'Black/white', label: 'Black/white' },
-    { value: 'Brown/white', label: 'Brown/white' },
-    { value: 'Grey', label: 'Grey' },
-    { value: 'Beige', label: 'Beige' },
-  ];
+  // Update default name whenever puppy count changes
+  useEffect(() => {
+    form.setValue('name', `Puppy ${puppyCount + 1}`);
+  }, [puppyCount, form]);
 
   const handleSubmit = async (data: WelpingPuppyFormData) => {
     setIsSubmitting(true);
@@ -66,8 +82,11 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
       const birthDateTime = new Date(now);
       birthDateTime.setHours(hours, minutes, 0, 0);
       
+      // If name is empty, use the default naming convention
+      const puppyName = data.name || `Puppy ${puppyCount + 1}`;
+      
       const puppyData = {
-        name: data.name || null,
+        name: puppyName,
         gender: data.gender ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1).toLowerCase() : null,
         color: data.color || null,
         birth_weight: data.birth_weight || null,
