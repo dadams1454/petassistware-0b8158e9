@@ -32,6 +32,8 @@ const InterestedPuppyField = () => {
     const fetchPuppies = async () => {
       setIsLoading(true);
       try {
+        console.log("Fetching puppies for interest selection");
+        
         // Fetch puppies with 'Available' or 'Reserved' status
         const { data, error } = await supabase
           .from('puppies')
@@ -44,7 +46,10 @@ const InterestedPuppyField = () => {
         // If we have a currently selected puppy that's not in the fetched list,
         // we need to fetch it separately to include it in the options
         const currentPuppyId = form.getValues('interested_puppy_id');
+        console.log("Current selected puppy ID:", currentPuppyId);
+        
         if (currentPuppyId && currentPuppyId !== 'none' && !data?.find(p => p.id === currentPuppyId)) {
+          console.log("Current puppy not in list, fetching separately");
           const { data: currentPuppy, error: puppyError } = await supabase
             .from('puppies')
             .select('*')
@@ -52,12 +57,15 @@ const InterestedPuppyField = () => {
             .single();
           
           if (!puppyError && currentPuppy) {
+            console.log("Found current puppy:", currentPuppy);
             // Add the currently selected puppy to the options
             setPuppies([...data, currentPuppy]);
+            setIsLoading(false);
             return;
           }
         }
         
+        console.log("Fetched puppies:", data?.length || 0);
         setPuppies(data || []);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -66,6 +74,7 @@ const InterestedPuppyField = () => {
           description: errorMessage,
           variant: "destructive",
         });
+        console.error("Error fetching puppies:", error);
       } finally {
         setIsLoading(false);
       }
@@ -83,7 +92,7 @@ const InterestedPuppyField = () => {
           <FormLabel>Interested Puppy</FormLabel>
           <Select
             onValueChange={field.onChange}
-            defaultValue={field.value || "none"}
+            value={field.value}
             disabled={isLoading}
           >
             <FormControl>

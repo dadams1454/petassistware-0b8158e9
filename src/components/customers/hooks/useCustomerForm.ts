@@ -41,6 +41,8 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
   const handleSubmit = async (values: CustomerFormValues) => {
     setIsLoading(true);
     try {
+      console.log("Form submit started with values:", values);
+      
       // Extract metadata fields
       const { customer_type, customer_since, interested_puppy_id, ...otherFields } = values;
       
@@ -74,19 +76,28 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       const puppyInterestChanged = 
         (previousPuppyId || 'none') !== (interested_puppy_id || 'none');
 
+      console.log("Customer data to be sent:", customerData);
+      console.log("Puppy interest changed:", puppyInterestChanged);
+      
       // Transaction to update customer and handle puppy status
       const updateCustomerAndPuppies = async () => {
         // Step 1: Update or create customer
         let customerId;
         
         if (customer) {
+          console.log("Updating existing customer with ID:", customer.id);
           // Update existing customer
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('customers')
             .update(customerData)
-            .eq('id', customer.id);
+            .eq('id', customer.id)
+            .select();
           
-          if (error) throw error;
+          if (error) {
+            console.error("Customer update error:", error);
+            throw error;
+          }
+          console.log("Customer update successful:", data);
           customerId = customer.id;
         } else {
           // Create new customer
@@ -104,6 +115,7 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
         if (puppyInterestChanged) {
           // If there was a previous puppy, set it back to Available
           if (previousPuppyId && previousPuppyId !== 'none') {
+            console.log("Resetting previous puppy status for:", previousPuppyId);
             const { error: resetError } = await supabase
               .from('puppies')
               .update({ status: 'Available' })
@@ -114,6 +126,7 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
           
           // If a new puppy is selected, set it to Reserved
           if (interested_puppy_id && interested_puppy_id !== 'none') {
+            console.log("Updating new puppy status to Reserved for:", interested_puppy_id);
             const { error: reserveError } = await supabase
               .from('puppies')
               .update({ 
@@ -131,6 +144,7 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       
       // Execute the transaction logic
       await updateCustomerAndPuppies();
+      console.log("Customer and puppies updated successfully");
 
       toast({
         title: customer ? "Customer updated" : "Customer added",

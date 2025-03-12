@@ -142,7 +142,7 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
               <CustomerWaitlistStatus customerId={customer.id} />
             </TabsContent>
 
-            <TabsContent value="edit">
+            <TabsContent value="edit" className="mt-4">
               <CustomerForm
                 customer={customer}
                 onSubmit={handleSuccess}
