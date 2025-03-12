@@ -106,7 +106,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
       ) : (
         <>
           <LitterSection
-            title="Female Litters"
+            title="Active Litters"
             icon={<UserRound className="h-5 w-5 text-pink-500" />}
             litters={organizedLitters.female}
             onEditLitter={onEditLitter}
