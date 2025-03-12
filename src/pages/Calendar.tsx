@@ -57,6 +57,7 @@ export const EVENT_COLORS: Record<string, { bg: string, text: string }> = {
 const CalendarPage = () => {
   const location = useLocation();
   const initialEventData = location.state?.initialEventData;
+  const selectedEventId = location.state?.selectedEventId;
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -67,6 +68,11 @@ const CalendarPage = () => {
   
   const queryClient = useQueryClient();
   
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ['events'],
+    queryFn: fetchEvents
+  });
+
   // Effect to auto-open dialog with initial event data when navigating from dogs page
   useEffect(() => {
     if (initialEventData) {
@@ -81,10 +87,20 @@ const CalendarPage = () => {
     }
   }, [initialEventData]);
 
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events'],
-    queryFn: fetchEvents
-  });
+  // Effect to open an existing event when navigating with a selectedEventId
+  useEffect(() => {
+    if (selectedEventId && events.length > 0) {
+      const event = events.find(e => e.id === selectedEventId);
+      if (event) {
+        setSelectedEvent(event);
+        setIsCreating(false);
+        setDialogOpen(true);
+        
+        // Set the selected date to match the event date
+        setSelectedDate(new Date(event.event_date));
+      }
+    }
+  }, [selectedEventId, events]);
 
   const createMutation = useMutation({
     mutationFn: createEvent,

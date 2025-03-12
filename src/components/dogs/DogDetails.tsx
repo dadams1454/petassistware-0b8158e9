@@ -72,6 +72,15 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
     });
   };
 
+  // Navigate to calendar with the event selected
+  const handleViewEvent = (event: any) => {
+    navigate('/calendar', {
+      state: {
+        selectedEventId: event.id
+      }
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start">
@@ -191,7 +200,11 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
               <CardContent className="py-0">
                 <div className="space-y-3">
                   {events?.map(event => (
-                    <div key={event.id} className="flex justify-between items-center pb-3 border-b last:border-0">
+                    <div 
+                      key={event.id} 
+                      className="flex justify-between items-center pb-3 border-b last:border-0 cursor-pointer hover:bg-muted/50 rounded p-2 transition-colors"
+                      onClick={() => handleViewEvent(event)}
+                    >
                       <div>
                         <h4 className="font-medium">{event.title}</h4>
                         <p className="text-sm text-muted-foreground">
