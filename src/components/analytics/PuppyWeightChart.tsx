@@ -105,9 +105,9 @@ const PuppyWeightChart: React.FC<PuppyWeightChartProps> = ({
               />
               <Tooltip 
                 formatter={(value, name) => {
-                  if (name === 'litterAverage') return [`${value.toFixed(1)} oz`, 'Litter Average'];
-                  if (name === 'birthWeight') return [`${value.toFixed(1)} oz`, 'Birth Weight'];
-                  return [`${value.toFixed(1)} oz`, 'Current Weight'];
+                  if (name === 'litterAverage') return [`${Number(value).toFixed(1)} oz`, 'Litter Average'];
+                  if (name === 'birthWeight') return [`${Number(value).toFixed(1)} oz`, 'Birth Weight'];
+                  return [`${Number(value).toFixed(1)} oz`, 'Current Weight'];
                 }}
               />
               <Legend />
