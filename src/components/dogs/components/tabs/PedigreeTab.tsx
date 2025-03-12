@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
-import { Plus, TreeDeciduous } from 'lucide-react';
+import { Plus, TreeDeciduous, Scan } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDogRelationships } from '../../hooks/useDogRelationships';
 import RelationshipSection from '../pedigree/RelationshipSection';
 import AddRelationshipForm from '../pedigree/AddRelationshipForm';
 import PedigreeChart from '../pedigree/PedigreeChart';
+import PedigreeScanDialog from '../pedigree/PedigreeScanDialog';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -14,6 +16,7 @@ import {
   CardTitle,
   CardDescription 
 } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 interface PedigreeTabProps {
   dogId: string;
@@ -23,9 +26,11 @@ interface PedigreeTabProps {
 const PedigreeTab = ({ dogId, currentDog }: PedigreeTabProps) => {
   const { relationships, isLoading, addRelationship, removeRelationship } = useDogRelationships(dogId);
   const [isAdding, setIsAdding] = useState(false);
+  const [isScanDialogOpen, setIsScanDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   // Fetch all dogs for the pedigree chart
-  const { data: allDogs } = useQuery({
+  const { data: allDogs, refetch: refetchAllDogs } = useQuery({
     queryKey: ['allDogs'],
     queryFn: async () => {
       const { data } = await supabase
@@ -54,8 +59,42 @@ const PedigreeTab = ({ dogId, currentDog }: PedigreeTabProps) => {
     setIsAdding(false);
   };
 
-  const handleAddParent = () => {
-    setIsAdding(true);
+  const handlePedigreeExtracted = async (pedigreeData: any) => {
+    console.log('Extracted pedigree data:', pedigreeData);
+    
+    if (!pedigreeData || Object.keys(pedigreeData).length === 0) {
+      toast({
+        title: 'No data extracted',
+        description: 'Could not extract enough information from the pedigree document',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      // Check if we have sire/dam information to add as relationships
+      if (pedigreeData.sire || pedigreeData.dam) {
+        // For demonstration, we'll just show a success message
+        // In a real implementation, you would:
+        // 1. Check if the sire/dam already exist in the database
+        // 2. If not, create them as new dog entries
+        // 3. Create the relationships with the current dog
+        
+        toast({
+          title: 'Pedigree information extracted',
+          description: `Found information about ${pedigreeData.sire ? 'sire' : ''} ${pedigreeData.sire && pedigreeData.dam ? 'and' : ''} ${pedigreeData.dam ? 'dam' : ''}`,
+        });
+      }
+      
+      setIsScanDialogOpen(false);
+    } catch (error) {
+      console.error('Error processing pedigree data:', error);
+      toast({
+        title: 'Error processing data',
+        description: 'Failed to process the extracted pedigree information',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) {
@@ -74,16 +113,28 @@ const PedigreeTab = ({ dogId, currentDog }: PedigreeTabProps) => {
           <h2 className="text-xl font-semibold">Family Tree</h2>
         </div>
         
-        {!isAdding && (
+        <div className="flex gap-2">
           <Button 
-            onClick={() => setIsAdding(true)}
+            onClick={() => setIsScanDialogOpen(true)}
             size="sm"
+            variant="outline"
             className="gap-1"
           >
-            <Plus className="h-4 w-4" /> 
-            Add Relationship
+            <Scan className="h-4 w-4" /> 
+            Scan Pedigree
           </Button>
-        )}
+          
+          {!isAdding && (
+            <Button 
+              onClick={() => setIsAdding(true)}
+              size="sm"
+              className="gap-1"
+            >
+              <Plus className="h-4 w-4" /> 
+              Add Relationship
+            </Button>
+          )}
+        </div>
       </div>
 
       {isAdding && (
@@ -145,6 +196,13 @@ const PedigreeTab = ({ dogId, currentDog }: PedigreeTabProps) => {
           }}
         />
       </div>
+      
+      {/* Pedigree Scan Dialog */}
+      <PedigreeScanDialog 
+        isOpen={isScanDialogOpen}
+        onClose={() => setIsScanDialogOpen(false)}
+        onPedigreeExtracted={handlePedigreeExtracted}
+      />
     </div>
   );
 };
