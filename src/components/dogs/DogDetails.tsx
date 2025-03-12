@@ -13,7 +13,7 @@ import {
   CardDescription
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, Calendar, Bell } from 'lucide-react';
 import DogHealthSection from './DogHealthSection';
 import VaccinationsTab from './components/VaccinationsTab';
 import PedigreeTab from './components/tabs/PedigreeTab';
@@ -26,6 +26,10 @@ import {
 } from '@/components/ui/dialog';
 import DogForm from './DogForm';
 import { useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { fetchEvents } from '@/services/eventService';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface DogDetailsProps {
   dog: any;
@@ -36,6 +40,37 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Fetch upcoming events related to this dog
+  const { data: events } = useQuery({
+    queryKey: ['dogEvents', dog.id],
+    queryFn: async () => {
+      const allEvents = await fetchEvents();
+      // Filter events that mention this dog in the title or description
+      return allEvents.filter(event => 
+        (event.title?.toLowerCase().includes(dog.name.toLowerCase()) || 
+        event.description?.toLowerCase().includes(dog.name.toLowerCase())) &&
+        event.status !== 'completed' && 
+        event.status !== 'cancelled'
+      );
+    },
+  });
+
+  const upcomingEvents = events?.length || 0;
+
+  const handleAddAppointment = () => {
+    navigate('/calendar', { 
+      state: { 
+        initialEventData: {
+          title: `Appointment for ${dog.name}`,
+          description: `Dog: ${dog.name} (${dog.breed})`,
+          event_type: 'Vet Appointment'
+        }
+      } 
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -59,14 +94,24 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
               <h2 className="text-2xl font-bold">{dog.name}</h2>
               <p className="text-muted-foreground">{dog.breed}</p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setIsEditDialogOpen(true)}
-            >
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleAddAppointment}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Add Appointment
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsEditDialogOpen(true)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-y-2">
@@ -99,11 +144,18 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
             )}
           </div>
           
-          {dog.pedigree && (
-            <div>
+          <div className="flex flex-wrap gap-2">
+            {dog.pedigree && (
               <Badge variant="outline" className="bg-primary/10">Pedigree</Badge>
-            </div>
-          )}
+            )}
+            
+            {upcomingEvents > 0 && (
+              <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1">
+                <Bell className="h-3 w-3" />
+                {upcomingEvents} {upcomingEvents === 1 ? 'Appointment' : 'Appointments'}
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
       
@@ -127,6 +179,43 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
               <DogHealthSection dog={dog} />
             </CardContent>
           </Card>
+          
+          {upcomingEvents > 0 && (
+            <Card className="mt-4">
+              <CardHeader className="py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Upcoming Appointments
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="py-0">
+                <div className="space-y-3">
+                  {events?.map(event => (
+                    <div key={event.id} className="flex justify-between items-center pb-3 border-b last:border-0">
+                      <div>
+                        <h4 className="font-medium">{event.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {event.description}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">{format(new Date(event.event_date), 'PP')}</div>
+                        <Badge variant={event.status === 'upcoming' ? 'default' : 'outline'}>
+                          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="pt-4 pb-2">
+                <Button variant="outline" size="sm" onClick={handleAddAppointment} className="w-full">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Add New Appointment
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
           
           {dog.notes && (
             <div className="mt-4">

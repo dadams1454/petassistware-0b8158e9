@@ -6,10 +6,13 @@ import {
   CardContent,
   CardHeader,
 } from '@/components/ui/card';
-import { PawPrint } from 'lucide-react';
+import { PawPrint, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import DogStatusCard from './components/DogStatusCard';
+import { useQuery } from '@tanstack/react-query';
+import { fetchEvents } from '@/services/eventService';
 
 interface DogsListProps {
   dogs: any[];
@@ -20,6 +23,34 @@ interface DogsListProps {
 
 const DogsList = ({ dogs }: DogsListProps) => {
   const navigate = useNavigate();
+  
+  // Fetch all events
+  const { data: allEvents } = useQuery({
+    queryKey: ['events'],
+    queryFn: fetchEvents,
+  });
+  
+  // Get upcoming appointments for each dog
+  const dogAppointments = useMemo(() => {
+    if (!allEvents) return {};
+    
+    const appointments: Record<string, number> = {};
+    
+    allEvents.forEach(event => {
+      if (event.status === 'completed' || event.status === 'cancelled') {
+        return;
+      }
+      
+      dogs.forEach(dog => {
+        if (event.title?.toLowerCase().includes(dog.name.toLowerCase()) || 
+            event.description?.toLowerCase().includes(dog.name.toLowerCase())) {
+          appointments[dog.id] = (appointments[dog.id] || 0) + 1;
+        }
+      });
+    });
+    
+    return appointments;
+  }, [allEvents, dogs]);
   
   // Group dogs by gender
   const groupedDogs = useMemo(() => {
@@ -96,12 +127,19 @@ const DogsList = ({ dogs }: DogsListProps) => {
                   <p className="text-white/80">{dog.breed}</p>
                 </div>
 
-                {/* Status indicators for female dogs - now positioned at the top of the card */}
-                {dog.gender === 'Female' && (
-                  <div className="absolute top-3 left-3 z-30">
+                {/* Status indicators */}
+                <div className="absolute top-3 left-3 z-30 flex gap-2 flex-wrap">
+                  {dog.gender === 'Female' && (
                     <DogStatusCard dog={dog} />
-                  </div>
-                )}
+                  )}
+                  
+                  {dogAppointments[dog.id] > 0 && (
+                    <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1">
+                      <Bell className="h-3 w-3" />
+                      {dogAppointments[dog.id]}
+                    </Badge>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="p-4">
                 <div className="grid grid-cols-2 gap-2 text-sm">
