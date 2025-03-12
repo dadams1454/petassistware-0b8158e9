@@ -1,5 +1,6 @@
 
 import { toast } from '@/hooks/use-toast';
+import { compressImage } from '@/utils/imageOptimization';
 
 export const formatFileSize = (sizeInBytes: number): string => {
   if (sizeInBytes < 1024) {
