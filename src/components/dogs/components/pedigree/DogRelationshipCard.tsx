@@ -34,10 +34,10 @@ const DogRelationshipCard = ({
         )}
       </div>
       
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 overflow-hidden">
         <p className="font-medium truncate">{relatedDog?.name || 'Unknown Dog'}</p>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{relatedDog?.breed || 'Unknown Breed'}</span>
+        <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+          <span className="truncate max-w-[120px]">{relatedDog?.breed || 'Unknown Breed'}</span>
           {relatedDog?.gender && (
             <>
               <span>•</span>
@@ -47,7 +47,7 @@ const DogRelationshipCard = ({
           {relatedDog?.color && (
             <>
               <span>•</span>
-              <span>{relatedDog.color}</span>
+              <span className="truncate max-w-[100px]">{relatedDog.color}</span>
             </>
           )}
         </div>
@@ -56,7 +56,7 @@ const DogRelationshipCard = ({
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
         onClick={() => onRemove(relationshipId)}
         title="Remove relationship"
       >
