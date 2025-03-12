@@ -47,7 +47,7 @@ const Navbar: React.FC = () => {
   };
   return <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 bg-[4] bg-neutral-300">
+        <div className="flex items-center justify-between h-16 bg-[4] bg-neutral-300 my-[41px] mx-0 py-[43px] px-[48px]">
           <div className="flex items-center">
             <Link to="/dashboard" className="flex-shrink-0 font-bold text-xl">
               Bear Paw Kennels
