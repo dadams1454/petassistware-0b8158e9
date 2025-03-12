@@ -64,7 +64,7 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
     navigate('/calendar', { 
       state: { 
         initialEventData: {
-          title: `Appointment for ${dog.name}`,
+          title: `${dog.name}`,
           description: `Dog: ${dog.name} (${dog.breed})`,
           event_type: 'Vet Appointment'
         }
