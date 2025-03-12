@@ -11,10 +11,20 @@ export type Contract = Tables<'contracts'> & {
     phone: string | null;
   } | null;
   puppy?: Tables<'puppies'> | null;
+  breeder_signature?: string | null;
+  customer_signature?: string | null;
 };
 
-export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'>;
-export type ContractUpdate = Partial<Tables<'contracts'>> & { id: string };
+export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'> & {
+  breeder_signature?: string | null;
+  customer_signature?: string | null;
+};
+
+export type ContractUpdate = Partial<Tables<'contracts'>> & { 
+  id: string;
+  breeder_signature?: string | null;
+  customer_signature?: string | null;
+};
 
 export const createContract = async (contract: ContractInsert) => {
   const { data, error } = await supabase

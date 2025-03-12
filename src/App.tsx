@@ -1,8 +1,10 @@
+
 import React from 'react';
 import {
   BrowserRouter,
   Routes,
   Route,
+  Outlet
 } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -19,8 +21,8 @@ import Calendar from '@/pages/Calendar';
 import Documents from '@/pages/Documents';
 import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { AuthProvider } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { AuthProvider } from '@/contexts/AuthProvider';
 import ContractPage from './pages/ContractPage';
 
 function App() {
@@ -36,7 +38,7 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               
               {/* Protected routes */}
-              <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dogs" element={<Dogs />} />
                 <Route path="/litters" element={<Litters />} />
