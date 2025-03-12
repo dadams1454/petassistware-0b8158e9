@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { format, addDays, isWithinInterval } from 'date-fns';
@@ -74,8 +75,12 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
     <Tabs defaultValue="basic">
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="basic">Basic Information</TabsTrigger>
+        {gender === 'Female' && (
+          <TabsTrigger value="breeding" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 data-[state=active]:bg-purple-200 dark:data-[state=active]:bg-purple-800">
+            Breeding
+          </TabsTrigger>
+        )}
         <TabsTrigger value="health">Health</TabsTrigger>
-        <TabsTrigger value="breeding">Breeding</TabsTrigger>
         <TabsTrigger value="details">Details & Documentation</TabsTrigger>
       </TabsList>
       
@@ -146,74 +151,76 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
       <TabsContent value="breeding" className="space-y-4 py-4">
         {gender === 'Female' && (
           <div className="mt-2">
-            <h3 className="text-lg font-medium mb-4">Breeding Information</h3>
-            <Separator className="mb-4" />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <DatePicker
+            <div className="p-4 rounded-lg border-2 border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800">
+              <h3 className="text-lg font-semibold mb-4 text-purple-800 dark:text-purple-300">Breeding Information</h3>
+              <Separator className="mb-4 bg-purple-200 dark:bg-purple-700" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <DatePicker
+                    form={form}
+                    name="last_heat_date"
+                    label="Last Heat Date"
+                  />
+                  {nextHeatDate && !isPregnant && (
+                    <div className="flex items-center mt-1 text-xs">
+                      <Calendar className="h-3 w-3 mr-1 text-purple-600" />
+                      <span className="text-muted-foreground mr-1">Next heat:</span>
+                      <Badge variant="outline" className={`font-normal ${hasSchedulingConflict ? "text-amber-600 bg-amber-50" : "text-purple-600 bg-purple-50"}`}>
+                        {format(nextHeatDate, 'MMM d, yyyy')}
+                      </Badge>
+                      
+                      {hasSchedulingConflict && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="ml-1.5">
+                                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Warning: Heat cycle is predicted within 1 month of next vaccination. Consider rescheduling one of these.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <TextInput
                   form={form}
-                  name="last_heat_date"
-                  label="Last Heat Date"
+                  name="litter_number"
+                  label="Litter Number (out of 4)"
+                  type="number"
+                  onChange={handleLitterNumberChange}
                 />
-                {nextHeatDate && !isPregnant && (
-                  <div className="flex items-center mt-1 text-xs">
-                    <Calendar className="h-3 w-3 mr-1 text-blue-600" />
-                    <span className="text-muted-foreground mr-1">Next heat:</span>
-                    <Badge variant="outline" className={`font-normal ${hasSchedulingConflict ? "text-amber-600 bg-amber-50" : "text-blue-600 bg-blue-50"}`}>
-                      {format(nextHeatDate, 'MMM d, yyyy')}
-                    </Badge>
-                    
-                    {hasSchedulingConflict && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="ml-1.5">
-                              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Warning: Heat cycle is predicted within 1 month of next vaccination. Consider rescheduling one of these.</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                
+                <CheckboxInput
+                  form={form}
+                  name="is_pregnant"
+                  label="Currently Pregnant"
+                />
+                
+                {isPregnant && (
+                  <div className="space-y-1">
+                    <DatePicker
+                      form={form}
+                      name="tie_date"
+                      label="Tie Date"
+                    />
+                    {form.watch('tie_date') && (
+                      <div className="flex items-center mt-1 text-xs">
+                        <Calendar className="h-3 w-3 mr-1 text-pink-600" />
+                        <span className="text-muted-foreground mr-1">Due date:</span>
+                        <Badge variant="outline" className="font-normal text-pink-600 bg-pink-50">
+                          {format(addDays(form.watch('tie_date'), 65), 'MMM d, yyyy')}
+                        </Badge>
+                      </div>
                     )}
                   </div>
                 )}
               </div>
-              
-              <TextInput
-                form={form}
-                name="litter_number"
-                label="Litter Number (out of 4)"
-                type="number"
-                onChange={handleLitterNumberChange}
-              />
-              
-              <CheckboxInput
-                form={form}
-                name="is_pregnant"
-                label="Currently Pregnant"
-              />
-              
-              {isPregnant && (
-                <div className="space-y-1">
-                  <DatePicker
-                    form={form}
-                    name="tie_date"
-                    label="Tie Date"
-                  />
-                  {form.watch('tie_date') && (
-                    <div className="flex items-center mt-1 text-xs">
-                      <Calendar className="h-3 w-3 mr-1 text-pink-600" />
-                      <span className="text-muted-foreground mr-1">Due date:</span>
-                      <Badge variant="outline" className="font-normal text-pink-600 bg-pink-50">
-                        {format(addDays(form.watch('tie_date'), 65), 'MMM d, yyyy')}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         )}

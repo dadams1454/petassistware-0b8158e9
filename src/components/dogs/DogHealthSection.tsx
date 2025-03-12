@@ -40,6 +40,33 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
 
   return (
     <div className="text-sm space-y-4">
+      {/* Only show breeding section for females first and more prominently */}
+      {dog.gender === 'Female' && (
+        <>
+          <div className="p-4 rounded-lg border-2 border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800">
+            <div className="flex justify-between items-center mb-3">
+              <h4 className="font-semibold text-base text-purple-800 dark:text-purple-300">Breeding Information</h4>
+              {isPregnant && (
+                <span className="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-pink-900 dark:text-pink-300">
+                  Pregnant
+                </span>
+              )}
+            </div>
+            
+            <BreedingInfoSection 
+              lastHeatDate={lastHeatDate}
+              isPregnant={isPregnant}
+              tieDate={tieDate}
+              litterNumber={litterNumber}
+              nextHeatDate={nextHeatDate}
+              hasVaccinationConflict={hasVaccinationConflict}
+            />
+          </div>
+          
+          <Separator className="my-2" />
+        </>
+      )}
+
       {/* Vaccination management */}
       <div className="space-y-2">
         <VaccinationManager dogId={dog.id} />
@@ -48,9 +75,9 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
       <Separator className="my-2" />
 
       {/* Vaccination information */}
-      <div className="space-y-2">
+      <div className="space-y-2 opacity-90">
         <div className="flex justify-between items-center">
-          <h4 className="font-semibold text-sm">Vaccination Schedule</h4>
+          <h4 className="font-medium text-sm text-muted-foreground">Vaccination Schedule</h4>
         </div>
         
         <VaccinationHistorySection 
@@ -61,22 +88,6 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
           dogGender={dog.gender}
         />
       </div>
-
-      {/* Only show breeding section for females */}
-      {dog.gender === 'Female' && (
-        <>
-          <Separator className="my-2" />
-          
-          <BreedingInfoSection 
-            lastHeatDate={lastHeatDate}
-            isPregnant={isPregnant}
-            tieDate={tieDate}
-            litterNumber={litterNumber}
-            nextHeatDate={nextHeatDate}
-            hasVaccinationConflict={hasVaccinationConflict}
-          />
-        </>
-      )}
     </div>
   );
 };
