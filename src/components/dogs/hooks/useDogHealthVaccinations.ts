@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { VaccinationDisplay } from '../types/vaccination';
+import { getVaccinationTypeLabel } from '../utils/vaccinationUtils';
 
 // Type to handle the Supabase response
 type VaccinationResponse = {
@@ -62,21 +63,6 @@ export const useDogHealthVaccinations = (dogId: string | undefined) => {
     
     return Array.from(latestByType.values());
   };
-
-  // Map vaccination type to human-readable name
-  function getVaccinationTypeLabel(type: string) {
-    const types: Record<string, string> = {
-      'rabies': 'Rabies',
-      'distemper': 'Distemper',
-      'parvovirus': 'Parvovirus',
-      'adenovirus': 'Adenovirus',
-      'leptospirosis': 'Leptospirosis',
-      'bordetella': 'Bordetella',
-      'lyme': 'Lyme Disease',
-      'combo': 'Combo (DHPP)'
-    };
-    return types[type] || type;
-  }
 
   return {
     vaccinations,

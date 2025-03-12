@@ -4,12 +4,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, HelpCircle } from 'lucide-react';
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import SelectInput from '../form/SelectInput';
 import DatePicker from '../form/DatePicker';
 import TextareaInput from '../form/TextareaInput';
 import { Vaccination } from '../types/vaccination';
 import { vaccinationFormSchema } from '../schemas/vaccinationFormSchema';
+import { vaccinationInfo } from '../utils/vaccinationUtils';
 
 interface VaccinationFormProps {
   dogId: string;
@@ -42,6 +44,31 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
     });
   };
 
+  // Create vaccination options with tooltips
+  const vaccinationOptions = Object.entries(vaccinationInfo).map(([key, info]) => ({
+    value: key,
+    label: info.name,
+    description: (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex items-center ml-1">
+              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs p-3">
+            <div className="space-y-2">
+              <p className="font-medium">{info.name}</p>
+              <p className="text-xs">{info.description}</p>
+              <p className="text-xs font-medium mt-1">Recommended schedule:</p>
+              <p className="text-xs">{info.schedule}</p>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }));
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 p-4 border rounded-md bg-muted/20">
@@ -63,16 +90,7 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
             form={form}
             name="vaccination_type"
             label="Vaccination Type"
-            options={[
-              { value: 'rabies', label: 'Rabies' },
-              { value: 'distemper', label: 'Distemper' },
-              { value: 'parvovirus', label: 'Parvovirus' },
-              { value: 'adenovirus', label: 'Adenovirus' },
-              { value: 'leptospirosis', label: 'Leptospirosis' },
-              { value: 'bordetella', label: 'Bordetella' },
-              { value: 'lyme', label: 'Lyme Disease' },
-              { value: 'combo', label: 'Combo (DHPP)' }
-            ]}
+            options={vaccinationOptions}
             placeholder="Select vaccination type"
             required
           />
