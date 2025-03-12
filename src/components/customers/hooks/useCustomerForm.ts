@@ -153,25 +153,25 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
         }
 
         // Step 3: Add to waitlist if applicable
-        if (waitlistType === "open" || (waitlistType === "specific" && interested_litter_id && interested_litter_id !== "none")) {
+        if (waitlist_type === "open" || (waitlist_type === "specific" && interested_litter_id && interested_litter_id !== "none")) {
           // Check if already on waitlist for this litter
           const { data: existingEntries, error: checkError } = await supabase
             .from('waitlist')
             .select('id')
             .eq('customer_id', customerId)
-            .eq('litter_id', waitlistType === "open" ? null : interested_litter_id);
+            .eq('litter_id', waitlist_type === "open" ? null : interested_litter_id);
           
           if (checkError) console.error("Error checking waitlist:", checkError);
           
           // Only add to waitlist if not already on it
           if (!existingEntries || existingEntries.length === 0) {
-            console.log("Adding to waitlist:", waitlistType);
+            console.log("Adding to waitlist:", waitlist_type);
             
             const waitlistEntry = {
               customer_id: customerId,
-              litter_id: waitlistType === "open" ? null : interested_litter_id,
+              litter_id: waitlist_type === "open" ? null : interested_litter_id,
               status: 'pending',
-              notes: `Added via customer form - ${waitlistType === "open" ? "Open waitlist" : "Specific litter interest"}`,
+              notes: `Added via customer form - ${waitlist_type === "open" ? "Open waitlist" : "Specific litter interest"}`,
               preferences: {}
             };
             
