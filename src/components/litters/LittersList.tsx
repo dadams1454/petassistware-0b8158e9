@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { format, differenceInWeeks } from 'date-fns';
 import { Eye, Edit, Trash2, PlusCircle, PawPrint, UserRound } from 'lucide-react';
@@ -85,7 +86,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
         <h2 className="text-lg font-semibold">{title} ({sectionLitters.length})</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="space-y-4">
         {sectionLitters.map((litter) => {
           // Calculate litter age in weeks
           const birthDate = new Date(litter.birth_date);
