@@ -22,7 +22,7 @@ const LitterCard: React.FC<LitterCardProps> = ({ litter, onEdit, onDelete, onArc
   const ageInWeeks = differenceInWeeks(new Date(), birthDate);
   
   // Count available puppies and get unique colors
-  const availablePuppies = (litter.puppies || []).filter(p => p.status === 'Available');
+  const availablePuppies = litter.puppies ? litter.puppies.filter(p => p.status === 'Available') : [];
   const colors = [...new Set((litter.puppies || []).map(p => p.color).filter(Boolean))];
   
   const isArchived = litter.status === 'archived';
