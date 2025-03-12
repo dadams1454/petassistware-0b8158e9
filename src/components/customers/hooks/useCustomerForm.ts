@@ -12,6 +12,8 @@ type Customer = Tables<'customers'> & {
     customer_type?: 'new' | 'returning';
     customer_since?: string;
     interested_puppy_id?: string;
+    interested_litter_id?: string;
+    waitlist_type?: 'specific' | 'open';
   }
 };
 
@@ -35,6 +37,8 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       customer_type: customer?.metadata?.customer_type || 'new',
       customer_since: customer?.metadata?.customer_since || '',
       interested_puppy_id: customer?.metadata?.interested_puppy_id || 'none',
+      interested_litter_id: customer?.metadata?.interested_litter_id || 'none',
+      waitlist_type: customer?.metadata?.waitlist_type || 'specific',
     },
   });
 
@@ -44,7 +48,14 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       console.log("Form submit started with values:", values);
       
       // Extract metadata fields
-      const { customer_type, customer_since, interested_puppy_id, ...otherFields } = values;
+      const { 
+        customer_type, 
+        customer_since, 
+        interested_puppy_id, 
+        interested_litter_id,
+        waitlist_type,
+        ...otherFields 
+      } = values;
       
       // Get previous puppy id from existing customer if updating
       const previousPuppyId = customer?.metadata?.interested_puppy_id || null;
@@ -54,6 +65,8 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
         customer_type,
         customer_since: customer_since || new Date().toISOString().split('T')[0],
         interested_puppy_id: interested_puppy_id === 'none' ? null : interested_puppy_id,
+        interested_litter_id: interested_litter_id === 'none' ? null : interested_litter_id,
+        waitlist_type,
       };
       
       // Log values to help with debugging
@@ -136,6 +149,38 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
               .eq('id', interested_puppy_id);
             
             if (reserveError) console.error("Error updating puppy status:", reserveError);
+          }
+        }
+
+        // Step 3: Add to waitlist if applicable
+        if (waitlistType === "open" || (waitlistType === "specific" && interested_litter_id && interested_litter_id !== "none")) {
+          // Check if already on waitlist for this litter
+          const { data: existingEntries, error: checkError } = await supabase
+            .from('waitlist')
+            .select('id')
+            .eq('customer_id', customerId)
+            .eq('litter_id', waitlistType === "open" ? null : interested_litter_id);
+          
+          if (checkError) console.error("Error checking waitlist:", checkError);
+          
+          // Only add to waitlist if not already on it
+          if (!existingEntries || existingEntries.length === 0) {
+            console.log("Adding to waitlist:", waitlistType);
+            
+            const waitlistEntry = {
+              customer_id: customerId,
+              litter_id: waitlistType === "open" ? null : interested_litter_id,
+              status: 'pending',
+              notes: `Added via customer form - ${waitlistType === "open" ? "Open waitlist" : "Specific litter interest"}`,
+              preferences: {}
+            };
+            
+            const { error: waitlistError } = await supabase
+              .from('waitlist')
+              .insert(waitlistEntry);
+            
+            if (waitlistError) console.error("Error adding to waitlist:", waitlistError);
+            else console.log("Successfully added to waitlist");
           }
         }
 

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 import {
   FormField,
   FormItem,
@@ -28,18 +28,45 @@ const InterestedPuppyField = () => {
   const [puppies, setPuppies] = useState<Puppy[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Watch the selected litter to filter puppies
+  const selectedLitterId = useWatch({
+    control: form.control,
+    name: "interested_litter_id",
+    defaultValue: "none",
+  });
+  
+  const waitlistType = useWatch({
+    control: form.control,
+    name: "waitlist_type",
+    defaultValue: "specific",
+  });
+  
   useEffect(() => {
     const fetchPuppies = async () => {
+      if (waitlistType === "open") {
+        setPuppies([]);
+        return;
+      }
+      
       setIsLoading(true);
       try {
         console.log("Fetching puppies for interest selection");
         
-        // Fetch puppies with 'Available' or 'Reserved' status
-        const { data, error } = await supabase
+        // Base query for puppies
+        let query = supabase
           .from('puppies')
-          .select('*')
-          .in('status', ['Available', 'Reserved'])
-          .order('created_at', { ascending: false });
+          .select('*, litters(*)')
+          .in('status', ['Available', 'Reserved']);
+        
+        // Filter by litter if one is selected
+        if (selectedLitterId && selectedLitterId !== 'none') {
+          query = query.eq('litter_id', selectedLitterId);
+        }
+        
+        // Add ordering
+        query = query.order('created_at', { ascending: false });
+        
+        const { data, error } = await query;
         
         if (error) throw error;
         
@@ -52,7 +79,7 @@ const InterestedPuppyField = () => {
           console.log("Current puppy not in list, fetching separately");
           const { data: currentPuppy, error: puppyError } = await supabase
             .from('puppies')
-            .select('*')
+            .select('*, litters(*)')
             .eq('id', currentPuppyId)
             .single();
           
@@ -81,7 +108,12 @@ const InterestedPuppyField = () => {
     };
     
     fetchPuppies();
-  }, [form]);
+  }, [form, selectedLitterId, waitlistType]);
+
+  // Don't show puppy selection for open waitlist
+  if (waitlistType === "open") {
+    return null;
+  }
 
   return (
     <FormField
@@ -93,7 +125,7 @@ const InterestedPuppyField = () => {
           <Select
             onValueChange={field.onChange}
             value={field.value}
-            disabled={isLoading}
+            disabled={isLoading || selectedLitterId === "none"}
           >
             <FormControl>
               <SelectTrigger>
@@ -103,14 +135,18 @@ const InterestedPuppyField = () => {
                     <span>Loading puppies...</span>
                   </div>
                 ) : (
-                  <SelectValue placeholder="Select a puppy (if applicable)" />
+                  <SelectValue placeholder={selectedLitterId === "none" ? "Select a litter first" : "Select a puppy (if applicable)"} />
                 )}
               </SelectTrigger>
             </FormControl>
             <SelectContent>
               <SelectItem value="none">No puppy selected</SelectItem>
               {puppies.length === 0 && !isLoading ? (
-                <SelectItem value="none" disabled>No available puppies found</SelectItem>
+                <SelectItem value="none" disabled>
+                  {selectedLitterId === "none" 
+                    ? "Select a litter first" 
+                    : "No available puppies found"}
+                </SelectItem>
               ) : (
                 puppies.map((puppy) => (
                   <SelectItem 

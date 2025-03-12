@@ -11,6 +11,8 @@ export const customerFormSchema = z.object({
   customer_type: z.enum(["new", "returning"]).default("new"),
   customer_since: z.string().optional(),
   interested_puppy_id: z.string().default("none"),
+  interested_litter_id: z.string().default("none"),
+  waitlist_type: z.enum(["specific", "open"]).default("specific"),
 });
 
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;

@@ -6,6 +6,7 @@ import { useCustomerForm } from './hooks/useCustomerForm';
 import PersonalInfoFields from './form-fields/PersonalInfoFields';
 import AddressField from './form-fields/AddressField';
 import CustomerTypeFields from './form-fields/CustomerTypeFields';
+import LitterSelectionFields from './form-fields/LitterSelectionFields';
 import InterestedPuppyField from './form-fields/InterestedPuppyField';
 import NotesField from './form-fields/NotesField';
 import FormActions from './form-fields/FormActions';
@@ -15,6 +16,8 @@ type Customer = Tables<'customers'> & {
     customer_type?: 'new' | 'returning';
     customer_since?: string;
     interested_puppy_id?: string;
+    interested_litter_id?: string;
+    waitlist_type?: 'specific' | 'open';
   }
 };
 
@@ -40,6 +43,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         <PersonalInfoFields />
         <AddressField />
         <CustomerTypeFields />
+        <LitterSelectionFields />
         <InterestedPuppyField />
         <NotesField />
         <FormActions 

@@ -39,6 +39,28 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
     },
     enabled: !!customer?.metadata?.interested_puppy_id
   });
+  
+  // Fetch litter details if customer is interested in one
+  const { data: litter } = useQuery({
+    queryKey: ['litter', customer?.metadata?.interested_litter_id],
+    queryFn: async () => {
+      if (!customer?.metadata?.interested_litter_id) return null;
+      
+      const { data, error } = await supabase
+        .from('litters')
+        .select(`
+          *,
+          dam:dogs!litters_dam_id_fkey(name, breed),
+          sire:dogs!litters_sire_id_fkey(name, breed)
+        `)
+        .eq('id', customer.metadata.interested_litter_id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!customer?.metadata?.interested_litter_id
+  });
 
   const handleSuccess = () => {
     if (onSuccess) {
@@ -99,12 +121,40 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
                     <span className="text-muted-foreground mr-2">Customer Since:</span>
                     {customer.metadata?.customer_since || 'N/A'}
                   </p>
+                  <p>
+                    <span className="text-muted-foreground mr-2">Waitlist Type:</span>
+                    {customer.metadata?.waitlist_type === 'open' ? 'Open Waitlist (Any Future Litter)' : 'Specific Litter'}
+                  </p>
                 </div>
               </div>
 
+              {litter && (
+                <div>
+                  <h3 className="font-semibold mb-2">Interested Litter</h3>
+                  <div className="space-y-1 text-sm">
+                    <p>
+                      <span className="text-muted-foreground mr-2">Litter Name:</span>
+                      {litter.litter_name || 'Unnamed Litter'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground mr-2">Dam:</span>
+                      {litter.dam?.name || 'N/A'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground mr-2">Sire:</span>
+                      {litter.sire?.name || 'N/A'}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground mr-2">Birth Date:</span>
+                      {litter.birth_date ? new Date(litter.birth_date).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {puppy && (
                 <div>
-                  <h3 className="font-semibold mb-2">Litter Information</h3>
+                  <h3 className="font-semibold mb-2">Interested Puppy</h3>
                   <div className="space-y-1 text-sm">
                     <p>
                       <span className="text-muted-foreground mr-2">Puppy Name:</span>
