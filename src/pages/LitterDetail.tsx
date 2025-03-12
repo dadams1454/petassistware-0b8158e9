@@ -86,7 +86,8 @@ const LitterDetail = () => {
             <LitterTabs 
               litterId={litter.id} 
               litterName={litter.litter_name} 
-              dogBreed={litter.sire?.breed || litter.dam?.breed} 
+              dogBreed={litter.sire?.breed || litter.dam?.breed}
+              puppies={litter.puppies || []} // Pass puppies data here
             />
           </div>
         </div>

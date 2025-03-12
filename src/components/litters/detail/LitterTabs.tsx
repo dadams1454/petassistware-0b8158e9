@@ -9,12 +9,14 @@ interface LitterTabsProps {
   litterId: string;
   litterName?: string | null;
   dogBreed?: string | null;
+  puppies?: Puppy[]; // Add puppies prop
 }
 
 const LitterTabs: React.FC<LitterTabsProps> = ({ 
   litterId, 
   litterName = "Litter", 
-  dogBreed 
+  dogBreed,
+  puppies = [] // Default to empty array
 }) => {
   // Create a function that returns a Promise to satisfy the type requirement
   const handleRefresh = async (): Promise<any> => {
@@ -33,7 +35,7 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
       <TabsContent value="puppies" className="mt-6">
         <PuppiesList 
           litterId={litterId} 
-          puppies={[]} 
+          puppies={puppies} // Pass the puppies data
           onRefresh={handleRefresh} 
         />
       </TabsContent>
