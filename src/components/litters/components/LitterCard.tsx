@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, differenceInWeeks } from 'date-fns';
-import { Eye, Edit, Trash2, Archive } from 'lucide-react';
+import { Eye, Edit, Trash2, Archive, ArchiveRestore } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,9 +12,16 @@ interface LitterCardProps {
   onEdit: (litter: Litter) => void;
   onDelete: (litter: Litter) => void;
   onArchive: (litter: Litter) => void;
+  onUnarchive?: (litter: Litter) => void;
 }
 
-const LitterCard: React.FC<LitterCardProps> = ({ litter, onEdit, onDelete, onArchive }) => {
+const LitterCard: React.FC<LitterCardProps> = ({ 
+  litter, 
+  onEdit, 
+  onDelete, 
+  onArchive,
+  onUnarchive 
+}) => {
   const navigate = useNavigate();
   
   // Calculate litter age in weeks
@@ -123,6 +130,18 @@ const LitterCard: React.FC<LitterCardProps> = ({ litter, onEdit, onDelete, onArc
               >
                 <Archive className="h-4 w-4 mr-2" />
                 Archive
+              </Button>
+              <div className="w-px bg-border" />
+            </>
+          ) : onUnarchive ? (
+            <>
+              <Button 
+                variant="ghost" 
+                className="flex-1 rounded-none py-2 h-12 text-emerald-600 hover:text-emerald-700"
+                onClick={() => onUnarchive(litter)}
+              >
+                <ArchiveRestore className="h-4 w-4 mr-2" />
+                Unarchive
               </Button>
               <div className="w-px bg-border" />
             </>

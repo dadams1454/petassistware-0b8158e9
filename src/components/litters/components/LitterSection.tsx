@@ -9,6 +9,7 @@ interface LitterSectionProps {
   onEditLitter: (litter: Litter) => void;
   onDeleteLitter: (litter: Litter) => void;
   onArchiveLitter: (litter: Litter) => void;
+  onUnarchiveLitter?: (litter: Litter) => void;
 }
 
 const LitterSection: React.FC<LitterSectionProps> = ({
@@ -17,25 +18,32 @@ const LitterSection: React.FC<LitterSectionProps> = ({
   litters,
   onEditLitter,
   onDeleteLitter,
-  onArchiveLitter
+  onArchiveLitter,
+  onUnarchiveLitter
 }) => {
-  if (litters.length === 0) return null;
-  
+  if (litters.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-2">
+    <div>
+      <div className="flex items-center gap-2 mb-4">
         {icon}
-        <h2 className="text-lg font-semibold">{title} ({litters.length})</h2>
+        <h2 className="text-lg font-semibold">{title}</h2>
+        <span className="text-sm text-muted-foreground ml-2">
+          ({litters.length} {litters.length === 1 ? 'litter' : 'litters'})
+        </span>
       </div>
-      
-      <div className="space-y-4">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {litters.map((litter) => (
-          <LitterCard
+          <LitterCard 
             key={litter.id}
             litter={litter}
             onEdit={onEditLitter}
             onDelete={onDeleteLitter}
             onArchive={onArchiveLitter}
+            onUnarchive={onUnarchiveLitter}
           />
         ))}
       </div>

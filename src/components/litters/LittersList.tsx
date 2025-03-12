@@ -86,6 +86,31 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
     }
   };
 
+  const handleUnarchiveLitter = async (litter: Litter) => {
+    try {
+      const { error } = await supabase
+        .from('litters')
+        .update({ status: 'active' })
+        .eq('id', litter.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Litter unarchived",
+        description: "The litter has been successfully unarchived.",
+      });
+      
+      await onRefresh();
+    } catch (error) {
+      console.error('Error unarchiving litter:', error);
+      toast({
+        title: "Error",
+        description: "There was an error unarchiving the litter.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleCloseDeleteDialog = () => {
     setLitterToDelete(null);
   };
@@ -130,6 +155,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
           onEditLitter={onEditLitter} 
           onDeleteLitter={setLitterToDelete}
           onArchiveLitter={handleArchiveLitter}
+          onUnarchiveLitter={handleUnarchiveLitter}
         />
       ) : (
         <>
@@ -140,6 +166,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
             onEditLitter={onEditLitter}
             onDeleteLitter={setLitterToDelete}
             onArchiveLitter={handleArchiveLitter}
+            onUnarchiveLitter={handleUnarchiveLitter}
           />
           
           <LitterSection
@@ -149,6 +176,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
             onEditLitter={onEditLitter}
             onDeleteLitter={setLitterToDelete}
             onArchiveLitter={handleArchiveLitter}
+            onUnarchiveLitter={handleUnarchiveLitter}
           />
 
           {organizedLitters.archived.length > 0 && (
@@ -159,6 +187,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
               onEditLitter={onEditLitter}
               onDeleteLitter={setLitterToDelete}
               onArchiveLitter={handleArchiveLitter}
+              onUnarchiveLitter={handleUnarchiveLitter}
             />
           )}
         </>

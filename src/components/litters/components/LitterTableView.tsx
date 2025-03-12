@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, differenceInWeeks } from 'date-fns';
-import { Eye, Edit, Trash2, Users, Archive } from 'lucide-react';
+import { Eye, Edit, Trash2, Users, Archive, ArchiveRestore } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ interface LitterTableViewProps {
   onEditLitter: (litter: Litter) => void;
   onDeleteLitter: (litter: Litter) => void;
   onArchiveLitter: (litter: Litter) => void;
+  onUnarchiveLitter?: (litter: Litter) => void;
 }
 
 const LitterTableView: React.FC<LitterTableViewProps> = ({
@@ -26,6 +27,7 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
   onEditLitter,
   onDeleteLitter,
   onArchiveLitter,
+  onUnarchiveLitter,
 }) => {
   const navigate = useNavigate();
 
@@ -150,7 +152,7 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    {!isArchived && (
+                    {!isArchived ? (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -159,7 +161,16 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
                       >
                         <Archive className="h-4 w-4" />
                       </Button>
-                    )}
+                    ) : onUnarchiveLitter ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-emerald-600 hover:text-emerald-700"
+                        onClick={() => onUnarchiveLitter(litter)}
+                      >
+                        <ArchiveRestore className="h-4 w-4" />
+                      </Button>
+                    ) : null}
                     <Button
                       variant="ghost"
                       size="sm"
