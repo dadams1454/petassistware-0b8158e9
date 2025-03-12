@@ -82,8 +82,12 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
       const birthDateTime = new Date(now);
       birthDateTime.setHours(hours, minutes, 0, 0);
       
-      // Use simple numerical naming convention rather than using IDs
-      const puppyName = data.name ? data.name.trim() : `Puppy ${puppyCount + 1}`;
+      // Create a clean name
+      const nameValue = data.name.trim();
+      
+      // If no name is entered or it's the default "Puppy X" format, use the sequential number
+      const useSequentialNumber = !nameValue || nameValue.startsWith('Puppy ');
+      const puppyName = useSequentialNumber ? `Puppy ${puppyCount + 1}` : nameValue;
       
       const puppyData = {
         name: puppyName,

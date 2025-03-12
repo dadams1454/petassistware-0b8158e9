@@ -66,7 +66,7 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
               {/* ID/Color */}
               <TableCell>
                 <div className="font-medium">
-                  {/* Use sequential numbering for display if no name exists */}
+                  {/* Display name if exists, otherwise use sequential number by birth order */}
                   {puppy.name || `Puppy ${index + 1}`}
                 </div>
                 {puppy.color && (
