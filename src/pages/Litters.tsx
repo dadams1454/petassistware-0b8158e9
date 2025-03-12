@@ -20,13 +20,13 @@ const Litters = () => {
   const { data: litters, isLoading, error, refetch } = useQuery({
     queryKey: ['litters'],
     queryFn: async () => {
-      // Query the litters with all needed information including dam/sire gender and ALL puppy data
+      // Query the litters with all needed information including more complete dam/sire data
       const { data, error } = await supabase
         .from('litters')
         .select(`
           *,
-          dam:dogs!litters_dam_id_fkey(id, name, breed, gender),
-          sire:dogs!litters_sire_id_fkey(id, name, breed, gender),
+          dam:dogs!litters_dam_id_fkey(id, name, breed, gender, color, litter_number),
+          sire:dogs!litters_sire_id_fkey(id, name, breed, gender, color),
           puppies!puppies_litter_id_fkey(*)
         `)
         .order('birth_date', { ascending: false });

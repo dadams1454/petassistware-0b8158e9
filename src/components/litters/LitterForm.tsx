@@ -35,6 +35,7 @@ interface LitterFormProps {
 const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previousDamId, setPreviousDamId] = useState<string | null>(initialData?.dam_id || null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const form = useForm<LitterFormData>({
     defaultValues: {
@@ -58,7 +59,7 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
   const maleCount = form.watch('male_count');
   const femaleCount = form.watch('female_count');
   
-  // Fetch dam details when dam_id changes
+  // Fetch dam details when dam_id changes or when initializing with existing data
   const { data: damDetails } = useQuery({
     queryKey: ['dam-details', currentDamId],
     queryFn: async () => {
@@ -75,10 +76,30 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
         return null;
       }
       
+      console.log('Successfully fetched dam details:', data);
       return data;
     },
     enabled: !!currentDamId && currentDamId !== 'none',
   });
+
+  // Initial setup for edit mode - make sure we load dam details even if dam_id doesn't change
+  useEffect(() => {
+    if (initialData && initialData.dam_id && isInitialLoad && damDetails) {
+      console.log('Initial load with dam details:', damDetails);
+      setIsInitialLoad(false);
+      
+      // Only update these fields if they're empty in edit mode
+      if (!initialData.notes) {
+        const damInfo = `Dam: ${damDetails.name}, Breed: ${damDetails.breed}, Color: ${damDetails.color || 'N/A'}`;
+        form.setValue('notes', damInfo);
+      }
+      
+      if (!initialData.litter_name) {
+        const litterNumber = (damDetails.litter_number || 0);
+        form.setValue('litter_name', `${damDetails.name}'s Litter #${litterNumber}`);
+      }
+    }
+  }, [initialData, damDetails, form, isInitialLoad]);
 
   // Update form with additional data when dam changes
   useEffect(() => {
