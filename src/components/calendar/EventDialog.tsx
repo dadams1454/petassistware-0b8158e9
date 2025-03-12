@@ -41,7 +41,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
         <DialogHeader>
           <DialogTitle>
             {isCreating 
-              ? (selectedEvent ? 'Edit Event' : 'Create New Event') 
+              ? (selectedEvent?.id ? 'Edit Event' : 'Create New Event') 
               : 'Event Details'}
           </DialogTitle>
         </DialogHeader>

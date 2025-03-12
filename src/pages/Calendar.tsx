@@ -1,6 +1,6 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -55,6 +55,9 @@ export const EVENT_COLORS: Record<string, { bg: string, text: string }> = {
 };
 
 const CalendarPage = () => {
+  const location = useLocation();
+  const initialEventData = location.state?.initialEventData;
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -64,6 +67,20 @@ const CalendarPage = () => {
   
   const queryClient = useQueryClient();
   
+  // Effect to auto-open dialog with initial event data when navigating from dogs page
+  useEffect(() => {
+    if (initialEventData) {
+      setIsCreating(true);
+      setSelectedEvent({
+        ...initialEventData,
+        id: '',
+        event_date: format(new Date(), 'yyyy-MM-dd'),
+        status: 'planned'
+      } as Event);
+      setDialogOpen(true);
+    }
+  }, [initialEventData]);
+
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
     queryFn: fetchEvents
