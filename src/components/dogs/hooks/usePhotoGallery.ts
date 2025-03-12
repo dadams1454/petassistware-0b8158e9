@@ -66,6 +66,16 @@ export const usePhotoGallery = (dogId: string) => {
     },
   });
 
+  const formatFileSize = (sizeInBytes: number): string => {
+    if (sizeInBytes < 1024) {
+      return `${sizeInBytes} B`;
+    } else if (sizeInBytes < 1024 * 1024) {
+      return `${(sizeInBytes / 1024).toFixed(1)} KB`;
+    } else {
+      return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+  };
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!event.target.files || event.target.files.length === 0) {
@@ -73,13 +83,13 @@ export const usePhotoGallery = (dogId: string) => {
       }
 
       const file = event.target.files[0];
-      const fileSize = file.size / 1024 / 1024;
+      const originalSize = file.size;
 
-      // Validate file size (max 5 MB)
-      if (fileSize > 5) {
+      // Validate file size before compression (max 20 MB)
+      if (originalSize > 20 * 1024 * 1024) {
         toast({
           title: 'File too large',
-          description: 'Maximum file size is 5MB',
+          description: 'Maximum file size is 20MB before compression',
           variant: 'destructive',
         });
         return;
@@ -87,8 +97,36 @@ export const usePhotoGallery = (dogId: string) => {
 
       setUploading(true);
       
-      // Compress the image before upload
-      const compressedFile = await compressImage(file, 1920, 0.85, 1);
+      // Show toast for large files
+      if (originalSize > 5 * 1024 * 1024) {
+        toast({
+          title: 'Compressing image...',
+          description: 'Large image detected. Compressing to optimize file size.',
+        });
+      }
+      
+      // Apply compression with progressive settings based on file size
+      let compressedFile: File;
+      
+      if (originalSize > 10 * 1024 * 1024) {
+        // Very large file - aggressive compression
+        compressedFile = await compressImage(file, 1200, 0.6, 0.5);
+      } else if (originalSize > 5 * 1024 * 1024) {
+        // Large file - medium compression
+        compressedFile = await compressImage(file, 1600, 0.7, 0.8);
+      } else {
+        // Normal file - standard compression
+        compressedFile = await compressImage(file, 1920, 0.85, 1);
+      }
+      
+      // Show compression result
+      const compressionRatio = (1 - (compressedFile.size / originalSize)) * 100;
+      if (compressionRatio > 10) {
+        toast({
+          title: 'Image compressed',
+          description: `Reduced by ${compressionRatio.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(compressedFile.size)})`,
+        });
+      }
       
       // Generate a unique file name
       const fileName = `${dogId}_${Date.now()}_${file.name}`;

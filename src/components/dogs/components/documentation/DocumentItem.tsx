@@ -6,9 +6,9 @@ import {
   Trash, 
   Edit, 
   FileImage, 
-  FilePdf, 
-  FileArchive,
-  File
+  File,
+  Archive,
+  Package
 } from 'lucide-react';
 import { DogDocument } from '../../types/document';
 import { Button } from '@/components/ui/button';
@@ -38,9 +38,9 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
     if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
       return <FileImage className="h-10 w-10 text-green-500" />;
     } else if (ext === 'pdf') {
-      return <FilePdf className="h-10 w-10 text-red-500" />;
+      return <FileText className="h-10 w-10 text-red-500" />; // Changed from FilePdf to FileText
     } else if (['zip', 'rar', '7z'].includes(ext)) {
-      return <FileArchive className="h-10 w-10 text-yellow-500" />;
+      return <Archive className="h-10 w-10 text-yellow-500" />; // Changed from FileArchive to Archive
     } else if (['doc', 'docx', 'txt'].includes(ext)) {
       return <FileText className="h-10 w-10 text-blue-500" />;
     } else {

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Package } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +19,7 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<string | null>(null);
 
   // Get the current photo URL from the form
   const currentPhotoUrl = form.watch(name);
@@ -30,6 +31,16 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
     }
   }, [currentPhotoUrl]);
 
+  const formatFileSize = (sizeInBytes: number): string => {
+    if (sizeInBytes < 1024) {
+      return `${sizeInBytes} B`;
+    } else if (sizeInBytes < 1024 * 1024) {
+      return `${(sizeInBytes / 1024).toFixed(1)} KB`;
+    } else {
+      return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+  };
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!event.target.files || event.target.files.length === 0) {
@@ -37,13 +48,14 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
       }
 
       const file = event.target.files[0];
-      const fileSize = file.size / 1024 / 1024;
+      const originalSize = file.size;
+      setFileSize(formatFileSize(originalSize));
 
-      // Validate file size (max 5 MB)
-      if (fileSize > 5) {
+      // Validate file size before compression (max 20 MB)
+      if (originalSize > 20 * 1024 * 1024) {
         toast({
           title: 'File too large',
-          description: 'Maximum file size is 5MB',
+          description: 'Maximum file size is 20MB before compression',
           variant: 'destructive',
         });
         return;
@@ -55,8 +67,36 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
 
       setUploading(true);
       
-      // Compress the image before upload
-      const compressedFile = await compressImage(file, 1920, 0.85, 1);
+      // Show toast for large files
+      if (originalSize > 5 * 1024 * 1024) {
+        toast({
+          title: 'Compressing image...',
+          description: 'Large image detected. Compressing to optimize file size.',
+        });
+      }
+      
+      // Apply compression with progressive settings based on file size
+      let compressedFile: File;
+      
+      if (originalSize > 10 * 1024 * 1024) {
+        // Very large file - aggressive compression
+        compressedFile = await compressImage(file, 1200, 0.6, 0.5);
+      } else if (originalSize > 5 * 1024 * 1024) {
+        // Large file - medium compression
+        compressedFile = await compressImage(file, 1600, 0.7, 0.8);
+      } else {
+        // Normal file - standard compression
+        compressedFile = await compressImage(file, 1920, 0.85, 1);
+      }
+      
+      // Show compression result
+      const compressionRatio = (1 - (compressedFile.size / originalSize)) * 100;
+      if (compressionRatio > 10) {
+        toast({
+          title: 'Image compressed',
+          description: `Reduced by ${compressionRatio.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(compressedFile.size)})`,
+        });
+      }
       
       // Generate a unique file name
       const fileName = `${Date.now()}_${file.name}`;
@@ -97,6 +137,7 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
   const clearImage = () => {
     form.setValue(name, '');
     setFilePreview(null);
+    setFileSize(null);
   };
 
   return (
@@ -123,6 +164,11 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
                   >
                     <X className="h-4 w-4" />
                   </Button>
+                  {fileSize && (
+                    <div className="absolute -bottom-6 w-full text-center text-xs text-muted-foreground">
+                      {fileSize}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 h-40 w-full cursor-pointer"
@@ -133,7 +179,7 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
                       Click to upload a photo
                     </div>
                     <div className="text-xs text-gray-400">
-                      (Max size: 5MB)
+                      Photos are automatically compressed
                     </div>
                   </div>
                 </div>
