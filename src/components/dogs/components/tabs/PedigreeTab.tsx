@@ -1,5 +1,12 @@
-
 import React, { useState } from 'react';
+import { Plus, TreeDeciduous } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useDogRelationships } from '../../hooks/useDogRelationships';
+import RelationshipSection from '../pedigree/RelationshipSection';
+import AddRelationshipForm from '../pedigree/AddRelationshipForm';
+import PedigreeChart from '../pedigree/PedigreeChart';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Card, 
   CardContent, 
@@ -7,11 +14,6 @@ import {
   CardTitle,
   CardDescription 
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, TreeDeciduous } from 'lucide-react';
-import { useDogRelationships } from '../../hooks/useDogRelationships';
-import RelationshipSection from '../pedigree/RelationshipSection';
-import AddRelationshipForm from '../pedigree/AddRelationshipForm';
 
 interface PedigreeTabProps {
   dogId: string;
@@ -21,6 +23,17 @@ interface PedigreeTabProps {
 const PedigreeTab = ({ dogId, currentDog }: PedigreeTabProps) => {
   const { relationships, isLoading, addRelationship, removeRelationship } = useDogRelationships(dogId);
   const [isAdding, setIsAdding] = useState(false);
+
+  // Fetch all dogs for the pedigree chart
+  const { data: allDogs } = useQuery({
+    queryKey: ['allDogs'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('dogs')
+        .select('id, name, breed, gender, color, photo_url');
+      return data || [];
+    }
+  });
 
   // Filter relationships by type
   const parentRelationships = relationships?.filter(r => 
@@ -90,6 +103,12 @@ const PedigreeTab = ({ dogId, currentDog }: PedigreeTabProps) => {
           </CardContent>
         </Card>
       )}
+
+      <PedigreeChart 
+        dogId={dogId}
+        relationships={relationships || []}
+        allDogs={allDogs || []}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Parents Section */}
