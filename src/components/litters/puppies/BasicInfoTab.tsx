@@ -25,46 +25,15 @@ interface BasicInfoTabProps {
 }
 
 const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
-  const [colorOptions, setColorOptions] = useState<{value: string, label: string}[]>([]);
-  const [isNewfoundland, setIsNewfoundland] = useState(false);
-
-  // Get litter data to determine the breed
-  const { data: litterData } = useQuery({
-    queryKey: ['litter-breed', litterId],
-    queryFn: async () => {
-      if (!litterId) return null;
-      
-      const { data, error } = await supabase
-        .from('litters')
-        .select(`
-          *,
-          dam:dogs!litters_dam_id_fkey(breed)
-        `)
-        .eq('id', litterId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!litterId
-  });
-
-  // Set up color options based on breed
-  useEffect(() => {
-    if (litterData?.dam?.breed === 'Newfoundland') {
-      setIsNewfoundland(true);
-      setColorOptions([
-        { value: 'Black 007', label: 'Black 007' },
-        { value: 'Brown 061', label: 'Brown 061' },
-        { value: 'Gray 100', label: 'Gray 100' },
-        { value: 'brown/white 063', label: 'brown/white 063' },
-        { value: 'black/white 202', label: 'black/white 202' },
-      ]);
-    } else {
-      setIsNewfoundland(false);
-      setColorOptions([]);
-    }
-  }, [litterData]);
+  // Define standard color options for all puppies
+  const colorOptions = [
+    { value: 'Black', label: 'Black' },
+    { value: 'Brown', label: 'Brown' },
+    { value: 'Black/white', label: 'Black/white' },
+    { value: 'Brown/white', label: 'Brown/white' },
+    { value: 'Grey', label: 'Grey' },
+    { value: 'Beige', label: 'Beige' },
+  ];
 
   return (
     <div className="space-y-4">
@@ -120,22 +89,13 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
             <Palette className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Color Markings</span>
           </div>
-          {isNewfoundland ? (
-            <SelectInput 
-              form={form} 
-              name="color" 
-              label="Color" 
-              options={colorOptions}
-              placeholder="Select color" 
-            />
-          ) : (
-            <TextInput 
-              form={form} 
-              name="color" 
-              label="Color" 
-              placeholder="Puppy's color markings" 
-            />
-          )}
+          <SelectInput 
+            form={form} 
+            name="color" 
+            label="Color" 
+            options={colorOptions}
+            placeholder="Select color" 
+          />
         </div>
       </div>
 

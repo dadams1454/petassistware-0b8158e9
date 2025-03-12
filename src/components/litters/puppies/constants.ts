@@ -11,3 +11,12 @@ export const statusOptions = [
   { value: 'Retained', label: 'Retained' },
   { value: 'Deceased', label: 'Deceased' },
 ];
+
+export const colorOptions = [
+  { value: 'Black', label: 'Black' },
+  { value: 'Brown', label: 'Brown' },
+  { value: 'Black/white', label: 'Black/white' },
+  { value: 'Brown/white', label: 'Brown/white' },
+  { value: 'Grey', label: 'Grey' },
+  { value: 'Beige', label: 'Beige' },
+];

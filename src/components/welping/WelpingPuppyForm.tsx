@@ -45,6 +45,16 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
     }
   });
 
+  // Define standard color options for puppies
+  const colorOptions = [
+    { value: 'Black', label: 'Black' },
+    { value: 'Brown', label: 'Brown' },
+    { value: 'Black/white', label: 'Black/white' },
+    { value: 'Brown/white', label: 'Brown/white' },
+    { value: 'Grey', label: 'Grey' },
+    { value: 'Beige', label: 'Beige' },
+  ];
+
   const handleSubmit = async (data: WelpingPuppyFormData) => {
     setIsSubmitting(true);
     try {
@@ -113,11 +123,12 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextInput
+          <SelectInput
             form={form}
             name="color"
             label="Color/Markings"
-            placeholder="e.g., Black & White, Brindle, etc."
+            placeholder="Select color"
+            options={colorOptions}
           />
           
           <WeightInput
