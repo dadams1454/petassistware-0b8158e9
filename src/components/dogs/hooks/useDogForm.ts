@@ -1,26 +1,16 @@
-import { useState, useEffect } from 'react';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthProvider';
-import { useToast } from '@/hooks/use-toast';
 import { dogFormSchema, DogFormValues } from '../schemas/dogFormSchema';
-import { parse } from 'date-fns';
+import { parseLitterNumber } from '../utils/dogFormUtils';
+import { useBreedColors } from './useBreedColors';
+import { useDogMutation } from './useDogMutation';
 
 export const useDogForm = (dog: any, onSuccess: () => void) => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const isEditing = !!dog;
-  const [colorOptions, setColorOptions] = useState<{value: string, label: string}[]>([]);
-
-  // Parse litter_number to number if it exists
-  const parseLitterNumber = (value: any) => {
-    if (value === null || value === undefined) return 0;
-    const num = parseInt(String(value));
-    return isNaN(num) ? 0 : num;
-  };
-
+  
+  // Initialize default form values from dog data or empty values
   const defaultValues: DogFormValues = {
     name: dog?.name || '',
     breed: dog?.breed || '',
@@ -45,104 +35,21 @@ export const useDogForm = (dog: any, onSuccess: () => void) => {
     vaccination_notes: dog?.vaccination_notes || '',
   };
 
+  // Initialize form with validation
   const form = useForm<DogFormValues>({
     resolver: zodResolver(dogFormSchema),
     defaultValues,
-    mode: 'onChange', // Add this to validate on change
+    mode: 'onChange',
   });
 
   // Watch for breed changes
   const watchBreed = form.watch('breed');
-
-  // Update color options when breed changes
-  useEffect(() => {
-    if (watchBreed === 'Newfoundland') {
-      setColorOptions([
-        { value: 'Black 007', label: 'Black 007' },
-        { value: 'Brown 061', label: 'Brown 061' },
-        { value: 'Gray 100', label: 'Gray 100' },
-        { value: 'brown/white 063', label: 'brown/white 063' },
-        { value: 'black/white 202', label: 'black/white 202' },
-      ]);
-
-      // Reset color if current selection is not in the Newfoundland colors
-      const currentColor = form.getValues('color');
-      if (currentColor && !['Black 007', 'Brown 061', 'Gray 100', 'brown/white 063', 'black/white 202'].includes(currentColor)) {
-        form.setValue('color', '');
-      }
-    } else {
-      setColorOptions([]);
-    }
-  }, [watchBreed, form]);
-
-  const createDogMutation = useMutation({
-    mutationFn: async (values: DogFormValues) => {
-      if (!user) throw new Error('You must be logged in');
-
-      let birthdate = values.birthdate;
-      if (!birthdate && values.birthdateStr) {
-        try {
-          birthdate = parse(values.birthdateStr, 'MM/dd/yyyy', new Date());
-        } catch (e) {
-          console.error("Date parsing error:", e);
-        }
-      }
-
-      const dogData = {
-        name: values.name,
-        breed: values.breed,
-        birthdate: birthdate ? birthdate.toISOString().split('T')[0] : null,
-        gender: values.gender,
-        color: values.color,
-        weight: values.weight,
-        microchip_number: values.microchip_number,
-        registration_number: values.registration_number,
-        pedigree: values.pedigree,
-        notes: values.notes,
-        photo_url: values.photo_url,
-        owner_id: user.id,
-        // Female dog breeding fields
-        is_pregnant: values.is_pregnant,
-        last_heat_date: values.last_heat_date ? values.last_heat_date.toISOString().split('T')[0] : null,
-        tie_date: values.tie_date ? values.tie_date.toISOString().split('T')[0] : null,
-        litter_number: values.litter_number,
-        // Vaccination fields
-        last_vaccination_date: values.last_vaccination_date ? values.last_vaccination_date.toISOString().split('T')[0] : null,
-        vaccination_type: values.vaccination_type,
-        vaccination_notes: values.vaccination_notes,
-      };
-
-      const { data, error } = isEditing
-        ? await supabase
-            .from('dogs')
-            .update(dogData)
-            .eq('id', dog.id)
-            .select()
-        : await supabase
-            .from('dogs')
-            .insert(dogData)
-            .select();
-
-      if (error) throw new Error(error.message);
-      return data;
-    },
-    onSuccess: () => {
-      toast({
-        title: isEditing ? 'Dog updated' : 'Dog added',
-        description: isEditing
-          ? 'Dog has been successfully updated'
-          : 'New dog has been successfully added',
-      });
-      onSuccess();
-    },
-    onError: (error) => {
-      toast({
-        title: isEditing ? 'Error updating dog' : 'Error adding dog',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
+  
+  // Get breed-specific color options
+  const { colorOptions } = useBreedColors(form, watchBreed);
+  
+  // Get dog mutation functions
+  const { createDogMutation, isEditing } = useDogMutation(dog, user?.id, onSuccess);
 
   return {
     form,
