@@ -71,43 +71,21 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
               <CardHeader className="p-0 h-48 relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
                 <div 
-                  className="h-full w-full bg-muted cursor-pointer"
+                  className="h-full w-full bg-muted cursor-pointer transition-all duration-200 hover:opacity-90"
                   style={{
                     backgroundImage: dog.photo_url ? `url(${dog.photo_url})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}
-                  onClick={() => onView(dog)}
+                  onClick={() => onEdit(dog)}
+                  role="button"
+                  aria-label="Edit dog profile"
                 >
                   {!dog.photo_url && (
                     <div className="flex items-center justify-center h-full">
                       <span className="text-4xl">🐾</span>
                     </div>
                   )}
-                </div>
-                
-                {/* Action buttons overlay */}
-                <div className="absolute top-2 right-2 z-20 flex space-x-1">
-                  <button 
-                    className="p-1.5 bg-white/90 hover:bg-white rounded-full text-slate-700 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(dog);
-                    }}
-                    aria-label="Edit dog"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button 
-                    className="p-1.5 bg-white/90 hover:bg-white rounded-full text-slate-700 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(dog.id);
-                    }}
-                    aria-label="Delete dog"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </div>
                 <div className="absolute bottom-4 left-4 right-4 z-20">
                   <h3 className="text-xl font-semibold text-white">{dog.name}</h3>
@@ -144,7 +122,6 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
                   </div>
                 )}
                 
-                {/* Simplified status indicators for female dogs only */}
                 {dog.gender === 'Female' && (
                   <div className="mt-4">
                     <Separator className="my-2" />
