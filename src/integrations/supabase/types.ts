@@ -81,6 +81,36 @@ export type Database = {
         }
         Relationships: []
       }
+      communication_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          name: string
+          subject: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          name: string
+          subject?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          name?: string
+          subject?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           breeder_id: string | null
@@ -138,6 +168,47 @@ export type Database = {
           },
         ]
       }
+      customer_communications: {
+        Row: {
+          content: string
+          created_at: string
+          customer_id: string
+          id: string
+          sent_at: string
+          status: string
+          subject: string | null
+          type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          sent_at?: string
+          status: string
+          subject?: string | null
+          type: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          sent_at?: string
+          status?: string
+          subject?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_communications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -146,6 +217,7 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+          metadata: Json | null
           notes: string | null
           phone: string | null
         }
@@ -156,6 +228,7 @@ export type Database = {
           first_name: string
           id?: string
           last_name: string
+          metadata?: Json | null
           notes?: string | null
           phone?: string | null
         }
@@ -166,10 +239,85 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
+          metadata?: Json | null
           notes?: string | null
           phone?: string | null
         }
         Relationships: []
+      }
+      dog_relationships: {
+        Row: {
+          created_at: string | null
+          dog_id: string
+          id: string
+          related_dog_id: string
+          relationship_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          dog_id: string
+          id?: string
+          related_dog_id: string
+          relationship_type: string
+        }
+        Update: {
+          created_at?: string | null
+          dog_id?: string
+          id?: string
+          related_dog_id?: string
+          relationship_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dog_relationships_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dog_relationships_related_dog_id_fkey"
+            columns: ["related_dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dog_vaccinations: {
+        Row: {
+          created_at: string
+          dog_id: string
+          id: string
+          notes: string | null
+          vaccination_date: string
+          vaccination_type: string
+        }
+        Insert: {
+          created_at?: string
+          dog_id: string
+          id?: string
+          notes?: string | null
+          vaccination_date: string
+          vaccination_type: string
+        }
+        Update: {
+          created_at?: string
+          dog_id?: string
+          id?: string
+          notes?: string | null
+          vaccination_date?: string
+          vaccination_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dog_vaccinations_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dogs: {
         Row: {
@@ -179,6 +327,10 @@ export type Database = {
           created_at: string | null
           gender: string | null
           id: string
+          is_pregnant: boolean | null
+          last_heat_date: string | null
+          last_vaccination_date: string | null
+          litter_number: number | null
           microchip_number: string | null
           name: string
           notes: string | null
@@ -186,6 +338,9 @@ export type Database = {
           pedigree: boolean | null
           photo_url: string | null
           registration_number: string | null
+          tie_date: string | null
+          vaccination_notes: string | null
+          vaccination_type: string | null
           weight: number | null
         }
         Insert: {
@@ -195,6 +350,10 @@ export type Database = {
           created_at?: string | null
           gender?: string | null
           id?: string
+          is_pregnant?: boolean | null
+          last_heat_date?: string | null
+          last_vaccination_date?: string | null
+          litter_number?: number | null
           microchip_number?: string | null
           name: string
           notes?: string | null
@@ -202,6 +361,9 @@ export type Database = {
           pedigree?: boolean | null
           photo_url?: string | null
           registration_number?: string | null
+          tie_date?: string | null
+          vaccination_notes?: string | null
+          vaccination_type?: string | null
           weight?: number | null
         }
         Update: {
@@ -211,6 +373,10 @@ export type Database = {
           created_at?: string | null
           gender?: string | null
           id?: string
+          is_pregnant?: boolean | null
+          last_heat_date?: string | null
+          last_vaccination_date?: string | null
+          litter_number?: number | null
           microchip_number?: string | null
           name?: string
           notes?: string | null
@@ -218,6 +384,9 @@ export type Database = {
           pedigree?: boolean | null
           photo_url?: string | null
           registration_number?: string | null
+          tie_date?: string | null
+          vaccination_notes?: string | null
+          vaccination_type?: string | null
           weight?: number | null
         }
         Relationships: []
@@ -398,6 +567,7 @@ export type Database = {
       puppies: {
         Row: {
           birth_date: string | null
+          birth_time: string | null
           birth_weight: string | null
           color: string | null
           created_at: string | null
@@ -418,6 +588,7 @@ export type Database = {
         }
         Insert: {
           birth_date?: string | null
+          birth_time?: string | null
           birth_weight?: string | null
           color?: string | null
           created_at?: string | null
@@ -438,6 +609,7 @@ export type Database = {
         }
         Update: {
           birth_date?: string | null
+          birth_time?: string | null
           birth_weight?: string | null
           color?: string | null
           created_at?: string | null
@@ -567,6 +739,57 @@ export type Database = {
             columns: ["puppy_id"]
             isOneToOne: false
             referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist: {
+        Row: {
+          contacted_at: string | null
+          customer_id: string
+          id: string
+          litter_id: string
+          notes: string | null
+          position: number | null
+          preferences: Json | null
+          requested_at: string
+          status: string
+        }
+        Insert: {
+          contacted_at?: string | null
+          customer_id: string
+          id?: string
+          litter_id: string
+          notes?: string | null
+          position?: number | null
+          preferences?: Json | null
+          requested_at?: string
+          status?: string
+        }
+        Update: {
+          contacted_at?: string | null
+          customer_id?: string
+          id?: string
+          litter_id?: string
+          notes?: string | null
+          position?: number | null
+          preferences?: Json | null
+          requested_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_litter_id_fkey"
+            columns: ["litter_id"]
+            isOneToOne: false
+            referencedRelation: "litters"
             referencedColumns: ["id"]
           },
         ]
