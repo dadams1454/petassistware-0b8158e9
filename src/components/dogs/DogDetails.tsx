@@ -17,6 +17,7 @@ import { Pencil } from 'lucide-react';
 import DogHealthSection from './DogHealthSection';
 import VaccinationsTab from './components/VaccinationsTab';
 import PedigreeTab from './components/tabs/PedigreeTab';
+import GalleryTab from './components/tabs/GalleryTab';
 import {
   Dialog,
   DialogContent,
@@ -112,6 +113,7 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
+          <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
           <TabsTrigger value="documentation">Documentation</TabsTrigger>
         </TabsList>
@@ -142,6 +144,10 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="gallery">
+          <GalleryTab dogId={dog.id} mainPhotoUrl={dog.photo_url} />
+        </TabsContent>
+        
         <TabsContent value="pedigree">
           <PedigreeTab dogId={dog.id} currentDog={dog} />
         </TabsContent>
