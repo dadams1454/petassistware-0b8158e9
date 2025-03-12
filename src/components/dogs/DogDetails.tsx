@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -81,6 +80,20 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
     });
   };
 
+  // Navigate to calendar with first event when clicking on the notification badge
+  const handleViewFirstEvent = () => {
+    if (events && events.length > 0) {
+      navigate('/calendar', {
+        state: {
+          selectedEventId: events[0].id
+        }
+      });
+    } else {
+      // Fallback to add appointment if no events found
+      handleAddAppointment();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start">
@@ -159,7 +172,11 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
             )}
             
             {upcomingEvents > 0 && (
-              <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1">
+              <Badge 
+                variant="outline" 
+                className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1 cursor-pointer hover:bg-amber-200 transition-colors"
+                onClick={handleViewFirstEvent}
+              >
                 <Bell className="h-3 w-3" />
                 {upcomingEvents} {upcomingEvents === 1 ? 'Appointment' : 'Appointments'}
               </Badge>
