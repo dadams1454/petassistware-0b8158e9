@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface StatCardProps {
   className?: string;
@@ -12,6 +13,7 @@ interface StatCardProps {
   changeText?: string;
   trend?: 'up' | 'down' | 'neutral';
   textColor?: string;
+  linkTo?: string;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -23,6 +25,7 @@ const StatCard: React.FC<StatCardProps> = ({
   changeText,
   trend = 'neutral',
   textColor,
+  linkTo,
 }) => {
   const trendColors = {
     up: 'text-green-600 bg-green-50 dark:bg-green-900/20',
@@ -30,15 +33,8 @@ const StatCard: React.FC<StatCardProps> = ({
     neutral: 'text-slate-600 bg-slate-50 dark:bg-slate-700/20',
   };
 
-  return (
-    <div
-      className={cn(
-        'p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800',
-        'shadow-subtle transition-all duration-300 hover:shadow-elevated',
-        'overflow-hidden group',
-        className
-      )}
-    >
+  const cardContent = (
+    <>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -81,6 +77,34 @@ const StatCard: React.FC<StatCardProps> = ({
           )}
         </div>
       )}
+
+      {linkTo && (
+        <div className="mt-4 flex items-center text-primary text-sm font-medium">
+          View details <ArrowRight className="ml-1 h-4 w-4" />
+        </div>
+      )}
+    </>
+  );
+
+  const cardClasses = cn(
+    'p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800',
+    'shadow-subtle transition-all duration-300 hover:shadow-elevated',
+    'overflow-hidden group',
+    linkTo && 'hover:border-primary/50 cursor-pointer',
+    className
+  );
+
+  if (linkTo) {
+    return (
+      <Link to={linkTo} className={cardClasses}>
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={cardClasses}>
+      {cardContent}
     </div>
   );
 };

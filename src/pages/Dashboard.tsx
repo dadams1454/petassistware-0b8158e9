@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -265,6 +266,7 @@ const Dashboard: React.FC = () => {
           change={0}
           changeText="from database"
           trend="neutral"
+          linkTo="/dogs"
         />
         <StatCard
           title="Current Litters"
@@ -273,6 +275,7 @@ const Dashboard: React.FC = () => {
           change={0}
           changeText="from database"
           trend="neutral"
+          linkTo="/litters"
         />
         <StatCard
           title="Reservations"
@@ -281,6 +284,7 @@ const Dashboard: React.FC = () => {
           change={0}
           changeText="from database"
           trend="neutral"
+          linkTo="/customers"
         />
         <StatCard
           title="Revenue (Last 30 Days)"
@@ -290,6 +294,7 @@ const Dashboard: React.FC = () => {
           changeText="from database"
           trend="neutral"
           textColor="text-emerald-600 dark:text-emerald-400"
+          linkTo="/customers"
         />
       </div>
 
@@ -300,6 +305,11 @@ const Dashboard: React.FC = () => {
           title="Upcoming Events"
           icon={<Calendar size={18} />}
           className="xl:col-span-2"
+          actions={
+            <Link to="/calendar" className="text-sm text-primary flex items-center">
+              View all <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+          }
         >
           <UpcomingEvents events={events} isLoading={isLoading} />
         </DashboardCard>
