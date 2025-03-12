@@ -29,7 +29,7 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
   onEditPuppy, 
   onDeletePuppy 
 }) => {
-  // Sort puppies by birth time (assumed to be created_at)
+  // Sort puppies by birth time (or created_at)
   const sortedPuppies = [...puppies].sort((a, b) => {
     return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
   });
@@ -66,6 +66,7 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
               {/* ID/Color */}
               <TableCell>
                 <div className="font-medium">
+                  {/* Use sequential numbering for display if no name exists */}
                   {puppy.name || `Puppy ${index + 1}`}
                 </div>
                 {puppy.color && (

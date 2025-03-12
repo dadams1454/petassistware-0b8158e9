@@ -82,8 +82,8 @@ const WelpingPuppyForm: React.FC<WelpingPuppyFormProps> = ({
       const birthDateTime = new Date(now);
       birthDateTime.setHours(hours, minutes, 0, 0);
       
-      // If name is empty, use the default naming convention
-      const puppyName = data.name || `Puppy ${puppyCount + 1}`;
+      // Use simple numerical naming convention rather than using IDs
+      const puppyName = data.name ? data.name.trim() : `Puppy ${puppyCount + 1}`;
       
       const puppyData = {
         name: puppyName,
