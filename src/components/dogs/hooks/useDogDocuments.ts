@@ -164,8 +164,8 @@ export const useDogDocuments = (dogId: string) => {
 
   // Mutation to update an existing document
   const updateMutation = useMutation({
-    mutationFn: async (data: { documentId: string, values: Partial<DogDocument> & { file?: File } }) => {
-      const { documentId, values } = data;
+    mutationFn: async (payload: { documentId: string, values: Partial<DogDocument> & { file?: File } }) => {
+      const { documentId, values } = payload;
       
       // If there's a new file, upload it
       if (values.file) {
@@ -184,11 +184,11 @@ export const useDogDocuments = (dogId: string) => {
           if (uploadError) throw new Error(uploadError.message);
           
           // Get public URL
-          const { data: { publicUrl } } = supabase.storage
+          const { data: urlData } = supabase.storage
             .from('dog-documents')
             .getPublicUrl(fileName);
             
-          values.file_url = publicUrl;
+          values.file_url = urlData.publicUrl;
           values.file_name = fileName;
         } catch (error: any) {
           toast({
@@ -203,7 +203,7 @@ export const useDogDocuments = (dogId: string) => {
       // Remove the file property before updating
       const { file, ...updateData } = values;
       
-      const { data, error } = await supabase
+      const { data: responseData, error } = await supabase
         .from('dog_documents')
         .update(updateData)
         .eq('id', documentId)
@@ -211,7 +211,7 @@ export const useDogDocuments = (dogId: string) => {
         .single();
         
       if (error) throw new Error(error.message);
-      return data;
+      return responseData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dogDocuments', dogId] });
@@ -272,13 +272,13 @@ export const useDogDocuments = (dogId: string) => {
   };
 
   // Document operations
-  const handleSaveDocument = (data: any) => {
-    saveMutation.mutate(data);
+  const handleSaveDocument = async (data: any, file?: File): Promise<void> => {
+    await saveMutation.mutateAsync(data);
   };
   
-  const handleUpdateDocument = (data: any) => {
+  const handleUpdateDocument = async (data: any, file?: File): Promise<void> => {
     if (!documentToEdit) return;
-    updateMutation.mutate({ documentId: documentToEdit.id, values: data });
+    await updateMutation.mutateAsync({ documentId: documentToEdit.id, values: data });
   };
   
   const handleDeleteDocument = (documentId: string) => {

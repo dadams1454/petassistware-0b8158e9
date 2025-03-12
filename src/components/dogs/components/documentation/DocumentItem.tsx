@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   FileText, 
@@ -9,7 +8,7 @@ import {
   File,
   Archive,
   FileSpreadsheet,
-  FilePdf
+  FileText as FilePdf
 } from 'lucide-react';
 import { DogDocument } from '../../types/document';
 import { Button } from '@/components/ui/button';
