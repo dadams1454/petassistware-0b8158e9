@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -6,13 +5,13 @@ import DashboardCard from '@/components/dashboard/DashboardCard';
 import StatCard from '@/components/dashboard/StatCard';
 import UpcomingEvents from '@/components/dashboard/UpcomingEvents';
 import RecentActivities from '@/components/dashboard/RecentActivities';
+import BreedingAnalytics from '@/components/analytics/BreedingAnalytics';
 import { CustomButton } from '@/components/ui/custom-button';
 import BlurBackground from '@/components/ui/blur-background';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   Dog, Users, Calendar, PawPrint, DollarSign, 
-  PlusCircle, BarChart3, ChevronRight, File,
-  UtensilsCrossed
+  PlusCircle, File, ChevronRight, UtensilsCrossed
 } from 'lucide-react';
 import { 
   fetchDashboardStats, 
@@ -320,18 +319,8 @@ const Dashboard: React.FC = () => {
         </DashboardCard>
       </div>
 
-      {/* Breeding Analytics Card */}
-      <DashboardCard
-        title="Breeding Analytics"
-        subtitle="Overview of your breeding program performance"
-        icon={<BarChart3 size={18} />}
-      >
-        <div className="h-64 flex items-center justify-center border border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
-          <p className="text-slate-500 dark:text-slate-400 text-sm">
-            Breeding statistics and charts will appear here
-          </p>
-        </div>
-      </DashboardCard>
+      {/* Breeding Analytics - Replaced with our new component */}
+      <BreedingAnalytics />
     </MainLayout>
   );
 };
