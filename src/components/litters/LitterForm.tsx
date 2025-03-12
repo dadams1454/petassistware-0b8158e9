@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,21 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
       documents_url: initialData?.documents_url || null
     }
   });
+
+  // Watch male and female count to auto-calculate total puppies
+  const maleCount = form.watch('male_count');
+  const femaleCount = form.watch('female_count');
+  
+  // Update total puppy count whenever male or female count changes
+  useEffect(() => {
+    const male = parseInt(String(maleCount)) || 0;
+    const female = parseInt(String(femaleCount)) || 0;
+    
+    if (male > 0 || female > 0) {
+      const total = male + female;
+      form.setValue('puppy_count', total);
+    }
+  }, [maleCount, femaleCount, form]);
 
   const handleSubmit = async (data: LitterFormData) => {
     setIsSubmitting(true);
@@ -120,7 +135,8 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
               form={form} 
               name="puppy_count" 
               label="Total Puppies" 
-              placeholder="Number of puppies" 
+              placeholder="Number of puppies"
+              disabled={true}
             />
             <div className="grid grid-cols-2 gap-2">
               <TextInput 
