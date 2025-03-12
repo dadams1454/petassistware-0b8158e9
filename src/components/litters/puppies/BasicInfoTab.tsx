@@ -5,6 +5,7 @@ import TextInput from '@/components/dogs/form/TextInput';
 import SelectInput from '@/components/dogs/form/SelectInput';
 import DatePicker from '@/components/dogs/form/DatePicker';
 import PhotoUpload from '@/components/dogs/form/PhotoUpload';
+import TextareaInput from '@/components/dogs/form/TextareaInput';
 import { 
   User, 
   Calendar, 
@@ -12,9 +13,10 @@ import {
   Tag, 
   Scan, 
   DollarSign,
-  Image
+  Image,
+  FileText
 } from 'lucide-react';
-import { genderOptions, statusOptions } from './constants';
+import { genderOptions, statusOptions, colorOptions } from './constants';
 import { PuppyFormData } from './types';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -137,6 +139,19 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
           name="sale_price" 
           label="Sale Price" 
           placeholder="Enter sale price" 
+        />
+      </div>
+
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Notes</span>
+        </div>
+        <TextareaInput
+          form={form}
+          name="notes"
+          label="Notes"
+          placeholder="Add birth details or other notes about this puppy"
         />
       </div>
 
