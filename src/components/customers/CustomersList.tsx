@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/ui/table';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,7 +40,8 @@ const CustomersList: React.FC<CustomersListProps> = ({
       id: puppy.id,
       name: puppy.name || `Puppy ${puppy.id.substring(0, 8)}`,
       color: puppy.color,
-      gender: puppy.gender
+      gender: puppy.gender,
+      litterName: puppy.litterName
     };
   };
 

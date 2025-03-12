@@ -3,7 +3,7 @@ import React from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Mail, Phone, User, Bookmark } from 'lucide-react';
+import { Mail, Phone, User, Bookmark, Layers } from 'lucide-react';
 import CustomerDialog from '../CustomerDialog';
 import { Customer, Puppy } from '../types/customer';
 
@@ -14,6 +14,7 @@ interface CustomerRowProps {
     name: string;
     color: string;
     gender: string;
+    litterName?: string;
   } | null;
   onCustomerUpdated: () => void;
 }
@@ -77,6 +78,12 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
               <div className="text-xs text-muted-foreground">
                 {puppyInfo.color} {puppyInfo.gender}
               </div>
+              {puppyInfo.litterName && (
+                <div className="flex items-center space-x-1 text-xs text-muted-foreground mt-1">
+                  <Layers className="h-3 w-3 text-indigo-500" />
+                  <span className="font-medium">{puppyInfo.litterName}</span>
+                </div>
+              )}
             </div>
           </div>
         ) : (

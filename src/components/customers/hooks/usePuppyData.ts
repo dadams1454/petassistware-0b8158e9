@@ -5,7 +5,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Customer, Puppy } from '../types/customer';
 
 export const usePuppyData = (customers: Customer[]) => {
-  const [puppiesData, setPuppiesData] = useState<Record<string, Puppy>>({});
+  const [puppiesData, setPuppiesData] = useState<Record<string, Puppy & { litterName?: string }>>({});
 
   useEffect(() => {
     const fetchPuppies = async () => {
@@ -17,7 +17,7 @@ export const usePuppyData = (customers: Customer[]) => {
       
       const { data, error } = await supabase
         .from('puppies')
-        .select('*')
+        .select('*, litters(id, litter_name)')
         .in('id', puppyIds);
       
       if (error) {
@@ -29,9 +29,12 @@ export const usePuppyData = (customers: Customer[]) => {
         return;
       }
       
-      const puppiesRecord: Record<string, Puppy> = {};
+      const puppiesRecord: Record<string, Puppy & { litterName?: string }> = {};
       data?.forEach(puppy => {
-        puppiesRecord[puppy.id] = puppy;
+        puppiesRecord[puppy.id] = {
+          ...puppy,
+          litterName: (puppy.litters as any)?.litter_name || null
+        };
       });
       
       setPuppiesData(puppiesRecord);
