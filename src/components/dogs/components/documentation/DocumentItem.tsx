@@ -65,7 +65,10 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => onView(document)}>
+    <Card 
+      className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer" 
+      onClick={() => onView(document)}
+    >
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {getFileIcon()}
@@ -92,7 +95,10 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => window.open(document.file_url, '_blank')}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(document.file_url, '_blank');
+              }}
               title="Download"
             >
               <Download className="h-4 w-4" />
@@ -101,7 +107,10 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onEdit(document)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(document);
+              }}
               title="Edit"
             >
               <Edit className="h-4 w-4" />
@@ -110,7 +119,10 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onDelete(document.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(document.id);
+              }}
               title="Delete"
             >
               <Trash className="h-4 w-4" />
