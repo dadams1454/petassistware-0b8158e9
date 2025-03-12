@@ -11,6 +11,7 @@ interface TextInputProps {
   placeholder?: string;
   required?: boolean;
   type?: string;
+  disabled?: boolean;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -21,6 +22,7 @@ const TextInput = ({
   placeholder, 
   required = false, 
   type = 'text',
+  disabled = false,
   onChange 
 }: TextInputProps) => {
   return (
@@ -34,6 +36,7 @@ const TextInput = ({
             <Input 
               type={type} 
               placeholder={placeholder || label} 
+              disabled={disabled}
               {...field} 
               onChange={(e) => {
                 field.onChange(e);
