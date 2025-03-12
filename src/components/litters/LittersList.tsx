@@ -1,7 +1,6 @@
-
 import React, { useMemo } from 'react';
 import { format, differenceInWeeks } from 'date-fns';
-import { Eye, Edit, Trash2, PlusCircle, Male, Female, PawPrint } from 'lucide-react';
+import { Eye, Edit, Trash2, PlusCircle, PawPrint, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -211,7 +210,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
   return (
     <div className="space-y-8">
       {organizedLitters.female.length > 0 && (
-        renderLitterSection(organizedLitters.female, "Female Litters", <Female className="h-5 w-5 text-pink-500" />)
+        renderLitterSection(organizedLitters.female, "Female Litters", <UserRound className="h-5 w-5 text-pink-500" />)
       )}
       
       {organizedLitters.other.length > 0 && (
