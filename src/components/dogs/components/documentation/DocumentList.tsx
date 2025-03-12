@@ -12,6 +12,7 @@ interface DocumentListProps {
   onEdit: (document: DogDocument) => void;
   onDelete: (documentId: string) => void;
   onAddDocument: () => void;
+  onView: (document: DogDocument) => void;
 }
 
 const DocumentList: React.FC<DocumentListProps> = ({
@@ -19,7 +20,8 @@ const DocumentList: React.FC<DocumentListProps> = ({
   isLoading,
   onEdit,
   onDelete,
-  onAddDocument
+  onAddDocument,
+  onView
 }) => {
   if (isLoading) {
     return (
@@ -55,6 +57,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
             document={document}
             onEdit={onEdit}
             onDelete={onDelete}
+            onView={onView}
           />
         ))}
       </TabsContent>
@@ -67,6 +70,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
           documents={documents?.filter(d => d.document_type === value) || []}
           onEdit={onEdit}
           onDelete={onDelete}
+          onView={onView}
         />
       ))}
     </Tabs>

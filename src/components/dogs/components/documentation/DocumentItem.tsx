@@ -24,12 +24,14 @@ interface DocumentItemProps {
   document: DogDocument;
   onEdit: (document: DogDocument) => void;
   onDelete: (documentId: string) => void;
+  onView: (document: DogDocument) => void;
 }
 
 const DocumentItem: React.FC<DocumentItemProps> = ({ 
   document, 
   onEdit,
-  onDelete
+  onDelete,
+  onView
 }) => {
   // Get file extension to determine icon
   const getFileIcon = () => {
@@ -63,7 +65,7 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => onView(document)}>
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {getFileIcon()}
@@ -86,7 +88,7 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
             )}
           </div>
           
-          <div className="flex gap-2 shrink-0">
+          <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
             <Button
               variant="ghost"
               size="icon"

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -7,12 +7,16 @@ import { useDogDocuments } from '../../hooks/useDogDocuments';
 import DocumentDialog from '../documentation/DocumentDialog';
 import DogBasicInfo from '../documentation/DogBasicInfo';
 import DocumentList from '../documentation/DocumentList';
+import DocumentViewer from '../documentation/DocumentViewer';
+import { DogDocument } from '../../types/document';
 
 interface DocumentationTabProps {
   dog: any;
 }
 
 const DocumentationTab: React.FC<DocumentationTabProps> = ({ dog }) => {
+  const [viewingDocument, setViewingDocument] = useState<DogDocument | null>(null);
+  
   const {
     documents,
     isLoading,
@@ -27,6 +31,14 @@ const DocumentationTab: React.FC<DocumentationTabProps> = ({ dog }) => {
     handleUpdateDocument,
     handleDeleteDocument
   } = useDogDocuments(dog.id);
+
+  const handleViewDocument = (document: DogDocument) => {
+    setViewingDocument(document);
+  };
+
+  const handleCloseViewer = () => {
+    setViewingDocument(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -48,13 +60,14 @@ const DocumentationTab: React.FC<DocumentationTabProps> = ({ dog }) => {
       
       <Separator />
       
-      {/* Document list section - now as a separate component */}
+      {/* Document list section */}
       <DocumentList 
         documents={documents}
         isLoading={isLoading}
         onEdit={openEditDocument}
         onDelete={handleDeleteDocument}
         onAddDocument={openAddDocument}
+        onView={handleViewDocument}
       />
       
       {/* Document dialogs */}
@@ -78,6 +91,12 @@ const DocumentationTab: React.FC<DocumentationTabProps> = ({ dog }) => {
           isEdit
         />
       )}
+
+      {/* Document viewer */}
+      <DocumentViewer 
+        document={viewingDocument} 
+        onClose={handleCloseViewer} 
+      />
     </div>
   );
 };

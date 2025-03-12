@@ -11,6 +11,7 @@ interface DocumentTabsContentProps {
   label: string;
   onEdit: (document: DogDocument) => void;
   onDelete: (documentId: string) => void;
+  onView: (document: DogDocument) => void;
 }
 
 const DocumentTabsContent: React.FC<DocumentTabsContentProps> = ({
@@ -18,7 +19,8 @@ const DocumentTabsContent: React.FC<DocumentTabsContentProps> = ({
   value,
   label,
   onEdit,
-  onDelete
+  onDelete,
+  onView
 }) => {
   return (
     <TabsContent key={value} value={value} className="space-y-4">
@@ -29,6 +31,7 @@ const DocumentTabsContent: React.FC<DocumentTabsContentProps> = ({
             document={document}
             onEdit={onEdit}
             onDelete={onDelete}
+            onView={onView}
           />
         ))
       ) : (
