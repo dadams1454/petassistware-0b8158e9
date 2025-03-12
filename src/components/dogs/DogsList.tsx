@@ -1,10 +1,11 @@
+
 import React, { useMemo } from 'react';
 import {
   Card,
   CardContent,
   CardHeader,
 } from '@/components/ui/card';
-import { Pencil, Trash2, PawPrint } from 'lucide-react';
+import { PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
@@ -17,7 +18,7 @@ interface DogsListProps {
   onDelete: (dogId: string) => void;
 }
 
-const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
+const DogsList = ({ dogs, onEdit }: DogsListProps) => {
   // Group dogs by gender
   const groupedDogs = useMemo(() => {
     const females = dogs.filter(dog => dog.gender === 'Female');
@@ -91,6 +92,13 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
                   <h3 className="text-xl font-semibold text-white">{dog.name}</h3>
                   <p className="text-white/80">{dog.breed}</p>
                 </div>
+
+                {/* Status indicators for female dogs - now positioned at the top of the card */}
+                {dog.gender === 'Female' && (
+                  <div className="absolute top-3 left-3 z-30">
+                    <DogStatusCard dog={dog} />
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="p-4">
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -119,13 +127,6 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
                 {dog.pedigree && (
                   <div className="mt-3">
                     <Badge variant="outline" className="bg-primary/10">Pedigree</Badge>
-                  </div>
-                )}
-                
-                {dog.gender === 'Female' && (
-                  <div className="mt-4">
-                    <Separator className="my-2" />
-                    <DogStatusCard dog={dog} />
                   </div>
                 )}
               </CardContent>

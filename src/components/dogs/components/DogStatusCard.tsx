@@ -2,7 +2,6 @@
 import React from 'react';
 import { format, addDays, isAfter, isBefore, isToday } from 'date-fns';
 import { Heart, AlertTriangle, Flame } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DogStatusCardProps {
@@ -28,13 +27,13 @@ const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
     ? isWithinDays(today, nextHeatDate, 14)
     : false;
   
-  // Check if vaccinations are overdue
-  const isVaccinationOverdue = nextVaccinationDate 
-    ? isAfter(today, nextVaccinationDate)
+  // Check if vaccinations are due soon or overdue (within 30 days or past due)
+  const vaccinationDueSoon = nextVaccinationDate 
+    ? isWithinDays(today, nextVaccinationDate, 30) || isAfter(today, nextVaccinationDate)
     : false;
 
   // If no status to show, return null
-  if (!isPregnant && !inHeatWindow && !isVaccinationOverdue) {
+  if (!isPregnant && !inHeatWindow && !vaccinationDueSoon) {
     return null;
   }
 
@@ -45,10 +44,10 @@ const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge className="bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300 hover:bg-pink-200 flex items-center gap-1">
-                <Heart className="h-3 w-3 fill-pink-800 dark:fill-pink-300" />
+              <div className="bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help">
+                <Heart className="h-4 w-4 fill-pink-600 dark:fill-pink-300" />
                 Pregnant
-              </Badge>
+              </div>
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-sm">This dog is currently pregnant</p>
@@ -67,10 +66,10 @@ const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 hover:bg-purple-200 flex items-center gap-1">
-                <Flame className="h-3 w-3" />
+              <div className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help">
+                <Flame className="h-4 w-4 text-purple-500 dark:text-purple-300" />
                 {isWithinDays(today, nextHeatDate, 0) ? 'In Heat' : 'Heat Soon'}
-              </Badge>
+              </div>
             </TooltipTrigger>
             <TooltipContent>
               {isWithinDays(today, nextHeatDate, 0) 
@@ -86,19 +85,26 @@ const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
       )}
       
       {/* Vaccination Status */}
-      {isVaccinationOverdue && (
+      {vaccinationDueSoon && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 hover:bg-amber-200 flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                Vaccination Overdue
-              </Badge>
+              <div className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help">
+                <AlertTriangle className="h-4 w-4 text-amber-500 dark:text-amber-300" />
+                {isAfter(today, nextVaccinationDate!) ? 'Vaccination Overdue' : 'Vaccination Due Soon'}
+              </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-sm">Vaccinations are overdue</p>
+              <p className="text-sm">
+                {isAfter(today, nextVaccinationDate!) 
+                  ? 'Vaccinations are overdue' 
+                  : 'Vaccinations due within 30 days'}
+              </p>
               <p className="text-xs mt-1">
                 Last vaccination: {format(lastVaccinationDate!, 'MMM d, yyyy')}
+              </p>
+              <p className="text-xs mt-1">
+                Due date: {format(nextVaccinationDate!, 'MMM d, yyyy')}
               </p>
             </TooltipContent>
           </Tooltip>
