@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import PuppiesTable from './puppies/PuppiesTable';
 import DeletePuppyDialog from './puppies/DeletePuppyDialog';
 import EditPuppyDialog from './puppies/EditPuppyDialog';
@@ -14,6 +16,7 @@ interface PuppiesListProps {
 
 const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedPuppy, setSelectedPuppy] = useState<Puppy | null>(null);
   const [puppyToDelete, setPuppyToDelete] = useState<Puppy | null>(null);
 
@@ -22,8 +25,14 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
     setIsEditDialogOpen(true);
   };
 
+  const handleAddPuppy = () => {
+    setSelectedPuppy(null);
+    setIsAddDialogOpen(true);
+  };
+
   const handleEditSuccess = async () => {
     setIsEditDialogOpen(false);
+    setIsAddDialogOpen(false);
     setSelectedPuppy(null);
     await onRefresh();
     toast({
@@ -64,8 +73,9 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
     <div>
       <PuppiesTable 
         puppies={puppies} 
-        onEditPuppy={handleEditPuppy} 
+        onEditPuppy={handleEditPuppy}
         onDeletePuppy={setPuppyToDelete} 
+        onAddPuppy={handleAddPuppy}
       />
 
       {/* Edit Puppy Dialog */}
@@ -74,6 +84,15 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
         litterId={litterId}
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
+        onSuccess={handleEditSuccess}
+      />
+
+      {/* Add Puppy Dialog */}
+      <EditPuppyDialog
+        puppy={null}
+        litterId={litterId}
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
         onSuccess={handleEditSuccess}
       />
 

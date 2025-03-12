@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -10,21 +9,9 @@ export type Contract = Tables<'contracts'> & {
     email: string | null;
     phone: string | null;
   } | null;
-  puppy?: Tables<'puppies'> | null;
-  breeder_signature?: string | null;
-  customer_signature?: string | null;
 };
 
-export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'> & {
-  breeder_signature?: string | null;
-  customer_signature?: string | null;
-};
-
-export type ContractUpdate = Partial<Tables<'contracts'>> & { 
-  id: string;
-  breeder_signature?: string | null;
-  customer_signature?: string | null;
-};
+export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'>;
 
 export const createContract = async (contract: ContractInsert) => {
   const { data, error } = await supabase
@@ -35,22 +22,6 @@ export const createContract = async (contract: ContractInsert) => {
 
   if (error) {
     console.error('Error creating contract:', error);
-    throw error;
-  }
-
-  return data;
-};
-
-export const updateContract = async (contract: ContractUpdate) => {
-  const { data, error } = await supabase
-    .from('contracts')
-    .update(contract)
-    .eq('id', contract.id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating contract:', error);
     throw error;
   }
 
