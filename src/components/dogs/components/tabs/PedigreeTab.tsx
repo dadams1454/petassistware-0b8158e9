@@ -145,7 +145,7 @@ const PedigreeTab = ({ dogId, currentDog }: PedigreeTabProps) => {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="parent">Parent of {currentDog.name}</SelectItem>
-                          <SelectItem value="offspring">Offspring of {currentDog.name}</SelectItem>
+                          <SelectItem value="offspring">Child of {currentDog.name}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
