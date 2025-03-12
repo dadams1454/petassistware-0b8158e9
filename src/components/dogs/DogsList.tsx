@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import {
   Card,
@@ -67,19 +66,16 @@ const DogsList = ({ dogs, onEdit }: DogsListProps) => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dogs.map((dog) => (
-            <Card key={dog.id} className="overflow-hidden">
+            <Card key={dog.id} className="overflow-hidden cursor-pointer" onClick={() => onEdit(dog)}>
               <CardHeader className="p-0 h-48 relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
                 <div 
-                  className="h-full w-full bg-muted cursor-pointer transition-all duration-200 hover:opacity-90"
+                  className="h-full w-full bg-muted transition-all duration-200 hover:opacity-90"
                   style={{
                     backgroundImage: dog.photo_url ? `url(${dog.photo_url})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}
-                  onClick={() => onEdit(dog)}
-                  role="button"
-                  aria-label="Edit dog profile"
                 >
                   {!dog.photo_url && (
                     <div className="flex items-center justify-center h-full">
