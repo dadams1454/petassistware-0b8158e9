@@ -36,13 +36,17 @@ export const useDogRelationships = (dogId: string) => {
 
   const addRelationship = useMutation({
     mutationFn: async ({ relatedDogId, type }: { relatedDogId: string, type: 'parent' | 'offspring' }) => {
+      // If type is 'parent', the related dog is the parent of the current dog
+      // If type is 'offspring', the related dog is the offspring of the current dog
+      const relationshipData = {
+        dog_id: type === 'offspring' ? dogId : relatedDogId,
+        related_dog_id: type === 'offspring' ? relatedDogId : dogId,
+        relationship_type: type === 'offspring' ? 'offspring' : 'parent'
+      };
+
       const { error } = await supabase
         .from('dog_relationships')
-        .insert({
-          dog_id: dogId,
-          related_dog_id: relatedDogId,
-          relationship_type: type
-        });
+        .insert(relationshipData);
 
       if (error) throw error;
     },
