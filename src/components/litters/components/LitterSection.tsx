@@ -8,6 +8,7 @@ interface LitterSectionProps {
   litters: Litter[];
   onEditLitter: (litter: Litter) => void;
   onDeleteLitter: (litter: Litter) => void;
+  onArchiveLitter: (litter: Litter) => void;
 }
 
 const LitterSection: React.FC<LitterSectionProps> = ({
@@ -15,7 +16,8 @@ const LitterSection: React.FC<LitterSectionProps> = ({
   icon,
   litters,
   onEditLitter,
-  onDeleteLitter
+  onDeleteLitter,
+  onArchiveLitter
 }) => {
   if (litters.length === 0) return null;
   
@@ -33,6 +35,7 @@ const LitterSection: React.FC<LitterSectionProps> = ({
             litter={litter}
             onEdit={onEditLitter}
             onDelete={onDeleteLitter}
+            onArchive={onArchiveLitter}
           />
         ))}
       </div>

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, differenceInWeeks } from 'date-fns';
-import { Eye, Edit, Trash2, Users } from 'lucide-react';
+import { Eye, Edit, Trash2, Users, Archive } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,14 +18,23 @@ interface LitterTableViewProps {
   litters: Litter[];
   onEditLitter: (litter: Litter) => void;
   onDeleteLitter: (litter: Litter) => void;
+  onArchiveLitter: (litter: Litter) => void;
 }
 
 const LitterTableView: React.FC<LitterTableViewProps> = ({
   litters,
   onEditLitter,
   onDeleteLitter,
+  onArchiveLitter,
 }) => {
   const navigate = useNavigate();
+
+  // Separate active and archived litters
+  const activeLitters = litters.filter(litter => litter.status !== 'archived');
+  const archivedLitters = litters.filter(litter => litter.status === 'archived');
+  
+  // Combine with active litters first, then archived ones
+  const sortedLitters = [...activeLitters, ...archivedLitters];
 
   return (
     <div className="rounded-md border">
@@ -39,7 +48,7 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {litters.map((litter) => {
+          {sortedLitters.map((litter) => {
             // Calculate litter age in weeks
             const birthDate = new Date(litter.birth_date);
             const ageInWeeks = differenceInWeeks(new Date(), birthDate);
@@ -48,16 +57,23 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
             const availablePuppies = (litter.puppies || []).filter(p => p.status === 'Available');
             const colors = [...new Set((litter.puppies || []).map(p => p.color).filter(Boolean))];
             
+            const isArchived = litter.status === 'archived';
+            
             return (
-              <TableRow key={litter.id}>
+              <TableRow key={litter.id} className={isArchived ? 'bg-muted/30' : ''}>
                 {/* Litter Info */}
                 <TableCell className="font-medium">
                   <div className="space-y-1">
-                    <div>
+                    <div className="flex items-center gap-2">
                       {litter.litter_name ? (
                         <span className="font-semibold">{litter.litter_name}</span>
                       ) : (
                         <span className="text-muted-foreground italic">Unnamed Litter</span>
+                      )}
+                      {isArchived && (
+                        <Badge variant="outline" className="bg-muted text-muted-foreground">
+                          Archived
+                        </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -127,6 +143,16 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
+                    {!isArchived && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-amber-600 hover:text-amber-700"
+                        onClick={() => onArchiveLitter(litter)}
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"

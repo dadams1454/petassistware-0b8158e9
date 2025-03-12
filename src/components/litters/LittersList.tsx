@@ -1,6 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
-import { PawPrint, UserRound, Table as TableIcon, Columns } from 'lucide-react';
+import { PawPrint, UserRound, Table as TableIcon, Columns, ArchiveIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -20,14 +20,16 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const isDeleteDialogOpen = Boolean(litterToDelete);
 
-  // Organize litters by dam gender
+  // Organize litters by status and dam gender
   const organizedLitters = useMemo(() => {
-    const femaleLitters = litters.filter(litter => litter.dam?.gender === 'Female');
-    const otherLitters = litters.filter(litter => litter.dam?.gender !== 'Female');
+    const activeLitters = litters.filter(litter => litter.status !== 'archived' && litter.dam?.gender === 'Female');
+    const otherActiveLitters = litters.filter(litter => litter.status !== 'archived' && litter.dam?.gender !== 'Female');
+    const archivedLitters = litters.filter(litter => litter.status === 'archived');
 
     return {
-      female: femaleLitters,
-      other: otherLitters
+      active: activeLitters,
+      other: otherActiveLitters,
+      archived: archivedLitters
     };
   }, [litters]);
 
@@ -54,6 +56,31 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
       toast({
         title: "Error",
         description: "There was an error deleting the litter.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleArchiveLitter = async (litter: Litter) => {
+    try {
+      const { error } = await supabase
+        .from('litters')
+        .update({ status: 'archived' })
+        .eq('id', litter.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Litter archived",
+        description: "The litter has been successfully archived.",
+      });
+      
+      await onRefresh();
+    } catch (error) {
+      console.error('Error archiving litter:', error);
+      toast({
+        title: "Error",
+        description: "There was an error archiving the litter.",
         variant: "destructive",
       });
     }
@@ -102,15 +129,17 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
           litters={litters} 
           onEditLitter={onEditLitter} 
           onDeleteLitter={setLitterToDelete}
+          onArchiveLitter={handleArchiveLitter}
         />
       ) : (
         <>
           <LitterSection
             title="Active Litters"
             icon={<UserRound className="h-5 w-5 text-pink-500" />}
-            litters={organizedLitters.female}
+            litters={organizedLitters.active}
             onEditLitter={onEditLitter}
             onDeleteLitter={setLitterToDelete}
+            onArchiveLitter={handleArchiveLitter}
           />
           
           <LitterSection
@@ -119,7 +148,19 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
             litters={organizedLitters.other}
             onEditLitter={onEditLitter}
             onDeleteLitter={setLitterToDelete}
+            onArchiveLitter={handleArchiveLitter}
           />
+
+          {organizedLitters.archived.length > 0 && (
+            <LitterSection
+              title="Archived Litters"
+              icon={<ArchiveIcon className="h-5 w-5 text-muted-foreground" />}
+              litters={organizedLitters.archived}
+              onEditLitter={onEditLitter}
+              onDeleteLitter={setLitterToDelete}
+              onArchiveLitter={handleArchiveLitter}
+            />
+          )}
         </>
       )}
 
