@@ -6,7 +6,6 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 import { PawPrint } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import DogStatusCard from './components/DogStatusCard';
@@ -124,11 +123,7 @@ const DogsList = ({ dogs, onEdit }: DogsListProps) => {
                     </div>
                   )}
                 </div>
-                {dog.pedigree && (
-                  <div className="mt-3">
-                    <Badge variant="outline" className="bg-primary/10">Pedigree</Badge>
-                  </div>
-                )}
+                {/* Removed pedigree badge from here to clean up the UI */}
               </CardContent>
             </Card>
           ))}
