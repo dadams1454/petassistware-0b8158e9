@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +12,19 @@ import {
   CardFooter,
   CardDescription
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 import DogHealthSection from './DogHealthSection';
 import VaccinationsTab from './components/VaccinationsTab';
 import PedigreeTab from './components/tabs/PedigreeTab';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import DogForm from './DogForm';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface DogDetailsProps {
   dog: any;
@@ -21,6 +32,8 @@ interface DogDetailsProps {
 
 const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   return (
     <div className="space-y-6">
@@ -39,9 +52,19 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
         </div>
         
         <div className="flex-1 space-y-4">
-          <div>
-            <h2 className="text-2xl font-bold">{dog.name}</h2>
-            <p className="text-muted-foreground">{dog.breed}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">{dog.name}</h2>
+              <p className="text-muted-foreground">{dog.breed}</p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsEditDialogOpen(true)}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
           </div>
           
           <div className="grid grid-cols-2 gap-y-2">
@@ -143,6 +166,24 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog }) => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Dog</DialogTitle>
+          </DialogHeader>
+          <DogForm 
+            dog={dog}
+            onSuccess={() => {
+              setIsEditDialogOpen(false);
+              queryClient.invalidateQueries({ queryKey: ['dogs'] });
+              queryClient.invalidateQueries({ queryKey: ['allDogs'] });
+            }}
+            onCancel={() => setIsEditDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

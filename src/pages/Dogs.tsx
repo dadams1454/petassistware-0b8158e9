@@ -64,6 +64,7 @@ const DogsPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
+      queryClient.invalidateQueries({ queryKey: ['allDogs'] });
       toast({
         title: 'Dog deleted',
         description: 'Dog has been successfully removed',
@@ -132,6 +133,7 @@ const DogsPage = () => {
                 onSuccess={() => {
                   setIsAddDialogOpen(false);
                   queryClient.invalidateQueries({ queryKey: ['dogs'] });
+                  queryClient.invalidateQueries({ queryKey: ['allDogs'] });
                 }}
                 onCancel={() => setIsAddDialogOpen(false)}
               />
@@ -150,6 +152,7 @@ const DogsPage = () => {
                   onSuccess={() => {
                     setIsEditDialogOpen(false);
                     queryClient.invalidateQueries({ queryKey: ['dogs'] });
+                    queryClient.invalidateQueries({ queryKey: ['allDogs'] });
                   }}
                   onCancel={() => setIsEditDialogOpen(false)}
                 />

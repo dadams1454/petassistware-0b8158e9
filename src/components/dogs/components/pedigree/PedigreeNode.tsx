@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 interface PedigreeNodeProps {
   dog?: any;
   small?: boolean;
+  onClick?: (dog: any) => void;
 }
 
 interface EmptyNodeProps {
@@ -12,13 +13,15 @@ interface EmptyNodeProps {
   small?: boolean;
 }
 
-const PedigreeNode = ({ dog, small = false }: PedigreeNodeProps) => {
+const PedigreeNode = ({ dog, small = false, onClick }: PedigreeNodeProps) => {
   return (
     <div 
       className={cn(
         "border rounded-lg p-3 bg-card shadow-sm hover:shadow-md transition-shadow",
-        small ? "w-[120px]" : "w-[180px]"
+        small ? "w-[120px]" : "w-[180px]",
+        onClick && dog ? "cursor-pointer hover:bg-accent/20" : ""
       )}
+      onClick={() => onClick && dog && onClick(dog)}
     >
       <div className="flex items-center gap-2">
         <div className={cn(
