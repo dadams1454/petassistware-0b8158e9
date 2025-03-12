@@ -1,30 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import TextInput from '@/components/dogs/form/TextInput';
-import TextareaInput from '@/components/dogs/form/TextareaInput';
-import { CustomButton } from '@/components/ui/custom-button';
-import DogSelector from './form/DogSelector';
-import LitterDatePicker from './form/LitterDatePicker';
-import { toast } from '@/components/ui/use-toast';
-import PhotoUpload from '@/components/dogs/form/PhotoUpload';
-import { useQuery } from '@tanstack/react-query';
-
-interface LitterFormData {
-  litter_name: string;
-  dam_id: string | null;
-  sire_id: string | null;
-  birth_date: Date;
-  expected_go_home_date: Date;
-  puppy_count: number | null;
-  male_count: number | null;
-  female_count: number | null;
-  notes: string | null;
-  documents_url: string | null;
-}
+import React from 'react';
+import { useLitterForm } from './hooks/useLitterForm';
+import { useDamInfoUpdater } from './hooks/useDamInfoUpdater';
+import { usePuppyCounter } from './hooks/usePuppyCounter';
+import LitterFormLayout from './form/LitterFormLayout';
 
 interface LitterFormProps {
   initialData?: Litter;
@@ -33,273 +12,46 @@ interface LitterFormProps {
 }
 
 const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCancel }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previousDamId, setPreviousDamId] = useState<string | null>(initialData?.dam_id || null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const {
+    form,
+    isSubmitting,
+    damDetails,
+    previousDamId,
+    setPreviousDamId,
+    isInitialLoad,
+    setIsInitialLoad,
+    maleCount,
+    femaleCount,
+    currentDamId,
+    handleSubmit
+  } = useLitterForm({ initialData, onSuccess });
 
-  const form = useForm<LitterFormData>({
-    defaultValues: {
-      litter_name: initialData?.litter_name || '',
-      dam_id: initialData?.dam_id || null,
-      sire_id: initialData?.sire_id || null,
-      birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : new Date(),
-      expected_go_home_date: initialData?.expected_go_home_date ? new Date(initialData.expected_go_home_date) : new Date(Date.now() + 8 * 7 * 24 * 60 * 60 * 1000), // Default to 8 weeks from now
-      puppy_count: initialData?.puppy_count || null,
-      male_count: initialData?.male_count || null,
-      female_count: initialData?.female_count || null,
-      notes: initialData?.notes || null,
-      documents_url: initialData?.documents_url || null
-    }
+  // Use hooks for side effects
+  useDamInfoUpdater({
+    form,
+    damDetails,
+    isInitialLoad,
+    setIsInitialLoad,
+    initialData,
+    currentDamId,
+    previousDamId,
+    setPreviousDamId
   });
 
-  // Watch dam_id to detect changes
-  const currentDamId = form.watch('dam_id');
-  
-  // Watch male and female count to auto-calculate total puppies
-  const maleCount = form.watch('male_count');
-  const femaleCount = form.watch('female_count');
-  
-  // Fetch dam details when dam_id changes or when initializing with existing data
-  const { data: damDetails } = useQuery({
-    queryKey: ['dam-details', currentDamId],
-    queryFn: async () => {
-      if (!currentDamId || currentDamId === 'none') return null;
-      
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*')
-        .eq('id', currentDamId)
-        .single();
-      
-      if (error) {
-        console.error('Error fetching dam details:', error);
-        return null;
-      }
-      
-      console.log('Successfully fetched dam details:', data);
-      return data;
-    },
-    enabled: !!currentDamId && currentDamId !== 'none',
+  usePuppyCounter({
+    form,
+    maleCount,
+    femaleCount
   });
-
-  // Initial setup for edit mode - make sure we load dam details even if dam_id doesn't change
-  useEffect(() => {
-    if (initialData && initialData.dam_id && isInitialLoad && damDetails) {
-      console.log('Initial load with dam details:', damDetails);
-      setIsInitialLoad(false);
-      
-      // Only update these fields if they're empty in edit mode
-      if (!initialData.notes) {
-        const damInfo = `Dam: ${damDetails.name}, Breed: ${damDetails.breed}, Color: ${damDetails.color || 'N/A'}`;
-        form.setValue('notes', damInfo);
-      }
-      
-      if (!initialData.litter_name) {
-        const litterNumber = (damDetails.litter_number || 0);
-        form.setValue('litter_name', `${damDetails.name}'s Litter #${litterNumber}`);
-      }
-    }
-  }, [initialData, damDetails, form, isInitialLoad]);
-
-  // Update form with additional data when dam changes
-  useEffect(() => {
-    if (currentDamId !== previousDamId && damDetails) {
-      console.log('Dam changed, updating form with dam details:', damDetails);
-      
-      // Update litter name if it's empty or was auto-generated previously
-      if (!form.getValues('litter_name') || form.getValues('litter_name').includes('Litter')) {
-        const litterNumber = (damDetails.litter_number || 0) + 1;
-        form.setValue('litter_name', `${damDetails.name}'s Litter #${litterNumber}`);
-      }
-      
-      // Update notes with dam information if notes are empty
-      if (!form.getValues('notes')) {
-        const damInfo = `Dam: ${damDetails.name}, Breed: ${damDetails.breed}, Color: ${damDetails.color || 'N/A'}`;
-        form.setValue('notes', damInfo);
-      }
-      
-      setPreviousDamId(currentDamId);
-    }
-  }, [currentDamId, damDetails, form, previousDamId]);
-  
-  // Update total puppy count whenever male or female count changes
-  useEffect(() => {
-    const male = parseInt(String(maleCount)) || 0;
-    const female = parseInt(String(femaleCount)) || 0;
-    
-    if (male > 0 || female > 0) {
-      const total = male + female;
-      form.setValue('puppy_count', total);
-    }
-  }, [maleCount, femaleCount, form]);
-
-  const handleSubmit = async (data: LitterFormData) => {
-    setIsSubmitting(true);
-    try {
-      // Debug logging
-      console.log('Submitting form with data:', data);
-      
-      // Process the data to handle null values
-      const processedData = {
-        ...data,
-        birth_date: data.birth_date.toISOString().split('T')[0],
-        expected_go_home_date: data.expected_go_home_date.toISOString().split('T')[0]
-      };
-
-      console.log('Processed data for submission:', processedData);
-
-      if (initialData) {
-        // Update existing litter
-        const { error } = await supabase
-          .from('litters')
-          .update(processedData)
-          .eq('id', initialData.id);
-
-        if (error) throw error;
-        
-        toast({
-          title: "Success",
-          description: "Litter updated successfully",
-        });
-      } else {
-        // Create new litter
-        const { error } = await supabase
-          .from('litters')
-          .insert(processedData);
-
-        if (error) throw error;
-        
-        toast({
-          title: "Success",
-          description: "Litter created successfully",
-        });
-        
-        // If this is a new litter and we have dam details, update the dam's litter count
-        if (damDetails && currentDamId) {
-          const newLitterNumber = (damDetails.litter_number || 0) + 1;
-          await supabase
-            .from('dogs')
-            .update({ litter_number: newLitterNumber })
-            .eq('id', currentDamId);
-          
-          console.log(`Updated dam's litter count to ${newLitterNumber}`);
-        }
-      }
-
-      onSuccess();
-    } catch (error) {
-      console.error('Error saving litter:', error);
-      toast({
-        title: "Error",
-        description: "There was a problem saving the litter",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TextInput 
-            form={form} 
-            name="litter_name" 
-            label="Litter Name/ID" 
-            placeholder="Enter a name or ID for this litter" 
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TextInput 
-              form={form} 
-              name="puppy_count" 
-              label="Total Puppies" 
-              placeholder="Number of puppies"
-              disabled={true}
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <TextInput 
-                form={form} 
-                name="male_count" 
-                label="Males" 
-                placeholder="Male count" 
-              />
-              <TextInput 
-                form={form} 
-                name="female_count" 
-                label="Females" 
-                placeholder="Female count" 
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <DogSelector 
-            form={form} 
-            name="dam_id" 
-            label="Dam (Mother)" 
-            filterGender="Female" 
-          />
-          
-          <DogSelector 
-            form={form} 
-            name="sire_id" 
-            label="Sire (Father)" 
-            filterGender="Male" 
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <LitterDatePicker 
-            form={form}
-            name="birth_date"
-            label="Birth Date" 
-          />
-          
-          <LitterDatePicker 
-            form={form}
-            name="expected_go_home_date"
-            label="Expected Go-Home Date" 
-          />
-        </div>
-
-        <TextareaInput 
-          form={form} 
-          name="notes" 
-          label="Notes" 
-          placeholder="Enter any notes about this litter" 
-        />
-
-        <PhotoUpload 
-          form={form} 
-          name="documents_url" 
-          label="Litter Documents (Health records, pedigrees, etc.)" 
-        />
-
-        <div className="flex justify-end space-x-2 pt-4">
-          {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-          )}
-          <CustomButton
-            type="submit"
-            variant="primary"
-            isLoading={isSubmitting}
-            fullWidth={false}
-          >
-            {initialData ? 'Update Litter' : 'Create Litter'}
-          </CustomButton>
-        </div>
-      </form>
-    </Form>
+    <LitterFormLayout
+      form={form}
+      isSubmitting={isSubmitting}
+      onSubmit={handleSubmit}
+      onCancel={onCancel}
+      isEditMode={!!initialData}
+    />
   );
 };
 
