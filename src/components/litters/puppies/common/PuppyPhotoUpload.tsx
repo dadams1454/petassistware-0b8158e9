@@ -4,18 +4,19 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Upload, X } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { compressImage } from '@/utils/imageOptimization';
+import PuppyPhoto from './PuppyPhoto';
 
-interface PhotoUploadProps {
+interface PuppyPhotoUploadProps {
   form: UseFormReturn<any>;
   name: string;
   label: string;
+  litterId: string;
 }
 
-const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
+const PuppyPhotoUpload = ({ form, name, label, litterId }: PuppyPhotoUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -56,10 +57,10 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
       setUploading(true);
       
       // Compress the image before upload
-      const compressedFile = await compressImage(file, 1920, 0.85, 1);
+      const compressedFile = await compressImage(file, 1200, 0.85, 1);
       
       // Generate a unique file name
-      const fileName = `${Date.now()}_${file.name}`;
+      const fileName = `puppy_${litterId}_${Date.now()}_${file.name}`;
       
       // Upload compressed file to Supabase storage
       const { data, error } = await supabase.storage
@@ -79,13 +80,13 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
       form.setValue(name, publicUrl);
 
       toast({
-        title: 'Image uploaded',
-        description: 'The image has been optimized and uploaded successfully',
+        title: 'Photo uploaded',
+        description: 'The puppy photo has been optimized and uploaded successfully',
       });
     } catch (error: any) {
       toast({
         title: 'Upload failed',
-        description: error.message || 'Failed to upload image',
+        description: error.message || 'Failed to upload puppy photo',
         variant: 'destructive',
       });
       console.error('Error uploading file:', error);
@@ -95,7 +96,7 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
   };
 
   const clearImage = () => {
-    form.setValue(name, '');
+    form.setValue(name, null);
     setFilePreview(null);
   };
 
@@ -109,31 +110,33 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
           <FormControl>
             <div className="space-y-2">
               {filePreview ? (
-                <div className="relative w-40 h-40 mx-auto">
-                  <Avatar className="w-40 h-40 border rounded-md shadow">
-                    <AvatarImage src={filePreview} alt="Dog photo" className="object-cover" />
-                    <AvatarFallback className="text-xl">Dog</AvatarFallback>
-                  </Avatar>
+                <div className="relative w-32 h-32 mx-auto">
+                  <div className="w-32 h-32 rounded-md overflow-hidden border shadow">
+                    <img 
+                      src={filePreview} 
+                      alt="Puppy photo" 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
                   <Button
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute -top-2 -right-2 rounded-full w-7 h-7"
+                    className="absolute -top-2 -right-2 rounded-full w-6 h-6"
                     onClick={clearImage}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </div>
               ) : (
-                <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 h-40 w-full cursor-pointer"
-                  onClick={() => document.getElementById(`${field.name}-upload`)?.click()}>
+                <div 
+                  className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 h-32 w-full cursor-pointer"
+                  onClick={() => document.getElementById(`${field.name}-upload`)?.click()}
+                >
                   <div className="space-y-2 text-center">
-                    <Upload className="h-10 w-10 text-gray-400 mx-auto" />
-                    <div className="text-sm text-gray-500">
-                      Click to upload a photo
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      (Max size: 5MB)
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto" />
+                    <div className="text-xs text-gray-500">
+                      Click to upload
                     </div>
                   </div>
                 </div>
@@ -150,7 +153,7 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full"
+                  className="w-full text-xs h-8"
                   disabled={uploading}
                   onClick={() => document.getElementById(`${field.name}-upload`)?.click()}
                 >
@@ -166,4 +169,4 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
   );
 };
 
-export default PhotoUpload;
+export default PuppyPhotoUpload;

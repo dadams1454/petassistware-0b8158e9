@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, X, Upload } from 'lucide-react';
+import { compressImage } from '@/utils/imageOptimization';
 
 interface GalleryTabProps {
   dogId: string;
@@ -94,13 +94,16 @@ const GalleryTab: React.FC<GalleryTabProps> = ({ dogId, mainPhotoUrl }) => {
 
       setUploading(true);
       
+      // Compress the image before upload
+      const compressedFile = await compressImage(file, 1920, 0.85, 1);
+      
       // Generate a unique file name
       const fileName = `${dogId}_${Date.now()}_${file.name}`;
       
-      // Upload file to Supabase storage
+      // Upload compressed file to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('dog-photos')
-        .upload(fileName, file);
+        .upload(fileName, compressedFile);
 
       if (uploadError) {
         throw uploadError;
@@ -125,7 +128,7 @@ const GalleryTab: React.FC<GalleryTabProps> = ({ dogId, mainPhotoUrl }) => {
       refetch();
       toast({
         title: 'Photo uploaded',
-        description: 'The photo has been added to the gallery',
+        description: 'The photo has been optimized and added to the gallery',
       });
     } catch (error: any) {
       toast({
