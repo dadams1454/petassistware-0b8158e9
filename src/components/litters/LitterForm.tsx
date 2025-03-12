@@ -11,6 +11,7 @@ import DogSelector from './form/DogSelector';
 import LitterDatePicker from './form/LitterDatePicker';
 import { toast } from '@/components/ui/use-toast';
 import PhotoUpload from '@/components/dogs/form/PhotoUpload';
+import { useQuery } from '@tanstack/react-query';
 
 interface LitterFormData {
   litter_name: string;
@@ -33,6 +34,7 @@ interface LitterFormProps {
 
 const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previousDamId, setPreviousDamId] = useState<string | null>(initialData?.dam_id || null);
 
   const form = useForm<LitterFormData>({
     defaultValues: {
@@ -49,9 +51,55 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
     }
   });
 
+  // Watch dam_id to detect changes
+  const currentDamId = form.watch('dam_id');
+  
   // Watch male and female count to auto-calculate total puppies
   const maleCount = form.watch('male_count');
   const femaleCount = form.watch('female_count');
+  
+  // Fetch dam details when dam_id changes
+  const { data: damDetails } = useQuery({
+    queryKey: ['dam-details', currentDamId],
+    queryFn: async () => {
+      if (!currentDamId || currentDamId === 'none') return null;
+      
+      const { data, error } = await supabase
+        .from('dogs')
+        .select('*')
+        .eq('id', currentDamId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching dam details:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!currentDamId && currentDamId !== 'none',
+  });
+
+  // Update form with additional data when dam changes
+  useEffect(() => {
+    if (currentDamId !== previousDamId && damDetails) {
+      console.log('Dam changed, updating form with dam details:', damDetails);
+      
+      // Update litter name if it's empty or was auto-generated previously
+      if (!form.getValues('litter_name') || form.getValues('litter_name').includes('Litter')) {
+        const litterNumber = (damDetails.litter_number || 0) + 1;
+        form.setValue('litter_name', `${damDetails.name}'s Litter #${litterNumber}`);
+      }
+      
+      // Update notes with dam information if notes are empty
+      if (!form.getValues('notes')) {
+        const damInfo = `Dam: ${damDetails.name}, Breed: ${damDetails.breed}, Color: ${damDetails.color || 'N/A'}`;
+        form.setValue('notes', damInfo);
+      }
+      
+      setPreviousDamId(currentDamId);
+    }
+  }, [currentDamId, damDetails, form, previousDamId]);
   
   // Update total puppy count whenever male or female count changes
   useEffect(() => {
@@ -104,6 +152,17 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
           title: "Success",
           description: "Litter created successfully",
         });
+        
+        // If this is a new litter and we have dam details, update the dam's litter count
+        if (damDetails && currentDamId) {
+          const newLitterNumber = (damDetails.litter_number || 0) + 1;
+          await supabase
+            .from('dogs')
+            .update({ litter_number: newLitterNumber })
+            .eq('id', currentDamId);
+          
+          console.log(`Updated dam's litter count to ${newLitterNumber}`);
+        }
       }
 
       onSuccess();
