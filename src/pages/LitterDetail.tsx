@@ -20,13 +20,13 @@ const LitterDetail = () => {
     queryFn: async () => {
       if (!id) throw new Error('Litter ID is required');
       
-      // Update the query to get more comprehensive data for dam and sire
+      // Expanded query to get complete dam and sire information
       const { data, error } = await supabase
         .from('litters')
         .select(`
           *,
-          dam:dogs!litters_dam_id_fkey(id, name, breed, color, photo_url, litter_number),
-          sire:dogs!litters_sire_id_fkey(id, name, breed, color, photo_url),
+          dam:dogs!litters_dam_id_fkey(id, name, breed, color, photo_url, litter_number, gender),
+          sire:dogs!litters_sire_id_fkey(id, name, breed, color, photo_url, gender),
           puppies!puppies_litter_id_fkey(*)
         `)
         .eq('id', id)

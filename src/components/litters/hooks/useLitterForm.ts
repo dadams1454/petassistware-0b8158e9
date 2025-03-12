@@ -28,6 +28,7 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
   const [previousDamId, setPreviousDamId] = useState<string | null>(initialData?.dam_id || null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Initialize form with initial data values
   const form = useForm<LitterFormData>({
     defaultValues: {
       litter_name: initialData?.litter_name || '',

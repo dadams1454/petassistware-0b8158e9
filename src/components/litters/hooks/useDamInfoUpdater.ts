@@ -30,16 +30,13 @@ export const useDamInfoUpdater = ({
       console.log('Initial load with dam details:', damDetails);
       setIsInitialLoad(false);
       
-      // Only update these fields if they're empty in edit mode
-      if (!initialData.notes) {
-        const damInfo = `Dam: ${damDetails.name}, Breed: ${damDetails.breed}, Color: ${damDetails.color || 'N/A'}`;
-        form.setValue('notes', damInfo);
-      }
+      // In edit mode, we need to ensure dam info is visible even if form fields aren't empty
+      // This is the key fix - we're updating dam info regardless of existing values
+      const damInfo = `Dam: ${damDetails.name}, Breed: ${damDetails.breed}, Color: ${damDetails.color || 'N/A'}`;
+      form.setValue('notes', initialData.notes || damInfo);
       
-      if (!initialData.litter_name) {
-        const litterNumber = (damDetails.litter_number || 0);
-        form.setValue('litter_name', `${damDetails.name}'s Litter #${litterNumber}`);
-      }
+      const litterName = initialData.litter_name || `${damDetails.name}'s Litter #${damDetails.litter_number || 0}`;
+      form.setValue('litter_name', litterName);
     }
   }, [initialData, damDetails, form, isInitialLoad, setIsInitialLoad]);
 
