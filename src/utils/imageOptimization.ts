@@ -160,7 +160,7 @@ export const compressImage = async (
  */
 export const zipFile = async (file: File, zipFileName?: string): Promise<File> => {
   // Simply return the original file for now as client-side zipping requires additional libraries
-  // This is a placeholder for future implementation
+  // This is a placeholder for future implementation with a library like JSZip
   console.warn('Client-side zip compression not implemented yet');
   return file;
   

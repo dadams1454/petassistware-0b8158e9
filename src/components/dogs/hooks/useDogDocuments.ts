@@ -36,6 +36,60 @@ export const useDogDocuments = (dogId: string) => {
     },
   });
 
+  // Format file size in a human-readable way
+  const formatFileSize = (sizeInBytes: number): string => {
+    if (sizeInBytes < 1024) {
+      return `${sizeInBytes} B`;
+    } else if (sizeInBytes < 1024 * 1024) {
+      return `${(sizeInBytes / 1024).toFixed(1)} KB`;
+    } else {
+      return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+  };
+
+  // Process file before upload (compress if possible)
+  const processFile = async (file: File): Promise<File> => {
+    const isImage = file.type.startsWith('image/');
+    
+    // For images, apply compression
+    if (isImage) {
+      // Display original size
+      const originalSize = file.size;
+      
+      // Apply different compression levels based on file size
+      let compressedFile: File;
+      
+      if (originalSize > 5 * 1024 * 1024) {
+        // Very large image - aggressive compression
+        toast({
+          title: 'Large image detected',
+          description: 'Applying compression to reduce file size...',
+        });
+        compressedFile = await compressImage(file, 1200, 0.6, 0.6);
+      } else if (originalSize > 2 * 1024 * 1024) {
+        // Medium size image - moderate compression
+        compressedFile = await compressImage(file, 1600, 0.75, 0.8);
+      } else {
+        // Small image - light compression to preserve quality
+        compressedFile = await compressImage(file, 1920, 0.85, 1);
+      }
+      
+      // Show reduction in file size
+      const compressionRatio = (1 - (compressedFile.size / originalSize)) * 100;
+      if (compressionRatio > 10) {
+        toast({
+          title: 'Image compressed',
+          description: `Reduced by ${compressionRatio.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(compressedFile.size)})`,
+        });
+      }
+      
+      return compressedFile;
+    }
+    
+    // For non-images, just return the original file
+    return file;
+  };
+
   // Mutation to save a new document
   const saveMutation = useMutation({
     mutationFn: async (documentData: Omit<DogDocument, 'id' | 'created_at'> & { file?: File }) => {
@@ -45,30 +99,16 @@ export const useDogDocuments = (dogId: string) => {
       
       if (documentData.file) {
         try {
-          // Compress file if it's an image
-          const file = documentData.file;
-          const isImage = file.type.startsWith('image/');
+          // Process file (compress if it's an image)
+          const processedFile = await processFile(documentData.file);
           
           // Generate unique filename
-          fileName = `${Date.now()}_${file.name}`;
-          
-          let fileToUpload = file;
-          
-          // Apply compression for images
-          if (isImage) {
-            // Aggressively compress images to ensure they're within size limits
-            fileToUpload = await compressImage(file, 1200, 0.7, 0.8);
-            
-            // If still too large, compress more
-            if (fileToUpload.size > 2 * 1024 * 1024) {
-              fileToUpload = await compressImage(file, 800, 0.5, 0.5);
-            }
-          }
+          fileName = `${Date.now()}_${documentData.file.name}`;
           
           // Upload file
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('dog-documents')
-            .upload(fileName, fileToUpload);
+            .upload(fileName, processedFile);
             
           if (uploadError) throw new Error(uploadError.message);
           
@@ -130,29 +170,16 @@ export const useDogDocuments = (dogId: string) => {
       // If there's a new file, upload it
       if (values.file) {
         try {
-          const file = values.file;
-          const isImage = file.type.startsWith('image/');
+          // Process file (compress if it's an image)
+          const processedFile = await processFile(values.file);
           
           // Generate unique filename
-          const fileName = `${Date.now()}_${file.name}`;
-          
-          let fileToUpload = file;
-          
-          // Apply compression for images
-          if (isImage) {
-            // Aggressively compress images to ensure they're within size limits
-            fileToUpload = await compressImage(file, 1200, 0.7, 0.8);
-            
-            // If still too large, compress more
-            if (fileToUpload.size > 2 * 1024 * 1024) {
-              fileToUpload = await compressImage(file, 800, 0.5, 0.5);
-            }
-          }
+          const fileName = `${Date.now()}_${values.file.name}`;
           
           // Upload file
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('dog-documents')
-            .upload(fileName, fileToUpload);
+            .upload(fileName, processedFile);
             
           if (uploadError) throw new Error(uploadError.message);
           
@@ -255,7 +282,9 @@ export const useDogDocuments = (dogId: string) => {
   };
   
   const handleDeleteDocument = (documentId: string) => {
-    deleteMutation.mutate(documentId);
+    if (window.confirm('Are you sure you want to delete this document?')) {
+      deleteMutation.mutate(documentId);
+    }
   };
 
   return {

@@ -245,6 +245,47 @@ export type Database = {
         }
         Relationships: []
       }
+      dog_documents: {
+        Row: {
+          created_at: string | null
+          document_type: string
+          dog_id: string
+          file_name: string
+          file_url: string
+          id: string
+          notes: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          document_type: string
+          dog_id: string
+          file_name: string
+          file_url: string
+          id?: string
+          notes?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          document_type?: string
+          dog_id?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          notes?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dog_documents_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dog_photos: {
         Row: {
           created_at: string
