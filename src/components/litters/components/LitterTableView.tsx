@@ -36,6 +36,12 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
   // Combine with active litters first, then archived ones
   const sortedLitters = [...activeLitters, ...archivedLitters];
 
+  // Add some debug logs
+  console.log('All litters:', litters);
+  litters.forEach(litter => {
+    console.log(`Litter ${litter.litter_name} - Puppies: ${litter.puppies?.length || 0}`);
+  });
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -55,6 +61,7 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
             
             // Count available puppies and get unique colors
             const availablePuppies = litter.puppies ? litter.puppies.filter(p => p.status === 'Available') : [];
+            const totalPuppies = litter.puppies ? litter.puppies.length : 0;
             const colors = [...new Set((litter.puppies || []).map(p => p.color).filter(Boolean))];
             
             const isArchived = litter.status === 'archived';
@@ -107,7 +114,7 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
                     <div className="flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-sm">
-                        <span className="font-medium">Total:</span> {litter.puppies?.length || 0}{' '}
+                        <span className="font-medium">Total:</span> {totalPuppies}{' '}
                         <span className="text-green-600 font-medium">
                           ({availablePuppies.length} available)
                         </span>
