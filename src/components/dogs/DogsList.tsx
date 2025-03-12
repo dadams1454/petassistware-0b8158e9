@@ -1,23 +1,12 @@
-
 import React, { useMemo } from 'react';
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Eye, Pencil, Trash2, PawPrint, Heart, AlertTriangle, Flame } from 'lucide-react';
+import { Pencil, Trash2, PawPrint } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { format, addDays, isAfter, isBefore } from 'date-fns';
-import { 
-  Table, 
-  TableHeader, 
-  TableHead, 
-  TableRow,
-  TableBody,
-  TableCell
-} from '@/components/ui/table';
+import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import DogStatusCard from './components/DogStatusCard';
 
@@ -163,15 +152,6 @@ const DogsList = ({ dogs, onView, onEdit, onDelete }: DogsListProps) => {
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
-                  onClick={() => onView(dog)}
-                >
-                  <Eye className="h-4 w-4 mr-2" /> View Details
-                </Button>
-              </CardFooter>
             </Card>
           ))}
         </div>
