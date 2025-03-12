@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -113,11 +112,11 @@ export const useDogDocuments = (dogId: string) => {
           if (uploadError) throw new Error(uploadError.message);
           
           // Get public URL
-          const { data: { publicUrl } } = supabase.storage
+          const { data: urlData } = supabase.storage
             .from('dog-documents')
             .getPublicUrl(fileName);
             
-          fileUrl = publicUrl;
+          fileUrl = urlData.publicUrl;
         } catch (error: any) {
           toast({
             title: 'Error uploading file',
@@ -129,7 +128,7 @@ export const useDogDocuments = (dogId: string) => {
       }
       
       // Insert document record
-      const { data, error } = await supabase
+      const { data: responseData, error } = await supabase
         .from('dog_documents')
         .insert([{
           dog_id: dogId,
@@ -143,7 +142,7 @@ export const useDogDocuments = (dogId: string) => {
         .single();
         
       if (error) throw new Error(error.message);
-      return data;
+      return responseData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dogDocuments', dogId] });

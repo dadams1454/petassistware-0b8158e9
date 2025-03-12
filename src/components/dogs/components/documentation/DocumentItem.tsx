@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   FileText, 
@@ -7,8 +8,7 @@ import {
   FileImage, 
   File,
   Archive,
-  FileSpreadsheet,
-  FileText as FilePdf
+  FileSpreadsheet
 } from 'lucide-react';
 import { DogDocument } from '../../types/document';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { DOCUMENT_TYPE_LABELS } from '../../types/document';
 
@@ -40,7 +40,7 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
     if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
       return <FileImage className="h-10 w-10 text-green-500" />;
     } else if (ext === 'pdf') {
-      return <FilePdf className="h-10 w-10 text-red-500" />;
+      return <FileText className="h-10 w-10 text-red-500" />;
     } else if (['zip', 'rar', '7z'].includes(ext)) {
       return <Archive className="h-10 w-10 text-yellow-500" />;
     } else if (['doc', 'docx'].includes(ext)) {
