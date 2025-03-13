@@ -1,171 +1,125 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import TextInput from '@/components/dogs/form/TextInput';
 import SelectInput from '@/components/dogs/form/SelectInput';
-import DatePicker from '@/components/dogs/form/DatePicker';
-import PhotoUpload from '@/components/dogs/form/PhotoUpload';
-import TextareaInput from '@/components/dogs/form/TextareaInput';
-import { 
-  User, 
-  Calendar, 
-  Palette, 
-  Tag, 
-  Scan, 
-  DollarSign,
-  Image,
-  FileText
-} from 'lucide-react';
-import { genderOptions, statusOptions, colorOptions } from './constants';
+import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Calendar } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Calendar as CalendarUI } from '@/components/ui/calendar';
+import PuppyPhotoUpload from './common/PuppyPhotoUpload';
 import { PuppyFormData } from './types';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 interface BasicInfoTabProps {
   form: UseFormReturn<PuppyFormData>;
-  litterId?: string;
 }
 
-const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
-  // Define standard color options for all puppies
-  const colorOptions = [
-    { value: 'Black', label: 'Black' },
-    { value: 'Brown', label: 'Brown' },
-    { value: 'Black/white', label: 'Black/white' },
-    { value: 'Brown/white', label: 'Brown/white' },
-    { value: 'Grey', label: 'Grey' },
-    { value: 'Beige', label: 'Beige' },
-  ];
+const genderOptions = [
+  { value: 'Male', label: 'Male' },
+  { value: 'Female', label: 'Female' },
+];
 
+const statusOptions = [
+  { value: 'Available', label: 'Available' },
+  { value: 'Reserved', label: 'Reserved' },
+  { value: 'Sold', label: 'Sold' },
+  { value: 'Kept', label: 'Kept' },
+  { value: 'Deceased', label: 'Deceased' },
+];
+
+const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-3">
-        <User className="h-5 w-5 text-primary" />
-        <h3 className="text-sm font-medium">Identity & Basic Information</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <TextInput 
+          form={form} 
+          name="name" 
+          label="Puppy Name" 
+          placeholder="Enter puppy name" 
+        />
+        
+        <TextInput 
+          form={form} 
+          name="color" 
+          label="Color/Markings" 
+          placeholder="Describe the puppy's color and markings" 
+        />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Tag className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Puppy Name</span>
-          </div>
-          <TextInput 
-            form={form} 
-            name="name" 
-            label="Name" 
-            placeholder="Puppy name (optional)" 
-          />
-        </div>
-        
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Gender</span>
-          </div>
-          <SelectInput 
-            form={form} 
-            name="gender" 
-            label="Sex" 
-            options={genderOptions} 
-            placeholder="Select gender" 
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Date of Birth</span>
-          </div>
-          <DatePicker
-            form={form}
-            name="birth_date"
-            label="Birth Date"
-          />
-        </div>
-        
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Palette className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Color Markings</span>
-          </div>
-          <SelectInput 
-            form={form} 
-            name="color" 
-            label="Color" 
-            options={colorOptions}
-            placeholder="Select color" 
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Tag className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Puppy Status</span>
-          </div>
-          <SelectInput 
-            form={form} 
-            name="status" 
-            label="Status" 
-            options={statusOptions} 
-          />
-        </div>
-        
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Scan className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Microchip</span>
-          </div>
-          <TextInput 
-            form={form} 
-            name="microchip_number" 
-            label="Microchip Number" 
-            placeholder="Enter microchip number" 
-          />
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Pricing</span>
-        </div>
-        <TextInput 
+        <SelectInput 
           form={form} 
-          name="sale_price" 
-          label="Sale Price" 
-          placeholder="Enter sale price" 
+          name="gender" 
+          label="Gender" 
+          options={genderOptions} 
+        />
+        
+        <SelectInput 
+          form={form} 
+          name="status" 
+          label="Status" 
+          options={statusOptions} 
         />
       </div>
-
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <FileText className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Notes</span>
-        </div>
-        <TextareaInput
-          form={form}
-          name="notes"
-          label="Notes"
-          placeholder="Add birth details or other notes about this puppy"
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="birth_date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Birth Date</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={field.value as Date}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="birth_time"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Birth Time</FormLabel>
+              <FormControl>
+                <Input type="time" {...field} />
+              </FormControl>
+            </FormItem>
+          )}
         />
       </div>
-
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Image className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Photo</span>
-        </div>
-        <PhotoUpload
-          form={form}
-          name="photo_url"
-          label="Puppy Photo"
-        />
-      </div>
+      
+      <PuppyPhotoUpload form={form} />
     </div>
   );
 };

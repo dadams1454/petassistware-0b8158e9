@@ -40,8 +40,13 @@ const WelpingPage = () => {
     }
   });
 
-  const handlePuppyAdded = async () => {
+  // Wrap refetch in a function that returns void
+  const handleRefresh = async (): Promise<void> => {
     await refetch();
+  };
+
+  const handlePuppyAdded = async () => {
+    await handleRefresh();
     // Optionally switch to the list tab after adding a puppy
     setActiveTab('list');
   };
@@ -89,7 +94,7 @@ const WelpingPage = () => {
               Welping Session
             </h1>
             <p className="text-muted-foreground">
-              Record puppies for {litter.dam?.name || 'Unknown Dam'} × {litter.sire?.name || 'Unknown Sire'}
+              Record puppies for {litter?.dam?.name || 'Unknown Dam'} × {litter?.sire?.name || 'Unknown Sire'}
             </p>
           </div>
         </div>
@@ -106,17 +111,17 @@ const WelpingPage = () => {
                     <h3 className="font-medium text-sm text-muted-foreground mb-2">Parents</h3>
                     <div className="flex justify-between">
                       <span className="text-sm">Dam:</span>
-                      <span className="text-sm font-medium">{litter.dam?.name || 'Unknown'}</span>
+                      <span className="text-sm font-medium">{litter?.dam?.name || 'Unknown'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Sire:</span>
-                      <span className="text-sm font-medium">{litter.sire?.name || 'Unknown'}</span>
+                      <span className="text-sm font-medium">{litter?.sire?.name || 'Unknown'}</span>
                     </div>
                   </div>
                   
                   <div>
                     <h3 className="font-medium text-sm text-muted-foreground mb-2">Litter Details</h3>
-                    {litter.litter_name && (
+                    {litter?.litter_name && (
                       <div className="flex justify-between">
                         <span className="text-sm">Name:</span>
                         <span className="text-sm font-medium">{litter.litter_name}</span>
@@ -124,15 +129,15 @@ const WelpingPage = () => {
                     )}
                     <div className="flex justify-between">
                       <span className="text-sm">Birth Date:</span>
-                      <span className="text-sm font-medium">{format(birthDate, 'MMM d, yyyy')}</span>
+                      <span className="text-sm font-medium">{litter ? format(new Date(litter.birth_date), 'MMM d, yyyy') : '-'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Puppies Recorded:</span>
                       <Badge variant="outline" className="text-xs">
-                        {puppyCount} {puppyCount === 1 ? 'puppy' : 'puppies'}
+                        {litter?.puppies?.length || 0} {(litter?.puppies?.length || 0) === 1 ? 'puppy' : 'puppies'}
                       </Badge>
                     </div>
-                    {litter.akc_registration_number && (
+                    {litter?.akc_registration_number && (
                       <div className="flex justify-between">
                         <span className="text-sm">AKC Registration:</span>
                         <span className="text-sm font-medium">{litter.akc_registration_number}</span>
@@ -163,7 +168,7 @@ const WelpingPage = () => {
                 </TabsTrigger>
                 <TabsTrigger value="list" className="flex items-center gap-1">
                   <Tag className="h-4 w-4" />
-                  Recorded Puppies ({puppyCount})
+                  Recorded Puppies ({litter?.puppies?.length || 0})
                 </TabsTrigger>
               </TabsList>
               
@@ -185,10 +190,12 @@ const WelpingPage = () => {
               </TabsContent>
               
               <TabsContent value="list">
-                <WelpingPuppyList 
-                  puppies={litter.puppies || []} 
-                  onRefresh={refetch} 
-                />
+                {litter && (
+                  <WelpingPuppyList 
+                    puppies={litter.puppies || []} 
+                    onRefresh={handleRefresh} 
+                  />
+                )}
               </TabsContent>
             </Tabs>
           </div>

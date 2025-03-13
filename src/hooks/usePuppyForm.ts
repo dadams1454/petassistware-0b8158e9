@@ -56,6 +56,29 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
           }
         }
       }
+
+      // Parse weight to number or null
+      let birthWeight = null;
+      if (data.birth_weight !== null && data.birth_weight !== undefined) {
+        const weightStr = String(data.birth_weight);
+        if (weightStr.trim() !== '') {
+          const weight = Number(weightStr);
+          if (!isNaN(weight)) {
+            birthWeight = weight;
+          }
+        }
+      }
+
+      let currentWeight = null;
+      if (data.current_weight !== null && data.current_weight !== undefined) {
+        const weightStr = String(data.current_weight);
+        if (weightStr.trim() !== '') {
+          const weight = Number(weightStr);
+          if (!isNaN(weight)) {
+            currentWeight = weight;
+          }
+        }
+      }
       
       // Clean up the data to remove any fields that don't exist in the database schema
       const puppyData = {
@@ -64,8 +87,8 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
         status: data.status,
         color: data.color || null,
         birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
-        birth_weight: data.birth_weight || null,
-        current_weight: data.current_weight || null,
+        birth_weight: birthWeight,
+        current_weight: currentWeight,
         microchip_number: data.microchip_number || null,
         sale_price: salePrice,
         deworming_dates: data.deworming_dates || null,
