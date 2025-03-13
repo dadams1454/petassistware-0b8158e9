@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthProvider';
 
 export interface LitterFormData {
   litter_name: string;
@@ -39,6 +40,7 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previousDamId, setPreviousDamId] = useState<string | null>(initialData?.dam_id || null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const { user } = useAuth(); // Get the current authenticated user
 
   // Initialize form with initial data values
   const form = useForm<LitterFormData>({
@@ -99,6 +101,15 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
   });
 
   const handleSubmit = async (data: LitterFormData) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create or update a litter",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Debug logging
@@ -112,6 +123,7 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
         akc_registration_date: data.akc_registration_date?.toISOString().split('T')[0] || null,
         first_mating_date: data.first_mating_date?.toISOString().split('T')[0] || null,
         last_mating_date: data.last_mating_date?.toISOString().split('T')[0] || null,
+        breeder_id: user.id, // Add the current user's id as the breeder_id
       };
 
       console.log('Processed data for submission:', processedData);

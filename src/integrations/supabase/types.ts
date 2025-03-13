@@ -577,6 +577,7 @@ export type Database = {
       litters: {
         Row: {
           birth_date: string
+          breeder_id: string
           created_at: string | null
           dam_id: string | null
           documents_url: string | null
@@ -592,6 +593,7 @@ export type Database = {
         }
         Insert: {
           birth_date: string
+          breeder_id: string
           created_at?: string | null
           dam_id?: string | null
           documents_url?: string | null
@@ -607,6 +609,7 @@ export type Database = {
         }
         Update: {
           birth_date?: string
+          breeder_id?: string
           created_at?: string | null
           dam_id?: string | null
           documents_url?: string | null

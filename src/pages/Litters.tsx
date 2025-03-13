@@ -11,16 +11,22 @@ import LittersList from '@/components/litters/LittersList';
 import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthProvider';
+import { Litter } from '@/components/litters/puppies/types';
 
 const Litters = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedLitter, setSelectedLitter] = useState<Litter | null>(null);
 
   const { data: litters, isLoading, error, refetch } = useQuery({
-    queryKey: ['litters'],
+    queryKey: ['litters', user?.id],
     queryFn: async () => {
+      if (!user) return [];
+      
       // Query the litters with all needed information including more complete dam/sire data
+      // Row Level Security will automatically filter to only show the current user's litters
       const { data, error } = await supabase
         .from('litters')
         .select(`
@@ -33,8 +39,9 @@ const Litters = () => {
 
       if (error) throw error;
       console.log('Fetched litters data:', data);
-      return data || [];
-    }
+      return data as Litter[];
+    },
+    enabled: !!user,
   });
 
   const handleEditSuccess = async () => {
@@ -78,6 +85,14 @@ const Litters = () => {
           ) : error ? (
             <div className="text-center text-red-500 py-8">
               <p>There was an error loading litters. Please try again.</p>
+            </div>
+          ) : !user ? (
+            <div className="text-center py-8">
+              <p>You must be logged in to view litters.</p>
+            </div>
+          ) : litters && litters.length === 0 ? (
+            <div className="text-center py-8">
+              <p>No litters found. Create your first litter to get started!</p>
             </div>
           ) : (
             <LittersList 

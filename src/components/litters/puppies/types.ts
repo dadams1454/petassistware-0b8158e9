@@ -48,7 +48,7 @@ export interface Puppy {
   akc_registration_number?: string | null;
 }
 
-// Updated Litter interface with all required fields
+// Updated Litter interface with all required fields including breeder_id
 export interface Litter {
   id: string;
   created_at: string;
@@ -64,6 +64,7 @@ export interface Litter {
   documents_url: string | null;
   updated_at?: string; // Make this optional since it's not always present
   status?: string; // Add status field for archived/active
+  breeder_id: string; // Add breeder_id field to associate litters with users
   // AKC compliance fields
   akc_registration_number?: string | null;
   akc_registration_date?: string | null;
