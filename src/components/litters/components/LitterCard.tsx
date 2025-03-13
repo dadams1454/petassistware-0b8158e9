@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, differenceInWeeks } from 'date-fns';
-import { Eye, Edit, Trash2, Archive, ArchiveRestore } from 'lucide-react';
+import { Eye, Edit, Trash2, Archive, ArchiveRestore, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,10 +36,6 @@ const LitterCard: React.FC<LitterCardProps> = ({
   
   const isArchived = litter.status === 'archived';
   
-  // Debug logging to check what we have
-  console.log(`Litter ${litter.litter_name} - Total puppies: ${totalPuppies}, Available: ${availablePuppies.length}`);
-  console.log('Puppy data:', litter.puppies);
-  
   return (
     <Card className={`overflow-hidden ${isArchived ? 'bg-muted/30' : ''}`}>
       <CardContent className="p-0">
@@ -52,6 +48,11 @@ const LitterCard: React.FC<LitterCardProps> = ({
               <p className="text-muted-foreground text-sm">
                 Born: {format(new Date(litter.birth_date), 'MMM d, yyyy')}
               </p>
+              {litter.litter_name && (
+                <p className="text-sm font-medium mt-1">
+                  {litter.litter_name}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {isArchived && (
@@ -86,6 +87,17 @@ const LitterCard: React.FC<LitterCardProps> = ({
                 {availablePuppies.length} puppies
               </span>
             </div>
+            {litter.akc_registration_number && (
+              <div className="flex justify-between">
+                <span className="text-sm font-medium flex items-center">
+                  <Award className="h-3.5 w-3.5 mr-1 text-purple-600" />
+                  AKC #:
+                </span> 
+                <span className="text-sm text-purple-600 font-medium">
+                  {litter.akc_registration_number}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-sm font-medium">Colors:</span> 
               <div className="flex flex-wrap justify-end gap-1">

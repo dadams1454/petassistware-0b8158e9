@@ -79,13 +79,13 @@ const LitterDetail = () => {
       <div className="container mx-auto py-6 space-y-6">
         <LitterHeader 
           litter={litter} 
-          sire={litter.sire}
-          dam={litter.dam}
+          sire={litter?.sire}
+          dam={litter?.dam}
           onEditClick={() => setIsEditDialogOpen(true)} 
         />
 
-        {/* AKC Compliance Status Card */}
-        {litter.akc_registration_number && (
+        {/* AKC Compliance Status Card - show when AKC registration number exists */}
+        {litter?.akc_registration_number && (
           <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -123,10 +123,10 @@ const LitterDetail = () => {
           <LitterInfo litter={litter} />
           <div className="lg:col-span-2">
             <LitterTabs 
-              litterId={litter.id} 
-              litterName={litter.litter_name} 
-              dogBreed={litter.sire?.breed || litter.dam?.breed}
-              puppies={litter.puppies || []}
+              litterId={litter?.id} 
+              litterName={litter?.litter_name} 
+              dogBreed={litter?.sire?.breed || litter?.dam?.breed}
+              puppies={litter?.puppies || []}
             />
           </div>
         </div>
@@ -138,10 +138,12 @@ const LitterDetail = () => {
           <DialogHeader>
             <DialogTitle>Edit Litter</DialogTitle>
           </DialogHeader>
-          <LitterForm 
-            initialData={litter} 
-            onSuccess={handleEditSuccess} 
-          />
+          {litter && (
+            <LitterForm 
+              initialData={litter} 
+              onSuccess={handleEditSuccess} 
+            />
+          )}
         </DialogContent>
       </Dialog>
     </MainLayout>

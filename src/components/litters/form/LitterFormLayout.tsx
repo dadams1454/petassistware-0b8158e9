@@ -43,8 +43,8 @@ const LitterFormLayout: React.FC<LitterFormLayoutProps> = ({
               <TextInput 
                 form={form} 
                 name="litter_name" 
-                label="Litter Name/ID" 
-                placeholder="Enter a name or ID for this litter" 
+                label="Friendly Litter Name" 
+                placeholder="Enter a descriptive name for this litter (e.g., 'Rainbow Litter')" 
               />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -113,14 +113,14 @@ const LitterFormLayout: React.FC<LitterFormLayoutProps> = ({
               <TextInput 
                 form={form} 
                 name="akc_registration_number" 
-                label="AKC Registration Number" 
-                placeholder="Enter AKC litter registration number" 
+                label="AKC Litter Registration Number" 
+                placeholder="Enter official AKC litter registration number" 
               />
               
               <LitterDatePicker 
                 form={form}
                 name="akc_registration_date"
-                label="Registration Date" 
+                label="AKC Registration Date" 
               />
             </div>
             
