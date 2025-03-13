@@ -39,7 +39,7 @@ const Litters = () => {
 
       if (error) throw error;
       console.log('Fetched litters data:', data);
-      return data as unknown as Litter[];
+      return data as unknown as Litter[]; // Explicitly cast to Litter[] type
     },
     enabled: !!user,
   });
@@ -112,7 +112,7 @@ const Litters = () => {
           </DialogHeader>
           {selectedLitter && (
             <LitterForm 
-              initialData={selectedLitter}
+              initialData={selectedLitter as Litter}
               onSuccess={handleEditSuccess} 
             />
           )}

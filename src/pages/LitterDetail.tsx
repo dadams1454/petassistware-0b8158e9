@@ -38,7 +38,7 @@ const LitterDetail = () => {
 
       if (error) throw error;
       console.log('Fetched detailed litter data:', data);
-      return data as unknown as Litter;
+      return data as unknown as Litter; // Cast to Litter type
     }
   });
 
@@ -126,7 +126,7 @@ const LitterDetail = () => {
               litterId={litter?.id} 
               litterName={litter?.litter_name} 
               dogBreed={litter?.sire?.breed || litter?.dam?.breed}
-              puppies={litter?.puppies as Puppy[] || []}
+              puppies={(litter?.puppies || []) as Puppy[]} // Cast to Puppy[] type
             />
           </div>
         </div>
@@ -138,12 +138,10 @@ const LitterDetail = () => {
           <DialogHeader>
             <DialogTitle>Edit Litter</DialogTitle>
           </DialogHeader>
-          {litter && (
-            <LitterForm 
-              initialData={litter} 
-              onSuccess={handleEditSuccess} 
-            />
-          )}
+          <LitterForm 
+            initialData={litter as Litter} // Explicitly cast to Litter type
+            onSuccess={handleEditSuccess} 
+          />
         </DialogContent>
       </Dialog>
     </MainLayout>

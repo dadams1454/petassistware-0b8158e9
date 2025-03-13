@@ -2,10 +2,10 @@
 export interface Puppy {
   id: string;
   name: string | null;
-  gender: string | null; // Changed from 'Male' | 'Female' | null to be compatible with existing code
+  gender: string | null; // Allow any string to be compatible with both systems
   color: string | null;
   birth_date: string | null;
-  birth_time: string | null;
+  birth_time: string | null; // Make required to match the expected type in components
   birth_weight: string | number | null; // Allow both string and number
   current_weight: string | number | null; // Allow both string and number
   photo_url: string | null;
@@ -41,7 +41,7 @@ export interface Litter {
   notes: string | null;
   documents_url: string | null;
   created_at: string;
-  updated_at?: string; // Made optional to match existing code
+  updated_at?: string; // Make optional to match expected type
   status?: string;
   breeder_id: string;
   
@@ -107,8 +107,8 @@ export interface PuppyFormData {
   status: 'Available' | 'Reserved' | 'Sold' | 'Kept' | 'Deceased';
   color: string;
   birth_date: Date | null;
-  birth_weight: string | number | null;
-  current_weight: string | number | null;
+  birth_weight: string | number | null; // Allow both string and number
+  current_weight: string | number | null; // Allow both string and number
   microchip_number: string;
   sale_price: number | string | null;
   deworming_dates: string;

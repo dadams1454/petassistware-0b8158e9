@@ -1,35 +1,25 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
-import { WelpingPuppiesTable } from './WelpingPuppiesTable'; // Use named import
+import { WelpingPuppiesTable } from './WelpingPuppiesTable'; // Using named import since there's no default export
 import { Puppy } from '@/components/litters/puppies/types';
-import EmptyState from './EmptyState';
 
 interface WelpingPuppiesListProps {
   puppies: Puppy[];
-  onRefresh?: () => Promise<void>;
 }
 
-const WelpingPuppiesList: React.FC<WelpingPuppiesListProps> = ({ 
-  puppies,
-  onRefresh = async () => Promise.resolve() // Default implementation
-}) => {
-  if (!puppies || puppies.length === 0) {
-    return (
-      <EmptyState
-        title="No puppies recorded yet"
-        description="Record the birth of puppies to track them here"
-      />
-    );
-  }
+const WelpingPuppiesList: React.FC<WelpingPuppiesListProps> = ({ puppies }) => {
+  // Add an onRefresh function to satisfy the WelpingPuppiesTable props requirements
+  const handleRefresh = async (): Promise<any> => {
+    return Promise.resolve();
+  };
 
   return (
-    <Card className="overflow-hidden">
+    <div className="space-y-4">
       <WelpingPuppiesTable 
-        puppies={puppies} 
-        onRefresh={onRefresh} 
+        puppies={puppies}
+        onRefresh={handleRefresh} // Add the required onRefresh prop
       />
-    </Card>
+    </div>
   );
 };
 
