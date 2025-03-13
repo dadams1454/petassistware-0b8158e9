@@ -16,6 +16,18 @@ export interface LitterFormData {
   female_count: number | null;
   notes: string | null;
   documents_url: string | null;
+  // AKC compliance fields
+  akc_registration_number: string | null;
+  akc_registration_date: Date | null;
+  akc_breeder_id: string | null;
+  akc_litter_color: string | null;
+  akc_documents_url: string | null;
+  akc_verified: boolean | null;
+  // Breeding details
+  first_mating_date: Date | null;
+  last_mating_date: Date | null;
+  kennel_name: string | null;
+  breeding_notes: string | null;
 }
 
 interface UseLitterFormProps {
@@ -40,7 +52,19 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       male_count: initialData?.male_count || null,
       female_count: initialData?.female_count || null,
       notes: initialData?.notes || null,
-      documents_url: initialData?.documents_url || null
+      documents_url: initialData?.documents_url || null,
+      // AKC compliance fields
+      akc_registration_number: initialData?.akc_registration_number || null,
+      akc_registration_date: initialData?.akc_registration_date ? new Date(initialData.akc_registration_date) : null,
+      akc_breeder_id: initialData?.akc_breeder_id || null,
+      akc_litter_color: initialData?.akc_litter_color || null,
+      akc_documents_url: initialData?.akc_documents_url || null,
+      akc_verified: initialData?.akc_verified || false,
+      // Breeding details
+      first_mating_date: initialData?.first_mating_date ? new Date(initialData.first_mating_date) : null,
+      last_mating_date: initialData?.last_mating_date ? new Date(initialData.last_mating_date) : null,
+      kennel_name: initialData?.kennel_name || null,
+      breeding_notes: initialData?.breeding_notes || null,
     }
   });
 
@@ -80,11 +104,14 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       // Debug logging
       console.log('Submitting form with data:', data);
       
-      // Process the data to handle null values
+      // Process the data to handle null values and date formatting
       const processedData = {
         ...data,
         birth_date: data.birth_date.toISOString().split('T')[0],
-        expected_go_home_date: data.expected_go_home_date.toISOString().split('T')[0]
+        expected_go_home_date: data.expected_go_home_date.toISOString().split('T')[0],
+        akc_registration_date: data.akc_registration_date?.toISOString().split('T')[0] || null,
+        first_mating_date: data.first_mating_date?.toISOString().split('T')[0] || null,
+        last_mating_date: data.last_mating_date?.toISOString().split('T')[0] || null,
       };
 
       console.log('Processed data for submission:', processedData);

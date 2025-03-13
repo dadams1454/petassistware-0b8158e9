@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import MainLayout from '@/layouts/MainLayout';
@@ -10,6 +12,7 @@ import LitterForm from '@/components/litters/LitterForm';
 import LitterHeader from '@/components/litters/detail/LitterHeader';
 import LitterInfo from '@/components/litters/detail/LitterInfo';
 import LitterTabs from '@/components/litters/detail/LitterTabs';
+import { Award, Calendar, Check, FileCheck } from 'lucide-react';
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,8 +28,8 @@ const LitterDetail = () => {
         .from('litters')
         .select(`
           *,
-          dam:dogs!litters_dam_id_fkey(id, name, breed, color, photo_url, litter_number, gender),
-          sire:dogs!litters_sire_id_fkey(id, name, breed, color, photo_url, gender),
+          dam:dogs!litters_dam_id_fkey(id, name, breed, color, photo_url, litter_number, gender, registration_number, microchip_number),
+          sire:dogs!litters_sire_id_fkey(id, name, breed, color, photo_url, gender, registration_number, microchip_number),
           puppies!puppies_litter_id_fkey(*)
         `)
         .eq('id', id)
@@ -79,6 +82,41 @@ const LitterDetail = () => {
           dam={litter.dam}
           onEditClick={() => setIsEditDialogOpen(true)} 
         />
+
+        {/* AKC Compliance Status Card */}
+        {litter.akc_registration_number && (
+          <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <Award className="h-8 w-8 text-purple-600" />
+                  <div>
+                    <h3 className="font-semibold text-purple-800">AKC Registration</h3>
+                    <p className="text-sm text-purple-700">{litter.akc_registration_number}</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="bg-white border-purple-200 text-purple-700 flex items-center gap-1">
+                    <FileCheck className="h-3.5 w-3.5" />
+                    <span>Registered</span>
+                  </Badge>
+                  {litter.akc_registration_date && (
+                    <Badge variant="outline" className="bg-white border-purple-200 text-purple-700 flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>{new Date(litter.akc_registration_date).toLocaleDateString()}</span>
+                    </Badge>
+                  )}
+                  {litter.akc_verified && (
+                    <Badge variant="outline" className="bg-white border-green-200 text-green-700 flex items-center gap-1">
+                      <Check className="h-3.5 w-3.5" />
+                      <span>Verified</span>
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <LitterInfo litter={litter} />
