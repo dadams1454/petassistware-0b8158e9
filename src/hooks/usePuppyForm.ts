@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
-import { PuppyFormData } from '@/components/litters/puppies/types';
+import { PuppyFormData, Puppy } from '@/components/litters/puppies/types';
 import { toast } from '@/components/ui/use-toast';
 
 export interface UsePuppyFormProps {
@@ -30,6 +30,9 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
       vet_check_dates: initialData?.vet_check_dates || '',
       notes: initialData?.notes || '',
       photo_url: initialData?.photo_url || '',
+      birth_time: initialData?.birth_time || '',
+      akc_litter_number: initialData?.akc_litter_number || '',
+      akc_registration_number: initialData?.akc_registration_number || ''
     }
   });
 

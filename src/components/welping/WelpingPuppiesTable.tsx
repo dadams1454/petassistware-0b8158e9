@@ -14,19 +14,12 @@ import PuppyActions from '@/components/litters/puppies/PuppyActions';
 import { renderGenderIcon } from '@/components/litters/puppies/utils/puppyUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { FileCheck, Award, Fingerprint } from 'lucide-react';
+import { Puppy } from '@/components/litters/puppies/types';
 
 interface WelpingPuppiesTableProps {
   puppies: Puppy[];
   onEditPuppy: (puppy: Puppy) => void;
   onDeletePuppy: (puppy: Puppy) => void;
-}
-
-// Extended Puppy type to include AKC-specific fields and birth_time
-interface WelpingPuppy extends Puppy {
-  birth_time?: string;
-  akc_litter_number?: string;
-  akc_registration_number?: string;
-  microchip_number?: string;
 }
 
 const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({ 
@@ -54,112 +47,107 @@ const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {sortedPuppies.map((puppy, index) => {
-          // Use the extended type to access all fields
-          const welpingPuppy = puppy as WelpingPuppy;
-          
-          return (
-            <TableRow key={puppy.id} className="border-b border-slate-100 hover:bg-slate-50/50">
-              {/* Birth Time */}
-              <TableCell className="font-medium whitespace-nowrap">
-                {welpingPuppy.birth_time 
-                  ? welpingPuppy.birth_time 
-                  : puppy.created_at 
-                    ? format(new Date(puppy.created_at), 'h:mm a') 
-                    : 'Unknown'}
-              </TableCell>
-              
-              {/* ID/Color */}
-              <TableCell>
-                <div className="font-medium">
-                  {/* Display name if exists, otherwise use sequential number by birth order */}
-                  {puppy.name || `Puppy ${index + 1}`}
+        {sortedPuppies.map((puppy, index) => (
+          <TableRow key={puppy.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+            {/* Birth Time */}
+            <TableCell className="font-medium whitespace-nowrap">
+              {puppy.birth_time 
+                ? puppy.birth_time 
+                : puppy.created_at 
+                  ? format(new Date(puppy.created_at), 'h:mm a') 
+                  : 'Unknown'}
+            </TableCell>
+            
+            {/* ID/Color */}
+            <TableCell>
+              <div className="font-medium">
+                {/* Display name if exists, otherwise use sequential number by birth order */}
+                {puppy.name || `Puppy ${index + 1}`}
+              </div>
+              {puppy.color && (
+                <div className="text-sm text-muted-foreground">{puppy.color}</div>
+              )}
+            </TableCell>
+            
+            {/* Gender */}
+            <TableCell>
+              <div className="flex items-center gap-1.5">
+                {renderGenderIcon(puppy.gender)}
+                <span>{puppy.gender || 'Unknown'}</span>
+              </div>
+            </TableCell>
+            
+            {/* Weight */}
+            <TableCell>
+              {puppy.birth_weight 
+                ? `${puppy.birth_weight} oz` 
+                : 'Not recorded'}
+            </TableCell>
+            
+            {/* AKC/Microchip Info */}
+            <TableCell>
+              <TooltipProvider>
+                <div className="flex items-center space-x-2">
+                  {puppy.akc_litter_number && (
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Award className="h-4 w-4 text-purple-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>AKC Litter #: {puppy.akc_litter_number}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  
+                  {puppy.akc_registration_number && (
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <FileCheck className="h-4 w-4 text-blue-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>AKC Reg #: {puppy.akc_registration_number}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  
+                  {puppy.microchip_number && (
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Fingerprint className="h-4 w-4 text-green-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Microchip #: {puppy.microchip_number}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  
+                  {!puppy.akc_litter_number && !puppy.akc_registration_number && !puppy.microchip_number && (
+                    <span className="text-sm text-muted-foreground">None recorded</span>
+                  )}
                 </div>
-                {puppy.color && (
-                  <div className="text-sm text-muted-foreground">{puppy.color}</div>
-                )}
-              </TableCell>
-              
-              {/* Gender */}
-              <TableCell>
-                <div className="flex items-center gap-1.5">
-                  {renderGenderIcon(puppy.gender)}
-                  <span>{puppy.gender || 'Unknown'}</span>
-                </div>
-              </TableCell>
-              
-              {/* Weight */}
-              <TableCell>
-                {puppy.birth_weight 
-                  ? `${puppy.birth_weight} oz` 
-                  : 'Not recorded'}
-              </TableCell>
-              
-              {/* AKC/Microchip Info */}
-              <TableCell>
-                <TooltipProvider>
-                  <div className="flex items-center space-x-2">
-                    {welpingPuppy.akc_litter_number && (
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Award className="h-4 w-4 text-purple-500" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>AKC Litter #: {welpingPuppy.akc_litter_number}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                    
-                    {welpingPuppy.akc_registration_number && (
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <FileCheck className="h-4 w-4 text-blue-500" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>AKC Reg #: {welpingPuppy.akc_registration_number}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                    
-                    {welpingPuppy.microchip_number && (
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Fingerprint className="h-4 w-4 text-green-500" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Microchip #: {welpingPuppy.microchip_number}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                    
-                    {!welpingPuppy.akc_litter_number && !welpingPuppy.akc_registration_number && !welpingPuppy.microchip_number && (
-                      <span className="text-sm text-muted-foreground">None recorded</span>
-                    )}
-                  </div>
-                </TooltipProvider>
-              </TableCell>
-              
-              {/* Notes */}
-              <TableCell className="max-w-[200px] truncate">
-                {puppy.notes || '-'}
-              </TableCell>
-              
-              {/* Status */}
-              <TableCell>
-                <PuppyStatusBadge status={puppy.status} />
-              </TableCell>
-              
-              {/* Actions */}
-              <TableCell className="text-right">
-                <PuppyActions 
-                  puppy={puppy} 
-                  onEdit={onEditPuppy} 
-                  onDelete={onDeletePuppy} 
-                />
-              </TableCell>
-            </TableRow>
-          );
-        })}
+              </TooltipProvider>
+            </TableCell>
+            
+            {/* Notes */}
+            <TableCell className="max-w-[200px] truncate">
+              {puppy.notes || '-'}
+            </TableCell>
+            
+            {/* Status */}
+            <TableCell>
+              <PuppyStatusBadge status={puppy.status} />
+            </TableCell>
+            
+            {/* Actions */}
+            <TableCell className="text-right">
+              <PuppyActions 
+                puppy={puppy} 
+                onEdit={onEditPuppy} 
+                onDelete={onDeletePuppy} 
+              />
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
   );
