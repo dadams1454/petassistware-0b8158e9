@@ -87,14 +87,13 @@ const useLitterActions = (
     }
   };
 
-  // Helper function to get the litter to delete from state
-  const getLitterToDelete = async (): Promise<Litter | null> => {
+  // Fixed - now correctly returns a Promise<Litter | null> instead of void
+  const getLitterToDelete = (): Promise<Litter | null> => {
     return new Promise(resolve => {
-      // Just retrieve the current value without setting it
-      const currentValue = setLitterToDelete(state => {
+      setLitterToDelete(state => {
+        resolve(state);
         return state;
       });
-      resolve(currentValue);
     });
   };
 

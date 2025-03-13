@@ -36,7 +36,7 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
       <TabsContent value="puppies" className="mt-6">
         <PuppiesList 
           litterId={litterId} 
-          puppies={puppies as any} 
+          puppies={puppies as Puppy[]} // Explicit cast to Puppy[]
           onRefresh={handleRefresh} 
         />
       </TabsContent>
