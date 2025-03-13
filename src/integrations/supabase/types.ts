@@ -576,14 +576,22 @@ export type Database = {
       }
       litters: {
         Row: {
+          akc_litter_color: string | null
+          akc_registration_date: string | null
+          akc_registration_number: string | null
+          akc_verified: boolean | null
           birth_date: string
           breeder_id: string
+          breeding_notes: string | null
           created_at: string | null
           dam_id: string | null
           documents_url: string | null
           expected_go_home_date: string | null
           female_count: number | null
+          first_mating_date: string | null
           id: string
+          kennel_name: string | null
+          last_mating_date: string | null
           litter_name: string | null
           male_count: number | null
           notes: string | null
@@ -592,14 +600,22 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          akc_litter_color?: string | null
+          akc_registration_date?: string | null
+          akc_registration_number?: string | null
+          akc_verified?: boolean | null
           birth_date: string
           breeder_id: string
+          breeding_notes?: string | null
           created_at?: string | null
           dam_id?: string | null
           documents_url?: string | null
           expected_go_home_date?: string | null
           female_count?: number | null
+          first_mating_date?: string | null
           id?: string
+          kennel_name?: string | null
+          last_mating_date?: string | null
           litter_name?: string | null
           male_count?: number | null
           notes?: string | null
@@ -608,14 +624,22 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          akc_litter_color?: string | null
+          akc_registration_date?: string | null
+          akc_registration_number?: string | null
+          akc_verified?: boolean | null
           birth_date?: string
           breeder_id?: string
+          breeding_notes?: string | null
           created_at?: string | null
           dam_id?: string | null
           documents_url?: string | null
           expected_go_home_date?: string | null
           female_count?: number | null
+          first_mating_date?: string | null
           id?: string
+          kennel_name?: string | null
+          last_mating_date?: string | null
           litter_name?: string | null
           male_count?: number | null
           notes?: string | null

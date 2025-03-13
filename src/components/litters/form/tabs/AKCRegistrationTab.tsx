@@ -4,6 +4,8 @@ import { UseFormReturn } from 'react-hook-form';
 import TextInput from '@/components/dogs/form/TextInput';
 import LitterDatePicker from '../LitterDatePicker';
 import { LitterFormData } from '../../hooks/useLitterForm';
+import { Switch } from '@/components/ui/switch';
+import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 
 interface AKCRegistrationTabProps {
   form: UseFormReturn<LitterFormData>;
@@ -38,6 +40,27 @@ const AKCRegistrationTab: React.FC<AKCRegistrationTabProps> = ({ form }) => {
           name="akc_litter_color" 
           label="Litter Colors/Markings" 
           placeholder="Primary colors/markings in this litter" 
+        />
+        
+        <FormField
+          control={form.control}
+          name="akc_verified"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  AKC Verified
+                </FormLabel>
+                <div className="text-sm text-muted-foreground">
+                  Mark if this litter's AKC registration has been verified
+                </div>
+              </div>
+              <Switch
+                checked={field.value || false}
+                onCheckedChange={field.onChange}
+              />
+            </FormItem>
+          )}
         />
       </div>
     </div>
