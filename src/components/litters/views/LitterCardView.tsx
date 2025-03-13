@@ -26,7 +26,7 @@ const LitterCardView: React.FC<LitterCardViewProps> = ({
 }) => {
   return (
     <div className="space-y-10">
-      {/* Active Litters - Enhanced Layout */}
+      {/* Active Litters - Full Width Layout */}
       {organizedLitters.active.length > 0 && (
         <div className="bg-purple-50 rounded-lg p-4 pb-8">
           <div className="flex items-center gap-2 mb-6 pl-2">
@@ -37,9 +37,12 @@ const LitterCardView: React.FC<LitterCardViewProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-row-reverse overflow-x-auto pb-2 gap-6 snap-x">
             {organizedLitters.active.map((litter) => (
-              <div key={litter.id} className="transform transition-all duration-200 hover:scale-105 hover:shadow-lg">
+              <div 
+                key={litter.id} 
+                className="transform transition-all duration-200 hover:scale-105 hover:shadow-lg min-w-[350px] snap-start"
+              >
                 <LitterCard 
                   litter={litter}
                   onEdit={onEditLitter}
@@ -155,7 +158,7 @@ const LitterCard: React.FC<LitterCardProps> = ({
       <CardContent className="p-0">
         {/* Colored header bar for active litters */}
         {isActive && (
-          <div className="bg-gradient-to-r from-purple-600 to-pink-500 h-1.5"></div>
+          <div className="bg-gradient-to-l from-purple-600 to-pink-500 h-1.5"></div>
         )}
         
         <div className="p-6">
