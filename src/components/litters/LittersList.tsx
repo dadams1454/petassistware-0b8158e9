@@ -48,7 +48,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* View Mode Toggle */}
       <div className="flex justify-end mb-4">
         <div className="bg-muted rounded-lg p-1 inline-flex">
