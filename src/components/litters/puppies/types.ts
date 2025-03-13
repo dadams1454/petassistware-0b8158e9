@@ -48,7 +48,7 @@ export interface Puppy {
   akc_registration_number?: string | null;
 }
 
-// Adding the Litter interface that includes all required fields
+// Updated Litter interface with all required fields
 export interface Litter {
   id: string;
   created_at: string;
