@@ -23,7 +23,6 @@ export interface LitterFormData {
   akc_registration_number: string | null;
   akc_registration_date: Date | null;
   akc_litter_color: string | null;
-  akc_documents_url: string | null;
   akc_verified: boolean | null;
   // Breeding details
   first_mating_date: Date | null;
@@ -61,7 +60,6 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       akc_registration_number: initialData?.akc_registration_number || null,
       akc_registration_date: initialData?.akc_registration_date ? new Date(initialData.akc_registration_date) : null,
       akc_litter_color: initialData?.akc_litter_color || null,
-      akc_documents_url: initialData?.akc_documents_url || null,
       akc_verified: initialData?.akc_verified || false,
       // Breeding details
       first_mating_date: initialData?.first_mating_date ? new Date(initialData.first_mating_date) : null,
@@ -126,6 +124,9 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
         last_mating_date: data.last_mating_date?.toISOString().split('T')[0] || null,
         breeder_id: user.id, // Add the current user's id as the breeder_id
       };
+
+      // Remove akc_documents_url field which doesn't exist in the database
+      delete (processedData as any).akc_documents_url;
 
       console.log('Processed data for submission:', processedData);
 

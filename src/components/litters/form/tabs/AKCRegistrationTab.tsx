@@ -3,7 +3,6 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import TextInput from '@/components/dogs/form/TextInput';
 import LitterDatePicker from '../LitterDatePicker';
-import PhotoUpload from '@/components/dogs/form/PhotoUpload';
 import { LitterFormData } from '../../hooks/useLitterForm';
 
 interface AKCRegistrationTabProps {
@@ -41,12 +40,6 @@ const AKCRegistrationTab: React.FC<AKCRegistrationTabProps> = ({ form }) => {
           placeholder="Primary colors/markings in this litter" 
         />
       </div>
-      
-      <PhotoUpload 
-        form={form} 
-        name="akc_documents_url" 
-        label="AKC Registration Documents" 
-      />
     </div>
   );
 };
