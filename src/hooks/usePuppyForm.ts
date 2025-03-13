@@ -73,7 +73,10 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
         vet_check_dates: data.vet_check_dates || null,
         notes: data.notes || null,
         photo_url: data.photo_url || null,
-        litter_id: litterId
+        litter_id: litterId,
+        birth_time: data.birth_time || null,
+        akc_litter_number: data.akc_litter_number || null,
+        akc_registration_number: data.akc_registration_number || null
       };
 
       console.log('Cleaned puppy data for submission:', puppyData);
