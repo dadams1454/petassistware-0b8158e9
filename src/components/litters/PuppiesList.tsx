@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import PuppiesTable from './puppies/PuppiesTable';
 import DeletePuppyDialog from './puppies/DeletePuppyDialog';
 import EditPuppyDialog from './puppies/EditPuppyDialog';
@@ -70,12 +69,15 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
     }
   };
 
+  // Explicitly cast puppies to ensure type compatibility
+  const typedPuppies = puppies as unknown as Puppy[];
+
   return (
     <div>
       <PuppiesTable 
-        puppies={puppies} 
-        onEditPuppy={handleEditPuppy}
-        onDeletePuppy={setPuppyToDelete} 
+        puppies={typedPuppies} 
+        onEditPuppy={handleEditPuppy as (puppy: Puppy) => void}
+        onDeletePuppy={setPuppyToDelete as (puppy: Puppy) => void} 
         onAddPuppy={handleAddPuppy}
       />
 
@@ -99,7 +101,7 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
 
       {/* Delete Confirmation Dialog */}
       <DeletePuppyDialog
-        puppy={puppyToDelete}
+        puppy={puppyToDelete as Puppy}
         onClose={() => setPuppyToDelete(null)}
         onConfirm={handleDeletePuppy}
       />

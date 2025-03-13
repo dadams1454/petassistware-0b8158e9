@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -78,7 +77,7 @@ const LitterDetail = () => {
     <MainLayout>
       <div className="container mx-auto py-6 space-y-6">
         <LitterHeader 
-          litter={litter} 
+          litter={litter as Litter} 
           sire={litter?.sire}
           dam={litter?.dam}
           onEditClick={() => setIsEditDialogOpen(true)} 
@@ -120,13 +119,13 @@ const LitterDetail = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <LitterInfo litter={litter} />
+          <LitterInfo litter={litter as Litter} />
           <div className="lg:col-span-2">
             <LitterTabs 
-              litterId={litter?.id} 
+              litterId={litter?.id as string} 
               litterName={litter?.litter_name} 
               dogBreed={litter?.sire?.breed || litter?.dam?.breed}
-              puppies={(litter?.puppies || []) as Puppy[]} // Cast to Puppy[] type
+              puppies={(litter?.puppies || []) as unknown as Puppy[]} // Cast to Puppy[] type
             />
           </div>
         </div>
@@ -138,10 +137,12 @@ const LitterDetail = () => {
           <DialogHeader>
             <DialogTitle>Edit Litter</DialogTitle>
           </DialogHeader>
-          <LitterForm 
-            initialData={litter as Litter} // Explicitly cast to Litter type
-            onSuccess={handleEditSuccess} 
-          />
+          {litter && (
+            <LitterForm 
+              initialData={litter as unknown as Litter} // Explicitly cast to Litter type
+              onSuccess={handleEditSuccess} 
+            />
+          )}
         </DialogContent>
       </Dialog>
     </MainLayout>

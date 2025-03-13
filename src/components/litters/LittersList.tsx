@@ -1,14 +1,13 @@
 
 import React, { useMemo, useState } from 'react';
-import { PawPrint, UserRound, Table as TableIcon, Columns, ArchiveIcon } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { Columns, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import LitterSection from './components/LitterSection';
 import EmptyLitterState from './components/EmptyLitterState';
 import DeleteLitterDialog from './components/DeleteLitterDialog';
 import LitterTableView from './components/LitterTableView';
+import LitterCardView from './views/LitterCardView';
 import { Litter } from './puppies/types';
+import useLitterActions from './hooks/useLitterActions';
 
 interface LittersListProps {
   litters: Litter[];
@@ -20,6 +19,12 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
   const [litterToDelete, setLitterToDelete] = useState<Litter | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const isDeleteDialogOpen = Boolean(litterToDelete);
+  
+  const { 
+    handleDeleteLitter,
+    handleArchiveLitter,
+    handleUnarchiveLitter
+  } = useLitterActions(onRefresh, setLitterToDelete);
 
   // Organize litters by status and dam gender
   const organizedLitters = useMemo(() => {
@@ -33,88 +38,6 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
       archived: archivedLitters
     };
   }, [litters]);
-
-  const handleDeleteLitter = async () => {
-    if (!litterToDelete) return;
-    
-    try {
-      const { error } = await supabase
-        .from('litters')
-        .delete()
-        .eq('id', litterToDelete.id);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Litter deleted",
-        description: "The litter has been successfully deleted.",
-      });
-      
-      setLitterToDelete(null);
-      await onRefresh();
-    } catch (error) {
-      console.error('Error deleting litter:', error);
-      toast({
-        title: "Error",
-        description: "There was an error deleting the litter.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleArchiveLitter = async (litter: Litter) => {
-    try {
-      const { error } = await supabase
-        .from('litters')
-        .update({ status: 'archived' })
-        .eq('id', litter.id);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Litter archived",
-        description: "The litter has been successfully archived.",
-      });
-      
-      await onRefresh();
-    } catch (error) {
-      console.error('Error archiving litter:', error);
-      toast({
-        title: "Error",
-        description: "There was an error archiving the litter.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleUnarchiveLitter = async (litter: Litter) => {
-    try {
-      const { error } = await supabase
-        .from('litters')
-        .update({ status: 'active' })
-        .eq('id', litter.id);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Litter unarchived",
-        description: "The litter has been successfully unarchived.",
-      });
-      
-      await onRefresh();
-    } catch (error) {
-      console.error('Error unarchiving litter:', error);
-      toast({
-        title: "Error",
-        description: "There was an error unarchiving the litter.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setLitterToDelete(null);
-  };
 
   if (litters.length === 0) {
     return (
@@ -159,46 +82,20 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
           onUnarchiveLitter={handleUnarchiveLitter}
         />
       ) : (
-        <>
-          <LitterSection
-            title="Active Litters"
-            icon={<UserRound className="h-5 w-5 text-pink-500" />}
-            litters={organizedLitters.active}
-            onEditLitter={onEditLitter}
-            onDeleteLitter={setLitterToDelete}
-            onArchiveLitter={handleArchiveLitter}
-            onUnarchiveLitter={handleUnarchiveLitter}
-          />
-          
-          <LitterSection
-            title="Other Litters"
-            icon={<PawPrint className="h-5 w-5 text-muted-foreground" />}
-            litters={organizedLitters.other}
-            onEditLitter={onEditLitter}
-            onDeleteLitter={setLitterToDelete}
-            onArchiveLitter={handleArchiveLitter}
-            onUnarchiveLitter={handleUnarchiveLitter}
-          />
-
-          {organizedLitters.archived.length > 0 && (
-            <LitterSection
-              title="Archived Litters"
-              icon={<ArchiveIcon className="h-5 w-5 text-muted-foreground" />}
-              litters={organizedLitters.archived}
-              onEditLitter={onEditLitter}
-              onDeleteLitter={setLitterToDelete}
-              onArchiveLitter={handleArchiveLitter}
-              onUnarchiveLitter={handleUnarchiveLitter}
-            />
-          )}
-        </>
+        <LitterCardView 
+          organizedLitters={organizedLitters}
+          onEditLitter={onEditLitter}
+          onDeleteLitter={setLitterToDelete}
+          onArchiveLitter={handleArchiveLitter}
+          onUnarchiveLitter={handleUnarchiveLitter}
+        />
       )}
 
       <DeleteLitterDialog
         isOpen={isDeleteDialogOpen}
         onOpenChange={(open) => !open && setLitterToDelete(null)}
         onConfirm={handleDeleteLitter}
-        onCancel={handleCloseDeleteDialog}
+        onCancel={() => setLitterToDelete(null)}
       />
     </div>
   );
