@@ -13,6 +13,7 @@ import LitterHeader from '@/components/litters/detail/LitterHeader';
 import LitterInfo from '@/components/litters/detail/LitterInfo';
 import LitterTabs from '@/components/litters/detail/LitterTabs';
 import { Award, Calendar, Check, FileCheck } from 'lucide-react';
+import { Litter } from '@/components/litters/puppies/types';
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +38,7 @@ const LitterDetail = () => {
 
       if (error) throw error;
       console.log('Fetched detailed litter data:', data);
-      return data;
+      return data as Litter;
     }
   });
 

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Form } from '@/components/ui/form';
 import { useWelpingPuppyForm } from './hooks/useWelpingPuppyForm';
 import { CustomButton } from '@/components/ui/custom-button';

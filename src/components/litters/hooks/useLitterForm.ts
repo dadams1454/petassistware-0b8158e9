@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthProvider';
+import { Litter } from '../puppies/types';
 
 export interface LitterFormData {
   litter_name: string;
@@ -17,6 +18,7 @@ export interface LitterFormData {
   female_count: number | null;
   notes: string | null;
   documents_url: string | null;
+  status?: string;
   // AKC compliance fields
   akc_registration_number: string | null;
   akc_registration_date: Date | null;
@@ -55,6 +57,7 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       female_count: initialData?.female_count || null,
       notes: initialData?.notes || null,
       documents_url: initialData?.documents_url || null,
+      status: initialData?.status || 'active',
       // AKC compliance fields
       akc_registration_number: initialData?.akc_registration_number || null,
       akc_registration_date: initialData?.akc_registration_date ? new Date(initialData.akc_registration_date) : null,
