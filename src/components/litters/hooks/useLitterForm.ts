@@ -22,7 +22,6 @@ export interface LitterFormData {
   // AKC compliance fields
   akc_registration_number: string | null;
   akc_registration_date: Date | null;
-  akc_breeder_id: string | null;
   akc_litter_color: string | null;
   akc_documents_url: string | null;
   akc_verified: boolean | null;
@@ -61,7 +60,6 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       // AKC compliance fields
       akc_registration_number: initialData?.akc_registration_number || null,
       akc_registration_date: initialData?.akc_registration_date ? new Date(initialData.akc_registration_date) : null,
-      akc_breeder_id: initialData?.akc_breeder_id || null,
       akc_litter_color: initialData?.akc_litter_color || null,
       akc_documents_url: initialData?.akc_documents_url || null,
       akc_verified: initialData?.akc_verified || false,

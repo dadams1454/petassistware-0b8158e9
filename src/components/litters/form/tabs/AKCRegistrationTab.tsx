@@ -36,13 +36,6 @@ const AKCRegistrationTab: React.FC<AKCRegistrationTabProps> = ({ form }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <TextInput 
           form={form} 
-          name="akc_breeder_id" 
-          label="AKC Breeder ID" 
-          placeholder="Your AKC breeder identification" 
-        />
-        
-        <TextInput 
-          form={form} 
           name="akc_litter_color" 
           label="Litter Colors/Markings" 
           placeholder="Primary colors/markings in this litter" 
