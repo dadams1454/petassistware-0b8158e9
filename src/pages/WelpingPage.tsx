@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { ChevronLeft, Clipboard, Paw, Stethoscope, Tag } from 'lucide-react';
+import { ChevronLeft, Clipboard, Dog, Stethoscope, Tag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -84,7 +85,7 @@ const WelpingPage = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Paw className="h-7 w-7 text-pink-500" />
+              <Dog className="h-7 w-7 text-pink-500" />
               Welping Session
             </h1>
             <p className="text-muted-foreground">

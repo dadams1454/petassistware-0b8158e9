@@ -42,17 +42,21 @@ const LitterCard: React.FC<LitterCardProps> = ({
         <div className="p-6">
           <div className="flex justify-between items-start mb-4">
             <div>
+              {/* Litter Name (displayed prominently) */}
+              {litter.litter_name && (
+                <h2 className="font-bold text-xl mb-1">
+                  {litter.litter_name}
+                </h2>
+              )}
               <h3 className="font-semibold text-lg">
                 {litter.dam?.name || 'Unknown Dam'} × {litter.sire?.name || 'Unknown Sire'}
               </h3>
               <p className="text-muted-foreground text-sm">
                 Born: {format(new Date(litter.birth_date), 'MMM d, yyyy')}
               </p>
-              {litter.litter_name && (
-                <p className="text-sm font-medium mt-1">
-                  {litter.litter_name}
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                ID: {litter.id.substring(0, 8)}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               {isArchived && (
