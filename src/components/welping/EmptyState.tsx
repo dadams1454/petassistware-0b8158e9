@@ -1,29 +1,22 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { PawPrint } from 'lucide-react';
 
 interface EmptyStateProps {
   title: string;
   description: string;
-  actionText: string;
-  onAction: () => void;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
-  title,
-  description,
-  actionText,
-  onAction
-}) => {
+const EmptyState: React.FC<EmptyStateProps> = ({ title, description }) => {
   return (
-    <div className="text-center p-8 bg-muted/20 rounded-lg border border-dashed">
-      <h3 className="font-semibold text-lg mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-6">{description}</p>
-      <Button onClick={onAction} className="gap-2">
-        <Plus className="h-4 w-4" />
-        {actionText}
-      </Button>
+    <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50 border border-dashed rounded-lg h-56">
+      <div className="bg-primary/10 p-3 rounded-full mb-4">
+        <PawPrint className="h-10 w-10 text-primary" />
+      </div>
+      <h3 className="text-lg font-medium mb-2">{title}</h3>
+      <p className="text-muted-foreground max-w-sm">{description}</p>
     </div>
   );
 };
+
+export default EmptyState;

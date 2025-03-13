@@ -4,12 +4,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PuppiesList from '../PuppiesList';
 import WaitlistManager from '../../waitlist/WaitlistManager';
 import LitterTimeline from './LitterTimeline';
+import { Puppy } from '../puppies/types';
 
 interface LitterTabsProps {
   litterId: string;
   litterName?: string | null;
   dogBreed?: string | null;
-  puppies?: Puppy[]; // Add puppies prop
+  puppies?: Puppy[]; // Using the imported Puppy type
 }
 
 const LitterTabs: React.FC<LitterTabsProps> = ({ 

@@ -2,12 +2,12 @@
 export interface Puppy {
   id: string;
   name: string | null;
-  gender: 'Male' | 'Female' | null;
+  gender: string | null; // Changed from 'Male' | 'Female' | null to be compatible with existing code
   color: string | null;
   birth_date: string | null;
   birth_time: string | null;
-  birth_weight: string | number | null;
-  current_weight: string | number | null;
+  birth_weight: string | number | null; // Allow both string and number
+  current_weight: string | number | null; // Allow both string and number
   photo_url: string | null;
   notes: string | null;
   litter_id: string;
@@ -41,7 +41,7 @@ export interface Litter {
   notes: string | null;
   documents_url: string | null;
   created_at: string;
-  updated_at?: string;
+  updated_at?: string; // Made optional to match existing code
   status?: string;
   breeder_id: string;
   

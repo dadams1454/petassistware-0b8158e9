@@ -140,7 +140,7 @@ const LitterDetail = () => {
           </DialogHeader>
           {litter && (
             <LitterForm 
-              initialData={litter as unknown as Litter} 
+              initialData={litter} 
               onSuccess={handleEditSuccess} 
             />
           )}

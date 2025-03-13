@@ -112,7 +112,7 @@ const Litters = () => {
           </DialogHeader>
           {selectedLitter && (
             <LitterForm 
-              initialData={selectedLitter as unknown as Litter}
+              initialData={selectedLitter}
               onSuccess={handleEditSuccess} 
             />
           )}
