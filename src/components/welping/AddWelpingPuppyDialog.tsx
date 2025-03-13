@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription
 } from '@/components/ui/dialog';
-import WelpingPuppyForm from './WelpingPuppyForm';
+import WelpingPuppyForm from './form/WelpingPuppyForm';
 
 interface AddWelpingPuppyDialogProps {
   litterId: string;
