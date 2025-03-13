@@ -25,9 +25,6 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
     return Promise.resolve();
   };
   
-  // Cast puppies to ensure type compatibility
-  const typedPuppies = puppies as unknown as Puppy[];
-  
   return (
     <Tabs defaultValue="puppies" className="w-full mt-6">
       <TabsList className="grid w-full grid-cols-3">
@@ -39,7 +36,7 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
       <TabsContent value="puppies" className="mt-6">
         <PuppiesList 
           litterId={litterId} 
-          puppies={typedPuppies} // Pass the typed puppies data
+          puppies={puppies as any} 
           onRefresh={handleRefresh} 
         />
       </TabsContent>

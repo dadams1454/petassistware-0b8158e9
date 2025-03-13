@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
 import PuppiesTable from './puppies/PuppiesTable';
 import DeletePuppyDialog from './puppies/DeletePuppyDialog';
 import EditPuppyDialog from './puppies/EditPuppyDialog';
@@ -69,21 +68,18 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
     }
   };
 
-  // Explicitly cast puppies to ensure type compatibility
-  const typedPuppies = puppies as unknown as Puppy[];
-
   return (
     <div>
       <PuppiesTable 
-        puppies={typedPuppies} 
-        onEditPuppy={handleEditPuppy as (puppy: Puppy) => void}
-        onDeletePuppy={setPuppyToDelete as (puppy: Puppy) => void} 
+        puppies={puppies as any} 
+        onEditPuppy={handleEditPuppy as any}
+        onDeletePuppy={setPuppyToDelete as any} 
         onAddPuppy={handleAddPuppy}
       />
 
       {/* Edit Puppy Dialog */}
       <EditPuppyDialog
-        puppy={selectedPuppy}
+        puppy={selectedPuppy as any}
         litterId={litterId}
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -101,7 +97,7 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
 
       {/* Delete Confirmation Dialog */}
       <DeletePuppyDialog
-        puppy={puppyToDelete as Puppy}
+        puppy={puppyToDelete as any}
         onClose={() => setPuppyToDelete(null)}
         onConfirm={handleDeletePuppy}
       />
