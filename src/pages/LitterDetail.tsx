@@ -78,7 +78,7 @@ const LitterDetail = () => {
     <MainLayout>
       <div className="container mx-auto py-6 space-y-6">
         <LitterHeader 
-          litter={litter as Litter} 
+          litter={litter} 
           sire={litter?.sire}
           dam={litter?.dam}
           onEditClick={() => setIsEditDialogOpen(true)} 
@@ -140,7 +140,7 @@ const LitterDetail = () => {
           </DialogHeader>
           {litter && (
             <LitterForm 
-              initialData={litter} 
+              initialData={litter as unknown as Litter} 
               onSuccess={handleEditSuccess} 
             />
           )}

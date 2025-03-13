@@ -6,8 +6,8 @@ export interface Puppy {
   color: string | null;
   birth_date: string | null;
   birth_time: string | null;
-  birth_weight: number | string | null;
-  current_weight: number | string | null;
+  birth_weight: string | number | null;
+  current_weight: string | number | null;
   photo_url: string | null;
   notes: string | null;
   litter_id: string;

@@ -7,6 +7,7 @@ import { Plus } from 'lucide-react';
 import PuppiesTable from './puppies/PuppiesTable';
 import DeletePuppyDialog from './puppies/DeletePuppyDialog';
 import EditPuppyDialog from './puppies/EditPuppyDialog';
+import { Puppy } from './puppies/types';
 
 interface PuppiesListProps {
   puppies: Puppy[];

@@ -123,8 +123,8 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
       {litterId && (
         <PuppyPhotoUpload 
           form={form} 
-          name="photo_url" 
-          label="Puppy Photo" 
+          name="photo_url"
+          label="Puppy Photo"
           litterId={litterId} 
         />
       )}
