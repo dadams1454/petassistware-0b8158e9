@@ -28,12 +28,14 @@ export interface RecentActivity {
 // Function to fetch dashboard statistics
 export const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    // Fetch dog count - this is what we're updating to work correctly
-    const { count: dogCount, error: dogError } = await supabase
+    // Fetch dog count - revised to make sure we're correctly counting
+    const { data: dogsData, error: dogError } = await supabase
       .from('dogs')
-      .select('*', { count: 'exact', head: true });
+      .select('id');
     
     if (dogError) throw dogError;
+    
+    const dogCount = dogsData?.length || 0;
 
     // Fetch litter count
     const { count: litterCount, error: litterError } = await supabase
@@ -62,8 +64,10 @@ export const fetchDashboardStats = async (): Promise<DashboardStats> => {
     
     const recentRevenue = recentTransactions?.reduce((sum, transaction) => sum + (Number(transaction.amount) || 0), 0) || 0;
 
+    console.log('Dashboard stats - Dog count:', dogCount);
+
     return {
-      dogCount: dogCount || 0,
+      dogCount,
       litterCount: litterCount || 0,
       reservationCount: reservationCount || 0,
       recentRevenue
