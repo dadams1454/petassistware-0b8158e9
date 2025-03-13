@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Litter } from '../puppies/types';
-import LitterSection from '../components/LitterSection';
-import { PawPrint, UserRound, ArchiveIcon } from 'lucide-react';
+import { PawPrint, UserRound, ArchiveIcon, Eye, Edit, Trash2, Archive, ArchiveRestore, Award, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { format, differenceInWeeks } from 'date-fns';
 
 interface OrganizedLitters {
   active: Litter[];
@@ -24,11 +28,18 @@ const LitterCardView: React.FC<LitterCardViewProps> = ({
   onArchiveLitter,
   onUnarchiveLitter
 }) => {
+  // Track which litter is expanded
+  const [expandedLitterId, setExpandedLitterId] = useState<string | null>(null);
+
+  const toggleExpand = (litterId: string) => {
+    setExpandedLitterId(expandedLitterId === litterId ? null : litterId);
+  };
+
   return (
     <div className="space-y-10">
-      {/* Active Litters - Full Width Layout */}
+      {/* Active Litters - Full Width Horizontal Layout */}
       {organizedLitters.active.length > 0 && (
-        <div className="bg-purple-50 rounded-lg p-4 pb-8">
+        <div className="bg-purple-50 rounded-lg p-4 pb-6 w-full">
           <div className="flex items-center gap-2 mb-6 pl-2">
             <UserRound className="h-5 w-5 text-purple-600" />
             <h2 className="text-xl font-semibold text-purple-800">Active Litters</h2>
@@ -37,20 +48,145 @@ const LitterCardView: React.FC<LitterCardViewProps> = ({
             </span>
           </div>
 
-          <div className="flex flex-row-reverse overflow-x-auto pb-2 gap-6 snap-x">
+          {/* Right-to-left scrolling container for active litters */}
+          <div className="flex flex-row-reverse space-x-reverse overflow-x-auto pb-2 gap-6 snap-x w-full">
             {organizedLitters.active.map((litter) => (
               <div 
                 key={litter.id} 
-                className="transform transition-all duration-200 hover:scale-105 hover:shadow-lg min-w-[350px] snap-start"
+                className="transform transition-all duration-200 hover:shadow-lg min-w-[320px] max-w-[400px] snap-start"
               >
-                <LitterCard 
-                  litter={litter}
-                  onEdit={onEditLitter}
-                  onDelete={onDeleteLitter}
-                  onArchive={onArchiveLitter}
-                  onUnarchive={onUnarchiveLitter}
-                  isActive={true}
-                />
+                <Card 
+                  className={`overflow-hidden cursor-pointer border-purple-300 shadow-md ${expandedLitterId === litter.id ? 'ring-2 ring-purple-400' : ''}`}
+                  onClick={() => toggleExpand(litter.id)}
+                >
+                  <CardContent className="p-0">
+                    {/* Colored header bar */}
+                    <div className="bg-gradient-to-l from-purple-600 to-pink-500 h-1.5"></div>
+                    
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          {/* Litter Name (displayed prominently) */}
+                          {litter.litter_name && (
+                            <h2 className="font-bold text-xl mb-1 text-purple-900">
+                              {litter.litter_name}
+                            </h2>
+                          )}
+                          <h3 className="font-semibold text-lg">
+                            {litter.dam?.name || 'Unknown Dam'} × {litter.sire?.name || 'Unknown Sire'}
+                          </h3>
+                          <p className="text-muted-foreground text-sm">
+                            Born: {format(new Date(litter.birth_date), 'MMM d, yyyy')}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge variant="secondary" className="bg-purple-100 text-purple-800 rounded-full px-3 py-0.5 text-sm font-medium">
+                            {differenceInWeeks(new Date(), new Date(litter.birth_date))} weeks old
+                          </Badge>
+                          {litter.puppies && litter.puppies.filter(p => p.status === 'Available').length > 0 && (
+                            <Badge variant="secondary" className="bg-green-100 text-green-800 rounded-full px-3 py-0.5 text-sm font-medium">
+                              {litter.puppies.filter(p => p.status === 'Available').length} available
+                            </Badge>
+                          )}
+                          <div className="text-purple-500 mt-1">
+                            {expandedLitterId === litter.id ? 
+                              <ChevronUp className="h-5 w-5" /> : 
+                              <ChevronDown className="h-5 w-5" />
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Expanded content */}
+                      {expandedLitterId === litter.id && (
+                        <div className="space-y-2 mt-4 border-t pt-4">
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Dam:</span> 
+                            <span className="text-sm text-muted-foreground">{litter.dam?.name || 'Unknown'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Sire:</span> 
+                            <span className="text-sm text-muted-foreground">{litter.sire?.name || 'Unknown'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Total Puppies:</span> 
+                            <span className="text-sm text-muted-foreground">
+                              {litter.puppies ? litter.puppies.length : 0}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Available:</span> 
+                            <span className="text-sm font-medium text-green-600">
+                              {litter.puppies ? litter.puppies.filter(p => p.status === 'Available').length : 0} puppies
+                            </span>
+                          </div>
+                          {litter.akc_registration_number && (
+                            <div className="flex justify-between">
+                              <span className="text-sm font-medium flex items-center">
+                                <Award className="h-3.5 w-3.5 mr-1 text-purple-600" />
+                                AKC #:
+                              </span> 
+                              <span className="text-sm text-purple-600 font-medium">
+                                {litter.akc_registration_number}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium">Colors:</span> 
+                            <div className="flex flex-wrap justify-end gap-1">
+                              {litter.puppies && [...new Set(litter.puppies.map(p => p.color).filter(Boolean))].length > 0 ? (
+                                [...new Set(litter.puppies.map(p => p.color).filter(Boolean))].map((color, idx) => (
+                                  <Badge key={idx} variant="outline" className="text-xs">
+                                    {color}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-sm text-muted-foreground">N/A</span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Action buttons for expanded view */}
+                          <div className="flex mt-4 pt-2 border-t">
+                            <Button 
+                              variant="ghost" 
+                              className="flex-1 rounded-md py-1 h-9 text-purple-700 hover:text-purple-900 hover:bg-purple-50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.location.href = `/litters/${litter.id}`;
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              className="flex-1 rounded-md py-1 h-9"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEditLitter(litter);
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              className="flex-1 rounded-md py-1 h-9 text-amber-600 hover:text-amber-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onArchiveLitter(litter);
+                              }}
+                            >
+                              <Archive className="h-4 w-4 mr-2" />
+                              Archive
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             ))}
           </div>
@@ -116,13 +252,6 @@ const LitterCardView: React.FC<LitterCardViewProps> = ({
 
 // We need to import the LitterCard component directly here 
 // since we've removed the LitterSection component
-import { Eye, Edit, Trash2, Archive, ArchiveRestore, Award } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { format, differenceInWeeks } from 'date-fns';
-
 interface LitterCardProps {
   litter: Litter;
   onEdit: (litter: Litter) => void;
