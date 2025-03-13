@@ -4,6 +4,7 @@ import { useLitterForm } from './hooks/useLitterForm';
 import { useDamInfoUpdater } from './hooks/useDamInfoUpdater';
 import { usePuppyCounter } from './hooks/usePuppyCounter';
 import LitterFormLayout from './form/LitterFormLayout';
+import { Litter } from './puppies/types';
 
 interface LitterFormProps {
   initialData?: Litter;
