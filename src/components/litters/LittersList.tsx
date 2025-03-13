@@ -8,6 +8,7 @@ import LitterSection from './components/LitterSection';
 import EmptyLitterState from './components/EmptyLitterState';
 import DeleteLitterDialog from './components/DeleteLitterDialog';
 import LitterTableView from './components/LitterTableView';
+import { Litter } from './puppies/types';
 
 interface LittersListProps {
   litters: Litter[];

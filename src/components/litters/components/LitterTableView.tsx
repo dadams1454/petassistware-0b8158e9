@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, differenceInWeeks } from 'date-fns';
 import { Eye, Edit, Trash2, Users, Archive, ArchiveRestore } from 'lucide-react';
@@ -13,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Litter } from '../puppies/types';
 
 interface LitterTableViewProps {
   litters: Litter[];
@@ -37,12 +37,6 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
   
   // Combine with active litters first, then archived ones
   const sortedLitters = [...activeLitters, ...archivedLitters];
-
-  // Add some debug logs
-  console.log('All litters:', litters);
-  litters.forEach(litter => {
-    console.log(`Litter ${litter.litter_name} - Puppies: ${litter.puppies?.length || 0}`);
-  });
 
   return (
     <div className="rounded-md border">
