@@ -13,7 +13,7 @@ import LitterHeader from '@/components/litters/detail/LitterHeader';
 import LitterInfo from '@/components/litters/detail/LitterInfo';
 import LitterTabs from '@/components/litters/detail/LitterTabs';
 import { Award, Calendar, Check, FileCheck } from 'lucide-react';
-import { Litter } from '@/components/litters/puppies/types';
+import { Litter, Puppy } from '@/components/litters/puppies/types';
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,7 +38,7 @@ const LitterDetail = () => {
 
       if (error) throw error;
       console.log('Fetched detailed litter data:', data);
-      return data as Litter;
+      return data as unknown as Litter;
     }
   });
 
@@ -78,7 +78,7 @@ const LitterDetail = () => {
     <MainLayout>
       <div className="container mx-auto py-6 space-y-6">
         <LitterHeader 
-          litter={litter} 
+          litter={litter as Litter} 
           sire={litter?.sire}
           dam={litter?.dam}
           onEditClick={() => setIsEditDialogOpen(true)} 
@@ -126,7 +126,7 @@ const LitterDetail = () => {
               litterId={litter?.id} 
               litterName={litter?.litter_name} 
               dogBreed={litter?.sire?.breed || litter?.dam?.breed}
-              puppies={litter?.puppies || []}
+              puppies={litter?.puppies as Puppy[] || []}
             />
           </div>
         </div>

@@ -7,6 +7,7 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import PuppyForm from '@/components/litters/PuppyForm';
+import { Puppy } from './types';
 
 interface EditPuppyDialogProps {
   puppy: Puppy | null;
@@ -23,6 +24,11 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
   onOpenChange, 
   onSuccess 
 }) => {
+  // Convert Promise<void> to regular void function
+  const handleSuccess = () => {
+    onSuccess();
+  };
+  
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -32,7 +38,7 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
         <PuppyForm 
           initialData={puppy} 
           litterId={litterId}
-          onSuccess={onSuccess} 
+          onSuccess={handleSuccess} 
         />
       </DialogContent>
     </Dialog>

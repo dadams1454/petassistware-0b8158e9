@@ -6,8 +6,8 @@ export interface Puppy {
   color: string | null;
   birth_date: string | null;
   birth_time: string | null;
-  birth_weight: number | null;
-  current_weight: number | null;
+  birth_weight: number | string | null;
+  current_weight: number | string | null;
   photo_url: string | null;
   notes: string | null;
   litter_id: string;
@@ -101,7 +101,6 @@ export interface Dog {
   breeder_id: string | null;
 }
 
-// Add the missing PuppyFormData interface
 export interface PuppyFormData {
   name: string;
   gender: string;
@@ -122,7 +121,6 @@ export interface PuppyFormData {
   akc_registration_number: string;
 }
 
-// Add PuppyFormProps interface
 export interface PuppyFormProps {
   litterId: string;
   initialData?: Puppy;

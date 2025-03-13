@@ -35,7 +35,7 @@ const PuppyForm: React.FC<PuppyFormProps> = ({
           </TabsList>
           
           <TabsContent value="basic" className="space-y-4">
-            <BasicInfoTab form={form} />
+            <BasicInfoTab form={form} litterId={litterId} />
           </TabsContent>
           
           <TabsContent value="weights" className="space-y-4">

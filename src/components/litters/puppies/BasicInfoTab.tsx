@@ -16,6 +16,7 @@ import { PuppyFormData } from './types';
 
 interface BasicInfoTabProps {
   form: UseFormReturn<PuppyFormData>;
+  litterId?: string;
 }
 
 const genderOptions = [
@@ -31,7 +32,7 @@ const statusOptions = [
   { value: 'Deceased', label: 'Deceased' },
 ];
 
-const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
+const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -119,7 +120,14 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         />
       </div>
       
-      <PuppyPhotoUpload form={form} />
+      {litterId && (
+        <PuppyPhotoUpload 
+          form={form} 
+          name="photo_url" 
+          label="Puppy Photo" 
+          litterId={litterId} 
+        />
+      )}
     </div>
   );
 };

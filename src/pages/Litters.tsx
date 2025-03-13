@@ -39,7 +39,7 @@ const Litters = () => {
 
       if (error) throw error;
       console.log('Fetched litters data:', data);
-      return data as Litter[];
+      return data as unknown as Litter[];
     },
     enabled: !!user,
   });

@@ -83,7 +83,7 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
       // Clean up the data to remove any fields that don't exist in the database schema
       const puppyData = {
         name: data.name || null,
-        gender: formattedGender,
+        gender: formattedGender as 'Male' | 'Female' | null,
         status: data.status,
         color: data.color || null,
         birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,

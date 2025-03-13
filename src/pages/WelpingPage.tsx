@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import MainLayout from '@/layouts/MainLayout';
 import WelpingPuppyForm from '@/components/welping/form/WelpingPuppyForm';
 import WelpingPuppyList from '@/components/welping/WelpingPuppyList';
-import { Litter } from '@/components/litters/puppies/types';
+import { Litter, Puppy } from '@/components/litters/puppies/types';
 
 const WelpingPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,13 +36,14 @@ const WelpingPage = () => {
         .single();
 
       if (error) throw error;
-      return data as Litter;
+      return data as unknown as Litter;
     }
   });
 
   // Wrap refetch in a function that returns void
   const handleRefresh = async (): Promise<void> => {
     await refetch();
+    return;
   };
 
   const handlePuppyAdded = async () => {
@@ -183,7 +184,7 @@ const WelpingPage = () => {
                   <CardContent>
                     <WelpingPuppyForm 
                       litterId={id || ''} 
-                      onSuccess={handlePuppyAdded} 
+                      onSuccess={handleRefresh} 
                     />
                   </CardContent>
                 </Card>
@@ -192,7 +193,7 @@ const WelpingPage = () => {
               <TabsContent value="list">
                 {litter && (
                   <WelpingPuppyList 
-                    puppies={litter.puppies || []} 
+                    puppies={litter.puppies as Puppy[] || []} 
                     onRefresh={handleRefresh} 
                   />
                 )}
