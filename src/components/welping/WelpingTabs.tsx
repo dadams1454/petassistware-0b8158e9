@@ -7,6 +7,9 @@ import { Stethoscope } from 'lucide-react';
 import WelpingPuppyForm from './form/WelpingPuppyForm';
 import WelpingPuppyList from './WelpingPuppyList';
 import { Puppy } from '@/components/litters/puppies/types';
+import { useForm } from 'react-hook-form';
+import { WelpingPuppyFormData } from './form/hooks/useWelpingPuppyForm';
+import { format } from 'date-fns';
 
 interface WelpingTabsProps {
   activeTab: string;
@@ -25,6 +28,16 @@ const WelpingTabs: React.FC<WelpingTabsProps> = ({
   handleRefresh,
   handlePuppyAdded
 }) => {
+  // Create a reset key that will force the WelpingPuppyForm to remount when a puppy is added
+  const [resetKey, setResetKey] = React.useState(0);
+  
+  // Wrapper for handlePuppyAdded that also increments the reset key
+  const handleSuccess = async () => {
+    await handlePuppyAdded();
+    // Increment reset key to force form remount with fresh values
+    setResetKey(prev => prev + 1);
+  };
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid grid-cols-2 mb-4">
@@ -47,9 +60,11 @@ const WelpingTabs: React.FC<WelpingTabsProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Use key to force component to remount with fresh state */}
             <WelpingPuppyForm 
+              key={resetKey}
               litterId={litterId} 
-              onSuccess={handlePuppyAdded} 
+              onSuccess={handleSuccess} 
             />
           </CardContent>
         </Card>

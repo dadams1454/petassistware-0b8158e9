@@ -1,16 +1,23 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { WelpingPuppyFormData } from '../hooks/useWelpingPuppyForm';
 import { Clock } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface BirthTimeInputProps {
   form: UseFormReturn<WelpingPuppyFormData>;
 }
 
 const BirthTimeInput: React.FC<BirthTimeInputProps> = ({ form }) => {
+  // Set the current time whenever the component mounts
+  useEffect(() => {
+    const currentTime = format(new Date(), 'HH:mm');
+    form.setValue('birth_time', currentTime);
+  }, [form]);
+
   return (
     <FormField
       control={form.control}
