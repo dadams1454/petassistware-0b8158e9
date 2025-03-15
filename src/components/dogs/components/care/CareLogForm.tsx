@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 
@@ -65,7 +65,6 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess }) => {
               selectedCategory={selectedCategory}
               setSelectedCategory={handleCategoryChange}
               customTaskName={customTaskName}
-              setCustomTaskName={setCustomTaskName}
               showCustomTask={showCustomTask}
               setShowCustomTask={setShowCustomTask}
               activeTab={activeTab}
