@@ -12,7 +12,7 @@ interface DogData {
   name: string;
   breed: string;
   color: string;
-  profile_photo_url?: string;
+  photo_url?: string;
 }
 
 interface DogSelectorProps {
@@ -30,7 +30,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ onDogSelected }) => {
         setLoading(true);
         const { data, error } = await supabase
           .from('dogs')
-          .select('id, name, breed, color, profile_photo_url')
+          .select('id, name, breed, color, photo_url')
           .order('name', { ascending: true });
 
         if (error) throw error;
@@ -114,9 +114,9 @@ const DogSelector: React.FC<DogSelectorProps> = ({ onDogSelected }) => {
             onClick={() => handleDogClick(dog.id)}
           >
             <div className="p-4 flex items-center space-x-4">
-              {dog.profile_photo_url ? (
+              {dog.photo_url ? (
                 <img 
-                  src={dog.profile_photo_url} 
+                  src={dog.photo_url} 
                   alt={dog.name}
                   className="h-12 w-12 rounded-full object-cover"
                 />
