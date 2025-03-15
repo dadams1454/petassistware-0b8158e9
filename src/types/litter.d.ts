@@ -23,13 +23,13 @@ interface Puppy {
   status: string;
   color: string;
   birth_date: string;
-  birth_weight: string | number; // Updated to accept string or number
-  current_weight: string | number; // Updated to accept string or number
+  birth_weight: string | number; // Accept string or number
+  current_weight: string | number; // Accept string or number
   microchip_number: string;
   sale_price: number;
-  deworming_dates: string;
-  vaccination_dates: string;
-  vet_check_dates: string;
+  deworming_dates?: string; // Make optional
+  vaccination_dates?: string; // Make optional
+  vet_check_dates?: string; // Make optional
   notes: string;
   photo_url: string;
   litter_id: string;

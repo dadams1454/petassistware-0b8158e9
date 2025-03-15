@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { 
   LineChart,
@@ -34,8 +33,18 @@ const PuppyWeightChart: React.FC<PuppyWeightChartProps> = ({
     return puppies
       .filter(puppy => puppy.current_weight || puppy.birth_weight)
       .map(puppy => {
-        const currentWeight = puppy.current_weight ? parseFloat(puppy.current_weight) : 0;
-        const birthWeight = puppy.birth_weight ? parseFloat(puppy.birth_weight) : 0;
+        // Handle different types for weight values
+        const currentWeight = puppy.current_weight 
+          ? (typeof puppy.current_weight === 'string' 
+              ? parseFloat(puppy.current_weight) 
+              : puppy.current_weight)
+          : 0;
+          
+        const birthWeight = puppy.birth_weight 
+          ? (typeof puppy.birth_weight === 'string' 
+              ? parseFloat(puppy.birth_weight) 
+              : puppy.birth_weight)
+          : 0;
         
         return {
           name: puppy.name || `Puppy #${puppy.id.substring(0, 4)}`,

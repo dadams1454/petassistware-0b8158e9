@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, AlertTriangle, Info } from 'lucide-react';
@@ -18,11 +17,21 @@ const LitterStatistics: React.FC<LitterStatisticsProps> = ({
     
     // Calculate average weights
     const avgBirthWeight = puppiesWithWeight.length > 0 
-      ? puppiesWithWeight.reduce((sum, p) => sum + parseFloat(p.birth_weight || '0'), 0) / puppiesWithWeight.length
+      ? puppiesWithWeight.reduce((sum, p) => {
+          const weight = typeof p.birth_weight === 'string' 
+            ? parseFloat(p.birth_weight || '0') 
+            : p.birth_weight || 0;
+          return sum + weight;
+        }, 0) / puppiesWithWeight.length
       : 0;
     
     const avgCurrentWeight = puppiesWithWeight.length > 0 
-      ? puppiesWithWeight.reduce((sum, p) => sum + parseFloat(p.current_weight || '0'), 0) / puppiesWithWeight.length
+      ? puppiesWithWeight.reduce((sum, p) => {
+          const weight = typeof p.current_weight === 'string' 
+            ? parseFloat(p.current_weight || '0') 
+            : p.current_weight || 0;
+          return sum + weight;
+        }, 0) / puppiesWithWeight.length
       : 0;
     
     // Calculate weight gain
