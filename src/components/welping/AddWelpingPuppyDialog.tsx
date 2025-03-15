@@ -22,6 +22,16 @@ const AddWelpingPuppyDialog: React.FC<AddWelpingPuppyDialogProps> = ({
   onOpenChange, 
   onSuccess 
 }) => {
+  // Create a wrapper function that returns a Promise<void>
+  const handleSuccess = async () => {
+    try {
+      await onSuccess();
+      console.log('onSuccess completed in AddWelpingPuppyDialog');
+    } catch (error) {
+      console.error('Error in onSuccess callback from AddWelpingPuppyDialog:', error);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -33,7 +43,7 @@ const AddWelpingPuppyDialog: React.FC<AddWelpingPuppyDialogProps> = ({
         </DialogHeader>
         <WelpingPuppyForm 
           litterId={litterId}
-          onSuccess={onSuccess} 
+          onSuccess={handleSuccess} 
         />
       </DialogContent>
     </Dialog>
