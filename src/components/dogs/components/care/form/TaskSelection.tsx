@@ -15,7 +15,8 @@ interface TaskSelectionProps {
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
   customTaskName: string;
-  setCustomTaskName: (name: string) => void;
+  // We'll modify this to be optional with a ? mark
+  setCustomTaskName?: (name: string) => void;
   showCustomTask: boolean;
   setShowCustomTask: (show: boolean) => void;
   activeTab: string;
