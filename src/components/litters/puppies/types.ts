@@ -1,13 +1,12 @@
-
 export interface Puppy {
   id: string;
   name: string | null;
-  gender: string | null; // Allow any string to be compatible with both systems
+  gender: string | null;
   color: string | null;
   birth_date: string | null;
-  birth_time: string | null; // Make required to match the expected type in components
-  birth_weight: string | number | null; // Allow both string and number
-  current_weight: string | number | null; // Allow both string and number
+  birth_time?: string | null;
+  birth_weight: string | number | null;
+  current_weight: string | number | null;
   photo_url: string | null;
   notes: string | null;
   litter_id: string;

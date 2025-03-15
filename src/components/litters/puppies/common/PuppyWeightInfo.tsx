@@ -3,8 +3,8 @@ import React from 'react';
 import { Weight } from 'lucide-react';
 
 interface PuppyWeightInfoProps {
-  birthWeight: string | null;
-  currentWeight: string | null;
+  birthWeight: string | number | null;
+  currentWeight: string | number | null;
   layout?: 'vertical' | 'horizontal';
   displayUnit?: 'oz' | 'g' | 'both';
 }
@@ -19,18 +19,16 @@ const PuppyWeightInfo: React.FC<PuppyWeightInfoProps> = ({
     return <span className="text-sm text-muted-foreground">No weight data</span>;
   }
 
-  // Function to format weight with correct unit
-  const formatWeight = (weight: string | null) => {
+  const formatWeight = (weight: string | number | null) => {
     if (!weight) return null;
     
-    const numWeight = parseFloat(weight);
+    const numWeight = typeof weight === 'string' ? parseFloat(weight) : weight;
     if (isNaN(numWeight)) return weight;
     
     switch (displayUnit) {
       case 'oz':
         return `${numWeight} oz`;
       case 'g':
-        // Convert to grams if in oz
         const inGrams = Math.round(numWeight * 28.35);
         return `${inGrams} g`;
       case 'both':
