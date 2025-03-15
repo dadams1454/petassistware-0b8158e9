@@ -2,6 +2,7 @@
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import DogCareCard from './DogCareCard';
+import { DogCareStatus } from '@/types/dailyCare';
 
 interface CareCardsViewProps {
   dogsStatus: DogCareStatus[];

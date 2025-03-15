@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { PawPrint, AlertCircle, Flag, Heart, Slash } from 'lucide-react';
+import { DogCareStatus } from '@/types/dailyCare';
 
 interface DogCareStatCardsProps {
   dogsStatus: DogCareStatus[];

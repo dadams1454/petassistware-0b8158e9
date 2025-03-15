@@ -1,9 +1,13 @@
-
 import React from 'react';
-import { Heart, Slash, AlertCircle, Flag } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { FormLabel } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { DogFlag } from '@/types/dailyCare';
 
 interface FlagSelectionProps {
   selectedFlags: {
@@ -13,13 +17,13 @@ interface FlagSelectionProps {
     other: boolean;
   };
   toggleFlag: (flagType: keyof typeof selectedFlags) => void;
-  otherDogs: Array<{ id: string; name: string }>;
+  otherDogs: { id: string; name: string }[];
   incompatibleDogs: string[];
   handleIncompatibleDogToggle: (dogId: string) => void;
   specialAttentionNote: string;
-  setSpecialAttentionNote: (value: string) => void;
+  setSpecialAttentionNote: (note: string) => void;
   otherFlagNote: string;
-  setOtherFlagNote: (value: string) => void;
+  setOtherFlagNote: (note: string) => void;
   showFlagsSection: boolean;
   setShowFlagsSection: (show: boolean) => void;
 }
@@ -35,185 +39,134 @@ const FlagSelection: React.FC<FlagSelectionProps> = ({
   otherFlagNote,
   setOtherFlagNote,
   showFlagsSection,
-  setShowFlagsSection
+  setShowFlagsSection,
 }) => {
   return (
-    <div className="border rounded-md p-4 space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium">Special Flags</h3>
-        <button
-          type="button"
-          className="text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => setShowFlagsSection(!showFlagsSection)}
-        >
-          {showFlagsSection ? 'Hide' : 'Show'}
-        </button>
-      </div>
-      
-      {showFlagsSection && (
-        <div className="space-y-4">
-          <div className="flex flex-col space-y-2">
+    <div className="space-y-4">
+      <Collapsible
+        open={showFlagsSection}
+        onOpenChange={setShowFlagsSection}
+        className="border rounded-md p-2"
+      >
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" className="flex w-full justify-between p-2">
+            <FormLabel className="cursor-pointer">Add Flags (Optional)</FormLabel>
+            <Check className={`h-4 w-4 ${showFlagsSection ? 'opacity-100' : 'opacity-0'}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="px-4 pb-2 pt-1">
+          <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="in-heat" 
+              <Checkbox
+                id="in-heat"
                 checked={selectedFlags.in_heat}
                 onCheckedChange={() => toggleFlag('in_heat')}
               />
-              <label 
+              <label
                 htmlFor="in-heat"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center space-x-2"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                <Heart className="h-4 w-4 text-red-500" />
-                <span>In Heat</span>
+                In Heat
               </label>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="incompatible" 
-                checked={selectedFlags.incompatible}
-                onCheckedChange={() => toggleFlag('incompatible')}
-              />
-              <label 
-                htmlFor="incompatible"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center space-x-2"
-              >
-                <Slash className="h-4 w-4 text-amber-500" />
-                <span>Doesn't Get Along With Other Dogs</span>
-              </label>
-            </div>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="incompatible"
+                  checked={selectedFlags.incompatible}
+                  onCheckedChange={() => toggleFlag('incompatible')}
+                />
+                <label
+                  htmlFor="incompatible"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Incompatible with other dogs
+                </label>
+              </div>
 
-            {selectedFlags.incompatible && (
-              <div className="pl-6 mt-2 space-y-2">
-                <p className="text-sm text-muted-foreground">Select incompatible dogs:</p>
-                <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-                  {otherDogs.map(dog => (
-                    <div key={dog.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`incompatible-${dog.id}`}
-                        checked={incompatibleDogs.includes(dog.id)}
-                        onCheckedChange={() => handleIncompatibleDogToggle(dog.id)}
-                      />
-                      <label 
-                        htmlFor={`incompatible-${dog.id}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {dog.name}
-                      </label>
+              {selectedFlags.incompatible && otherDogs.length > 0 && (
+                <div className="ml-6 mt-2">
+                  <p className="text-sm text-muted-foreground mb-2">Select incompatible dogs:</p>
+                  <ScrollArea className="h-24 w-full rounded-md border">
+                    <div className="p-2 space-y-2">
+                      {otherDogs.map((dog) => (
+                        <div key={dog.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`dog-${dog.id}`}
+                            checked={incompatibleDogs.includes(dog.id)}
+                            onCheckedChange={() => handleIncompatibleDogToggle(dog.id)}
+                          />
+                          <label
+                            htmlFor={`dog-${dog.id}`}
+                            className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {dog.name}
+                          </label>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </ScrollArea>
                 </div>
-              </div>
-            )}
-
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="special-attention" 
-                checked={selectedFlags.special_attention}
-                onCheckedChange={() => toggleFlag('special_attention')}
-              />
-              <label 
-                htmlFor="special-attention"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center space-x-2"
-              >
-                <AlertCircle className="h-4 w-4 text-blue-500" />
-                <span>Needs Special Attention</span>
-              </label>
+              )}
             </div>
 
-            {selectedFlags.special_attention && (
-              <div className="pl-6 mt-2">
-                <Input
-                  placeholder="Specify what special attention is needed"
-                  value={specialAttentionNote}
-                  onChange={(e) => setSpecialAttentionNote(e.target.value)}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="special-attention"
+                  checked={selectedFlags.special_attention}
+                  onCheckedChange={() => toggleFlag('special_attention')}
                 />
+                <label
+                  htmlFor="special-attention"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Needs special attention
+                </label>
               </div>
-            )}
 
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="other-flag" 
-                checked={selectedFlags.other}
-                onCheckedChange={() => toggleFlag('other')}
-              />
-              <label 
-                htmlFor="other-flag"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center space-x-2"
-              >
-                <Flag className="h-4 w-4 text-gray-500" />
-                <span>Other Flag</span>
-              </label>
+              {selectedFlags.special_attention && (
+                <div className="ml-6 mt-2">
+                  <Textarea
+                    placeholder="Describe the special attention needed"
+                    value={specialAttentionNote}
+                    onChange={(e) => setSpecialAttentionNote(e.target.value)}
+                    className="resize-none"
+                  />
+                </div>
+              )}
             </div>
 
-            {selectedFlags.other && (
-              <div className="pl-6 mt-2">
-                <Input
-                  placeholder="Specify the flag"
-                  value={otherFlagNote}
-                  onChange={(e) => setOtherFlagNote(e.target.value)}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="other-flag"
+                  checked={selectedFlags.other}
+                  onCheckedChange={() => toggleFlag('other')}
                 />
+                <label
+                  htmlFor="other-flag"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Other flag
+                </label>
               </div>
-            )}
+
+              {selectedFlags.other && (
+                <div className="ml-6 mt-2">
+                  <Textarea
+                    placeholder="Describe the flag"
+                    value={otherFlagNote}
+                    onChange={(e) => setOtherFlagNote(e.target.value)}
+                    className="resize-none"
+                  />
+                </div>
+              )}
+            </div>
           </div>
-
-          <ActiveFlagsSummary
-            selectedFlags={selectedFlags}
-            incompatibleDogs={incompatibleDogs}
-            specialAttentionNote={specialAttentionNote}
-            otherFlagNote={otherFlagNote}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Helper component for active flags summary
-const ActiveFlagsSummary: React.FC<{
-  selectedFlags: {
-    in_heat: boolean;
-    incompatible: boolean;
-    special_attention: boolean;
-    other: boolean;
-  };
-  incompatibleDogs: string[];
-  specialAttentionNote: string;
-  otherFlagNote: string;
-}> = ({ selectedFlags, incompatibleDogs, specialAttentionNote, otherFlagNote }) => {
-  if (!(selectedFlags.in_heat || 
-        (selectedFlags.incompatible && incompatibleDogs.length > 0) || 
-        (selectedFlags.special_attention && specialAttentionNote) || 
-        (selectedFlags.other && otherFlagNote))) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2 mt-2">
-      {selectedFlags.in_heat && (
-        <Badge variant="outline" className="bg-red-100 text-red-800">
-          <Heart className="h-3 w-3 mr-1 fill-red-500 text-red-500" />
-          In Heat
-        </Badge>
-      )}
-      {selectedFlags.incompatible && incompatibleDogs.length > 0 && (
-        <Badge variant="outline" className="bg-amber-100 text-amber-800">
-          <Slash className="h-3 w-3 mr-1 text-amber-500" />
-          Incompatible with {incompatibleDogs.length} dogs
-        </Badge>
-      )}
-      {selectedFlags.special_attention && specialAttentionNote && (
-        <Badge variant="outline" className="bg-blue-100 text-blue-800">
-          <AlertCircle className="h-3 w-3 mr-1 text-blue-500" />
-          {specialAttentionNote}
-        </Badge>
-      )}
-      {selectedFlags.other && otherFlagNote && (
-        <Badge variant="outline" className="bg-gray-100 text-gray-800">
-          <Flag className="h-3 w-3 mr-1 text-gray-500" />
-          {otherFlagNote}
-        </Badge>
-      )}
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };

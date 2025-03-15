@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import CareCardsView from './CareCardsView';
 import DogCareTable from './DogCareTable';
+import { DogCareStatus } from '@/types/dailyCare';
 
 interface CareTabsContentProps {
   activeTab: string;

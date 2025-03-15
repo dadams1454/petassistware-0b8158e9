@@ -1,4 +1,6 @@
 
+import { DogFlag } from '@/types/dailyCare';
+
 /**
  * Utility to generate mock dog flags for demonstration purposes
  */

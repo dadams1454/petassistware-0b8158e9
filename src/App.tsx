@@ -21,7 +21,7 @@ import Customers from "./pages/Customers";
 import Communications from "./pages/Communications";
 import WelpingPage from "./pages/WelpingPage";
 import DailyCare from "./pages/DailyCare";
-import { DailyCareProvider } from "./contexts/DailyCareProvider";
+import { DailyCareProvider } from "./contexts/dailyCare";
 
 const queryClient = new QueryClient();
 

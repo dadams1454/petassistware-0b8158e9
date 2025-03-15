@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
@@ -7,6 +6,7 @@ import LoadingSpinner from './LoadingSpinner';
 import DogCareStatCards from './DogCareStatCards';
 import CareDashboardHeader from './CareDashboardHeader';
 import CareTabsContent from './CareTabsContent';
+import { DogCareStatus } from '@/types/dailyCare';
 
 interface CareDashboardProps {
   date?: Date;

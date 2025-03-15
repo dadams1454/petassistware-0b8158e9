@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Heart, Slash, AlertCircle, Flag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DogFlag } from '@/types/dailyCare';
 
 interface DogFlagsListProps {
   flags: DogFlag[];

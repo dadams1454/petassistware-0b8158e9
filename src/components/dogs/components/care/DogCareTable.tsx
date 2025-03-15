@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { Dog } from 'lucide-react';
@@ -10,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import CareLogForm from './CareLogForm';
 import { DogFlagsList } from './DogFlagsList';
+import { DogCareStatus } from '@/types/dailyCare';
 
 interface DogCareTableProps {
   dogsStatus: DogCareStatus[];

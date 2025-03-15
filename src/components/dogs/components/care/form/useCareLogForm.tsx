@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useDailyCare } from '@/contexts/dailyCare';
-import { DogFlag } from '@/types/dailyCare';
+import { DogFlag, CareTaskPreset } from '@/types/dailyCare';
 
 const careLogSchema = z.object({
   category: z.string().min(1, { message: 'Please select a category' }),

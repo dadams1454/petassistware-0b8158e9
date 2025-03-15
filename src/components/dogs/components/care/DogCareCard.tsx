@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { Dog, Clock, PawPrint } from 'lucide-react';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import CareLogForm from './CareLogForm';
 import { DogFlagsList } from './DogFlagsList';
+import { DogCareStatus } from '@/types/dailyCare';
 
 interface DogCareCardProps {
   dog: DogCareStatus;
