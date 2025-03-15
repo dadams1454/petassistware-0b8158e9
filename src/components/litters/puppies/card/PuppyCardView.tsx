@@ -8,6 +8,7 @@ import PuppyDetailsInfo from '../common/PuppyDetailsInfo';
 import PuppyWeightInfo from '../common/PuppyWeightInfo';
 import PuppyStatusBadge from '../PuppyStatusBadge';
 import PuppyActions from '../PuppyActions';
+import { Puppy } from '../types';
 
 interface PuppyCardViewProps {
   puppies: Puppy[];

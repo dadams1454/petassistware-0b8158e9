@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ViewIcon, LayoutGrid, LayoutList, Plus } from 'lucide-react';
@@ -143,7 +142,7 @@ const PuppiesTable: React.FC<PuppiesTableProps> = ({
           </div>
         </div>
       </div>
-
+      
       {/* Filters Section */}
       <div className="bg-card p-4 rounded-lg border shadow-sm">
         <PuppyFilters 

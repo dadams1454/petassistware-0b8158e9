@@ -74,12 +74,8 @@ const PuppyTableView: React.FC<PuppyTableViewProps> = ({
             {/* Weights */}
             <TableCell>
               <PuppyWeightInfo
-                birthWeight={typeof puppy.birth_weight === 'number' 
-                  ? puppy.birth_weight.toString() 
-                  : puppy.birth_weight}
-                currentWeight={typeof puppy.current_weight === 'number'
-                  ? puppy.current_weight.toString()
-                  : puppy.current_weight}
+                birthWeight={puppy.birth_weight}
+                currentWeight={puppy.current_weight}
                 displayUnit="both"
               />
             </TableCell>

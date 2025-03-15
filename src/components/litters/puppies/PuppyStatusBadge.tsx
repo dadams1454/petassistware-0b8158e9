@@ -22,6 +22,7 @@ const PuppyStatusBadge: React.FC<PuppyStatusBadgeProps> = ({ status }) => {
       case 'Sold':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'Retained':
+      case 'Kept':
         return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'Deceased':
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -39,6 +40,7 @@ const PuppyStatusBadge: React.FC<PuppyStatusBadgeProps> = ({ status }) => {
       case 'Sold':
         return <DollarSign className="h-3.5 w-3.5 mr-1" />;
       case 'Retained':
+      case 'Kept':
         return <Heart className="h-3.5 w-3.5 mr-1" />;
       case 'Deceased':
         return <XCircle className="h-3.5 w-3.5 mr-1" />;

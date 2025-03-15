@@ -1,3 +1,4 @@
+
 export interface Puppy {
   id: string;
   name: string | null;
@@ -10,7 +11,7 @@ export interface Puppy {
   photo_url: string | null;
   notes: string | null;
   litter_id: string;
-  status: 'Available' | 'Reserved' | 'Sold' | 'Kept' | 'Deceased';
+  status: 'Available' | 'Reserved' | 'Sold' | 'Kept' | 'Deceased' | 'Retained' | string;
   microchip_number: string | null;
   sale_price: number | null;
   created_at: string;
