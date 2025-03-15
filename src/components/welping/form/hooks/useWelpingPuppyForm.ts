@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
@@ -92,20 +91,11 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
         ? `${data.color || ''} ${data.markings ? `(${data.markings})` : ''}`.trim()
         : data.color;
       
-      // Format birth_weight to ensure it's a valid value for the database
-      let birthWeight = null;
-      if (data.birth_weight && data.birth_weight.trim() !== '') {
-        const weightValue = parseFloat(data.birth_weight.replace(',', '.'));
-        if (!isNaN(weightValue)) {
-          birthWeight = weightValue.toString();
-        }
-      }
-      
       const puppyData = {
         name: puppyName,
         gender: data.gender ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1).toLowerCase() : null,
         color: colorWithMarkings || null,
-        birth_weight: birthWeight,
+        birth_weight: data.birth_weight || null,
         birth_time: data.birth_time || null,
         notes: data.notes || null,
         birth_date: now.toISOString().split('T')[0], // Today's date
@@ -117,20 +107,12 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
         created_at: birthDateTime.toISOString() // Use birth date/time for created_at to sort by birth order
       };
 
-      console.log('Attempting to insert puppy with data:', puppyData);
-
       // Insert the puppy record
-      const { data: insertedData, error } = await supabase
+      const { error } = await supabase
         .from('puppies')
-        .insert(puppyData)
-        .select();
+        .insert(puppyData);
 
-      if (error) {
-        console.error('Supabase error recording puppy:', error);
-        throw new Error(`Database error: ${error.message}`);
-      }
-      
-      console.log('Successfully recorded puppy:', insertedData);
+      if (error) throw error;
       
       await onSuccess();
       
