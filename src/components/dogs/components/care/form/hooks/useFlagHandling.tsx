@@ -55,8 +55,8 @@ export const useFlagHandling = ({
   }, [dogId, setOtherDogs]);
 
   const handleIncompatibleDogToggle = (dogId: string) => {
-    // Fix the TypeScript error by using a function expression with proper typing
-    setIncompatibleDogs((current) => {
+    // Fix by using explicit type annotation for the function parameter and return type
+    setIncompatibleDogs((current: string[]): string[] => {
       if (current.includes(dogId)) {
         return current.filter(id => id !== dogId);
       } else {
