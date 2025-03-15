@@ -26,7 +26,9 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
 }) => {
   // Convert Promise<void> to regular void function
   const handleSuccess = () => {
-    onSuccess();
+    onSuccess().catch(error => {
+      console.error('Error in onSuccess callback from EditPuppyDialog:', error);
+    });
   };
   
   return (

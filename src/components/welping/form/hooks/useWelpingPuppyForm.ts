@@ -71,6 +71,8 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
 
   const handleSubmit = async (data: WelpingPuppyFormData) => {
     setIsSubmitting(true);
+    console.log('Starting puppy submission process with data:', data);
+    
     try {
       // Prepare data for database
       const now = new Date();
@@ -132,7 +134,13 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
       
       console.log('Successfully recorded puppy:', insertedData);
       
-      await onSuccess();
+      try {
+        await onSuccess();
+        console.log('onSuccess callback completed successfully');
+      } catch (callbackError) {
+        console.error('Error in onSuccess callback:', callbackError);
+        // Continue with the function even if callback has issues
+      }
       
       toast({
         title: "Puppy Recorded",
@@ -151,7 +159,7 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
       console.error('Error recording puppy:', error);
       toast({
         title: "Error",
-        description: "There was a problem recording the puppy. Please try again.",
+        description: "There was a problem saving the puppy information. Please try again.",
         variant: "destructive",
       });
     } finally {
