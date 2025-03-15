@@ -5,7 +5,7 @@ import { DailyCareProvider } from '@/contexts/DailyCareProvider';
 import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import DogSelector from '@/components/dashboard/DogSelector';
 import CareLogForm from '@/components/dogs/components/care/CareLogForm';
 
@@ -67,6 +67,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       {/* Daily Care Log Dialog */}
       <Dialog open={careLogDialogOpen} onOpenChange={setCareLogDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
+          <DialogTitle className="text-xl font-semibold">
+            {selectedDogId ? 'Log Daily Care' : 'Select a Dog'}
+          </DialogTitle>
           <DailyCareProvider>
             {!selectedDogId ? (
               <DogSelector onDogSelected={handleDogSelected} />

@@ -31,6 +31,14 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onCareLogClick }) => {
     });
   };
 
+  const handleCareLogClick = () => {
+    onCareLogClick();
+    toast({
+      title: "Daily Care",
+      description: "Opening care log form...",
+    });
+  };
+
   const handleCreateContract = () => {
     navigate('/documents?action=create-contract');
     toast({
@@ -86,7 +94,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onCareLogClick }) => {
             variant="outline" 
             size="sm" 
             icon={<UtensilsCrossed size={16} />}
-            onClick={onCareLogClick}
+            onClick={handleCareLogClick}
           >
             Log Daily Care
           </CustomButton>
