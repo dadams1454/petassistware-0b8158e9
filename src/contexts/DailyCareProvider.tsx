@@ -82,14 +82,15 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       
       // Add "incompatible" flags to two random dogs
       if (dogs.length > 2) {
-        const randomIndex2 = Math.floor(Math.random() * dogs.length);
+        // Fixed: Use let instead of const for variables that will be reassigned
+        let randomIndex2 = Math.floor(Math.random() * dogs.length);
         // Make sure randomIndex2 is different from randomIndex1
         if (randomIndex2 === randomIndex1) {
           // If it's the same, choose the next or first index
           randomIndex2 = (randomIndex1 + 1) % dogs.length;
         }
         
-        const randomIndex3 = Math.floor(Math.random() * dogs.length);
+        let randomIndex3 = Math.floor(Math.random() * dogs.length);
         // Make sure randomIndex3 is different from both randomIndex1 and randomIndex2
         if (randomIndex3 === randomIndex1 || randomIndex3 === randomIndex2) {
           // If it's the same as either, choose the next available index
@@ -115,8 +116,8 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         let randomIndex4 = Math.floor(Math.random() * dogs.length);
         while (
           randomIndex4 === randomIndex1 || 
-          (typeof randomIndex2 !== 'undefined' && randomIndex4 === randomIndex2) ||
-          (typeof randomIndex3 !== 'undefined' && randomIndex4 === randomIndex3)
+          randomIndex4 === (dogs.length > 2 ? randomIndex2 : -1) ||
+          randomIndex4 === (dogs.length > 2 ? randomIndex3 : -1)
         ) {
           randomIndex4 = Math.floor(Math.random() * dogs.length);
         }
