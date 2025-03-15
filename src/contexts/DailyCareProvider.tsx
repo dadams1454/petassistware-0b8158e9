@@ -100,11 +100,13 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         
         // Add "incompatible" flags to two random dogs
         if (dogs.length > 2) {
+          // Define randomIndex2 here to fix the error
           let randomIndex2 = Math.floor(Math.random() * dogs.length);
           while (randomIndex2 === randomIndex1) {
             randomIndex2 = Math.floor(Math.random() * dogs.length);
           }
           
+          // Define randomIndex3 here to fix the error
           let randomIndex3 = Math.floor(Math.random() * dogs.length);
           while (randomIndex3 === randomIndex1 || randomIndex3 === randomIndex2) {
             randomIndex3 = Math.floor(Math.random() * dogs.length);
