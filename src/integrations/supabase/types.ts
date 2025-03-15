@@ -666,8 +666,6 @@ export type Database = {
       }
       puppies: {
         Row: {
-          akc_litter_number: string | null
-          akc_registration_number: string | null
           birth_date: string | null
           birth_time: string | null
           birth_weight: string | null
@@ -689,8 +687,6 @@ export type Database = {
           vet_check_dates: string | null
         }
         Insert: {
-          akc_litter_number?: string | null
-          akc_registration_number?: string | null
           birth_date?: string | null
           birth_time?: string | null
           birth_weight?: string | null
@@ -712,8 +708,6 @@ export type Database = {
           vet_check_dates?: string | null
         }
         Update: {
-          akc_litter_number?: string | null
-          akc_registration_number?: string | null
           birth_date?: string | null
           birth_time?: string | null
           birth_weight?: string | null

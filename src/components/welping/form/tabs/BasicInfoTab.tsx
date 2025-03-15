@@ -20,9 +20,8 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         <TextInput
           form={form}
           name="name"
-          label="Puppy Name"
-          placeholder="Puppy name will be automatically generated"
-          disabled={false}
+          label="Temporary Name/ID"
+          placeholder="e.g., Green collar, Puppy #1, etc."
         />
         
         <SelectInput

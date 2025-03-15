@@ -24,12 +24,7 @@ const AddWelpingPuppyDialog: React.FC<AddWelpingPuppyDialogProps> = ({
 }) => {
   // Create a wrapper function that returns a Promise<void>
   const handleSuccess = async () => {
-    try {
-      await onSuccess();
-      console.log('onSuccess completed in AddWelpingPuppyDialog');
-    } catch (error) {
-      console.error('Error in onSuccess callback from AddWelpingPuppyDialog:', error);
-    }
+    await onSuccess();
   };
 
   return (

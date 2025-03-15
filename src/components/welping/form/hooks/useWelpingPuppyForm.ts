@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,7 +41,6 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
         
         if (error) throw error;
         setPuppyCount(data?.length || 0);
-        console.log(`Fetched puppy count: ${data?.length || 0}`);
       } catch (error) {
         console.error('Error fetching puppy count:', error);
       }
@@ -51,7 +51,7 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
   
   const form = useForm<WelpingPuppyFormData>({
     defaultValues: {
-      name: '',
+      name: `Puppy ${puppyCount + 1}`,
       gender: '',
       color: '',
       birth_weight: '',
@@ -66,15 +66,11 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
 
   // Update default name whenever puppy count changes
   useEffect(() => {
-    const puppyName = `Puppy ${puppyCount + 1}`;
-    console.log(`Setting default puppy name to: ${puppyName}`);
-    form.setValue('name', puppyName);
+    form.setValue('name', `Puppy ${puppyCount + 1}`);
   }, [puppyCount, form]);
 
   const handleSubmit = async (data: WelpingPuppyFormData) => {
     setIsSubmitting(true);
-    console.log('Starting puppy submission process with data:', data);
-    
     try {
       // Prepare data for database
       const now = new Date();
@@ -136,16 +132,7 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
       
       console.log('Successfully recorded puppy:', insertedData);
       
-      // Refresh the puppy count after successful insertion
-      setPuppyCount(prevCount => prevCount + 1);
-      
-      try {
-        await onSuccess();
-        console.log('onSuccess callback completed successfully');
-      } catch (callbackError) {
-        console.error('Error in onSuccess callback:', callbackError);
-        // Continue with the function even if callback has issues
-      }
+      await onSuccess();
       
       toast({
         title: "Puppy Recorded",
@@ -154,22 +141,17 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
       
       // Reset form for next puppy entry, keeping some values
       form.reset({
+        ...form.getValues(),
         name: `Puppy ${puppyCount + 2}`, // Increment for next puppy
-        gender: '',
-        color: data.color, // Keep the color for sequential puppies
         birth_weight: '',
         notes: '',
-        akc_litter_number: data.akc_litter_number, // Keep AKC litter number
-        akc_registration_number: '',
-        microchip_number: '',
-        markings: '',
-        birth_time: format(new Date(), 'HH:mm') // Reset to current time for next puppy
+        akc_registration_number: ''
       });
     } catch (error) {
       console.error('Error recording puppy:', error);
       toast({
         title: "Error",
-        description: "There was a problem saving the puppy information. Please try again.",
+        description: "There was a problem recording the puppy. Please try again.",
         variant: "destructive",
       });
     } finally {
