@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -69,6 +70,60 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [toast]);
 
+  const createMockDogFlags = useCallback((dogs: any[]): Record<string, DogFlag[]> => {
+    // Mock flag data - in a real implementation, fetch this from a database table
+    const mockDogFlags: Record<string, DogFlag[]> = {};
+
+    // Add some mock flags for random dogs as an example
+    if (dogs && dogs.length > 0) {
+      // Add "in heat" flag to a random dog
+      const randomIndex1 = Math.floor(Math.random() * dogs.length);
+      mockDogFlags[dogs[randomIndex1].id] = [{ type: 'in_heat' }];
+      
+      // Add "incompatible" flags to two random dogs
+      if (dogs.length > 2) {
+        let randomIndex2 = Math.floor(Math.random() * dogs.length);
+        while (randomIndex2 === randomIndex1) {
+          randomIndex2 = Math.floor(Math.random() * dogs.length);
+        }
+        
+        let randomIndex3 = Math.floor(Math.random() * dogs.length);
+        while (randomIndex3 === randomIndex1 || randomIndex3 === randomIndex2) {
+          randomIndex3 = Math.floor(Math.random() * dogs.length);
+        }
+        
+        mockDogFlags[dogs[randomIndex2].id] = [{ 
+          type: 'incompatible', 
+          incompatible_with: [dogs[randomIndex3].id] 
+        }];
+        
+        mockDogFlags[dogs[randomIndex3].id] = [{ 
+          type: 'incompatible', 
+          incompatible_with: [dogs[randomIndex2].id] 
+        }];
+      }
+      
+      // Add "special attention" flag to another random dog
+      if (dogs.length > 3) {
+        let randomIndex4 = Math.floor(Math.random() * dogs.length);
+        while (
+          randomIndex4 === randomIndex1 || 
+          randomIndex4 === randomIndex2 ||
+          randomIndex4 === randomIndex3
+        ) {
+          randomIndex4 = Math.floor(Math.random() * dogs.length);
+        }
+        
+        mockDogFlags[dogs[randomIndex4].id] = [{ 
+          type: 'special_attention',
+          value: 'Needs medication'
+        }];
+      }
+    }
+    
+    return mockDogFlags;
+  }, []);
+
   const fetchAllDogsWithCareStatus = useCallback(async (date = new Date()): Promise<DogCareStatus[]> => {
     setLoading(true);
     try {
@@ -87,58 +142,8 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const todayEnd = new Date(date);
       todayEnd.setHours(23, 59, 59, 999);
 
-      // Mock flag data - in a real implementation, fetch this from a database table
-      // This is just a placeholder for demonstration
-      const mockDogFlags: Record<string, DogFlag[]> = {};
-
-      // Add some mock flags for random dogs as an example
-      if (dogs && dogs.length > 0) {
-        // Add "in heat" flag to a random dog
-        const randomIndex1 = Math.floor(Math.random() * dogs.length);
-        mockDogFlags[dogs[randomIndex1].id] = [{ type: 'in_heat' }];
-        
-        // Add "incompatible" flags to two random dogs
-        if (dogs.length > 2) {
-          // Define randomIndex2 here to fix the error
-          let randomIndex2 = Math.floor(Math.random() * dogs.length);
-          while (randomIndex2 === randomIndex1) {
-            randomIndex2 = Math.floor(Math.random() * dogs.length);
-          }
-          
-          // Define randomIndex3 here to fix the error
-          let randomIndex3 = Math.floor(Math.random() * dogs.length);
-          while (randomIndex3 === randomIndex1 || randomIndex3 === randomIndex2) {
-            randomIndex3 = Math.floor(Math.random() * dogs.length);
-          }
-          
-          mockDogFlags[dogs[randomIndex2].id] = [{ 
-            type: 'incompatible', 
-            incompatible_with: [dogs[randomIndex3].id] 
-          }];
-          
-          mockDogFlags[dogs[randomIndex3].id] = [{ 
-            type: 'incompatible', 
-            incompatible_with: [dogs[randomIndex2].id] 
-          }];
-        }
-        
-        // Add "special attention" flag to another random dog
-        if (dogs.length > 3) {
-          let randomIndex4 = Math.floor(Math.random() * dogs.length);
-          while (
-            randomIndex4 === randomIndex1 || 
-            (typeof randomIndex2 !== 'undefined' && randomIndex4 === randomIndex2) ||
-            (typeof randomIndex3 !== 'undefined' && randomIndex4 === randomIndex3)
-          ) {
-            randomIndex4 = Math.floor(Math.random() * dogs.length);
-          }
-          
-          mockDogFlags[dogs[randomIndex4].id] = [{ 
-            type: 'special_attention',
-            value: 'Needs medication'
-          }];
-        }
-      }
+      // Generate mock flags for dogs
+      const mockDogFlags = createMockDogFlags(dogs);
 
       const statusPromises = dogs.map(async (dog) => {
         const { data: logs, error: logsError } = await supabase
@@ -180,7 +185,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, createMockDogFlags]);
 
   const addCareLog = useCallback(async (data: CareLogFormData): Promise<DailyCarelog | null> => {
     if (!user) {
