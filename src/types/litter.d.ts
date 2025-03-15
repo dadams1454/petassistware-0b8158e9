@@ -1,3 +1,4 @@
+
 interface Dog {
   id: string;
   created_at: string;
@@ -22,8 +23,8 @@ interface Puppy {
   status: string;
   color: string;
   birth_date: string;
-  birth_weight: string;
-  current_weight: string;
+  birth_weight: string | number; // Updated to accept string or number
+  current_weight: string | number; // Updated to accept string or number
   microchip_number: string;
   sale_price: number;
   deworming_dates: string;
