@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -128,8 +127,8 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           let randomIndex4 = Math.floor(Math.random() * dogs.length);
           while (
             randomIndex4 === randomIndex1 || 
-            randomIndex4 === randomIndex2 ||
-            randomIndex4 === randomIndex3
+            (typeof randomIndex2 !== 'undefined' && randomIndex4 === randomIndex2) ||
+            (typeof randomIndex3 !== 'undefined' && randomIndex4 === randomIndex3)
           ) {
             randomIndex4 = Math.floor(Math.random() * dogs.length);
           }
