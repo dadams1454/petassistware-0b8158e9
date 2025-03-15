@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 import { Puppy } from '@/components/litters/puppies/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format } from 'date-fns';
 import { Edit, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import EditPuppyDialog from '@/components/litters/puppies/EditPuppyDialog';
 
 interface WelpingPuppiesTableProps {
   puppies: Puppy[];
@@ -20,8 +20,6 @@ export const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
 }) => {
   const [puppyToDelete, setPuppyToDelete] = useState<Puppy | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [puppyToEdit, setPuppyToEdit] = useState<Puppy | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleDeletePuppy = async () => {
     if (!puppyToDelete) return;
@@ -52,11 +50,6 @@ export const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
       setIsDeleting(false);
       setPuppyToDelete(null);
     }
-  };
-
-  const handleOpenEditDialog = (puppy: Puppy) => {
-    setPuppyToEdit(puppy);
-    setIsEditDialogOpen(true);
   };
 
   return (
@@ -91,12 +84,7 @@ export const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
                   <TableCell>{puppy.birth_time || 'Not recorded'}</TableCell>
                   <TableCell>{puppy.birth_weight || 'Not recorded'}</TableCell>
                   <TableCell className="flex gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      title="Edit puppy"
-                      onClick={() => handleOpenEditDialog(puppy)}
-                    >
+                    <Button variant="ghost" size="icon" title="Edit puppy">
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button 
@@ -136,19 +124,6 @@ export const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {puppyToEdit && (
-        <EditPuppyDialog
-          puppy={puppyToEdit}
-          litterId={puppyToEdit.litter_id}
-          isOpen={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-          onSuccess={async () => {
-            setPuppyToEdit(null);
-            await onRefresh();
-          }}
-        />
-      )}
     </>
   );
 };
