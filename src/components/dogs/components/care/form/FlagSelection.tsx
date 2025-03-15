@@ -17,7 +17,7 @@ interface FlagSelectionProps {
     special_attention: boolean;
     other: boolean;
   };
-  toggleFlag: (flagType: keyof typeof selectedFlags) => void;
+  toggleFlag: (flagType: 'in_heat' | 'incompatible' | 'special_attention' | 'other') => void;
   otherDogs: { id: string; name: string }[];
   incompatibleDogs: string[];
   handleIncompatibleDogToggle: (dogId: string) => void;
