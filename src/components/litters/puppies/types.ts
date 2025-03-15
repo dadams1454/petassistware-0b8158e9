@@ -107,8 +107,8 @@ export interface PuppyFormData {
   status: 'Available' | 'Reserved' | 'Sold' | 'Kept' | 'Deceased';
   color: string;
   birth_date: Date | null;
-  birth_weight: string | number | null; // Allow both string and number
-  current_weight: string | number | null; // Allow both string and number
+  birth_weight: string | number | null;
+  current_weight: string | number | null;
   microchip_number: string;
   sale_price: number | string | null;
   deworming_dates: string;

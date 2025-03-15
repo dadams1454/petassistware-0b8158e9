@@ -18,7 +18,7 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
     defaultValues: {
       name: initialData?.name || '',
       gender: initialData?.gender || '',
-      status: initialData?.status || 'Available',
+      status: (initialData?.status as 'Available' | 'Reserved' | 'Sold' | 'Kept' | 'Deceased') || 'Available',
       color: initialData?.color || '',
       birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
       birth_weight: initialData?.birth_weight || '',
