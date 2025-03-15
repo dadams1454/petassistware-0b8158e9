@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { memo } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import CareCardsView from './CareCardsView';
 import DogCareTable from './DogCareTable';
@@ -14,7 +15,8 @@ interface CareTabsContentProps {
   onCareLogSuccess: () => void;
 }
 
-const CareTabsContent: React.FC<CareTabsContentProps> = ({
+// Memoize the component to prevent unnecessary re-renders
+const CareTabsContent: React.FC<CareTabsContentProps> = memo(({
   activeTab,
   dogsStatus,
   onLogCare,
@@ -48,6 +50,9 @@ const CareTabsContent: React.FC<CareTabsContentProps> = ({
       </TabsContent>
     </>
   );
-};
+});
+
+// Add display name for debugging purposes
+CareTabsContent.displayName = 'CareTabsContent';
 
 export default CareTabsContent;

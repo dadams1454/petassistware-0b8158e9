@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import * as dailyCareService from '@/services/dailyCare';
 import { DailyCarelog, CareTaskPreset, CareLogFormData, DogCareStatus } from '@/types/dailyCare';
@@ -7,6 +7,17 @@ import { DailyCarelog, CareTaskPreset, CareLogFormData, DogCareStatus } from '@/
 export const useDailyCareActions = (userId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  
+  // Add cache to prevent repeated fetches
+  const careStatusCache = useRef<{
+    [dateString: string]: {
+      timestamp: number;
+      data: DogCareStatus[];
+    }
+  }>({});
+
+  // Cache expiration time (5 minutes)
+  const CACHE_EXPIRATION = 5 * 60 * 1000;
 
   const fetchDogCareLogs = useCallback(async (dogId: string): Promise<DailyCarelog[]> => {
     setLoading(true);
@@ -47,7 +58,28 @@ export const useDailyCareActions = (userId: string | undefined) => {
   const fetchAllDogsWithCareStatus = useCallback(async (date = new Date()): Promise<DogCareStatus[]> => {
     setLoading(true);
     try {
+      // Convert date to string for caching
+      const dateString = date.toISOString().split('T')[0];
+      const now = Date.now();
+      
+      // Check if we have cached data that's not expired
+      if (
+        careStatusCache.current[dateString] && 
+        now - careStatusCache.current[dateString].timestamp < CACHE_EXPIRATION
+      ) {
+        setLoading(false);
+        return careStatusCache.current[dateString].data;
+      }
+      
+      // Fetch new data
       const statuses = await dailyCareService.fetchAllDogsWithCareStatus(date);
+      
+      // Cache the results
+      careStatusCache.current[dateString] = {
+        timestamp: now,
+        data: statuses
+      };
+      
       return statuses;
     } catch (error) {
       console.error('Error fetching all dogs care status:', error);
@@ -77,6 +109,9 @@ export const useDailyCareActions = (userId: string | undefined) => {
       const newLog = await dailyCareService.addCareLog(data, userId);
       
       if (newLog) {
+        // Clear cache after adding a new log to force refresh
+        careStatusCache.current = {};
+        
         toast({
           title: 'Success',
           description: 'Care log added successfully',

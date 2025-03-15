@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,9 +22,11 @@ const CareDashboard: React.FC<CareDashboardProps> = ({ date = new Date() }) => {
   const { toast } = useToast();
   const { fetchAllDogsWithCareStatus } = useDailyCare();
 
-  useEffect(() => {
-    const loadDogCareStatus = async () => {
-      setLoading(true);
+  // Memoize the date string to prevent unnecessary refetches
+  const dateString = date.toISOString().split('T')[0];
+
+  const loadDogCareStatus = useCallback(async () => {
+    if (loading) {
       try {
         const statuses = await fetchAllDogsWithCareStatus(date);
         setDogsStatus(statuses);
@@ -37,35 +40,38 @@ const CareDashboard: React.FC<CareDashboardProps> = ({ date = new Date() }) => {
       } finally {
         setLoading(false);
       }
-    };
+    }
+  }, [date, fetchAllDogsWithCareStatus, toast, loading]);
 
+  useEffect(() => {
+    setLoading(true);
+  }, [dateString]);
+
+  useEffect(() => {
     loadDogCareStatus();
-  }, [date, fetchAllDogsWithCareStatus, toast]);
+  }, [loadDogCareStatus]);
 
-  const handleCareLogSuccess = () => {
+  const handleCareLogSuccess = useCallback(() => {
     setDialogOpen(false);
-    // Refresh dog statuses after a successful care log
-    fetchAllDogsWithCareStatus(date).then(statuses => {
-      setDogsStatus(statuses);
-    });
+    setLoading(true);
     
     toast({
       title: 'Success',
       description: 'Care log added successfully',
     });
-  };
+  }, [toast]);
 
-  const handleAddCareLog = (dogId: string) => {
+  const handleAddCareLog = useCallback((dogId: string) => {
     setSelectedDogId(dogId);
     setDialogOpen(true);
-  };
+  }, []);
 
-  // Calculate completion percentage
-  const careCompletionPercentage = Math.round(
-    (dogsStatus.filter(dog => dog.last_care !== null).length / dogsStatus.length) * 100
-  ) || 0;
+  // Calculate completion percentage - only recalculate when dogsStatus changes
+  const careCompletionPercentage = dogsStatus.length > 0 
+    ? Math.round((dogsStatus.filter(dog => dog.last_care !== null).length / dogsStatus.length) * 100)
+    : 0;
 
-  if (loading) {
+  if (loading && dogsStatus.length === 0) {
     return <LoadingSpinner />;
   }
 
