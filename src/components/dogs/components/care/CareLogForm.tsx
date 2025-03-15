@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Calendar as CalendarIcon, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Heart, Slash, Flag, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { useDailyCare } from '@/contexts/DailyCareProvider';
@@ -18,12 +18,20 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DialogTrigger, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 
 const careLogSchema = z.object({
   category: z.string().min(1, { message: 'Please select a category' }),
   task_name: z.string().min(1, { message: 'Please select or enter a task' }),
   timestamp: z.date(),
   notes: z.string().optional(),
+  flags: z.array(z.object({
+    type: z.enum(['in_heat', 'incompatible', 'special_attention', 'other']),
+    value: z.string().optional(),
+    incompatible_with: z.array(z.string()).optional(),
+  })).optional(),
 });
 
 type CareLogFormValues = z.infer<typeof careLogSchema>;
@@ -31,6 +39,11 @@ type CareLogFormValues = z.infer<typeof careLogSchema>;
 interface CareLogFormProps {
   dogId: string;
   onSuccess?: () => void;
+}
+
+interface DogBasicInfo {
+  id: string;
+  name: string;
 }
 
 const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess }) => {
@@ -43,6 +56,22 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess }) => {
   const [showCustomTask, setShowCustomTask] = useState(false);
   const [activeTab, setActiveTab] = useState('existing');
   const [showNewPresetDialog, setShowNewPresetDialog] = useState(false);
+  const [otherDogs, setOtherDogs] = useState<DogBasicInfo[]>([]);
+  const [incompatibleDogs, setIncompatibleDogs] = useState<string[]>([]);
+  const [showFlagsSection, setShowFlagsSection] = useState(false);
+  const [selectedFlags, setSelectedFlags] = useState<{
+    in_heat: boolean;
+    incompatible: boolean;
+    special_attention: boolean;
+    other: boolean;
+  }>({
+    in_heat: false,
+    incompatible: false,
+    special_attention: false,
+    other: false,
+  });
+  const [specialAttentionNote, setSpecialAttentionNote] = useState('');
+  const [otherFlagNote, setOtherFlagNote] = useState('');
 
   // Extract unique categories from presets
   const categories = Array.from(new Set(presets.map(preset => preset.category)));
@@ -54,6 +83,7 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess }) => {
       task_name: '',
       timestamp: new Date(),
       notes: '',
+      flags: [],
     },
   });
 
@@ -65,14 +95,69 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess }) => {
     loadPresets();
   }, [fetchCareTaskPresets]);
 
+  useEffect(() => {
+    // Fetch other dogs for incompatibility selection
+    const fetchOtherDogs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('dogs')
+          .select('id, name')
+          .neq('id', dogId)
+          .order('name');
+        
+        if (error) throw error;
+        setOtherDogs(data || []);
+      } catch (error) {
+        console.error('Error fetching other dogs:', error);
+      }
+    };
+    
+    fetchOtherDogs();
+  }, [dogId]);
+
+  const compileFlags = (): DogFlag[] => {
+    const flags: DogFlag[] = [];
+    
+    if (selectedFlags.in_heat) {
+      flags.push({ type: 'in_heat' });
+    }
+    
+    if (selectedFlags.incompatible && incompatibleDogs.length > 0) {
+      flags.push({ 
+        type: 'incompatible',
+        incompatible_with: incompatibleDogs
+      });
+    }
+    
+    if (selectedFlags.special_attention && specialAttentionNote) {
+      flags.push({
+        type: 'special_attention',
+        value: specialAttentionNote
+      });
+    }
+    
+    if (selectedFlags.other && otherFlagNote) {
+      flags.push({
+        type: 'other',
+        value: otherFlagNote
+      });
+    }
+    
+    return flags;
+  };
+
   const onSubmit = async (values: CareLogFormValues) => {
+    // Compile flags from UI state
+    const flags = compileFlags();
+    
     // Create a properly typed CareLogFormData object
     const careLogData: CareLogFormData = {
       dog_id: dogId,
       category: values.category,
       task_name: values.task_name,
       timestamp: values.timestamp,
-      notes: values.notes
+      notes: values.notes,
+      flags: flags.length > 0 ? flags : undefined
     };
     
     const success = await addCareLog(careLogData);
@@ -126,6 +211,21 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess }) => {
         setActiveTab('existing');
       }
     }
+  };
+
+  const handleIncompatibleDogToggle = (dogId: string) => {
+    setIncompatibleDogs(current => 
+      current.includes(dogId)
+        ? current.filter(id => id !== dogId)
+        : [...current, dogId]
+    );
+  };
+
+  const toggleFlag = (flagType: keyof typeof selectedFlags) => {
+    setSelectedFlags(prev => ({
+      ...prev,
+      [flagType]: !prev[flagType]
+    }));
   };
 
   // Filter tasks based on selected category
@@ -321,6 +421,161 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess }) => {
                 </FormItem>
               )}
             />
+
+            {/* Add flags section */}
+            <div className="border rounded-md p-4 space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-medium">Special Flags</h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowFlagsSection(!showFlagsSection)}
+                >
+                  {showFlagsSection ? 'Hide' : 'Show'}
+                </Button>
+              </div>
+              
+              {showFlagsSection && (
+                <div className="space-y-4">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="in-heat" 
+                        checked={selectedFlags.in_heat}
+                        onCheckedChange={() => toggleFlag('in_heat')}
+                      />
+                      <label 
+                        htmlFor="in-heat"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center space-x-2"
+                      >
+                        <Heart className="h-4 w-4 text-red-500" />
+                        <span>In Heat</span>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="incompatible" 
+                        checked={selectedFlags.incompatible}
+                        onCheckedChange={() => toggleFlag('incompatible')}
+                      />
+                      <label 
+                        htmlFor="incompatible"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center space-x-2"
+                      >
+                        <Slash className="h-4 w-4 text-amber-500" />
+                        <span>Doesn't Get Along With Other Dogs</span>
+                      </label>
+                    </div>
+
+                    {selectedFlags.incompatible && (
+                      <div className="pl-6 mt-2 space-y-2">
+                        <p className="text-sm text-muted-foreground">Select incompatible dogs:</p>
+                        <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                          {otherDogs.map(dog => (
+                            <div key={dog.id} className="flex items-center space-x-2">
+                              <Checkbox 
+                                id={`incompatible-${dog.id}`}
+                                checked={incompatibleDogs.includes(dog.id)}
+                                onCheckedChange={() => handleIncompatibleDogToggle(dog.id)}
+                              />
+                              <label 
+                                htmlFor={`incompatible-${dog.id}`}
+                                className="text-sm cursor-pointer"
+                              >
+                                {dog.name}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="special-attention" 
+                        checked={selectedFlags.special_attention}
+                        onCheckedChange={() => toggleFlag('special_attention')}
+                      />
+                      <label 
+                        htmlFor="special-attention"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center space-x-2"
+                      >
+                        <AlertCircle className="h-4 w-4 text-blue-500" />
+                        <span>Needs Special Attention</span>
+                      </label>
+                    </div>
+
+                    {selectedFlags.special_attention && (
+                      <div className="pl-6 mt-2">
+                        <Input
+                          placeholder="Specify what special attention is needed"
+                          value={specialAttentionNote}
+                          onChange={(e) => setSpecialAttentionNote(e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="other-flag" 
+                        checked={selectedFlags.other}
+                        onCheckedChange={() => toggleFlag('other')}
+                      />
+                      <label 
+                        htmlFor="other-flag"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center space-x-2"
+                      >
+                        <Flag className="h-4 w-4 text-gray-500" />
+                        <span>Other Flag</span>
+                      </label>
+                    </div>
+
+                    {selectedFlags.other && (
+                      <div className="pl-6 mt-2">
+                        <Input
+                          placeholder="Specify the flag"
+                          value={otherFlagNote}
+                          onChange={(e) => setOtherFlagNote(e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Show active flags summary */}
+                  {(selectedFlags.in_heat || selectedFlags.incompatible || 
+                    selectedFlags.special_attention || selectedFlags.other) && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedFlags.in_heat && (
+                        <Badge variant="outline" className="bg-red-100 text-red-800">
+                          <Heart className="h-3 w-3 mr-1 fill-red-500 text-red-500" />
+                          In Heat
+                        </Badge>
+                      )}
+                      {selectedFlags.incompatible && incompatibleDogs.length > 0 && (
+                        <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                          <Slash className="h-3 w-3 mr-1 text-amber-500" />
+                          Incompatible with {incompatibleDogs.length} dogs
+                        </Badge>
+                      )}
+                      {selectedFlags.special_attention && specialAttentionNote && (
+                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                          <AlertCircle className="h-3 w-3 mr-1 text-blue-500" />
+                          {specialAttentionNote}
+                        </Badge>
+                      )}
+                      {selectedFlags.other && otherFlagNote && (
+                        <Badge variant="outline" className="bg-gray-100 text-gray-800">
+                          <Flag className="h-3 w-3 mr-1 text-gray-500" />
+                          {otherFlagNote}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
               Log Care Task

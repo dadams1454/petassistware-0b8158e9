@@ -26,6 +26,8 @@ import { useState as useDialogState } from 'react';
 import DogSelector from '@/components/dashboard/DogSelector';
 import { DailyCareProvider } from '@/contexts/DailyCareProvider';
 import CareLogForm from '@/components/dogs/components/care/CareLogForm';
+import CareDashboard from '@/components/dogs/components/care/CareDashboard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Dashboard: React.FC = () => {
   const { toast } = useToast();
@@ -42,6 +44,8 @@ const Dashboard: React.FC = () => {
   const [careLogDialogOpen, setCareLogDialogOpen] = useDialogState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
 
+  const [activeTab, setActiveTab] = useState('overview');
+  
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
@@ -224,134 +228,149 @@ const Dashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Quick Actions */}
-      <BlurBackground
-        className="p-4 sm:p-6 rounded-xl mb-8 overflow-hidden relative"
-        intensity="md"
-        opacity="light"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 z-[-1]" />
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="care">Daily Care</TabsTrigger>
+        </TabsList>
         
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-              Quick Actions
-            </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Frequently used features for your daily operations
-            </p>
+        <TabsContent value="overview">
+          {/* Quick Actions */}
+          <BlurBackground
+            className="p-4 sm:p-6 rounded-xl mb-8 overflow-hidden relative"
+            intensity="md"
+            opacity="light"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 z-[-1]" />
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-medium text-slate-900 dark:text-white">
+                  Quick Actions
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  Frequently used features for your daily operations
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                <CustomButton 
+                  variant="primary" 
+                  size="sm" 
+                  icon={<PlusCircle size={16} />}
+                  onClick={handleNewLitter}
+                >
+                  New Litter
+                </CustomButton>
+                <CustomButton 
+                  variant="outline" 
+                  size="sm" 
+                  icon={<PlusCircle size={16} />}
+                  onClick={handleAddDog}
+                >
+                  Add Dog
+                </CustomButton>
+                <CustomButton 
+                  variant="outline" 
+                  size="sm" 
+                  icon={<UtensilsCrossed size={16} />}
+                  onClick={handleCareLogClick}
+                >
+                  Log Daily Care
+                </CustomButton>
+                <CustomButton 
+                  variant="outline" 
+                  size="sm" 
+                  icon={<File size={16} />}
+                  onClick={handleCreateContract}
+                >
+                  Create Contract
+                </CustomButton>
+                <CustomButton 
+                  variant="outline" 
+                  size="sm" 
+                  icon={<Calendar size={16} />}
+                  onClick={handleCreateEvent}
+                >
+                  Add Event
+                </CustomButton>
+              </div>
+            </div>
+          </BlurBackground>
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-6 mb-8">
+            <StatCard
+              title="Active Dogs"
+              value={isLoading ? "Loading..." : stats.dogCount.toString()}
+              icon={<Dog size={18} />}
+              change={0}
+              changeText="from database"
+              trend="neutral"
+              linkTo="/dogs"
+            />
+            <StatCard
+              title="Current Litters"
+              value={isLoading ? "Loading..." : stats.litterCount.toString()}
+              icon={<PawPrint size={18} />}
+              change={0}
+              changeText="from database"
+              trend="neutral"
+              linkTo="/litters"
+            />
+            <StatCard
+              title="Reservations"
+              value={isLoading ? "Loading..." : stats.reservationCount.toString()}
+              icon={<Users size={18} />}
+              change={0}
+              changeText="from database"
+              trend="neutral"
+              linkTo="/customers"
+            />
+            <StatCard
+              title="Revenue (Last 30 Days)"
+              value={isLoading ? "Loading..." : `$${stats.recentRevenue.toLocaleString()}`}
+              icon={<DollarSign size={18} />}
+              change={0}
+              changeText="from database"
+              trend="neutral"
+              textColor="text-emerald-600 dark:text-emerald-400"
+              linkTo="/customers"
+            />
           </div>
-          
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            <CustomButton 
-              variant="primary" 
-              size="sm" 
-              icon={<PlusCircle size={16} />}
-              onClick={handleNewLitter}
+
+          {/* Main Content */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+            {/* Upcoming Events Card */}
+            <DashboardCard
+              title="Upcoming Events"
+              icon={<Calendar size={18} />}
+              className="xl:col-span-2"
+              actions={
+                <Link to="/calendar" className="text-sm text-primary flex items-center">
+                  View all <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              }
             >
-              New Litter
-            </CustomButton>
-            <CustomButton 
-              variant="outline" 
-              size="sm" 
-              icon={<PlusCircle size={16} />}
-              onClick={handleAddDog}
-            >
-              Add Dog
-            </CustomButton>
-            <CustomButton 
-              variant="outline" 
-              size="sm" 
-              icon={<UtensilsCrossed size={16} />}
-              onClick={handleCareLogClick}
-            >
-              Log Daily Care
-            </CustomButton>
-            <CustomButton 
-              variant="outline" 
-              size="sm" 
-              icon={<File size={16} />}
-              onClick={handleCreateContract}
-            >
-              Create Contract
-            </CustomButton>
-            <CustomButton 
-              variant="outline" 
-              size="sm" 
-              icon={<Calendar size={16} />}
-              onClick={handleCreateEvent}
-            >
-              Add Event
-            </CustomButton>
+              <UpcomingEvents events={events} isLoading={isLoading} />
+            </DashboardCard>
+
+            {/* Recent Activities Card */}
+            <DashboardCard className="h-full">
+              <RecentActivities activities={activities} isLoading={isLoading} />
+            </DashboardCard>
           </div>
-        </div>
-      </BlurBackground>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-6 mb-8">
-        <StatCard
-          title="Active Dogs"
-          value={isLoading ? "Loading..." : stats.dogCount.toString()}
-          icon={<Dog size={18} />}
-          change={0}
-          changeText="from database"
-          trend="neutral"
-          linkTo="/dogs"
-        />
-        <StatCard
-          title="Current Litters"
-          value={isLoading ? "Loading..." : stats.litterCount.toString()}
-          icon={<PawPrint size={18} />}
-          change={0}
-          changeText="from database"
-          trend="neutral"
-          linkTo="/litters"
-        />
-        <StatCard
-          title="Reservations"
-          value={isLoading ? "Loading..." : stats.reservationCount.toString()}
-          icon={<Users size={18} />}
-          change={0}
-          changeText="from database"
-          trend="neutral"
-          linkTo="/customers"
-        />
-        <StatCard
-          title="Revenue (Last 30 Days)"
-          value={isLoading ? "Loading..." : `$${stats.recentRevenue.toLocaleString()}`}
-          icon={<DollarSign size={18} />}
-          change={0}
-          changeText="from database"
-          trend="neutral"
-          textColor="text-emerald-600 dark:text-emerald-400"
-          linkTo="/customers"
-        />
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-        {/* Upcoming Events Card */}
-        <DashboardCard
-          title="Upcoming Events"
-          icon={<Calendar size={18} />}
-          className="xl:col-span-2"
-          actions={
-            <Link to="/calendar" className="text-sm text-primary flex items-center">
-              View all <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          }
-        >
-          <UpcomingEvents events={events} isLoading={isLoading} />
-        </DashboardCard>
-
-        {/* Recent Activities Card */}
-        <DashboardCard className="h-full">
-          <RecentActivities activities={activities} isLoading={isLoading} />
-        </DashboardCard>
-      </div>
-
-      {/* Breeding Analytics - Replaced with our new component */}
-      <BreedingAnalytics />
+          {/* Breeding Analytics */}
+          <BreedingAnalytics />
+        </TabsContent>
+        
+        <TabsContent value="care">
+          <DailyCareProvider>
+            <CareDashboard />
+          </DailyCareProvider>
+        </TabsContent>
+      </Tabs>
 
       {/* Daily Care Log Dialog */}
       <Dialog open={careLogDialogOpen} onOpenChange={setCareLogDialogOpen}>

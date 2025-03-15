@@ -11,6 +11,7 @@ type DailyCareContextType = {
   deleteCareLog: (id: string) => Promise<boolean>;
   addCareTaskPreset: (category: string, taskName: string) => Promise<CareTaskPreset | null>;
   deleteCareTaskPreset: (id: string) => Promise<boolean>;
+  fetchAllDogsWithCareStatus: (date?: Date) => Promise<DogCareStatus[]>;
   loading: boolean;
 };
 
@@ -69,6 +70,117 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [toast]);
 
+  const fetchAllDogsWithCareStatus = useCallback(async (date = new Date()): Promise<DogCareStatus[]> => {
+    setLoading(true);
+    try {
+      // Fetch all dogs
+      const { data: dogs, error: dogsError } = await supabase
+        .from('dogs')
+        .select('id, name, breed, color, photo_url')
+        .order('name');
+
+      if (dogsError) throw dogsError;
+
+      // For each dog, fetch their most recent care log for the specified date
+      const todayStart = new Date(date);
+      todayStart.setHours(0, 0, 0, 0);
+      
+      const todayEnd = new Date(date);
+      todayEnd.setHours(23, 59, 59, 999);
+
+      // Mock flag data - in a real implementation, fetch this from a database table
+      // This is just a placeholder for demonstration
+      const mockDogFlags: Record<string, DogFlag[]> = {};
+
+      // Add some mock flags for random dogs as an example
+      if (dogs && dogs.length > 0) {
+        // Add "in heat" flag to a random dog
+        const randomIndex1 = Math.floor(Math.random() * dogs.length);
+        mockDogFlags[dogs[randomIndex1].id] = [{ type: 'in_heat' }];
+        
+        // Add "incompatible" flags to two random dogs
+        if (dogs.length > 2) {
+          let randomIndex2 = Math.floor(Math.random() * dogs.length);
+          while (randomIndex2 === randomIndex1) {
+            randomIndex2 = Math.floor(Math.random() * dogs.length);
+          }
+          
+          let randomIndex3 = Math.floor(Math.random() * dogs.length);
+          while (randomIndex3 === randomIndex1 || randomIndex3 === randomIndex2) {
+            randomIndex3 = Math.floor(Math.random() * dogs.length);
+          }
+          
+          mockDogFlags[dogs[randomIndex2].id] = [{ 
+            type: 'incompatible', 
+            incompatible_with: [dogs[randomIndex3].id] 
+          }];
+          
+          mockDogFlags[dogs[randomIndex3].id] = [{ 
+            type: 'incompatible', 
+            incompatible_with: [dogs[randomIndex2].id] 
+          }];
+        }
+        
+        // Add "special attention" flag to another random dog
+        if (dogs.length > 3) {
+          let randomIndex4 = Math.floor(Math.random() * dogs.length);
+          while (
+            randomIndex4 === randomIndex1 || 
+            randomIndex4 === randomIndex2 ||
+            randomIndex4 === randomIndex3
+          ) {
+            randomIndex4 = Math.floor(Math.random() * dogs.length);
+          }
+          
+          mockDogFlags[dogs[randomIndex4].id] = [{ 
+            type: 'special_attention',
+            value: 'Needs medication'
+          }];
+        }
+      }
+
+      const statusPromises = dogs.map(async (dog) => {
+        const { data: logs, error: logsError } = await supabase
+          .from('daily_care_logs')
+          .select('*')
+          .eq('dog_id', dog.id)
+          .gte('timestamp', todayStart.toISOString())
+          .lte('timestamp', todayEnd.toISOString())
+          .order('timestamp', { ascending: false })
+          .limit(1);
+
+        if (logsError) throw logsError;
+
+        return {
+          dog_id: dog.id,
+          dog_name: dog.name,
+          dog_photo: dog.photo_url,
+          breed: dog.breed,
+          color: dog.color,
+          last_care: logs && logs.length > 0 ? {
+            category: logs[0].category,
+            task_name: logs[0].task_name,
+            timestamp: logs[0].timestamp,
+          } : null,
+          flags: mockDogFlags[dog.id] || []
+        } as DogCareStatus;
+      });
+
+      const statuses = await Promise.all(statusPromises);
+      return statuses;
+    } catch (error) {
+      console.error('Error fetching all dogs care status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load dogs care status',
+        variant: 'destructive',
+      });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
   const addCareLog = useCallback(async (data: CareLogFormData): Promise<DailyCarelog | null> => {
     if (!user) {
       toast({
@@ -81,6 +193,12 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setLoading(true);
     try {
+      // We'll need to store flags in a separate table in a real implementation
+      // For now, store them in the notes field as JSON for simplicity
+      const notesWithFlags = data.flags && data.flags.length > 0
+        ? `${data.notes || ''}\n\nFLAGS: ${JSON.stringify(data.flags)}`
+        : data.notes;
+
       const { data: newLog, error } = await supabase
         .from('daily_care_logs')
         .insert({
@@ -89,7 +207,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           category: data.category,
           task_name: data.task_name,
           timestamp: data.timestamp.toISOString(),
-          notes: data.notes || null,
+          notes: notesWithFlags || null,
         })
         .select()
         .single();
@@ -226,6 +344,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         deleteCareLog,
         addCareTaskPreset,
         deleteCareTaskPreset,
+        fetchAllDogsWithCareStatus,
         loading,
       }}
     >
