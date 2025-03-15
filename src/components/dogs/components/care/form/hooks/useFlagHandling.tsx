@@ -55,13 +55,13 @@ export const useFlagHandling = ({
   }, [dogId, setOtherDogs]);
 
   const handleIncompatibleDogToggle = (dogId: string) => {
-    // Fixed: We need to correctly handle the state update by using 
-    // a function that returns string[] instead of any
-    setIncompatibleDogs((current: string[]) => 
-      current.includes(dogId)
+    // Fixed: We're updating the state using a function, so we need to fix the type issue
+    setIncompatibleDogs((current) => {
+      // Explicitly create a new array of string[] type
+      return current.includes(dogId)
         ? current.filter(id => id !== dogId)
-        : [...current, dogId]
-    );
+        : [...current, dogId];
+    });
   };
 
   const toggleFlag = (flagType: keyof typeof selectedFlags) => {
