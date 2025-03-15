@@ -21,6 +21,11 @@ import {
   UpcomingEvent,
   RecentActivity
 } from '@/services/dashboardService';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useState as useDialogState } from 'react';
+import DogSelector from '@/components/dashboard/DogSelector';
+import { DailyCareProvider } from '@/contexts/DailyCareProvider';
+import CareLogForm from '@/components/dogs/components/care/CareLogForm';
 
 const Dashboard: React.FC = () => {
   const { toast } = useToast();
@@ -34,6 +39,8 @@ const Dashboard: React.FC = () => {
   });
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
+  const [careLogDialogOpen, setCareLogDialogOpen] = useDialogState(false);
+  const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -100,6 +107,22 @@ const Dashboard: React.FC = () => {
       title: "Create Event",
       description: "Redirecting to create a new event...",
     });
+  };
+
+  const handleCareLogClick = () => {
+    setCareLogDialogOpen(true);
+  };
+
+  const handleCareLogSuccess = () => {
+    setCareLogDialogOpen(false);
+    toast({
+      title: "Success",
+      description: "Daily care log added successfully",
+    });
+  };
+
+  const handleDogSelected = (dogId: string) => {
+    setSelectedDogId(dogId);
   };
 
   // Mock activities if none are found in the database
@@ -239,6 +262,14 @@ const Dashboard: React.FC = () => {
             <CustomButton 
               variant="outline" 
               size="sm" 
+              icon={<UtensilsCrossed size={16} />}
+              onClick={handleCareLogClick}
+            >
+              Log Daily Care
+            </CustomButton>
+            <CustomButton 
+              variant="outline" 
+              size="sm" 
               icon={<File size={16} />}
               onClick={handleCreateContract}
             >
@@ -321,6 +352,19 @@ const Dashboard: React.FC = () => {
 
       {/* Breeding Analytics - Replaced with our new component */}
       <BreedingAnalytics />
+
+      {/* Daily Care Log Dialog */}
+      <Dialog open={careLogDialogOpen} onOpenChange={setCareLogDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DailyCareProvider>
+            {!selectedDogId ? (
+              <DogSelector onDogSelected={handleDogSelected} />
+            ) : (
+              <CareLogForm dogId={selectedDogId} onSuccess={handleCareLogSuccess} />
+            )}
+          </DailyCareProvider>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };
