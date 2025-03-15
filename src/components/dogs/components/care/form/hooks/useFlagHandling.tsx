@@ -55,7 +55,9 @@ export const useFlagHandling = ({
   }, [dogId, setOtherDogs]);
 
   const handleIncompatibleDogToggle = (dogId: string) => {
-    setIncompatibleDogs(current => 
+    // Fixed: We need to correctly handle the state update by using 
+    // a function that returns string[] instead of any
+    setIncompatibleDogs((current: string[]) => 
       current.includes(dogId)
         ? current.filter(id => id !== dogId)
         : [...current, dogId]
