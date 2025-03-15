@@ -58,7 +58,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         <WeightInput
           form={form}
           name="birth_weight"
-          label="Birth Weight (oz)"
+          label="Birth Weight"
         />
         
         <BirthTimeInput form={form} />

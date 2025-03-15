@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Puppy } from '../types';
 import PuppyPhoto from '../common/PuppyPhoto';
 import PuppyBasicInfo from '../common/PuppyBasicInfo';
 import PuppyDetailsInfo from '../common/PuppyDetailsInfo';
@@ -73,8 +74,9 @@ const PuppyTableView: React.FC<PuppyTableViewProps> = ({
             {/* Weights */}
             <TableCell>
               <PuppyWeightInfo
-                birthWeight={puppy.birth_weight}
-                currentWeight={puppy.current_weight}
+                birthWeight={puppy.birth_weight?.toString() || null}
+                currentWeight={puppy.current_weight?.toString() || null}
+                displayUnit="both" // Show both units in the table view
               />
             </TableCell>
             

@@ -3,17 +3,22 @@ import React, { useState } from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MinusCircle, PlusCircle, AlertCircle } from 'lucide-react';
+import { MinusCircle, PlusCircle, AlertCircle, Scale } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+type WeightUnit = 'oz' | 'g';
 
 interface WeightInputProps {
   form: UseFormReturn<any>;
   name: string;
   label: string;
+  defaultUnit?: WeightUnit;
 }
 
-const WeightInput = ({ form, name, label }: WeightInputProps) => {
+const WeightInput = ({ form, name, label, defaultUnit = 'oz' }: WeightInputProps) => {
   const [inputError, setInputError] = useState<string | null>(null);
+  const [unit, setUnit] = useState<WeightUnit>(defaultUnit);
   
   const validateWeight = (value: string): boolean => {
     if (value === '') return true;
@@ -37,12 +42,15 @@ const WeightInput = ({ form, name, label }: WeightInputProps) => {
     const currentWeight = form.getValues(name);
     const currentWeightNum = currentWeight ? parseFloat(currentWeight) : 0;
     if (isNaN(currentWeightNum)) {
-      form.setValue(name, '0.1');
+      form.setValue(name, unit === 'oz' ? '0.1' : '1');
       setInputError(null);
       return;
     }
-    const newWeight = currentWeightNum + 0.1;
-    form.setValue(name, newWeight.toFixed(1));
+    
+    // Increment by 0.1 for oz, 1 for grams
+    const incrementAmount = unit === 'oz' ? 0.1 : 1;
+    const newWeight = currentWeightNum + incrementAmount;
+    form.setValue(name, unit === 'oz' ? newWeight.toFixed(1) : Math.round(newWeight));
     setInputError(null);
   };
 
@@ -52,19 +60,43 @@ const WeightInput = ({ form, name, label }: WeightInputProps) => {
     
     const currentWeightNum = parseFloat(currentWeight);
     if (isNaN(currentWeightNum)) {
-      form.setValue(name, '0.0');
+      form.setValue(name, '0');
       setInputError(null);
       return;
     }
     
-    const newWeight = Math.max(0, currentWeightNum - 0.1);
-    form.setValue(name, newWeight.toFixed(1));
+    // Decrement by 0.1 for oz, 1 for grams
+    const decrementAmount = unit === 'oz' ? 0.1 : 1;
+    const newWeight = Math.max(0, currentWeightNum - decrementAmount);
+    form.setValue(name, unit === 'oz' ? newWeight.toFixed(1) : Math.round(newWeight));
     setInputError(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     validateWeight(value);
+  };
+
+  const handleUnitChange = (newUnit: WeightUnit) => {
+    const currentWeight = form.getValues(name);
+    
+    if (currentWeight && currentWeight !== '') {
+      const numValue = parseFloat(currentWeight);
+      if (!isNaN(numValue)) {
+        // Convert between units
+        if (newUnit === 'g' && unit === 'oz') {
+          // Convert oz to grams (1 oz ≈ 28.35 g)
+          const grams = Math.round(numValue * 28.35);
+          form.setValue(name, grams.toString());
+        } else if (newUnit === 'oz' && unit === 'g') {
+          // Convert grams to oz (1 g ≈ 0.035 oz)
+          const oz = (numValue * 0.035).toFixed(1);
+          form.setValue(name, oz);
+        }
+      }
+    }
+    
+    setUnit(newUnit);
   };
 
   return (
@@ -109,11 +141,34 @@ const WeightInput = ({ form, name, label }: WeightInputProps) => {
                 type="button" 
                 variant="outline" 
                 size="icon" 
-                className="rounded-l-none" 
+                className="rounded-l-none rounded-r-none" 
                 onClick={incrementWeight}
               >
                 <PlusCircle size={16} />
               </Button>
+              
+              <Select 
+                value={unit} 
+                onValueChange={(value) => handleUnitChange(value as WeightUnit)}
+              >
+                <SelectTrigger className="w-24 rounded-l-none">
+                  <SelectValue placeholder="Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="oz">
+                    <div className="flex items-center gap-2">
+                      <Scale className="h-4 w-4" />
+                      <span>oz</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="g">
+                    <div className="flex items-center gap-2">
+                      <Scale className="h-4 w-4" />
+                      <span>grams</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {inputError && (
               <p className="text-sm font-medium text-red-500 mt-1">{inputError}</p>

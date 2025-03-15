@@ -26,7 +26,8 @@ const WeightsTab: React.FC<WeightsTabProps> = ({ form }) => {
           <WeightInput 
             form={form} 
             name="birth_weight" 
-            label="Birth Weight (oz)" 
+            label="Birth Weight" 
+            defaultUnit="oz"
           />
         </div>
         
@@ -38,7 +39,8 @@ const WeightsTab: React.FC<WeightsTabProps> = ({ form }) => {
           <WeightInput 
             form={form} 
             name="current_weight" 
-            label="Current Weight (oz)" 
+            label="Current Weight" 
+            defaultUnit="oz"
           />
         </div>
       </div>
@@ -47,8 +49,9 @@ const WeightsTab: React.FC<WeightsTabProps> = ({ form }) => {
         <div className="flex items-start gap-2">
           <Info className="h-4 w-4 text-muted-foreground mt-0.5" />
           <p className="text-sm text-muted-foreground">
-            This simplified form shows birth weight and current weight. For more detailed 
-            weight tracking over time, we'll be adding a dedicated weight history feature in a future update.
+            You can switch between ounces (oz) and grams (g) for weight measurements. The system will automatically 
+            convert values when you change units. For more detailed weight tracking over time, we'll be adding 
+            a dedicated weight history feature in a future update.
           </p>
         </div>
       </div>
