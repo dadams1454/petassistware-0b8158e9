@@ -5,6 +5,7 @@ import { ViewIcon, LayoutGrid, LayoutList, Plus } from 'lucide-react';
 import PuppyTableView from './table/PuppyTableView';
 import PuppyCardView from './card/PuppyCardView';
 import PuppyFilters from './filters/PuppyFilters';
+import { Puppy } from './types';
 
 interface PuppiesTableProps {
   puppies: Puppy[];
