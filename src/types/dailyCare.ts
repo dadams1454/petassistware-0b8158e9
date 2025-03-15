@@ -1,5 +1,5 @@
 
-interface DailyCarelog {
+export interface DailyCarelog {
   id: string;
   dog_id: string;
   created_by: string;
@@ -10,7 +10,7 @@ interface DailyCarelog {
   created_at: string;
 }
 
-interface CareTaskPreset {
+export interface CareTaskPreset {
   id: string;
   category: string;
   task_name: string;
@@ -19,7 +19,7 @@ interface CareTaskPreset {
   created_at: string;
 }
 
-interface CareLogFormData {
+export interface CareLogFormData {
   dog_id: string;
   category: string;
   task_name: string;
@@ -28,13 +28,13 @@ interface CareLogFormData {
   flags?: DogFlag[];
 }
 
-interface DogFlag {
+export interface DogFlag {
   type: 'in_heat' | 'incompatible' | 'special_attention' | 'other';
   value?: string;
   incompatible_with?: string[];
 }
 
-interface DogCareStatus {
+export interface DogCareStatus {
   dog_id: string;
   dog_name: string;
   dog_photo?: string;
@@ -47,4 +47,3 @@ interface DogCareStatus {
   } | null;
   flags: DogFlag[];
 }
-
