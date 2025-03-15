@@ -19,7 +19,7 @@ const BirthTimeInput: React.FC<BirthTimeInputProps> = ({ form }) => {
         <FormItem className="space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <FormLabel className="text-xs text-muted-foreground">Birth Time</FormLabel>
+            <FormLabel className="text-xs text-muted-foreground">Birth Time (Current Time)</FormLabel>
           </div>
           <FormControl>
             <Input
