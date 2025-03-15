@@ -4,7 +4,8 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription 
 } from '@/components/ui/dialog';
 import PuppyForm from '@/components/litters/PuppyForm';
 import { Puppy } from './types';
@@ -24,11 +25,18 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
   onOpenChange, 
   onSuccess 
 }) => {
-  // Convert Promise<void> to regular void function
-  const handleSuccess = () => {
-    onSuccess().catch(error => {
+  // Create a wrapper function that returns a Promise<void>
+  const handleSuccess = async () => {
+    try {
+      // Close the dialog first
+      onOpenChange(false);
+      
+      // Then call the success callback
+      await onSuccess();
+      console.log('onSuccess completed in EditPuppyDialog');
+    } catch (error) {
       console.error('Error in onSuccess callback from EditPuppyDialog:', error);
-    });
+    }
   };
   
   return (
@@ -36,6 +44,9 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{puppy ? 'Edit Puppy' : 'Add New Puppy'}</DialogTitle>
+          <DialogDescription>
+            {puppy ? "Edit this puppy's information" : "Add a new puppy to the litter"}
+          </DialogDescription>
         </DialogHeader>
         <PuppyForm 
           initialData={puppy} 
