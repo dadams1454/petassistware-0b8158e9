@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -6,7 +5,7 @@ import { z } from 'zod';
 import { Calendar as CalendarIcon, Plus, Heart, Slash, Flag, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
-import { useDailyCare } from '@/contexts/DailyCareProvider';
+import { useDailyCare } from '@/contexts/dailyCare';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';

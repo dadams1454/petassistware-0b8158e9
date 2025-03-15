@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useDailyCare } from '@/contexts/DailyCareProvider';
+import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoadingSpinner from './LoadingSpinner';

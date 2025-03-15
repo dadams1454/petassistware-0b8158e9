@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Trash2, Calendar, Clock, FileText } from 'lucide-react';
 
-import { useDailyCare } from '@/contexts/DailyCareProvider';
+import { useDailyCare } from '@/contexts/dailyCare';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';

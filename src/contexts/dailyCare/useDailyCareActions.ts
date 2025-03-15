@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import * as dailyCareService from '@/services/dailyCareService';
+import * as dailyCareService from '@/services/dailyCare';
 import { DailyCarelog, CareTaskPreset, CareLogFormData, DogCareStatus } from '@/types/dailyCare';
 
 export const useDailyCareActions = (userId: string | undefined) => {
