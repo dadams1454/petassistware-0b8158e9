@@ -1,14 +1,12 @@
 
 import React, { useEffect, useState } from 'react';
-import { format } from 'date-fns';
 import { useDailyCare } from '@/contexts/DailyCareProvider';
 import { useToast } from '@/components/ui/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import DogCareCard from './DogCareCard';
-import DogCareTable from './DogCareTable';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import LoadingSpinner from './LoadingSpinner';
 import DogCareStatCards from './DogCareStatCards';
+import CareDashboardHeader from './CareDashboardHeader';
+import CareTabsContent from './CareTabsContent';
 
 interface CareDashboardProps {
   date?: Date;
@@ -68,29 +66,17 @@ const CareDashboard: React.FC<CareDashboardProps> = ({ date = new Date() }) => {
   ) || 0;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col space-y-2 sm:flex-row sm:justify-between sm:space-y-0 sm:items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Daily Care Dashboard</h2>
-          <p className="text-muted-foreground">
-            {format(date, 'EEEE, MMMM d, yyyy')}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="text-sm text-muted-foreground">
-            {dogsStatus.filter(dog => dog.last_care !== null).length} of {dogsStatus.length} dogs cared for
-          </div>
-          <Progress value={careCompletionPercentage} className="w-24" />
-        </div>
-      </div>
+      <CareDashboardHeader 
+        date={date}
+        careCompletionPercentage={careCompletionPercentage}
+        totalDogs={dogsStatus.length}
+        caredDogs={dogsStatus.filter(dog => dog.last_care !== null).length}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -98,34 +84,15 @@ const CareDashboard: React.FC<CareDashboardProps> = ({ date = new Date() }) => {
           <TabsTrigger value="table">Table View</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="cards" className="mt-4">
-          <ScrollArea className="h-[60vh]">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
-              {dogsStatus.map((dog) => (
-                <DogCareCard
-                  key={dog.dog_id}
-                  dog={dog}
-                  onLogCare={handleAddCareLog}
-                  selectedDogId={selectedDogId}
-                  dialogOpen={dialogOpen}
-                  setDialogOpen={setDialogOpen}
-                  onCareLogSuccess={handleCareLogSuccess}
-                />
-              ))}
-            </div>
-          </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="table" className="mt-4">
-          <DogCareTable
-            dogsStatus={dogsStatus}
-            onLogCare={handleAddCareLog}
-            selectedDogId={selectedDogId}
-            dialogOpen={dialogOpen}
-            setDialogOpen={setDialogOpen}
-            onCareLogSuccess={handleCareLogSuccess}
-          />
-        </TabsContent>
+        <CareTabsContent 
+          activeTab={activeTab}
+          dogsStatus={dogsStatus}
+          onLogCare={handleAddCareLog}
+          selectedDogId={selectedDogId}
+          dialogOpen={dialogOpen}
+          setDialogOpen={setDialogOpen}
+          onCareLogSuccess={handleCareLogSuccess}
+        />
       </Tabs>
 
       {/* Overall stats summary */}
