@@ -89,7 +89,13 @@ export const WelpingPuppiesTable: React.FC<WelpingPuppiesTableProps> = ({
                   <TableCell>{puppy.gender || 'Unknown'}</TableCell>
                   <TableCell>{puppy.color || 'Not specified'}</TableCell>
                   <TableCell>{puppy.birth_time || 'Not recorded'}</TableCell>
-                  <TableCell>{puppy.birth_weight || 'Not recorded'}</TableCell>
+                  <TableCell>
+                    {puppy.birth_weight 
+                      ? typeof puppy.birth_weight === 'number' 
+                        ? `${puppy.birth_weight} oz`
+                        : puppy.birth_weight 
+                      : 'Not recorded'}
+                  </TableCell>
                   <TableCell className="flex gap-2">
                     <Button 
                       variant="ghost" 

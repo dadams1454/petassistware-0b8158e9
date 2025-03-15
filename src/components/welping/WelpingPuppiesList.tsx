@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { WelpingPuppiesTable } from './WelpingPuppiesTable'; // Using named import since there's no default export
+import { WelpingPuppiesTable } from './WelpingPuppiesTable';
 import { Puppy } from '@/components/litters/puppies/types';
 
 interface WelpingPuppiesListProps {
@@ -17,7 +17,7 @@ const WelpingPuppiesList: React.FC<WelpingPuppiesListProps> = ({ puppies }) => {
     <div className="space-y-4">
       <WelpingPuppiesTable 
         puppies={puppies}
-        onRefresh={handleRefresh} // Add the required onRefresh prop
+        onRefresh={handleRefresh}
       />
     </div>
   );
