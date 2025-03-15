@@ -66,10 +66,16 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess }) => {
   }, [fetchCareTaskPresets]);
 
   const onSubmit = async (values: CareLogFormValues) => {
-    const success = await addCareLog({
-      ...values,
+    // Create a properly typed CareLogFormData object
+    const careLogData: CareLogFormData = {
       dog_id: dogId,
-    });
+      category: values.category,
+      task_name: values.task_name,
+      timestamp: values.timestamp,
+      notes: values.notes
+    };
+    
+    const success = await addCareLog(careLogData);
     
     if (success && onSuccess) {
       form.reset();

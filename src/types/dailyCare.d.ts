@@ -20,9 +20,9 @@ interface CareTaskPreset {
 }
 
 interface CareLogFormData {
+  dog_id: string;
   category: string;
   task_name: string;
   timestamp: Date;
   notes?: string;
-  dog_id: string;
 }
