@@ -20,6 +20,7 @@ import AddLitter from "./pages/AddLitter";
 import Customers from "./pages/Customers";
 import Communications from "./pages/Communications";
 import WelpingPage from "./pages/WelpingPage";
+import DailyCare from "./pages/DailyCare";
 import { DailyCareProvider } from "./contexts/DailyCareProvider";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/litters/new" element={<AddLitter />} />
                 <Route path="/litters/:id" element={<LitterDetail />} />
                 <Route path="/welping/:id" element={<WelpingPage />} />
+                <Route path="/daily-care" element={<DailyCare />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>
               
