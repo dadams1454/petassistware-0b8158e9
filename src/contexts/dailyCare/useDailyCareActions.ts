@@ -1,25 +1,11 @@
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthProvider';
+import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import * as dailyCareService from '@/services/dailyCareService';
+import { DailyCarelog, CareTaskPreset, CareLogFormData, DogCareStatus } from '@/types/dailyCare';
 
-type DailyCareContextType = {
-  fetchDogCareLogs: (dogId: string) => Promise<DailyCarelog[]>;
-  fetchCareTaskPresets: () => Promise<CareTaskPreset[]>;
-  addCareLog: (data: CareLogFormData) => Promise<DailyCarelog | null>;
-  deleteCareLog: (id: string) => Promise<boolean>;
-  addCareTaskPreset: (category: string, taskName: string) => Promise<CareTaskPreset | null>;
-  deleteCareTaskPreset: (id: string) => Promise<boolean>;
-  fetchAllDogsWithCareStatus: (date?: Date) => Promise<DogCareStatus[]>;
-  loading: boolean;
-};
-
-const DailyCareContext = createContext<DailyCareContextType | undefined>(undefined);
-
-export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const useDailyCareActions = (userId: string | undefined) => {
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const fetchDogCareLogs = useCallback(async (dogId: string): Promise<DailyCarelog[]> => {
@@ -77,7 +63,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [toast]);
 
   const addCareLog = useCallback(async (data: CareLogFormData): Promise<DailyCarelog | null> => {
-    if (!user) {
+    if (!userId) {
       toast({
         title: 'Authentication Required',
         description: 'You must be logged in to add care logs',
@@ -88,7 +74,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setLoading(true);
     try {
-      const newLog = await dailyCareService.addCareLog(data, user.id);
+      const newLog = await dailyCareService.addCareLog(data, userId);
       
       if (newLog) {
         toast({
@@ -109,7 +95,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [userId, toast]);
 
   const deleteCareLog = useCallback(async (id: string): Promise<boolean> => {
     setLoading(true);
@@ -138,7 +124,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [toast]);
 
   const addCareTaskPreset = useCallback(async (category: string, taskName: string): Promise<CareTaskPreset | null> => {
-    if (!user) {
+    if (!userId) {
       toast({
         title: 'Authentication Required',
         description: 'You must be logged in to add task presets',
@@ -149,7 +135,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setLoading(true);
     try {
-      const newPreset = await dailyCareService.addCareTaskPreset(category, taskName, user.id);
+      const newPreset = await dailyCareService.addCareTaskPreset(category, taskName, userId);
       
       if (newPreset) {
         toast({
@@ -170,7 +156,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [userId, toast]);
 
   const deleteCareTaskPreset = useCallback(async (id: string): Promise<boolean> => {
     setLoading(true);
@@ -198,28 +184,14 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [toast]);
 
-  return (
-    <DailyCareContext.Provider
-      value={{
-        fetchDogCareLogs,
-        fetchCareTaskPresets,
-        addCareLog,
-        deleteCareLog,
-        addCareTaskPreset,
-        deleteCareTaskPreset,
-        fetchAllDogsWithCareStatus,
-        loading,
-      }}
-    >
-      {children}
-    </DailyCareContext.Provider>
-  );
-};
-
-export const useDailyCare = () => {
-  const context = useContext(DailyCareContext);
-  if (context === undefined) {
-    throw new Error('useDailyCare must be used within a DailyCareProvider');
-  }
-  return context;
+  return {
+    loading,
+    fetchDogCareLogs,
+    fetchCareTaskPresets,
+    fetchAllDogsWithCareStatus,
+    addCareLog,
+    deleteCareLog,
+    addCareTaskPreset,
+    deleteCareTaskPreset,
+  };
 };

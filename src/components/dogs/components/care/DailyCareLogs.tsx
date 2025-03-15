@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Grid, RefreshCw } from 'lucide-react';
 
-import { DailyCareProvider } from '@/contexts/DailyCareProvider';
+import { DailyCareProvider } from '@/contexts/dailyCare';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CareLogForm from './CareLogForm';

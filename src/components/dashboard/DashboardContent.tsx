@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DailyCareProvider } from '@/contexts/DailyCareProvider';
+import { DailyCareProvider } from '@/contexts/dailyCare';
 import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import MainLayout from '@/layouts/MainLayout';
-import { DailyCareProvider } from '@/contexts/DailyCareProvider';
+import { DailyCareProvider } from '@/contexts/dailyCare';
 import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 
 const DailyCare: React.FC = () => {
