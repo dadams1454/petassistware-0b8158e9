@@ -81,6 +81,33 @@ export type Database = {
         }
         Relationships: []
       }
+      care_task_presets: {
+        Row: {
+          breeder_id: string | null
+          category: string
+          created_at: string
+          id: string
+          is_default: boolean
+          task_name: string
+        }
+        Insert: {
+          breeder_id?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          task_name: string
+        }
+        Update: {
+          breeder_id?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          task_name?: string
+        }
+        Relationships: []
+      }
       communication_templates: {
         Row: {
           content: string
@@ -244,6 +271,47 @@ export type Database = {
           phone?: string | null
         }
         Relationships: []
+      }
+      daily_care_logs: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          dog_id: string
+          id: string
+          notes: string | null
+          task_name: string
+          timestamp: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by: string
+          dog_id: string
+          id?: string
+          notes?: string | null
+          task_name: string
+          timestamp?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          dog_id?: string
+          id?: string
+          notes?: string | null
+          task_name?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_care_logs_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dog_documents: {
         Row: {
