@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
 import { CareTaskPreset } from '@/types/dailyCare';
+import CategoryTabs from './CategoryTabs';
 
 interface ExistingTaskSelectionProps {
   form: UseFormReturn<any>;
@@ -44,23 +45,11 @@ const ExistingTaskSelection: React.FC<ExistingTaskSelectionProps> = ({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Category</FormLabel>
-            <Select
-              value={field.value}
-              onValueChange={(value) => handleCategoryChange(value)}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {categories.map(category => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CategoryTabs 
+              categories={categories} 
+              selectedCategory={selectedCategory} 
+              handleCategoryChange={handleCategoryChange} 
+            />
             <FormMessage />
           </FormItem>
         )}
