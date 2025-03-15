@@ -24,11 +24,14 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
   onOpenChange, 
   onSuccess 
 }) => {
-  // Convert Promise<void> to regular void function
-  const handleSuccess = () => {
-    onSuccess().catch(error => {
+  // Create a wrapper function that returns a Promise<void>
+  const handleSuccess = async () => {
+    try {
+      await onSuccess();
+      console.log('onSuccess completed in EditPuppyDialog');
+    } catch (error) {
       console.error('Error in onSuccess callback from EditPuppyDialog:', error);
-    });
+    }
   };
   
   return (

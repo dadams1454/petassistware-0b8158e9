@@ -153,7 +153,8 @@ export const useWelpingPuppyForm = ({ litterId, onSuccess }: UseWelpingPuppyForm
         name: `Puppy ${puppyCount + 2}`, // Increment for next puppy
         birth_weight: '',
         notes: '',
-        akc_registration_number: ''
+        akc_registration_number: '',
+        birth_time: format(new Date(), 'HH:mm') // Reset to current time for next puppy
       });
     } catch (error) {
       console.error('Error recording puppy:', error);
