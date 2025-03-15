@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -82,7 +81,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       
       // Add "incompatible" flags to two random dogs
       if (dogs.length > 2) {
-        // Fixed: Use let instead of const for variables that will be reassigned
+        // Use let instead of const for variables that will be reassigned
         let randomIndex2 = Math.floor(Math.random() * dogs.length);
         // Make sure randomIndex2 is different from randomIndex1
         if (randomIndex2 === randomIndex1) {
@@ -114,10 +113,24 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // Add "special attention" flag to another random dog
       if (dogs.length > 3) {
         let randomIndex4 = Math.floor(Math.random() * dogs.length);
+        
+        // Declare these outside the if to avoid scope issues
+        let randomIndex2 = -1;
+        let randomIndex3 = -1;
+        
+        // Only set these values if we previously created them (in the dogs.length > 2 block)
+        if (dogs.length > 2) {
+          randomIndex2 = (randomIndex1 + 1) % dogs.length; // re-calculate based on previous logic
+          randomIndex3 = (randomIndex2 + 1) % dogs.length;
+          if (randomIndex3 === randomIndex1) {
+            randomIndex3 = (randomIndex3 + 1) % dogs.length;
+          }
+        }
+        
         while (
           randomIndex4 === randomIndex1 || 
-          randomIndex4 === (dogs.length > 2 ? randomIndex2 : -1) ||
-          randomIndex4 === (dogs.length > 2 ? randomIndex3 : -1)
+          (dogs.length > 2 && randomIndex4 === randomIndex2) ||
+          (dogs.length > 2 && randomIndex4 === randomIndex3)
         ) {
           randomIndex4 = Math.floor(Math.random() * dogs.length);
         }
