@@ -12,7 +12,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
   try {
     console.log('🔍 Simplified dog fetch for date:', date);
     
-    // Fetch only essential dog data - just id, name, breed, color and photo_url
+    // Fetch only essential dog data with more reliable query
     const { data: dogs, error } = await supabase
       .from('dogs')
       .select('id, name, breed, color, photo_url, gender')
@@ -26,7 +26,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
 
     if (error) {
       console.error('❌ Error fetching dogs:', error);
-      throw error;
+      throw new Error(`Failed to fetch dogs: ${error.message}`);
     }
     
     if (!dogs || dogs.length === 0) {
@@ -36,7 +36,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
 
     console.log(`✅ Found ${dogs.length} dogs in database, dog names:`, dogs.map(d => d.name).join(', '));
     
-    // Generate mock flags
+    // Generate mock flags (with error handling)
     let mockDogFlags = {};
     try {
       mockDogFlags = createMockDogFlags(dogs);
@@ -45,16 +45,16 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       mockDogFlags = {};
     }
 
-    // Convert to DogCareStatus objects
+    // Convert to DogCareStatus objects with better error handling for missing values
     const dogStatuses = dogs.map(dog => ({
-      dog_id: dog.id,
-      dog_name: dog.name,
-      dog_photo: dog.photo_url,
+      dog_id: dog.id || '',
+      dog_name: dog.name || 'Unknown dog',
+      dog_photo: dog.photo_url || '',
       breed: dog.breed || 'Unknown',
       color: dog.color || 'Unknown',
       sex: dog.gender || 'Unknown', // Use gender column since sex doesn't exist
       last_care: null, // We're not loading care data for simplicity
-      flags: mockDogFlags[dog.id] || []
+      flags: (mockDogFlags[dog.id] || []).filter(Boolean) // Filter out any null/undefined flags
     }));
 
     console.log(`✅ Converted ${dogStatuses.length} dog statuses`);
