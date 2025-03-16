@@ -24,17 +24,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
   // Filter dogs that have received care today
   const dogsWithCareToday = dogStatuses?.filter(dog => dog.last_care !== null) || [];
 
-  // Handle potty break success
-  const handlePottyBreakLogged = () => {
-    toast({
-      title: "Timetable Updated",
-      description: "The potty break has been logged successfully.",
-    });
-    
-    // Refresh dog data when a potty break is logged
-    onRefreshDogs();
-  };
-
   return (
     <>
       <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-md mb-4">

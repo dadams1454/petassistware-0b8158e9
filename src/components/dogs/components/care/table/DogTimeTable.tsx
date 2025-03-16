@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, Clock, Dog } from 'lucide-react';
+import { Calendar, Clock, Dog, X } from 'lucide-react';
 import EmptyTableRow from './EmptyTableRow';
 import TableDebugger from './TableDebugger';
 import { format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PottyBreakDialog from '@/components/dashboard/dialogs/PottyBreakDialog';
+import PottyBreakLogger from '@/components/dashboard/dialogs/PottyBreakDialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -55,9 +56,13 @@ const careCategories = [
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const [currentDate] = useState(new Date());
   const [activeCategory, setActiveCategory] = useState('all');
-  const [pottyBreakDialogOpen, setPottyBreakDialogOpen] = useState(false);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
-  const [selectedDogs, setSelectedDogs] = useState<{id: string, name: string}[]>([]);
+  
+  // Track potty breaks in a state variable
+  const [pottyBreaks, setPottyBreaks] = useState<{
+    dogId: string;
+    timeSlot: string;
+    timestamp: string;
+  }[]>([]);
   
   // Filter out duplicate dog names to avoid confusion in the table
   const uniqueDogs = dogsStatus.reduce((acc: DogCareStatus[], current) => {
@@ -73,32 +78,38 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     a.dog_name.toLowerCase().localeCompare(b.dog_name.toLowerCase())
   );
 
-  // Handle cell click - specifically for potty breaks
+  // Handle cell click - for potty breaks, immediately mark with an X
   const handleCellClick = (dogId: string, dogName: string, timeSlot: string, category: string) => {
     console.log(`Cell clicked: Dog ${dogId}, Time: ${timeSlot}, Category: ${category}`);
     
     // Only handle potty break logging in the potty breaks tab
     if (category === 'pottybreaks') {
-      setSelectedTimeSlot(timeSlot);
-      setSelectedDogs([{ id: dogId, name: dogName }]);
-      setPottyBreakDialogOpen(true);
+      // Add new potty break to the state
+      const newPottyBreak = {
+        dogId,
+        timeSlot,
+        timestamp: new Date().toISOString()
+      };
+      
+      setPottyBreaks([...pottyBreaks, newPottyBreak]);
+      
+      // Log potty break
+      console.log('Potty break logged:', {
+        dog: { id: dogId, name: dogName },
+        timeSlot,
+        timestamp: new Date().toISOString(),
+      });
+      
+      // Show a toast notification
+      if (onRefresh) {
+        onRefresh();
+      }
     }
   };
   
-  // Handle multiple dogs selection for potty breaks (future enhancement)
-  const handleGroupPottyBreak = (dogs: DogCareStatus[], timeSlot: string) => {
-    const selectedDogs = dogs.map(dog => ({ id: dog.dog_id, name: dog.dog_name }));
-    setSelectedTimeSlot(timeSlot);
-    setSelectedDogs(selectedDogs);
-    setPottyBreakDialogOpen(true);
-  };
-  
-  const handlePottyBreakSuccess = () => {
-    setPottyBreakDialogOpen(false);
-    // Optionally refresh the data
-    if (onRefresh) {
-      onRefresh();
-    }
+  // Check if a potty break exists for a specific dog and time slot
+  const hasPottyBreak = (dogId: string, timeSlot: string) => {
+    return pottyBreaks.some(pb => pb.dogId === dogId && pb.timeSlot === timeSlot);
   };
 
   return (
@@ -145,7 +156,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
                   
                   {category.id === 'pottybreaks' && (
                     <span className="ml-2 text-sm text-blue-500">
-                      Click on a time slot to log a potty break
+                      Click on a time slot to mark a potty break
                     </span>
                   )}
                 </p>
@@ -192,9 +203,22 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
                                 `}
                                 onClick={() => category.id === 'pottybreaks' && handleCellClick(dog.dog_id, dog.dog_name, timeSlot, category.id)}
                               >
-                                {/* This cell will be filled with care data if it exists */}
-                                {/* For now, just show an empty cell */}
-                                &nbsp;
+                                {category.id === 'pottybreaks' && hasPottyBreak(dog.dog_id, timeSlot) ? (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div className="flex items-center justify-center h-full">
+                                          <X className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{dog.dog_name} - Potty break at {timeSlot}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ) : (
+                                  <span>&nbsp;</span>
+                                )}
                               </TableCell>
                             ))}
                           </TableRow>
@@ -213,15 +237,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       
       {/* Hidden debugging component */}
       <TableDebugger dogsStatus={dogsStatus} selectedCategory={activeCategory} />
-      
-      {/* Potty Break Dialog */}
-      <PottyBreakDialog
-        open={pottyBreakDialogOpen}
-        onOpenChange={setPottyBreakDialogOpen}
-        selectedDogs={selectedDogs}
-        timeSlot={selectedTimeSlot}
-        onSuccess={handlePottyBreakSuccess}
-      />
     </Card>
   );
 };
