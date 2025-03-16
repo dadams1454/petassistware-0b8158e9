@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
+import { Dog } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
-import DogNameCell from './components/DogNameCell';
+import { DogFlagsList } from '../DogFlagsList';
 
 interface DogTimeRowProps {
   dog: DogCareStatus;
@@ -11,7 +12,6 @@ interface DogTimeRowProps {
   rowColor: string;
   activeCategory: string;
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
-  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
 }
 
@@ -21,15 +21,37 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
   rowColor,
   activeCategory,
   hasPottyBreak,
-  hasCareLogged,
   onCellClick
 }) => {
+  // Check if dog has any flags
+  const hasFlags = dog.flags && dog.flags.length > 0;
+  
   return (
     <TableRow key={dog.dog_id} className={rowColor}>
-      {/* Dog name cell with photo and flags */}
-      <DogNameCell dog={dog} />
+      <TableCell className="font-medium sticky left-0 z-10 border-r border-slate-200 bg-white dark:bg-slate-900">
+        <div className="flex items-center space-x-2">
+          {dog.dog_photo ? (
+            <img 
+              src={dog.dog_photo} 
+              alt={dog.dog_name} 
+              className="w-6 h-6 rounded-full object-cover" 
+            />
+          ) : (
+            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+              <Dog className="h-3 w-3 text-primary" />
+            </div>
+          )}
+          <div className="flex items-center">
+            <span>{dog.dog_name}</span>
+            {hasFlags && (
+              <div className="ml-1 flex">
+                <DogFlagsList flags={dog.flags} />
+              </div>
+            )}
+          </div>
+        </div>
+      </TableCell>
       
-      {/* Time slot cells */}
       {timeSlots.map((timeSlot) => (
         <TimeSlotCell 
           key={`${dog.dog_id}-${timeSlot}`}
@@ -38,7 +60,6 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
           timeSlot={timeSlot}
           category={activeCategory}
           hasPottyBreak={hasPottyBreak(dog.dog_id, timeSlot)}
-          hasCareLogged={hasCareLogged(dog.dog_id, timeSlot, activeCategory)}
           onClick={() => onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory)}
           flags={dog.flags}
         />

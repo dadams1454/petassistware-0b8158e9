@@ -9,7 +9,7 @@ const Dashboard: React.FC = () => {
   const { isLoading, stats, events, activities } = useDashboardData();
   const { toast } = useToast();
   
-  // Show welcome toast only once when Dashboard loads
+  // Add an effect to log when the Dashboard page loads and display a welcome toast
   useEffect(() => {
     console.log('🚀 Dashboard page loaded');
     
@@ -19,8 +19,7 @@ const Dashboard: React.FC = () => {
       description: "The Daily Care tab is now shown by default for quick access to your dogs.",
       duration: 5000,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array ensures this runs only once
+  }, [toast]);
 
   return (
     <MainLayout>

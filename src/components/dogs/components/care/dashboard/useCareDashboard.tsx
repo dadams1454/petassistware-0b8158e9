@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 
 export const useCareDashboard = () => {
@@ -12,7 +12,6 @@ export const useCareDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const initialFetchRef = useRef(false);
   
   // Get daily care context
   const { 
@@ -64,11 +63,10 @@ export const useCareDashboard = () => {
     }
   }, [fetchCareTaskPresets, selectedCategory]);
 
-  // Initial data loading - only once
+  // Initial data loading
   useEffect(() => {
-    if (!initialLoadAttempted && !initialFetchRef.current) {
+    if (!initialLoadAttempted) {
       console.log('🚀 Initial data loading for CareDashboard');
-      initialFetchRef.current = true;
       
       Promise.all([loadDogsStatus(), loadCategories()])
         .then(() => {
@@ -83,7 +81,7 @@ export const useCareDashboard = () => {
     }
   }, [initialLoadAttempted, loadDogsStatus, loadCategories]);
 
-  // Check for missing dogs only when needed, not on every render
+  // Force refresh if no dogs are found
   useEffect(() => {
     if (initialLoadAttempted && (!dogStatuses || dogStatuses.length === 0)) {
       console.log('⚠️ No dogs found after initial load, forcing a refresh');

@@ -1,42 +1,29 @@
 
 import React from 'react';
+import { Dog } from 'lucide-react';
 import { TabsTrigger } from '@/components/ui/tabs';
-import { Utensils, AlarmClock, Pill, Activity, Scissors, Layers } from 'lucide-react';
-import { CareCategory } from './components/types';
 
-// Define care categories with icons
-export const careCategories: CareCategory[] = [
-  { id: 'all', name: 'All', icon: <Layers className="h-4 w-4 mr-2" /> },
-  { id: 'feeding', name: 'Feeding', icon: <Utensils className="h-4 w-4 mr-2" /> },
-  { id: 'pottybreaks', name: 'Potty Breaks', icon: <AlarmClock className="h-4 w-4 mr-2" /> },
-  { id: 'medications', name: 'Medications', icon: <Pill className="h-4 w-4 mr-2" /> },
-  { id: 'exercise', name: 'Exercise', icon: <Activity className="h-4 w-4 mr-2" /> },
-  { id: 'grooming', name: 'Grooming', icon: <Scissors className="h-4 w-4 mr-2" /> }
+export const careCategories = [
+  { id: 'all', name: 'All Care', icon: <Dog className="h-4 w-4 mr-1" /> },
+  { id: 'exercise', name: 'Exercise', icon: <Dog className="h-4 w-4 mr-1" /> },
+  { id: 'feeding', name: 'Feeding', icon: <Dog className="h-4 w-4 mr-1" /> },
+  { id: 'grooming', name: 'Grooming', icon: <Dog className="h-4 w-4 mr-1" /> },
+  { id: 'medication', name: 'Medication', icon: <Dog className="h-4 w-4 mr-1" /> },
+  { id: 'pottybreaks', name: 'Potty Breaks', icon: <Dog className="h-4 w-4 mr-1" /> },
 ];
 
 interface CareCategoriesProps {
   activeCategory: string;
-  onCategoryChange?: (category: string) => void;
 }
 
-const CareCategories: React.FC<CareCategoriesProps> = ({ 
-  activeCategory,
-  onCategoryChange 
-}) => {
-  const handleCategoryClick = (category: string) => {
-    if (onCategoryChange) {
-      onCategoryChange(category);
-    }
-  };
-
+const CareCategories: React.FC<CareCategoriesProps> = ({ activeCategory }) => {
   return (
     <>
       {careCategories.map(category => (
         <TabsTrigger 
           key={category.id} 
           value={category.id}
-          onClick={() => handleCategoryClick(category.id)}
-          className={activeCategory === category.id ? 'bg-primary/10' : ''}
+          className="data-[state=active]:bg-background rounded-t-lg rounded-b-none"
         >
           {category.icon}
           {category.name}
