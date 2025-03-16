@@ -1,63 +1,83 @@
 
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 import { DogFlag } from '@/types/dailyCare';
+import { DogCellStyles } from './types';
 
-interface UseCellStylesProps {
+interface CellStylesProps {
   category: string;
   hasPottyBreak: boolean;
-  hasCareLogged?: boolean;
+  hasCareLogged: boolean;
   flags: DogFlag[];
 }
 
-export const useCellStyles = ({ 
-  category, 
-  hasPottyBreak, 
-  hasCareLogged = false,
-  flags 
-}: UseCellStylesProps) => {
-  // Process flags
-  const isInHeat = useMemo(() => flags.some(flag => flag.type === 'in_heat'), [flags]);
-  const isPregnant = useMemo(() => flags.some(flag => flag.type === 'pregnant'), [flags]);
-  const hasIncompatibility = useMemo(() => flags.some(flag => flag.type === 'incompatible'), [flags]);
-  
-  // Determine if this is a potty category cell
-  const isPottyCategory = useMemo(() => 
-    category.toLowerCase().includes('potty') || 
-    category === 'pottybreaks', 
-  [category]);
-  
-  // Determine cell styling based on various conditions
-  const cellClassNames = useMemo(() => {
-    const baseClasses = 'text-center p-0 h-10 relative';
+export const useCellStyles = ({
+  category,
+  hasPottyBreak,
+  hasCareLogged,
+  flags
+}: CellStylesProps): DogCellStyles => {
+  const getCellClassNames = useCallback(() => {
+    // Base styles for all cells
+    let classes = 'text-center py-2 px-1 relative border';
     
-    if (hasCareLogged) {
-      return `${baseClasses} bg-green-100 dark:bg-green-900/30`;
+    // Default background if nothing special is happening
+    let defaultBg = 'bg-white dark:bg-slate-800';
+    
+    // Handle potty break cells
+    const isPottyCategory = category === 'pottybreaks';
+    if (isPottyCategory) {
+      if (hasPottyBreak) {
+        classes += ' bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800';
+      } else {
+        classes += ` ${defaultBg}`;
+      }
+    } 
+    // Handle care logged cells
+    else if (hasCareLogged) {
+      classes += ' bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800';
+    } 
+    // Default background
+    else {
+      classes += ` ${defaultBg}`;
     }
     
-    if (isPottyCategory && hasPottyBreak) {
-      return `${baseClasses} bg-green-100 dark:bg-green-900/30`;
+    // Highlight cells for dogs with flags
+    const isInHeat = flags.some(flag => flag.type === 'in_heat');
+    const isPregnant = flags.some(flag => flag.type === 'pregnant');
+    const hasIncompatibility = flags.some(flag => flag.type === 'incompatible');
+    const hasSpecialAttention = flags.some(flag => flag.type === 'special_attention');
+    
+    // Apply category-specific highlighting
+    switch(category) {
+      case 'feeding':
+        if (!hasCareLogged) classes += ' hover:bg-yellow-50 dark:hover:bg-yellow-900/20';
+        break;
+      case 'medications':
+        if (!hasCareLogged) classes += ' hover:bg-purple-50 dark:hover:bg-purple-900/20';
+        break;
+      case 'exercise':
+        if (!hasCareLogged) classes += ' hover:bg-indigo-50 dark:hover:bg-indigo-900/20';
+        break;
+      case 'grooming':
+        if (!hasCareLogged) classes += ' hover:bg-pink-50 dark:hover:bg-pink-900/20';
+        break;
     }
     
-    if (isInHeat) {
-      return `${baseClasses} bg-red-50 dark:bg-red-900/20`;
-    }
-    
-    if (isPregnant) {
-      return `${baseClasses} bg-pink-50 dark:bg-pink-900/20`;
-    }
-    
-    if (hasIncompatibility) {
-      return `${baseClasses} bg-amber-50 dark:bg-amber-900/20`;
-    }
-    
-    return baseClasses;
-  }, [isPottyCategory, hasPottyBreak, hasCareLogged, isInHeat, isPregnant, hasIncompatibility]);
+    return classes;
+  }, [category, hasPottyBreak, hasCareLogged, flags]);
+
+  // Extract flag statuses
+  const isInHeat = flags.some(flag => flag.type === 'in_heat');
+  const isPregnant = flags.some(flag => flag.type === 'pregnant');
+  const hasIncompatibility = flags.some(flag => flag.type === 'incompatible');
+  const hasSpecialAttention = flags.some(flag => flag.type === 'special_attention');
   
   return {
-    cellClassNames,
-    isPottyCategory,
+    cellClassNames: getCellClassNames(),
+    isPottyCategory: category === 'pottybreaks',
     isInHeat,
     isPregnant,
-    hasIncompatibility
+    hasIncompatibility,
+    hasSpecialAttention
   };
 };

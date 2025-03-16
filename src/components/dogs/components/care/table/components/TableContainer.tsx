@@ -2,7 +2,7 @@
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Table, TableBody, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Tabs } from '@/components/ui/tabs';
 import TimeSlotHeaders from '../TimeSlotHeaders';
 import DogTimeRow from '../DogTimeRow';
 import EmptyTableRow from '../EmptyTableRow';
@@ -30,12 +30,25 @@ const TableContainer: React.FC<TableContainerProps> = ({
   onRefresh,
   careCategories
 }) => {
+  // Filter to only show the active category and 'All' tables 
+  // if the active category is not 'All'
+  const categoriesToShow = activeCategory === 'all' 
+    ? careCategories 
+    : careCategories.filter(cat => cat.id === activeCategory || cat.id === 'all');
+
   return (
     <Tabs defaultValue="all" value={activeCategory}>
-      {careCategories.map(category => (
-        <TabsContent key={category.id} value={category.id} className="mt-0">
+      {/* Display individual tables for each category */}
+      {categoriesToShow.map(category => (
+        <div key={category.id} className="mb-8">
           <div className="p-2 bg-background border-b border-muted">
-            <p className="text-sm text-muted-foreground">
+            <div className="flex items-center">
+              {category.icon}
+              <h3 className="text-md font-medium ml-2">
+                {category.name} Schedule
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
               {category.id === 'all' 
                 ? 'Showing all care activities' 
                 : `Showing schedule for ${category.name}`}
@@ -64,7 +77,7 @@ const TableContainer: React.FC<TableContainerProps> = ({
                   <TableBody>
                     {dogs.map((dog, index) => (
                       <DogTimeRow
-                        key={dog.dog_id}
+                        key={`${dog.dog_id}-${category.id}`}
                         dog={dog}
                         timeSlots={timeSlots}
                         rowColor={getDogRowColor(index)}
@@ -81,7 +94,7 @@ const TableContainer: React.FC<TableContainerProps> = ({
           ) : (
             <EmptyTableRow onRefresh={onRefresh} />
           )}
-        </TabsContent>
+        </div>
       ))}
     </Tabs>
   );

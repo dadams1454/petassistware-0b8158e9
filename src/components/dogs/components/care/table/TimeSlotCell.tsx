@@ -41,6 +41,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
     <TableCell 
       className={`${cellClassNames} cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700`}
       onClick={onClick}
+      title={`${dogName} - ${timeSlot} - ${category}`}
     >
       <CellContent 
         dogName={dogName}
@@ -48,7 +49,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
         category={category}
         hasPottyBreak={hasPottyBreak}
         hasCareLogged={hasCareLogged}
-        flags={cellFlags} // Pass only the filtered flags
+        flags={cellFlags}
       />
     </TableCell>
   );
