@@ -27,6 +27,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
     <TableCell 
       className={`text-center p-0 h-10 border border-slate-200 
         ${isPottyCategory ? 'cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/20' : ''}
+        ${(isPottyCategory && hasPottyBreak) ? 'bg-green-50 dark:bg-green-900/10' : ''}
       `}
       onClick={isPottyCategory ? onClick : undefined}
     >
@@ -39,7 +40,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{dogName} - Potty break at {timeSlot}</p>
+              <p>{hasPottyBreak ? `${dogName} - Click to remove potty break at ${timeSlot}` : `Click to log potty break for ${dogName} at ${timeSlot}`}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

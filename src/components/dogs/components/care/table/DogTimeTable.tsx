@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +11,7 @@ import { timeSlots, getDogRowColor } from './dogGroupColors';
 import TimeSlotHeaders from './TimeSlotHeaders';
 import DogTimeRow from './DogTimeRow';
 import CareCategories, { careCategories } from './CareCategories';
+import { useToast } from '@/components/ui/use-toast';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -21,6 +21,7 @@ interface DogTimeTableProps {
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const [currentDate] = useState(new Date());
   const [activeCategory, setActiveCategory] = useState('all');
+  const { toast } = useToast();
   
   // Track potty breaks in a state variable
   const [pottyBreaks, setPottyBreaks] = useState<{
@@ -43,27 +44,53 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     a.dog_name.toLowerCase().localeCompare(b.dog_name.toLowerCase())
   );
 
-  // Handle cell click - for potty breaks, immediately mark with an X
+  // Handle cell click - toggle potty break status
   const handleCellClick = (dogId: string, dogName: string, timeSlot: string, category: string) => {
-    console.log(`Cell clicked: Dog ${dogId}, Time: ${timeSlot}, Category: ${category}`);
-    
     // Only handle potty break logging in the potty breaks tab
     if (category === 'pottybreaks') {
-      // Add new potty break to the state
-      const newPottyBreak = {
-        dogId,
-        timeSlot,
-        timestamp: new Date().toISOString()
-      };
+      // Check if this dog already has a potty break at this time
+      const existingBreakIndex = pottyBreaks.findIndex(
+        pb => pb.dogId === dogId && pb.timeSlot === timeSlot
+      );
       
-      setPottyBreaks([...pottyBreaks, newPottyBreak]);
-      
-      // Log potty break
-      console.log('Potty break logged:', {
-        dog: { id: dogId, name: dogName },
-        timeSlot,
-        timestamp: new Date().toISOString(),
-      });
+      if (existingBreakIndex >= 0) {
+        // Remove the potty break if it exists
+        const updatedBreaks = [...pottyBreaks];
+        updatedBreaks.splice(existingBreakIndex, 1);
+        setPottyBreaks(updatedBreaks);
+        
+        // Show toast for removal
+        toast({
+          title: "Potty break removed",
+          description: `Removed potty break for ${dogName} at ${timeSlot}`,
+        });
+        
+        console.log('Potty break removed:', {
+          dog: { id: dogId, name: dogName },
+          timeSlot
+        });
+      } else {
+        // Add new potty break
+        const newPottyBreak = {
+          dogId,
+          timeSlot,
+          timestamp: new Date().toISOString()
+        };
+        
+        setPottyBreaks([...pottyBreaks, newPottyBreak]);
+        
+        // Show toast for added potty break
+        toast({
+          title: "Potty break logged",
+          description: `${dogName} was taken out at ${timeSlot}`,
+        });
+        
+        console.log('Potty break logged:', {
+          dog: { id: dogId, name: dogName },
+          timeSlot,
+          timestamp: new Date().toISOString(),
+        });
+      }
       
       // Trigger refresh if provided
       if (onRefresh) {
@@ -96,6 +123,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
           </div>
         </div>
       </CardHeader>
+      
       <CardContent className="p-0">
         <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
           <TabsList className="w-full justify-start px-4 pt-2 bg-muted/50 rounded-none border-b">
@@ -112,7 +140,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
                   
                   {category.id === 'pottybreaks' && (
                     <span className="ml-2 text-sm text-blue-500">
-                      Click on a time slot to mark a potty break
+                      Click on a time slot to mark or unmark a potty break
                     </span>
                   )}
                 </p>
