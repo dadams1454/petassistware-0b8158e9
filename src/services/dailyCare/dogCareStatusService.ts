@@ -93,8 +93,8 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
               dog_id: dog.id,
               dog_name: dog.name,
               dog_photo: dog.photo_url,
-              breed: dog.breed,
-              color: dog.color,
+              breed: dog.breed || 'Unknown',
+              color: dog.color || 'Unknown',
               last_care: null,
               flags: mockDogFlags[dog.id] || []
             } as DogCareStatus;
@@ -104,8 +104,8 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
             dog_id: dog.id,
             dog_name: dog.name,
             dog_photo: dog.photo_url,
-            breed: dog.breed,
-            color: dog.color,
+            breed: dog.breed || 'Unknown',
+            color: dog.color || 'Unknown',
             last_care: logs && logs.length > 0 ? {
               category: logs[0].category,
               task_name: logs[0].task_name,
@@ -138,6 +138,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     );
 
     console.log(`✅ Processed ${statuses.length} dogs with care status`);
+    console.log('🐕 Dog names sample:', statuses.slice(0, 5).map(d => d.dog_name));
     return statuses;
   } catch (error) {
     console.error('❌ Error fetching all dogs care status:', error);

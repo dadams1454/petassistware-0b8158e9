@@ -38,6 +38,7 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
   // Display all dogs, regardless of category filter
   // The category will only be used when logging care for a specific dog
   console.log(`DogCareTable rendering ${dogsStatus.length} dogs with category "${selectedCategory}"`);
+  console.log('Dog names in table:', dogsStatus.map(dog => dog.dog_name).join(', '));
 
   return (
     <Card>

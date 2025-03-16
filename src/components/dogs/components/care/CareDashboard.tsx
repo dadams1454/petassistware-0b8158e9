@@ -29,6 +29,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       console.log('🔄 Loading dogs status...');
       const dogs = await fetchAllDogsWithCareStatus();
       console.log('✅ Dogs loaded successfully:', dogs.length);
+      console.log('🐕 Dogs data sample:', dogs.slice(0, 3).map(d => d.dog_name));
       return dogs;
     } catch (error) {
       console.error('❌ Error loading dogs status:', error);
@@ -64,6 +65,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       // Add check for dogStatuses to detect if they're already loaded
       if (dogStatuses && dogStatuses.length > 0) {
         console.log('📋 Dogs already loaded:', dogStatuses.length);
+        console.log('🐕 Dog names sample:', dogStatuses.slice(0, 5).map(d => d.dog_name));
         setHasInitiallyLoaded(true);
       } else {
         Promise.all([loadDogsStatus(), loadCategories()])
@@ -110,6 +112,9 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   useEffect(() => {
     if (dogStatuses) {
       console.log(`📊 Dashboard state: View=${activeView}, Category=${selectedCategory}, Dogs=${dogStatuses.length}, Loading=${loading}`);
+      if (dogStatuses.length > 0) {
+        console.log('🐕 First few dogs:', dogStatuses.slice(0, 3).map(d => d.dog_name).join(', '));
+      }
     }
   }, [activeView, selectedCategory, dogStatuses, loading]);
 
@@ -130,7 +135,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       )}
       
       {loading ? (
-        <div>
+        <div className="mt-4">
           <LoadingSpinner />
           <p className="text-center mt-2 text-gray-500">Loading dogs data...</p>
         </div>

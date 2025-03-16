@@ -26,6 +26,7 @@ const CareCardsView: React.FC<CareCardsViewProps> = ({
 }) => {
   // Display all dogs in the card view
   console.log(`CareCardsView rendering ${dogsStatus.length} dogs with category "${selectedCategory}"`);
+  console.log('Dog names in cards:', dogsStatus.map(dog => dog.dog_name).join(', '));
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -33,7 +34,7 @@ const CareCardsView: React.FC<CareCardsViewProps> = ({
         dogsStatus.map((dog) => (
           <Dialog key={dog.dog_id} open={dialogOpen && selectedDogId === dog.dog_id} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <div onClick={() => onLogCare(dog.dog_id)}>
+              <div onClick={() => onLogCare(dog.dog_id)} className="cursor-pointer">
                 <DogCareCard 
                   dog={dog} 
                   onLogCare={onLogCare}

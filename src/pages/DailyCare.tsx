@@ -16,7 +16,10 @@ const DailyCare: React.FC = () => {
     fetchAllDogsWithCareStatus(new Date())
       .then(dogs => {
         console.log('🐕 Fetched dogs count:', dogs.length);
-        console.log('🐕 First dog sample:', dogs[0] || 'No dogs returned');
+        if (dogs.length > 0) {
+          console.log('🐕 Dog names sample:', dogs.slice(0, 5).map(d => d.dog_name).join(', '));
+          console.log('🐕 First dog sample:', dogs[0] || 'No dogs returned');
+        }
       })
       .catch(error => {
         console.error('❌ Error fetching dogs on DailyCare mount:', error);
@@ -33,6 +36,12 @@ const DailyCare: React.FC = () => {
           Track and log daily care activities for all your dogs
           {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
         </p>
+        {dogStatuses && dogStatuses.length > 0 && (
+          <p className="mt-1 text-xs text-slate-400">
+            Dogs: {dogStatuses.slice(0, 5).map(d => d.dog_name).join(', ')}
+            {dogStatuses.length > 5 ? ` and ${dogStatuses.length - 5} more...` : ''}
+          </p>
+        )}
       </div>
 
       <CareDashboard />
