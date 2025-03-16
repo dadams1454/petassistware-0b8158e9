@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,8 +7,8 @@ import { format } from 'date-fns';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { timeSlots } from './dogGroupColors';
 import { careCategories } from './CareCategories';
-import SpecialConditionsAlert from './components/SpecialConditionsAlert';
-import TableContainer from './components/TableContainer';
+import SpecialConditionsAlert from './SpecialConditionsAlert';
+import TableContainer from './TableContainer';
 import { usePottyBreaks } from './components/usePottyBreaks';
 import { useCareTracking } from './components/useCareTracking';
 
@@ -20,7 +19,8 @@ interface DogTimeTableProps {
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const [currentDate] = useState(new Date());
-  const [activeCategory, setActiveCategory] = useState('pottybreaks'); // Default to pottybreaks for testing
+  // Since we only have pottybreaks now, we'll set it as the default and only option
+  const [activeCategory, setActiveCategory] = useState('pottybreaks');
   
   // Use the potty breaks hook for managing potty break state
   const { hasPottyBreak, handleCellClick: handlePottyBreakClick } = usePottyBreaks(onRefresh);
@@ -90,6 +90,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       
       <CardContent className="p-0">
         <div className="w-full">
+          {/* Since we only have one category now, we can simplify this section */}
           <TabsList className="w-full justify-start px-4 pt-2 bg-muted/50 rounded-none border-b">
             {careCategories.map(category => (
               <TabsTrigger 
