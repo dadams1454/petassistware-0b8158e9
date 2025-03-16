@@ -1,5 +1,6 @@
 
 import { ReactNode } from 'react';
+import { DogFlag } from '@/types/dailyCare';
 
 export interface CareCategory {
   id: string;
@@ -7,14 +8,11 @@ export interface CareCategory {
   icon: ReactNode;
 }
 
-export type CellFlagStatus = {
+export interface DogCellStyles {
+  cellClassNames: string;
+  isPottyCategory: boolean;
   isInHeat: boolean;
   isPregnant: boolean;
   hasIncompatibility: boolean;
   hasSpecialAttention: boolean;
-};
-
-export type DogCellStyles = {
-  cellClassNames: string;
-  isPottyCategory: boolean;
-} & CellFlagStatus;
+}
