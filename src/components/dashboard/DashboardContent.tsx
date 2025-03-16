@@ -1,17 +1,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
+import ExerciseTab from './tabs/ExerciseTab';
+import MedicationsTab from './tabs/MedicationsTab';
+import GroomingTab from './tabs/GroomingTab';
 import CareLogDialog from './dialogs/CareLogDialog';
-import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
-import ExerciseLog from '@/components/dogs/components/care/exercise/ExerciseLog';
-import MedicationsLog from '@/components/dogs/components/care/medications/MedicationsLog';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -98,26 +97,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   return (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <TabsList>
-            <TabsTrigger value="care">Potty Break</TabsTrigger>
-            <TabsTrigger value="exercise">Exercise Log</TabsTrigger>
-            <TabsTrigger value="medications">Medications</TabsTrigger>
-            <TabsTrigger value="grooming">Grooming</TabsTrigger>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-          </TabsList>
-          
-          <Button 
-            onClick={handleRefreshDogs} 
-            disabled={isRefreshing}
-            variant="outline"
-            size="sm"
-            className="gap-1"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            {isRefreshing ? 'Refreshing...' : 'Refresh Dogs'}
-          </Button>
-        </div>
+        <TabsList 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onRefreshDogs={handleRefreshDogs}
+          isRefreshing={isRefreshing}
+        />
         
         <TabsContent value="care">
           <DailyCareTab 
@@ -127,64 +112,24 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </TabsContent>
         
         <TabsContent value="exercise">
-          {dogStatuses && dogStatuses.length > 0 ? (
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800 mb-4">
-              <h3 className="text-lg font-medium text-indigo-800 dark:text-indigo-300">Daily Exercise Tracking</h3>
-              <p className="text-sm text-indigo-600 dark:text-indigo-400">
-                Monitor and log exercise activities for all dogs throughout the day.
-              </p>
-            </div>
-          ) : null}
-          {dogStatuses && dogStatuses.length > 0 ? (
-            <ExerciseLog
-              dogs={dogStatuses}
-              onRefresh={handleRefreshDogs}
-            />
-          ) : (
-            <div className="p-8 text-center border rounded-lg">
-              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-              <Button onClick={handleRefreshDogs} className="mt-4">Refresh Dogs</Button>
-            </div>
-          )}
+          <ExerciseTab 
+            dogStatuses={dogStatuses} 
+            onRefreshDogs={handleRefreshDogs} 
+          />
         </TabsContent>
         
         <TabsContent value="medications">
-          {dogStatuses && dogStatuses.length > 0 ? (
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800 mb-4">
-              <h3 className="text-lg font-medium text-purple-800 dark:text-purple-300">Medication Tracking</h3>
-              <p className="text-sm text-purple-600 dark:text-purple-400">
-                Track and log monthly preventative medications and daily treatments for all dogs.
-              </p>
-            </div>
-          ) : null}
-          {dogStatuses && dogStatuses.length > 0 ? (
-            <MedicationsLog
-              dogs={dogStatuses}
-              onRefresh={handleRefreshDogs}
-            />
-          ) : (
-            <div className="p-8 text-center border rounded-lg">
-              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-              <Button onClick={handleRefreshDogs} className="mt-4">Refresh Dogs</Button>
-            </div>
-          )}
+          <MedicationsTab 
+            dogStatuses={dogStatuses} 
+            onRefreshDogs={handleRefreshDogs} 
+          />
         </TabsContent>
         
         <TabsContent value="grooming">
-          <div className="mb-4 bg-pink-50 dark:bg-pink-900/20 p-3 rounded-lg border border-pink-200 dark:border-pink-800">
-            <h3 className="text-lg font-medium text-pink-800 dark:text-pink-300">Monthly Grooming Schedule</h3>
-            <p className="text-sm text-pink-600 dark:text-pink-400">
-              Track and schedule grooming activities for all dogs throughout the month.
-            </p>
-          </div>
-          {dogStatuses && dogStatuses.length > 0 ? (
-            <GroomingSchedule dogs={dogStatuses} onRefresh={handleRefreshDogs} />
-          ) : (
-            <div className="p-8 text-center border rounded-lg">
-              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-              <Button onClick={handleRefreshDogs} className="mt-4">Refresh Dogs</Button>
-            </div>
-          )}
+          <GroomingTab 
+            dogStatuses={dogStatuses} 
+            onRefreshDogs={handleRefreshDogs} 
+          />
         </TabsContent>
         
         <TabsContent value="overview">
