@@ -11,12 +11,14 @@ interface CellStylesProps {
 
 export const useCellStyles = ({ category, hasPottyBreak, flags }: CellStylesProps): DogCellStyles => {
   const isPottyCategory = category === 'pottybreaks';
+  
+  // Check for specific flags that affect cell styling
   const isInHeat = flags.some(flag => flag.type === 'in_heat');
-  const isPregnant = flags.some(flag => flag.type === 'special_attention' && flag.value?.includes('pregnant'));
+  const isPregnant = flags.some(flag => flag.type === 'pregnant');
   const hasIncompatibility = flags.some(flag => flag.type === 'incompatible');
   
-  // Don't process special attention flags in the cells - only use values that affect display
-  const hasSpecialAttention = false; // This is now handled in DogNameCell only
+  // Special attention is now handled exclusively in DogNameCell
+  const hasSpecialAttention = false;
   
   const getBorderColor = () => {
     if (isInHeat) return 'border-red-400';

@@ -14,8 +14,9 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog }) => {
   // Get only non-special-attention flags for the flags list
   const regularFlags = dog.flags?.filter(flag => flag.type !== 'special_attention') || [];
   
-  // Get only the special attention flag if it exists
-  const specialAttentionFlag = dog.flags?.find(flag => flag.type === 'special_attention');
+  // Get only the FIRST special attention flag if it exists (to prevent duplicates)
+  const specialAttentionFlags = dog.flags?.filter(flag => flag.type === 'special_attention') || [];
+  const specialAttentionFlag = specialAttentionFlags.length > 0 ? specialAttentionFlags[0] : null;
   const hasSpecialAttention = !!specialAttentionFlag;
   
   return (

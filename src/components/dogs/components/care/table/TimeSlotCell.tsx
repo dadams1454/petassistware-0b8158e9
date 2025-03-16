@@ -25,6 +25,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   flags = []
 }) => {
   // Filter out special_attention flags for cell styling
+  // This ensures special attention flags only appear in the dog name cell
   const cellFlags = flags.filter(flag => flag.type !== 'special_attention');
   
   const { cellClassNames, isPottyCategory } = useCellStyles({
@@ -43,7 +44,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
         timeSlot={timeSlot}
         category={category}
         hasPottyBreak={hasPottyBreak}
-        flags={flags}
+        flags={cellFlags} // Pass only the filtered flags
       />
     </TableCell>
   );
