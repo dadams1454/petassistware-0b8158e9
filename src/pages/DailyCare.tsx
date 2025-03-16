@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout';
 import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DogRotationSchedule from '@/components/dogs/components/care/DogRotationSchedule';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
+import ExerciseLog from '@/components/dogs/components/care/exercise/ExerciseLog';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, parseISO } from 'date-fns';
@@ -80,6 +81,7 @@ const DailyCare: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList>
           <TabsTrigger value="timeTable">Time Table</TabsTrigger>
+          <TabsTrigger value="exercise">Exercise Log</TabsTrigger>
           <TabsTrigger value="care">Daily Care</TabsTrigger>
           <TabsTrigger value="rotation">Dog Rotation</TabsTrigger>
         </TabsList>
@@ -91,6 +93,22 @@ const DailyCare: React.FC = () => {
 
           {dogStatuses && dogStatuses.length > 0 ? (
             <DogTimeTable dogsStatus={dogStatuses} onRefresh={handleManualRefresh} />
+          ) : (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
+              <Button onClick={handleManualRefresh} className="mt-4">Refresh Dogs</Button>
+            </Card>
+          )}
+        </TabsContent>
+        
+        {/* New Exercise Log Tab */}
+        <TabsContent value="exercise" className="mt-4">
+          <div className="text-sm text-muted-foreground mb-2">
+            👆 Exercise log for daily dog activities
+          </div>
+
+          {dogStatuses && dogStatuses.length > 0 ? (
+            <ExerciseLog dogs={dogStatuses} onRefresh={handleManualRefresh} />
           ) : (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>

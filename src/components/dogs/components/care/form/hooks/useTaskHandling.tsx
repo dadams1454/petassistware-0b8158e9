@@ -32,10 +32,31 @@ export const useTaskHandling = ({
   useEffect(() => {
     const loadPresets = async () => {
       const data = await fetchCareTaskPresets();
-      setPresets(data);
+      
+      // If we don't have any exercise presets, let's add some default ones
+      if (!data.some(preset => preset.category === 'exercise')) {
+        console.log('No exercise presets found, adding defaults...');
+        try {
+          await addCareTaskPreset('exercise', 'Walk');
+          await addCareTaskPreset('exercise', 'Play fetch');
+          await addCareTaskPreset('exercise', 'Run');
+          await addCareTaskPreset('exercise', 'Swim');
+          await addCareTaskPreset('exercise', 'Training session');
+          
+          // Fetch again after adding defaults
+          const updatedData = await fetchCareTaskPresets();
+          setPresets(updatedData);
+        } catch (error) {
+          console.error('Error adding default exercise presets:', error);
+          setPresets(data);
+        }
+      } else {
+        setPresets(data);
+      }
     };
+    
     loadPresets();
-  }, [fetchCareTaskPresets]);
+  }, [fetchCareTaskPresets, addCareTaskPreset]);
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
