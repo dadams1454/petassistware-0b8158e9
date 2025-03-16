@@ -31,7 +31,6 @@ const TableContainer: React.FC<TableContainerProps> = ({
   careCategories
 }) => {
   // Always show the currently selected category table
-  // We don't filter the categories anymore - we'll just render the active one
   const selectedCategory = careCategories.find(cat => cat.id === activeCategory) || careCategories[0];
   
   return (
