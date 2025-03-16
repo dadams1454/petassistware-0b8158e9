@@ -42,19 +42,28 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   const cellIdentifier = `${dogId}-${timeSlot}-${category}`;
   
   const handleClick = () => {
-    console.log(`Clicked cell: ${cellIdentifier}, isPottyCategory: ${isPottyCategory}, hasPottyBreak: ${hasPottyBreak}`);
+    console.log(`Clicked cell: ${cellIdentifier}, category: ${category}, hasCareLogged: ${hasCareLogged}`);
     onClick();
   };
+  
+  // Add specific hover effects based on the category
+  let hoverClass = 'hover:bg-slate-100 dark:hover:bg-slate-700';
+  
+  if (category === 'grooming' && !hasCareLogged) {
+    hoverClass = 'hover:bg-purple-100 dark:hover:bg-purple-900/20';
+  } else if (category === 'pottybreaks' && !hasPottyBreak) {
+    hoverClass = 'hover:bg-blue-100 dark:hover:bg-blue-900/20';
+  }
   
   return (
     <TableCell 
       key={cellIdentifier}
-      className={`${cellClassNames} cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700`}
+      className={`${cellClassNames} cursor-pointer ${hoverClass}`}
       onClick={handleClick}
       title={`${dogName} - ${timeSlot} - ${category}`}
       data-cell-id={cellIdentifier}
-      data-potty={isPottyCategory ? 'true' : 'false'}
-      data-has-potty={hasPottyBreak ? 'true' : 'false'}
+      data-category={category}
+      data-has-care={hasCareLogged ? 'true' : 'false'}
     >
       <CellContent 
         dogName={dogName}

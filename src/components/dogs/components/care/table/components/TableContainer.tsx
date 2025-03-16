@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Table, TableBody, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
 import TimeSlotHeaders from '../TimeSlotHeaders';
 import DogTimeRow from '../DogTimeRow';
 import EmptyTableRow from '../EmptyTableRow';
@@ -37,7 +36,6 @@ const TableContainer: React.FC<TableContainerProps> = ({
     console.log(`TableContainer rendering for category: ${activeCategory} with ${dogs.length} dogs`);
   }, [activeCategory, dogs.length]);
 
-  // No longer using Tabs/TabsContent since we want direct control
   return (
     <div className="mb-8">
       <div className="p-2 bg-background border-b border-muted">
@@ -55,6 +53,10 @@ const TableContainer: React.FC<TableContainerProps> = ({
           {selectedCategory.id === 'pottybreaks' ? (
             <span className="ml-2 text-sm text-blue-500">
               Click on a time slot to mark or unmark a potty break
+            </span>
+          ) : selectedCategory.id === 'grooming' ? (
+            <span className="ml-2 text-sm text-blue-500">
+              Click on a time slot to log grooming activity
             </span>
           ) : (
             <span className="ml-2 text-sm text-blue-500">
