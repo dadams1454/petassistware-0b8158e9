@@ -24,8 +24,8 @@ const CareCardsView: React.FC<CareCardsViewProps> = ({
   onCareLogSuccess,
   selectedCategory
 }) => {
-  // Don't filter dogs by category - show all dogs regardless of selected category
-  // The category will only be used when logging care
+  // Always show all dogs, no filtering by category
+  // We want to see all dogs regardless of category
   const allDogs = dogsStatus;
 
   return (
