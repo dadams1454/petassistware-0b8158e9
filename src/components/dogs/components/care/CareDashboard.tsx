@@ -1,111 +1,97 @@
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
-import { useToast } from '@/components/ui/use-toast';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import LoadingSpinner from './LoadingSpinner';
-import DogCareStatCards from './DogCareStatCards';
+import { DogCareStatus } from '@/types/dailyCare';
 import CareDashboardHeader from './CareDashboardHeader';
 import CareTabsContent from './CareTabsContent';
-import { DogCareStatus } from '@/types/dailyCare';
+import TopCategoryTabs from './TopCategoryTabs';
+import LoadingSpinner from './LoadingSpinner';
 
-interface CareDashboardProps {
-  date?: Date;
-}
-
-const CareDashboard: React.FC<CareDashboardProps> = ({ date = new Date() }) => {
-  const [dogsStatus, setDogsStatus] = useState<DogCareStatus[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
+const CareDashboard: React.FC = () => {
+  const [activeView, setActiveView] = useState<string>('table');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('cards');
-  const { toast } = useToast();
-  const { fetchAllDogsWithCareStatus } = useDailyCare();
+  const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
+  const [dogsStatus, setDogsStatus] = useState<DogCareStatus[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  
+  const { fetchAllDogsWithCareStatus, loading, fetchCareTaskPresets } = useDailyCare();
 
-  // Memoize the date string to prevent unnecessary refetches
-  const dateString = date.toISOString().split('T')[0];
+  // Function to fetch all dogs care status
+  const loadDogsStatus = useCallback(async () => {
+    setIsLoading(true);
+    const data = await fetchAllDogsWithCareStatus();
+    setDogsStatus(data);
+    setIsLoading(false);
+  }, [fetchAllDogsWithCareStatus]);
 
-  const loadDogCareStatus = useCallback(async () => {
-    if (loading) {
-      try {
-        const statuses = await fetchAllDogsWithCareStatus(date);
-        setDogsStatus(statuses);
-      } catch (error) {
-        console.error('Error fetching care status:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load dogs care status',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
+  // Function to fetch categories
+  const loadCategories = useCallback(async () => {
+    try {
+      const presets = await fetchCareTaskPresets();
+      const uniqueCategories = Array.from(new Set(presets.map(preset => preset.category)));
+      setCategories(uniqueCategories);
+      if (uniqueCategories.length > 0 && !selectedCategory) {
+        setSelectedCategory(uniqueCategories[0]);
       }
+    } catch (error) {
+      console.error('Error loading categories:', error);
     }
-  }, [date, fetchAllDogsWithCareStatus, toast, loading]);
+  }, [fetchCareTaskPresets, selectedCategory]);
 
+  // Initial data loading
   useEffect(() => {
-    setLoading(true);
-  }, [dateString]);
+    loadDogsStatus();
+    loadCategories();
+  }, [loadDogsStatus, loadCategories]);
 
-  useEffect(() => {
-    loadDogCareStatus();
-  }, [loadDogCareStatus]);
-
-  const handleCareLogSuccess = useCallback(() => {
-    setDialogOpen(false);
-    setLoading(true);
-    
-    toast({
-      title: 'Success',
-      description: 'Care log added successfully',
-    });
-  }, [toast]);
-
-  const handleAddCareLog = useCallback((dogId: string) => {
+  // Handler for selecting a dog to log care
+  const handleLogCare = (dogId: string) => {
     setSelectedDogId(dogId);
     setDialogOpen(true);
-  }, []);
+  };
 
-  // Calculate completion percentage - only recalculate when dogsStatus changes
-  const careCompletionPercentage = dogsStatus.length > 0 
-    ? Math.round((dogsStatus.filter(dog => dog.last_care !== null).length / dogsStatus.length) * 100)
-    : 0;
-
-  if (loading && dogsStatus.length === 0) {
-    return <LoadingSpinner />;
-  }
+  // Success handler for when care is logged
+  const handleCareLogSuccess = () => {
+    setDialogOpen(false);
+    loadDogsStatus();
+  };
+  
+  // Handle category change
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
 
   return (
     <div className="space-y-4">
       <CareDashboardHeader 
-        date={date}
-        careCompletionPercentage={careCompletionPercentage}
-        totalDogs={dogsStatus.length}
-        caredDogs={dogsStatus.filter(dog => dog.last_care !== null).length}
+        activeView={activeView} 
+        setActiveView={setActiveView} 
       />
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="cards">Cards View</TabsTrigger>
-          <TabsTrigger value="table">Table View</TabsTrigger>
-        </TabsList>
-
-        <CareTabsContent 
-          activeTab={activeTab}
+      
+      {categories.length > 0 && (
+        <TopCategoryTabs 
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+      )}
+      
+      {isLoading || loading ? (
+        <LoadingSpinner />
+      ) : (
+        <CareTabsContent
+          activeTab={activeView}
           dogsStatus={dogsStatus}
-          onLogCare={handleAddCareLog}
+          onLogCare={handleLogCare}
           selectedDogId={selectedDogId}
           dialogOpen={dialogOpen}
           setDialogOpen={setDialogOpen}
           onCareLogSuccess={handleCareLogSuccess}
+          selectedCategory={selectedCategory}
         />
-      </Tabs>
-
-      {/* Overall stats summary */}
-      <DogCareStatCards
-        dogsStatus={dogsStatus}
-        careCompletionPercentage={careCompletionPercentage}
-      />
+      )}
     </div>
   );
 };

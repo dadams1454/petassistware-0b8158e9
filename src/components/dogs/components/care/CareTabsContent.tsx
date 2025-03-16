@@ -13,6 +13,7 @@ interface CareTabsContentProps {
   dialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
   onCareLogSuccess: () => void;
+  selectedCategory: string;
 }
 
 // Memoize the component to prevent unnecessary re-renders
@@ -24,6 +25,7 @@ const CareTabsContent: React.FC<CareTabsContentProps> = memo(({
   dialogOpen,
   setDialogOpen,
   onCareLogSuccess,
+  selectedCategory,
 }) => {
   return (
     <>
@@ -35,6 +37,7 @@ const CareTabsContent: React.FC<CareTabsContentProps> = memo(({
           dialogOpen={dialogOpen}
           setDialogOpen={setDialogOpen}
           onCareLogSuccess={onCareLogSuccess}
+          selectedCategory={selectedCategory}
         />
       </TabsContent>
 
@@ -46,6 +49,7 @@ const CareTabsContent: React.FC<CareTabsContentProps> = memo(({
           dialogOpen={dialogOpen}
           setDialogOpen={setDialogOpen}
           onCareLogSuccess={onCareLogSuccess}
+          selectedCategory={selectedCategory}
         />
       </TabsContent>
     </>

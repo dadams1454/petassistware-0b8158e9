@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { Dog } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,8 +11,6 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import CareLogForm from './CareLogForm';
 import { DogFlagsList } from './DogFlagsList';
 import { DogCareStatus } from '@/types/dailyCare';
-import CategoryTabs from './form/task-selection/CategoryTabs';
-import { useDailyCare } from '@/contexts/dailyCare';
 
 interface DogCareTableProps {
   dogsStatus: DogCareStatus[];
@@ -21,6 +19,7 @@ interface DogCareTableProps {
   dialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
   onCareLogSuccess: () => void;
+  selectedCategory: string;
 }
 
 const DogCareTable: React.FC<DogCareTableProps> = ({
@@ -29,41 +28,9 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
   selectedDogId,
   dialogOpen,
   setDialogOpen,
-  onCareLogSuccess
+  onCareLogSuccess,
+  selectedCategory
 }) => {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<Record<string, string>>({});
-  const { fetchCareTaskPresets } = useDailyCare();
-
-  // Fetch categories when the component mounts
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const presets = await fetchCareTaskPresets();
-        const uniqueCategories = Array.from(new Set(presets.map(preset => preset.category)));
-        setCategories(uniqueCategories);
-        
-        // Initialize selected categories for each dog
-        const initialSelectedCategories: Record<string, string> = {};
-        dogsStatus.forEach(dog => {
-          initialSelectedCategories[dog.dog_id] = uniqueCategories[0] || '';
-        });
-        setSelectedCategories(initialSelectedCategories);
-      } catch (error) {
-        console.error('Error loading categories:', error);
-      }
-    };
-    
-    loadCategories();
-  }, [fetchCareTaskPresets, dogsStatus]);
-
-  const handleCategoryChange = (dogId: string, category: string) => {
-    setSelectedCategories(prev => ({
-      ...prev,
-      [dogId]: category
-    }));
-  };
-
   const handleCareClick = (dogId: string) => {
     onLogCare(dogId);
   };
@@ -80,7 +47,6 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
                 <TableHead>Last Care</TableHead>
                 <TableHead>Time</TableHead>
                 <TableHead>Flags</TableHead>
-                <TableHead>Categories</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -123,16 +89,6 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
                       <DogFlagsList flags={dog.flags} />
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-xs">
-                    {categories.length > 0 && (
-                      <CategoryTabs 
-                        categories={categories} 
-                        selectedCategory={selectedCategories[dog.dog_id] || categories[0]} 
-                        handleCategoryChange={(category) => handleCategoryChange(dog.dog_id, category)}
-                        compact={true}
-                      />
-                    )}
-                  </TableCell>
                   <TableCell className="text-right">
                     <Dialog open={dialogOpen && selectedDogId === dog.dog_id} onOpenChange={setDialogOpen}>
                       <DialogTrigger asChild>
@@ -149,7 +105,7 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
                           <CareLogForm 
                             dogId={dog.dog_id} 
                             onSuccess={onCareLogSuccess} 
-                            initialCategory={selectedCategories[dog.dog_id]}
+                            initialCategory={selectedCategory}
                           />
                         )}
                       </DialogContent>

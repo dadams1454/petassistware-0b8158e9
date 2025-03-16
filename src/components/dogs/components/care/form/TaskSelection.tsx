@@ -27,15 +27,17 @@ interface TaskSelectionProps {
   handleTaskNameChange: (value: string) => void;
   handleCustomTaskChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleAddPreset: () => Promise<void>;
-  loading: boolean;
+  loading?: boolean;
 }
 
 const TaskSelection: React.FC<TaskSelectionProps> = ({
   form,
   presets,
   selectedCategory,
+  setSelectedCategory,
   customTaskName,
   showCustomTask,
+  setShowCustomTask,
   activeTab,
   setActiveTab,
   showNewPresetDialog,
@@ -48,7 +50,7 @@ const TaskSelection: React.FC<TaskSelectionProps> = ({
   handleTaskNameChange,
   handleCustomTaskChange,
   handleAddPreset,
-  loading
+  loading = false
 }) => {
   return (
     <div className="space-y-4">

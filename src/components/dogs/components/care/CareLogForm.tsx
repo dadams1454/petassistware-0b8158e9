@@ -22,9 +22,11 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess, initialCate
     loading,
     presets,
     selectedCategory,
+    setSelectedCategory,
     customTaskName,
     setCustomTaskName,
     showCustomTask,
+    setShowCustomTask,
     newCategoryName,
     setNewCategoryName,
     newTaskName, 
@@ -63,8 +65,11 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess, initialCate
             form={form}
             presets={presets}
             selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
             customTaskName={customTaskName}
+            setCustomTaskName={setCustomTaskName}
             showCustomTask={showCustomTask}
+            setShowCustomTask={setShowCustomTask}
             newCategoryName={newCategoryName}
             setNewCategoryName={setNewCategoryName}
             newTaskName={newTaskName}
@@ -77,6 +82,7 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess, initialCate
             handleTaskNameChange={handleTaskNameChange}
             handleCustomTaskChange={handleCustomTaskChange}
             handleAddPreset={handleAddPreset}
+            loading={loading}
           />
 
           <DateTimeSelector form={form} />
