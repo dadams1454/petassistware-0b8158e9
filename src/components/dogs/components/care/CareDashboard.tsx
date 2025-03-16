@@ -14,6 +14,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   
   const { 
     fetchAllDogsWithCareStatus, 
@@ -48,12 +49,17 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
 
   // Initial data loading - fetch only once during component mount
   useEffect(() => {
-    loadDogsStatus();
-    loadCategories();
-  }, [loadDogsStatus, loadCategories]);
+    if (!hasInitiallyLoaded) {
+      console.log('Initial data loading');
+      loadDogsStatus();
+      loadCategories();
+      setHasInitiallyLoaded(true);
+    }
+  }, [loadDogsStatus, loadCategories, hasInitiallyLoaded]);
 
   // Handler for refreshing data
   const handleRefresh = useCallback(() => {
+    console.log('Manual refresh triggered');
     loadDogsStatus();
   }, [loadDogsStatus]);
 

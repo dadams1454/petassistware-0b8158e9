@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import * as dailyCareService from '@/services/dailyCare';
 import { DogCareStatus } from '@/types/dailyCare';
@@ -10,17 +10,32 @@ export const useDogCareStatus = () => {
   const [dogStatuses, setDogStatuses] = useState<DogCareStatus[]>([]);
   const { toast } = useToast();
   const { getCachedStatus, setCachedStatus, clearCache } = useCacheState();
+  
+  // Use a ref to track if an initial fetch has occurred
+  const initialFetchDone = useRef(false);
 
-  const fetchAllDogsWithCareStatus = useCallback(async (date = new Date()): Promise<DogCareStatus[]> => {
+  const fetchAllDogsWithCareStatus = useCallback(async (date = new Date(), forceRefresh = false): Promise<DogCareStatus[]> => {
     // Convert date to string for caching
     const dateString = date.toISOString().split('T')[0];
     
-    // Check cache first
-    const cachedData = getCachedStatus(dateString);
-    if (cachedData) {
-      // If we have cached data, update the state without showing loading state
-      setDogStatuses(cachedData);
-      return cachedData;
+    // If we have already fetched and are not forcing a refresh, avoid another fetch
+    if (initialFetchDone.current && !forceRefresh) {
+      console.log('Using existing dog statuses, no fetch needed');
+      return dogStatuses;
+    }
+    
+    // Check cache first if not forcing a refresh
+    if (!forceRefresh) {
+      const cachedData = getCachedStatus(dateString);
+      if (cachedData) {
+        console.log('Using cached dog statuses from', dateString);
+        // If we have cached data, update the state without showing loading state
+        setDogStatuses(cachedData);
+        initialFetchDone.current = true;
+        return cachedData;
+      }
+    } else {
+      console.log('Force refreshing dog statuses');
     }
     
     // Only show loading state when we need to fetch from server
@@ -28,6 +43,7 @@ export const useDogCareStatus = () => {
     
     try {
       // Fetch new data
+      console.log('Fetching dog statuses from server for', dateString);
       const statuses = await dailyCareService.fetchAllDogsWithCareStatus(date);
       
       // Cache the results
@@ -35,6 +51,7 @@ export const useDogCareStatus = () => {
       
       // Update state with new data
       setDogStatuses(statuses);
+      initialFetchDone.current = true;
       
       return statuses;
     } catch (error) {
@@ -48,7 +65,7 @@ export const useDogCareStatus = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast, getCachedStatus, setCachedStatus]);
+  }, [toast, getCachedStatus, setCachedStatus, dogStatuses]);
 
   return {
     loading,
