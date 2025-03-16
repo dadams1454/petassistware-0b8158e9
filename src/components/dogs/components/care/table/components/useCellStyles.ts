@@ -34,7 +34,11 @@ export const useCellStyles = ({
     } 
     // Handle care logged cells
     else if (hasCareLogged) {
-      classes += ' bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800';
+      if (category === 'grooming') {
+        classes += ' bg-pink-100 dark:bg-pink-900/30 border-pink-200 dark:border-pink-800';
+      } else {
+        classes += ' bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800';
+      }
     } 
     // Default background
     else {

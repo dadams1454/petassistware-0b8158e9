@@ -7,6 +7,7 @@ import DogTimeRow from '../DogTimeRow';
 import EmptyTableRow from '../EmptyTableRow';
 import { timeSlots, getDogRowColor } from '../dogGroupColors';
 import { CareCategory } from './types';
+import GroomingSchedule from '../GroomingSchedule';
 
 interface TableContainerProps {
   dogs: DogCareStatus[];
@@ -35,6 +36,11 @@ const TableContainer: React.FC<TableContainerProps> = ({
   useEffect(() => {
     console.log(`TableContainer rendering for category: ${activeCategory} with ${dogs.length} dogs`);
   }, [activeCategory, dogs.length]);
+
+  // Special case for grooming - show the monthly schedule instead of hourly
+  if (selectedCategory.id === 'grooming') {
+    return <GroomingSchedule dogs={dogs} onRefresh={onRefresh} />;
+  }
 
   return (
     <div className="mb-8">

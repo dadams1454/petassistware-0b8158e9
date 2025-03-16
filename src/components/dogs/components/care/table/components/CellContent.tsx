@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Scissors } from 'lucide-react';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { DogFlag } from '@/types/dailyCare';
 import { useCellStyles } from './useCellStyles';
@@ -74,7 +74,11 @@ const CellContent: React.FC<CellContentProps> = ({
         <TooltipTrigger asChild>
           <div className="flex items-center justify-center h-full">
             {hasCareLogged ? (
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+              category === 'grooming' ? (
+                <Scissors className="h-4 w-4 text-pink-600 dark:text-pink-400" />
+              ) : (
+                <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+              )
             ) : isPottyCategory && hasPottyBreak ? (
               <X className="h-4 w-4 text-green-600 dark:text-green-400" />
             ) : (
