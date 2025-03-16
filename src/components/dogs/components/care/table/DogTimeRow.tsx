@@ -4,6 +4,7 @@ import { TableRow, TableCell } from '@/components/ui/table';
 import { Dog } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
+import { DogFlagsList } from '../DogFlagsList';
 
 interface DogTimeRowProps {
   dog: DogCareStatus;
@@ -22,6 +23,9 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
   hasPottyBreak,
   onCellClick
 }) => {
+  // Check if dog has any flags
+  const hasFlags = dog.flags && dog.flags.length > 0;
+  
   return (
     <TableRow key={dog.dog_id} className={rowColor}>
       <TableCell className="font-medium sticky left-0 z-10 border-r border-slate-200 bg-white dark:bg-slate-900">
@@ -37,7 +41,14 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
               <Dog className="h-3 w-3 text-primary" />
             </div>
           )}
-          <span>{dog.dog_name}</span>
+          <div className="flex items-center">
+            <span>{dog.dog_name}</span>
+            {hasFlags && (
+              <div className="ml-1 flex">
+                <DogFlagsList flags={dog.flags} />
+              </div>
+            )}
+          </div>
         </div>
       </TableCell>
       
@@ -50,6 +61,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
           category={activeCategory}
           hasPottyBreak={hasPottyBreak(dog.dog_id, timeSlot)}
           onClick={() => onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory)}
+          flags={dog.flags}
         />
       ))}
     </TableRow>

@@ -9,7 +9,7 @@ interface TimeSlotHeadersProps {
 const TimeSlotHeaders: React.FC<TimeSlotHeadersProps> = ({ timeSlots }) => {
   return (
     <>
-      <TableHead className="w-32 sticky left-0 z-10 bg-muted/50">Dog Name</TableHead>
+      <TableHead className="w-40 sticky left-0 z-10 bg-muted/50">Dog Name</TableHead>
       {timeSlots.map((timeSlot) => (
         <TableHead key={timeSlot} className="text-center px-2 py-1 w-12 border-x border-slate-200">
           {timeSlot}

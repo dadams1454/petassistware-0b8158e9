@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, Dog } from 'lucide-react';
+import { Calendar, Dog, AlertTriangle } from 'lucide-react';
 import EmptyTableRow from './EmptyTableRow';
 import TableDebugger from './TableDebugger';
 import { format } from 'date-fns';
@@ -12,6 +13,7 @@ import TimeSlotHeaders from './TimeSlotHeaders';
 import DogTimeRow from './DogTimeRow';
 import CareCategories, { careCategories } from './CareCategories';
 import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -42,6 +44,19 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   // Sort dogs alphabetically by name
   const sortedDogs = [...uniqueDogs].sort((a, b) => 
     a.dog_name.toLowerCase().localeCompare(b.dog_name.toLowerCase())
+  );
+
+  // Find dogs with special conditions
+  const dogsInHeat = sortedDogs.filter(dog => 
+    dog.flags?.some(flag => flag.type === 'in_heat')
+  );
+  
+  const pregnantDogs = sortedDogs.filter(dog => 
+    dog.flags?.some(flag => flag.type === 'special_attention' && flag.value?.includes('pregnant'))
+  );
+  
+  const incompatibleDogs = sortedDogs.filter(dog => 
+    dog.flags?.some(flag => flag.type === 'incompatible')
   );
 
   // Handle cell click - toggle potty break status
@@ -103,6 +118,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const hasPottyBreak = (dogId: string, timeSlot: string) => {
     return pottyBreaks.some(pb => pb.dogId === dogId && pb.timeSlot === timeSlot);
   };
+  
+  // Check if we have any dogs with special conditions
+  const hasSpecialConditions = dogsInHeat.length > 0 || pregnantDogs.length > 0 || incompatibleDogs.length > 0;
 
   return (
     <Card className="shadow-md">
@@ -123,6 +141,26 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
           </div>
         </div>
       </CardHeader>
+      
+      {hasSpecialConditions && (
+        <div className="px-6 pt-0 pb-2">
+          <Alert variant="warning" className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <span className="font-semibold">Special attention needed:</span>{' '}
+              {dogsInHeat.length > 0 && (
+                <span>🔴 {dogsInHeat.length} dog(s) in heat. </span>
+              )}
+              {pregnantDogs.length > 0 && (
+                <span>🩷 {pregnantDogs.length} pregnant dog(s). </span>
+              )}
+              {incompatibleDogs.length > 0 && (
+                <span>⚠️ {incompatibleDogs.length} dog(s) with incompatibility issues. </span>
+              )}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       
       <CardContent className="p-0">
         <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
