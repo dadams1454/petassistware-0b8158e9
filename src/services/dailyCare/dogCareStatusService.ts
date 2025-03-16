@@ -10,18 +10,25 @@ import { createMockDogFlags } from '@/utils/mockDogFlags';
  */
 export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<DogCareStatus[]> => {
   try {
+    console.log('Fetching dogs with care status for date:', date);
     // Fetch all dogs
     const { data: dogs, error: dogsError } = await supabase
       .from('dogs')
       .select('id, name, breed, color, photo_url')
       .order('name');
 
-    if (dogsError) throw dogsError;
+    if (dogsError) {
+      console.error('Error fetching dogs:', dogsError);
+      throw dogsError;
+    }
     
     if (!dogs || dogs.length === 0) {
+      console.log('No dogs found in database');
       return []; // Return empty array if no dogs found
     }
 
+    console.log(`Found ${dogs.length} dogs in database`);
+    
     // For each dog, fetch their most recent care log for the specified date
     const todayStart = new Date(date);
     todayStart.setHours(0, 0, 0, 0);
@@ -98,6 +105,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       })
     );
 
+    console.log(`Processed ${statuses.length} dogs with care status`);
     return statuses;
   } catch (error) {
     console.error('Error fetching all dogs care status:', error);

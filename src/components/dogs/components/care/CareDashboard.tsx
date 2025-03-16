@@ -19,13 +19,18 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     fetchAllDogsWithCareStatus, 
     loading, 
     fetchCareTaskPresets,
-    dogStatuses = [] // Use the statuses directly from context with fallback to empty array
+    dogStatuses 
   } = useDailyCare();
 
   // Function to fetch all dogs care status
   const loadDogsStatus = useCallback(async () => {
-    await fetchAllDogsWithCareStatus();
-  }, [fetchAllDogsWithCareStatus]);
+    try {
+      await fetchAllDogsWithCareStatus();
+      console.log('Dogs loaded successfully:', dogStatuses?.length || 0);
+    } catch (error) {
+      console.error('Error loading dogs status:', error);
+    }
+  }, [fetchAllDogsWithCareStatus, dogStatuses]);
 
   // Function to fetch categories
   const loadCategories = useCallback(async () => {
@@ -45,7 +50,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   useEffect(() => {
     loadDogsStatus();
     loadCategories();
-  }, []);
+  }, [loadDogsStatus, loadCategories]);
 
   // Handler for refreshing data
   const handleRefresh = useCallback(() => {
@@ -61,7 +66,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   // Success handler for when care is logged
   const handleCareLogSuccess = () => {
     setDialogOpen(false);
-    // Data will be refreshed automatically through context
+    loadDogsStatus(); // Explicitly reload data after care is logged
   };
   
   // Handle category change
@@ -88,16 +93,25 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       {loading ? (
         <LoadingSpinner />
       ) : (
-        <CareTabsContent
-          activeTab={activeView}
-          dogsStatus={dogStatuses}
-          onLogCare={handleLogCare}
-          selectedDogId={selectedDogId}
-          dialogOpen={dialogOpen}
-          setDialogOpen={setDialogOpen}
-          onCareLogSuccess={handleCareLogSuccess}
-          selectedCategory={selectedCategory}
-        />
+        dogStatuses && dogStatuses.length > 0 ? (
+          <CareTabsContent
+            activeTab={activeView}
+            dogsStatus={dogStatuses}
+            onLogCare={handleLogCare}
+            selectedDogId={selectedDogId}
+            dialogOpen={dialogOpen}
+            setDialogOpen={setDialogOpen}
+            onCareLogSuccess={handleCareLogSuccess}
+            selectedCategory={selectedCategory}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-[60vh]">
+            <div className="text-center p-8 bg-gray-50 dark:bg-gray-800 rounded-lg shadow">
+              <p className="text-lg text-gray-600 dark:text-gray-300">No dogs found in the system.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Please add dogs to start tracking their care.</p>
+            </div>
+          </div>
+        )
       )}
     </div>
   );

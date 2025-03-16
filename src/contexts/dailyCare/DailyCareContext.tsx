@@ -20,7 +20,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         addCareTaskPreset: careActions.addCareTaskPreset,
         deleteCareTaskPreset: careActions.deleteCareTaskPreset,
         fetchAllDogsWithCareStatus: careActions.fetchAllDogsWithCareStatus,
-        dogStatuses: careActions.dogStatuses, // Expose dog statuses directly
+        dogStatuses: careActions.dogStatuses,
         loading: careActions.loading,
       }}
     >

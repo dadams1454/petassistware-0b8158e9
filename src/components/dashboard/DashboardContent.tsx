@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DailyCareProvider } from '@/contexts/dailyCare';
 import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
@@ -58,9 +57,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </TabsContent>
         
         <TabsContent value="care">
-          <DailyCareProvider>
-            <CareDashboard />
-          </DailyCareProvider>
+          <CareDashboard />
         </TabsContent>
       </Tabs>
 
@@ -70,13 +67,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           <DialogTitle className="text-xl font-semibold">
             {selectedDogId ? 'Log Daily Care' : 'Select a Dog'}
           </DialogTitle>
-          <DailyCareProvider>
-            {!selectedDogId ? (
-              <DogSelector onDogSelected={handleDogSelected} />
-            ) : (
-              <CareLogForm dogId={selectedDogId} onSuccess={handleCareLogSuccess} />
-            )}
-          </DailyCareProvider>
+          {!selectedDogId ? (
+            <DogSelector onDogSelected={handleDogSelected} />
+          ) : (
+            <CareLogForm dogId={selectedDogId} onSuccess={handleCareLogSuccess} />
+          )}
         </DialogContent>
       </Dialog>
     </>
