@@ -1,111 +1,72 @@
-
-import React from 'react';
-import { format } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Pencil, Calendar, Bell } from 'lucide-react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  MoreHorizontal, Edit, Trash, Share, Download, 
+  Heart, PawPrint, Calendar, Info
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
+  DropdownMenuSeparator, DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { formatDistanceToNow } from 'date-fns';
+import DogStatusCard from '../DogStatusCard';
 
 interface DogHeaderProps {
   dog: any;
-  upcomingEvents: number;
-  onEdit: () => void;
-  onViewFirstEvent: () => void;
-  onAddAppointment: () => void;
+  isFullPage?: boolean;
+  onEdit?: (dog: any) => void;
+  onDelete?: (dogId: string) => void;
 }
 
-const DogHeader: React.FC<DogHeaderProps> = ({
-  dog,
-  upcomingEvents,
-  onEdit,
-  onViewFirstEvent,
-  onAddAppointment
-}) => {
+const DogHeader: React.FC<DogHeaderProps> = ({ dog, isFullPage = false }) => {
+  const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleViewDetails = () => {
+    navigate(`/dogs/${dog.id}`);
+  };
+
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-start">
-      <div className="w-full sm:w-1/4 aspect-square relative rounded-lg overflow-hidden bg-muted">
+    <div className={`flex flex-col ${isFullPage ? 'mb-6' : 'mb-2'}`}>
+      <div className="flex items-start gap-4">
         {dog.photo_url ? (
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${dog.photo_url})` }}
+          <img
+            src={dog.photo_url}
+            alt={dog.name}
+            className="h-24 w-24 rounded-full object-cover"
           />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <span className="text-5xl">🐾</span>
+          <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">
+            <PawPrint className="h-12 w-12 text-primary" />
           </div>
         )}
-      </div>
-      
-      <div className="flex-1 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">{dog.name}</h2>
-            <p className="text-muted-foreground">{dog.breed}</p>
-          </div>
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onAddAppointment}
-            >
-              <Calendar className="h-4 w-4 mr-2" />
-              Add Appointment
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onEdit}
-            >
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </div>
-        </div>
         
-        <div className="grid grid-cols-2 gap-y-2">
-          {dog.gender && (
-            <div>
-              <span className="text-muted-foreground font-medium">Gender:</span>{' '}
-              {dog.gender}
-            </div>
-          )}
+        <div className="flex-grow">
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-semibold">{dog.name}</h2>
+            {dog.pedigree && (
+              <Badge variant="secondary">
+                <Heart className="h-3.5 w-3.5 mr-1" />
+                Pedigree
+              </Badge>
+            )}
+          </div>
           
-          {dog.birthdate && (
-            <div>
-              <span className="text-muted-foreground font-medium">Date of Birth:</span>{' '}
-              {format(new Date(dog.birthdate), 'PPP')}
-            </div>
-          )}
+          <div className="text-muted-foreground text-sm mb-1">
+            {dog.breed} • {dog.gender} • {dog.weight} lbs
+          </div>
           
-          {dog.color && (
-            <div>
-              <span className="text-muted-foreground font-medium">Color:</span>{' '}
-              {dog.color}
-            </div>
-          )}
+          {/* Add DogStatusCard for displaying heat/pregnancy status */}
+          <DogStatusCard dog={dog} />
           
-          {dog.weight && (
-            <div>
-              <span className="text-muted-foreground font-medium">Weight:</span>{' '}
-              {dog.weight} kg
+          {!isFullPage && (
+            <div className="flex items-center mt-2 space-x-2">
+              <Button variant="outline" size="sm" onClick={handleViewDetails}>
+                View Details
+              </Button>
             </div>
-          )}
-        </div>
-        
-        <div className="flex flex-wrap gap-2">
-          {dog.pedigree && (
-            <Badge variant="outline" className="bg-primary/10">Pedigree</Badge>
-          )}
-          
-          {upcomingEvents > 0 && (
-            <Badge 
-              variant="outline" 
-              className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1 cursor-pointer hover:bg-amber-200 transition-colors"
-              onClick={onViewFirstEvent}
-            >
-              <Bell className="h-3 w-3" />
-              {upcomingEvents} {upcomingEvents === 1 ? 'Appointment' : 'Appointments'}
-            </Badge>
           )}
         </div>
       </div>
