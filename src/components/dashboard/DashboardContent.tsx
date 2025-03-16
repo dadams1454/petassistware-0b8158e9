@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DashboardOverview from './DashboardOverview';
@@ -39,7 +39,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   };
 
   // Add debugging to track active tab changes
-  console.log(`🔍 DashboardContent - Active Tab: ${activeTab}`);
+  useEffect(() => {
+    console.log(`🔍 DashboardContent - Active Tab: ${activeTab}`);
+  }, [activeTab]);
 
   return (
     <>

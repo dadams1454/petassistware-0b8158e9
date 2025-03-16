@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, File, Calendar, UtensilsCrossed } from 'lucide-react';
+import { PlusCircle, File, Calendar } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import BlurBackground from '@/components/ui/blur-background';
 import { useToast } from '@/components/ui/use-toast';
@@ -28,14 +28,6 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onCareLogClick }) => {
     toast({
       title: "Add Dog",
       description: "Redirecting to add a new dog...",
-    });
-  };
-
-  const handleCareLogClick = () => {
-    onCareLogClick();
-    toast({
-      title: "Daily Care",
-      description: "Opening care log form...",
     });
   };
 
@@ -89,14 +81,6 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onCareLogClick }) => {
             onClick={handleAddDog}
           >
             Add Dog
-          </CustomButton>
-          <CustomButton 
-            variant="outline" 
-            size="sm" 
-            icon={<UtensilsCrossed size={16} />}
-            onClick={handleCareLogClick}
-          >
-            Log Daily Care
           </CustomButton>
           <CustomButton 
             variant="outline" 
