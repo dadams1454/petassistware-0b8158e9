@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
@@ -29,25 +29,27 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const initialFetchCompleted = useRef(false);
 
-  // Force fetch all dogs on component mount
+  // Force fetch all dogs on component mount, but only once
   useEffect(() => {
-    console.log('🚀 DashboardContent mounted - fetching all dogs');
-    fetchAllDogsWithCareStatus(new Date(), true)
-      .then(dogs => {
-        console.log(`✅ DashboardContent: Fetched ${dogs.length} dogs successfully`);
-        if (dogs.length === 0) {
-          console.warn('⚠️ No dogs were returned from the API');
-        }
-      })
-      .catch(error => {
-        console.error('❌ Error fetching dogs in DashboardContent:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load dogs. Please try refreshing the page.',
-          variant: 'destructive',
+    if (!initialFetchCompleted.current) {
+      console.log('🚀 DashboardContent mounted - initial dogs fetch');
+      
+      fetchAllDogsWithCareStatus(new Date(), true)
+        .then(dogs => {
+          console.log(`✅ Initial fetch: Loaded ${dogs.length} dogs`);
+          initialFetchCompleted.current = true;
+        })
+        .catch(error => {
+          console.error('❌ Error fetching dogs in DashboardContent:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to load dogs. Please try refreshing the page.',
+            variant: 'destructive',
+          });
         });
-      });
+    }
   }, [fetchAllDogsWithCareStatus, toast]);
 
   // Handler for manually refreshing the dog list

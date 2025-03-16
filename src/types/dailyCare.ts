@@ -29,7 +29,7 @@ export interface CareLogFormData {
 }
 
 export interface DogFlag {
-  type: 'in_heat' | 'incompatible' | 'special_attention' | 'other';
+  type: 'in_heat' | 'pregnant' | 'incompatible' | 'special_attention' | 'other';
   value?: string;
   incompatible_with?: string[];
 }
