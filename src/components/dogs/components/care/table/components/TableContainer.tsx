@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Table, TableBody, TableHeader, TableRow } from '@/components/ui/table';
@@ -42,8 +41,8 @@ const TableContainer: React.FC<TableContainerProps> = ({
         <div className="flex items-center">
           {selectedCategory.icon}
           <h3 className="text-md font-medium ml-2">
-            {/* Only display category name if it's not pottybreaks */}
-            {selectedCategory.id !== 'pottybreaks' ? selectedCategory.name + ' Schedule' : 'Dog Care Schedule'}
+            {/* Don't display label for potty breaks */}
+            {selectedCategory.id === 'pottybreaks' ? 'Dog Care Schedule' : selectedCategory.name + ' Schedule'}
           </h3>
         </div>
         <p className="text-sm text-muted-foreground mt-1">
