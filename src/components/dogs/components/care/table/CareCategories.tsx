@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { TabsTrigger } from '@/components/ui/tabs';
-import { Bowl, AlarmClock, Pill, Activity, Scissors, Layers } from 'lucide-react';
+import { Utensils, AlarmClock, Pill, Activity, Scissors, Layers } from 'lucide-react';
 import { CareCategory } from './components/types';
 
 // Define care categories with icons
 export const careCategories: CareCategory[] = [
   { id: 'all', name: 'All', icon: <Layers className="h-4 w-4 mr-2" /> },
-  { id: 'feeding', name: 'Feeding', icon: <Bowl className="h-4 w-4 mr-2" /> },
+  { id: 'feeding', name: 'Feeding', icon: <Utensils className="h-4 w-4 mr-2" /> },
   { id: 'pottybreaks', name: 'Potty Breaks', icon: <AlarmClock className="h-4 w-4 mr-2" /> },
   { id: 'medications', name: 'Medications', icon: <Pill className="h-4 w-4 mr-2" /> },
   { id: 'exercise', name: 'Exercise', icon: <Activity className="h-4 w-4 mr-2" /> },
