@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import ExerciseLog from '@/components/dogs/components/care/exercise/ExerciseLog';
 import { useDailyCare } from '@/contexts/dailyCare';
@@ -35,7 +34,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
       <Tabs value={careView} onValueChange={setCareView} className="mb-4">
         <TabsList>
           <TabsTrigger value="timetable">Time Table</TabsTrigger>
-          <TabsTrigger value="dashboard">Care Dashboard</TabsTrigger>
           <TabsTrigger value="history">Care History</TabsTrigger>
         </TabsList>
         
@@ -51,52 +49,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
               <Button onClick={onRefreshDogs} className="mt-4">Refresh Dogs</Button>
             </Card>
           )}
-        </TabsContent>
-        
-        <TabsContent value="dashboard">
-          {/* Recent Care History Card */}
-          {dogsWithCareToday.length > 0 && (
-            <Card className="mb-4">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-md flex items-center">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Dogs Cared For Today ({dogsWithCareToday.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {dogsWithCareToday.map(dog => (
-                    <div key={dog.dog_id} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded-md">
-                      <div className="flex items-center">
-                        {dog.dog_photo ? (
-                          <img src={dog.dog_photo} alt={dog.dog_name} className="h-8 w-8 rounded-full mr-2 object-cover" />
-                        ) : (
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-2">
-                            <Dog className="h-4 w-4 text-primary" />
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium">{dog.dog_name}</p>
-                          <p className="text-xs text-muted-foreground">{dog.last_care?.category}: {dog.last_care?.task_name}</p>
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {dog.last_care && format(parseISO(dog.last_care.timestamp), 'h:mm a')}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {dogsWithCareToday.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-2">
-                    No dogs have been recorded for care today.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          )}
-          
-          <CareDashboard />
         </TabsContent>
         
         <TabsContent value="history">
