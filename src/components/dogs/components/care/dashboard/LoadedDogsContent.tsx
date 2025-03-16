@@ -28,7 +28,7 @@ const LoadedDogsContent: React.FC<LoadedDogsContentProps> = ({
   useEffect(() => {
     console.log(`🐕 LoadedDogsContent received ${dogStatuses.length} dogs`);
     if (dogStatuses.length > 0) {
-      console.log('🐕 First few dog names:', dogStatuses.slice(0, 5).map(d => d.dog_name).join(', '));
+      console.log('🐕 Dog names:', dogStatuses.map(d => d.dog_name).join(', '));
     }
   }, [dogStatuses]);
 
@@ -41,11 +41,10 @@ const LoadedDogsContent: React.FC<LoadedDogsContentProps> = ({
         <AlertDescription className="text-green-600 dark:text-green-400">
           {dogStatuses.length > 0 ? (
             <>
-              <span className="font-medium">Available dogs:</span> {dogStatuses.slice(0, 10).map(d => d.dog_name).join(', ')}
-              {dogStatuses.length > 10 ? ` and ${dogStatuses.length - 10} more` : ''}
+              <span className="font-medium">Available dogs:</span> {dogStatuses.map(d => d.dog_name).join(', ')}
             </>
           ) : (
-            "No dogs available. Try refreshing the page."
+            "No dogs available. Try refreshing the page or adding dogs to the system."
           )}
         </AlertDescription>
       </Alert>

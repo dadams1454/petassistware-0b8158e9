@@ -13,21 +13,20 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     console.log('🔍 Simplified dog fetch for date:', date);
     
     // Fetch only essential dog data - just id, name, breed, color and photo_url
-    const dogsResponse = await supabase
+    const { data: dogs, error } = await supabase
       .from('dogs')
       .select('id, name, breed, color, photo_url, gender')
       .order('name');
       
-    console.log('📊 Supabase dogs response status:', {
-      status: dogsResponse.status,
-      count: dogsResponse.data?.length || 0
+    console.log('📊 Supabase dogs response:', {
+      status: error ? 'Error' : 'Success',
+      count: dogs?.length || 0,
+      error: error ? error.message : null
     });
 
-    const { data: dogs, error: dogsError } = dogsResponse;
-
-    if (dogsError) {
-      console.error('❌ Error fetching dogs:', dogsError);
-      throw dogsError;
+    if (error) {
+      console.error('❌ Error fetching dogs:', error);
+      throw error;
     }
     
     if (!dogs || dogs.length === 0) {
@@ -35,9 +34,9 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       return []; // Return empty array if no dogs found
     }
 
-    console.log(`✅ Found ${dogs.length} dogs in database, first few:`, dogs.slice(0, 3).map(d => d.name));
+    console.log(`✅ Found ${dogs.length} dogs in database, dog names:`, dogs.map(d => d.name).join(', '));
     
-    // Generate mock flags - simplified
+    // Generate mock flags
     let mockDogFlags = {};
     try {
       mockDogFlags = createMockDogFlags(dogs);
@@ -46,22 +45,22 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       mockDogFlags = {};
     }
 
-    // Immediately convert to simplified DogCareStatus objects
-    const simplifiedStatuses = dogs.map(dog => ({
+    // Convert to DogCareStatus objects
+    const dogStatuses = dogs.map(dog => ({
       dog_id: dog.id,
       dog_name: dog.name,
       dog_photo: dog.photo_url,
       breed: dog.breed || 'Unknown',
       color: dog.color || 'Unknown',
-      sex: dog.gender || 'Unknown', // Use 'gender' column instead of non-existent 'sex'
+      sex: dog.gender || 'Unknown', // Use gender column since sex doesn't exist
       last_care: null, // We're not loading care data for simplicity
       flags: mockDogFlags[dog.id] || []
     }));
 
-    console.log(`✅ Simplified ${simplifiedStatuses.length} dog statuses`);
-    return simplifiedStatuses;
+    console.log(`✅ Converted ${dogStatuses.length} dog statuses`);
+    return dogStatuses;
   } catch (error) {
-    console.error('❌ Error in simplified dog fetch:', error);
+    console.error('❌ Error in dog fetch:', error);
     throw error;
   }
 };

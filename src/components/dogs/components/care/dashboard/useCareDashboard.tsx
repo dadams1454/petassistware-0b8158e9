@@ -25,11 +25,10 @@ export const useCareDashboard = () => {
     setLoading(true);
     setLoadError(null);
     try {
-      console.log('🔄 Loading ALL dogs status...');
+      console.log('🔄 Loading dogs status...');
       const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
       console.log('✅ Dogs loaded successfully:', dogs.length);
       if (dogs.length > 0) {
-        console.log('🐕 Dogs data sample:', dogs.slice(0, 3).map(d => d.dog_name).join(', '));
         console.log('🐕 All dog names:', dogs.map(d => d.dog_name).join(', '));
       } else {
         console.warn('⚠️ No dogs were returned from the API');
@@ -64,10 +63,10 @@ export const useCareDashboard = () => {
     }
   }, [fetchCareTaskPresets, selectedCategory]);
 
-  // Initial data loading - runs exactly once on mount
+  // Initial data loading
   useEffect(() => {
     if (!initialLoadAttempted) {
-      console.log('🚀 Initial data loading for CareDashboard - first time load');
+      console.log('🚀 Initial data loading for CareDashboard');
       
       Promise.all([loadDogsStatus(), loadCategories()])
         .then(() => {
@@ -82,7 +81,7 @@ export const useCareDashboard = () => {
     }
   }, [initialLoadAttempted, loadDogsStatus, loadCategories]);
 
-  // Add a second effect to force refresh dog data if dogStatuses is empty
+  // Force refresh if no dogs are found
   useEffect(() => {
     if (initialLoadAttempted && (!dogStatuses || dogStatuses.length === 0)) {
       console.log('⚠️ No dogs found after initial load, forcing a refresh');
@@ -92,8 +91,7 @@ export const useCareDashboard = () => {
 
   // Handler for refreshing data
   const handleRefresh = useCallback(() => {
-    console.log('🔄 Manual refresh triggered - forcing reload of ALL dogs');
-    setLoading(true);
+    console.log('🔄 Manual refresh triggered');
     loadDogsStatus();
   }, [loadDogsStatus]);
 
@@ -106,7 +104,7 @@ export const useCareDashboard = () => {
 
   // Success handler for when care is logged
   const handleCareLogSuccess = () => {
-    console.log('✅ Care log success, closing dialog and refreshing ALL dogs');
+    console.log('✅ Care log success, closing dialog and refreshing');
     setDialogOpen(false);
     handleRefresh();
   };

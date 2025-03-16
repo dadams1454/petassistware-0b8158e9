@@ -22,7 +22,7 @@ export const useDogCareStatus = () => {
     
     // Always fetch on force refresh
     if (forceRefresh) {
-      console.log('🔄 Force refreshing ALL dog statuses');
+      console.log('🔄 Force refreshing dog statuses');
       setLoading(true);
       try {
         console.log('📡 Fetching fresh dog data from server');
@@ -49,7 +49,7 @@ export const useDogCareStatus = () => {
     
     // Use existing data if available and not forcing a refresh
     if (initialFetchDone.current && dogStatuses.length > 0) {
-      console.log('📋 Using existing dog statuses in memory');
+      console.log('📋 Using existing dog statuses in memory:', dogStatuses.length);
       return dogStatuses;
     }
     
@@ -68,7 +68,7 @@ export const useDogCareStatus = () => {
     try {
       console.log('📡 No cached data - fetching from server');
       const statuses = await dailyCareService.fetchAllDogsWithCareStatus(date);
-      console.log(`✅ Fetched ${statuses.length} dogs`);
+      console.log(`✅ Fetched ${statuses.length} dogs with names:`, statuses.map(d => d.dog_name).join(', '));
       
       // Cache and update state
       setCachedStatus(dateString, statuses);
