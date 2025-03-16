@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import CareTabsContent from '../CareTabsContent';
 import { DogCareStatus } from '@/types/dailyCare';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface LoadedDogsContentProps {
   dogStatuses: DogCareStatus[];
@@ -24,7 +25,6 @@ const LoadedDogsContent: React.FC<LoadedDogsContentProps> = ({
   onLogCare,
   onCareLogSuccess
 }) => {
-  // Add debug useEffect to log when dog data changes
   useEffect(() => {
     console.log(`🐕 LoadedDogsContent received ${dogStatuses.length} dogs`);
     if (dogStatuses.length > 0) {
@@ -34,12 +34,22 @@ const LoadedDogsContent: React.FC<LoadedDogsContentProps> = ({
 
   return (
     <>
-      <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-md mb-2">
-        <p className="text-sm text-green-600 dark:text-green-400">
-          ✅ Loaded {dogStatuses.length} dogs successfully: {dogStatuses.slice(0, 5).map(d => d.dog_name).join(', ')}
-          {dogStatuses.length > 5 ? ` and ${dogStatuses.length - 5} more` : ''}
-        </p>
-      </div>
+      <Alert className="mb-4 border-green-500 bg-green-50 dark:bg-green-900/20">
+        <AlertTitle className="font-semibold text-green-700 dark:text-green-300">
+          Dogs Loaded: {dogStatuses.length}
+        </AlertTitle>
+        <AlertDescription className="text-green-600 dark:text-green-400">
+          {dogStatuses.length > 0 ? (
+            <>
+              <span className="font-medium">Available dogs:</span> {dogStatuses.slice(0, 10).map(d => d.dog_name).join(', ')}
+              {dogStatuses.length > 10 ? ` and ${dogStatuses.length - 10} more` : ''}
+            </>
+          ) : (
+            "No dogs available. Try refreshing the page."
+          )}
+        </AlertDescription>
+      </Alert>
+      
       <CareTabsContent
         activeTab={activeView}
         dogsStatus={dogStatuses}

@@ -10,19 +10,16 @@ import { createMockDogFlags } from '@/utils/mockDogFlags';
  */
 export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<DogCareStatus[]> => {
   try {
-    console.log('🔍 Fetching ALL dogs with care status for date:', date);
+    console.log('🔍 Simplified dog fetch for date:', date);
     
-    // Fetch all dogs, with no filter constraints to ensure we get ALL dogs
+    // Fetch only essential dog data - just id, name, breed, color and photo_url
     const dogsResponse = await supabase
       .from('dogs')
-      .select('id, name, breed, color, photo_url')
+      .select('id, name, breed, color, photo_url, sex')
       .order('name');
       
-    // Log the raw response for debugging
-    console.log('📊 Supabase dogs response:', {
+    console.log('📊 Supabase dogs response status:', {
       status: dogsResponse.status,
-      statusText: dogsResponse.statusText,
-      error: dogsResponse.error,
       count: dogsResponse.data?.length || 0
     });
 
@@ -38,100 +35,33 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       return []; // Return empty array if no dogs found
     }
 
-    console.log(`✅ Found ${dogs.length} dogs in database:`, dogs.map(d => d.name));
+    console.log(`✅ Found ${dogs.length} dogs in database, first few:`, dogs.slice(0, 3).map(d => d.name));
     
-    // For each dog, fetch their most recent care log for the specified date
-    const todayStart = new Date(date);
-    todayStart.setHours(0, 0, 0, 0);
-    
-    const todayEnd = new Date(date);
-    todayEnd.setHours(23, 59, 59, 999);
-
-    // Generate mock flags for dogs (using fallback if there's an error)
+    // Generate mock flags - simplified
     let mockDogFlags = {};
     try {
       mockDogFlags = createMockDogFlags(dogs);
     } catch (error) {
       console.error('❌ Error creating mock dog flags:', error);
-      // Use empty flags as fallback
-      mockDogFlags = dogs.reduce((acc, dog) => {
-        acc[dog.id] = [];
-        return acc;
-      }, {});
+      mockDogFlags = {};
     }
 
-    // Process each dog with error handling
-    const statuses = await Promise.all(
-      dogs.map(async (dog) => {
-        try {
-          console.log(`🔍 Fetching care logs for dog ${dog.name} (${dog.id})`);
-          
-          const logsResponse = await supabase
-            .from('daily_care_logs')
-            .select('*')
-            .eq('dog_id', dog.id)
-            .gte('timestamp', todayStart.toISOString())
-            .lte('timestamp', todayEnd.toISOString())
-            .order('timestamp', { ascending: false })
-            .limit(1);
-            
-          console.log(`📊 Care logs response for ${dog.name}:`, {
-            status: logsResponse.status,
-            error: logsResponse.error,
-            count: logsResponse.data?.length || 0
-          });
-          
-          const { data: logs, error: logsError } = logsResponse;
+    // Immediately convert to simplified DogCareStatus objects
+    const simplifiedStatuses = dogs.map(dog => ({
+      dog_id: dog.id,
+      dog_name: dog.name,
+      dog_photo: dog.photo_url,
+      breed: dog.breed || 'Unknown',
+      color: dog.color || 'Unknown',
+      sex: dog.sex || 'Unknown',
+      last_care: null, // We're not loading care data for simplicity
+      flags: mockDogFlags[dog.id] || []
+    }));
 
-          if (logsError) {
-            console.warn(`⚠️ Error fetching logs for dog ${dog.id}:`, logsError);
-            // Continue with no logs instead of throwing
-            return {
-              dog_id: dog.id,
-              dog_name: dog.name,
-              dog_photo: dog.photo_url,
-              breed: dog.breed || 'Unknown',
-              color: dog.color || 'Unknown',
-              last_care: null,
-              flags: mockDogFlags[dog.id] || []
-            } as DogCareStatus;
-          }
-
-          const dogStatus = {
-            dog_id: dog.id,
-            dog_name: dog.name,
-            dog_photo: dog.photo_url,
-            breed: dog.breed || 'Unknown',
-            color: dog.color || 'Unknown',
-            last_care: logs && logs.length > 0 ? {
-              category: logs[0].category,
-              task_name: logs[0].task_name,
-              timestamp: logs[0].timestamp,
-            } : null,
-            flags: mockDogFlags[dog.id] || []
-          } as DogCareStatus;
-          
-          return dogStatus;
-        } catch (error) {
-          console.error(`❌ Error processing dog ${dog.id}:`, error);
-          // Return basic dog info with null care status
-          return {
-            dog_id: dog.id,
-            dog_name: dog.name,
-            dog_photo: dog.photo_url,
-            breed: dog.breed || 'Unknown',
-            color: dog.color || 'Unknown',
-            last_care: null,
-            flags: []
-          } as DogCareStatus;
-        }
-      })
-    );
-
-    console.log(`✅ Processed ${statuses.length} dogs with care status`);
-    return statuses;
+    console.log(`✅ Simplified ${simplifiedStatuses.length} dog statuses`);
+    return simplifiedStatuses;
   } catch (error) {
-    console.error('❌ Error fetching all dogs care status:', error);
+    console.error('❌ Error in simplified dog fetch:', error);
     throw error;
   }
 };

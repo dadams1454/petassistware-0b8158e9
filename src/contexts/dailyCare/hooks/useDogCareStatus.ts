@@ -18,37 +18,27 @@ export const useDogCareStatus = () => {
     // Convert date to string for caching
     const dateString = date.toISOString().split('T')[0];
     
-    console.log(`🔍 fetchAllDogsWithCareStatus called with date=${dateString}, forceRefresh=${forceRefresh}`);
-    console.log(`🔍 Current state: ${dogStatuses.length} dogs, initialFetchDone=${initialFetchDone.current}`);
+    console.log(`🔍 Hook: fetchAllDogsWithCareStatus called with forceRefresh=${forceRefresh}`);
     
     // Always fetch on force refresh
     if (forceRefresh) {
       console.log('🔄 Force refreshing ALL dog statuses');
       setLoading(true);
       try {
-        // Fetch new data
-        console.log('📡 Fetching ALL dog statuses from server for', dateString);
+        console.log('📡 Fetching fresh dog data from server');
         const statuses = await dailyCareService.fetchAllDogsWithCareStatus(date);
-        console.log(`✅ Fetched ${statuses.length} dogs from server`);
+        console.log(`✅ Fetched ${statuses.length} dogs successfully`);
         
-        if (statuses.length > 0) {
-          console.log('🐕 First few dogs:', statuses.slice(0, 5).map(d => d.dog_name).join(', '));
-          // Cache the results
-          setCachedStatus(dateString, statuses);
-        } else {
-          console.warn('⚠️ No dogs returned from API');
-        }
-        
-        // Update state with new data
+        // Cache and update state
+        setCachedStatus(dateString, statuses);
         setDogStatuses(statuses);
         initialFetchDone.current = true;
-        
         return statuses;
       } catch (error) {
-        console.error('❌ Error fetching all dogs care status:', error);
+        console.error('❌ Error during forced refresh:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load dogs care status. Please try again.',
+          description: 'Failed to load dogs. Please try again.',
           variant: 'destructive',
         });
         return [];
@@ -57,49 +47,39 @@ export const useDogCareStatus = () => {
       }
     }
     
-    // If we have already fetched and are not forcing a refresh, avoid another fetch
+    // Use existing data if available and not forcing a refresh
     if (initialFetchDone.current && dogStatuses.length > 0) {
-      console.log('📋 Using existing dog statuses, no fetch needed');
+      console.log('📋 Using existing dog statuses in memory');
       return dogStatuses;
     }
     
-    // Check cache first if not forcing a refresh
+    // Check cache
     const cachedData = getCachedStatus(dateString);
     if (cachedData && cachedData.length > 0) {
-      console.log('📋 Using cached dog statuses from', dateString, `(${cachedData.length} dogs)`);
-      // If we have cached data, update the state without showing loading state
+      console.log('📋 Using cached dog data', cachedData.length);
       setDogStatuses(cachedData);
       initialFetchDone.current = true;
       return cachedData;
     }
     
-    // Only show loading state when we need to fetch from server
+    // If we get here, we need to fetch from server
     setLoading(true);
     
     try {
-      // Fetch new data
-      console.log('📡 Fetching ALL dog statuses from server for', dateString);
+      console.log('📡 No cached data - fetching from server');
       const statuses = await dailyCareService.fetchAllDogsWithCareStatus(date);
-      console.log(`✅ Fetched ${statuses.length} dogs from server`);
+      console.log(`✅ Fetched ${statuses.length} dogs`);
       
-      if (statuses.length > 0) {
-        console.log('🐕 First few dogs:', statuses.slice(0, 5).map(d => d.dog_name).join(', '));
-        // Cache the results
-        setCachedStatus(dateString, statuses);
-      } else {
-        console.warn('⚠️ No dogs returned from API');
-      }
-      
-      // Update state with new data
+      // Cache and update state
+      setCachedStatus(dateString, statuses);
       setDogStatuses(statuses);
       initialFetchDone.current = true;
-      
       return statuses;
     } catch (error) {
-      console.error('❌ Error fetching all dogs care status:', error);
+      console.error('❌ Error fetching dogs:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load dogs care status. Please try again.',
+        description: 'Failed to load dogs. Please try again.',
         variant: 'destructive',
       });
       return [];
@@ -108,13 +88,19 @@ export const useDogCareStatus = () => {
     }
   }, [toast, getCachedStatus, setCachedStatus, dogStatuses]);
 
-  // Add effect to log when the hook is initialized
+  // Add immediate fetch on initialization
   useEffect(() => {
-    console.log('🚀 useDogCareStatus hook initialized');
-    return () => {
-      console.log('🚫 useDogCareStatus hook cleanup');
-    };
-  }, []);
+    if (!initialFetchDone.current) {
+      console.log('🚀 Initial fetch on hook mount');
+      fetchAllDogsWithCareStatus(new Date(), true)
+        .then(dogs => {
+          console.log(`✅ Initial fetch complete: ${dogs.length} dogs loaded`);
+        })
+        .catch(error => {
+          console.error('❌ Error during initial fetch:', error);
+        });
+    }
+  }, [fetchAllDogsWithCareStatus]);
 
   return {
     loading,
