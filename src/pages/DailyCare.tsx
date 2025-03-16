@@ -13,7 +13,7 @@ const DailyCare: React.FC = () => {
     console.log('🐕 Initial dogStatuses:', dogStatuses?.length || 0);
     
     // Force a fetch on component mount to ensure we have data
-    fetchAllDogsWithCareStatus(new Date(), true)
+    fetchAllDogsWithCareStatus(new Date())
       .then(dogs => {
         console.log('🐕 Fetched dogs count:', dogs.length);
         console.log('🐕 First dog sample:', dogs[0] || 'No dogs returned');
