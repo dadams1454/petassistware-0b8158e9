@@ -24,23 +24,25 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
   hasCareLogged,
   onCellClick
 }) => {
+  // Debug render
   useEffect(() => {
     console.log(`DogTimeRow rendered for ${dog.dog_name} with category: ${activeCategory}`);
   }, [dog.dog_name, activeCategory]);
 
   return (
-    <TableRow key={`${dog.dog_id}-row-${activeCategory}`} className={rowColor}>
+    <TableRow key={`${dog.dog_id}-${activeCategory}-row`} className={rowColor}>
       {/* Dog name cell with photo and flags */}
       <DogNameCell dog={dog} />
       
       {/* Time slot cells */}
       {timeSlots.map((timeSlot) => {
+        const cellKey = `${dog.dog_id}-${timeSlot}-${activeCategory}`;
         const hasPottyBreakForSlot = hasPottyBreak(dog.dog_id, timeSlot);
         const hasCareLoggedForSlot = hasCareLogged(dog.dog_id, timeSlot, activeCategory);
         
         return (
           <TimeSlotCell 
-            key={`${dog.dog_id}-${timeSlot}-${activeCategory}`}
+            key={cellKey}
             dogId={dog.dog_id}
             dogName={dog.dog_name}
             timeSlot={timeSlot}

@@ -41,16 +41,20 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   // Debug info for identifying missed renders
   const cellIdentifier = `${dogId}-${timeSlot}-${category}`;
   
+  const handleClick = () => {
+    console.log(`Clicked cell: ${cellIdentifier}, isPottyCategory: ${isPottyCategory}, hasPottyBreak: ${hasPottyBreak}`);
+    onClick();
+  };
+  
   return (
     <TableCell 
       key={cellIdentifier}
       className={`${cellClassNames} cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700`}
-      onClick={() => {
-        console.log(`Clicked cell: ${cellIdentifier}`);
-        onClick();
-      }}
+      onClick={handleClick}
       title={`${dogName} - ${timeSlot} - ${category}`}
       data-cell-id={cellIdentifier}
+      data-potty={isPottyCategory ? 'true' : 'false'}
+      data-has-potty={hasPottyBreak ? 'true' : 'false'}
     >
       <CellContent 
         dogName={dogName}

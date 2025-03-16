@@ -58,6 +58,8 @@ const DailyCare: React.FC = () => {
       });
   }, [fetchAllDogsWithCareStatus, refreshTrigger]);
 
+  console.log('Rendering DailyCare page with activeTab:', activeTab);
+
   return (
     <MainLayout>
       <div className="mb-6 flex justify-between items-center">
@@ -83,6 +85,10 @@ const DailyCare: React.FC = () => {
         </TabsList>
         
         <TabsContent value="timeTable" className="mt-4">
+          <div className="text-sm text-muted-foreground mb-2">
+            👆 Debug: Tab content for "timeTable" is now displaying
+          </div>
+
           {dogStatuses && dogStatuses.length > 0 ? (
             <DogTimeTable dogsStatus={dogStatuses} onRefresh={handleManualRefresh} />
           ) : (

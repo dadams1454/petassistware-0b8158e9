@@ -20,7 +20,7 @@ interface DogTimeTableProps {
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const [currentDate] = useState(new Date());
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState('pottybreaks'); // Default to pottybreaks for testing
   
   // Use the potty breaks hook for managing potty break state
   const { hasPottyBreak, handleCellClick: handlePottyBreakClick } = usePottyBreaks(onRefresh);
@@ -33,8 +33,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     console.log(`Handling click for ${dogName} at ${timeSlot} for ${category}`);
     
     if (category === 'pottybreaks') {
+      console.log('Delegating to potty break handler');
       handlePottyBreakClick(dogId, dogName, timeSlot, category);
     } else {
+      console.log('Delegating to care log handler');
       handleCareLogClick(dogId, dogName, timeSlot, category);
     }
   };
@@ -60,8 +62,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   };
 
   useEffect(() => {
-    console.log('DogTimeTable rendered with activeCategory:', activeCategory);
-  }, [activeCategory]);
+    console.log(`DogTimeTable rendered with ${sortedDogs.length} dogs and activeCategory: ${activeCategory}`);
+  }, [activeCategory, sortedDogs.length]);
 
   return (
     <Card className="shadow-md">
@@ -95,17 +97,23 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             />
           </TabsList>
           
-          {/* Table container with tabs content */}
-          <TableContainer 
-            dogs={sortedDogs}
-            activeCategory={activeCategory}
-            timeSlots={timeSlots}
-            hasPottyBreak={hasPottyBreak}
-            hasCareLogged={hasCareLogged}
-            onCellClick={handleCellClick}
-            onRefresh={onRefresh}
-            careCategories={careCategories}
-          />
+          <div className="p-4">
+            <pre className="text-xs text-muted-foreground mb-2">
+              Debug: Active Category: {activeCategory}, Dogs: {sortedDogs.length}
+            </pre>
+            
+            {/* Table container with tabs content */}
+            <TableContainer 
+              dogs={sortedDogs}
+              activeCategory={activeCategory}
+              timeSlots={timeSlots}
+              hasPottyBreak={hasPottyBreak}
+              hasCareLogged={hasCareLogged}
+              onCellClick={handleCellClick}
+              onRefresh={onRefresh}
+              careCategories={careCategories}
+            />
+          </div>
         </div>
       </CardContent>
       

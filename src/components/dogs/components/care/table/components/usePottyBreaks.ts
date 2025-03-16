@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface PottyBreak {
@@ -12,17 +12,22 @@ export const usePottyBreaks = (onRefresh?: () => void) => {
   const [pottyBreaks, setPottyBreaks] = useState<PottyBreak[]>([]);
   const { toast } = useToast();
   
+  // Log potty breaks on change for debugging
+  useEffect(() => {
+    console.log('Current potty breaks:', pottyBreaks);
+  }, [pottyBreaks]);
+  
   const hasPottyBreak = useCallback((dogId: string, timeSlot: string) => {
-    console.log('Checking potty break for:', dogId, timeSlot);
     const result = pottyBreaks.some(pb => pb.dogId === dogId && pb.timeSlot === timeSlot);
-    console.log('Has potty break:', result);
+    // Verbose logging removed to clean up console, uncomment if needed for debugging
+    // console.log('Checking potty break for:', dogId, timeSlot, 'Result:', result);
     return result;
   }, [pottyBreaks]);
   
   const handleCellClick = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
     // Only handle potty break logging in the potty breaks tab
     if (category === 'pottybreaks') {
-      console.log('Potty break cell clicked:', { dogId, dogName, timeSlot });
+      console.log('⭐ Potty break cell clicked:', { dogId, dogName, timeSlot });
       
       // Check if this dog already has a potty break at this time
       const existingBreakIndex = pottyBreaks.findIndex(
@@ -41,10 +46,7 @@ export const usePottyBreaks = (onRefresh?: () => void) => {
           description: `Removed potty break for ${dogName} at ${timeSlot}`,
         });
         
-        console.log('Potty break removed:', {
-          dog: { id: dogId, name: dogName },
-          timeSlot
-        });
+        console.log('🚫 Potty break removed for', dogName, 'at', timeSlot);
       } else {
         // Add new potty break
         const newPottyBreak = {
@@ -61,17 +63,15 @@ export const usePottyBreaks = (onRefresh?: () => void) => {
           description: `${dogName} was taken out at ${timeSlot}`,
         });
         
-        console.log('Potty break logged:', {
-          dog: { id: dogId, name: dogName },
-          timeSlot,
-          timestamp: new Date().toISOString(),
-        });
+        console.log('✅ Potty break added for', dogName, 'at', timeSlot);
       }
       
       // Trigger refresh if provided
       if (onRefresh) {
         onRefresh();
       }
+    } else {
+      console.log('Ignoring cell click in potty handler - not a potty category:', category);
     }
   }, [pottyBreaks, toast, onRefresh]);
   
