@@ -55,14 +55,12 @@ export const useFlagHandling = ({
   }, [dogId, setOtherDogs]);
 
   const handleIncompatibleDogToggle = (dogId: string) => {
-    // Fix by using explicit type annotation for the function parameter and return type
-    setIncompatibleDogs((current: string[]): string[] => {
-      if (current.includes(dogId)) {
-        return current.filter(id => id !== dogId);
-      } else {
-        return [...current, dogId];
-      }
-    });
+    // Create a new array instead of using a function-based update
+    const updated = incompatibleDogs.includes(dogId)
+      ? incompatibleDogs.filter(id => id !== dogId)
+      : [...incompatibleDogs, dogId];
+    
+    setIncompatibleDogs(updated);
   };
 
   const toggleFlag = (flagType: keyof typeof selectedFlags) => {
