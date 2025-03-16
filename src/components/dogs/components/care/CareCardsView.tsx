@@ -4,7 +4,6 @@ import { DogCareStatus } from '@/types/dailyCare';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import DogCareCard from './DogCareCard';
 import CareLogForm from './CareLogForm';
-import { Grid } from '@/components/ui/grid';
 
 interface CareCardsViewProps {
   dogsStatus: DogCareStatus[];
@@ -35,7 +34,14 @@ const CareCardsView: React.FC<CareCardsViewProps> = ({
         <Dialog key={dog.dog_id} open={dialogOpen && selectedDogId === dog.dog_id} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <div onClick={() => onLogCare(dog.dog_id)}>
-              <DogCareCard dog={dog} />
+              <DogCareCard 
+                dog={dog} 
+                onLogCare={onLogCare}
+                selectedDogId={selectedDogId}
+                dialogOpen={dialogOpen}
+                setDialogOpen={setDialogOpen}
+                onCareLogSuccess={onCareLogSuccess}
+              />
             </div>
           </DialogTrigger>
           <DialogContent>
