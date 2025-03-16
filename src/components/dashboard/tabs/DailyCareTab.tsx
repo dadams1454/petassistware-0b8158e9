@@ -5,6 +5,7 @@ import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { format, parseISO } from 'date-fns';
 import { Dog, Calendar } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
