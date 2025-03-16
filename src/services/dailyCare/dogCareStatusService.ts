@@ -15,7 +15,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     // Fetch only essential dog data - just id, name, breed, color and photo_url
     const dogsResponse = await supabase
       .from('dogs')
-      .select('id, name, breed, color, photo_url, sex')
+      .select('id, name, breed, color, photo_url, gender')
       .order('name');
       
     console.log('📊 Supabase dogs response status:', {
@@ -53,7 +53,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       dog_photo: dog.photo_url,
       breed: dog.breed || 'Unknown',
       color: dog.color || 'Unknown',
-      sex: dog.sex || 'Unknown',
+      sex: dog.gender || 'Unknown', // Use 'gender' column instead of non-existent 'sex'
       last_care: null, // We're not loading care data for simplicity
       flags: mockDogFlags[dog.id] || []
     }));
