@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 
 const DailyCare: React.FC = () => {
   const { loading, dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
-  const [activeTab, setActiveTab] = useState('timeTable'); // Changed default to timeTable
+  const [activeTab, setActiveTab] = useState('timeTable'); // Default to timeTable
   
   // Add state for cared-for dogs
   const [dogsWithCare, setDogsWithCare] = useState<DogCareStatus[]>([]);
@@ -84,7 +84,7 @@ const DailyCare: React.FC = () => {
         
         <TabsContent value="timeTable">
           {dogStatuses && dogStatuses.length > 0 ? (
-            <DogTimeTable dogsStatus={dogStatuses} />
+            <DogTimeTable dogsStatus={dogStatuses} onRefresh={handleManualRefresh} />
           ) : (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
