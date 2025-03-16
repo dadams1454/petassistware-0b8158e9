@@ -11,6 +11,7 @@ interface TimeSlotCellProps {
   timeSlot: string;
   category: string;
   hasPottyBreak: boolean;
+  hasCareLogged: boolean;
   onClick: () => void;
   flags?: DogFlag[];
 }
@@ -21,6 +22,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   timeSlot,
   category,
   hasPottyBreak,
+  hasCareLogged,
   onClick,
   flags = []
 }) => {
@@ -31,19 +33,21 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   const { cellClassNames, isPottyCategory } = useCellStyles({
     category,
     hasPottyBreak,
+    hasCareLogged,
     flags: cellFlags
   });
   
   return (
     <TableCell 
-      className={cellClassNames}
-      onClick={isPottyCategory ? onClick : undefined}
+      className={`${cellClassNames} cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700`}
+      onClick={onClick}
     >
       <CellContent 
         dogName={dogName}
         timeSlot={timeSlot}
         category={category}
         hasPottyBreak={hasPottyBreak}
+        hasCareLogged={hasCareLogged}
         flags={cellFlags} // Pass only the filtered flags
       />
     </TableCell>

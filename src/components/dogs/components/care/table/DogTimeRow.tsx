@@ -11,6 +11,7 @@ interface DogTimeRowProps {
   rowColor: string;
   activeCategory: string;
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
 }
 
@@ -20,6 +21,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
   rowColor,
   activeCategory,
   hasPottyBreak,
+  hasCareLogged,
   onCellClick
 }) => {
   return (
@@ -36,6 +38,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
           timeSlot={timeSlot}
           category={activeCategory}
           hasPottyBreak={hasPottyBreak(dog.dog_id, timeSlot)}
+          hasCareLogged={hasCareLogged(dog.dog_id, timeSlot, activeCategory)}
           onClick={() => onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory)}
           flags={dog.flags}
         />

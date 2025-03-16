@@ -14,6 +14,7 @@ interface TableContainerProps {
   activeCategory: string;
   timeSlots: string[];
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onRefresh?: () => void;
   careCategories: CareCategory[];
@@ -24,6 +25,7 @@ const TableContainer: React.FC<TableContainerProps> = ({
   activeCategory,
   timeSlots,
   hasPottyBreak,
+  hasCareLogged,
   onCellClick,
   onRefresh,
   careCategories
@@ -38,9 +40,13 @@ const TableContainer: React.FC<TableContainerProps> = ({
                 ? 'Showing all care activities' 
                 : `Showing schedule for ${category.name}`}
               
-              {category.id === 'pottybreaks' && (
+              {category.id === 'pottybreaks' ? (
                 <span className="ml-2 text-sm text-blue-500">
                   Click on a time slot to mark or unmark a potty break
+                </span>
+              ) : (
+                <span className="ml-2 text-sm text-blue-500">
+                  Click on a time slot to log care
                 </span>
               )}
             </p>
@@ -64,6 +70,7 @@ const TableContainer: React.FC<TableContainerProps> = ({
                         rowColor={getDogRowColor(index)}
                         activeCategory={category.id}
                         hasPottyBreak={hasPottyBreak}
+                        hasCareLogged={hasCareLogged}
                         onCellClick={onCellClick}
                       />
                     ))}

@@ -1,47 +1,63 @@
 
-import { DogFlag } from '@/types/dailyCare';
 import { useMemo } from 'react';
-import { DogCellStyles } from './types';
+import { DogFlag } from '@/types/dailyCare';
 
-interface CellStylesProps {
+interface UseCellStylesProps {
   category: string;
   hasPottyBreak: boolean;
+  hasCareLogged?: boolean;
   flags: DogFlag[];
 }
 
-export const useCellStyles = ({ category, hasPottyBreak, flags }: CellStylesProps): DogCellStyles => {
-  const isPottyCategory = category === 'pottybreaks';
+export const useCellStyles = ({ 
+  category, 
+  hasPottyBreak, 
+  hasCareLogged = false,
+  flags 
+}: UseCellStylesProps) => {
+  // Process flags
+  const isInHeat = useMemo(() => flags.some(flag => flag.type === 'in_heat'), [flags]);
+  const isPregnant = useMemo(() => flags.some(flag => flag.type === 'pregnant'), [flags]);
+  const hasIncompatibility = useMemo(() => flags.some(flag => flag.type === 'incompatible'), [flags]);
   
-  // Check for specific flags that affect cell styling
-  const isInHeat = flags.some(flag => flag.type === 'in_heat');
-  const isPregnant = flags.some(flag => flag.type === 'pregnant');
-  const hasIncompatibility = flags.some(flag => flag.type === 'incompatible');
+  // Determine if this is a potty category cell
+  const isPottyCategory = useMemo(() => 
+    category.toLowerCase().includes('potty') || 
+    category === 'pottybreaks', 
+  [category]);
   
-  // Special attention is now handled exclusively in DogNameCell
-  const hasSpecialAttention = false;
-  
-  const getBorderColor = () => {
-    if (isInHeat) return 'border-red-400';
-    if (isPregnant) return 'border-pink-400';
-    if (hasIncompatibility) return 'border-amber-400';
-    return 'border-slate-200';
-  };
-  
+  // Determine cell styling based on various conditions
   const cellClassNames = useMemo(() => {
-    return `text-center p-0 h-10 border ${getBorderColor()}
-      ${isPottyCategory ? 'cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/20' : ''}
-      ${(isPottyCategory && hasPottyBreak) ? 'bg-green-50 dark:bg-green-900/10' : ''}
-      ${isInHeat ? 'bg-red-50 dark:bg-red-900/10' : ''}
-      ${isPregnant ? 'bg-pink-50 dark:bg-pink-900/10' : ''}
-      ${hasIncompatibility ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`;
-  }, [isPottyCategory, hasPottyBreak, isInHeat, isPregnant, hasIncompatibility, getBorderColor]);
+    const baseClasses = 'text-center p-0 h-10 relative';
+    
+    if (hasCareLogged) {
+      return `${baseClasses} bg-green-100 dark:bg-green-900/30`;
+    }
+    
+    if (isPottyCategory && hasPottyBreak) {
+      return `${baseClasses} bg-green-100 dark:bg-green-900/30`;
+    }
+    
+    if (isInHeat) {
+      return `${baseClasses} bg-red-50 dark:bg-red-900/20`;
+    }
+    
+    if (isPregnant) {
+      return `${baseClasses} bg-pink-50 dark:bg-pink-900/20`;
+    }
+    
+    if (hasIncompatibility) {
+      return `${baseClasses} bg-amber-50 dark:bg-amber-900/20`;
+    }
+    
+    return baseClasses;
+  }, [isPottyCategory, hasPottyBreak, hasCareLogged, isInHeat, isPregnant, hasIncompatibility]);
   
   return {
     cellClassNames,
     isPottyCategory,
     isInHeat,
     isPregnant,
-    hasIncompatibility,
-    hasSpecialAttention
+    hasIncompatibility
   };
 };

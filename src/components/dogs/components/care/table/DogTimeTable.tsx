@@ -11,6 +11,7 @@ import CareCategories, { careCategories } from './CareCategories';
 import SpecialConditionsAlert from './components/SpecialConditionsAlert';
 import TableContainer from './components/TableContainer';
 import { usePottyBreaks } from './components/usePottyBreaks';
+import { useCareTracking } from './components/useCareTracking';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -22,7 +23,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const [activeCategory, setActiveCategory] = useState('all');
   
   // Use the potty breaks hook for managing potty break state
-  const { hasPottyBreak, handleCellClick } = usePottyBreaks(onRefresh);
+  const { hasPottyBreak } = usePottyBreaks(onRefresh);
+  
+  // Use the care tracking hook for general care logging
+  const { hasCareLogged, handleCellClick } = useCareTracking(onRefresh);
   
   // Filter out duplicate dog names to avoid confusion in the table
   const uniqueDogs = dogsStatus.reduce((acc: DogCareStatus[], current) => {
@@ -37,6 +41,11 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const sortedDogs = [...uniqueDogs].sort((a, b) => 
     a.dog_name.toLowerCase().localeCompare(b.dog_name.toLowerCase())
   );
+
+  // Handle category change
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+  };
 
   return (
     <Card className="shadow-md">
@@ -64,7 +73,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       <CardContent className="p-0">
         <div className="w-full">
           <TabsList className="w-full justify-start px-4 pt-2 bg-muted/50 rounded-none border-b">
-            <CareCategories activeCategory={activeCategory} />
+            <CareCategories 
+              activeCategory={activeCategory} 
+              onCategoryChange={handleCategoryChange}
+            />
           </TabsList>
           
           {/* Table container with tabs content */}
@@ -73,6 +85,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             activeCategory={activeCategory}
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
+            hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
             onRefresh={onRefresh}
             careCategories={careCategories}
