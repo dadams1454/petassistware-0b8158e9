@@ -17,18 +17,16 @@ const DailyCare: React.FC = () => {
   // Add state for cared-for dogs
   const [dogsWithCare, setDogsWithCare] = useState<DogCareStatus[]>([]);
 
-  // Add debugging effect to check when this component loads and what data it receives
+  // Fetch all dogs on component mount and whenever fetchAllDogsWithCareStatus changes
   useEffect(() => {
-    console.log('🚀 DailyCare page mounted');
-    console.log('🐕 Initial dogStatuses:', dogStatuses?.length || 0);
+    console.log('🚀 DailyCare page mounted - fetching dogs data');
     
     // Force a fetch on component mount to ensure we have data
     fetchAllDogsWithCareStatus(new Date(), true)
       .then(dogs => {
-        console.log('🐕 Fetched dogs count:', dogs.length);
+        console.log('✅ Fetched dogs count:', dogs.length);
         if (dogs.length > 0) {
           console.log('🐕 Dog names:', dogs.map(d => d.dog_name).join(', '));
-          console.log('🐕 First dog sample:', JSON.stringify(dogs[0] || 'No dogs returned').substring(0, 200) + '...');
           
           // Filter dogs that have received care
           const caredForDogs = dogs.filter(dog => dog.last_care !== null);
@@ -52,11 +50,6 @@ const DailyCare: React.FC = () => {
           Track and log daily care activities for all your dogs
           {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
         </p>
-        {dogStatuses && dogStatuses.length > 0 && (
-          <p className="mt-1 text-xs text-slate-400">
-            Dogs: {dogStatuses.map(d => d.dog_name).join(', ')}
-          </p>
-        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">

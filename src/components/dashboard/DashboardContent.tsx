@@ -28,7 +28,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const [activeTab, setActiveTab] = useState('care'); // Default to care tab
   const [careLogDialogOpen, setCareLogDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
-  const { dogStatuses } = useDailyCare();
+  const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
+
+  // Force fetch all dogs on component mount
+  useEffect(() => {
+    console.log('🚀 DashboardContent mounted - fetching all dogs');
+    fetchAllDogsWithCareStatus(new Date(), true);
+  }, [fetchAllDogsWithCareStatus]);
 
   // Filter dogs that have received care today
   const dogsWithCareToday = dogStatuses?.filter(dog => dog.last_care !== null) || [];
@@ -40,16 +46,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const handleCareLogSuccess = () => {
     setCareLogDialogOpen(false);
     setSelectedDogId(null);
+    // Refresh dog statuses
+    fetchAllDogsWithCareStatus(new Date(), true);
   };
 
   const handleDogSelected = (dogId: string) => {
     setSelectedDogId(dogId);
   };
-
-  // Add debugging to track active tab changes
-  useEffect(() => {
-    console.log(`🔍 DashboardContent - Active Tab: ${activeTab}`);
-  }, [activeTab]);
 
   return (
     <>
@@ -62,7 +65,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsContent value="care">
           <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-md mb-4">
             <p className="text-sm text-green-600 dark:text-green-400">
-              🐕 Daily Care Dashboard - Your dogs will appear below
+              🐕 Daily Care Dashboard - All dogs will appear below ({dogStatuses?.length || 0} dogs total)
             </p>
           </div>
           

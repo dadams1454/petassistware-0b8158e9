@@ -4,7 +4,7 @@ import { useDailyCare } from '@/contexts/dailyCare';
 
 export const useCareDashboard = () => {
   // State variables
-  const [activeView, setActiveView] = useState<string>('table'); // Changed default from 'cards' to 'table'
+  const [activeView, setActiveView] = useState<string>('table'); // Default to table view
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
@@ -25,7 +25,7 @@ export const useCareDashboard = () => {
     setLoading(true);
     setLoadError(null);
     try {
-      console.log('🔄 Loading dogs status...');
+      console.log('🔄 Loading ALL dogs status...');
       const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
       console.log('✅ Dogs loaded successfully:', dogs.length);
       if (dogs.length > 0) {
@@ -67,7 +67,7 @@ export const useCareDashboard = () => {
   // Initial data loading - runs exactly once on mount
   useEffect(() => {
     if (!initialLoadAttempted) {
-      console.log('🚀 Initial data loading for CareDashboard');
+      console.log('🚀 Initial data loading for CareDashboard - first time load');
       
       Promise.all([loadDogsStatus(), loadCategories()])
         .then(() => {
@@ -84,7 +84,7 @@ export const useCareDashboard = () => {
 
   // Handler for refreshing data
   const handleRefresh = useCallback(() => {
-    console.log('🔄 Manual refresh triggered');
+    console.log('🔄 Manual refresh triggered - forcing reload of ALL dogs');
     setLoading(true);
     loadDogsStatus();
   }, [loadDogsStatus]);
@@ -98,7 +98,7 @@ export const useCareDashboard = () => {
 
   // Success handler for when care is logged
   const handleCareLogSuccess = () => {
-    console.log('✅ Care log success, closing dialog and refreshing');
+    console.log('✅ Care log success, closing dialog and refreshing ALL dogs');
     setDialogOpen(false);
     handleRefresh();
   };
@@ -108,14 +108,6 @@ export const useCareDashboard = () => {
     console.log('📋 Category changed to:', category);
     setSelectedCategory(category);
   };
-
-  // Debug output for current state
-  useEffect(() => {
-    console.log(`📊 Dashboard state: View=${activeView}, Category=${selectedCategory}, Dogs=${dogStatuses?.length || 0}, Loading=${loading}`);
-    if (dogStatuses && dogStatuses.length > 0) {
-      console.log('🐕 First few dogs:', dogStatuses.slice(0, 3).map(d => d.dog_name).join(', '));
-    }
-  }, [activeView, selectedCategory, dogStatuses, loading]);
 
   return {
     // State

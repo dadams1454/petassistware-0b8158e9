@@ -10,12 +10,9 @@ import { createMockDogFlags } from '@/utils/mockDogFlags';
  */
 export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<DogCareStatus[]> => {
   try {
-    console.log('🔍 Fetching dogs with care status for date:', date);
+    console.log('🔍 Fetching ALL dogs with care status for date:', date);
     
-    // Debug the actual Supabase query being made
-    console.log('📊 Supabase query: SELECT id, name, breed, color, photo_url FROM dogs ORDER BY name');
-    
-    // Fetch all dogs
+    // Fetch all dogs, with no filter constraints to ensure we get ALL dogs
     const dogsResponse = await supabase
       .from('dogs')
       .select('id, name, breed, color, photo_url')
@@ -114,12 +111,6 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
             flags: mockDogFlags[dog.id] || []
           } as DogCareStatus;
           
-          console.log(`✅ Processed dog status for ${dog.name}:`, {
-            id: dogStatus.dog_id,
-            name: dogStatus.dog_name,
-            lastCare: dogStatus.last_care ? `${dogStatus.last_care.task_name} at ${new Date(dogStatus.last_care.timestamp).toLocaleTimeString()}` : 'None'
-          });
-          
           return dogStatus;
         } catch (error) {
           console.error(`❌ Error processing dog ${dog.id}:`, error);
@@ -138,11 +129,9 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     );
 
     console.log(`✅ Processed ${statuses.length} dogs with care status`);
-    console.log('🐕 Dog names sample:', statuses.slice(0, 5).map(d => d.dog_name));
     return statuses;
   } catch (error) {
     console.error('❌ Error fetching all dogs care status:', error);
-    // Return empty array instead of throwing
-    return [];
+    throw error;
   }
 };
