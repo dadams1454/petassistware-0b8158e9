@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -16,11 +17,22 @@ import DogStatusCard from '../DogStatusCard';
 interface DogHeaderProps {
   dog: any;
   isFullPage?: boolean;
+  upcomingEvents?: number;
   onEdit?: (dog: any) => void;
   onDelete?: (dogId: string) => void;
+  onViewFirstEvent?: () => void;
+  onAddAppointment?: () => void;
 }
 
-const DogHeader: React.FC<DogHeaderProps> = ({ dog, isFullPage = false }) => {
+const DogHeader: React.FC<DogHeaderProps> = ({ 
+  dog, 
+  isFullPage = false,
+  upcomingEvents,
+  onEdit,
+  onDelete,
+  onViewFirstEvent,
+  onAddAppointment
+}) => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -61,11 +73,46 @@ const DogHeader: React.FC<DogHeaderProps> = ({ dog, isFullPage = false }) => {
           {/* Add DogStatusCard for displaying heat/pregnancy status */}
           <DogStatusCard dog={dog} />
           
+          {/* Add upcoming events button if available */}
+          {upcomingEvents && upcomingEvents > 0 && onViewFirstEvent && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2 mr-2"
+              onClick={onViewFirstEvent}
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              {upcomingEvents} Upcoming {upcomingEvents === 1 ? 'Event' : 'Events'}
+            </Button>
+          )}
+          
+          {onAddAppointment && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={onAddAppointment}
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              Add Appointment
+            </Button>
+          )}
+          
           {!isFullPage && (
             <div className="flex items-center mt-2 space-x-2">
               <Button variant="outline" size="sm" onClick={handleViewDetails}>
                 View Details
               </Button>
+              {onEdit && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => onEdit(dog)}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -75,3 +122,4 @@ const DogHeader: React.FC<DogHeaderProps> = ({ dog, isFullPage = false }) => {
 };
 
 export default DogHeader;
+
