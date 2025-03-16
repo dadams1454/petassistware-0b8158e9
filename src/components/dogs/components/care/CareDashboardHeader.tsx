@@ -1,34 +1,57 @@
 
 import React from 'react';
-import { format } from 'date-fns';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar, Grid3X3, RefreshCw } from 'lucide-react';
 
 interface CareDashboardHeaderProps {
-  date: Date;
-  careCompletionPercentage: number;
-  totalDogs: number;
-  caredDogs: number;
+  view: string;
+  onViewChange: (value: string) => void;
+  onRefresh?: () => void;
 }
 
-const CareDashboardHeader: React.FC<CareDashboardHeaderProps> = ({
-  date,
-  careCompletionPercentage,
-  totalDogs,
-  caredDogs,
+const CareDashboardHeader: React.FC<CareDashboardHeaderProps> = ({ 
+  view, 
+  onViewChange,
+  onRefresh 
 }) => {
   return (
-    <div className="flex flex-col space-y-2 sm:flex-row sm:justify-between sm:space-y-0 sm:items-center">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h2 className="text-2xl font-bold">Daily Care Dashboard</h2>
+        <h1 className="text-2xl font-bold tracking-tight">Daily Care</h1>
         <p className="text-muted-foreground">
-          {format(date, 'EEEE, MMMM d, yyyy')}
+          Monitor and log care activities for all dogs
         </p>
       </div>
-      <div className="flex items-center space-x-2">
-        <div className="text-sm text-muted-foreground">
-          {caredDogs} of {totalDogs} dogs cared for
-        </div>
-        <Progress value={careCompletionPercentage} className="w-24" />
+      
+      <div className="flex items-center gap-2">
+        {onRefresh && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onRefresh}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        )}
+        
+        <Tabs 
+          value={view} 
+          onValueChange={onViewChange}
+          className="w-[200px]"
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="table">
+              <Calendar className="h-4 w-4 mr-2" />
+              Table
+            </TabsTrigger>
+            <TabsTrigger value="cards">
+              <Grid3X3 className="h-4 w-4 mr-2" />
+              Cards
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
     </div>
   );

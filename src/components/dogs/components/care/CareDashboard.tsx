@@ -7,7 +7,9 @@ import CareTabsContent from './CareTabsContent';
 import TopCategoryTabs from './TopCategoryTabs';
 import LoadingSpinner from './LoadingSpinner';
 
-const CareDashboard: React.FC = () => {
+interface CareDashboardProps {}
+
+const CareDashboard: React.FC<CareDashboardProps> = () => {
   const [activeView, setActiveView] = useState<string>('table');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
@@ -66,8 +68,8 @@ const CareDashboard: React.FC = () => {
   return (
     <div className="space-y-4">
       <CareDashboardHeader 
-        activeView={activeView} 
-        setActiveView={setActiveView} 
+        view={activeView} 
+        onViewChange={setActiveView} 
       />
       
       {categories.length > 0 && (
