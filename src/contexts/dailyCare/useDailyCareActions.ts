@@ -33,6 +33,8 @@ export const useDailyCareActions = (userId: string | undefined) => {
     if (newLog) {
       // Clear cache to force refresh on next fetch
       dogCareStatus.clearCache();
+      // Re-fetch to update the UI immediately
+      await dogCareStatus.fetchAllDogsWithCareStatus();
     }
     return newLog;
   }, [careLogs, dogCareStatus]);
@@ -43,6 +45,7 @@ export const useDailyCareActions = (userId: string | undefined) => {
     fetchDogCareLogs: careLogs.fetchDogCareLogs,
     fetchCareTaskPresets: careTaskPresets.fetchCareTaskPresets,
     fetchAllDogsWithCareStatus: dogCareStatus.fetchAllDogsWithCareStatus,
+    dogStatuses: dogCareStatus.dogStatuses, // Expose dog statuses directly
     // Override addCareLog to include cache clearing
     addCareLog: addCareLogWithCacheClear,
     deleteCareLog: careLogs.deleteCareLog,

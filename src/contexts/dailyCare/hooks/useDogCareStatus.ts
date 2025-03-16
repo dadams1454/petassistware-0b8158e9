@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import * as dailyCareService from '@/services/dailyCare';
 import { DogCareStatus } from '@/types/dailyCare';
@@ -7,6 +7,7 @@ import { useCacheState } from './useCacheState';
 
 export const useDogCareStatus = () => {
   const [loading, setLoading] = useState(false);
+  const [dogStatuses, setDogStatuses] = useState<DogCareStatus[]>([]);
   const { toast } = useToast();
   const { getCachedStatus, setCachedStatus, clearCache } = useCacheState();
 
@@ -19,6 +20,7 @@ export const useDogCareStatus = () => {
       // Check cache first
       const cachedData = getCachedStatus(dateString);
       if (cachedData) {
+        setDogStatuses(cachedData); // Store in component state
         setLoading(false);
         return cachedData;
       }
@@ -28,6 +30,7 @@ export const useDogCareStatus = () => {
       
       // Cache the results
       setCachedStatus(dateString, statuses);
+      setDogStatuses(statuses); // Store in component state
       
       return statuses;
     } catch (error) {
@@ -45,6 +48,7 @@ export const useDogCareStatus = () => {
 
   return {
     loading,
+    dogStatuses, // Return the stored state
     fetchAllDogsWithCareStatus,
     clearCache
   };

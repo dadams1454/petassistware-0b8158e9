@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, RefreshCw } from 'lucide-react';
 
 import { DailyCareProvider } from '@/contexts/dailyCare';
@@ -17,7 +17,6 @@ const DailyCareLogs: React.FC<DailyCareLogsProps> = ({ dogId }) => {
   const [activeTab, setActiveTab] = useState('logs');
 
   const handleLogAdded = () => {
-    setRefreshTrigger(prev => prev + 1);
     // Switch to logs tab after adding a new log
     setActiveTab('logs');
   };

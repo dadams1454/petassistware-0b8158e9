@@ -13,19 +13,19 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   const [activeView, setActiveView] = useState<string>('table');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
-  const [dogsStatus, setDogsStatus] = useState<DogCareStatus[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   
-  const { fetchAllDogsWithCareStatus, loading, fetchCareTaskPresets } = useDailyCare();
+  const { 
+    fetchAllDogsWithCareStatus, 
+    loading, 
+    fetchCareTaskPresets,
+    dogStatuses = [] // Use the statuses directly from context with fallback to empty array
+  } = useDailyCare();
 
   // Function to fetch all dogs care status
   const loadDogsStatus = useCallback(async () => {
-    setIsLoading(true);
-    const data = await fetchAllDogsWithCareStatus();
-    setDogsStatus(data);
-    setIsLoading(false);
+    await fetchAllDogsWithCareStatus();
   }, [fetchAllDogsWithCareStatus]);
 
   // Function to fetch categories
@@ -48,6 +48,11 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     loadCategories();
   }, [loadDogsStatus, loadCategories]);
 
+  // Handler for refreshing data
+  const handleRefresh = useCallback(() => {
+    loadDogsStatus();
+  }, [loadDogsStatus]);
+
   // Handler for selecting a dog to log care
   const handleLogCare = (dogId: string) => {
     setSelectedDogId(dogId);
@@ -57,7 +62,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   // Success handler for when care is logged
   const handleCareLogSuccess = () => {
     setDialogOpen(false);
-    loadDogsStatus();
+    // Data will be refreshed automatically through context
   };
   
   // Handle category change
@@ -69,7 +74,8 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     <div className="space-y-4">
       <CareDashboardHeader 
         view={activeView} 
-        onViewChange={setActiveView} 
+        onViewChange={setActiveView}
+        onRefresh={handleRefresh}
       />
       
       {categories.length > 0 && (
@@ -80,12 +86,12 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
         />
       )}
       
-      {isLoading || loading ? (
+      {loading ? (
         <LoadingSpinner />
       ) : (
         <CareTabsContent
           activeTab={activeView}
-          dogsStatus={dogsStatus}
+          dogsStatus={dogStatuses}
           onLogCare={handleLogCare}
           selectedDogId={selectedDogId}
           dialogOpen={dialogOpen}
