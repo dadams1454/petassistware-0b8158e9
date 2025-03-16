@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 interface CareDashboardProps {}
 
 const CareDashboard: React.FC<CareDashboardProps> = () => {
-  // Essential state variables - ensure all are properly defined
-  const [activeView, setActiveView] = useState<string>('table');
+  // Essential state variables
+  const [activeView, setActiveView] = useState<string>('cards');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
@@ -27,6 +27,17 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     fetchCareTaskPresets,
     dogStatuses 
   } = useDailyCare();
+
+  // Log when component mounts and when dogStatuses change
+  useEffect(() => {
+    console.log('🚀 CareDashboard mounted');
+    console.log(`🐕 dogStatuses available: ${dogStatuses?.length || 0} dogs`);
+    
+    // Log all dog names if available
+    if (dogStatuses && dogStatuses.length > 0) {
+      console.log('🐕 Available dogs:', dogStatuses.map(d => d.dog_name).join(', '));
+    }
+  }, [dogStatuses]);
 
   // Function to fetch all dogs care status
   const loadDogsStatus = useCallback(async () => {
@@ -119,11 +130,9 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
 
   // Debug output for current state
   useEffect(() => {
-    if (dogStatuses) {
-      console.log(`📊 Dashboard state: View=${activeView}, Category=${selectedCategory}, Dogs=${dogStatuses.length}, Loading=${loading}`);
-      if (dogStatuses.length > 0) {
-        console.log('🐕 First few dogs:', dogStatuses.slice(0, 3).map(d => d.dog_name).join(', '));
-      }
+    console.log(`📊 Dashboard state: View=${activeView}, Category=${selectedCategory}, Dogs=${dogStatuses?.length || 0}, Loading=${loading}`);
+    if (dogStatuses && dogStatuses.length > 0) {
+      console.log('🐕 First few dogs:', dogStatuses.slice(0, 3).map(d => d.dog_name).join(', '));
     }
   }, [activeView, selectedCategory, dogStatuses, loading]);
 

@@ -9,7 +9,7 @@ const DailyCare: React.FC = () => {
 
   // Add debugging effect to check when this component loads and what data it receives
   useEffect(() => {
-    console.log('🔍 DailyCare page mounted');
+    console.log('🚀 DailyCare page mounted');
     console.log('🐕 Initial dogStatuses:', dogStatuses?.length || 0);
     
     // Force a fetch on component mount to ensure we have data

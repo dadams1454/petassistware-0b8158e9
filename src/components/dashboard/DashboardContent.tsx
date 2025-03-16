@@ -38,9 +38,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     setSelectedDogId(dogId);
   };
 
+  // Add debugging to track active tab changes
+  console.log(`🔍 DashboardContent - Active Tab: ${activeTab}`);
+
   return (
     <>
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="mb-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="care">Daily Care</TabsTrigger>
@@ -57,6 +60,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </TabsContent>
         
         <TabsContent value="care">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md mb-4">
+            <p className="text-sm text-blue-600 dark:text-blue-400">
+              🐕 Daily Care Dashboard - Dogs should appear below
+            </p>
+          </div>
           <CareDashboard />
         </TabsContent>
       </Tabs>

@@ -1,11 +1,18 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import { useDashboardData } from '@/components/dashboard/useDashboardData';
 
 const Dashboard: React.FC = () => {
   const { isLoading, stats, events, activities } = useDashboardData();
+  
+  // Add an effect to log when the Dashboard page loads
+  useEffect(() => {
+    console.log('🚀 Dashboard page loaded');
+    // Log information about data availability
+    console.log(`📊 Dashboard data: ${activities.length} activities, ${events.length} events`);
+  }, [activities.length, events.length]);
 
   return (
     <MainLayout>

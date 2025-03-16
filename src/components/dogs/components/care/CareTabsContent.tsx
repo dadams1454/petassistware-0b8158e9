@@ -41,6 +41,9 @@ const CareTabsContent: React.FC<CareTabsContentProps> = memo(({
   return (
     <>
       <TabsContent value="cards" className="mt-4">
+        <div className="p-2 mb-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded">
+          <p>🎴 Showing {dogsStatus.length} dogs in card view</p>
+        </div>
         <CareCardsView
           dogsStatus={dogsStatus}
           onLogCare={onLogCare}
@@ -53,6 +56,9 @@ const CareTabsContent: React.FC<CareTabsContentProps> = memo(({
       </TabsContent>
 
       <TabsContent value="table" className="mt-4">
+        <div className="p-2 mb-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded">
+          <p>📋 Showing {dogsStatus.length} dogs in table view</p>
+        </div>
         <DogCareTable
           dogsStatus={dogsStatus}
           onLogCare={onLogCare}
