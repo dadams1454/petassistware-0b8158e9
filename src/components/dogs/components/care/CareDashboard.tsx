@@ -9,33 +9,38 @@ import LoadingSpinner from './LoadingSpinner';
 interface CareDashboardProps {}
 
 const CareDashboard: React.FC<CareDashboardProps> = () => {
+  // Essential state variables
   const [activeView, setActiveView] = useState<string>('table');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true
   
   const { 
     fetchAllDogsWithCareStatus, 
-    loading, 
     fetchCareTaskPresets,
     dogStatuses 
   } = useDailyCare();
 
   // Function to fetch all dogs care status
   const loadDogsStatus = useCallback(async () => {
+    setLoading(true);
     try {
       console.log('🔄 Loading dogs status...');
       const dogs = await fetchAllDogsWithCareStatus();
       console.log('✅ Dogs loaded successfully:', dogs.length);
       if (dogs.length > 0) {
         console.log('🐕 Dogs data sample:', dogs.slice(0, 3).map(d => d.dog_name).join(', '));
+        console.log('🐕 All dog names:', dogs.map(d => d.dog_name).join(', '));
       }
       return dogs;
     } catch (error) {
       console.error('❌ Error loading dogs status:', error);
       return [];
+    } finally {
+      setLoading(false);
     }
   }, [fetchAllDogsWithCareStatus]);
 
@@ -59,35 +64,30 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     }
   }, [fetchCareTaskPresets, selectedCategory]);
 
-  // Initial data loading - fetch only once during component mount
+  // Initial data loading - Simplified to ensure it runs exactly once on mount
   useEffect(() => {
     if (!hasInitiallyLoaded) {
       console.log('🚀 Initial data loading for CareDashboard');
       
-      // Add check for dogStatuses to detect if they're already loaded
-      if (dogStatuses && dogStatuses.length > 0) {
-        console.log('📋 Dogs already loaded:', dogStatuses.length);
-        console.log('🐕 Dog names:', dogStatuses.slice(0, 10).map(d => d.dog_name).join(', '));
-        setHasInitiallyLoaded(true);
-      } else {
-        Promise.all([loadDogsStatus(), loadCategories()])
-          .then(() => {
-            console.log('✅ Initial data loaded successfully');
-            setHasInitiallyLoaded(true);
-          })
-          .catch(error => {
-            console.error('❌ Error during initial data loading:', error);
-            // Set loaded anyway to prevent infinite loops
-            setHasInitiallyLoaded(true);
-          });
-      }
+      Promise.all([loadDogsStatus(), loadCategories()])
+        .then(() => {
+          console.log('✅ Initial data loaded successfully');
+        })
+        .catch(error => {
+          console.error('❌ Error during initial data loading:', error);
+        })
+        .finally(() => {
+          console.log('🏁 Setting hasInitiallyLoaded to true');
+          setHasInitiallyLoaded(true);
+        });
     }
-  }, [loadDogsStatus, loadCategories, hasInitiallyLoaded, dogStatuses]);
+  }, [hasInitiallyLoaded, loadDogsStatus, loadCategories]);
 
   // Handler for refreshing data
   const handleRefresh = useCallback(() => {
     console.log('🔄 Manual refresh triggered');
-    loadDogsStatus();
+    setLoading(true);
+    loadDogsStatus().finally(() => setLoading(false));
   }, [loadDogsStatus]);
 
   // Handler for selecting a dog to log care
@@ -101,7 +101,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   const handleCareLogSuccess = () => {
     console.log('✅ Care log success, closing dialog and refreshing');
     setDialogOpen(false);
-    loadDogsStatus(); // Explicitly reload data after care is logged
+    handleRefresh(); // Use the existing refresh handler
   };
   
   // Handle category change
