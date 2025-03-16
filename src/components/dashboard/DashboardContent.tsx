@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import DailyCareTab from './tabs/DailyCareTab';
 import CareLogDialog from './dialogs/CareLogDialog';
+import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -26,7 +27,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const [activeTab, setActiveTab] = useState('care'); // Default to care tab
   const [careLogDialogOpen, setCareLogDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
-  const { fetchAllDogsWithCareStatus } = useDailyCare();
+  const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const initialFetchCompleted = useRef(false);
@@ -98,6 +99,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <div className="flex justify-between items-center mb-4">
           <TabsList>
             <TabsTrigger value="care">Daily Care</TabsTrigger>
+            <TabsTrigger value="grooming">Grooming</TabsTrigger>
             <TabsTrigger value="overview">Overview</TabsTrigger>
           </TabsList>
           
@@ -118,6 +120,23 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             onRefreshDogs={handleRefreshDogs} 
             isRefreshing={isRefreshing} 
           />
+        </TabsContent>
+        
+        <TabsContent value="grooming">
+          <div className="mb-4 bg-pink-50 dark:bg-pink-900/20 p-3 rounded-lg border border-pink-200 dark:border-pink-800">
+            <h3 className="text-lg font-medium text-pink-800 dark:text-pink-300">Monthly Grooming Schedule</h3>
+            <p className="text-sm text-pink-600 dark:text-pink-400">
+              Track and schedule grooming activities for all dogs throughout the month.
+            </p>
+          </div>
+          {dogStatuses && dogStatuses.length > 0 ? (
+            <GroomingSchedule dogs={dogStatuses} onRefresh={handleRefreshDogs} />
+          ) : (
+            <div className="p-8 text-center border rounded-lg">
+              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
+              <Button onClick={handleRefreshDogs} className="mt-4">Refresh Dogs</Button>
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="overview">

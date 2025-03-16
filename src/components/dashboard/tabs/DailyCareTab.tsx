@@ -1,7 +1,5 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
@@ -19,7 +17,6 @@ interface DailyCareTabProps {
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing }) => {
   const [careView, setCareView] = useState('timetable'); // Default to timetable view
   const { dogStatuses } = useDailyCare();
-  const { toast } = useToast();
   
   // Filter dogs that have received care today
   const dogsWithCareToday = dogStatuses?.filter(dog => dog.last_care !== null) || [];

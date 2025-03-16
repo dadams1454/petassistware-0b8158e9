@@ -34,11 +34,8 @@ export const useCellStyles = ({
     } 
     // Handle care logged cells
     else if (hasCareLogged) {
-      if (category === 'grooming') {
-        classes += ' bg-pink-100 dark:bg-pink-900/30 border-pink-200 dark:border-pink-800';
-      } else {
-        classes += ' bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800';
-      }
+      // No more special case for grooming in the main table since it has its own tab
+      classes += ' bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800';
     } 
     // Default background
     else {
@@ -56,9 +53,6 @@ export const useCellStyles = ({
           break;
         case 'exercise':
           classes += ' hover:bg-indigo-50 dark:hover:bg-indigo-900/20';
-          break;
-        case 'grooming':
-          classes += ' hover:bg-pink-50 dark:hover:bg-pink-900/20';
           break;
         case 'pottybreaks':
           classes += ' hover:bg-blue-50 dark:hover:bg-blue-900/20';

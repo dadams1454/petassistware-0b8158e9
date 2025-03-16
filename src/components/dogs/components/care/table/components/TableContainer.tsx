@@ -7,7 +7,6 @@ import DogTimeRow from '../DogTimeRow';
 import EmptyTableRow from '../EmptyTableRow';
 import { timeSlots, getDogRowColor } from '../dogGroupColors';
 import { CareCategory } from './types';
-import GroomingSchedule from '../GroomingSchedule';
 
 interface TableContainerProps {
   dogs: DogCareStatus[];
@@ -37,11 +36,6 @@ const TableContainer: React.FC<TableContainerProps> = ({
     console.log(`TableContainer rendering for category: ${activeCategory} with ${dogs.length} dogs`);
   }, [activeCategory, dogs.length]);
 
-  // Special case for grooming - show the monthly schedule instead of hourly
-  if (selectedCategory.id === 'grooming') {
-    return <GroomingSchedule dogs={dogs} onRefresh={onRefresh} />;
-  }
-
   return (
     <div className="mb-8">
       <div className="p-2 bg-background border-b border-muted">
@@ -59,10 +53,6 @@ const TableContainer: React.FC<TableContainerProps> = ({
           {selectedCategory.id === 'pottybreaks' ? (
             <span className="ml-2 text-sm text-blue-500">
               Click on a time slot to mark or unmark a potty break
-            </span>
-          ) : selectedCategory.id === 'grooming' ? (
-            <span className="ml-2 text-sm text-blue-500">
-              Click on a time slot to log grooming activity
             </span>
           ) : (
             <span className="ml-2 text-sm text-blue-500">
