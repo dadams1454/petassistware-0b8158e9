@@ -6,6 +6,8 @@ import DogAvatar from './DogAvatar';
 import { DogFlagsList } from '../DogFlagsList';
 import { format, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import LogCareButton from './LogCareButton';
+import LastCareStatus from './LastCareStatus';
 
 interface DogTableRowProps {
   dog: DogCareStatus;
@@ -33,15 +35,7 @@ const DogTableRow: React.FC<DogTableRowProps> = ({
       </TableCell>
       <TableCell>{dog.breed}</TableCell>
       <TableCell>
-        {dog.last_care ? (
-          <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-            {dog.last_care.category}: {dog.last_care.task_name}
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">
-            Needs care
-          </Badge>
-        )}
+        <LastCareStatus lastCare={dog.last_care} />
       </TableCell>
       <TableCell>
         {dog.last_care ? format(parseISO(dog.last_care.timestamp), 'h:mm a') : '-'}
