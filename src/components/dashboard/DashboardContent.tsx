@@ -10,6 +10,7 @@ import DailyCareTab from './tabs/DailyCareTab';
 import CareLogDialog from './dialogs/CareLogDialog';
 import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
 import ExerciseLog from '@/components/dogs/components/care/exercise/ExerciseLog';
+import MedicationsLog from '@/components/dogs/components/care/medications/MedicationsLog';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -100,6 +101,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           <TabsList>
             <TabsTrigger value="care">Daily Care</TabsTrigger>
             <TabsTrigger value="exercise">Exercise Log</TabsTrigger>
+            <TabsTrigger value="medications">Medications</TabsTrigger>
             <TabsTrigger value="grooming">Grooming</TabsTrigger>
             <TabsTrigger value="overview">Overview</TabsTrigger>
           </TabsList>
@@ -134,6 +136,28 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           ) : null}
           {dogStatuses && dogStatuses.length > 0 ? (
             <ExerciseLog
+              dogs={dogStatuses}
+              onRefresh={handleRefreshDogs}
+            />
+          ) : (
+            <div className="p-8 text-center border rounded-lg">
+              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
+              <Button onClick={handleRefreshDogs} className="mt-4">Refresh Dogs</Button>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="medications">
+          {dogStatuses && dogStatuses.length > 0 ? (
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800 mb-4">
+              <h3 className="text-lg font-medium text-purple-800 dark:text-purple-300">Medication Tracking</h3>
+              <p className="text-sm text-purple-600 dark:text-purple-400">
+                Track and log monthly preventative medications and daily treatments for all dogs.
+              </p>
+            </div>
+          ) : null}
+          {dogStatuses && dogStatuses.length > 0 ? (
+            <MedicationsLog
               dogs={dogStatuses}
               onRefresh={handleRefreshDogs}
             />

@@ -33,21 +33,39 @@ export const useTaskHandling = ({
     const loadPresets = async () => {
       const data = await fetchCareTaskPresets();
       
-      // If we don't have any exercise presets, let's add some default ones
-      if (!data.some(preset => preset.category === 'exercise')) {
-        console.log('No exercise presets found, adding defaults...');
+      // Check if we need to add default presets
+      const needsExercisePresets = !data.some(preset => preset.category === 'exercise');
+      const needsMedicationPresets = !data.some(preset => preset.category === 'medications');
+      
+      if (needsExercisePresets || needsMedicationPresets) {
         try {
-          await addCareTaskPreset('exercise', 'Walk');
-          await addCareTaskPreset('exercise', 'Play fetch');
-          await addCareTaskPreset('exercise', 'Run');
-          await addCareTaskPreset('exercise', 'Swim');
-          await addCareTaskPreset('exercise', 'Training session');
+          // Add exercise presets if needed
+          if (needsExercisePresets) {
+            console.log('No exercise presets found, adding defaults...');
+            await addCareTaskPreset('exercise', 'Walk');
+            await addCareTaskPreset('exercise', 'Play fetch');
+            await addCareTaskPreset('exercise', 'Run');
+            await addCareTaskPreset('exercise', 'Swim');
+            await addCareTaskPreset('exercise', 'Training session');
+          }
+          
+          // Add medication presets if needed  
+          if (needsMedicationPresets) {
+            console.log('No medication presets found, adding defaults...');
+            await addCareTaskPreset('medications', 'Heartworm Prevention');
+            await addCareTaskPreset('medications', 'Flea/Tick Prevention');
+            await addCareTaskPreset('medications', 'Dewormer');
+            await addCareTaskPreset('medications', 'Antibiotics');
+            await addCareTaskPreset('medications', 'Pain Medication');
+            await addCareTaskPreset('medications', 'Eye Medication');
+            await addCareTaskPreset('medications', 'Ear Medication');
+          }
           
           // Fetch again after adding defaults
           const updatedData = await fetchCareTaskPresets();
           setPresets(updatedData);
         } catch (error) {
-          console.error('Error adding default exercise presets:', error);
+          console.error('Error adding default presets:', error);
           setPresets(data);
         }
       } else {
