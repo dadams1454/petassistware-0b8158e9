@@ -15,12 +15,19 @@ export const useDogCareStatus = () => {
   // Use a ref to track if an initial fetch has occurred
   const initialFetchDone = useRef(false);
   const fetchPromiseRef = useRef<Promise<DogCareStatus[]> | null>(null);
+  const fetchInProgressRef = useRef(false);
 
   const fetchAllDogsWithCareStatus = useCallback(async (date = new Date(), forceRefresh = false): Promise<DogCareStatus[]> => {
     // Convert date to string for caching
     const dateString = date.toISOString().split('T')[0];
     
     console.log(`🔍 Hook: fetchAllDogsWithCareStatus called with forceRefresh=${forceRefresh}`);
+    
+    // Prevent multiple simultaneous fetches unless forceRefresh is true
+    if (fetchInProgressRef.current && !forceRefresh) {
+      console.log('🔄 Fetch already in progress, skipping duplicate request');
+      return fetchPromiseRef.current || Promise.resolve([]);
+    }
     
     // If we're already fetching, return the existing promise to prevent duplicate requests
     if (fetchPromiseRef.current && !forceRefresh) {
@@ -33,6 +40,7 @@ export const useDogCareStatus = () => {
       console.log('🔄 Force refreshing dog statuses');
       setLoading(true);
       setError(null);
+      fetchInProgressRef.current = true;
       
       const fetchPromise = dailyCareService.fetchAllDogsWithCareStatus(date)
         .then(statuses => {
@@ -57,6 +65,7 @@ export const useDogCareStatus = () => {
         .finally(() => {
           setLoading(false);
           fetchPromiseRef.current = null;
+          fetchInProgressRef.current = false;
         });
       
       fetchPromiseRef.current = fetchPromise;
@@ -81,6 +90,7 @@ export const useDogCareStatus = () => {
     // If we get here, we need to fetch from server
     setLoading(true);
     setError(null);
+    fetchInProgressRef.current = true;
     
     const fetchPromise = dailyCareService.fetchAllDogsWithCareStatus(date)
       .then(statuses => {
@@ -105,16 +115,17 @@ export const useDogCareStatus = () => {
       .finally(() => {
         setLoading(false);
         fetchPromiseRef.current = null;
+        fetchInProgressRef.current = false;
       });
     
     fetchPromiseRef.current = fetchPromise;
     return fetchPromise;
   }, [toast, getCachedStatus, setCachedStatus, dogStatuses]);
 
-  // Add immediate fetch on initialization
+  // Initial fetch only once on mount
   useEffect(() => {
-    if (!initialFetchDone.current) {
-      console.log('🚀 Initial fetch on hook mount');
+    if (!initialFetchDone.current && !fetchInProgressRef.current) {
+      console.log('🚀 Initial fetch on hook mount (once only)');
       fetchAllDogsWithCareStatus(new Date(), true)
         .then(dogs => {
           console.log(`✅ Initial fetch complete: ${dogs.length} dogs loaded`);
