@@ -34,7 +34,6 @@ export const useCellStyles = ({
     } 
     // Handle care logged cells
     else if (hasCareLogged) {
-      // No more special case for grooming in the main table since it has its own tab
       classes += ' bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800';
     } 
     // Default background

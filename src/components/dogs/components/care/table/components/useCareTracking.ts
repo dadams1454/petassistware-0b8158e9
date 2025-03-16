@@ -49,11 +49,9 @@ export const useCareTracking = (onRefresh?: () => void) => {
         [key]: true
       }));
       
-      const displayCategory = category === 'grooming' ? 'grooming session' : category;
-      
       toast({
         title: "Care logged",
-        description: `Logged ${displayCategory} for ${dogName} at ${timeSlot}`,
+        description: `Logged ${category} for ${dogName} at ${timeSlot}`,
       });
       
       console.log('✅ Care logged:', { key });
