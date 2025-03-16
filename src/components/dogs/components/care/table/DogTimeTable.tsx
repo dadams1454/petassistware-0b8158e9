@@ -8,6 +8,7 @@ import EmptyTableRow from './EmptyTableRow';
 import TableDebugger from './TableDebugger';
 import { format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PottyBreakDialog from '@/components/dashboard/dialogs/PottyBreakDialog';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -54,6 +55,9 @@ const careCategories = [
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const [currentDate] = useState(new Date());
   const [activeCategory, setActiveCategory] = useState('all');
+  const [pottyBreakDialogOpen, setPottyBreakDialogOpen] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
+  const [selectedDogs, setSelectedDogs] = useState<{id: string, name: string}[]>([]);
   
   // Filter out duplicate dog names to avoid confusion in the table
   const uniqueDogs = dogsStatus.reduce((acc: DogCareStatus[], current) => {
@@ -69,10 +73,32 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     a.dog_name.toLowerCase().localeCompare(b.dog_name.toLowerCase())
   );
 
-  // Handle cell click - could be used to log care for a specific time
-  const handleCellClick = (dogId: string, timeSlot: string, category: string) => {
+  // Handle cell click - specifically for potty breaks
+  const handleCellClick = (dogId: string, dogName: string, timeSlot: string, category: string) => {
     console.log(`Cell clicked: Dog ${dogId}, Time: ${timeSlot}, Category: ${category}`);
-    // Future functionality: Open care log dialog or mark as completed
+    
+    // Only handle potty break logging in the potty breaks tab
+    if (category === 'pottybreaks') {
+      setSelectedTimeSlot(timeSlot);
+      setSelectedDogs([{ id: dogId, name: dogName }]);
+      setPottyBreakDialogOpen(true);
+    }
+  };
+  
+  // Handle multiple dogs selection for potty breaks (future enhancement)
+  const handleGroupPottyBreak = (dogs: DogCareStatus[], timeSlot: string) => {
+    const selectedDogs = dogs.map(dog => ({ id: dog.dog_id, name: dog.dog_name }));
+    setSelectedTimeSlot(timeSlot);
+    setSelectedDogs(selectedDogs);
+    setPottyBreakDialogOpen(true);
+  };
+  
+  const handlePottyBreakSuccess = () => {
+    setPottyBreakDialogOpen(false);
+    // Optionally refresh the data
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
   return (
@@ -116,6 +142,12 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
                   {category.id === 'all' 
                     ? 'Showing all care activities' 
                     : `Showing schedule for ${category.name}`}
+                  
+                  {category.id === 'pottybreaks' && (
+                    <span className="ml-2 text-sm text-blue-500">
+                      Click on a time slot to log a potty break
+                    </span>
+                  )}
                 </p>
               </div>
               
@@ -155,8 +187,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
                             {timeSlots.map((timeSlot) => (
                               <TableCell 
                                 key={`${dog.dog_id}-${timeSlot}`} 
-                                className="text-center p-0 h-10 border border-slate-200 cursor-pointer"
-                                onClick={() => handleCellClick(dog.dog_id, timeSlot, category.id)}
+                                className={`text-center p-0 h-10 border border-slate-200 
+                                  ${category.id === 'pottybreaks' ? 'cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/20' : ''}
+                                `}
+                                onClick={() => category.id === 'pottybreaks' && handleCellClick(dog.dog_id, dog.dog_name, timeSlot, category.id)}
                               >
                                 {/* This cell will be filled with care data if it exists */}
                                 {/* For now, just show an empty cell */}
@@ -179,6 +213,15 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       
       {/* Hidden debugging component */}
       <TableDebugger dogsStatus={dogsStatus} selectedCategory={activeCategory} />
+      
+      {/* Potty Break Dialog */}
+      <PottyBreakDialog
+        open={pottyBreakDialogOpen}
+        onOpenChange={setPottyBreakDialogOpen}
+        selectedDogs={selectedDogs}
+        timeSlot={selectedTimeSlot}
+        onSuccess={handlePottyBreakSuccess}
+      />
     </Card>
   );
 };

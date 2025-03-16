@@ -19,9 +19,21 @@ interface DailyCareTabProps {
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing }) => {
   const [careView, setCareView] = useState('timetable'); // Default to timetable view
   const { dogStatuses } = useDailyCare();
+  const { toast } = useToast();
   
   // Filter dogs that have received care today
   const dogsWithCareToday = dogStatuses?.filter(dog => dog.last_care !== null) || [];
+
+  // Handle potty break success
+  const handlePottyBreakLogged = () => {
+    toast({
+      title: "Timetable Updated",
+      description: "The potty break has been logged successfully.",
+    });
+    
+    // Refresh dog data when a potty break is logged
+    onRefreshDogs();
+  };
 
   return (
     <>
@@ -41,7 +53,10 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
         
         <TabsContent value="timetable" className="mt-4">
           {dogStatuses && dogStatuses.length > 0 ? (
-            <DogTimeTable dogsStatus={dogStatuses} onRefresh={onRefreshDogs} />
+            <DogTimeTable 
+              dogsStatus={dogStatuses} 
+              onRefresh={onRefreshDogs} 
+            />
           ) : (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
