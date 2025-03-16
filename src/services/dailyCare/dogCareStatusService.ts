@@ -10,24 +10,38 @@ import { createMockDogFlags } from '@/utils/mockDogFlags';
  */
 export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<DogCareStatus[]> => {
   try {
-    console.log('Fetching dogs with care status for date:', date);
+    console.log('🔍 Fetching dogs with care status for date:', date);
+    
+    // Debug the actual Supabase query being made
+    console.log('📊 Supabase query: SELECT id, name, breed, color, photo_url FROM dogs ORDER BY name');
+    
     // Fetch all dogs
-    const { data: dogs, error: dogsError } = await supabase
+    const dogsResponse = await supabase
       .from('dogs')
       .select('id, name, breed, color, photo_url')
       .order('name');
+      
+    // Log the raw response for debugging
+    console.log('📊 Supabase dogs response:', {
+      status: dogsResponse.status,
+      statusText: dogsResponse.statusText,
+      error: dogsResponse.error,
+      count: dogsResponse.data?.length || 0
+    });
+
+    const { data: dogs, error: dogsError } = dogsResponse;
 
     if (dogsError) {
-      console.error('Error fetching dogs:', dogsError);
+      console.error('❌ Error fetching dogs:', dogsError);
       throw dogsError;
     }
     
     if (!dogs || dogs.length === 0) {
-      console.log('No dogs found in database');
+      console.log('⚠️ No dogs found in database');
       return []; // Return empty array if no dogs found
     }
 
-    console.log(`Found ${dogs.length} dogs in database`);
+    console.log(`✅ Found ${dogs.length} dogs in database:`, dogs.map(d => d.name));
     
     // For each dog, fetch their most recent care log for the specified date
     const todayStart = new Date(date);
@@ -41,7 +55,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     try {
       mockDogFlags = createMockDogFlags(dogs);
     } catch (error) {
-      console.error('Error creating mock dog flags:', error);
+      console.error('❌ Error creating mock dog flags:', error);
       // Use empty flags as fallback
       mockDogFlags = dogs.reduce((acc, dog) => {
         acc[dog.id] = [];
@@ -53,7 +67,9 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     const statuses = await Promise.all(
       dogs.map(async (dog) => {
         try {
-          const { data: logs, error: logsError } = await supabase
+          console.log(`🔍 Fetching care logs for dog ${dog.name} (${dog.id})`);
+          
+          const logsResponse = await supabase
             .from('daily_care_logs')
             .select('*')
             .eq('dog_id', dog.id)
@@ -61,9 +77,17 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
             .lte('timestamp', todayEnd.toISOString())
             .order('timestamp', { ascending: false })
             .limit(1);
+            
+          console.log(`📊 Care logs response for ${dog.name}:`, {
+            status: logsResponse.status,
+            error: logsResponse.error,
+            count: logsResponse.data?.length || 0
+          });
+          
+          const { data: logs, error: logsError } = logsResponse;
 
           if (logsError) {
-            console.warn(`Error fetching logs for dog ${dog.id}:`, logsError);
+            console.warn(`⚠️ Error fetching logs for dog ${dog.id}:`, logsError);
             // Continue with no logs instead of throwing
             return {
               dog_id: dog.id,
@@ -76,7 +100,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
             } as DogCareStatus;
           }
 
-          return {
+          const dogStatus = {
             dog_id: dog.id,
             dog_name: dog.name,
             dog_photo: dog.photo_url,
@@ -89,8 +113,16 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
             } : null,
             flags: mockDogFlags[dog.id] || []
           } as DogCareStatus;
+          
+          console.log(`✅ Processed dog status for ${dog.name}:`, {
+            id: dogStatus.dog_id,
+            name: dogStatus.dog_name,
+            lastCare: dogStatus.last_care ? `${dogStatus.last_care.task_name} at ${new Date(dogStatus.last_care.timestamp).toLocaleTimeString()}` : 'None'
+          });
+          
+          return dogStatus;
         } catch (error) {
-          console.error(`Error processing dog ${dog.id}:`, error);
+          console.error(`❌ Error processing dog ${dog.id}:`, error);
           // Return basic dog info with null care status
           return {
             dog_id: dog.id,
@@ -105,10 +137,10 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       })
     );
 
-    console.log(`Processed ${statuses.length} dogs with care status`);
+    console.log(`✅ Processed ${statuses.length} dogs with care status`);
     return statuses;
   } catch (error) {
-    console.error('Error fetching all dogs care status:', error);
+    console.error('❌ Error fetching all dogs care status:', error);
     // Return empty array instead of throwing
     return [];
   }
