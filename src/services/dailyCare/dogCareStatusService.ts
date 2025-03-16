@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 import { createMockDogFlags } from '@/utils/mockDogFlags';
@@ -41,7 +40,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     try {
       mockDogFlags = createMockDogFlags(dogs);
       
-      // Deduplicate special attention flags
+      // Deduplicate special attention flags and ensure pregnant flag is supported
       Object.keys(mockDogFlags).forEach(dogId => {
         const specialAttentionFlags = mockDogFlags[dogId].filter(f => f.type === 'special_attention');
         if (specialAttentionFlags.length > 1) {
