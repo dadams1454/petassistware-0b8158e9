@@ -27,8 +27,8 @@ export const useDogCareStatus = () => {
     // Check cache first if not forcing a refresh
     if (!forceRefresh) {
       const cachedData = getCachedStatus(dateString);
-      if (cachedData) {
-        console.log('Using cached dog statuses from', dateString);
+      if (cachedData && cachedData.length > 0) {
+        console.log('Using cached dog statuses from', dateString, `(${cachedData.length} dogs)`);
         // If we have cached data, update the state without showing loading state
         setDogStatuses(cachedData);
         initialFetchDone.current = true;
@@ -45,9 +45,13 @@ export const useDogCareStatus = () => {
       // Fetch new data
       console.log('Fetching dog statuses from server for', dateString);
       const statuses = await dailyCareService.fetchAllDogsWithCareStatus(date);
+      console.log(`Fetched ${statuses.length} dogs from server`);
       
-      // Cache the results
-      setCachedStatus(dateString, statuses);
+      // Cache the results if there are any dogs
+      if (statuses.length > 0) {
+        setCachedStatus(dateString, statuses);
+        console.log(`Cached ${statuses.length} dogs for date ${dateString}`);
+      }
       
       // Update state with new data
       setDogStatuses(statuses);

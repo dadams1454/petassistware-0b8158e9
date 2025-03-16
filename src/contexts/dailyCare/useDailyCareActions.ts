@@ -29,8 +29,10 @@ export const useDailyCareActions = (userId: string | undefined) => {
 
   // Special handler for adding care log that clears the cache
   const addCareLogWithCacheClear = useCallback(async (data: CareLogFormData): Promise<DailyCarelog | null> => {
+    console.log('Adding care log with cache clear...');
     const newLog = await careLogs.addCareLog(data);
     if (newLog) {
+      console.log('Care log added successfully, clearing cache and refreshing');
       // Clear cache to force refresh on next fetch
       dogCareStatus.clearCache();
       // Re-fetch to update the UI immediately with force refresh
@@ -45,6 +47,7 @@ export const useDailyCareActions = (userId: string | undefined) => {
     fetchDogCareLogs: careLogs.fetchDogCareLogs,
     fetchCareTaskPresets: careTaskPresets.fetchCareTaskPresets,
     fetchAllDogsWithCareStatus: useCallback((date = new Date()) => {
+      console.log('Fetching all dogs with care status...');
       // Use the existing dogStatuses if available instead of fetching again
       return dogCareStatus.fetchAllDogsWithCareStatus(date, false);
     }, [dogCareStatus]),

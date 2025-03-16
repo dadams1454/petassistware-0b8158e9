@@ -26,6 +26,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   // Function to fetch all dogs care status
   const loadDogsStatus = useCallback(async () => {
     try {
+      console.log('Loading dogs status...');
       await fetchAllDogsWithCareStatus();
       console.log('Dogs loaded successfully:', dogStatuses?.length || 0);
     } catch (error) {
@@ -36,11 +37,14 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   // Function to fetch categories
   const loadCategories = useCallback(async () => {
     try {
+      console.log('Loading care categories...');
       const presets = await fetchCareTaskPresets();
       const uniqueCategories = Array.from(new Set(presets.map(preset => preset.category)));
       setCategories(uniqueCategories);
       if (uniqueCategories.length > 0 && !selectedCategory) {
+        // Set first category as default if none is selected
         setSelectedCategory(uniqueCategories[0]);
+        console.log('Setting default category:', uniqueCategories[0]);
       }
     } catch (error) {
       console.error('Error loading categories:', error);
@@ -77,8 +81,16 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
   
   // Handle category change
   const handleCategoryChange = (category: string) => {
+    console.log('Category changed to:', category);
     setSelectedCategory(category);
   };
+
+  // Debug output for current state
+  useEffect(() => {
+    if (dogStatuses) {
+      console.log(`Current view: ${activeView}, Category: ${selectedCategory}, Dogs loaded: ${dogStatuses.length}`);
+    }
+  }, [activeView, selectedCategory, dogStatuses]);
 
   return (
     <div className="space-y-4">
