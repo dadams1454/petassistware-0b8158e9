@@ -11,8 +11,10 @@ interface DogNameCellProps {
 }
 
 const DogNameCell: React.FC<DogNameCellProps> = ({ dog }) => {
-  // Check if dog has any flags
-  const hasFlags = dog.flags && dog.flags.length > 0;
+  // Get only non-special-attention flags for the flags list
+  const regularFlags = dog.flags?.filter(flag => flag.type !== 'special_attention') || [];
+  
+  // Get only the special attention flag if it exists
   const specialAttentionFlag = dog.flags?.find(flag => flag.type === 'special_attention');
   const hasSpecialAttention = !!specialAttentionFlag;
   
@@ -44,9 +46,9 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog }) => {
               </Tooltip>
             </TooltipProvider>
           )}
-          {hasFlags && (
+          {regularFlags.length > 0 && (
             <div className="ml-1 flex">
-              <DogFlagsList flags={dog.flags} />
+              <DogFlagsList flags={regularFlags} />
             </div>
           )}
         </div>

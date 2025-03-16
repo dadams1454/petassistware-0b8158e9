@@ -20,12 +20,19 @@ const CellContent: React.FC<CellContentProps> = ({
   hasPottyBreak,
   flags
 }) => {
+  // Filter out special_attention flags for cell content
+  const cellFlags = flags.filter(flag => flag.type !== 'special_attention');
+  
   const { 
     isPottyCategory,
     isInHeat,
     isPregnant,
     hasIncompatibility
-  } = useCellStyles({ category, hasPottyBreak, flags });
+  } = useCellStyles({ 
+    category, 
+    hasPottyBreak, 
+    flags: cellFlags 
+  });
   
   const getCellFlag = () => {
     if (isInHeat) return '🔴';
@@ -41,7 +48,7 @@ const CellContent: React.FC<CellContentProps> = ({
     if (isPregnant) message += '• Pregnant\n';
     
     if (hasIncompatibility) {
-      const incompatibleDogs = flags.find(f => f.type === 'incompatible')?.incompatible_with;
+      const incompatibleDogs = cellFlags.find(f => f.type === 'incompatible')?.incompatible_with;
       message += `• Doesn't get along with ${incompatibleDogs?.length || 0} other dog(s)\n`;
     }
     

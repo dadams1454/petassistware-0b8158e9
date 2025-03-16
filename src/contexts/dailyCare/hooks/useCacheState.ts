@@ -1,4 +1,3 @@
-
 import { useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 
@@ -14,8 +13,8 @@ export const useCacheState = () => {
     }
   }>({});
 
-  // Cache expiration time (15 minutes to ensure more frequent updates)
-  const CACHE_EXPIRATION = 15 * 60 * 1000;
+  // Reduced cache expiration time (5 minutes to reduce stale data issues)
+  const CACHE_EXPIRATION = 5 * 60 * 1000;
   
   const getCachedStatus = (dateString: string): DogCareStatus[] | null => {
     const now = Date.now();
@@ -27,7 +26,23 @@ export const useCacheState = () => {
       careStatusCache.current[dateString].data.length > 0 // Ensure we have actual data
     ) {
       console.log(`📋 Found valid cache for ${dateString} with ${careStatusCache.current[dateString].data.length} dogs`);
-      return careStatusCache.current[dateString].data;
+      
+      // Ensure each dog has at most one special_attention flag
+      const dedupedData = careStatusCache.current[dateString].data.map(dog => {
+        if (!dog.flags || dog.flags.length === 0) return dog;
+        
+        const specialAttentionFlags = dog.flags.filter(f => f.type === 'special_attention');
+        if (specialAttentionFlags.length <= 1) return dog;
+        
+        // Keep only the first special attention flag
+        const firstFlag = specialAttentionFlags[0];
+        return {
+          ...dog,
+          flags: dog.flags.filter(f => f.type !== 'special_attention' || f === firstFlag)
+        };
+      });
+      
+      return dedupedData;
     }
     
     console.log(`📋 No valid cache found for ${dateString}`);
@@ -40,10 +55,25 @@ export const useCacheState = () => {
       return;
     }
     
-    console.log(`📋 Caching ${data.length} dogs for ${dateString}`);
+    // Ensure each dog has at most one special_attention flag before caching
+    const dedupedData = data.map(dog => {
+      if (!dog.flags || dog.flags.length === 0) return dog;
+      
+      const specialAttentionFlags = dog.flags.filter(f => f.type === 'special_attention');
+      if (specialAttentionFlags.length <= 1) return dog;
+      
+      // Keep only the first special attention flag
+      const firstFlag = specialAttentionFlags[0];
+      return {
+        ...dog,
+        flags: dog.flags.filter(f => f.type !== 'special_attention' || f === firstFlag)
+      };
+    });
+    
+    console.log(`📋 Caching ${dedupedData.length} dogs for ${dateString}`);
     careStatusCache.current[dateString] = {
       timestamp: Date.now(),
-      data
+      data: dedupedData
     };
   };
   

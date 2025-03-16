@@ -24,10 +24,13 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   onClick,
   flags = []
 }) => {
+  // Filter out special_attention flags for cell styling
+  const cellFlags = flags.filter(flag => flag.type !== 'special_attention');
+  
   const { cellClassNames, isPottyCategory } = useCellStyles({
     category,
     hasPottyBreak,
-    flags
+    flags: cellFlags
   });
   
   return (

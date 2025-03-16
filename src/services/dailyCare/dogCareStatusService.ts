@@ -1,6 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { DogCareStatus } from '@/types/dailyCare';
+import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 import { createMockDogFlags } from '@/utils/mockDogFlags';
 
 /**
@@ -37,9 +36,20 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     console.log(`✅ Found ${dogs.length} dogs in database, dog names:`, dogs.map(d => d.name).join(', '));
     
     // Generate mock flags (with error handling)
-    let mockDogFlags = {};
+    let mockDogFlags: Record<string, DogFlag[]> = {};
     try {
       mockDogFlags = createMockDogFlags(dogs);
+      // Ensure each dog has at most one special_attention flag
+      Object.keys(mockDogFlags).forEach(dogId => {
+        const specialAttentionFlags = mockDogFlags[dogId].filter(f => f.type === 'special_attention');
+        if (specialAttentionFlags.length > 1) {
+          // Keep only the first special attention flag
+          const firstFlag = specialAttentionFlags[0];
+          mockDogFlags[dogId] = mockDogFlags[dogId].filter(f => 
+            f.type !== 'special_attention' || f === firstFlag
+          );
+        }
+      });
     } catch (error) {
       console.error('❌ Error creating mock dog flags:', error);
       mockDogFlags = {};
