@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
@@ -10,6 +9,7 @@ import { RefreshCw } from 'lucide-react';
 import DailyCareTab from './tabs/DailyCareTab';
 import CareLogDialog from './dialogs/CareLogDialog';
 import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
+import ExerciseLog from '@/components/dogs/components/care/exercise/ExerciseLog';
 
 interface DashboardContentProps {
   isLoading: boolean;
