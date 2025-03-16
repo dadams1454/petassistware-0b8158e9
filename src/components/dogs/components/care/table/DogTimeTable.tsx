@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +8,8 @@ import { format } from 'date-fns';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { timeSlots } from './dogGroupColors';
 import { careCategories } from './CareCategories';
-import SpecialConditionsAlert from './SpecialConditionsAlert';
-import TableContainer from './TableContainer';
+import SpecialConditionsAlert from './components/SpecialConditionsAlert';
+import TableContainer from './components/TableContainer';
 import { usePottyBreaks } from './components/usePottyBreaks';
 import { useCareTracking } from './components/useCareTracking';
 
