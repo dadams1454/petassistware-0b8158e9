@@ -12,25 +12,29 @@ export const useDogCareStatus = () => {
   const { getCachedStatus, setCachedStatus, clearCache } = useCacheState();
 
   const fetchAllDogsWithCareStatus = useCallback(async (date = new Date()): Promise<DogCareStatus[]> => {
+    // Convert date to string for caching
+    const dateString = date.toISOString().split('T')[0];
+    
+    // Check cache first
+    const cachedData = getCachedStatus(dateString);
+    if (cachedData) {
+      // If we have cached data, update the state without showing loading state
+      setDogStatuses(cachedData);
+      return cachedData;
+    }
+    
+    // Only show loading state when we need to fetch from server
     setLoading(true);
+    
     try {
-      // Convert date to string for caching
-      const dateString = date.toISOString().split('T')[0];
-      
-      // Check cache first
-      const cachedData = getCachedStatus(dateString);
-      if (cachedData) {
-        setDogStatuses(cachedData); // Store in component state
-        setLoading(false);
-        return cachedData;
-      }
-      
       // Fetch new data
       const statuses = await dailyCareService.fetchAllDogsWithCareStatus(date);
       
       // Cache the results
       setCachedStatus(dateString, statuses);
-      setDogStatuses(statuses); // Store in component state
+      
+      // Update state with new data
+      setDogStatuses(statuses);
       
       return statuses;
     } catch (error) {
@@ -48,7 +52,7 @@ export const useDogCareStatus = () => {
 
   return {
     loading,
-    dogStatuses, // Return the stored state
+    dogStatuses,
     fetchAllDogsWithCareStatus,
     clearCache
   };

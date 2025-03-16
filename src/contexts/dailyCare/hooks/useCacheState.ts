@@ -14,8 +14,8 @@ export const useCacheState = () => {
     }
   }>({});
 
-  // Cache expiration time (30 minutes)
-  const CACHE_EXPIRATION = 30 * 60 * 1000;
+  // Cache expiration time (60 minutes)
+  const CACHE_EXPIRATION = 60 * 60 * 1000;
   
   const getCachedStatus = (dateString: string): DogCareStatus[] | null => {
     const now = Date.now();

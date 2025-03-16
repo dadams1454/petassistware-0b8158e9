@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
-import { DogCareStatus } from '@/types/dailyCare';
 import CareDashboardHeader from './CareDashboardHeader';
 import CareTabsContent from './CareTabsContent';
 import TopCategoryTabs from './TopCategoryTabs';
@@ -42,11 +41,11 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     }
   }, [fetchCareTaskPresets, selectedCategory]);
 
-  // Initial data loading
+  // Initial data loading - fetch only once during component mount
   useEffect(() => {
     loadDogsStatus();
     loadCategories();
-  }, [loadDogsStatus, loadCategories]);
+  }, []);
 
   // Handler for refreshing data
   const handleRefresh = useCallback(() => {
