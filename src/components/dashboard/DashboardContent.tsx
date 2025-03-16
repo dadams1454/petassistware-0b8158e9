@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
@@ -99,7 +100,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <TabsList>
-            <TabsTrigger value="care">Daily Care</TabsTrigger>
+            <TabsTrigger value="care">Potty Break</TabsTrigger>
             <TabsTrigger value="exercise">Exercise Log</TabsTrigger>
             <TabsTrigger value="medications">Medications</TabsTrigger>
             <TabsTrigger value="grooming">Grooming</TabsTrigger>

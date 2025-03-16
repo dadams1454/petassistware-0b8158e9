@@ -13,10 +13,10 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     console.log('🚀 Dashboard page loaded');
     
-    // Show a welcome toast that also informs about the default Daily Care tab
+    // Show a welcome toast that also informs about the default Potty Break tab
     toast({
       title: "Welcome to your dashboard",
-      description: "The Daily Care tab is now shown by default for quick access to your dogs.",
+      description: "The Potty Break tab is now shown by default for quick access to your dogs.",
       duration: 5000,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -29,7 +29,7 @@ const Dashboard: React.FC = () => {
           Dashboard
         </h1>
         <p className="mt-1 text-slate-500 dark:text-slate-400">
-          Welcome back! Manage your dogs' daily care activities below.
+          Welcome back! Manage your dogs' potty breaks below.
         </p>
       </div>
 
