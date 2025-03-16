@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Table, TableBody, TableHeader, TableRow } from '@/components/ui/table';
@@ -34,7 +33,7 @@ const TableContainer: React.FC<TableContainerProps> = ({
   // if the active category is not 'All'
   const categoriesToShow = activeCategory === 'all' 
     ? careCategories 
-    : careCategories.filter(cat => cat.id === activeCategory || cat.id === 'all');
+    : careCategories.filter(cat => cat.id === activeCategory);
 
   return (
     <Tabs defaultValue="all" value={activeCategory}>
