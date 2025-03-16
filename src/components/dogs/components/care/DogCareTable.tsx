@@ -72,7 +72,7 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
                             <Dog className="h-4 w-4 text-primary" />
                           </div>
                         )}
-                        <span>{dog.dog_name}</span>
+                        <span className="font-medium">{dog.dog_name}</span>
                       </div>
                     </TableCell>
                     <TableCell>{dog.breed}</TableCell>

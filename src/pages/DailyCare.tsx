@@ -13,11 +13,11 @@ const DailyCare: React.FC = () => {
     console.log('🐕 Initial dogStatuses:', dogStatuses?.length || 0);
     
     // Force a fetch on component mount to ensure we have data
-    fetchAllDogsWithCareStatus(new Date())
+    fetchAllDogsWithCareStatus()
       .then(dogs => {
         console.log('🐕 Fetched dogs count:', dogs.length);
         if (dogs.length > 0) {
-          console.log('🐕 Dog names sample:', dogs.slice(0, 5).map(d => d.dog_name).join(', '));
+          console.log('🐕 Dog names:', dogs.map(d => d.dog_name).join(', '));
           console.log('🐕 First dog sample:', dogs[0] || 'No dogs returned');
         }
       })
@@ -38,8 +38,7 @@ const DailyCare: React.FC = () => {
         </p>
         {dogStatuses && dogStatuses.length > 0 && (
           <p className="mt-1 text-xs text-slate-400">
-            Dogs: {dogStatuses.slice(0, 5).map(d => d.dog_name).join(', ')}
-            {dogStatuses.length > 5 ? ` and ${dogStatuses.length - 5} more...` : ''}
+            Dogs: {dogStatuses.map(d => d.dog_name).join(', ')}
           </p>
         )}
       </div>

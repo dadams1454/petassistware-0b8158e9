@@ -29,7 +29,9 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       console.log('🔄 Loading dogs status...');
       const dogs = await fetchAllDogsWithCareStatus();
       console.log('✅ Dogs loaded successfully:', dogs.length);
-      console.log('🐕 Dogs data sample:', dogs.slice(0, 3).map(d => d.dog_name));
+      if (dogs.length > 0) {
+        console.log('🐕 Dogs data sample:', dogs.slice(0, 3).map(d => d.dog_name).join(', '));
+      }
       return dogs;
     } catch (error) {
       console.error('❌ Error loading dogs status:', error);
@@ -65,7 +67,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       // Add check for dogStatuses to detect if they're already loaded
       if (dogStatuses && dogStatuses.length > 0) {
         console.log('📋 Dogs already loaded:', dogStatuses.length);
-        console.log('🐕 Dog names sample:', dogStatuses.slice(0, 5).map(d => d.dog_name));
+        console.log('🐕 Dog names:', dogStatuses.slice(0, 10).map(d => d.dog_name).join(', '));
         setHasInitiallyLoaded(true);
       } else {
         Promise.all([loadDogsStatus(), loadCategories()])
@@ -144,7 +146,8 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
           <>
             <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-md mb-2">
               <p className="text-sm text-green-600 dark:text-green-400">
-                ✅ Loaded {dogStatuses.length} dogs successfully
+                ✅ Loaded {dogStatuses.length} dogs successfully: {dogStatuses.slice(0, 5).map(d => d.dog_name).join(', ')}
+                {dogStatuses.length > 5 ? ` and ${dogStatuses.length - 5} more` : ''}
               </p>
             </div>
             <CareTabsContent
