@@ -82,7 +82,7 @@ const DailyCare: React.FC = () => {
           <TabsTrigger value="rotation">Dog Rotation</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="timeTable">
+        <TabsContent value="timeTable" className="mt-4">
           {dogStatuses && dogStatuses.length > 0 ? (
             <DogTimeTable dogsStatus={dogStatuses} onRefresh={handleManualRefresh} />
           ) : (
