@@ -1,47 +1,26 @@
+
 import React from 'react';
-import { TabsTrigger } from '@/components/ui/tabs';
-import { Utensils, AlarmClock, Pill, Activity, Layers } from 'lucide-react';
+import { Calendar, Coffee, Utensils } from 'lucide-react';
 import { CareCategory } from './components/types';
 
-// Define care categories with icons
+// Define the care categories for the table view
 export const careCategories: CareCategory[] = [
-  { id: 'all', name: 'All', icon: <Layers className="h-4 w-4 mr-2" /> },
-  { id: 'feeding', name: 'Feeding', icon: <Utensils className="h-4 w-4 mr-2" /> },
-  { id: 'pottybreaks', name: 'Potty Breaks', icon: <AlarmClock className="h-4 w-4 mr-2" /> },
-  { id: 'medications', name: 'Medications', icon: <Pill className="h-4 w-4 mr-2" /> },
-  { id: 'exercise', name: 'Exercise', icon: <Activity className="h-4 w-4 mr-2" /> }
+  {
+    id: 'all',
+    name: 'All Care',
+    icon: <Calendar className="h-4 w-4 text-blue-500" />,
+  },
+  {
+    id: 'feeding',
+    name: 'Feeding',
+    icon: <Utensils className="h-4 w-4 text-yellow-500" />,
+  },
+  {
+    id: 'pottybreaks',
+    name: 'Potty Breaks',
+    icon: <Coffee className="h-4 w-4 text-blue-500" />,
+  },
+  // Removed "exercise" and "medications" categories from this list
 ];
 
-interface CareCategoriesProps {
-  activeCategory: string;
-  onCategoryChange?: (category: string) => void;
-}
-
-const CareCategories: React.FC<CareCategoriesProps> = ({ 
-  activeCategory,
-  onCategoryChange 
-}) => {
-  const handleCategoryClick = (category: string) => {
-    if (onCategoryChange) {
-      onCategoryChange(category);
-    }
-  };
-
-  return (
-    <>
-      {careCategories.map(category => (
-        <TabsTrigger 
-          key={category.id} 
-          value={category.id}
-          onClick={() => handleCategoryClick(category.id)}
-          className={activeCategory === category.id ? 'bg-primary/10' : ''}
-        >
-          {category.icon}
-          {category.name}
-        </TabsTrigger>
-      ))}
-    </>
-  );
-};
-
-export default CareCategories;
+export default careCategories;
