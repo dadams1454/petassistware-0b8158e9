@@ -9,7 +9,7 @@ import LoadingSpinner from './LoadingSpinner';
 interface CareDashboardProps {}
 
 const CareDashboard: React.FC<CareDashboardProps> = () => {
-  // Essential state variables
+  // Essential state variables - ensure all are properly defined
   const [activeView, setActiveView] = useState<string>('table');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
