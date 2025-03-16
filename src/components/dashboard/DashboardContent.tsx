@@ -11,6 +11,8 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dog, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -29,12 +31,53 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const [careLogDialogOpen, setCareLogDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
+  const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Force fetch all dogs on component mount
   useEffect(() => {
     console.log('🚀 DashboardContent mounted - fetching all dogs');
-    fetchAllDogsWithCareStatus(new Date(), true);
-  }, [fetchAllDogsWithCareStatus]);
+    fetchAllDogsWithCareStatus(new Date(), true)
+      .then(dogs => {
+        console.log(`✅ DashboardContent: Fetched ${dogs.length} dogs successfully`);
+        if (dogs.length === 0) {
+          console.warn('⚠️ No dogs were returned from the API');
+        }
+      })
+      .catch(error => {
+        console.error('❌ Error fetching dogs in DashboardContent:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load dogs. Please try refreshing the page.',
+          variant: 'destructive',
+        });
+      });
+  }, [fetchAllDogsWithCareStatus, toast]);
+
+  // Handler for manually refreshing the dog list
+  const handleRefreshDogs = () => {
+    console.log('🔄 Manual refresh triggered in DashboardContent');
+    setIsRefreshing(true);
+    fetchAllDogsWithCareStatus(new Date(), true)
+      .then(dogs => {
+        console.log(`✅ Manually refreshed: ${dogs.length} dogs loaded`);
+        toast({
+          title: 'Refresh Complete',
+          description: `Successfully loaded ${dogs.length} dogs.`,
+        });
+      })
+      .catch(error => {
+        console.error('❌ Error during manual refresh:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to refresh dogs. Please try again.',
+          variant: 'destructive',
+        });
+      })
+      .finally(() => {
+        setIsRefreshing(false);
+      });
+  };
 
   // Filter dogs that have received care today
   const dogsWithCareToday = dogStatuses?.filter(dog => dog.last_care !== null) || [];
@@ -57,15 +100,26 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   return (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList>
-          <TabsTrigger value="care">Daily Care</TabsTrigger>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-        </TabsList>
+        <div className="flex justify-between items-center mb-4">
+          <TabsList>
+            <TabsTrigger value="care">Daily Care</TabsTrigger>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+          </TabsList>
+          
+          <Button 
+            onClick={handleRefreshDogs} 
+            disabled={isRefreshing}
+            variant="outline"
+            size="sm"
+          >
+            {isRefreshing ? 'Refreshing...' : 'Refresh Dogs'}
+          </Button>
+        </div>
         
         <TabsContent value="care">
           <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-md mb-4">
             <p className="text-sm text-green-600 dark:text-green-400">
-              🐕 Daily Care Dashboard - All dogs will appear below ({dogStatuses?.length || 0} dogs total)
+              🐕 Daily Care Dashboard - {dogStatuses?.length || 0} dogs available
             </p>
           </div>
           

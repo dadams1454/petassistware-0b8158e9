@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import CareTabsContent from '../CareTabsContent';
 import { DogCareStatus } from '@/types/dailyCare';
 
@@ -24,6 +24,14 @@ const LoadedDogsContent: React.FC<LoadedDogsContentProps> = ({
   onLogCare,
   onCareLogSuccess
 }) => {
+  // Add debug useEffect to log when dog data changes
+  useEffect(() => {
+    console.log(`🐕 LoadedDogsContent received ${dogStatuses.length} dogs`);
+    if (dogStatuses.length > 0) {
+      console.log('🐕 First few dog names:', dogStatuses.slice(0, 5).map(d => d.dog_name).join(', '));
+    }
+  }, [dogStatuses]);
+
   return (
     <>
       <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-md mb-2">

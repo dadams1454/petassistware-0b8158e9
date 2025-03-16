@@ -82,6 +82,14 @@ export const useCareDashboard = () => {
     }
   }, [initialLoadAttempted, loadDogsStatus, loadCategories]);
 
+  // Add a second effect to force refresh dog data if dogStatuses is empty
+  useEffect(() => {
+    if (initialLoadAttempted && (!dogStatuses || dogStatuses.length === 0)) {
+      console.log('⚠️ No dogs found after initial load, forcing a refresh');
+      loadDogsStatus();
+    }
+  }, [initialLoadAttempted, dogStatuses, loadDogsStatus]);
+
   // Handler for refreshing data
   const handleRefresh = useCallback(() => {
     console.log('🔄 Manual refresh triggered - forcing reload of ALL dogs');

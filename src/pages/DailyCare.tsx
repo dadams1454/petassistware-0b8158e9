@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { Dog, Clock, Calendar } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 
 const DailyCare: React.FC = () => {
   const { loading, dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
@@ -16,10 +17,26 @@ const DailyCare: React.FC = () => {
   
   // Add state for cared-for dogs
   const [dogsWithCare, setDogsWithCare] = useState<DogCareStatus[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Fetch all dogs on component mount and whenever fetchAllDogsWithCareStatus changes
+  // Manually trigger refresh function
+  const handleManualRefresh = () => {
+    console.log('🔄 Manual refresh triggered in DailyCare page');
+    setRefreshTrigger(prev => prev + 1);
+    // Force fetch with refresh flag
+    fetchAllDogsWithCareStatus(new Date(), true)
+      .then(dogs => {
+        console.log(`✅ Manually refreshed: ${dogs.length} dogs loaded`);
+      })
+      .catch(error => {
+        console.error('❌ Error during manual refresh:', error);
+      });
+  };
+
+  // Fetch all dogs on component mount, when fetchAllDogsWithCareStatus changes,
+  // or when refreshTrigger is updated
   useEffect(() => {
-    console.log('🚀 DailyCare page mounted - fetching dogs data');
+    console.log('🚀 DailyCare page mount or refresh triggered - fetching dogs data');
     
     // Force a fetch on component mount to ensure we have data
     fetchAllDogsWithCareStatus(new Date(), true)
@@ -38,18 +55,23 @@ const DailyCare: React.FC = () => {
       .catch(error => {
         console.error('❌ Error fetching dogs on DailyCare mount:', error);
       });
-  }, [fetchAllDogsWithCareStatus]);
+  }, [fetchAllDogsWithCareStatus, refreshTrigger]);
 
   return (
     <MainLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-          Daily Care
-        </h1>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">
-          Track and log daily care activities for all your dogs
-          {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
-        </p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+            Daily Care
+          </h1>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
+            Track and log daily care activities for all your dogs
+            {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
+          </p>
+        </div>
+        <Button onClick={handleManualRefresh} className="ml-auto">
+          Refresh Dogs
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
