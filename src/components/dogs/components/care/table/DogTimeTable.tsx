@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Dog } from 'lucide-react';
@@ -23,10 +23,21 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const [activeCategory, setActiveCategory] = useState('all');
   
   // Use the potty breaks hook for managing potty break state
-  const { hasPottyBreak } = usePottyBreaks(onRefresh);
+  const { hasPottyBreak, handleCellClick: handlePottyBreakClick } = usePottyBreaks(onRefresh);
   
   // Use the care tracking hook for general care logging
-  const { hasCareLogged, handleCellClick } = useCareTracking(onRefresh);
+  const { hasCareLogged, handleCellClick: handleCareLogClick } = useCareTracking(onRefresh);
+  
+  // Combined cell click handler
+  const handleCellClick = (dogId: string, dogName: string, timeSlot: string, category: string) => {
+    console.log(`Handling click for ${dogName} at ${timeSlot} for ${category}`);
+    
+    if (category === 'pottybreaks') {
+      handlePottyBreakClick(dogId, dogName, timeSlot, category);
+    } else {
+      handleCareLogClick(dogId, dogName, timeSlot, category);
+    }
+  };
   
   // Filter out duplicate dog names to avoid confusion in the table
   const uniqueDogs = dogsStatus.reduce((acc: DogCareStatus[], current) => {
@@ -47,6 +58,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     console.log(`📊 Changing category from ${activeCategory} to ${category}`);
     setActiveCategory(category);
   };
+
+  useEffect(() => {
+    console.log('DogTimeTable rendered with activeCategory:', activeCategory);
+  }, [activeCategory]);
 
   return (
     <Card className="shadow-md">

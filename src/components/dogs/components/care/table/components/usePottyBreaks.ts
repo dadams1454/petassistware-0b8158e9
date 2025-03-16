@@ -13,12 +13,17 @@ export const usePottyBreaks = (onRefresh?: () => void) => {
   const { toast } = useToast();
   
   const hasPottyBreak = useCallback((dogId: string, timeSlot: string) => {
-    return pottyBreaks.some(pb => pb.dogId === dogId && pb.timeSlot === timeSlot);
+    console.log('Checking potty break for:', dogId, timeSlot);
+    const result = pottyBreaks.some(pb => pb.dogId === dogId && pb.timeSlot === timeSlot);
+    console.log('Has potty break:', result);
+    return result;
   }, [pottyBreaks]);
   
   const handleCellClick = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
     // Only handle potty break logging in the potty breaks tab
     if (category === 'pottybreaks') {
+      console.log('Potty break cell clicked:', { dogId, dogName, timeSlot });
+      
       // Check if this dog already has a potty break at this time
       const existingBreakIndex = pottyBreaks.findIndex(
         pb => pb.dogId === dogId && pb.timeSlot === timeSlot
@@ -48,7 +53,7 @@ export const usePottyBreaks = (onRefresh?: () => void) => {
           timestamp: new Date().toISOString()
         };
         
-        setPottyBreaks([...pottyBreaks, newPottyBreak]);
+        setPottyBreaks(prev => [...prev, newPottyBreak]);
         
         // Show toast for added potty break
         toast({

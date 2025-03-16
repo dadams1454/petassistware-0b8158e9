@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Table, TableBody, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -33,9 +33,13 @@ const TableContainer: React.FC<TableContainerProps> = ({
   // Always show the currently selected category table
   const selectedCategory = careCategories.find(cat => cat.id === activeCategory) || careCategories[0];
   
+  useEffect(() => {
+    console.log(`TableContainer rendered with activeCategory: ${activeCategory}`);
+  }, [activeCategory]);
+
   return (
     <Tabs defaultValue={activeCategory} value={activeCategory}>
-      <TabsContent value={activeCategory} forceMount>
+      <TabsContent value={activeCategory} forceMount className="mt-0">
         <div className="mb-8">
           <div className="p-2 bg-background border-b border-muted">
             <div className="flex items-center">

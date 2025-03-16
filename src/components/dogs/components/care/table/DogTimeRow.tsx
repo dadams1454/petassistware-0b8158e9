@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
@@ -24,25 +24,37 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
   hasCareLogged,
   onCellClick
 }) => {
+  useEffect(() => {
+    console.log(`DogTimeRow rendered for ${dog.dog_name} with category: ${activeCategory}`);
+  }, [dog.dog_name, activeCategory]);
+
   return (
-    <TableRow key={dog.dog_id} className={rowColor}>
+    <TableRow key={`${dog.dog_id}-row-${activeCategory}`} className={rowColor}>
       {/* Dog name cell with photo and flags */}
       <DogNameCell dog={dog} />
       
       {/* Time slot cells */}
-      {timeSlots.map((timeSlot) => (
-        <TimeSlotCell 
-          key={`${dog.dog_id}-${timeSlot}-${activeCategory}`}
-          dogId={dog.dog_id}
-          dogName={dog.dog_name}
-          timeSlot={timeSlot}
-          category={activeCategory}
-          hasPottyBreak={hasPottyBreak(dog.dog_id, timeSlot)}
-          hasCareLogged={hasCareLogged(dog.dog_id, timeSlot, activeCategory)}
-          onClick={() => onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory)}
-          flags={dog.flags}
-        />
-      ))}
+      {timeSlots.map((timeSlot) => {
+        const hasPottyBreakForSlot = hasPottyBreak(dog.dog_id, timeSlot);
+        const hasCareLoggedForSlot = hasCareLogged(dog.dog_id, timeSlot, activeCategory);
+        
+        return (
+          <TimeSlotCell 
+            key={`${dog.dog_id}-${timeSlot}-${activeCategory}`}
+            dogId={dog.dog_id}
+            dogName={dog.dog_name}
+            timeSlot={timeSlot}
+            category={activeCategory}
+            hasPottyBreak={hasPottyBreakForSlot}
+            hasCareLogged={hasCareLoggedForSlot}
+            onClick={() => {
+              console.log(`Cell clicked for ${dog.dog_name} at ${timeSlot} for ${activeCategory}`);
+              onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory);
+            }}
+            flags={dog.flags}
+          />
+        );
+      })}
     </TableRow>
   );
 };
