@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import CareDashboard from '@/components/dogs/components/care/CareDashboard';
 import DogRotationSchedule from '@/components/dogs/components/care/DogRotationSchedule';
+import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, parseISO } from 'date-fns';
@@ -13,7 +14,7 @@ import { Button } from '@/components/ui/button';
 
 const DailyCare: React.FC = () => {
   const { loading, dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
-  const [activeTab, setActiveTab] = useState('care');
+  const [activeTab, setActiveTab] = useState('timeTable'); // Changed default to timeTable
   
   // Add state for cared-for dogs
   const [dogsWithCare, setDogsWithCare] = useState<DogCareStatus[]>([]);
@@ -76,9 +77,21 @@ const DailyCare: React.FC = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList>
+          <TabsTrigger value="timeTable">Time Table</TabsTrigger>
           <TabsTrigger value="care">Daily Care</TabsTrigger>
           <TabsTrigger value="rotation">Dog Rotation</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="timeTable">
+          {dogStatuses && dogStatuses.length > 0 ? (
+            <DogTimeTable dogsStatus={dogStatuses} />
+          ) : (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
+              <Button onClick={handleManualRefresh} className="mt-4">Refresh Dogs</Button>
+            </Card>
+          )}
+        </TabsContent>
         
         <TabsContent value="care">
           {/* Care Activity Summary */}
