@@ -3,16 +3,23 @@ import React, { useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import { useDashboardData } from '@/components/dashboard/useDashboardData';
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard: React.FC = () => {
   const { isLoading, stats, events, activities } = useDashboardData();
+  const { toast } = useToast();
   
-  // Add an effect to log when the Dashboard page loads
+  // Add an effect to log when the Dashboard page loads and display a welcome toast
   useEffect(() => {
     console.log('🚀 Dashboard page loaded');
-    // Log information about data availability
-    console.log(`📊 Dashboard data: ${activities.length} activities, ${events.length} events`);
-  }, [activities.length, events.length]);
+    
+    // Show a welcome toast that also informs about the default Daily Care tab
+    toast({
+      title: "Welcome to your dashboard",
+      description: "The Daily Care tab is now shown by default for quick access to your dogs.",
+      duration: 5000,
+    });
+  }, [toast]);
 
   return (
     <MainLayout>
@@ -21,7 +28,7 @@ const Dashboard: React.FC = () => {
           Dashboard
         </h1>
         <p className="mt-1 text-slate-500 dark:text-slate-400">
-          Welcome back! Here's an overview of your breeding program.
+          Welcome back! Manage your dogs' daily care activities below.
         </p>
       </div>
 
