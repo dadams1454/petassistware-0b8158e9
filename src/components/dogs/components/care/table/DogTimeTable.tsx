@@ -144,7 +144,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       
       {hasSpecialConditions && (
         <div className="px-6 pt-0 pb-2">
-          <Alert variant="warning" className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300">
+          <Alert className="bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription className="text-sm">
               <span className="font-semibold">Special attention needed:</span>{' '}
