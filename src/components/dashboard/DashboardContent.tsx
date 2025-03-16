@@ -10,7 +10,7 @@ import CareLogForm from '@/components/dogs/components/care/CareLogForm';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dog, Calendar } from 'lucide-react';
+import { Dog, Calendar, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
@@ -34,7 +34,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [careView, setCareView] = useState('timetable'); // Add state for care view tabs
+  const [careView, setCareView] = useState('timetable'); // Default to timetable view
 
   // Force fetch all dogs on component mount
   useEffect(() => {
@@ -113,7 +113,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             disabled={isRefreshing}
             variant="outline"
             size="sm"
+            className="gap-1"
           >
+            <RefreshCw className="h-3.5 w-3.5" />
             {isRefreshing ? 'Refreshing...' : 'Refresh Dogs'}
           </Button>
         </div>
