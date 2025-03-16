@@ -35,6 +35,10 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
     onLogCare(dogId);
   };
 
+  // Don't filter dogs by category - show all dogs regardless of selected category
+  // The category will only be used when logging care
+  const allDogs = dogsStatus;
+
   return (
     <Card>
       <CardContent className="p-0">
@@ -51,7 +55,7 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {dogsStatus.map((dog) => (
+              {allDogs.map((dog) => (
                 <TableRow key={dog.dog_id}>
                   <TableCell>
                     <div className="flex items-center space-x-2">
@@ -104,7 +108,7 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
                         {selectedDogId === dog.dog_id && (
                           <CareLogForm 
                             dogId={dog.dog_id} 
-                            onSuccess={onCareLogSuccess} 
+                            onSuccess={onCareLogSuccess}
                             initialCategory={selectedCategory}
                           />
                         )}
