@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { TableCell } from '@/components/ui/table';
-import { Dog } from 'lucide-react';
-import { DogCareStatus } from '@/types/dailyCare';
+import { AlertCircle, Dog } from 'lucide-react';
+import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 import { DogFlagsList } from '../../DogFlagsList';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
@@ -12,6 +13,8 @@ interface DogNameCellProps {
 const DogNameCell: React.FC<DogNameCellProps> = ({ dog }) => {
   // Check if dog has any flags
   const hasFlags = dog.flags && dog.flags.length > 0;
+  const specialAttentionFlag = dog.flags?.find(flag => flag.type === 'special_attention');
+  const hasSpecialAttention = !!specialAttentionFlag;
   
   return (
     <TableCell className="font-medium sticky left-0 z-10 border-r border-slate-200 bg-white dark:bg-slate-900">
@@ -29,6 +32,18 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog }) => {
         )}
         <div className="flex items-center">
           <span>{dog.dog_name}</span>
+          {hasSpecialAttention && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertCircle className="h-4 w-4 ml-1 text-blue-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{specialAttentionFlag.value || "Needs special attention"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {hasFlags && (
             <div className="ml-1 flex">
               <DogFlagsList flags={dog.flags} />

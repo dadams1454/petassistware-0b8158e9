@@ -1,6 +1,7 @@
 
 import { DogFlag } from '@/types/dailyCare';
 import { useMemo } from 'react';
+import { DogCellStyles } from './types';
 
 interface CellStylesProps {
   category: string;
@@ -8,7 +9,7 @@ interface CellStylesProps {
   flags: DogFlag[];
 }
 
-export const useCellStyles = ({ category, hasPottyBreak, flags }: CellStylesProps) => {
+export const useCellStyles = ({ category, hasPottyBreak, flags }: CellStylesProps): DogCellStyles => {
   const isPottyCategory = category === 'pottybreaks';
   const isInHeat = flags.some(flag => flag.type === 'in_heat');
   const isPregnant = flags.some(flag => flag.type === 'special_attention' && flag.value?.includes('pregnant'));
@@ -29,9 +30,8 @@ export const useCellStyles = ({ category, hasPottyBreak, flags }: CellStylesProp
       ${(isPottyCategory && hasPottyBreak) ? 'bg-green-50 dark:bg-green-900/10' : ''}
       ${isInHeat ? 'bg-red-50 dark:bg-red-900/10' : ''}
       ${isPregnant ? 'bg-pink-50 dark:bg-pink-900/10' : ''}
-      ${hasIncompatibility ? 'bg-amber-50 dark:bg-amber-900/10' : ''}
-      ${hasSpecialAttention && !isPregnant ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`;
-  }, [isPottyCategory, hasPottyBreak, isInHeat, isPregnant, hasIncompatibility, hasSpecialAttention, getBorderColor]);
+      ${hasIncompatibility ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`;
+  }, [isPottyCategory, hasPottyBreak, isInHeat, isPregnant, hasIncompatibility, getBorderColor]);
   
   return {
     cellClassNames,
