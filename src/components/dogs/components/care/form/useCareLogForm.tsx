@@ -1,11 +1,17 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCareLogFormState, CareLogFormValues } from './hooks/useCareLogFormState';
 import { useTaskHandling } from './hooks/useTaskHandling';
 import { useFlagHandling } from './hooks/useFlagHandling';
 import { useFormSubmission } from './hooks/useFormSubmission';
 
-export const useCareLogForm = (dogId: string, onSuccess?: () => void) => {
+interface UseCareLogFormProps {
+  dogId: string;
+  onSuccess?: () => void;
+  initialCategory?: string;
+}
+
+export const useCareLogForm = ({ dogId, onSuccess, initialCategory }: UseCareLogFormProps) => {
   // Get form state and handlers from our custom hooks
   const formState = useCareLogFormState();
   
@@ -38,6 +44,13 @@ export const useCareLogForm = (dogId: string, onSuccess?: () => void) => {
     otherFlagNote,
     setOtherFlagNote
   } = formState;
+
+  // Set initial category if provided
+  useEffect(() => {
+    if (initialCategory) {
+      setSelectedCategory(initialCategory);
+    }
+  }, [initialCategory, setSelectedCategory]);
 
   // Task handling
   const taskHandling = useTaskHandling({
