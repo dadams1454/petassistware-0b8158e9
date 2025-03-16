@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Table, TableBody, TableHeader, TableRow } from '@/components/ui/table';

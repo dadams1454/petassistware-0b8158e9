@@ -91,27 +91,13 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       
       <CardContent className="p-0">
         <div className="w-full">
-          {/* Since we only have one category now, we can simplify this section */}
-          <TabsList className="w-full justify-start px-4 pt-2 bg-muted/50 rounded-none border-b">
-            {careCategories.map(category => (
-              <TabsTrigger 
-                key={category.id} 
-                value={category.id}
-                onClick={() => handleCategoryChange(category.id)}
-                className={activeCategory === category.id ? 'bg-primary/10' : ''}
-              >
-                {category.icon}
-                {category.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          
+          {/* Since we only have one category now, hide the tabs section completely */}
           <div className="p-4">
             <pre className="text-xs text-muted-foreground mb-2">
               Debug: Active Category: {activeCategory}, Dogs: {sortedDogs.length}
             </pre>
             
-            {/* Table container with tabs content */}
+            {/* Table container with content */}
             <TableContainer 
               dogs={sortedDogs}
               activeCategory={activeCategory}
