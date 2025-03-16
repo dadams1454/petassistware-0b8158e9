@@ -9,6 +9,6 @@ export interface DailyCareContextType {
   dogStatuses?: DogCareStatus[]; // Add dogStatuses to expose it directly
   addCareLog: (data: CareLogFormData) => Promise<DailyCarelog | null>;
   deleteCareLog: (id: string) => Promise<boolean>;
-  addCareTaskPreset: (data: CareTaskPreset) => Promise<CareTaskPreset | null>;
+  addCareTaskPreset: (category: string, taskName: string) => Promise<CareTaskPreset | null>;
   deleteCareTaskPreset: (id: string) => Promise<boolean>;
 }
