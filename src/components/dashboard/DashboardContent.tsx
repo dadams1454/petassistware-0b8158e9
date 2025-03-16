@@ -25,7 +25,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   events,
   activities,
 }) => {
-  const [activeTab, setActiveTab] = useState('care'); // Default to care tab
+  const [activeTab, setActiveTab] = useState('overview'); // Default to overview tab
   const [careLogDialogOpen, setCareLogDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
@@ -104,6 +104,16 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           isRefreshing={isRefreshing}
         />
         
+        <TabsContent value="overview">
+          <DashboardOverview 
+            isLoading={isLoading}
+            stats={stats}
+            events={events}
+            activities={activities}
+            onCareLogClick={handleCareLogClick}
+          />
+        </TabsContent>
+        
         <TabsContent value="care">
           <DailyCareTab 
             onRefreshDogs={handleRefreshDogs} 
@@ -129,16 +139,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           <GroomingTab 
             dogStatuses={dogStatuses} 
             onRefreshDogs={handleRefreshDogs} 
-          />
-        </TabsContent>
-        
-        <TabsContent value="overview">
-          <DashboardOverview 
-            isLoading={isLoading}
-            stats={stats}
-            events={events}
-            activities={activities}
-            onCareLogClick={handleCareLogClick}
           />
         </TabsContent>
       </Tabs>

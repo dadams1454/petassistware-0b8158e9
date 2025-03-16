@@ -20,6 +20,9 @@ const TabsList: React.FC<TabsListProps> = ({
   return (
     <div className="flex justify-between items-center mb-4">
       <ShadcnTabsList>
+        <TabsTrigger value="overview" onClick={() => onTabChange('overview')}>
+          Overview
+        </TabsTrigger>
         <TabsTrigger value="care" onClick={() => onTabChange('care')}>
           Potty Break
         </TabsTrigger>
@@ -31,9 +34,6 @@ const TabsList: React.FC<TabsListProps> = ({
         </TabsTrigger>
         <TabsTrigger value="grooming" onClick={() => onTabChange('grooming')}>
           Grooming
-        </TabsTrigger>
-        <TabsTrigger value="overview" onClick={() => onTabChange('overview')}>
-          Overview
         </TabsTrigger>
       </ShadcnTabsList>
       
