@@ -42,23 +42,16 @@ const TableContainer: React.FC<TableContainerProps> = ({
         <div className="flex items-center">
           {selectedCategory.icon}
           <h3 className="text-md font-medium ml-2">
-            {selectedCategory.name} Schedule
+            {/* Only display category name if it's not pottybreaks */}
+            {selectedCategory.id !== 'pottybreaks' ? selectedCategory.name + ' Schedule' : 'Dog Care Schedule'}
           </h3>
         </div>
         <p className="text-sm text-muted-foreground mt-1">
           {selectedCategory.id === 'all' 
             ? 'Showing all care activities' 
-            : `Showing schedule for ${selectedCategory.name}`}
-          
-          {selectedCategory.id === 'pottybreaks' ? (
-            <span className="ml-2 text-sm text-blue-500">
-              Click on a time slot to mark or unmark a potty break
-            </span>
-          ) : (
-            <span className="ml-2 text-sm text-blue-500">
-              Click on a time slot to log care
-            </span>
-          )}
+            : selectedCategory.id === 'pottybreaks'
+              ? 'Click on a time slot to mark or unmark a potty break'
+              : `Showing schedule for ${selectedCategory.name}`}
         </p>
       </div>
       
