@@ -99,6 +99,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <div className="flex justify-between items-center mb-4">
           <TabsList>
             <TabsTrigger value="care">Daily Care</TabsTrigger>
+            <TabsTrigger value="exercise">Exercise Log</TabsTrigger>
             <TabsTrigger value="grooming">Grooming</TabsTrigger>
             <TabsTrigger value="overview">Overview</TabsTrigger>
           </TabsList>
@@ -120,6 +121,28 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             onRefreshDogs={handleRefreshDogs} 
             isRefreshing={isRefreshing} 
           />
+        </TabsContent>
+        
+        <TabsContent value="exercise">
+          {dogStatuses && dogStatuses.length > 0 ? (
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800 mb-4">
+              <h3 className="text-lg font-medium text-indigo-800 dark:text-indigo-300">Daily Exercise Tracking</h3>
+              <p className="text-sm text-indigo-600 dark:text-indigo-400">
+                Monitor and log exercise activities for all dogs throughout the day.
+              </p>
+            </div>
+          ) : null}
+          {dogStatuses && dogStatuses.length > 0 ? (
+            <ExerciseLog
+              dogs={dogStatuses}
+              onRefresh={handleRefreshDogs}
+            />
+          ) : (
+            <div className="p-8 text-center border rounded-lg">
+              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
+              <Button onClick={handleRefreshDogs} className="mt-4">Refresh Dogs</Button>
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="grooming">

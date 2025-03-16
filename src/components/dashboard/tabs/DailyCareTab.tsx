@@ -35,7 +35,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
       <Tabs value={careView} onValueChange={setCareView} className="mb-4">
         <TabsList>
           <TabsTrigger value="timetable">Time Table</TabsTrigger>
-          <TabsTrigger value="exercise">Exercise Log</TabsTrigger>
           <TabsTrigger value="dashboard">Care Dashboard</TabsTrigger>
           <TabsTrigger value="history">Care History</TabsTrigger>
         </TabsList>
@@ -45,21 +44,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
             <DogTimeTable 
               dogsStatus={dogStatuses} 
               onRefresh={onRefreshDogs} 
-            />
-          ) : (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-              <Button onClick={onRefreshDogs} className="mt-4">Refresh Dogs</Button>
-            </Card>
-          )}
-        </TabsContent>
-        
-        {/* New Exercise Log Tab */}
-        <TabsContent value="exercise" className="mt-4">
-          {dogStatuses && dogStatuses.length > 0 ? (
-            <ExerciseLog
-              dogs={dogStatuses}
-              onRefresh={onRefreshDogs}
             />
           ) : (
             <Card className="p-8 text-center">
