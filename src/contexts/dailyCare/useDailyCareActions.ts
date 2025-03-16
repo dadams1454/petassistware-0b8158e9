@@ -41,16 +41,33 @@ export const useDailyCareActions = (userId: string | undefined) => {
     return newLog;
   }, [careLogs, dogCareStatus]);
 
+  // Enhanced fetchAllDogsWithCareStatus with better logging
+  const fetchWithEnhancedLogging = useCallback(async (date = new Date(), forceRefresh = false): Promise<DogCareStatus[]> => {
+    console.log(`🔍 Enhanced fetch called with: date=${date.toISOString().slice(0, 10)}, forceRefresh=${forceRefresh}`);
+    
+    try {
+      const dogs = await dogCareStatus.fetchAllDogsWithCareStatus(date, forceRefresh);
+      console.log(`✅ Enhanced fetch successful: retrieved ${dogs.length} dogs`);
+      
+      if (dogs.length > 0) {
+        console.log('🐕 Sample dog names:', dogs.slice(0, 3).map(d => d.dog_name).join(', '));
+      } else {
+        console.warn('⚠️ No dogs returned from fetchAllDogsWithCareStatus');
+      }
+      
+      return dogs;
+    } catch (error) {
+      console.error('❌ Enhanced fetch failed:', error);
+      throw error; // Re-throw to allow component-level error handling
+    }
+  }, [dogCareStatus]);
+
   return {
     loading: isLoading,
     // Re-export all methods from specialized hooks
     fetchDogCareLogs: careLogs.fetchDogCareLogs,
     fetchCareTaskPresets: careTaskPresets.fetchCareTaskPresets,
-    fetchAllDogsWithCareStatus: useCallback((date = new Date()) => {
-      console.log('Fetching all dogs with care status...');
-      // Use the existing dogStatuses if available instead of fetching again
-      return dogCareStatus.fetchAllDogsWithCareStatus(date, false);
-    }, [dogCareStatus]),
+    fetchAllDogsWithCareStatus: fetchWithEnhancedLogging,
     dogStatuses: dogCareStatus.dogStatuses, // Expose dog statuses directly
     // Override addCareLog to include cache clearing
     addCareLog: addCareLogWithCacheClear,

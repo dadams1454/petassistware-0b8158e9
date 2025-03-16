@@ -14,13 +14,21 @@ export const useDogCareStatus = () => {
   // Use a ref to track if an initial fetch has occurred
   const initialFetchDone = useRef(false);
 
+  // Debug effect to log current state
+  useEffect(() => {
+    console.log(`🔍 useDogCareStatus state: ${dogStatuses.length} dogs, loading=${loading}, initialFetchDone=${initialFetchDone.current}`);
+  }, [dogStatuses, loading]);
+
   const fetchAllDogsWithCareStatus = useCallback(async (date = new Date(), forceRefresh = false): Promise<DogCareStatus[]> => {
     // Convert date to string for caching
     const dateString = date.toISOString().split('T')[0];
     
+    console.log(`🔍 fetchAllDogsWithCareStatus called with date=${dateString}, forceRefresh=${forceRefresh}`);
+    console.log(`🔍 Current state: ${dogStatuses.length} dogs, initialFetchDone=${initialFetchDone.current}`);
+    
     // If we have already fetched and are not forcing a refresh, avoid another fetch
-    if (initialFetchDone.current && !forceRefresh) {
-      console.log('Using existing dog statuses, no fetch needed');
+    if (initialFetchDone.current && !forceRefresh && dogStatuses.length > 0) {
+      console.log('📋 Using existing dog statuses, no fetch needed');
       return dogStatuses;
     }
     
@@ -28,14 +36,14 @@ export const useDogCareStatus = () => {
     if (!forceRefresh) {
       const cachedData = getCachedStatus(dateString);
       if (cachedData && cachedData.length > 0) {
-        console.log('Using cached dog statuses from', dateString, `(${cachedData.length} dogs)`);
+        console.log('📋 Using cached dog statuses from', dateString, `(${cachedData.length} dogs)`);
         // If we have cached data, update the state without showing loading state
         setDogStatuses(cachedData);
         initialFetchDone.current = true;
         return cachedData;
       }
     } else {
-      console.log('Force refreshing dog statuses');
+      console.log('🔄 Force refreshing dog statuses');
     }
     
     // Only show loading state when we need to fetch from server
@@ -43,14 +51,20 @@ export const useDogCareStatus = () => {
     
     try {
       // Fetch new data
-      console.log('Fetching dog statuses from server for', dateString);
+      console.log('📡 Fetching dog statuses from server for', dateString);
       const statuses = await dailyCareService.fetchAllDogsWithCareStatus(date);
-      console.log(`Fetched ${statuses.length} dogs from server`);
+      console.log(`✅ Fetched ${statuses.length} dogs from server`);
+      
+      if (statuses.length > 0) {
+        console.log('🐕 First dog sample:', JSON.stringify(statuses[0]).substring(0, 200) + '...');
+      } else {
+        console.warn('⚠️ No dogs returned from API');
+      }
       
       // Cache the results if there are any dogs
       if (statuses.length > 0) {
         setCachedStatus(dateString, statuses);
-        console.log(`Cached ${statuses.length} dogs for date ${dateString}`);
+        console.log(`📦 Cached ${statuses.length} dogs for date ${dateString}`);
       }
       
       // Update state with new data
@@ -59,7 +73,7 @@ export const useDogCareStatus = () => {
       
       return statuses;
     } catch (error) {
-      console.error('Error fetching all dogs care status:', error);
+      console.error('❌ Error fetching all dogs care status:', error);
       toast({
         title: 'Error',
         description: 'Failed to load dogs care status',

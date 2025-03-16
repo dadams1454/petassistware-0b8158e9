@@ -13,12 +13,14 @@ const DailyCare: React.FC = () => {
     console.log('🐕 Initial dogStatuses:', dogStatuses?.length || 0);
     
     // Force a fetch on component mount to ensure we have data
-    fetchAllDogsWithCareStatus()
+    fetchAllDogsWithCareStatus(new Date(), true)
       .then(dogs => {
         console.log('🐕 Fetched dogs count:', dogs.length);
         if (dogs.length > 0) {
           console.log('🐕 Dog names:', dogs.map(d => d.dog_name).join(', '));
-          console.log('🐕 First dog sample:', dogs[0] || 'No dogs returned');
+          console.log('🐕 First dog sample:', JSON.stringify(dogs[0] || 'No dogs returned').substring(0, 200) + '...');
+        } else {
+          console.warn('⚠️ No dogs returned from API call');
         }
       })
       .catch(error => {

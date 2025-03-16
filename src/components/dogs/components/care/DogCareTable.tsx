@@ -31,15 +31,25 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
   onCareLogSuccess,
   selectedCategory
 }) => {
+  // Add more detailed logging to debug
+  React.useEffect(() => {
+    console.log(`🐕 DogCareTable rendering with ${dogsStatus.length} dogs`);
+    console.log('🐕 Selected category:', selectedCategory);
+    
+    if (dogsStatus.length > 0) {
+      console.log('🐕 First dog object:', JSON.stringify(dogsStatus[0]).substring(0, 200) + '...');
+    } else {
+      console.warn('⚠️ No dogs available in DogCareTable');
+    }
+  }, [dogsStatus, selectedCategory]);
+
   const handleCareClick = (dogId: string) => {
+    console.log(`🔍 Log care clicked for dog: ${dogId}`);
     onLogCare(dogId);
   };
 
   // Display all dogs, regardless of category filter
   // The category will only be used when logging care for a specific dog
-  console.log(`DogCareTable rendering ${dogsStatus.length} dogs with category "${selectedCategory}"`);
-  console.log('Dog names in table:', dogsStatus.map(dog => dog.dog_name).join(', '));
-
   return (
     <Card>
       <CardContent className="p-0">
@@ -56,7 +66,7 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {dogsStatus.length > 0 ? (
+              {dogsStatus && dogsStatus.length > 0 ? (
                 dogsStatus.map((dog) => (
                   <TableRow key={dog.dog_id}>
                     <TableCell>
@@ -92,7 +102,7 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
                     </TableCell>
                     <TableCell>
                       <div className="flex">
-                        <DogFlagsList flags={dog.flags} />
+                        <DogFlagsList flags={dog.flags || []} />
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -123,6 +133,7 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
                     <p className="text-gray-500">No dogs found</p>
+                    <p className="text-xs text-gray-400 mt-2">Check your Supabase connection and ensure dogs are added to the system</p>
                   </TableCell>
                 </TableRow>
               )}

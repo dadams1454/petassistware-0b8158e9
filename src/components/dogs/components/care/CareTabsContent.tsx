@@ -1,5 +1,5 @@
 
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import CareCardsView from './CareCardsView';
 import DogCareTable from './DogCareTable';
@@ -27,6 +27,17 @@ const CareTabsContent: React.FC<CareTabsContentProps> = memo(({
   onCareLogSuccess,
   selectedCategory,
 }) => {
+  // Add effects to debug rendering issues
+  useEffect(() => {
+    console.log(`🔍 CareTabsContent render - activeTab: ${activeTab}, dogsStatus: ${dogsStatus.length}, selectedCategory: ${selectedCategory}`);
+    
+    if (dogsStatus.length > 0) {
+      console.log('🐕 First dog from CareTabsContent:', dogsStatus[0].dog_name);
+    } else {
+      console.warn('⚠️ No dogs available in CareTabsContent');
+    }
+  }, [activeTab, dogsStatus, selectedCategory]);
+
   return (
     <>
       <TabsContent value="cards" className="mt-4">
