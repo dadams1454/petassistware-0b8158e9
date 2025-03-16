@@ -4,7 +4,7 @@ import { useDailyCare } from '@/contexts/dailyCare';
 
 export const useCareDashboard = () => {
   // State variables
-  const [activeView, setActiveView] = useState<string>('cards');
+  const [activeView, setActiveView] = useState<string>('table'); // Changed default from 'cards' to 'table'
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);

@@ -5,7 +5,6 @@ import { DogCareStatus } from '@/types/dailyCare';
 import DogAvatar from './DogAvatar';
 import { DogFlagsList } from '../DogFlagsList';
 import { format, parseISO } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
 import LogCareButton from './LogCareButton';
 import LastCareStatus from './LastCareStatus';
 
@@ -29,7 +28,7 @@ const DogTableRow: React.FC<DogTableRowProps> = ({
   selectedCategory
 }) => {
   return (
-    <TableRow>
+    <TableRow data-dog-id={dog.dog_id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
       <TableCell>
         <DogAvatar photoUrl={dog.dog_photo} name={dog.dog_name} />
       </TableCell>

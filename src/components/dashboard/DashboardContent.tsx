@@ -21,7 +21,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   events,
   activities,
 }) => {
-  const [activeTab, setActiveTab] = useState('care'); // Changed default from 'overview' to 'care'
+  const [activeTab, setActiveTab] = useState('care'); // Default to care tab
   const [careLogDialogOpen, setCareLogDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
 
@@ -49,6 +49,15 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           <TabsTrigger value="overview">Overview</TabsTrigger>
         </TabsList>
         
+        <TabsContent value="care">
+          <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-md mb-4">
+            <p className="text-sm text-green-600 dark:text-green-400">
+              🐕 Daily Care Dashboard - Your dogs will appear below
+            </p>
+          </div>
+          <CareDashboard />
+        </TabsContent>
+        
         <TabsContent value="overview">
           <DashboardOverview 
             isLoading={isLoading}
@@ -57,15 +66,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             activities={activities}
             onCareLogClick={handleCareLogClick}
           />
-        </TabsContent>
-        
-        <TabsContent value="care">
-          <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-md mb-4">
-            <p className="text-sm text-green-600 dark:text-green-400">
-              🐕 Daily Care Dashboard - Your dogs will appear below
-            </p>
-          </div>
-          <CareDashboard />
         </TabsContent>
       </Tabs>
 
