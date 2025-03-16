@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Dog } from 'lucide-react';
 import TableDebugger from './TableDebugger';
 import { format } from 'date-fns';
-import { TabsList } from '@/components/ui/tabs';
+import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { timeSlots } from './dogGroupColors';
-import CareCategories, { careCategories } from './CareCategories';
+import { careCategories } from './CareCategories';
 import SpecialConditionsAlert from './components/SpecialConditionsAlert';
 import TableContainer from './components/TableContainer';
 import { usePottyBreaks } from './components/usePottyBreaks';
@@ -91,10 +91,17 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       <CardContent className="p-0">
         <div className="w-full">
           <TabsList className="w-full justify-start px-4 pt-2 bg-muted/50 rounded-none border-b">
-            <CareCategories 
-              activeCategory={activeCategory} 
-              onCategoryChange={handleCategoryChange}
-            />
+            {careCategories.map(category => (
+              <TabsTrigger 
+                key={category.id} 
+                value={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className={activeCategory === category.id ? 'bg-primary/10' : ''}
+              >
+                {category.icon}
+                {category.name}
+              </TabsTrigger>
+            ))}
           </TabsList>
           
           <div className="p-4">
