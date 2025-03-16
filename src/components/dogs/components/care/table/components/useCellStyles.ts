@@ -41,26 +41,25 @@ export const useCellStyles = ({
       classes += ` ${defaultBg}`;
     }
     
-    // Highlight cells for dogs with flags
-    const isInHeat = flags.some(flag => flag.type === 'in_heat');
-    const isPregnant = flags.some(flag => flag.type === 'pregnant');
-    const hasIncompatibility = flags.some(flag => flag.type === 'incompatible');
-    const hasSpecialAttention = flags.some(flag => flag.type === 'special_attention');
-    
-    // Apply category-specific highlighting
-    switch(category) {
-      case 'feeding':
-        if (!hasCareLogged) classes += ' hover:bg-yellow-50 dark:hover:bg-yellow-900/20';
-        break;
-      case 'medications':
-        if (!hasCareLogged) classes += ' hover:bg-purple-50 dark:hover:bg-purple-900/20';
-        break;
-      case 'exercise':
-        if (!hasCareLogged) classes += ' hover:bg-indigo-50 dark:hover:bg-indigo-900/20';
-        break;
-      case 'grooming':
-        if (!hasCareLogged) classes += ' hover:bg-pink-50 dark:hover:bg-pink-900/20';
-        break;
+    // Apply category-specific highlighting for empty cells
+    if (!hasCareLogged && !hasPottyBreak) {
+      switch(category) {
+        case 'feeding':
+          classes += ' hover:bg-yellow-50 dark:hover:bg-yellow-900/20';
+          break;
+        case 'medications':
+          classes += ' hover:bg-purple-50 dark:hover:bg-purple-900/20';
+          break;
+        case 'exercise':
+          classes += ' hover:bg-indigo-50 dark:hover:bg-indigo-900/20';
+          break;
+        case 'grooming':
+          classes += ' hover:bg-pink-50 dark:hover:bg-pink-900/20';
+          break;
+        case 'pottybreaks':
+          classes += ' hover:bg-blue-50 dark:hover:bg-blue-900/20';
+          break;
+      }
     }
     
     return classes;

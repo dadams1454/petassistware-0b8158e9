@@ -44,6 +44,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
 
   // Handle category change
   const handleCategoryChange = (category: string) => {
+    console.log(`📊 Changing category from ${activeCategory} to ${category}`);
     setActiveCategory(category);
   };
 

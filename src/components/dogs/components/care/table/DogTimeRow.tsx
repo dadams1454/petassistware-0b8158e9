@@ -32,7 +32,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
       {/* Time slot cells */}
       {timeSlots.map((timeSlot) => (
         <TimeSlotCell 
-          key={`${dog.dog_id}-${timeSlot}`}
+          key={`${dog.dog_id}-${timeSlot}-${activeCategory}`}
           dogId={dog.dog_id}
           dogName={dog.dog_name}
           timeSlot={timeSlot}
