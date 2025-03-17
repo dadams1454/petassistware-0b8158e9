@@ -29,10 +29,10 @@ export const getLastDogPottyBreak = async (dogId: string): Promise<{ session_tim
 
 // Get dogs that haven't had a potty break in X minutes
 export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<any[]> => {
-  // The issue is with the RPC call - need to properly type the parameters
+  // Fix the parameter type issue by using the correct parameter structure
   const { data, error } = await supabase.rpc(
     'get_dogs_needing_potty_break', 
-    { threshold_minutes: Number(thresholdMinutes) }
+    { threshold_minutes: thresholdMinutes }
   );
 
   if (error) {
