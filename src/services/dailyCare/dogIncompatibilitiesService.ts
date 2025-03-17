@@ -20,7 +20,7 @@ export const fetchDogIncompatibilities = async (dogId: string): Promise<DogIncom
     .from('dog_incompatibilities')
     .select(`
       *,
-      incompatible_dog:incompatible_with (
+      incompatible_dog:dogs!dog_incompatibilities_incompatible_with_fkey (
         name,
         photo_url
       )
