@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { PottyBreakSession } from '@/services/dailyCare/pottyBreakService';
+import { PottyBreakSession } from '@/services/dailyCare/pottyBreak/types';
 import { formatDistanceToNow, format, parseISO } from 'date-fns';
 import { Clock, Users, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { deletePottyBreakSession } from '@/services/dailyCare/pottyBreakService';
+import { deletePottyBreakSession } from '@/services/dailyCare/pottyBreak/pottyBreakSessionService';
 
 interface PottyBreakHistoryListProps {
   sessions: PottyBreakSession[];
