@@ -29,10 +29,10 @@ export const getLastDogPottyBreak = async (dogId: string): Promise<{ session_tim
 
 // Get dogs that haven't had a potty break in X minutes
 export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<any[]> => {
-  // Use type assertion to explicitly tell TypeScript about the parameter structure
+  // Use a type assertion to work around TypeScript's limitations with the Supabase RPC typing
   const { data, error } = await supabase.rpc(
     'get_dogs_needing_potty_break', 
-    { threshold_minutes: thresholdMinutes }
+    { threshold_minutes: thresholdMinutes as unknown as Record<string, never> }
   );
 
   if (error) {
