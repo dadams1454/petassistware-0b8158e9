@@ -22,69 +22,33 @@ const CellContent: React.FC<CellContentProps> = ({
   hasCareLogged,
   flags
 }) => {
-  // Filter out special_attention flags for cell content
-  const cellFlags = flags.filter(flag => flag.type !== 'special_attention');
-  
-  const { 
-    isPottyCategory,
-    isInHeat,
-    isPregnant,
-    hasIncompatibility
-  } = useCellStyles({ 
+  // Filter out special_attention flags for cell content  
+  const { isPottyCategory } = useCellStyles({ 
     category, 
     hasPottyBreak,
     hasCareLogged,
-    flags: cellFlags 
+    flags 
   });
-  
-  const getCellFlag = () => {
-    if (isInHeat) return '🔴';
-    if (isPregnant) return '🩷';
-    if (hasIncompatibility) return '⚠️';
-    return '';
-  };
-  
-  const getFlagTooltip = () => {
-    let message = '';
-    
-    if (isInHeat) message += '• In heat\n';
-    if (isPregnant) message += '• Pregnant\n';
-    
-    if (hasIncompatibility) {
-      const incompatibleDogs = cellFlags.find(f => f.type === 'incompatible')?.incompatible_with;
-      message += `• Doesn't get along with ${incompatibleDogs?.length || 0} other dog(s)\n`;
-    }
-    
-    if (hasCareLogged) {
-      message += `\n✅ ${category} completed at ${timeSlot}`;
-    } else {
-      message += `\nClick to log ${category} at ${timeSlot}`;
-    }
-    
-    if (hasPottyBreak) {
-      message += `\n${isPottyCategory ? 'Click to remove potty break' : 'Has potty break logged'}`;
-    }
-    
-    return message.trim();
-  };
   
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center justify-center h-full">
-            {hasCareLogged ? (
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-            ) : isPottyCategory && hasPottyBreak ? (
-              <X className="h-4 w-4 text-green-600 dark:text-green-400" />
+            {hasPottyBreak ? (
+              <X className="h-5 w-5 text-blue-600 dark:text-blue-400 font-bold" />
             ) : (
-              <span className="text-xs">{getCellFlag()}</span>
+              <span>&nbsp;</span>
             )}
           </div>
         </TooltipTrigger>
-        <TooltipContent className="whitespace-pre-line">
+        <TooltipContent>
           <p className="text-sm font-medium">{dogName}</p>
-          <p className="text-xs">{getFlagTooltip()}</p>
+          <p className="text-xs">
+            {hasPottyBreak ? 
+              `Potty break at ${timeSlot}` : 
+              `Click to log potty break at ${timeSlot}`}
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

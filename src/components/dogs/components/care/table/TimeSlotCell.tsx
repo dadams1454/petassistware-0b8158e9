@@ -27,43 +27,25 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   flags = []
 }) => {
   // Filter out special_attention flags for cell styling
-  // This ensures special attention flags only appear in the dog name cell
   const cellFlags = flags.filter(flag => flag.type !== 'special_attention');
 
   // Get cell styles for this particular cell
-  const { cellClassNames, isPottyCategory } = useCellStyles({
+  const { cellClassNames } = useCellStyles({
     category,
     hasPottyBreak,
     hasCareLogged,
     flags: cellFlags
   });
   
-  // Debug info for identifying missed renders
   const cellIdentifier = `${dogId}-${timeSlot}-${category}`;
-  
-  const handleClick = () => {
-    console.log(`Clicked cell: ${cellIdentifier}, category: ${category}, hasCareLogged: ${hasCareLogged}`);
-    onClick();
-  };
-  
-  // Add specific hover effects based on the category
-  let hoverClass = 'hover:bg-slate-100 dark:hover:bg-slate-700';
-  
-  if (category === 'grooming' && !hasCareLogged) {
-    hoverClass = 'hover:bg-purple-100 dark:hover:bg-purple-900/20';
-  } else if (category === 'pottybreaks' && !hasPottyBreak) {
-    hoverClass = 'hover:bg-blue-100 dark:hover:bg-blue-900/20';
-  }
   
   return (
     <TableCell 
       key={cellIdentifier}
-      className={`${cellClassNames} cursor-pointer ${hoverClass}`}
-      onClick={handleClick}
-      title={`${dogName} - ${timeSlot} - ${category}`}
+      className={`${cellClassNames} cursor-pointer`}
+      onClick={onClick}
+      title={`${dogName} - ${timeSlot}`}
       data-cell-id={cellIdentifier}
-      data-category={category}
-      data-has-care={hasCareLogged ? 'true' : 'false'}
     >
       <CellContent 
         dogName={dogName}

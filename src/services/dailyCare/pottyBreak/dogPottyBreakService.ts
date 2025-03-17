@@ -29,7 +29,7 @@ export const getLastDogPottyBreak = async (dogId: string): Promise<{ session_tim
 
 // Get dogs that haven't had a potty break in X minutes
 export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<any[]> => {
-  // Fix the type error by using correct parameters - specifying thresholdMinutes as a number
+  // Fix the type error by explicitly passing thresholdMinutes as a number
   const { data, error } = await supabase.rpc('get_dogs_needing_potty_break', { 
     threshold_minutes: thresholdMinutes 
   });

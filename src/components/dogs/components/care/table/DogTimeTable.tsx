@@ -3,15 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Dog } from 'lucide-react';
-import TableDebugger from './TableDebugger';
 import { format } from 'date-fns';
-import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { timeSlots } from './dogGroupColors';
-import { careCategories } from './CareCategories';
-import SpecialConditionsAlert from './components/SpecialConditionsAlert';
 import TableContainer from './components/TableContainer';
 import { usePottyBreaks } from './components/usePottyBreaks';
 import { useCareTracking } from './components/useCareTracking';
+import SpecialConditionsAlert from './components/SpecialConditionsAlert';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -20,29 +17,21 @@ interface DogTimeTableProps {
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const [currentDate] = useState(new Date());
-  // Since we only have pottybreaks now, we'll set it as the default and only option
-  const [activeCategory, setActiveCategory] = useState('pottybreaks');
+  // We'll just have a single potty break view now - no categories
+  const activeCategory = 'pottybreaks';
   
   // Use the potty breaks hook for managing potty break state
   const { hasPottyBreak, handleCellClick: handlePottyBreakClick } = usePottyBreaks(onRefresh);
   
   // Use the care tracking hook for general care logging
-  const { hasCareLogged, handleCellClick: handleCareLogClick } = useCareTracking(onRefresh);
+  const { hasCareLogged } = useCareTracking(onRefresh);
   
-  // Combined cell click handler
-  const handleCellClick = (dogId: string, dogName: string, timeSlot: string, category: string) => {
-    console.log(`Handling click for ${dogName} at ${timeSlot} for ${category}`);
-    
-    if (category === 'pottybreaks') {
-      console.log('Delegating to potty break handler');
-      handlePottyBreakClick(dogId, dogName, timeSlot, category);
-    } else {
-      console.log('Delegating to care log handler');
-      handleCareLogClick(dogId, dogName, timeSlot, category);
-    }
+  const handleCellClick = (dogId: string, dogName: string, timeSlot: string) => {
+    console.log(`Handling potty break for ${dogName} at ${timeSlot}`);
+    handlePottyBreakClick(dogId, dogName, timeSlot, activeCategory);
   };
   
-  // Filter out duplicate dog names to avoid confusion in the table
+  // Filter out duplicate dog names
   const uniqueDogs = dogsStatus.reduce((acc: DogCareStatus[], current) => {
     const isDuplicate = acc.find((dog) => dog.dog_name.toLowerCase() === current.dog_name.toLowerCase());
     if (!isDuplicate) {
@@ -56,15 +45,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     a.dog_name.toLowerCase().localeCompare(b.dog_name.toLowerCase())
   );
 
-  // Handle category change
-  const handleCategoryChange = (category: string) => {
-    console.log(`📊 Changing category from ${activeCategory} to ${category}`);
-    setActiveCategory(category);
-  };
-
   useEffect(() => {
-    console.log(`DogTimeTable rendered with ${sortedDogs.length} dogs and activeCategory: ${activeCategory}`);
-  }, [activeCategory, sortedDogs.length]);
+    console.log(`DogTimeTable rendered with ${sortedDogs.length} dogs`);
+  }, [sortedDogs.length]);
 
   return (
     <Card className="shadow-md">
@@ -72,7 +55,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl flex items-center">
             <Dog className="h-5 w-5 mr-2" />
-            Dog Care Schedule
+            Dog Potty Break Log
             <span className="ml-2 text-sm font-normal text-muted-foreground">
               ({sortedDogs.length} dogs)
             </span>
@@ -90,30 +73,23 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       <SpecialConditionsAlert dogs={sortedDogs} />
       
       <CardContent className="p-0">
-        <div className="w-full">
-          {/* Since we only have one category now, hide the tabs section completely */}
-          <div className="p-4">
-            <pre className="text-xs text-muted-foreground mb-2">
-              Debug: Active Category: {activeCategory}, Dogs: {sortedDogs.length}
-            </pre>
-            
-            {/* Table container with content */}
-            <TableContainer 
-              dogs={sortedDogs}
-              activeCategory={activeCategory}
-              timeSlots={timeSlots}
-              hasPottyBreak={hasPottyBreak}
-              hasCareLogged={hasCareLogged}
-              onCellClick={handleCellClick}
-              onRefresh={onRefresh}
-              careCategories={careCategories}
-            />
-          </div>
+        <div className="p-4">
+          <p className="text-sm mb-4">
+            Click on a cell to mark a potty break with an X. The X will remain visible throughout the day.
+          </p>
+          
+          {/* Table container with content */}
+          <TableContainer 
+            dogs={sortedDogs}
+            activeCategory={activeCategory}
+            timeSlots={timeSlots}
+            hasPottyBreak={hasPottyBreak}
+            hasCareLogged={hasCareLogged}
+            onCellClick={handleCellClick}
+            onRefresh={onRefresh}
+          />
         </div>
       </CardContent>
-      
-      {/* Hidden debugging component */}
-      <TableDebugger dogsStatus={dogsStatus} selectedCategory={activeCategory} />
     </Card>
   );
 };

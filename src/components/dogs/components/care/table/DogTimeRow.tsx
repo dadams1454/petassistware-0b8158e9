@@ -1,6 +1,6 @@
 
-import React, { useEffect } from 'react';
-import { TableRow, TableCell } from '@/components/ui/table';
+import React from 'react';
+import { TableRow } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
 import DogNameCell from './components/DogNameCell';
@@ -24,19 +24,14 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
   hasCareLogged,
   onCellClick
 }) => {
-  // Debug render
-  useEffect(() => {
-    console.log(`DogTimeRow rendered for ${dog.dog_name} with category: ${activeCategory}`);
-  }, [dog.dog_name, activeCategory]);
-
   return (
-    <TableRow key={`${dog.dog_id}-${activeCategory}-row`} className={rowColor}>
-      {/* Dog name cell with photo and flags */}
+    <TableRow key={`${dog.dog_id}-row`} className={rowColor}>
+      {/* Dog name cell with photo, gender color, and condition symbols */}
       <DogNameCell dog={dog} />
       
-      {/* Time slot cells */}
+      {/* Time slot cells with X marks */}
       {timeSlots.map((timeSlot) => {
-        const cellKey = `${dog.dog_id}-${timeSlot}-${activeCategory}`;
+        const cellKey = `${dog.dog_id}-${timeSlot}`;
         const hasPottyBreakForSlot = hasPottyBreak(dog.dog_id, timeSlot);
         const hasCareLoggedForSlot = hasCareLogged(dog.dog_id, timeSlot, activeCategory);
         
@@ -49,10 +44,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
             category={activeCategory}
             hasPottyBreak={hasPottyBreakForSlot}
             hasCareLogged={hasCareLoggedForSlot}
-            onClick={() => {
-              console.log(`Cell clicked for ${dog.dog_name} at ${timeSlot} for ${activeCategory}`);
-              onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory);
-            }}
+            onClick={() => onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory)}
             flags={dog.flags}
           />
         );
