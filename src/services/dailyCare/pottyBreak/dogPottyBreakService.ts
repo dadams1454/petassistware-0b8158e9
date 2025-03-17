@@ -34,7 +34,7 @@ export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<
   
   const { data, error } = await supabase.rpc(
     'get_dogs_needing_potty_break', 
-    params as any
+    params as unknown as Record<string, any>
   );
 
   if (error) {

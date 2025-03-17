@@ -163,9 +163,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
                             style={{ backgroundColor: index % 2 === 0 ? 'var(--bg-white, white)' : 'var(--bg-gray-50, #f9fafb)' }}>
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-8 w-8 mr-2">
-                              {dog.photo_url ? (
+                              {dog.dog_photo ? (
                                 <AspectRatio ratio={1/1} className="rounded-full overflow-hidden">
-                                  <img src={dog.photo_url} alt={dog.dog_name} className="h-full w-full object-cover" />
+                                  <img src={dog.dog_photo} alt={dog.dog_name} className="h-full w-full object-cover" />
                                 </AspectRatio>
                               ) : (
                                 <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
