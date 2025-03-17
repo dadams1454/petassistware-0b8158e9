@@ -59,3 +59,25 @@ export const getPottyBreakSessionsByDate = async (date: Date): Promise<PottyBrea
 
   return data || [];
 };
+
+// Get potty breaks by dog and time slot (for Excel-like view)
+export const getPottyBreaksByDogAndTimeSlot = async (date: Date): Promise<Record<string, string[]>> => {
+  const sessions = await getPottyBreakSessionsByDate(date);
+  const dogPottyBreaks: Record<string, string[]> = {};
+  
+  sessions.forEach(session => {
+    const timeSlot = format(new Date(session.session_time), 'h:mm a');
+    
+    session.dogs?.forEach(dogSession => {
+      if (dogSession.dog && dogSession.dog.name) {
+        const dogId = dogSession.dog_id;
+        if (!dogPottyBreaks[dogId]) {
+          dogPottyBreaks[dogId] = [];
+        }
+        dogPottyBreaks[dogId].push(timeSlot);
+      }
+    });
+  });
+  
+  return dogPottyBreaks;
+};

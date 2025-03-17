@@ -29,14 +29,79 @@ export const getLastDogPottyBreak = async (dogId: string): Promise<{ session_tim
 
 // Get dogs that haven't had a potty break in X minutes
 export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<any[]> => {
-  // Use a type assertion to work around TypeScript's limitations with the Supabase RPC typing
+  // Convert the threshold to number and use a proper type assertion for RPC
+  const params = { threshold_minutes: thresholdMinutes };
+  
   const { data, error } = await supabase.rpc(
     'get_dogs_needing_potty_break', 
-    { threshold_minutes: thresholdMinutes as unknown as Record<string, never> }
+    params as any
   );
 
   if (error) {
     console.error('Error getting dogs needing potty break:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+// Log a potty break for a specific dog at a specific time slot
+export const logDogPottyBreak = async (dogId: string, timeSlot: string): Promise<any> => {
+  // Create a new potty break session
+  const { data: sessionData, error: sessionError } = await supabase
+    .from('potty_break_sessions')
+    .insert({
+      session_time: new Date().toISOString(),
+      notes: `Potty break at ${timeSlot}`
+    })
+    .select()
+    .single();
+
+  if (sessionError) {
+    console.error('Error creating potty break session:', sessionError);
+    throw sessionError;
+  }
+
+  // Associate the dog with the session
+  const { data: dogData, error: dogError } = await supabase
+    .from('potty_break_dogs')
+    .insert({
+      dog_id: dogId,
+      session_id: sessionData.id
+    })
+    .select()
+    .single();
+
+  if (dogError) {
+    console.error('Error associating dog with potty break:', dogError);
+    throw dogError;
+  }
+
+  return { session: sessionData, dogSession: dogData };
+};
+
+// Get all potty breaks for a specific day
+export const getPottyBreaksForDay = async (date: Date): Promise<any[]> => {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+  
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  const { data, error } = await supabase
+    .from('potty_break_sessions')
+    .select(`
+      *,
+      dogs:potty_break_dogs(
+        *,
+        dog:dog_id(id, name)
+      )
+    `)
+    .gte('session_time', startOfDay.toISOString())
+    .lte('session_time', endOfDay.toISOString());
+
+  if (error) {
+    console.error('Error fetching potty breaks for day:', error);
     throw error;
   }
 
