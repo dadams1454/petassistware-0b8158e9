@@ -9,7 +9,7 @@ import { DogCareStatus } from '@/types/dailyCare';
 import { Clock, Users, AlertTriangle, RefreshCw, Plus, Check } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { DialogContent, DialogHeader, DialogTitle, Dialog } from '@/components/ui/dialog';
-import { getRecentPottyBreakSessions, PottyBreakSession, createPottyBreakSession } from '@/services/dailyCare/pottyBreakService';
+import { getRecentPottyBreakSessions, PottyBreakSession, createPottyBreakSession } from '@/services/dailyCare/pottyBreak';
 import PottyBreakGroupSelector from './PottyBreakGroupSelector';
 import PottyBreakHistoryList from './PottyBreakHistoryList';
 import PottyBreakDogSelection from './PottyBreakDogSelection';
