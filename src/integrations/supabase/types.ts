@@ -354,6 +354,108 @@ export type Database = {
           },
         ]
       }
+      dog_group_members: {
+        Row: {
+          created_at: string
+          dog_id: string
+          group_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          dog_id: string
+          group_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          dog_id?: string
+          group_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dog_group_members_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dog_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "dog_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dog_groups: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      dog_incompatibilities: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          dog_id: string
+          id: string
+          incompatible_with: string
+          reason: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          dog_id: string
+          id?: string
+          incompatible_with: string
+          reason?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          dog_id?: string
+          id?: string
+          incompatible_with?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dog_incompatibilities_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dog_incompatibilities_incompatible_with_fkey"
+            columns: ["incompatible_with"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dog_photos: {
         Row: {
           created_at: string
@@ -469,13 +571,16 @@ export type Database = {
           last_heat_date: string | null
           last_vaccination_date: string | null
           litter_number: number | null
+          max_time_between_breaks: number | null
           microchip_number: string | null
           name: string
           notes: string | null
           owner_id: string | null
           pedigree: boolean | null
           photo_url: string | null
+          potty_alert_threshold: number | null
           registration_number: string | null
+          requires_special_handling: boolean | null
           tie_date: string | null
           vaccination_notes: string | null
           vaccination_type: string | null
@@ -492,13 +597,16 @@ export type Database = {
           last_heat_date?: string | null
           last_vaccination_date?: string | null
           litter_number?: number | null
+          max_time_between_breaks?: number | null
           microchip_number?: string | null
           name: string
           notes?: string | null
           owner_id?: string | null
           pedigree?: boolean | null
           photo_url?: string | null
+          potty_alert_threshold?: number | null
           registration_number?: string | null
+          requires_special_handling?: boolean | null
           tie_date?: string | null
           vaccination_notes?: string | null
           vaccination_type?: string | null
@@ -515,13 +623,16 @@ export type Database = {
           last_heat_date?: string | null
           last_vaccination_date?: string | null
           litter_number?: number | null
+          max_time_between_breaks?: number | null
           microchip_number?: string | null
           name?: string
           notes?: string | null
           owner_id?: string | null
           pedigree?: boolean | null
           photo_url?: string | null
+          potty_alert_threshold?: number | null
           registration_number?: string | null
+          requires_special_handling?: boolean | null
           tie_date?: string | null
           vaccination_notes?: string | null
           vaccination_type?: string | null
@@ -731,6 +842,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      potty_break_dogs: {
+        Row: {
+          created_at: string
+          dog_id: string
+          id: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          dog_id: string
+          id?: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          dog_id?: string
+          id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "potty_break_dogs_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "potty_break_dogs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "potty_break_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      potty_break_sessions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          session_time: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          session_time?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          session_time?: string
+        }
+        Relationships: []
       }
       puppies: {
         Row: {
