@@ -37,11 +37,13 @@ const TableContainer: React.FC<TableContainerProps> = ({
   }, [activeCategory, dogs.length]);
 
   return (
-    <div className="mb-8">
-      <div className="p-2 bg-background border-b border-muted">
+    <div className="mb-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div className="p-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center">
-          {selectedCategory.icon}
-          <h3 className="text-md font-medium ml-2">
+          <div className="text-indigo-600 dark:text-indigo-400">
+            {selectedCategory.icon}
+          </div>
+          <h3 className="text-md font-medium ml-2 text-slate-800 dark:text-slate-200">
             {/* Don't display label for potty breaks */}
             {selectedCategory.id === 'pottybreaks' ? 'Dog Care Schedule' : selectedCategory.name + ' Schedule'}
           </h3>
@@ -56,11 +58,11 @@ const TableContainer: React.FC<TableContainerProps> = ({
       </div>
       
       {dogs.length > 0 ? (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto bg-white dark:bg-slate-900">
           <div className="min-w-max">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
+                <TableRow className="bg-slate-100 dark:bg-slate-800/50">
                   <TimeSlotHeaders timeSlots={timeSlots} />
                 </TableRow>
               </TableHeader>

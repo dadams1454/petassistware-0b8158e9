@@ -18,17 +18,18 @@ const Dashboard: React.FC = () => {
       title: "Welcome to your dashboard",
       description: "The Overview tab gives you a complete picture of your kennel's activities.",
       duration: 5000,
+      className: "bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-50"
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array ensures this runs only once
 
   return (
     <MainLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+      <div className="mb-6 animate-fade-in">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-1">
           Dashboard
         </h1>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">
+        <p className="text-slate-500 dark:text-slate-400">
           Welcome back! View your kennel overview and manage dog care below.
         </p>
       </div>

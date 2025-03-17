@@ -36,39 +36,43 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         <StatCard
           title="Active Dogs"
           value={isLoading ? "Loading..." : stats.dogCount.toString()}
-          icon={<Dog size={18} />}
+          icon={<Dog size={18} className="text-blue-600" />}
           change={0}
           changeText="from database"
           trend="neutral"
           linkTo="/dogs"
+          className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 shadow-sm hover:shadow-md transition-shadow"
         />
         <StatCard
           title="Current Litters"
           value={isLoading ? "Loading..." : stats.litterCount.toString()}
-          icon={<PawPrint size={18} />}
+          icon={<PawPrint size={18} className="text-purple-600" />}
           change={0}
           changeText="from database"
           trend="neutral"
           linkTo="/litters"
+          className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 shadow-sm hover:shadow-md transition-shadow"
         />
         <StatCard
           title="Reservations"
           value={isLoading ? "Loading..." : stats.reservationCount.toString()}
-          icon={<Users size={18} />}
+          icon={<Users size={18} className="text-amber-600" />}
           change={0}
           changeText="from database"
           trend="neutral"
           linkTo="/customers"
+          className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 shadow-sm hover:shadow-md transition-shadow"
         />
         <StatCard
           title="Revenue (Last 30 Days)"
           value={isLoading ? "Loading..." : `$${stats.recentRevenue.toLocaleString()}`}
-          icon={<DollarSign size={18} />}
+          icon={<DollarSign size={18} className="text-emerald-600" />}
           change={0}
           changeText="from database"
           trend="neutral"
           textColor="text-emerald-600 dark:text-emerald-400"
           linkTo="/customers"
+          className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 shadow-sm hover:shadow-md transition-shadow"
         />
       </div>
 
@@ -77,10 +81,10 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         {/* Upcoming Events Card */}
         <DashboardCard
           title="Upcoming Events"
-          icon={<Calendar size={18} />}
-          className="xl:col-span-2"
+          icon={<Calendar size={18} className="text-indigo-500" />}
+          className="xl:col-span-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all"
           actions={
-            <Link to="/calendar" className="text-sm text-primary flex items-center">
+            <Link to="/calendar" className="text-sm text-indigo-600 dark:text-indigo-400 flex items-center hover:underline">
               View all <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           }
@@ -89,7 +93,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         </DashboardCard>
 
         {/* Recent Activities Card */}
-        <DashboardCard className="h-full">
+        <DashboardCard className="h-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
           <RecentActivities activities={activities} isLoading={isLoading} />
         </DashboardCard>
       </div>
