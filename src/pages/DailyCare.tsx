@@ -4,9 +4,9 @@ import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
-import { DogCareStatus } from '@/types/dailyCare';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 
 const DailyCare: React.FC = () => {
   const { loading, dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
@@ -65,7 +65,24 @@ const DailyCare: React.FC = () => {
       </div>
 
       {dogStatuses && dogStatuses.length > 0 ? (
-        <DogTimeTable dogsStatus={dogStatuses} onRefresh={handleManualRefresh} />
+        <div className="space-y-6">
+          {/* Reminder Card */}
+          <PottyBreakReminderCard 
+            dogs={dogStatuses}
+            onLogPottyBreak={() => {
+              // Just scroll to the timetable on click
+              const timeTableSection = document.getElementById('dog-time-table');
+              if (timeTableSection) {
+                timeTableSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          />
+          
+          {/* Time Table */}
+          <div id="dog-time-table">
+            <DogTimeTable dogsStatus={dogStatuses} onRefresh={handleManualRefresh} />
+          </div>
+        </div>
       ) : (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>

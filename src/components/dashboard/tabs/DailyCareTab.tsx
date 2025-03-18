@@ -1,9 +1,7 @@
 
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { useDailyCare } from '@/contexts/dailyCare';
-import PottyBreakManager from '@/components/dogs/components/care/potty/PottyBreakManager';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { Button } from '@/components/ui/button';
@@ -15,17 +13,6 @@ interface DailyCareTabProps {
 
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing }) => {
   const { dogStatuses } = useDailyCare();
-  const [activeSubTab, setActiveSubTab] = useState('pottybreaks');
-  
-  // Handler for potty break reminder button
-  const handlePottyBreakButtonClick = () => {
-    // Open the potty break dialog or scroll to the potty break section
-    setActiveSubTab('pottybreaks');
-    const pottyBreakSection = document.getElementById('potty-break-manager');
-    if (pottyBreakSection) {
-      pottyBreakSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
   
   if (!dogStatuses || dogStatuses.length === 0) {
     return (
@@ -43,32 +30,22 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
       {/* Reminder Card */}
       <PottyBreakReminderCard 
         dogs={dogStatuses}
-        onLogPottyBreak={handlePottyBreakButtonClick}
+        onLogPottyBreak={() => {
+          // Just scroll to the timetable on click
+          const timeTableSection = document.getElementById('dog-time-table');
+          if (timeTableSection) {
+            timeTableSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
       />
       
-      {/* Sub-tabs for the different daily care functions */}
-      <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="pottybreaks">Potty Breaks</TabsTrigger>
-          <TabsTrigger value="timetable">Time Table</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="pottybreaks">
-          <div id="potty-break-manager">
-            <PottyBreakManager 
-              dogs={dogStatuses}
-              onRefresh={onRefreshDogs}
-            />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="timetable">
-          <DogTimeTable 
-            dogsStatus={dogStatuses} 
-            onRefresh={onRefreshDogs} 
-          />
-        </TabsContent>
-      </Tabs>
+      {/* Time Table (now the main and only component) */}
+      <div id="dog-time-table">
+        <DogTimeTable 
+          dogsStatus={dogStatuses} 
+          onRefresh={onRefreshDogs} 
+        />
+      </div>
     </div>
   );
 };

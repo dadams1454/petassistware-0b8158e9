@@ -6,7 +6,6 @@ import TimeTableHeader from './components/TimeTableHeader';
 import TimeTableContent from './components/TimeTableContent';
 import TimeTableFooter from './components/TimeTableFooter';
 import usePottyBreakTable from './hooks/usePottyBreakTable';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SpecialConditionsAlert from './components/SpecialConditionsAlert';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CareLogForm from '../CareLogForm';
@@ -39,10 +38,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     handleRefresh
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
 
-  const handleCategoryChange = (value: string) => {
-    setActiveCategory(value);
-  };
-  
   const handleCareLogClick = (dogId: string, dogName: string) => {
     setSelectedDogId(dogId);
     setSelectedDogName(dogName);
@@ -67,16 +62,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       />
       
       <CardContent className="p-0">
-        {/* Tabs for different categories */}
+        {/* For now, we're only using pottybreaks, so removed tabs */}
         <div className="px-4 py-2 border-b">
-          <Tabs value={activeCategory} onValueChange={handleCategoryChange}>
-            <TabsList className="grid grid-cols-4">
-              <TabsTrigger value="pottybreaks">Potty Breaks</TabsTrigger>
-              <TabsTrigger value="feeding">Feeding</TabsTrigger>
-              <TabsTrigger value="medications">Medications</TabsTrigger>
-              <TabsTrigger value="exercise">Exercise</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <h3 className="text-lg font-medium">Potty Breaks</h3>
+          <p className="text-sm text-muted-foreground">Click on a cell to log or remove a potty break</p>
         </div>
         
         {/* Special conditions alert */}
