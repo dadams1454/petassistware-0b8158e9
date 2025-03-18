@@ -5,7 +5,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 
 interface ObservationDialogActionsProps {
   onCancel: () => void;
-  onSubmit: () => void;
+  onSubmit: (e: React.FormEvent) => void;
   isSubmitting: boolean;
   isValid: boolean;
   isMobile?: boolean;

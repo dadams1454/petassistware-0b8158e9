@@ -1,13 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MessageCircle } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-
-// Import refactored components
 import ObservationTypeSelector from './observationDialog/ObservationTypeSelector';
-import ObservationHistory from './observationDialog/ObservationHistory';
 import ObservationInput from './observationDialog/ObservationInput';
+import ObservationHistory from './observationDialog/ObservationHistory';
 import ObservationDialogActions from './observationDialog/ObservationDialogActions';
 
 interface ObservationDialogProps {
@@ -32,101 +28,103 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   dogName,
   onSubmit,
   existingObservations = [],
-  timeSlot = '',
+  timeSlot,
   isMobile = false
 }) => {
-  const [observation, setObservation] = useState('');
+  // State for form
+  const [observation, setObservation] = useState<string>('');
   const [observationType, setObservationType] = useState<'accident' | 'heat' | 'behavior' | 'other'>('other');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timestamp, setTimestamp] = useState<string>('');
-
-  // Update the timestamp whenever the dialog opens
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [currentTimestamp, setCurrentTimestamp] = useState<string>('');
+  
+  // Update timestamp every second when dialog is open
+  useEffect(() => {
+    if (!open) return;
+    
+    // Initialize timestamp
+    setCurrentTimestamp(new Date().toLocaleTimeString());
+    
+    // Set up interval to update timestamp
+    const intervalId = setInterval(() => {
+      setCurrentTimestamp(new Date().toLocaleTimeString());
+    }, 1000);
+    
+    // Clear interval on cleanup
+    return () => clearInterval(intervalId);
+  }, [open]);
+  
+  // Reset form when dialog opens/closes
   useEffect(() => {
     if (open) {
-      const now = new Date();
-      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      setTimestamp(timeString);
-    }
-  }, [open]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!observation.trim()) return;
-    
-    // Add timestamp to observation if provided
-    const observationWithTimestamp = timestamp 
-      ? `[${timestamp}] ${observation}` 
-      : observation;
-    
-    setIsSubmitting(true);
-    try {
-      await onSubmit(dogId, observationWithTimestamp, observationType);
+      // Initialize form
       setObservation('');
       setObservationType('other');
+      setIsSubmitting(false);
+    }
+  }, [open]);
+  
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!observation.trim()) {
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      await onSubmit(dogId, observation.trim(), observationType);
+      
+      // Close dialog on successful submission
       onOpenChange(false);
+    } catch (error) {
+      console.error('Error submitting observation:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // The form content is the same for both mobile and desktop
-  const dialogContent = (
-    <>
-      <ObservationHistory observations={existingObservations} />
-      
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          <ObservationTypeSelector
-            value={observationType}
-            onChange={setObservationType}
+  // Check if form is valid
+  const isFormValid = observation.trim().length > 0;
+  
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={isMobile ? "w-[95vw] max-w-lg rounded-lg p-4" : ""}>
+        <DialogHeader>
+          <DialogTitle>{dogName} - Observation</DialogTitle>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Show existing observations if any */}
+          {existingObservations.length > 0 && (
+            <ObservationHistory observations={existingObservations} />
+          )}
+          
+          {/* Observation type selector */}
+          <ObservationTypeSelector 
+            value={observationType} 
+            onChange={setObservationType} 
+            isMobile={isMobile} 
+          />
+          
+          {/* Observation input */}
+          <ObservationInput 
+            value={observation} 
+            onChange={setObservation} 
+            timeSlot={timeSlot}
+            timestamp={currentTimestamp}
             isMobile={isMobile}
           />
           
-          <ObservationInput
-            value={observation}
-            onChange={setObservation}
-            timeSlot={timeSlot}
-            timestamp={timestamp}
+          {/* Dialog actions */}
+          <ObservationDialogActions 
+            onCancel={() => onOpenChange(false)} 
+            onSubmit={handleSubmit} 
+            isSubmitting={isSubmitting} 
+            isValid={isFormValid}
             isMobile={isMobile}
           />
-        </div>
-        
-        <div className="mt-4">
-          <ObservationDialogActions
-            onCancel={() => onOpenChange(false)}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            isValid={observation.trim().length > 0}
-            isMobile={isMobile}
-          />
-        </div>
-      </form>
-    </>
-  );
-  
-  // Use regular Dialog on desktop, Sheet on mobile
-  return isMobile ? (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-auto max-h-[85vh] overflow-auto pb-10">
-        <SheetHeader className="mb-4">
-          <SheetTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            <span>Observation for {dogName}</span>
-          </SheetTitle>
-        </SheetHeader>
-        {dialogContent}
-      </SheetContent>
-    </Sheet>
-  ) : (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            <span>Daily Observation for {dogName}</span>
-          </DialogTitle>
-        </DialogHeader>
-        {dialogContent}
+        </form>
       </DialogContent>
     </Dialog>
   );
