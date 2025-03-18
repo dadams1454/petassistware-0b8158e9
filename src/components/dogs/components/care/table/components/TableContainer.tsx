@@ -14,6 +14,7 @@ interface TableContainerProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCareLogClick?: (dogId: string, dogName: string) => void;
   onRefresh?: () => void;
 }
 
@@ -24,8 +25,14 @@ const TableContainer: React.FC<TableContainerProps> = ({
   hasPottyBreak,
   hasCareLogged,
   onCellClick,
+  onCareLogClick,
   onRefresh
 }) => {
+  // Default care log click handler if none provided
+  const handleCareLogClick = onCareLogClick || ((dogId: string, dogName: string) => {
+    console.log(`Care log clicked for ${dogName} (${dogId})`);
+  });
+  
   return (
     <div className="mb-4 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
       <div className="overflow-x-auto bg-white dark:bg-slate-900">
@@ -48,6 +55,7 @@ const TableContainer: React.FC<TableContainerProps> = ({
                     hasPottyBreak={hasPottyBreak}
                     hasCareLogged={hasCareLogged}
                     onCellClick={onCellClick}
+                    onCareLogClick={(dogId, dogName) => handleCareLogClick(dogId, dogName)}
                   />
                 ))}
               </TableBody>

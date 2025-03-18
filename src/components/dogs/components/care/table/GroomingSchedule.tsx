@@ -74,6 +74,9 @@ const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) 
     a.dog_name.toLowerCase().localeCompare(b.dog_name.toLowerCase())
   );
 
+  // Empty function for DogNameCell compatibility
+  const handleCareLogClick = () => {};
+
   return (
     <Card className="shadow-md">
       <CardHeader className="pb-2">
@@ -111,7 +114,11 @@ const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) 
                   key={`${dog.dog_id}-grooming-row`}
                   className={getDogRowColor(index)}
                 >
-                  <DogNameCell dog={dog} />
+                  <DogNameCell 
+                    dog={dog} 
+                    onCareLogClick={handleCareLogClick} 
+                    activeCategory="grooming" 
+                  />
                   
                   {dayNumbers.map(day => {
                     const hasGrooming = isGroomingRecorded(dog.dog_id, day);
