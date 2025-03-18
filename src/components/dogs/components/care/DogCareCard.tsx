@@ -11,6 +11,7 @@ import { DogFlagsList } from './DogFlagsList';
 import { DogCareStatus } from '@/types/dailyCare';
 import CategoryTabs from './form/task-selection/CategoryTabs';
 import { useDailyCare } from '@/contexts/dailyCare';
+import { useNavigate } from 'react-router-dom';
 
 interface DogCareCardProps {
   dog: DogCareStatus;
@@ -32,6 +33,7 @@ const DogCareCard: React.FC<DogCareCardProps> = ({
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const { fetchCareTaskPresets } = useDailyCare();
+  const navigate = useNavigate();
 
   // Fetch categories when the component mounts
   useEffect(() => {
@@ -60,20 +62,24 @@ const DogCareCard: React.FC<DogCareCardProps> = ({
     onLogCare(dog.dog_id);
   };
 
+  const handleNavigateToDog = () => {
+    navigate(`/dogs/${dog.dog_id}`);
+  };
+
   return (
     <Card key={dog.dog_id} className={`overflow-hidden ${!dog.last_care ? 'border-orange-300 dark:border-orange-800' : ''}`}>
       <CardContent className="p-0">
         <div className="flex flex-col p-4">
           <div className="flex items-start mb-3">
-            <div className="flex-shrink-0 mr-4">
+            <div className="flex-shrink-0 mr-4 cursor-pointer" onClick={handleNavigateToDog}>
               {dog.dog_photo ? (
                 <img
                   src={dog.dog_photo}
                   alt={dog.dog_name}
-                  className="h-16 w-16 rounded-full object-cover"
+                  className="h-16 w-16 rounded-full object-cover hover:opacity-80 transition-opacity"
                 />
               ) : (
-                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center hover:opacity-80 transition-opacity">
                   <Dog className="h-8 w-8 text-primary" />
                 </div>
               )}
@@ -81,7 +87,12 @@ const DogCareCard: React.FC<DogCareCardProps> = ({
             
             <div className="flex-grow">
               <div className="flex items-center">
-                <h3 className="font-semibold text-lg">{dog.dog_name}</h3>
+                <h3 
+                  className="font-semibold text-lg cursor-pointer hover:underline" 
+                  onClick={handleNavigateToDog}
+                >
+                  {dog.dog_name}
+                </h3>
                 <DogFlagsList flags={dog.flags} />
               </div>
               <p className="text-sm text-muted-foreground">

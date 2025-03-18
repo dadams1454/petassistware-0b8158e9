@@ -5,6 +5,7 @@ import { AlertCircle, Dog, Heart, Flame, PlusCircle } from 'lucide-react';
 import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useNavigate } from 'react-router-dom';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
@@ -13,6 +14,8 @@ interface DogNameCellProps {
 }
 
 const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCategory }) => {
+  const navigate = useNavigate();
+  
   // Determine if dog is female based on gender field
   const isFemale = dog.sex?.toLowerCase() === 'female';
   
@@ -44,6 +47,11 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCa
     'exercise': 'Log Exercise'
   }[activeCategory] || 'Log Care';
   
+  // Handle navigation to dog detail page
+  const handleNavigateToDog = () => {
+    navigate(`/dogs/${dog.dog_id}`);
+  };
+  
   return (
     <TableCell className="font-medium sticky left-0 z-10 border-r border-slate-200 bg-white dark:bg-slate-900">
       <div className="flex items-center justify-between">
@@ -52,16 +60,25 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCa
             <img 
               src={dog.dog_photo} 
               alt={dog.dog_name} 
-              className={`w-8 h-8 rounded-full object-cover border-2 ${isFemale ? 'border-pink-300' : 'border-blue-300'}`}
+              onClick={handleNavigateToDog}
+              className={`w-8 h-8 rounded-full object-cover border-2 ${isFemale ? 'border-pink-300' : 'border-blue-300'} cursor-pointer hover:opacity-80 transition-opacity`}
             />
           ) : (
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isFemale ? 'bg-pink-100' : 'bg-blue-100'}`}>
+            <div 
+              onClick={handleNavigateToDog}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${isFemale ? 'bg-pink-100' : 'bg-blue-100'} cursor-pointer hover:opacity-80 transition-opacity`}
+            >
               <Dog className={`h-4 w-4 ${genderColor}`} />
             </div>
           )}
           <div className="flex flex-col">
             <div className="flex items-center">
-              <span className={`text-sm font-medium ${genderColor}`}>{dog.dog_name}</span>
+              <span 
+                onClick={handleNavigateToDog}
+                className={`text-sm font-medium ${genderColor} cursor-pointer hover:underline`}
+              >
+                {dog.dog_name}
+              </span>
               
               {/* Special condition indicators */}
               {isPregnant && (
