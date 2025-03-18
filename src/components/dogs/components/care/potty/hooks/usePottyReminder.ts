@@ -4,6 +4,7 @@ import { DogCareStatus } from '@/types/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import { getLastDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
 import { ObservationType } from '../components/ObservationDialog';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 
 export interface DogWithPottyTime {
   dog: DogCareStatus;
