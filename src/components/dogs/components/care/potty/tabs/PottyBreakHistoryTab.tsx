@@ -1,9 +1,10 @@
 
 import React from 'react';
+import { Card, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
-import PottyBreakHistoryList from '../PottyBreakHistoryList';
-import { PottyBreakSession } from '@/services/dailyCare/pottyBreak/types';
+import { RefreshCw, Clock, FileText } from 'lucide-react';
+import { PottyBreakSession } from '@/services/dailyCare/pottyBreak';
+import { format, parseISO } from 'date-fns';
 
 interface PottyBreakHistoryTabProps {
   sessions: PottyBreakSession[];
@@ -17,29 +18,69 @@ const PottyBreakHistoryTab: React.FC<PottyBreakHistoryTabProps> = ({
   onRefresh
 }) => {
   return (
-    <>
-      <div className="flex justify-between mb-4">
-        <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200">Recent Potty Breaks</h3>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium">Recent Potty Breaks</h3>
         <Button 
           variant="outline" 
-          size="sm"
-          onClick={onRefresh}
+          size="sm" 
+          onClick={onRefresh} 
           disabled={isLoading}
-          className="gap-2 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
 
-      <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-        <PottyBreakHistoryList 
-          sessions={sessions}
-          isLoading={isLoading}
-          onDelete={onRefresh}
-        />
-      </div>
-    </>
+      {sessions.length === 0 ? (
+        <Card className="p-4 text-center text-muted-foreground">
+          No recent potty breaks recorded.
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {sessions.map(session => (
+            <Card key={session.id} className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                  <span className="text-sm font-medium">
+                    {format(parseISO(session.session_time), 'MMM d, h:mm a')}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Dogs in this session */}
+              <div className="mt-2">
+                <span className="text-sm text-muted-foreground">Dogs:</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {session.dogs?.map(dogEntry => (
+                    <span 
+                      key={dogEntry.id} 
+                      className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5"
+                    >
+                      {dogEntry.dog?.name || 'Unknown dog'}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Notes section */}
+              {session.notes && (
+                <div className="mt-3 border-t pt-2">
+                  <div className="flex items-center text-sm text-muted-foreground mb-1">
+                    <FileText className="h-4 w-4 mr-1" />
+                    <span>Notes:</span>
+                  </div>
+                  <CardDescription className="whitespace-pre-wrap text-sm">
+                    {session.notes}
+                  </CardDescription>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -1,17 +1,16 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, FileText, PlusCircle } from 'lucide-react';
-import { DogCareStatus } from '@/types/dailyCare';
-import { useNavigate } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { DogCareStatus } from '@/types/dailyCare';
+import { Check, FileText, Clock } from 'lucide-react';
 
 interface QuickPottyBreakTabProps {
   dogs: DogCareStatus[];
   getTimeSinceLastPottyBreak: (dog: DogCareStatus) => string;
-  handleQuickPottyBreak: (dogId: string, dogName: string, notes?: string) => void;
+  handleQuickPottyBreak: (dogId: string, dogName: string, notes?: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -21,100 +20,98 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
   handleQuickPottyBreak,
   isLoading
 }) => {
-  const navigate = useNavigate();
-  const [selectedDog, setSelectedDog] = useState<{id: string, name: string} | null>(null);
-  const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
+  const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
+  const [notesOpen, setNotesOpen] = useState(false);
   const [notes, setNotes] = useState('');
 
-  const handleNavigateToDog = (dogId: string) => {
-    navigate(`/dogs/${dogId}`);
+  const handleOpenNotes = (dog: DogCareStatus) => {
+    setSelectedDog(dog);
+    setNotes('');
+    setNotesOpen(true);
   };
 
-  const openNotesDialog = (dogId: string, dogName: string) => {
-    setSelectedDog({id: dogId, name: dogName});
-    setIsNotesDialogOpen(true);
-  };
-
-  const handleNotesSubmit = () => {
-    if (selectedDog) {
-      handleQuickPottyBreak(selectedDog.id, selectedDog.name, notes);
+  const handleLogWithNotes = async () => {
+    if (!selectedDog) return;
+    
+    try {
+      await handleQuickPottyBreak(selectedDog.dog_id, selectedDog.dog_name, notes);
+      setNotesOpen(false);
       setNotes('');
-      setIsNotesDialogOpen(false);
+      setSelectedDog(null);
+    } catch (error) {
+      console.error('Error logging potty break with notes:', error);
     }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {dogs.map(dog => {
-        const needsPottyBreak = !dog.last_care || dog.last_care.category !== 'pottybreaks';
-        return (
-          <Card 
-            key={`quick-${dog.dog_id}`} 
-            className={`shadow-sm border overflow-hidden hover:shadow-md transition ${
-              needsPottyBreak ? 'border-amber-400 dark:border-amber-700' : 'border-slate-200 dark:border-slate-700'
-            }`}
-          >
-            <CardContent className="p-4 flex items-start">
-              <div 
-                className="flex-shrink-0 mr-3 cursor-pointer" 
-                onClick={() => handleNavigateToDog(dog.dog_id)}
-              >
-                {dog.dog_photo ? (
-                  <img 
-                    src={dog.dog_photo} 
-                    alt={dog.dog_name} 
-                    className="h-12 w-12 rounded-full object-cover hover:opacity-80 transition-opacity"
-                  />
-                ) : (
-                  <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center hover:opacity-80 transition-opacity">
-                    <span>{dog.dog_name.charAt(0)}</span>
-                  </div>
-                )}
-              </div>
-              <div className="flex-grow">
-                <h4 
-                  className="font-medium cursor-pointer hover:underline" 
-                  onClick={() => handleNavigateToDog(dog.dog_id)}
-                >
-                  {dog.dog_name}
-                </h4>
-                <div className="flex items-center text-sm text-muted-foreground mt-1">
-                  <Clock className="h-3.5 w-3.5 mr-1" />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {dogs.map(dog => (
+          <Card key={dog.dog_id} className="p-4 flex flex-col">
+            <div className="flex items-center space-x-3 mb-3">
+              {dog.dog_photo ? (
+                <img 
+                  src={dog.dog_photo} 
+                  alt={dog.dog_name} 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500 text-sm">{dog.dog_name.charAt(0)}</span>
+                </div>
+              )}
+              <div>
+                <h3 className="font-medium">{dog.dog_name}</h3>
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Clock className="mr-1 h-3 w-3" />
                   {getTimeSinceLastPottyBreak(dog)}
                 </div>
               </div>
+            </div>
+            <div className="flex space-x-2 mt-auto pt-2">
               <Button 
-                size="sm"
-                variant="outline"
-                onClick={() => openNotesDialog(dog.dog_id, dog.dog_name)}
-                disabled={isLoading}
-                className="gap-1"
+                variant="outline" 
+                size="sm" 
+                className="flex-1"
+                onClick={() => handleOpenNotes(dog)}
               >
-                <FileText className="h-3.5 w-3.5" />
-                {needsPottyBreak ? 'Add Notes' : 'Update'}
+                <FileText className="h-4 w-4 mr-1" />
+                Add Notes & Log
               </Button>
-            </CardContent>
+              <Button
+                size="sm"
+                variant="default"
+                className="flex-none gap-1"
+                onClick={() => handleQuickPottyBreak(dog.dog_id, dog.dog_name)}
+                disabled={isLoading}
+              >
+                <Check className="h-4 w-4" />
+                Log
+              </Button>
+            </div>
           </Card>
-        );
-      })}
+        ))}
+      </div>
 
-      <Dialog open={isNotesDialogOpen} onOpenChange={setIsNotesDialogOpen}>
+      {/* Notes Dialog */}
+      <Dialog open={notesOpen} onOpenChange={setNotesOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Potty Break Notes for {selectedDog?.name}</DialogTitle>
+            <DialogTitle>Add Notes for {selectedDog?.dog_name}'s Potty Break</DialogTitle>
           </DialogHeader>
           <Textarea
-            placeholder="Enter any observations about this potty break..."
+            placeholder="Enter any observations (e.g., unusual color, consistency, duration, etc.)"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="min-h-[120px]"
           />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNotesDialogOpen(false)}>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setNotesOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleNotesSubmit} disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Notes'}
+            <Button onClick={handleLogWithNotes} disabled={isLoading}>
+              <Check className="h-4 w-4 mr-1" />
+              Log with Notes
             </Button>
           </DialogFooter>
         </DialogContent>

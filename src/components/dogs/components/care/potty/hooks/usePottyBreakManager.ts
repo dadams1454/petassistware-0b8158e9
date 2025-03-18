@@ -25,8 +25,8 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
       } catch (error) {
         console.error('Error fetching recent potty break sessions:', error);
         toast({
-          title: 'Error',
-          description: 'Failed to load recent potty breaks.',
+          title: 'Database Connection Error',
+          description: 'Failed to load recent potty breaks. Please try again later.',
           variant: 'destructive',
         });
       } finally {
@@ -51,8 +51,8 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
     } catch (error) {
       console.error('Error logging quick potty break:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to log potty break.',
+        title: 'Database Error',
+        description: 'Failed to log potty break. Supabase might be experiencing issues.',
         variant: 'destructive',
       });
     } finally {
@@ -89,8 +89,8 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
     } catch (error) {
       console.error('Error logging group potty break:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to log group potty break.',
+        title: 'Database Error',
+        description: 'Failed to log group potty break. The database may be experiencing issues.',
         variant: 'destructive',
       });
     } finally {
