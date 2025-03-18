@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Get all potty breaks for a specific day
  */
-export const getPottyBreaksForDay = async (date: Date): Promise<any[]> => {
+export const getDailyPottyBreakReport = async (date: Date): Promise<any[]> => {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
   

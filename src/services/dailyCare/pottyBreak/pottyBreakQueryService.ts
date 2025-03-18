@@ -3,4 +3,4 @@
 export * from './queries/pottyBreakSessionQueries';
 export * from './queries/dogPottyBreakQueries';
 export * from './queries/timeSlotQueries';
-export * from './queries/dailyReportQueries';
+export { getDailyPottyBreakReport } from './queries/dailyReportQueries';
