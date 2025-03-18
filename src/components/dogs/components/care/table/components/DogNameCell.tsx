@@ -13,19 +13,28 @@ interface DogNameCellProps {
 }
 
 const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCategory }) => {
-  // Determine dog gender color (assumption: females have "female" in breed or color field)
-  const isFemale = dog.breed?.toLowerCase().includes('female') || 
-                  dog.color?.toLowerCase().includes('female') || 
-                  !dog.breed?.toLowerCase().includes('male');
+  // Determine if dog is female based on gender field
+  const isFemale = dog.sex?.toLowerCase() === 'female';
   
   const genderColor = isFemale ? 'text-pink-500 dark:text-pink-400' : 'text-blue-500 dark:text-blue-400';
   
   // Check for special conditions
   const isInHeat = dog.flags?.some(flag => flag.type === 'in_heat');
   const isPregnant = dog.flags?.some(flag => 
-    flag.type === 'pregnant' || 
-    (flag.type === 'special_attention' && flag.value?.toLowerCase().includes('pregnant'))
+    flag.type === 'special_attention' && 
+    flag.value?.toLowerCase().includes('pregnant')
   );
+  const hasSpecialAttention = dog.flags?.some(flag => 
+    flag.type === 'special_attention' && 
+    !flag.value?.toLowerCase().includes('pregnant')
+  );
+  const hasIncompatibility = dog.flags?.some(flag => flag.type === 'incompatible');
+  
+  // Get special attention value for tooltip
+  const specialAttentionValue = dog.flags?.find(flag => 
+    flag.type === 'special_attention' && 
+    !flag.value?.toLowerCase().includes('pregnant')
+  )?.value || "Needs special attention";
 
   // Get category-specific label
   const actionLabel = {
@@ -54,7 +63,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCa
             <div className="flex items-center">
               <span className={`text-sm font-medium ${genderColor}`}>{dog.dog_name}</span>
               
-              {/* Simple symbols for special conditions */}
+              {/* Special condition indicators */}
               {isPregnant && (
                 <TooltipProvider>
                   <Tooltip>
@@ -81,7 +90,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCa
                 </TooltipProvider>
               )}
               
-              {dog.flags?.some(flag => flag.type === 'incompatible') && (
+              {hasIncompatibility && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -94,14 +103,14 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCa
                 </TooltipProvider>
               )}
               
-              {dog.flags?.some(flag => flag.type === 'special_attention' && !flag.value?.toLowerCase().includes('pregnant')) && (
+              {hasSpecialAttention && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <AlertCircle className="h-4 w-4 ml-1 text-blue-500" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{dog.flags.find(f => f.type === 'special_attention')?.value || "Needs special attention"}</p>
+                      <p>{specialAttentionValue}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

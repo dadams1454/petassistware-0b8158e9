@@ -14,8 +14,22 @@ const SpecialConditionsAlert: React.FC<SpecialConditionsAlertProps> = ({ dogs })
     dog.flags?.some(flag => flag.type === 'in_heat')
   );
   
-  const pregnantDogs = dogs.filter(dog => 
-    dog.flags?.some(flag => flag.type === 'special_attention' && flag.value?.includes('pregnant'))
+  const dogsWithSpecialAttention = dogs.filter(dog => 
+    dog.flags?.some(flag => flag.type === 'special_attention')
+  );
+  
+  const pregnantDogs = dogsWithSpecialAttention.filter(dog => 
+    dog.flags?.some(flag => 
+      flag.type === 'special_attention' && 
+      flag.value?.toLowerCase().includes('pregnant')
+    )
+  );
+  
+  const otherSpecialAttentionDogs = dogsWithSpecialAttention.filter(dog => 
+    !dog.flags?.some(flag => 
+      flag.type === 'special_attention' && 
+      flag.value?.toLowerCase().includes('pregnant')
+    )
   );
   
   const incompatibleDogs = dogs.filter(dog => 
@@ -23,7 +37,10 @@ const SpecialConditionsAlert: React.FC<SpecialConditionsAlertProps> = ({ dogs })
   );
   
   // Check if we have any dogs with special conditions
-  const hasSpecialConditions = dogsInHeat.length > 0 || pregnantDogs.length > 0 || incompatibleDogs.length > 0;
+  const hasSpecialConditions = dogsInHeat.length > 0 || 
+                              pregnantDogs.length > 0 || 
+                              otherSpecialAttentionDogs.length > 0 || 
+                              incompatibleDogs.length > 0;
   
   if (!hasSpecialConditions) {
     return null;
@@ -40,6 +57,9 @@ const SpecialConditionsAlert: React.FC<SpecialConditionsAlertProps> = ({ dogs })
           )}
           {pregnantDogs.length > 0 && (
             <span>🩷 {pregnantDogs.length} pregnant dog(s). </span>
+          )}
+          {otherSpecialAttentionDogs.length > 0 && (
+            <span>🔔 {otherSpecialAttentionDogs.length} dog(s) needing special care. </span>
           )}
           {incompatibleDogs.length > 0 && (
             <span>⚠️ {incompatibleDogs.length} dog(s) with incompatibility issues. </span>
