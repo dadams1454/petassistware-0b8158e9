@@ -23,10 +23,7 @@ const TabsList: React.FC<TabsListProps> = ({
         <TabsTrigger value="overview" onClick={() => onTabChange('overview')}>
           Overview
         </TabsTrigger>
-        <TabsTrigger value="pottybreaks" onClick={() => onTabChange('pottybreaks')}>
-          Potty Breaks
-        </TabsTrigger>
-        <TabsTrigger value="care" onClick={() => onTabChange('care')}>
+        <TabsTrigger value="dailycare" onClick={() => onTabChange('dailycare')}>
           Daily Care
         </TabsTrigger>
         <TabsTrigger value="exercise" onClick={() => onTabChange('exercise')}>

@@ -10,7 +10,6 @@ import DailyCareTab from './tabs/DailyCareTab';
 import ExerciseTab from './tabs/ExerciseTab';
 import MedicationsTab from './tabs/MedicationsTab';
 import GroomingTab from './tabs/GroomingTab';
-import PottyBreaksTab from './tabs/PottyBreaksTab';
 import CareLogDialog from './dialogs/CareLogDialog';
 
 interface DashboardContentProps {
@@ -115,11 +114,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           />
         </TabsContent>
         
-        <TabsContent value="pottybreaks">
-          <PottyBreaksTab onRefreshDogs={handleRefreshDogs} />
-        </TabsContent>
-        
-        <TabsContent value="care">
+        <TabsContent value="dailycare">
           <DailyCareTab 
             onRefreshDogs={handleRefreshDogs} 
             isRefreshing={isRefreshing} 
