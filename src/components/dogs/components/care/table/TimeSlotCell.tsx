@@ -5,11 +5,11 @@ import ObservationDialog from './components/ObservationDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCellInteractions } from './hooks/useCellInteractions';
 
-// Import new cell components
+// Import cell components
 import CellContextMenu from './components/cellComponents/CellContextMenu';
 import CellTouchHandler from './components/cellComponents/CellTouchHandler';
 import CellWrapper from './components/cellComponents/CellWrapper';
-import CellContentWrapper from './components/cellComponents/CellContent';
+import CellContentWrapper from './components/cellComponents/CellContentWrapper';
 
 interface TimeSlotCellProps {
   dogId: string;
