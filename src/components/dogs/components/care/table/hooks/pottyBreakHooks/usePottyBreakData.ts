@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { getPottyBreaksByDogAndTimeSlot2 } from '@/services/dailyCare/pottyBreak/pottyBreakQueryService';
+import { getPottyBreaksByDogAndTimeSlot2 } from '@/services/dailyCare/pottyBreak/queries/timeSlotQueries';
 import { toast } from '@/components/ui/use-toast';
 import { useCallback } from 'react';
 

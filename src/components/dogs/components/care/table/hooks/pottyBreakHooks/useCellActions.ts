@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { savePottyBreaksByDogAndTimeSlot } from '@/services/dailyCare/pottyBreak/pottyBreakQueryService';
+import { savePottyBreaksByDogAndTimeSlot } from '@/services/dailyCare/pottyBreak/queries/timeSlotQueries';
 import { logDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { toast } from '@/components/ui/use-toast';
