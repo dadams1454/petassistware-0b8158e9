@@ -145,7 +145,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     <>
       {/* Use Context Menu on desktop */}
       {!isMobile ? (
-        <ContextMenu open={contextMenuOpen} onOpenChange={setContextMenuOpen}>
+        <ContextMenu>
           <ContextMenuTrigger asChild>
             <TableCell 
               ref={cellRef}
@@ -298,4 +298,3 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
 TimeSlotCell.displayName = 'TimeSlotCell';
 
 export default TimeSlotCell;
-

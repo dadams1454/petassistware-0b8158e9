@@ -98,7 +98,16 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         </div>
         
         <TabsContent value="pottybreaks" className="mt-0">
-          <TableContainer>
+          <TableContainer 
+            dogs={sortedDogs}
+            activeCategory="pottybreaks"
+            timeSlots={timeSlots}
+            hasPottyBreak={hasPottyBreak}
+            hasCareLogged={hasCareLogged}
+            onCellClick={handleCellClick}
+            onCareLogClick={handleCareLogClick}
+            onRefresh={handleRefresh}
+          >
             <TimeTableContent 
               sortedDogs={sortedDogs}
               timeSlots={timeSlots}
@@ -117,7 +126,16 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         </TabsContent>
         
         <TabsContent value="feeding" className="mt-0">
-          <TableContainer>
+          <TableContainer 
+            dogs={sortedDogs}
+            activeCategory="feeding"
+            timeSlots={timeSlots}
+            hasPottyBreak={hasPottyBreak}
+            hasCareLogged={hasCareLogged}
+            onCellClick={handleCellClick}
+            onCareLogClick={handleCareLogClick}
+            onRefresh={handleRefresh}
+          >
             <TimeTableContent 
               sortedDogs={sortedDogs}
               timeSlots={timeSlots}
@@ -136,7 +154,16 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         </TabsContent>
         
         <TabsContent value="medications" className="mt-0">
-          <TableContainer>
+          <TableContainer 
+            dogs={sortedDogs}
+            activeCategory="medications"
+            timeSlots={timeSlots}
+            hasPottyBreak={hasPottyBreak}
+            hasCareLogged={hasCareLogged}
+            onCellClick={handleCellClick}
+            onCareLogClick={handleCareLogClick}
+            onRefresh={handleRefresh}
+          >
             <TimeTableContent 
               sortedDogs={sortedDogs}
               timeSlots={timeSlots}
@@ -155,7 +182,16 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         </TabsContent>
         
         <TabsContent value="exercise" className="mt-0">
-          <TableContainer>
+          <TableContainer 
+            dogs={sortedDogs}
+            activeCategory="exercise"
+            timeSlots={timeSlots}
+            hasPottyBreak={hasPottyBreak}
+            hasCareLogged={hasCareLogged}
+            onCellClick={handleCellClick}
+            onCareLogClick={handleCareLogClick}
+            onRefresh={handleRefresh}
+          >
             <TimeTableContent 
               sortedDogs={sortedDogs}
               timeSlots={timeSlots}
@@ -173,11 +209,13 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
           </TableContainer>
         </TabsContent>
         
-        <TimeTableFooter
-          isLoading={isLoading}
-          onRefresh={handleRefresh}
-          lastUpdateTime={new Date().toLocaleTimeString()}
-        />
+        <div className="p-2 bg-gray-50 dark:bg-slate-900/60 border-t border-gray-200 dark:border-gray-800">
+          <TimeTableFooter
+            isLoading={isLoading}
+            onRefresh={handleRefresh}
+            lastUpdateTime={new Date().toLocaleTimeString()}
+          />
+        </div>
       </Tabs>
     </Card>
   );
