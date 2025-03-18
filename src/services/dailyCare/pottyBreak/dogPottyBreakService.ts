@@ -32,8 +32,8 @@ export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<
   // Cast threshold to number to ensure type safety
   const threshold = Number(thresholdMinutes);
   
-  // Call the RPC function with explicit type parameter
-  const { data, error } = await supabase.rpc<any[]>(
+  // Call the RPC function with both type parameters
+  const { data, error } = await supabase.rpc(
     'get_dogs_needing_potty_break', 
     { threshold_minutes: threshold }
   );
