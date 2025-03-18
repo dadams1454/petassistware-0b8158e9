@@ -2,21 +2,42 @@
 import React from 'react';
 import { Card, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Clock, FileText } from 'lucide-react';
+import { RefreshCw, Clock, FileText, Trash2, AlertCircle } from 'lucide-react';
 import { PottyBreakSession } from '@/services/dailyCare/pottyBreak';
 import { format, parseISO } from 'date-fns';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface PottyBreakHistoryTabProps {
   sessions: PottyBreakSession[];
   isLoading: boolean;
   onRefresh: () => void;
+  onDelete?: (sessionId: string) => Promise<void>;
+  deletingSessionId?: string | null;
 }
 
 const PottyBreakHistoryTab: React.FC<PottyBreakHistoryTabProps> = ({
   sessions,
   isLoading,
-  onRefresh
+  onRefresh,
+  onDelete,
+  deletingSessionId
 }) => {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+  const [sessionToDelete, setSessionToDelete] = React.useState<string | null>(null);
+
+  const handleDeleteClick = (sessionId: string) => {
+    setSessionToDelete(sessionId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (sessionToDelete && onDelete) {
+      await onDelete(sessionToDelete);
+      setDeleteConfirmOpen(false);
+      setSessionToDelete(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -51,6 +72,21 @@ const PottyBreakHistoryTab: React.FC<PottyBreakHistoryTabProps> = ({
                     {format(parseISO(session.session_time), 'MMM d, h:mm a')}
                   </span>
                 </div>
+                {onDelete && (
+                  <Button
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                    onClick={() => handleDeleteClick(session.id)}
+                    disabled={deletingSessionId === session.id}
+                  >
+                    {deletingSessionId === session.id ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
               </div>
               
               {/* Dogs in this session */}
@@ -84,6 +120,29 @@ const PottyBreakHistoryTab: React.FC<PottyBreakHistoryTabProps> = ({
           ))}
         </div>
       )}
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-destructive mr-2" />
+              Delete Potty Break Record
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this potty break record? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete} 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

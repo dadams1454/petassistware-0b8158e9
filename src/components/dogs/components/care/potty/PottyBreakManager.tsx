@@ -32,10 +32,12 @@ const PottyBreakManager: React.FC<PottyBreakManagerProps> = ({ dogs, onRefresh }
     setRefreshTrigger,
     handleQuickPottyBreak,
     handleGroupPottyBreak,
+    handleDeletePottyBreakSession,
     getTimeSinceLastPottyBreak,
     sortedDogs,
     groupNotes,
-    setGroupNotes
+    setGroupNotes,
+    deletingSessionId
   } = usePottyBreakManager(dogs, onRefresh);
 
   return (
@@ -79,6 +81,8 @@ const PottyBreakManager: React.FC<PottyBreakManagerProps> = ({ dogs, onRefresh }
               sessions={recentSessions}
               isLoading={isLoading}
               onRefresh={() => setRefreshTrigger(prev => prev + 1)}
+              onDelete={handleDeletePottyBreakSession}
+              deletingSessionId={deletingSessionId}
             />
           </TabsContent>
         </Tabs>

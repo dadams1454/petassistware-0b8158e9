@@ -94,6 +94,18 @@ export const getPottyBreakSession = async (sessionId: string): Promise<PottyBrea
 // Delete a potty break session
 export const deletePottyBreakSession = async (sessionId: string): Promise<void> => {
   try {
+    // First delete the associated dog records
+    const { error: dogsError } = await supabase
+      .from('potty_break_dogs')
+      .delete()
+      .eq('session_id', sessionId);
+    
+    if (dogsError) {
+      console.error('Error deleting potty break dogs:', dogsError);
+      throw new Error(`Failed to delete potty break dogs: ${dogsError.message}`);
+    }
+
+    // Then delete the session itself
     const { error } = await supabase
       .from('potty_break_sessions')
       .delete()

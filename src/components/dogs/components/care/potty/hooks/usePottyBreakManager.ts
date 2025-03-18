@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { PottyBreakSession, createPottyBreakSession, getRecentPottyBreakSessions } from '@/services/dailyCare/pottyBreak';
+import { PottyBreakSession, createPottyBreakSession, getRecentPottyBreakSessions, deletePottyBreakSession } from '@/services/dailyCare/pottyBreak';
 import { DogCareStatus } from '@/types/dailyCare';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
@@ -13,6 +13,7 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
   const [isLoading, setIsLoading] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [groupNotes, setGroupNotes] = useState('');
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Fetch recent potty break sessions
@@ -98,6 +99,29 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
     }
   };
 
+  // Handler for deleting potty break session
+  const handleDeletePottyBreakSession = async (sessionId: string) => {
+    try {
+      setDeletingSessionId(sessionId);
+      await deletePottyBreakSession(sessionId);
+      toast({
+        title: 'Potty Break Deleted',
+        description: 'The potty break record has been successfully deleted.',
+      });
+      setRefreshTrigger(prev => prev + 1);
+      onRefresh();
+    } catch (error) {
+      console.error('Error deleting potty break session:', error);
+      toast({
+        title: 'Deletion Failed',
+        description: 'Failed to delete potty break record. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingSessionId(null);
+    }
+  };
+
   // Get time since last potty break
   const getTimeSinceLastPottyBreak = (dog: DogCareStatus) => {
     if (!dog.last_care || dog.last_care.category !== 'pottybreaks') {
@@ -138,9 +162,11 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
     setRefreshTrigger,
     handleQuickPottyBreak,
     handleGroupPottyBreak,
+    handleDeletePottyBreakSession,
     getTimeSinceLastPottyBreak,
     sortedDogs,
     groupNotes,
-    setGroupNotes
+    setGroupNotes,
+    deletingSessionId
   };
 };
