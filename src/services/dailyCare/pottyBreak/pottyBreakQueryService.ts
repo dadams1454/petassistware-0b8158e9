@@ -168,9 +168,13 @@ export const savePottyBreaksByDogAndTimeSlot = async (date: Date, pottyBreaks: R
   try {
     console.log('Saving potty breaks for date:', date.toISOString().slice(0, 10), 'data:', pottyBreaks);
     
-    // In a real implementation, you would save this data to the database
-    // This could involve deleting existing entries and creating new ones
+    // This is a stub implementation. In a real-world scenario, you would implement
+    // database operations to save the potty break data.
+    // For example:
+    // 1. Delete existing entries for the given date
+    // 2. Create new entries for each dog and time slot
     
+    // Since this is just a placeholder, we'll return success
     return true;
   } catch (error) {
     console.error('Error saving potty breaks:', error);
