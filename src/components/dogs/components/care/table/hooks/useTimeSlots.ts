@@ -5,6 +5,7 @@ export const useTimeSlots = () => {
   // Create timeslots array once, not on every render
   const timeSlots = useMemo(() => {
     const slots = [];
+    // Generate time slots from 6 AM to 10 PM
     for (let hour = 6; hour <= 22; hour++) {
       const displayHour = hour > 12 ? hour - 12 : hour;
       const amPm = hour >= 12 ? 'PM' : 'AM';

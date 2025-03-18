@@ -31,7 +31,7 @@ const TimeSlotHeaders: React.FC<TimeSlotHeadersProps> = ({
         return (
           <TableHead 
             key={timeSlot} 
-            className={`text-center p-0 w-12 h-12 border-x border-slate-200 ${
+            className={`text-center p-0 w-12 h-12 border-x border-slate-200 dark:border-slate-700 ${
               isCurrentHour ? 'bg-blue-50 dark:bg-blue-900/20' : ''
             }`}
           >
