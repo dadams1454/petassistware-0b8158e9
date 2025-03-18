@@ -32,9 +32,9 @@ export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<
   // Convert the threshold to a number to avoid type errors
   const threshold = Number(thresholdMinutes);
   
-  // Fix the type error by passing the parameters object directly
-  const { data, error } = await supabase.rpc('get_dogs_needing_potty_break', {
-    threshold_minutes: threshold
+  // Fix the type error by correctly passing parameters to RPC function
+  const { data, error } = await supabase.functions.invoke('get_dogs_needing_potty_break', {
+    body: { threshold_minutes: threshold }
   });
 
   if (error) {
