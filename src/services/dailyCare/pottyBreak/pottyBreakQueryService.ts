@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { PottyBreak, PottyBreakDog } from './types';
+import { PottyBreak, PottyBreakDog, PottyBreakSession } from './types';
 
 /**
  * Get all potty breaks for a specific date
@@ -18,7 +18,19 @@ export const getPottyBreaksByDate = async (date: string): Promise<PottyBreak[]> 
     throw error;
   }
 
-  return data || [];
+  // Map the data from database format to PottyBreak format
+  return (data || []).map(session => {
+    // Parse the session_time to extract date and time
+    const sessionDate = new Date(session.session_time);
+    return {
+      id: session.id,
+      date: sessionDate.toISOString().split('T')[0],
+      time: sessionDate.toTimeString().slice(0, 5),
+      notes: session.notes || undefined,
+      created_at: session.created_at,
+      potty_break_dogs: session.potty_break_dogs || []
+    };
+  });
 };
 
 /**
@@ -36,8 +48,19 @@ export const getPottyBreaksByDogAndDate = async (dogId: string, date: string): P
     throw error;
   }
 
-  // Transform the data to return just the potty breaks
-  return data?.map(item => item.potty_break_sessions) || [];
+  // Transform the data to return just the potty breaks with proper date/time format
+  return (data || []).map(item => {
+    const session = item.potty_break_sessions;
+    const sessionDate = new Date(session.session_time);
+    return {
+      id: session.id,
+      date: sessionDate.toISOString().split('T')[0],
+      time: sessionDate.toTimeString().slice(0, 5),
+      notes: session.notes || undefined,
+      created_at: session.created_at,
+      potty_break_dogs: [{ dog_id: dogId, session_id: session.id }]
+    };
+  });
 };
 
 /**
@@ -143,9 +166,7 @@ export const getPottyBreaksByDogAndTimeSlot2 = async (date: Date): Promise<Recor
  */
 export const savePottyBreaksByDogAndTimeSlot = async (date: Date, pottyBreaks: Record<string, string[]>): Promise<boolean> => {
   try {
-    // Implementation will depend on how you want to save this data
-    // For now, we'll just log it and return success
-    console.log('Saving potty breaks for date:', date, 'data:', pottyBreaks);
+    console.log('Saving potty breaks for date:', date.toISOString().slice(0, 10), 'data:', pottyBreaks);
     
     // In a real implementation, you would save this data to the database
     // This could involve deleting existing entries and creating new ones
@@ -180,5 +201,15 @@ export const getPottyBreakById = async (id: string): Promise<PottyBreak | null> 
     throw error;
   }
 
-  return data;
+  if (!data) return null;
+  
+  // Transform to PottyBreak type
+  const sessionDate = new Date(data.session_time);
+  return {
+    id: data.id,
+    date: sessionDate.toISOString().split('T')[0],
+    time: sessionDate.toTimeString().slice(0, 5),
+    notes: data.notes || undefined,
+    created_at: data.created_at
+  };
 };
