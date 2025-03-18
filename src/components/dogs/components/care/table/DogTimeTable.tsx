@@ -11,6 +11,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CareLogForm from '../CareLogForm';
 import { generateTimeSlots } from './dogGroupColors';
 import { debounce } from 'lodash';
+import ObservationDialog from './components/ObservationDialog';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -22,6 +23,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [selectedDogName, setSelectedDogName] = useState<string>('');
   const [careDialogOpen, setCareDialogOpen] = useState(false);
+  const [observationDialogOpen, setObservationDialogOpen] = useState(false);
   const [timeSlots, setTimeSlots] = useState<string[]>(generateTimeSlots());
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
   
@@ -99,6 +101,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     sortedDogs,
     hasPottyBreak,
     hasCareLogged,
+    hasObservation,
+    addObservation,
+    observations,
     handleCellClick,
     handleRefresh
   } = usePottyBreakTable(dogsStatus, refreshTimeTable, activeCategory);
@@ -109,11 +114,24 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     setCareDialogOpen(true);
   }, []);
   
+  const handleObservationClick = useCallback((dogId: string, dogName: string) => {
+    setSelectedDogId(dogId);
+    setSelectedDogName(dogName);
+    setObservationDialogOpen(true);
+  }, []);
+  
   const handleCareLogSuccess = useCallback(() => {
     setCareDialogOpen(false);
     // Delay refresh slightly to ensure DB operations complete
     setTimeout(refreshTimeTable, 300);
   }, [refreshTimeTable]);
+  
+  const handleObservationSuccess = useCallback(async (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => {
+    await addObservation(dogId, observation, observationType);
+    setObservationDialogOpen(false);
+    // Refresh to update UI with new observation
+    setTimeout(refreshTimeTable, 300);
+  }, [addObservation, refreshTimeTable]);
 
   // Initial load - only once
   useEffect(() => {
@@ -135,9 +153,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       <CardContent className="p-0">
         {/* For now, we're only using pottybreaks, so removed tabs */}
         <div className="px-4 py-2 border-b">
-          <h3 className="text-lg font-medium">Potty Breaks</h3>
+          <h3 className="text-lg font-medium">Daily Care & Observations</h3>
           <p className="text-sm text-muted-foreground">
-            Click on a cell to log or remove a potty break. 
+            Click on a cell to log or remove a potty break. Right-click on any cell to add an observation.
             <span className="ml-1 font-medium">
               Showing 8-hour window from {timeSlots[0]} to {timeSlots[timeSlots.length - 1]}
             </span>
@@ -157,6 +175,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
           onCareLogClick={handleCareLogClick}
           activeCategory={activeCategory}
           currentHour={new Date().getHours()}
+          hasObservation={hasObservation}
+          onAddObservation={addObservation}
+          observations={observations}
         />
         
         <TimeTableFooter />
@@ -173,6 +194,18 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             )}
           </DialogContent>
         </Dialog>
+        
+        {/* Observation dialog */}
+        {selectedDogId && (
+          <ObservationDialog
+            open={observationDialogOpen}
+            onOpenChange={setObservationDialogOpen}
+            dogId={selectedDogId}
+            dogName={selectedDogName}
+            onSubmit={handleObservationSuccess}
+            existingObservations={observations[selectedDogId] || []}
+          />
+        )}
       </CardContent>
     </Card>
   );

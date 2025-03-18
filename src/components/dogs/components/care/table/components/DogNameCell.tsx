@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { TableCell } from '@/components/ui/table';
-import { AlertCircle, Dog, Heart, Flame, PlusCircle } from 'lucide-react';
+import { AlertCircle, Dog, Heart, Flame, PlusCircle, MessageCircle } from 'lucide-react';
 import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -11,9 +11,15 @@ interface DogNameCellProps {
   dog: DogCareStatus;
   onCareLogClick: () => void;
   activeCategory: string;
+  hasObservation?: boolean;
 }
 
-const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCategory }) => {
+const DogNameCell: React.FC<DogNameCellProps> = ({ 
+  dog, 
+  onCareLogClick, 
+  activeCategory,
+  hasObservation = false 
+}) => {
   const navigate = useNavigate();
   
   // Determine if dog is female based on gender field
@@ -128,6 +134,19 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onCareLogClick, activeCa
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{specialAttentionValue}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              
+              {hasObservation && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <MessageCircle className="h-4 w-4 ml-1 text-amber-600 fill-amber-100" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Has observations (right-click on any cell to view)</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

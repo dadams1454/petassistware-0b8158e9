@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { DogFlag } from '@/types/dailyCare';
-import { Check } from 'lucide-react';
+import { Check, MessageCircle } from 'lucide-react';
 
 interface CellContentProps {
   dogName: string;
@@ -11,6 +11,7 @@ interface CellContentProps {
   hasCareLogged: boolean;
   flags?: DogFlag[];
   isCurrentHour?: boolean;
+  hasObservation?: boolean;
 }
 
 const CellContent: React.FC<CellContentProps> = ({
@@ -20,8 +21,20 @@ const CellContent: React.FC<CellContentProps> = ({
   hasPottyBreak,
   hasCareLogged,
   flags = [],
-  isCurrentHour = false
+  isCurrentHour = false,
+  hasObservation = false
 }) => {
+  // Return observation icon if there's an observation
+  if (hasObservation) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <MessageCircle 
+          className="h-4 w-4 text-amber-600 dark:text-amber-400 fill-amber-100 dark:fill-amber-900/30" 
+        />
+      </div>
+    );
+  }
+  
   // Return checkmark if any type of care is logged (potty break or other care)
   if (hasPottyBreak || hasCareLogged) {
     return (

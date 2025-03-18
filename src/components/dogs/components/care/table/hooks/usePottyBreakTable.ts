@@ -6,6 +6,7 @@ import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
 import { useDogSorting } from './pottyBreakHooks/useDogSorting';
 import { useCellActions } from './pottyBreakHooks/useCellActions';
 import { debounce } from 'lodash';
+import { useObservations } from './pottyBreakHooks/useObservations';
 
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
@@ -21,6 +22,7 @@ const usePottyBreakTable = (
   const { sortedDogs } = useDogSorting(dogsStatus);
   const { pottyBreaks, setPottyBreaks, isLoading: pottyBreaksLoading, fetchPottyBreaks, hasPottyBreak } = usePottyBreakData(currentDate);
   const { careLogs, fetchCareLogs, isLoading: careLogsLoading, hasCareLogged } = useCareLogsData(sortedDogs);
+  const { observations, addObservation, hasObservation, isLoading: observationsLoading } = useObservations(sortedDogs);
   
   // Create debounced refresh function
   const debouncedRefresh = useRef(
@@ -62,7 +64,7 @@ const usePottyBreakTable = (
   );
   
   // Combined loading state
-  const isLoading = pottyBreaksLoading || careLogsLoading || cellActionsLoading || isRefreshingRef.current;
+  const isLoading = pottyBreaksLoading || careLogsLoading || cellActionsLoading || observationsLoading || isRefreshingRef.current;
   
   // Wrapper for hasCareLogged to incorporate hasPottyBreak
   const handleHasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
@@ -82,6 +84,9 @@ const usePottyBreakTable = (
     sortedDogs,
     hasPottyBreak,
     hasCareLogged: handleHasCareLogged,
+    hasObservation,
+    addObservation,
+    observations,
     handleCellClick,
     handleRefresh
   };
