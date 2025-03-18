@@ -23,6 +23,7 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
   const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
   const [notesOpen, setNotesOpen] = useState(false);
   const [notes, setNotes] = useState('');
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
 
   const handleOpenNotes = (dog: DogCareStatus) => {
     setSelectedDog(dog);
@@ -34,14 +35,34 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
     if (!selectedDog) return;
     
     try {
+      setActionInProgress(selectedDog.dog_id);
       await handleQuickPottyBreak(selectedDog.dog_id, selectedDog.dog_name, notes);
       setNotesOpen(false);
       setNotes('');
       setSelectedDog(null);
     } catch (error) {
       console.error('Error logging potty break with notes:', error);
+    } finally {
+      setActionInProgress(null);
     }
   };
+
+  const handleQuickLog = async (dog: DogCareStatus) => {
+    try {
+      setActionInProgress(dog.dog_id);
+      await handleQuickPottyBreak(dog.dog_id, dog.dog_name);
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  if (dogs.length === 0) {
+    return (
+      <Card className="p-4 text-center text-muted-foreground">
+        No dogs found. Please add dogs to the system first.
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -74,6 +95,7 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
                 size="sm" 
                 className="flex-1"
                 onClick={() => handleOpenNotes(dog)}
+                disabled={isLoading || actionInProgress !== null}
               >
                 <FileText className="h-4 w-4 mr-1" />
                 Add Notes & Log
@@ -82,10 +104,14 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
                 size="sm"
                 variant="default"
                 className="flex-none gap-1"
-                onClick={() => handleQuickPottyBreak(dog.dog_id, dog.dog_name)}
-                disabled={isLoading}
+                onClick={() => handleQuickLog(dog)}
+                disabled={isLoading || actionInProgress !== null}
               >
-                <Check className="h-4 w-4" />
+                {actionInProgress === dog.dog_id ? (
+                  <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-1" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
                 Log
               </Button>
             </div>
@@ -106,11 +132,15 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
             className="min-h-[120px]"
           />
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setNotesOpen(false)}>
+            <Button variant="outline" onClick={() => setNotesOpen(false)} disabled={actionInProgress !== null}>
               Cancel
             </Button>
-            <Button onClick={handleLogWithNotes} disabled={isLoading}>
-              <Check className="h-4 w-4 mr-1" />
+            <Button onClick={handleLogWithNotes} disabled={isLoading || actionInProgress !== null}>
+              {actionInProgress !== null ? (
+                <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-1" />
+              ) : (
+                <Check className="h-4 w-4 mr-1" />
+              )}
               Log with Notes
             </Button>
           </DialogFooter>

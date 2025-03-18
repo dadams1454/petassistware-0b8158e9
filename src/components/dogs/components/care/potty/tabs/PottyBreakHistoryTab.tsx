@@ -32,7 +32,11 @@ const PottyBreakHistoryTab: React.FC<PottyBreakHistoryTabProps> = ({
         </Button>
       </div>
 
-      {sessions.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-pulse text-gray-400">Loading history...</div>
+        </div>
+      ) : sessions.length === 0 ? (
         <Card className="p-4 text-center text-muted-foreground">
           No recent potty breaks recorded.
         </Card>
