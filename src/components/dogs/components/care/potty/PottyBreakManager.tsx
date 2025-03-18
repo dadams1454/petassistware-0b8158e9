@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Check } from 'lucide-react';
 import { DialogContent, DialogHeader, DialogTitle, Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { DogCareStatus } from '@/types/dailyCare';
 import PottyBreakDogSelection from './PottyBreakDogSelection';
 import { usePottyBreakManager } from './hooks/usePottyBreakManager';
@@ -32,7 +33,9 @@ const PottyBreakManager: React.FC<PottyBreakManagerProps> = ({ dogs, onRefresh }
     handleQuickPottyBreak,
     handleGroupPottyBreak,
     getTimeSinceLastPottyBreak,
-    sortedDogs
+    sortedDogs,
+    groupNotes,
+    setGroupNotes
   } = usePottyBreakManager(dogs, onRefresh);
 
   return (
@@ -91,6 +94,16 @@ const PottyBreakManager: React.FC<PottyBreakManagerProps> = ({ dogs, onRefresh }
               selectedDogs={selectedDogs}
               onChange={setSelectedDogs}
             />
+            
+            <div className="mt-4">
+              <label className="text-sm font-medium mb-2 block">Notes (Optional)</label>
+              <Textarea
+                placeholder="Enter any observations about this potty break session..."
+                value={groupNotes}
+                onChange={(e) => setGroupNotes(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
             
             <div className="flex justify-end gap-2 mt-4">
               <Button

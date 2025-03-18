@@ -12,6 +12,7 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
   const [recentSessions, setRecentSessions] = useState<PottyBreakSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [groupNotes, setGroupNotes] = useState('');
   const { toast } = useToast();
 
   // Fetch recent potty break sessions
@@ -37,13 +38,13 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
   }, [toast, refreshTrigger]);
 
   // Handler for quick potty break logging
-  const handleQuickPottyBreak = async (dogId: string, dogName: string) => {
+  const handleQuickPottyBreak = async (dogId: string, dogName: string, notes?: string) => {
     try {
       setIsLoading(true);
-      await createPottyBreakSession({ dogs: [dogId] });
+      await createPottyBreakSession({ dogs: [dogId], notes });
       toast({
         title: 'Potty Break Logged',
-        description: `${dogName} was taken out for a potty break.`,
+        description: `${dogName} was taken out for a potty break${notes ? ' with notes' : ''}.`,
       });
       setRefreshTrigger(prev => prev + 1);
       onRefresh();
@@ -72,13 +73,17 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
 
     try {
       setIsLoading(true);
-      await createPottyBreakSession({ dogs: selectedDogs });
+      await createPottyBreakSession({ 
+        dogs: selectedDogs,
+        notes: groupNotes.trim() || undefined
+      });
       toast({
         title: 'Group Potty Break Logged',
-        description: `${selectedDogs.length} dogs were taken out for a potty break.`,
+        description: `${selectedDogs.length} dogs were taken out for a potty break${groupNotes ? ' with notes' : ''}.`,
       });
       setDialogOpen(false);
       setSelectedDogs([]);
+      setGroupNotes('');
       setRefreshTrigger(prev => prev + 1);
       onRefresh();
     } catch (error) {
@@ -134,6 +139,8 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
     handleQuickPottyBreak,
     handleGroupPottyBreak,
     getTimeSinceLastPottyBreak,
-    sortedDogs
+    sortedDogs,
+    groupNotes,
+    setGroupNotes
   };
 };
