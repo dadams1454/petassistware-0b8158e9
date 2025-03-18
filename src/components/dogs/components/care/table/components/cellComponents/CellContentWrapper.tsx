@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { DogFlag } from '@/types/dailyCare';
-import CellContent from './CellContent';
+import CellContent from '../../components/CellContent';
 import ObservationIcon from './ObservationIcon';
 
 interface CellContentWrapperProps {
