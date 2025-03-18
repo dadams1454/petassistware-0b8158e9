@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, X } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { DogFlag } from '@/types/dailyCare';
 import { useCellStyles } from './useCellStyles';
@@ -34,11 +34,11 @@ const CellContent: React.FC<CellContentProps> = ({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center h-full w-full">
             {hasPottyBreak ? (
-              <X className="h-5 w-5 text-blue-600 dark:text-blue-400 font-bold" />
+              <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
             ) : (
-              <span>&nbsp;</span>
+              <span className="h-5 w-5 flex items-center justify-center">&nbsp;</span>
             )}
           </div>
         </TooltipTrigger>

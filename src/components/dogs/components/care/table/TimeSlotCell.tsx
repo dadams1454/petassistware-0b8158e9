@@ -42,19 +42,25 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   return (
     <TableCell 
       key={cellIdentifier}
-      className={`${cellClassNames} cursor-pointer`}
+      className={`${cellClassNames} cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden transition-all duration-200 ${
+        hasPottyBreak 
+          ? 'bg-green-100 dark:bg-green-900/30' 
+          : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+      }`}
       onClick={onClick}
       title={`${dogName} - ${timeSlot}`}
       data-cell-id={cellIdentifier}
     >
-      <CellContent 
-        dogName={dogName}
-        timeSlot={timeSlot}
-        category={category}
-        hasPottyBreak={hasPottyBreak}
-        hasCareLogged={hasCareLogged}
-        flags={cellFlags}
-      />
+      <div className="w-full h-full p-1">
+        <CellContent 
+          dogName={dogName}
+          timeSlot={timeSlot}
+          category={category}
+          hasPottyBreak={hasPottyBreak}
+          hasCareLogged={hasCareLogged}
+          flags={cellFlags}
+        />
+      </div>
     </TableCell>
   );
 };

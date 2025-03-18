@@ -24,11 +24,11 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-100 dark:bg-slate-800/60">
               <tr>
-                <th className="sticky left-0 z-10 bg-gray-100 dark:bg-slate-800/60 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[150px]">
+                <th className="sticky left-0 z-10 bg-gray-100 dark:bg-slate-800/60 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[150px] border-b border-r border-gray-200 dark:border-gray-700">
                   Dog
                 </th>
                 {timeSlots.map((slot) => (
-                  <th key={slot} className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th key={slot} className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-r border-gray-200 dark:border-gray-700">
                     {slot}
                   </th>
                 ))}
@@ -74,15 +74,21 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                         <td 
                           key={`${dog.dog_id}-${slot}`}
                           onClick={() => onCellClick(dog.dog_id, dog.dog_name, slot)}
-                          className={`text-center px-3 py-2 whitespace-nowrap text-sm ${hasBreak ? 'bg-green-100 dark:bg-green-900/30' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'} cursor-pointer transition-colors`}
+                          className={`text-center py-0 px-0 whitespace-nowrap text-sm cursor-pointer border border-slate-200 dark:border-slate-700 ${
+                            hasBreak 
+                              ? 'bg-green-100 dark:bg-green-900/30' 
+                              : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                          } transition-colors`}
                         >
-                          {hasBreak ? (
-                            <span className="inline-flex items-center justify-center h-6 w-6 text-green-600 dark:text-green-400 font-bold text-lg">
-                              X
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center justify-center h-6 w-6"></span>
-                          )}
+                          <div className="w-full h-full flex items-center justify-center p-2">
+                            {hasBreak ? (
+                              <span className="inline-flex items-center justify-center h-6 w-6 text-green-600 dark:text-green-400 font-bold text-lg">
+                                ✓
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center h-6 w-6"></span>
+                            )}
+                          </div>
                         </td>
                       );
                     })}
