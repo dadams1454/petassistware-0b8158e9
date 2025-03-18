@@ -1,10 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Dog, RefreshCw } from 'lucide-react';
-import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeTableHeader from './components/TimeTableHeader';
 import TimeTableContent from './components/TimeTableContent';
