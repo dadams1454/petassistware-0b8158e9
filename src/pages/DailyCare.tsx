@@ -1,15 +1,16 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 const DailyCare: React.FC = () => {
   const { loading, dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
 
   // Manually trigger refresh function
   const handleManualRefresh = () => {
@@ -53,11 +54,12 @@ const DailyCare: React.FC = () => {
             Daily Care Time Table
           </h1>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Track potty breaks and daily activities for all your dogs
+            Track potty breaks, feeding, medications and exercise for all your dogs
             {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
           </p>
         </div>
-        <Button onClick={handleManualRefresh} className="ml-auto">
+        <Button onClick={handleManualRefresh} className="gap-2">
+          <RefreshCw className="h-4 w-4" />
           Refresh Dogs
         </Button>
       </div>

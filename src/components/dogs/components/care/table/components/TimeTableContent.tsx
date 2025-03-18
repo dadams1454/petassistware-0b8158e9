@@ -1,121 +1,78 @@
 
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getRowColor } from '../utils/tableUtils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Check } from 'lucide-react';
+import DogTimeRow from '../DogTimeRow';
 
 interface TimeTableContentProps {
   sortedDogs: DogCareStatus[];
   timeSlots: string[];
+  activeCategory?: string;
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
-  onCellClick: (dogId: string, dogName: string, timeSlot: string) => void;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCareLogClick: (dogId: string, dogName: string) => void;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({ 
   sortedDogs, 
   timeSlots, 
+  activeCategory = 'pottybreaks',
   hasPottyBreak, 
-  onCellClick 
+  hasCareLogged,
+  onCellClick,
+  onCareLogClick
 }) => {
+  const categoryTitle = {
+    'pottybreaks': 'Potty Breaks',
+    'feeding': 'Feeding',
+    'medications': 'Medications',
+    'exercise': 'Exercise'
+  }[activeCategory] || activeCategory;
+
   return (
     <div className="relative overflow-auto">
       <div className="inline-block min-w-full align-middle">
         <div className="overflow-hidden border border-gray-200 dark:border-gray-700 shadow sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-100 dark:bg-slate-800/60">
-              <tr>
-                <th className="sticky left-0 z-10 bg-gray-100 dark:bg-slate-800/60 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[150px] border-b border-r border-gray-200 dark:border-gray-700">
-                  Dog
+          <Table>
+            <TableHeader className="bg-gray-100 dark:bg-slate-800/60">
+              <TableRow>
+                <th className="sticky left-0 z-10 bg-gray-100 dark:bg-slate-800/60 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[180px] border-b border-r border-gray-200 dark:border-gray-700">
+                  Dog / {categoryTitle}
                 </th>
                 {timeSlots.map((slot) => (
                   <th key={slot} className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-r border-gray-200 dark:border-gray-700">
                     {slot}
                   </th>
                 ))}
-              </tr>
-            </thead>
+              </TableRow>
+            </TableHeader>
             
-            <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
+            <TableBody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
               {sortedDogs.length > 0 ? (
                 sortedDogs.map((dog, index) => (
-                  <tr key={dog.dog_id} className={getRowColor(index)}>
-                    <td className="sticky left-0 z-10 px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 min-w-[150px]"
-                        style={{ backgroundColor: index % 2 === 0 ? 'var(--bg-white, white)' : 'var(--bg-gray-50, #f9fafb)' }}>
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8 mr-2">
-                          {dog.dog_photo ? (
-                            <AspectRatio ratio={1/1} className="rounded-full overflow-hidden">
-                              <img src={dog.dog_photo} alt={dog.dog_name} className="h-full w-full object-cover" />
-                            </AspectRatio>
-                          ) : (
-                            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                              <span className="text-blue-500 dark:text-blue-300 font-semibold">
-                                {dog.dog_name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {dog.dog_name}
-                          </div>
-                          {dog.breed && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {dog.breed}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    
-                    {timeSlots.map((slot) => {
-                      const hasBreak = hasPottyBreak(dog.dog_id, slot);
-                      return (
-                        <TooltipProvider key={`${dog.dog_id}-${slot}`}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <td 
-                                onClick={() => onCellClick(dog.dog_id, dog.dog_name, slot)}
-                                className={`text-center py-0 px-0 whitespace-nowrap text-sm cursor-pointer border border-slate-200 dark:border-slate-700 ${
-                                  hasBreak 
-                                    ? 'bg-green-100 dark:bg-green-900/30' 
-                                    : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                                } transition-colors`}
-                              >
-                                <div className="w-full h-full flex items-center justify-center p-2">
-                                  {hasBreak ? (
-                                    <span className="inline-flex items-center justify-center h-6 w-6 text-green-600 dark:text-green-400 font-bold text-lg">
-                                      <Check className="h-5 w-5" />
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center justify-center h-6 w-6"></span>
-                                  )}
-                                </div>
-                              </td>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{dog.dog_name} - {slot}</p>
-                              <p className="text-xs">
-                                {hasBreak ? 'Click to remove potty break' : 'Click to log potty break'}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      );
-                    })}
-                  </tr>
+                  <DogTimeRow
+                    key={dog.dog_id}
+                    dog={dog}
+                    timeSlots={timeSlots}
+                    rowColor={getRowColor(index)}
+                    activeCategory={activeCategory}
+                    hasPottyBreak={hasPottyBreak}
+                    hasCareLogged={hasCareLogged}
+                    onCellClick={onCellClick}
+                    onCareLogClick={onCareLogClick}
+                  />
                 ))
               ) : (
-                <tr>
+                <TableRow>
                   <td colSpan={timeSlots.length + 1} className="px-6 py-8 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
                     No dogs available
                   </td>
-                </tr>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
