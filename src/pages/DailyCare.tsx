@@ -1,21 +1,26 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Clock } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 
 const DailyCare: React.FC = () => {
   const { loading, dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
-  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [lastAutoRefresh, setLastAutoRefresh] = useState<Date>(new Date());
+  
+  // Autorefresh every 15 minutes
+  const AUTO_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
 
   // Manually trigger refresh function
   const handleManualRefresh = () => {
     console.log('🔄 Manual refresh triggered in DailyCare page');
     setRefreshTrigger(prev => prev + 1);
+    setLastAutoRefresh(new Date());
     // Force fetch with refresh flag
     fetchAllDogsWithCareStatus(new Date(), true)
       .then(dogs => {
@@ -25,6 +30,26 @@ const DailyCare: React.FC = () => {
         console.error('❌ Error during manual refresh:', error);
       });
   };
+
+  // Set up auto-refresh
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      console.log('🔄 Auto refresh triggered');
+      setRefreshTrigger(prev => prev + 1);
+      setLastAutoRefresh(new Date());
+      
+      fetchAllDogsWithCareStatus(new Date(), true)
+        .then(dogs => {
+          console.log(`✅ Auto refreshed: ${dogs.length} dogs loaded`);
+        })
+        .catch(error => {
+          console.error('❌ Error during auto refresh:', error);
+        });
+    }, AUTO_REFRESH_INTERVAL);
+    
+    // Clean up on unmount
+    return () => clearInterval(intervalId);
+  }, [fetchAllDogsWithCareStatus]);
 
   // Fetch all dogs on component mount, when fetchAllDogsWithCareStatus changes,
   // or when refreshTrigger is updated
@@ -53,9 +78,13 @@ const DailyCare: React.FC = () => {
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Daily Care Time Table
           </h1>
-          <p className="mt-1 text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-slate-500 dark:text-slate-400 flex items-center">
             Track potty breaks, feeding, medications and exercise for all your dogs
             {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
+            <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
+              <Clock className="h-3 w-3" />
+              Auto-refreshes every 15 minutes
+            </span>
           </p>
         </div>
         <Button onClick={handleManualRefresh} className="gap-2">

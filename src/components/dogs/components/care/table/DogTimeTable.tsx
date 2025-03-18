@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeTableHeader from './components/TimeTableHeader';
@@ -9,12 +9,7 @@ import usePottyBreakTable from './hooks/usePottyBreakTable';
 import SpecialConditionsAlert from './components/SpecialConditionsAlert';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CareLogForm from '../CareLogForm';
-
-// Define time slots for the Excel-like grid
-export const timeSlots = [
-  '6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM'
-];
+import { generateTimeSlots } from './dogGroupColors';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -26,6 +21,39 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [selectedDogName, setSelectedDogName] = useState<string>('');
   const [careDialogOpen, setCareDialogOpen] = useState(false);
+  const [timeSlots, setTimeSlots] = useState<string[]>(generateTimeSlots());
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  
+  // Function to refresh time slots and data
+  const refreshTimeTable = () => {
+    const now = new Date();
+    setTimeSlots(generateTimeSlots(now));
+    setLastRefreshTime(now);
+    if (handleRefresh) {
+      handleRefresh();
+    }
+  };
+  
+  // Auto-refresh logic - check every minute if the hour has changed
+  useEffect(() => {
+    const checkHourChange = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const lastHour = lastRefreshTime.getHours();
+      
+      // If the hour has changed, refresh the time slots
+      if (currentHour !== lastHour) {
+        console.log('Hour changed, refreshing time table');
+        refreshTimeTable();
+      }
+    };
+    
+    // Set up interval to check for hour changes (every minute)
+    const intervalId = setInterval(checkHourChange, 60000);
+    
+    // Clean up on unmount
+    return () => clearInterval(intervalId);
+  }, [lastRefreshTime]);
   
   const {
     currentDate,
@@ -46,11 +74,13 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   
   const handleCareLogSuccess = () => {
     setCareDialogOpen(false);
-    if (onRefresh) {
-      onRefresh();
-    }
-    handleRefresh();
+    refreshTimeTable();
   };
+
+  // Initial load
+  useEffect(() => {
+    refreshTimeTable();
+  }, []);
 
   return (
     <Card className="shadow-md overflow-hidden">
@@ -58,14 +88,20 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         dogCount={sortedDogs.length}
         currentDate={currentDate}
         isLoading={isLoading}
-        onRefresh={handleRefresh}
+        onRefresh={refreshTimeTable}
+        lastRefreshTime={lastRefreshTime}
       />
       
       <CardContent className="p-0">
         {/* For now, we're only using pottybreaks, so removed tabs */}
         <div className="px-4 py-2 border-b">
           <h3 className="text-lg font-medium">Potty Breaks</h3>
-          <p className="text-sm text-muted-foreground">Click on a cell to log or remove a potty break</p>
+          <p className="text-sm text-muted-foreground">
+            Click on a cell to log or remove a potty break. 
+            <span className="ml-1 font-medium">
+              Showing 8-hour window from {timeSlots[0]} to {timeSlots[timeSlots.length - 1]}
+            </span>
+          </p>
         </div>
         
         {/* Special conditions alert */}
@@ -80,6 +116,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
           onCellClick={handleCellClick}
           onCareLogClick={handleCareLogClick}
           activeCategory={activeCategory}
+          currentHour={new Date().getHours()}
         />
         
         <TimeTableFooter />

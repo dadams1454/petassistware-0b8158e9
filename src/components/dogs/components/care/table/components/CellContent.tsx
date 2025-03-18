@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { Check } from 'lucide-react';
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { DogFlag } from '@/types/dailyCare';
-import { useCellStyles } from './useCellStyles';
+import { Check } from 'lucide-react';
 
 interface CellContentProps {
   dogName: string;
@@ -11,7 +9,8 @@ interface CellContentProps {
   category: string;
   hasPottyBreak: boolean;
   hasCareLogged: boolean;
-  flags: DogFlag[];
+  flags?: DogFlag[];
+  isCurrentHour?: boolean;
 }
 
 const CellContent: React.FC<CellContentProps> = ({
@@ -20,39 +19,27 @@ const CellContent: React.FC<CellContentProps> = ({
   category,
   hasPottyBreak,
   hasCareLogged,
-  flags
+  flags = [],
+  isCurrentHour = false
 }) => {
-  // Filter out special_attention flags for cell content  
-  const { isPottyCategory } = useCellStyles({ 
-    category, 
-    hasPottyBreak,
-    hasCareLogged,
-    flags 
-  });
+  // For now, primarily using pottyBreak status
+  if (hasPottyBreak || hasCareLogged) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Check className={`h-4 w-4 ${isCurrentHour ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`} />
+      </div>
+    );
+  }
   
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center justify-center h-full w-full">
-            {hasPottyBreak ? (
-              <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
-            ) : (
-              <span className="h-5 w-5 flex items-center justify-center">&nbsp;</span>
-            )}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="text-sm font-medium">{dogName}</p>
-          <p className="text-xs">
-            {hasPottyBreak ? 
-              `Potty break at ${timeSlot}` : 
-              `Click to log potty break at ${timeSlot}`}
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+  if (isCurrentHour) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="h-1.5 w-1.5 rounded-full bg-blue-400 dark:bg-blue-600"></div>
+      </div>
+    );
+  }
+  
+  return null;
 };
 
 export default CellContent;

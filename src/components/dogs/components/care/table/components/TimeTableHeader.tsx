@@ -1,52 +1,51 @@
 
 import React from 'react';
 import { CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Dog, RefreshCw } from 'lucide-react';
-import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { RefreshCw, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface TimeTableHeaderProps {
   dogCount: number;
   currentDate: Date;
   isLoading: boolean;
   onRefresh: () => void;
+  lastRefreshTime?: Date;
 }
 
 const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({ 
   dogCount, 
   currentDate, 
   isLoading, 
-  onRefresh 
+  onRefresh,
+  lastRefreshTime
 }) => {
   return (
-    <CardHeader className="pb-2">
-      <div className="flex justify-between items-center">
+    <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
+      <div>
         <CardTitle className="text-xl flex items-center">
-          <Dog className="h-5 w-5 mr-2" />
-          Dog Potty Break Log
-          <span className="ml-2 text-sm font-normal text-muted-foreground">
-            ({dogCount} dogs)
-          </span>
+          <Calendar className="h-5 w-5 mr-2" />
+          Daily Care Time Table
         </CardTitle>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-2" />
-            <span className="text-sm font-medium">
-              {format(currentDate, 'MM/dd/yyyy')}
+        <p className="text-sm text-muted-foreground mt-1">
+          {dogCount} dogs • {format(currentDate, 'EEEE, MMMM d, yyyy')}
+          {lastRefreshTime && (
+            <span className="ml-2 text-xs text-muted-foreground">
+              Last updated: {format(lastRefreshTime, 'h:mm a')}
             </span>
-          </div>
-          <Button 
-            size="sm"
-            variant="outline"
-            onClick={onRefresh}
-            disabled={isLoading}
-            className="flex items-center gap-1"
-          >
-            <RefreshCw className="h-3 w-3" />
-            Refresh
-          </Button>
-        </div>
+          )}
+        </p>
       </div>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={onRefresh}
+        disabled={isLoading}
+        className="gap-2"
+      >
+        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        {isLoading ? 'Refreshing...' : 'Refresh'}
+      </Button>
     </CardHeader>
   );
 };

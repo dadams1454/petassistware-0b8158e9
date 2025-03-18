@@ -13,6 +13,7 @@ interface TimeTableContentProps {
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
+  currentHour?: number;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({ 
@@ -22,7 +23,8 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   hasPottyBreak, 
   hasCareLogged,
   onCellClick,
-  onCareLogClick
+  onCareLogClick,
+  currentHour
 }) => {
   // Create a stable copy of dog data to prevent reference issues
   const preparedDogs = useMemo(() => {
@@ -39,6 +41,22 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
     'exercise': 'Exercise'
   }[activeCategory] || activeCategory;
 
+  // Determine if a time slot represents the current hour
+  const isCurrentHour = (timeSlot: string) => {
+    if (currentHour === undefined) return false;
+    
+    const hour = parseInt(timeSlot.split(':')[0]);
+    const isPM = timeSlot.includes('PM');
+    const is12Hour = hour === 12;
+    
+    // Convert slot to 24-hour format
+    let slot24Hour = hour;
+    if (isPM && !is12Hour) slot24Hour += 12;
+    if (!isPM && is12Hour) slot24Hour = 0;
+    
+    return slot24Hour === currentHour;
+  };
+
   return (
     <div className="relative overflow-auto">
       <div className="inline-block min-w-full align-middle">
@@ -50,8 +68,18 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                   Dog / {categoryTitle}
                 </th>
                 {timeSlots.map((slot) => (
-                  <th key={slot} className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-r border-gray-200 dark:border-gray-700">
+                  <th 
+                    key={slot} 
+                    className={`px-3 py-3 text-center text-xs font-medium uppercase tracking-wider border-b border-r border-gray-200 dark:border-gray-700 ${
+                      isCurrentHour(slot) 
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' 
+                        : 'text-gray-500 dark:text-gray-300'
+                    }`}
+                  >
                     {slot}
+                    {isCurrentHour(slot) && (
+                      <div className="mt-1 h-1 w-full bg-blue-400 dark:bg-blue-600 rounded-full"></div>
+                    )}
                   </th>
                 ))}
               </TableRow>
@@ -70,6 +98,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                     hasCareLogged={hasCareLogged}
                     onCellClick={onCellClick}
                     onCareLogClick={onCareLogClick}
+                    currentHour={currentHour}
                   />
                 ))
               ) : (

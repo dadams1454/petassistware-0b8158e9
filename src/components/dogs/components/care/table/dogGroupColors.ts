@@ -1,10 +1,26 @@
 
-// Updated time slots to run from 5am to midnight as requested
-export const timeSlots = [
-  '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM',
-  '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM',
-  '8 PM', '9 PM', '10 PM', '11 PM', '12 AM'
-];
+// Function to generate time slots dynamically based on current time
+export const generateTimeSlots = (currentTime = new Date()): string[] => {
+  const slots: string[] = [];
+  const currentHour = currentTime.getHours();
+  
+  // Start 6 hours before current hour (showing 8 hours total including current hour)
+  let startHour = currentHour - 6;
+  
+  // Generate 8 hours (current hour + 1 hour after + 6 hours before)
+  for (let i = 0; i < 8; i++) {
+    // Normalize hour (handle wrapping around 24-hour clock)
+    const hour = (startHour + i + 24) % 24;
+    
+    // Format hour to 12-hour format with AM/PM
+    const formattedHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    
+    slots.push(`${formattedHour}:00 ${period}`);
+  }
+  
+  return slots;
+};
 
 // Function to determine row color based on index
 export const getDogRowColor = (index: number): string => {
