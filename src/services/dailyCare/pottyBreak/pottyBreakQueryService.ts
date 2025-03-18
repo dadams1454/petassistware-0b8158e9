@@ -1,134 +1,114 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfDay, endOfDay } from 'date-fns';
+import { PottyBreak, PottyBreakDog } from './types';
 
-// Get all potty breaks by dog ID and time slot for a given day
-export const getPottyBreaksByDogAndTimeSlot = async (date: Date): Promise<Record<string, string[]>> => {
-  const startTime = startOfDay(date);
-  const endTime = endOfDay(date);
-  const dateStr = format(date, 'yyyy-MM-dd');
-  
+/**
+ * Get all potty breaks for a specific date
+ */
+export const getPottyBreaksByDate = async (date: string): Promise<PottyBreak[]> => {
+  const { data, error } = await supabase
+    .from('potty_breaks')
+    .select('*, potty_break_dogs(dog_id)')
+    .eq('date', date)
+    .order('time', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching potty breaks:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+/**
+ * Get all potty breaks for a specific dog on a specific date
+ */
+export const getPottyBreaksByDogAndDate = async (dogId: string, date: string): Promise<PottyBreak[]> => {
+  const { data, error } = await supabase
+    .from('potty_break_dogs')
+    .select('potty_breaks:potty_break_id(*)')
+    .eq('dog_id', dogId)
+    .eq('potty_breaks.date', date)
+    .order('potty_breaks.time', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching potty breaks for dog:', error);
+    throw error;
+  }
+
+  // Transform the data to return just the potty breaks
+  return data?.map(item => item.potty_breaks) || [];
+};
+
+/**
+ * Get all dogs that had a potty break at a specific time and date
+ */
+export const getDogsByPottyBreakTimeAndDate = async (time: string, date: string): Promise<PottyBreakDog[]> => {
+  const { data, error } = await supabase
+    .from('potty_break_dogs')
+    .select('*, potty_breaks:potty_break_id(*)')
+    .eq('potty_breaks.time', time)
+    .eq('potty_breaks.date', date);
+
+  if (error) {
+    console.error('Error fetching dogs by potty break time:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+/**
+ * Get all potty breaks for a specific dog by time slot
+ */
+export const getPottyBreaksByDogAndTimeSlot = async (dogId: string, timeSlot: string, date: string): Promise<boolean> => {
   try {
-    // First check if we have saved potty break data in local storage
-    const storedBreaks = localStorage.getItem(`potty_breaks_${dateStr}`);
-    if (storedBreaks) {
-      console.log(`Loaded potty breaks from local storage for ${dateStr}`);
-      return JSON.parse(storedBreaks);
-    }
+    console.log('Fetching potty breaks for dog:', dogId, 'at time:', timeSlot, 'on date:', date);
     
-    // If not in local storage, fetch from database
-    console.log(`Fetching potty breaks from database for ${dateStr}`);
+    // Fix: Change 'session' to 'session_id' in the query
     const { data, error } = await supabase
       .from('potty_break_dogs')
-      .select(`
-        dog_id,
-        session:session_id(
-          session_time,
-          notes
-        )
-      `)
-      .gte('session:session_id.session_time', startTime.toISOString())
-      .lte('session:session_id.session_time', endTime.toISOString());
+      .select('potty_breaks:potty_break_id(*)')
+      .eq('dog_id', dogId)
+      .eq('potty_breaks.time', timeSlot)
+      .eq('potty_breaks.date', date);
 
     if (error) {
       console.error('Error fetching potty breaks by dog and time slot:', error);
       throw error;
     }
 
-    // Organize data by dog and time slot
-    const result: Record<string, string[]> = {};
-    
-    if (data && data.length > 0) {
-      data.forEach(item => {
-        if (!item.session) return;
-        
-        const dogId = item.dog_id;
-        // Extract time from session_time or from notes (which might contain the time slot)
-        const sessionDate = new Date(item.session.session_time);
-        const timeSlot = extractTimeSlotFromNote(item.session.notes) || 
-                        formatTimeSlot(sessionDate.getHours(), sessionDate.getMinutes());
-        
-        if (!result[dogId]) {
-          result[dogId] = [];
-        }
-        
-        // Add the time slot if it doesn't already exist
-        if (!result[dogId].includes(timeSlot)) {
-          result[dogId].push(timeSlot);
-        }
-      });
-    }
-    
-    // Save to local storage for future quick access
-    localStorage.setItem(`potty_breaks_${dateStr}`, JSON.stringify(result));
-    
-    return result;
+    console.log('Retrieved potty breaks:', data);
+    return data && data.length > 0;
   } catch (error) {
     console.error('Error in getPottyBreaksByDogAndTimeSlot:', error);
-    return {};
+    // Return false in case of error to avoid breaking the UI
+    return false;
   }
 };
 
-// Save potty breaks by dog and time slot for a given day
-export const savePottyBreaksByDogAndTimeSlot = async (date: Date, data: Record<string, string[]>): Promise<void> => {
-  const dateStr = format(date, 'yyyy-MM-dd');
-  try {
-    // Save to local storage for persistence
-    localStorage.setItem(`potty_breaks_${dateStr}`, JSON.stringify(data));
-    console.log(`Saved potty breaks to local storage for ${dateStr}`, data);
-    
-    // No need to save to database here as individual potty breaks are logged via logDogPottyBreak
-    // This function primarily ensures the UI state is preserved
-  } catch (error) {
-    console.error('Error saving potty breaks:', error);
-    throw error;
-  }
+/**
+ * Get all potty breaks for the current day
+ */
+export const getCurrentDayPottyBreaks = async (): Promise<PottyBreak[]> => {
+  const today = new Date().toISOString().split('T')[0];
+  return getPottyBreaksByDate(today);
 };
 
-// Helper to extract time slot from note text (e.g., "Potty break at 8:00 AM")
-const extractTimeSlotFromNote = (note: string | null): string | null => {
-  if (!note) return null;
-  
-  // Look for patterns like "at 8:00 AM" or similar
-  const match = note.match(/at\s+(\d+:\d+\s*[AP]M)/i);
-  if (match && match[1]) {
-    return match[1].trim();
-  }
-  return null;
-};
-
-// Format hours and minutes to a time slot string (e.g., "8:00 AM")
-const formatTimeSlot = (hours: number, minutes: number): string => {
-  const period = hours >= 12 ? 'PM' : 'AM';
-  const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
-  const formattedMinutes = minutes.toString().padStart(2, '0');
-  return `${formattedHours}:${formattedMinutes} ${period}`;
-};
-
-// Get potty breaks for a specific dog
-export const getDogPottyBreaks = async (dogId: string, date: Date): Promise<any[]> => {
-  const startTime = startOfDay(date);
-  const endTime = endOfDay(date);
-  
+/**
+ * Get a specific potty break by ID
+ */
+export const getPottyBreakById = async (id: string): Promise<PottyBreak | null> => {
   const { data, error } = await supabase
-    .from('potty_break_dogs')
-    .select(`
-      id,
-      session:session_id(
-        id,
-        session_time,
-        notes
-      )
-    `)
-    .eq('dog_id', dogId)
-    .gte('session:session_id.session_time', startTime.toISOString())
-    .lte('session:session_id.session_time', endTime.toISOString())
-    .order('session:session_id.session_time', { ascending: false });
+    .from('potty_breaks')
+    .select('*')
+    .eq('id', id)
+    .single();
 
   if (error) {
-    console.error('Error fetching dog potty breaks:', error);
+    console.error('Error fetching potty break:', error);
     throw error;
   }
 
-  return data || [];
+  return data;
 };
