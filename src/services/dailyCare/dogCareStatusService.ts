@@ -116,7 +116,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         dog_photo: dog.photo_url || '',
         breed: dog.breed || 'Unknown',
         color: dog.color || 'Unknown',
-        sex: dog.gender || 'Unknown',
+        sex: dog.gender || 'Unknown', // Map gender from database to sex in DogCareStatus
         last_care: null, // We're not loading care data for simplicity
         flags: flags
       };
