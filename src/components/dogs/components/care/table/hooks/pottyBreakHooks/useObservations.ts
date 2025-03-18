@@ -31,12 +31,14 @@ export const useObservations = (dogs: DogCareStatus[]) => {
     setIsLoading(true);
     try {
       // Insert the observation into the database
+      // Using explicit typing to ensure compatibility with Supabase schema
       const { error } = await supabase
-        .from('dog_observations')
+        .from('daily_care_logs') // Use the existing table for care logs
         .insert({
           dog_id: dogId,
-          observation,
-          observation_type: observationType,
+          category: 'observation',
+          task_name: observationType,
+          notes: observation,
           created_by: (await supabase.auth.getUser()).data.user?.id
         });
 
