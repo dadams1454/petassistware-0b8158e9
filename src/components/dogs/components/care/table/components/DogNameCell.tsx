@@ -1,172 +1,50 @@
 
 import React from 'react';
 import { TableCell } from '@/components/ui/table';
-import { AlertCircle, Dog, Heart, Flame, PlusCircle, MessageCircle } from 'lucide-react';
-import { DogCareStatus, DogFlag } from '@/types/dailyCare';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useNavigate } from 'react-router-dom';
+import { DogCareStatus } from '@/types/dailyCare';
+import DogAvatar from '../DogAvatar';
+import { getGenderColor } from '@/components/dogs/utils/dogFormUtils';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
   onCareLogClick: () => void;
   activeCategory: string;
-  hasObservation?: boolean;
 }
 
 const DogNameCell: React.FC<DogNameCellProps> = ({ 
   dog, 
   onCareLogClick, 
-  activeCategory,
-  hasObservation = false 
+  activeCategory 
 }) => {
-  const navigate = useNavigate();
-  
-  // Determine if dog is female based on gender field
-  const isFemale = dog.sex?.toLowerCase() === 'female';
-  
-  const genderColor = isFemale ? 'text-pink-500 dark:text-pink-400' : 'text-blue-500 dark:text-blue-400';
-  
-  // Check for special conditions
-  const isInHeat = dog.flags?.some(flag => flag.type === 'in_heat');
-  const isPregnant = dog.flags?.some(flag => 
-    flag.type === 'special_attention' && 
-    flag.value?.toLowerCase().includes('pregnant')
-  );
-  const hasSpecialAttention = dog.flags?.some(flag => 
-    flag.type === 'special_attention' && 
-    !flag.value?.toLowerCase().includes('pregnant')
-  );
-  const hasIncompatibility = dog.flags?.some(flag => flag.type === 'incompatible');
-  
-  // Get special attention value for tooltip
-  const specialAttentionValue = dog.flags?.find(flag => 
-    flag.type === 'special_attention' && 
-    !flag.value?.toLowerCase().includes('pregnant')
-  )?.value || "Needs special attention";
-
-  // Get category-specific label
-  const actionLabel = {
-    'pottybreaks': 'Log Break',
-    'feeding': 'Log Meal',
-    'medications': 'Log Meds',
-    'exercise': 'Log Exercise'
-  }[activeCategory] || 'Log Care';
-  
-  // Handle navigation to dog detail page
-  const handleNavigateToDog = () => {
-    navigate(`/dogs/${dog.dog_id}`);
-  };
+  const genderColor = getGenderColor(dog.gender);
   
   return (
-    <TableCell className="font-medium sticky left-0 z-10 border-r border-slate-200 bg-white dark:bg-slate-900">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          {dog.dog_photo ? (
-            <img 
-              src={dog.dog_photo} 
-              alt={dog.dog_name} 
-              onClick={handleNavigateToDog}
-              className={`w-8 h-8 rounded-full object-cover border-2 ${isFemale ? 'border-pink-300' : 'border-blue-300'} cursor-pointer hover:opacity-80 transition-opacity`}
-            />
-          ) : (
-            <div 
-              onClick={handleNavigateToDog}
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${isFemale ? 'bg-pink-100' : 'bg-blue-100'} cursor-pointer hover:opacity-80 transition-opacity`}
-            >
-              <Dog className={`h-4 w-4 ${genderColor}`} />
-            </div>
-          )}
-          <div className="flex flex-col">
-            <div className="flex items-center">
-              <span 
-                onClick={handleNavigateToDog}
-                className={`text-sm font-medium ${genderColor} cursor-pointer hover:underline`}
-              >
-                {dog.dog_name}
-              </span>
-              
-              {/* Special condition indicators */}
-              {isPregnant && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Heart className="h-4 w-4 ml-1 text-pink-500 fill-pink-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Pregnant</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              
-              {isInHeat && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Flame className="h-4 w-4 ml-1 text-red-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>In Heat</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              
-              {hasIncompatibility && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="ml-1 text-amber-500">⚠️</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Incompatible with other dogs</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              
-              {hasSpecialAttention && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertCircle className="h-4 w-4 ml-1 text-blue-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{specialAttentionValue}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              
-              {hasObservation && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <MessageCircle className="h-4 w-4 ml-1 text-amber-600 fill-amber-100" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Has observations (right-click on any cell to view)</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-            <span className="text-xs text-gray-500">
-              {dog.breed} {dog.color ? `• ${dog.color}` : ''}
-            </span>
-          </div>
+    <TableCell 
+      className="whitespace-nowrap sticky left-0 z-10 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700"
+    >
+      <div className="flex items-center gap-3 max-w-[160px]">
+        <div 
+          className={`w-1 h-10 rounded-full ${genderColor}`}
+          aria-label={`${dog.gender === 'male' ? 'Male' : 'Female'} dog indicator`}
+        ></div>
+        
+        <div className="flex-shrink-0 h-10 w-10">
+          <DogAvatar dog={dog} />
         </div>
         
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onCareLogClick}
-          className="ml-2 flex items-center text-xs px-2 py-1 h-7"
-        >
-          <PlusCircle className="h-3 w-3 mr-1" />
-          {actionLabel}
-        </Button>
+        <div className="overflow-hidden">
+          <div className="font-medium truncate max-w-[100px]" title={dog.dog_name}>
+            {dog.dog_name}
+          </div>
+          
+          <button
+            onClick={onCareLogClick}
+            className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[100px]"
+            title={`Log ${activeCategory} for ${dog.dog_name}`}
+          >
+            Log {activeCategory === 'pottybreaks' ? 'break' : activeCategory}
+          </button>
+        </div>
       </div>
     </TableCell>
   );

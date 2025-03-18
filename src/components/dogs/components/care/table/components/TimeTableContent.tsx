@@ -14,13 +14,6 @@ interface TimeTableContentProps {
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   currentHour?: number;
-  hasObservation?: (dogId: string) => boolean;
-  onAddObservation?: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => Promise<void>;
-  observations?: Record<string, Array<{
-    observation: string;
-    observation_type: 'accident' | 'heat' | 'behavior' | 'other';
-    created_at: string;
-  }>>;
   isMobile?: boolean;
 }
 
@@ -33,9 +26,6 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onCellClick,
   onCareLogClick,
   currentHour,
-  hasObservation,
-  onAddObservation,
-  observations,
   isMobile = false
 }) => {
   // Create a stable copy of dog data to prevent reference issues
@@ -111,9 +101,6 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                     onCellClick={onCellClick}
                     onCareLogClick={onCareLogClick}
                     currentHour={currentHour}
-                    hasObservation={hasObservation}
-                    onAddObservation={onAddObservation}
-                    observations={observations}
                     isMobile={isMobile}
                   />
                 ))

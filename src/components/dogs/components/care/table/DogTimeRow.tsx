@@ -15,13 +15,6 @@ interface DogTimeRowProps {
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   currentHour?: number;
-  hasObservation?: (dogId: string) => boolean;
-  onAddObservation?: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => Promise<void>;
-  observations?: Record<string, Array<{
-    observation: string;
-    observation_type: 'accident' | 'heat' | 'behavior' | 'other';
-    created_at: string;
-  }>>;
   isMobile?: boolean;
 }
 
@@ -36,17 +29,12 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   onCellClick,
   onCareLogClick,
   currentHour,
-  hasObservation = () => false,
-  onAddObservation,
-  observations = {},
   isMobile = false
 }) => {
   // Create stable copies of important data to prevent reference issues
   const dogId = dog.dog_id;
   const dogName = dog.dog_name;
   const dogFlags = dog.flags || [];
-  const dogHasObservation = hasObservation(dogId);
-  const dogObservations = observations[dogId] || [];
   
   // Helper function to determine if a time slot is the current hour
   const isCurrentHourSlot = (timeSlot: string) => {
@@ -71,7 +59,6 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         dog={dog} 
         onCareLogClick={() => onCareLogClick(dogId, dogName)} 
         activeCategory={activeCategory}
-        hasObservation={dogHasObservation}
       />
       
       {/* Time slot cells */}
@@ -93,9 +80,6 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             onClick={() => onCellClick(dogId, dogName, timeSlot, activeCategory)}
             flags={dogFlags}
             isCurrentHour={isCurrentTimeSlot}
-            hasObservation={dogHasObservation}
-            onAddObservation={onAddObservation}
-            existingObservations={dogObservations}
           />
         );
       })}
