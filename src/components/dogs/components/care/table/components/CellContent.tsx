@@ -2,7 +2,7 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 
-interface CellContentProps {
+export interface CellContentProps {
   dogName: string;
   timeSlot: string;
   category: string;

@@ -106,7 +106,6 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
           category={category}
           hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
-          flags={dogFlags}
           isCurrentHour={isCurrentHour}
         />
       </div>
