@@ -3,12 +3,7 @@ import React from 'react';
 import { Tables } from '@/integrations/supabase/types';
 import { Form } from "@/components/ui/form";
 import { useCustomerForm } from './hooks/useCustomerForm';
-import PersonalInfoFields from './form-fields/PersonalInfoFields';
-import AddressField from './form-fields/AddressField';
-import CustomerTypeFields from './form-fields/CustomerTypeFields';
-import LitterSelectionFields from './form-fields/LitterSelectionFields';
-import InterestedPuppyField from './form-fields/InterestedPuppyField';
-import NotesField from './form-fields/NotesField';
+import FormSections from './form-sections/FormSections';
 import FormActions from './form-fields/FormActions';
 
 type Customer = Tables<'customers'> & {
@@ -40,12 +35,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <PersonalInfoFields />
-        <AddressField />
-        <CustomerTypeFields />
-        <LitterSelectionFields />
-        <InterestedPuppyField />
-        <NotesField />
+        <FormSections />
         <FormActions 
           onCancel={onCancel} 
           isLoading={isLoading} 
