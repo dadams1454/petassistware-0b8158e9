@@ -3,6 +3,8 @@ import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { getRowColor } from '../utils/tableUtils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Check } from 'lucide-react';
 
 interface TimeTableContentProps {
   sortedDogs: DogCareStatus[];
@@ -71,25 +73,36 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                     {timeSlots.map((slot) => {
                       const hasBreak = hasPottyBreak(dog.dog_id, slot);
                       return (
-                        <td 
-                          key={`${dog.dog_id}-${slot}`}
-                          onClick={() => onCellClick(dog.dog_id, dog.dog_name, slot)}
-                          className={`text-center py-0 px-0 whitespace-nowrap text-sm cursor-pointer border border-slate-200 dark:border-slate-700 ${
-                            hasBreak 
-                              ? 'bg-green-100 dark:bg-green-900/30' 
-                              : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                          } transition-colors`}
-                        >
-                          <div className="w-full h-full flex items-center justify-center p-2">
-                            {hasBreak ? (
-                              <span className="inline-flex items-center justify-center h-6 w-6 text-green-600 dark:text-green-400 font-bold text-lg">
-                                ✓
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center justify-center h-6 w-6"></span>
-                            )}
-                          </div>
-                        </td>
+                        <TooltipProvider key={`${dog.dog_id}-${slot}`}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <td 
+                                onClick={() => onCellClick(dog.dog_id, dog.dog_name, slot)}
+                                className={`text-center py-0 px-0 whitespace-nowrap text-sm cursor-pointer border border-slate-200 dark:border-slate-700 ${
+                                  hasBreak 
+                                    ? 'bg-green-100 dark:bg-green-900/30' 
+                                    : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                } transition-colors`}
+                              >
+                                <div className="w-full h-full flex items-center justify-center p-2">
+                                  {hasBreak ? (
+                                    <span className="inline-flex items-center justify-center h-6 w-6 text-green-600 dark:text-green-400 font-bold text-lg">
+                                      <Check className="h-5 w-5" />
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center justify-center h-6 w-6"></span>
+                                  )}
+                                </div>
+                              </td>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{dog.dog_name} - {slot}</p>
+                              <p className="text-xs">
+                                {hasBreak ? 'Click to remove potty break' : 'Click to log potty break'}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       );
                     })}
                   </tr>
