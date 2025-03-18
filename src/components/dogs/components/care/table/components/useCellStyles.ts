@@ -27,13 +27,17 @@ export const useCellStyles = ({
       classes += ' bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700';
     }
     
-    // Special styles for cells with flags
+    // Special styles for cells with flags - use individual checks to prevent false positives
     if (flags.some(flag => flag.type === 'in_heat')) {
       classes += ' ring-2 ring-red-300 dark:ring-red-700';
     }
     
     if (flags.some(flag => flag.type === 'pregnant')) {
       classes += ' ring-2 ring-purple-300 dark:ring-purple-700';
+    }
+    
+    if (flags.some(flag => flag.type === 'special_attention')) {
+      classes += ' ring-1 ring-blue-300 dark:ring-blue-700';
     }
     
     return classes;

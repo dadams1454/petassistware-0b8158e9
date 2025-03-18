@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { TableCell } from '@/components/ui/table';
 import { DogFlag } from '@/types/dailyCare';
 import CellContent from './components/CellContent';
@@ -16,7 +16,8 @@ interface TimeSlotCellProps {
   flags?: DogFlag[];
 }
 
-const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
+// Use memo to prevent unnecessary re-renders that could cause flag flickering
+const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   dogId,
   dogName,
   timeSlot,
@@ -26,13 +27,15 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   onClick,
   flags = []
 }) => {
-  // Use the flags directly rather than filtering them
-  // This preserves the association between dogs and their flags
+  // Create a stable copy of flags to prevent reference issues
+  // This helps ensure each dog's flags stay with that dog
+  const dogFlags = [...flags];
+  
   const { cellClassNames } = useCellStyles({
     category,
     hasPottyBreak,
     hasCareLogged,
-    flags
+    flags: dogFlags
   });
   
   const cellIdentifier = `${dogId}-${timeSlot}-${category}`;
@@ -48,7 +51,8 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
       onClick={onClick}
       title={`${dogName} - ${timeSlot}`}
       data-cell-id={cellIdentifier}
-      data-dog-id={dogId} // Add data attribute for dog ID to help identify cell ownership
+      data-dog-id={dogId}
+      data-flags-count={dogFlags.length}
     >
       <div className="w-full h-full p-1">
         <CellContent 
@@ -57,11 +61,14 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
           category={category}
           hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
-          flags={flags}
+          flags={dogFlags}
         />
       </div>
     </TableCell>
   );
-};
+});
+
+// Add display name for better debugging
+TimeSlotCell.displayName = 'TimeSlotCell';
 
 export default TimeSlotCell;

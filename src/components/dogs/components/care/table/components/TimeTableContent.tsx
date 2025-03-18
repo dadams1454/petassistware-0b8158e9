@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getRowColor } from '../utils/tableUtils';
@@ -24,6 +24,14 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onCellClick,
   onCareLogClick
 }) => {
+  // Create a stable copy of dog data to prevent reference issues
+  const preparedDogs = useMemo(() => {
+    return sortedDogs.map(dog => ({
+      ...dog,
+      flags: dog.flags ? [...dog.flags].map(flag => ({...flag})) : []
+    }));
+  }, [sortedDogs]);
+  
   const categoryTitle = {
     'pottybreaks': 'Potty Breaks',
     'feeding': 'Feeding',
@@ -50,10 +58,10 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
             </TableHeader>
             
             <TableBody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {sortedDogs.length > 0 ? (
-                sortedDogs.map((dog, index) => (
+              {preparedDogs.length > 0 ? (
+                preparedDogs.map((dog, index) => (
                   <DogTimeRow
-                    key={dog.dog_id}
+                    key={`${dog.dog_id}-${activeCategory}-row`}
                     dog={dog}
                     timeSlots={timeSlots}
                     rowColor={getRowColor(index)}

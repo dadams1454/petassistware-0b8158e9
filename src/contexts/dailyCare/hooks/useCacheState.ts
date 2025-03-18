@@ -1,3 +1,4 @@
+
 import { useRef } from 'react';
 import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 
@@ -17,6 +18,17 @@ export const useCacheState = () => {
   const CACHE_EXPIRATION = 5 * 60 * 1000;
   
   /**
+   * Creates a deep copy of dog care status to ensure no reference issues
+   */
+  const deepCloneDogStatus = (dogs: DogCareStatus[]): DogCareStatus[] => {
+    return dogs.map(dog => ({
+      ...dog,
+      // Ensure each dog gets its own copy of flags
+      flags: dog.flags ? [...dog.flags].map(flag => ({...flag})) : []
+    }));
+  };
+  
+  /**
    * Deduplicates special attention flags on a dog object
    * while preserving the association between dogs and their flags
    */
@@ -34,7 +46,7 @@ export const useCacheState = () => {
         if (!flagsByType[flag.type]) {
           flagsByType[flag.type] = [];
         }
-        flagsByType[flag.type].push(flag);
+        flagsByType[flag.type].push({...flag}); // Create a copy of each flag
       });
       
       // Create a new array of deduplicated flags
@@ -44,11 +56,11 @@ export const useCacheState = () => {
       Object.keys(flagsByType).forEach(flagType => {
         // For special_attention, only keep the first one
         if (flagType === 'special_attention' && flagsByType[flagType].length > 0) {
-          deduplicatedFlags.push(flagsByType[flagType][0]);
+          deduplicatedFlags.push({...flagsByType[flagType][0]});
         } 
         // For all other flag types, keep all flags (or implement specific deduplication logic)
         else {
-          deduplicatedFlags.push(...flagsByType[flagType]);
+          deduplicatedFlags.push(...flagsByType[flagType].map(flag => ({...flag})));
         }
       });
       
@@ -71,8 +83,11 @@ export const useCacheState = () => {
     ) {
       console.log(`📋 Found valid cache for ${dateString} with ${careStatusCache.current[dateString].data.length} dogs`);
       
+      // Deep clone before returning to prevent reference issues
+      const cachedDogs = deepCloneDogStatus(careStatusCache.current[dateString].data);
+      
       // Deduplicate special attention flags before returning
-      return deduplicateSpecialAttentionFlags(careStatusCache.current[dateString].data);
+      return deduplicateSpecialAttentionFlags(cachedDogs);
     }
     
     console.log(`📋 No valid cache found for ${dateString}`);
@@ -85,11 +100,11 @@ export const useCacheState = () => {
       return;
     }
     
-    // Make a deep copy of the data to avoid reference issues
-    const dogsCopy = JSON.parse(JSON.stringify(data));
+    // Make a complete deep copy of the data to avoid reference issues
+    const dogsDeepCopy = deepCloneDogStatus(data);
     
     // Deduplicate special attention flags before caching
-    const dedupedData = deduplicateSpecialAttentionFlags(dogsCopy);
+    const dedupedData = deduplicateSpecialAttentionFlags(dogsDeepCopy);
     
     console.log(`📋 Caching ${dedupedData.length} dogs for ${dateString}`);
     careStatusCache.current[dateString] = {

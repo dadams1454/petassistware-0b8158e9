@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { TableRow } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
@@ -16,7 +16,8 @@ interface DogTimeRowProps {
   onCareLogClick: (dogId: string, dogName: string) => void;
 }
 
-const DogTimeRow: React.FC<DogTimeRowProps> = ({
+// Use memo to prevent unnecessary row re-renders
+const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   dog,
   timeSlots,
   rowColor,
@@ -26,37 +27,45 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
   onCellClick,
   onCareLogClick
 }) => {
+  // Create stable copies of important data to prevent reference issues
+  const dogId = dog.dog_id;
+  const dogName = dog.dog_name;
+  const dogFlags = dog.flags || [];
+  
   return (
-    <TableRow key={`${dog.dog_id}-row`} className={rowColor} data-dog-id={dog.dog_id}>
+    <TableRow key={`${dogId}-row`} className={rowColor} data-dog-id={dogId}>
       {/* Dog name cell with photo, gender color, and condition symbols */}
       <DogNameCell 
         dog={dog} 
-        onCareLogClick={() => onCareLogClick(dog.dog_id, dog.dog_name)} 
+        onCareLogClick={() => onCareLogClick(dogId, dogName)} 
         activeCategory={activeCategory}
       />
       
       {/* Time slot cells with X marks */}
       {timeSlots.map((timeSlot) => {
-        const cellKey = `${dog.dog_id}-${timeSlot}`;
-        const hasPottyBreakForSlot = hasPottyBreak(dog.dog_id, timeSlot);
-        const hasCareLoggedForSlot = hasCareLogged(dog.dog_id, timeSlot, activeCategory);
+        const cellKey = `${dogId}-${timeSlot}`;
+        const hasPottyBreakForSlot = hasPottyBreak(dogId, timeSlot);
+        const hasCareLoggedForSlot = hasCareLogged(dogId, timeSlot, activeCategory);
         
         return (
           <TimeSlotCell 
             key={cellKey}
-            dogId={dog.dog_id}
-            dogName={dog.dog_name}
+            dogId={dogId}
+            dogName={dogName}
             timeSlot={timeSlot}
             category={activeCategory}
             hasPottyBreak={hasPottyBreakForSlot}
             hasCareLogged={hasCareLoggedForSlot}
-            onClick={() => onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory)}
-            flags={dog.flags || []}
+            onClick={() => onCellClick(dogId, dogName, timeSlot, activeCategory)}
+            flags={dogFlags}
           />
         );
       })}
     </TableRow>
   );
-};
+});
+
+// Add display name for better debugging
+DogTimeRow.displayName = 'DogTimeRow';
 
 export default DogTimeRow;
