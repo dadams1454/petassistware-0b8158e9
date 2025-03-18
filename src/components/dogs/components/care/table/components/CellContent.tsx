@@ -41,7 +41,7 @@ const CellContent: React.FC<CellContentProps> = ({
     return (
       <div className="w-full h-full flex items-center justify-center">
         <Check 
-          className={`h-4 w-4 ${
+          className={`h-5 w-5 ${
             isCurrentHour 
               ? 'text-blue-600 dark:text-blue-400' 
               : hasPottyBreak 
