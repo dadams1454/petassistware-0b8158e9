@@ -27,7 +27,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
   onCareLogClick
 }) => {
   return (
-    <TableRow key={`${dog.dog_id}-row`} className={rowColor}>
+    <TableRow key={`${dog.dog_id}-row`} className={rowColor} data-dog-id={dog.dog_id}>
       {/* Dog name cell with photo, gender color, and condition symbols */}
       <DogNameCell 
         dog={dog} 
@@ -51,7 +51,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
             hasPottyBreak={hasPottyBreakForSlot}
             hasCareLogged={hasCareLoggedForSlot}
             onClick={() => onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory)}
-            flags={dog.flags}
+            flags={dog.flags || []}
           />
         );
       })}

@@ -26,15 +26,13 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
   onClick,
   flags = []
 }) => {
-  // Filter out special_attention flags for cell styling
-  const cellFlags = flags.filter(flag => flag.type !== 'special_attention');
-
-  // Get cell styles for this particular cell
+  // Use the flags directly rather than filtering them
+  // This preserves the association between dogs and their flags
   const { cellClassNames } = useCellStyles({
     category,
     hasPottyBreak,
     hasCareLogged,
-    flags: cellFlags
+    flags
   });
   
   const cellIdentifier = `${dogId}-${timeSlot}-${category}`;
@@ -50,6 +48,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
       onClick={onClick}
       title={`${dogName} - ${timeSlot}`}
       data-cell-id={cellIdentifier}
+      data-dog-id={dogId} // Add data attribute for dog ID to help identify cell ownership
     >
       <div className="w-full h-full p-1">
         <CellContent 
@@ -58,7 +57,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
           category={category}
           hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
-          flags={cellFlags}
+          flags={flags}
         />
       </div>
     </TableCell>

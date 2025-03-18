@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { DogCareStatus } from '@/types/dailyCare';
+import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 
 /**
  * Custom hook to manage cache state for dog care data
@@ -18,27 +18,44 @@ export const useCacheState = () => {
   
   /**
    * Deduplicates special attention flags on a dog object
+   * while preserving the association between dogs and their flags
    */
   const deduplicateSpecialAttentionFlags = (dogs: DogCareStatus[]): DogCareStatus[] => {
+    // Create a new array to avoid mutation issues
     return dogs.map(dog => {
+      // If the dog has no flags, return unchanged
       if (!dog.flags || dog.flags.length === 0) return dog;
       
-      // Find all special attention flags
-      const specialAttentionFlags = dog.flags.filter(f => f.type === 'special_attention');
+      // Group flags by type for deduplication
+      const flagsByType: Record<string, DogFlag[]> = {};
       
-      // If there's only 0 or 1, no deduplication needed
-      if (specialAttentionFlags.length <= 1) return dog;
+      // First, group all flags by their type
+      dog.flags.forEach(flag => {
+        if (!flagsByType[flag.type]) {
+          flagsByType[flag.type] = [];
+        }
+        flagsByType[flag.type].push(flag);
+      });
       
-      // Keep only the first special attention flag, filter out others
-      const firstSpecialAttentionFlag = specialAttentionFlags[0];
+      // Create a new array of deduplicated flags
+      const deduplicatedFlags: DogFlag[] = [];
       
-      // Return dog with deduplicated flags
+      // For each flag type, take appropriate action
+      Object.keys(flagsByType).forEach(flagType => {
+        // For special_attention, only keep the first one
+        if (flagType === 'special_attention' && flagsByType[flagType].length > 0) {
+          deduplicatedFlags.push(flagsByType[flagType][0]);
+        } 
+        // For all other flag types, keep all flags (or implement specific deduplication logic)
+        else {
+          deduplicatedFlags.push(...flagsByType[flagType]);
+        }
+      });
+      
+      // Return dog with deduplicated flags, maintaining the dog-to-flag association
       return {
         ...dog,
-        flags: [
-          ...dog.flags.filter(f => f.type !== 'special_attention'),
-          firstSpecialAttentionFlag
-        ]
+        flags: deduplicatedFlags
       };
     });
   };
@@ -68,8 +85,11 @@ export const useCacheState = () => {
       return;
     }
     
+    // Make a deep copy of the data to avoid reference issues
+    const dogsCopy = JSON.parse(JSON.stringify(data));
+    
     // Deduplicate special attention flags before caching
-    const dedupedData = deduplicateSpecialAttentionFlags(data);
+    const dedupedData = deduplicateSpecialAttentionFlags(dogsCopy);
     
     console.log(`📋 Caching ${dedupedData.length} dogs for ${dateString}`);
     careStatusCache.current[dateString] = {
