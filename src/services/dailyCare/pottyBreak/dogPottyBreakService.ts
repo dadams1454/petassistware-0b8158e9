@@ -29,15 +29,10 @@ export const getLastDogPottyBreak = async (dogId: string): Promise<{ session_tim
 
 // Get dogs that haven't had a potty break in X minutes
 export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<any[]> => {
-  // Define parameters with proper typing
-  const params: { threshold_minutes: number } = { 
-    threshold_minutes: thresholdMinutes 
-  };
-  
-  // Call the RPC function with the properly typed parameters
+  // Call the RPC function with parameters as a generic object
   const { data, error } = await supabase.rpc(
     'get_dogs_needing_potty_break', 
-    params
+    { threshold_minutes: thresholdMinutes }
   );
 
   if (error) {
