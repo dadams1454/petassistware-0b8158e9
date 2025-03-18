@@ -51,7 +51,9 @@ export const useObservations = (dogs: DogCareStatus[]) => {
             observation_type: log.task_name as 'accident' | 'heat' | 'behavior' | 'other',
             created_by: log.created_by,
             expires_at: new Date(new Date(log.timestamp).getTime() + 24 * 60 * 60 * 1000).toISOString()
-          }));
+          }))
+          // Sort by newest first
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           
         if (dogObservations.length > 0) {
           observationsMap[dog.dog_id] = dogObservations;
@@ -105,7 +107,8 @@ export const useObservations = (dogs: DogCareStatus[]) => {
             newObservations[dogId] = [];
           }
           
-          newObservations[dogId].push(newObservation);
+          // Add to beginning of array for most recent first
+          newObservations[dogId] = [newObservation, ...newObservations[dogId]];
           return newObservations;
         });
         
@@ -113,7 +116,10 @@ export const useObservations = (dogs: DogCareStatus[]) => {
           title: 'Observation Added',
           description: 'Your observation has been recorded and will be visible for 24 hours'
         });
+        
+        return true;
       }
+      return false;
     } catch (error) {
       console.error('Failed to add observation:', error);
       toast({
@@ -121,6 +127,7 @@ export const useObservations = (dogs: DogCareStatus[]) => {
         description: 'Failed to add observation',
         variant: 'destructive'
       });
+      return false;
     } finally {
       setIsLoading(false);
     }

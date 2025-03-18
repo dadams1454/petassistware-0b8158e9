@@ -72,13 +72,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     });
   }, [timeSlots, currentHour]);
   
-  // Handle care log button click - redirect to individual dog care page
-  const handleCareLogClick = (dogId: string, dogName: string) => {
-    console.log(`Redirecting to care logs for ${dogName} (ID: ${dogId})`);
-    // Here you would typically navigate to the dog's care page
-    // For now, just log it
-  };
-  
   return (
     <Card className="p-0 overflow-hidden">
       <Tabs
@@ -105,8 +98,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
-            onCareLogClick={handleCareLogClick}
             onRefresh={handleRefresh}
+            hasObservation={hasObservation}
+            onAddObservation={addObservation}
+            observations={observations}
           >
             <TimeTableContent 
               sortedDogs={sortedDogs}
@@ -115,7 +110,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
               hasPottyBreak={hasPottyBreak}
               hasCareLogged={hasCareLogged}
               onCellClick={handleCellClick}
-              onCareLogClick={handleCareLogClick}
               currentHour={currentHour}
               hasObservation={hasObservation}
               onAddObservation={addObservation}
@@ -133,8 +127,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
-            onCareLogClick={handleCareLogClick}
             onRefresh={handleRefresh}
+            hasObservation={hasObservation}
+            onAddObservation={addObservation}
+            observations={observations}
           >
             <TimeTableContent 
               sortedDogs={sortedDogs}
@@ -143,7 +139,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
               hasPottyBreak={hasPottyBreak}
               hasCareLogged={hasCareLogged}
               onCellClick={handleCellClick}
-              onCareLogClick={handleCareLogClick}
               currentHour={currentHour}
               hasObservation={hasObservation}
               onAddObservation={addObservation}
@@ -161,8 +156,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
-            onCareLogClick={handleCareLogClick}
             onRefresh={handleRefresh}
+            hasObservation={hasObservation}
+            onAddObservation={addObservation}
+            observations={observations}
           >
             <TimeTableContent 
               sortedDogs={sortedDogs}
@@ -171,7 +168,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
               hasPottyBreak={hasPottyBreak}
               hasCareLogged={hasCareLogged}
               onCellClick={handleCellClick}
-              onCareLogClick={handleCareLogClick}
               currentHour={currentHour}
               hasObservation={hasObservation}
               onAddObservation={addObservation}
@@ -189,8 +185,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
-            onCareLogClick={handleCareLogClick}
             onRefresh={handleRefresh}
+            hasObservation={hasObservation}
+            onAddObservation={addObservation}
+            observations={observations}
           >
             <TimeTableContent 
               sortedDogs={sortedDogs}
@@ -199,7 +197,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
               hasPottyBreak={hasPottyBreak}
               hasCareLogged={hasCareLogged}
               onCellClick={handleCellClick}
-              onCareLogClick={handleCareLogClick}
               currentHour={currentHour}
               hasObservation={hasObservation}
               onAddObservation={addObservation}
