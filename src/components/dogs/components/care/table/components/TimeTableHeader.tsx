@@ -1,52 +1,105 @@
 
 import React from 'react';
-import { CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RefreshCw, Dog, Apple, Pill, Activity, MessageCircle } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { CustomButton } from '@/components/ui/custom-button';
 
 interface TimeTableHeaderProps {
-  dogCount: number;
-  currentDate: Date;
-  isLoading: boolean;
-  onRefresh: () => void;
-  lastRefreshTime?: Date;
+  activeCategory: string;
+  onCategoryChange: (category: string) => void;
+  isLoading?: boolean;
+  onRefresh?: () => void;
+  isMobile?: boolean;
 }
 
 const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({ 
-  dogCount, 
-  currentDate, 
-  isLoading, 
+  activeCategory, 
+  onCategoryChange, 
+  isLoading = false,
   onRefresh,
-  lastRefreshTime
+  isMobile = false
 }) => {
+  const handleCategoryChange = (category: string) => {
+    onCategoryChange(category);
+  };
+  
+  // Get the icon for each category
+  const getIcon = (category: string) => {
+    switch (category) {
+      case 'pottybreaks':
+        return <Dog className="h-3 w-3 md:h-4 md:w-4" />;
+      case 'feeding':
+        return <Apple className="h-3 w-3 md:h-4 md:w-4" />;
+      case 'medications':
+        return <Pill className="h-3 w-3 md:h-4 md:w-4" />;
+      case 'exercise':
+        return <Activity className="h-3 w-3 md:h-4 md:w-4" />;
+      default:
+        return null;
+    }
+  };
+  
   return (
-    <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
-      <div>
-        <CardTitle className="text-xl flex items-center">
-          <Calendar className="h-5 w-5 mr-2" />
-          Daily Care Time Table
-        </CardTitle>
-        <p className="text-sm text-muted-foreground mt-1">
-          {dogCount} dogs • {format(currentDate, 'EEEE, MMMM d, yyyy')}
-          {lastRefreshTime && (
-            <span className="ml-2 text-xs text-muted-foreground">
-              Last updated: {format(lastRefreshTime, 'h:mm a')}
-            </span>
-          )}
-        </p>
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <TabsList className={`gap-1 ${isMobile ? 'w-full' : ''}`}>
+        <TabsTrigger 
+          value="pottybreaks" 
+          onClick={() => handleCategoryChange('pottybreaks')}
+          className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+        >
+          {getIcon('pottybreaks')}
+          <span className={isMobile ? 'text-xs' : ''}>Potty</span>
+        </TabsTrigger>
+        <TabsTrigger 
+          value="feeding" 
+          onClick={() => handleCategoryChange('feeding')}
+          className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+        >
+          {getIcon('feeding')}
+          <span className={isMobile ? 'text-xs' : ''}>Feeding</span>
+        </TabsTrigger>
+        <TabsTrigger 
+          value="medications" 
+          onClick={() => handleCategoryChange('medications')}
+          className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+        >
+          {getIcon('medications')}
+          <span className={isMobile ? 'text-xs' : ''}>Meds</span>
+        </TabsTrigger>
+        <TabsTrigger 
+          value="exercise" 
+          onClick={() => handleCategoryChange('exercise')}
+          className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+        >
+          {getIcon('exercise')}
+          <span className={isMobile ? 'text-xs' : ''}>Exercise</span>
+        </TabsTrigger>
+      </TabsList>
+      
+      <div className="flex items-center gap-2">
+        {!isMobile && (
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mr-2">
+            <MessageCircle className="h-4 w-4" />
+            <span>Right-click for observations</span>
+          </div>
+        )}
+        
+        {onRefresh && (
+          <Button
+            variant="outline"
+            size={isMobile ? "sm" : "default"}
+            onClick={onRefresh}
+            disabled={isLoading}
+            className="whitespace-nowrap"
+          >
+            <RefreshCw className={`h-3 w-3 md:h-4 md:w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            {!isMobile && <span className="ml-2">Refresh</span>}
+          </Button>
+        )}
       </div>
-      <Button 
-        variant="outline" 
-        size="sm" 
-        onClick={onRefresh}
-        disabled={isLoading}
-        className="gap-2"
-      >
-        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-        {isLoading ? 'Refreshing...' : 'Refresh'}
-      </Button>
-    </CardHeader>
+    </div>
   );
 };
 

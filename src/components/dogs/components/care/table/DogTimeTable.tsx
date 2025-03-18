@@ -1,17 +1,25 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { DogCareStatus } from '@/types/dailyCare';
+import React, { useState, useMemo, useEffect } from 'react';
 import TimeTableHeader from './components/TimeTableHeader';
 import TimeTableContent from './components/TimeTableContent';
 import TimeTableFooter from './components/TimeTableFooter';
+import { DogCareStatus } from '@/types/dailyCare';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import TableContainer from './components/TableContainer';
 import usePottyBreakTable from './hooks/usePottyBreakTable';
-import SpecialConditionsAlert from './components/SpecialConditionsAlert';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import CareLogForm from '../CareLogForm';
-import { generateTimeSlots } from './dogGroupColors';
-import { debounce } from 'lodash';
-import ObservationDialog from './components/ObservationDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// Create timeslots array once, not on every render
+const createTimeSlots = () => {
+  const slots = [];
+  for (let hour = 6; hour <= 22; hour++) {
+    const displayHour = hour > 12 ? hour - 12 : hour;
+    const amPm = hour >= 12 ? 'PM' : 'AM';
+    slots.push(`${displayHour}:00 ${amPm}`);
+  }
+  return slots;
+};
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -19,194 +27,158 @@ interface DogTimeTableProps {
 }
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
+  const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
-  const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
-  const [selectedDogName, setSelectedDogName] = useState<string>('');
-  const [careDialogOpen, setCareDialogOpen] = useState(false);
-  const [observationDialogOpen, setObservationDialogOpen] = useState(false);
-  const [timeSlots, setTimeSlots] = useState<string[]>(generateTimeSlots());
-  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  const timeSlots = useMemo(() => createTimeSlots(), []);
   
-  // Track if a refresh is in progress to prevent duplicates
-  const isRefreshingRef = useRef(false);
-  // Track when the last refresh happened to prevent too frequent refreshes
-  const lastRefreshRef = useRef<number>(Date.now());
-  // Minimum time between refreshes (5 seconds)
-  const MIN_REFRESH_INTERVAL = 5000;
+  // Get current hour
+  const [currentHour, setCurrentHour] = useState<number>(new Date().getHours());
   
-  // Debounced refresh function to prevent multiple calls in quick succession
-  const debouncedRefresh = useRef(
-    debounce(() => {
-      if (isRefreshingRef.current) return;
-      
-      const now = Date.now();
-      if (now - lastRefreshRef.current < MIN_REFRESH_INTERVAL) {
-        console.log('🔄 Skipping refresh - too soon after last refresh');
-        return;
-      }
-      
-      console.log('🔄 Performing debounced refresh');
-      isRefreshingRef.current = true;
-      
-      // Update time slots
-      setTimeSlots(generateTimeSlots(new Date()));
-      setLastRefreshTime(new Date());
-      lastRefreshRef.current = now;
-      
-      // Call the handleRefresh from usePottyBreakTable
-      if (handleRefresh) {
-        handleRefresh();
-      }
-      
-      // Only call parent refresh if explicitly needed
-      if (onRefresh) {
-        onRefresh();
-      }
-      
-      isRefreshingRef.current = false;
-    }, 300)
-  ).current;
-  
-  // Wrapper for refresh function
-  const refreshTimeTable = useCallback(() => {
-    console.log('🔄 Refresh requested - debouncing');
-    debouncedRefresh();
-  }, [debouncedRefresh]);
-  
-  // Auto-refresh logic - check every 5 minutes if the hour has changed
+  // Update current hour every minute
   useEffect(() => {
-    const checkHourChange = () => {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const lastHour = lastRefreshTime.getHours();
-      
-      // If the hour has changed, refresh the time slots
-      if (currentHour !== lastHour) {
-        console.log('🕒 Hour changed, refreshing time table');
-        refreshTimeTable();
-      }
-    };
+    const intervalId = setInterval(() => {
+      setCurrentHour(new Date().getHours());
+    }, 60000); // 60000ms = 1 minute
     
-    // Set up interval to check for hour changes (every 5 minutes instead of every minute)
-    const intervalId = setInterval(checkHourChange, 5 * 60 * 1000);
-    
-    // Clean up on unmount
     return () => clearInterval(intervalId);
-  }, [lastRefreshTime, refreshTimeTable]);
+  }, []);
   
-  const {
-    currentDate,
-    isLoading,
-    pottyBreaks,
-    sortedDogs,
-    hasPottyBreak,
-    hasCareLogged,
+  // Use the potty break table hook for data management
+  const { 
+    isLoading, 
+    sortedDogs, 
+    hasPottyBreak, 
+    hasCareLogged, 
+    handleCellClick, 
+    handleRefresh,
     hasObservation,
     addObservation,
-    observations,
-    handleCellClick,
-    handleRefresh
-  } = usePottyBreakTable(dogsStatus, refreshTimeTable, activeCategory);
-
-  const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
-    setSelectedDogId(dogId);
-    setSelectedDogName(dogName);
-    setCareDialogOpen(true);
-  }, []);
+    observations
+  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
   
-  const handleObservationClick = useCallback((dogId: string, dogName: string) => {
-    setSelectedDogId(dogId);
-    setSelectedDogName(dogName);
-    setObservationDialogOpen(true);
-  }, []);
-  
-  const handleCareLogSuccess = useCallback(() => {
-    setCareDialogOpen(false);
-    // Delay refresh slightly to ensure DB operations complete
-    setTimeout(refreshTimeTable, 300);
-  }, [refreshTimeTable]);
-  
-  const handleObservationSuccess = useCallback(async (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => {
-    await addObservation(dogId, observation, observationType);
-    setObservationDialogOpen(false);
-    // Refresh to update UI with new observation
-    setTimeout(refreshTimeTable, 300);
-  }, [addObservation, refreshTimeTable]);
-
-  // Initial load - only once
-  useEffect(() => {
-    console.log('📊 Initial DogTimeTable load');
-    refreshTimeTable();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <Card className="shadow-md overflow-hidden">
-      <TimeTableHeader
-        dogCount={sortedDogs.length}
-        currentDate={currentDate}
-        isLoading={isLoading}
-        onRefresh={refreshTimeTable}
-        lastRefreshTime={lastRefreshTime}
-      />
+  // Memo-ize the timeslot headers to prevent re-renders
+  const timeSlotHeaders = useMemo(() => {
+    return timeSlots.map(slot => {
+      const [hours, minutesPart] = slot.split(':');
+      const [minutes, period] = minutesPart.split(' ');
+      let hour = parseInt(hours);
+      if (period === 'PM' && hour !== 12) hour += 12;
+      if (period === 'AM' && hour === 12) hour = 0;
       
-      <CardContent className="p-0">
-        {/* For now, we're only using pottybreaks, so removed tabs */}
-        <div className="px-4 py-2 border-b">
-          <h3 className="text-lg font-medium">Daily Care & Observations</h3>
-          <p className="text-sm text-muted-foreground">
-            Click on a cell to log or remove a potty break. Right-click on any cell to add an observation.
-            <span className="ml-1 font-medium">
-              Showing 8-hour window from {timeSlots[0]} to {timeSlots[timeSlots.length - 1]}
-            </span>
-          </p>
+      return {
+        slot,
+        isCurrent: hour === currentHour
+      };
+    });
+  }, [timeSlots, currentHour]);
+  
+  // Handle care log button click - redirect to individual dog care page
+  const handleCareLogClick = (dogId: string, dogName: string) => {
+    console.log(`Redirecting to care logs for ${dogName} (ID: ${dogId})`);
+    // Here you would typically navigate to the dog's care page
+    // For now, just log it
+  };
+  
+  return (
+    <Card className="p-0 overflow-hidden">
+      <Tabs
+        defaultValue="pottybreaks"
+        value={activeCategory}
+        onValueChange={setActiveCategory}
+        className="w-full"
+      >
+        <div className="p-3 bg-white dark:bg-slate-950/60 border-b border-gray-200 dark:border-gray-800">
+          <TimeTableHeader 
+            activeCategory={activeCategory} 
+            onCategoryChange={setActiveCategory}
+            isLoading={isLoading}
+            onRefresh={handleRefresh} 
+            isMobile={isMobile}
+          />
         </div>
         
-        {/* Special conditions alert */}
-        <SpecialConditionsAlert dogs={sortedDogs} />
+        <TabsContent value="pottybreaks" className="mt-0">
+          <TableContainer>
+            <TimeTableContent 
+              sortedDogs={sortedDogs}
+              timeSlots={timeSlots}
+              activeCategory="pottybreaks"
+              hasPottyBreak={hasPottyBreak}
+              hasCareLogged={hasCareLogged}
+              onCellClick={handleCellClick}
+              onCareLogClick={handleCareLogClick}
+              currentHour={currentHour}
+              hasObservation={hasObservation}
+              onAddObservation={addObservation}
+              observations={observations}
+              isMobile={isMobile}
+            />
+          </TableContainer>
+        </TabsContent>
         
-        {/* Table content - main grid view */}
-        <TimeTableContent
-          sortedDogs={sortedDogs}
-          timeSlots={timeSlots}
-          hasPottyBreak={hasPottyBreak}
-          hasCareLogged={hasCareLogged}
-          onCellClick={handleCellClick}
-          onCareLogClick={handleCareLogClick}
-          activeCategory={activeCategory}
-          currentHour={new Date().getHours()}
-          hasObservation={hasObservation}
-          onAddObservation={addObservation}
-          observations={observations}
+        <TabsContent value="feeding" className="mt-0">
+          <TableContainer>
+            <TimeTableContent 
+              sortedDogs={sortedDogs}
+              timeSlots={timeSlots}
+              activeCategory="feeding"
+              hasPottyBreak={hasPottyBreak}
+              hasCareLogged={hasCareLogged}
+              onCellClick={handleCellClick}
+              onCareLogClick={handleCareLogClick}
+              currentHour={currentHour}
+              hasObservation={hasObservation}
+              onAddObservation={addObservation}
+              observations={observations}
+              isMobile={isMobile}
+            />
+          </TableContainer>
+        </TabsContent>
+        
+        <TabsContent value="medications" className="mt-0">
+          <TableContainer>
+            <TimeTableContent 
+              sortedDogs={sortedDogs}
+              timeSlots={timeSlots}
+              activeCategory="medications"
+              hasPottyBreak={hasPottyBreak}
+              hasCareLogged={hasCareLogged}
+              onCellClick={handleCellClick}
+              onCareLogClick={handleCareLogClick}
+              currentHour={currentHour}
+              hasObservation={hasObservation}
+              onAddObservation={addObservation}
+              observations={observations}
+              isMobile={isMobile}
+            />
+          </TableContainer>
+        </TabsContent>
+        
+        <TabsContent value="exercise" className="mt-0">
+          <TableContainer>
+            <TimeTableContent 
+              sortedDogs={sortedDogs}
+              timeSlots={timeSlots}
+              activeCategory="exercise"
+              hasPottyBreak={hasPottyBreak}
+              hasCareLogged={hasCareLogged}
+              onCellClick={handleCellClick}
+              onCareLogClick={handleCareLogClick}
+              currentHour={currentHour}
+              hasObservation={hasObservation}
+              onAddObservation={addObservation}
+              observations={observations}
+              isMobile={isMobile}
+            />
+          </TableContainer>
+        </TabsContent>
+        
+        <TimeTableFooter
+          isLoading={isLoading}
+          onRefresh={handleRefresh}
+          lastUpdateTime={new Date().toLocaleTimeString()}
         />
-        
-        <TimeTableFooter />
-        
-        {/* Care log dialog */}
-        <Dialog open={careDialogOpen} onOpenChange={setCareDialogOpen}>
-          <DialogContent>
-            {selectedDogId && (
-              <CareLogForm 
-                dogId={selectedDogId} 
-                onSuccess={handleCareLogSuccess}
-                initialCategory={activeCategory}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-        
-        {/* Observation dialog */}
-        {selectedDogId && (
-          <ObservationDialog
-            open={observationDialogOpen}
-            onOpenChange={setObservationDialogOpen}
-            dogId={selectedDogId}
-            dogName={selectedDogName}
-            onSubmit={handleObservationSuccess}
-            existingObservations={observations[selectedDogId] || []}
-          />
-        )}
-      </CardContent>
+      </Tabs>
     </Card>
   );
 };

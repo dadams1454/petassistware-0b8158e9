@@ -22,6 +22,7 @@ interface DogTimeRowProps {
     observation_type: 'accident' | 'heat' | 'behavior' | 'other';
     created_at: string;
   }>>;
+  isMobile?: boolean;
 }
 
 // Use memo to prevent unnecessary row re-renders
@@ -37,7 +38,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   currentHour,
   hasObservation = () => false,
   onAddObservation,
-  observations = {}
+  observations = {},
+  isMobile = false
 }) => {
   // Create stable copies of important data to prevent reference issues
   const dogId = dog.dog_id;

@@ -21,6 +21,7 @@ interface TimeTableContentProps {
     observation_type: 'accident' | 'heat' | 'behavior' | 'other';
     created_at: string;
   }>>;
+  isMobile?: boolean;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({ 
@@ -34,7 +35,8 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   currentHour,
   hasObservation,
   onAddObservation,
-  observations
+  observations,
+  isMobile = false
 }) => {
   // Create a stable copy of dog data to prevent reference issues
   const preparedDogs = useMemo(() => {
@@ -112,6 +114,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                     hasObservation={hasObservation}
                     onAddObservation={onAddObservation}
                     observations={observations}
+                    isMobile={isMobile}
                   />
                 ))
               ) : (
