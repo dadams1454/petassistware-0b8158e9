@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { getPottyBreaksByDogAndTimeSlot, savePottyBreaksByDogAndTimeSlot } from '@/services/dailyCare/pottyBreak/pottyBreakQueryService';
+import { getPottyBreaksByDogAndTimeSlot2, savePottyBreaksByDogAndTimeSlot } from '@/services/dailyCare/pottyBreak/pottyBreakQueryService';
 import { logDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
 import { toast } from '@/components/ui/use-toast';
 import { useDailyCare } from '@/contexts/dailyCare';
@@ -27,7 +27,7 @@ const usePottyBreakTable = (
     try {
       setIsLoading(true);
       console.log('Fetching potty breaks for date:', currentDate.toISOString().slice(0, 10));
-      const breaks = await getPottyBreaksByDogAndTimeSlot(currentDate);
+      const breaks = await getPottyBreaksByDogAndTimeSlot2(currentDate);
       console.log('Retrieved potty breaks:', breaks);
       setPottyBreaks(breaks);
     } catch (error) {

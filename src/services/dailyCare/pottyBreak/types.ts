@@ -25,3 +25,13 @@ export interface PottyBreakCreate {
   notes?: string;
   dogs: string[]; // Array of dog IDs
 }
+
+// Adding missing type for potty breaks
+export interface PottyBreak {
+  id: string;
+  date: string;
+  time: string;
+  notes?: string;
+  created_at: string;
+  potty_break_dogs?: { dog_id: string }[];
+}
