@@ -13,6 +13,7 @@ interface DogTimeRowProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCareLogClick: (dogId: string, dogName: string) => void;
   currentHour?: number;
   hasObservation?: (dogId: string) => boolean;
   onAddObservation?: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => Promise<void>;
@@ -33,6 +34,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   hasPottyBreak,
   hasCareLogged,
   onCellClick,
+  onCareLogClick,
   currentHour,
   hasObservation = () => false,
   onAddObservation,
@@ -67,10 +69,9 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       {/* Dog name cell with photo, gender color, and condition symbols */}
       <DogNameCell 
         dog={dog} 
+        onCareLogClick={() => onCareLogClick(dogId, dogName)} 
         activeCategory={activeCategory}
         hasObservation={dogHasObservation}
-        onAddObservation={onAddObservation}
-        existingObservations={dogObservations}
       />
       
       {/* Time slot cells */}

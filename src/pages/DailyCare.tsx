@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
@@ -12,8 +13,8 @@ const DailyCare: React.FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [lastAutoRefresh, setLastAutoRefresh] = useState<Date>(new Date());
   
-  // Autorefresh every 5 minutes to keep data more current
-  const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
+  // Autorefresh every 15 minutes
+  const AUTO_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
 
   // Manually trigger refresh function
   const handleManualRefresh = () => {
@@ -82,7 +83,7 @@ const DailyCare: React.FC = () => {
             {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
             <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
               <Clock className="h-3 w-3" />
-              Auto-refreshes every 5 minutes
+              Auto-refreshes every 15 minutes
             </span>
           </p>
         </div>

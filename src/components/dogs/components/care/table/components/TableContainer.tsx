@@ -10,14 +10,8 @@ interface TableContainerProps {
   hasPottyBreak?: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged?: (dogId: string, timeSlot: string, category: string) => boolean;
   onCellClick?: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCareLogClick?: (dogId: string, dogName: string) => void;
   onRefresh?: () => void;
-  hasObservation?: (dogId: string) => boolean;
-  onAddObservation?: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => Promise<void>;
-  observations?: Record<string, Array<{
-    observation: string;
-    observation_type: 'accident' | 'heat' | 'behavior' | 'other';
-    created_at: string;
-  }>>;
 }
 
 const TableContainer: React.FC<TableContainerProps> = ({
@@ -28,10 +22,8 @@ const TableContainer: React.FC<TableContainerProps> = ({
   hasPottyBreak = () => false,
   hasCareLogged = () => false,
   onCellClick = () => {},
-  onRefresh,
-  hasObservation = () => false,
-  onAddObservation,
-  observations = {}
+  onCareLogClick,
+  onRefresh
 }) => {
   return (
     <div className="mb-4 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
