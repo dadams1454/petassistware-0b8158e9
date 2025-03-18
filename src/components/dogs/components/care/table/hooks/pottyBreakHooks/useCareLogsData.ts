@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDailyCare } from '@/contexts/dailyCare';
 
@@ -8,12 +8,34 @@ export const useCareLogsData = (sortedDogs: DogCareStatus[]) => {
   const [isLoading, setIsLoading] = useState(false);
   const { fetchDogCareLogs } = useDailyCare();
   
+  // Add caching mechanism
+  const cacheExpiryRef = useRef<number>(0);
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+  const isFetchingRef = useRef(false);
+  
   // Fetch care logs for each dog
-  const fetchCareLogs = useCallback(async () => {
+  const fetchCareLogs = useCallback(async (forceRefresh = false) => {
     if (!sortedDogs.length) return;
     
+    // Skip if already fetching
+    if (isFetchingRef.current) {
+      console.log('🔍 Already fetching care logs, skipping');
+      return;
+    }
+    
+    // Check cache unless force refresh is requested
+    const now = Date.now();
+    if (!forceRefresh && now < cacheExpiryRef.current) {
+      console.log('📋 Using cached care logs, next refresh in', 
+        Math.ceil((cacheExpiryRef.current - now) / 1000), 'seconds');
+      return;
+    }
+    
     try {
+      isFetchingRef.current = true;
       setIsLoading(true);
+      console.log('🔍 Fetching care logs for', sortedDogs.length, 'dogs');
+      
       const logsMap: Record<string, Record<string, string[]>> = {};
       
       // For each dog, fetch care logs
@@ -39,10 +61,14 @@ export const useCareLogsData = (sortedDogs: DogCareStatus[]) => {
       }
       
       setCareLogs(logsMap);
+      
+      // Update cache expiry
+      cacheExpiryRef.current = Date.now() + CACHE_DURATION;
     } catch (error) {
-      console.error('Error fetching care logs:', error);
+      console.error('❌ Error fetching care logs:', error);
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
   }, [fetchDogCareLogs, sortedDogs]);
   
@@ -62,7 +88,7 @@ export const useCareLogsData = (sortedDogs: DogCareStatus[]) => {
   return {
     careLogs,
     setCareLogs,
-    isLoading: isLoading,
+    isLoading,
     fetchCareLogs,
     hasCareLogged
   };

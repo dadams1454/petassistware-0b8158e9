@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { savePottyBreaksByDogAndTimeSlot } from '@/services/dailyCare/pottyBreak/queries/timeSlotQueries';
 import { logDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
 import { useDailyCare } from '@/contexts/dailyCare';
@@ -13,14 +13,25 @@ export const useCellActions = (
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const { addCareLog } = useDailyCare();
+  const pendingUpdatesRef = useRef<Set<string>>(new Set());
   
   // Handle cell click to log a potty break or other care
   const handleCellClick = useCallback(async (dogId: string, dogName: string, timeSlot: string, category: string) => {
+    // Create a unique key for this update to prevent duplicates
+    const updateKey = `${dogId}-${timeSlot}-${category}`;
+    
+    // Prevent duplicate clicks/updates
+    if (pendingUpdatesRef.current.has(updateKey)) {
+      console.log('🔍 Update already in progress for:', updateKey);
+      return;
+    }
+    
     try {
+      pendingUpdatesRef.current.add(updateKey);
       setIsLoading(true);
       
       if (category === 'pottybreaks') {
-        // Clone current state
+        // Optimistically update UI first
         const updatedBreaks = { ...pottyBreaks };
         
         // If the dog doesn't have an entry yet, create one
@@ -33,6 +44,10 @@ export const useCellActions = (
         if (timeSlotIndex >= 0) {
           // Remove the time slot from the dog's breaks
           updatedBreaks[dogId].splice(timeSlotIndex, 1);
+          
+          // Update UI immediately
+          setPottyBreaks(updatedBreaks);
+          
           toast({
             title: 'Potty Break Removed',
             description: `Removed potty break for ${dogName} at ${timeSlot}`,
@@ -41,7 +56,10 @@ export const useCellActions = (
           // Add the time slot to the dog's breaks
           updatedBreaks[dogId].push(timeSlot);
           
-          // Also log this in the database as a potty break event
+          // Update UI immediately
+          setPottyBreaks(updatedBreaks);
+          
+          // Log this in the database as a potty break event
           await logDogPottyBreak(dogId, timeSlot);
           
           toast({
@@ -50,13 +68,10 @@ export const useCellActions = (
           });
         }
         
-        // Update state with the new breaks
-        setPottyBreaks(updatedBreaks);
-        
         // Save the updated potty breaks to the database
         await savePottyBreaksByDogAndTimeSlot(currentDate, updatedBreaks);
       } else {
-        // For other care categories, handle differently
+        // For other care categories
         // Parse the time slot to get a date object
         const [hours, minutesPart] = timeSlot.split(':');
         const [minutes, period] = minutesPart.split(' ');
@@ -82,12 +97,16 @@ export const useCellActions = (
         });
       }
       
-      // Refresh the data to show the updated state
+      // Only trigger refresh after a slight delay to prevent UI flickering
+      // and to allow time for database operations to complete
       if (onRefresh) {
-        onRefresh();
+        // Use a timeout to reduce refresh frequency
+        setTimeout(() => {
+          onRefresh();
+        }, 300);
       }
     } catch (error) {
-      console.error(`Error toggling ${category}:`, error);
+      console.error(`❌ Error toggling ${category}:`, error);
       toast({
         title: 'Error',
         description: `Failed to update ${category}`,
@@ -95,6 +114,7 @@ export const useCellActions = (
       });
     } finally {
       setIsLoading(false);
+      pendingUpdatesRef.current.delete(updateKey);
     }
   }, [pottyBreaks, setPottyBreaks, currentDate, addCareLog, onRefresh]);
   

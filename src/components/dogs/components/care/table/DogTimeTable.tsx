@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeTableHeader from './components/TimeTableHeader';
@@ -10,6 +10,7 @@ import SpecialConditionsAlert from './components/SpecialConditionsAlert';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CareLogForm from '../CareLogForm';
 import { generateTimeSlots } from './dogGroupColors';
+import { debounce } from 'lodash';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -24,17 +25,53 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const [timeSlots, setTimeSlots] = useState<string[]>(generateTimeSlots());
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
   
-  // Function to refresh time slots and data
-  const refreshTimeTable = () => {
-    const now = new Date();
-    setTimeSlots(generateTimeSlots(now));
-    setLastRefreshTime(now);
-    if (handleRefresh) {
-      handleRefresh();
-    }
-  };
+  // Track if a refresh is in progress to prevent duplicates
+  const isRefreshingRef = useRef(false);
+  // Track when the last refresh happened to prevent too frequent refreshes
+  const lastRefreshRef = useRef<number>(Date.now());
+  // Minimum time between refreshes (5 seconds)
+  const MIN_REFRESH_INTERVAL = 5000;
   
-  // Auto-refresh logic - check every minute if the hour has changed
+  // Debounced refresh function to prevent multiple calls in quick succession
+  const debouncedRefresh = useRef(
+    debounce(() => {
+      if (isRefreshingRef.current) return;
+      
+      const now = Date.now();
+      if (now - lastRefreshRef.current < MIN_REFRESH_INTERVAL) {
+        console.log('🔄 Skipping refresh - too soon after last refresh');
+        return;
+      }
+      
+      console.log('🔄 Performing debounced refresh');
+      isRefreshingRef.current = true;
+      
+      // Update time slots
+      setTimeSlots(generateTimeSlots(new Date()));
+      setLastRefreshTime(new Date());
+      lastRefreshRef.current = now;
+      
+      // Call the handleRefresh from usePottyBreakTable
+      if (handleRefresh) {
+        handleRefresh();
+      }
+      
+      // Only call parent refresh if explicitly needed
+      if (onRefresh) {
+        onRefresh();
+      }
+      
+      isRefreshingRef.current = false;
+    }, 300)
+  ).current;
+  
+  // Wrapper for refresh function
+  const refreshTimeTable = useCallback(() => {
+    console.log('🔄 Refresh requested - debouncing');
+    debouncedRefresh();
+  }, [debouncedRefresh]);
+  
+  // Auto-refresh logic - check every 5 minutes if the hour has changed
   useEffect(() => {
     const checkHourChange = () => {
       const now = new Date();
@@ -43,17 +80,17 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       
       // If the hour has changed, refresh the time slots
       if (currentHour !== lastHour) {
-        console.log('Hour changed, refreshing time table');
+        console.log('🕒 Hour changed, refreshing time table');
         refreshTimeTable();
       }
     };
     
-    // Set up interval to check for hour changes (every minute)
-    const intervalId = setInterval(checkHourChange, 60000);
+    // Set up interval to check for hour changes (every 5 minutes instead of every minute)
+    const intervalId = setInterval(checkHourChange, 5 * 60 * 1000);
     
     // Clean up on unmount
     return () => clearInterval(intervalId);
-  }, [lastRefreshTime]);
+  }, [lastRefreshTime, refreshTimeTable]);
   
   const {
     currentDate,
@@ -64,22 +101,25 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     hasCareLogged,
     handleCellClick,
     handleRefresh
-  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
+  } = usePottyBreakTable(dogsStatus, refreshTimeTable, activeCategory);
 
-  const handleCareLogClick = (dogId: string, dogName: string) => {
+  const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
     setSelectedDogId(dogId);
     setSelectedDogName(dogName);
     setCareDialogOpen(true);
-  };
+  }, []);
   
-  const handleCareLogSuccess = () => {
+  const handleCareLogSuccess = useCallback(() => {
     setCareDialogOpen(false);
-    refreshTimeTable();
-  };
+    // Delay refresh slightly to ensure DB operations complete
+    setTimeout(refreshTimeTable, 300);
+  }, [refreshTimeTable]);
 
-  // Initial load
+  // Initial load - only once
   useEffect(() => {
+    console.log('📊 Initial DogTimeTable load');
     refreshTimeTable();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

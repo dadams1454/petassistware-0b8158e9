@@ -22,15 +22,24 @@ const CellContent: React.FC<CellContentProps> = ({
   flags = [],
   isCurrentHour = false
 }) => {
-  // For now, primarily using pottyBreak status
+  // Return checkmark if any type of care is logged (potty break or other care)
   if (hasPottyBreak || hasCareLogged) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <Check className={`h-4 w-4 ${isCurrentHour ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`} />
+        <Check 
+          className={`h-4 w-4 ${
+            isCurrentHour 
+              ? 'text-blue-600 dark:text-blue-400' 
+              : hasPottyBreak 
+                ? 'text-green-600 dark:text-green-400'
+                : 'text-purple-600 dark:text-purple-400'
+          }`} 
+        />
       </div>
     );
   }
   
+  // Show current hour indicator
   if (isCurrentHour) {
     return (
       <div className="w-full h-full flex items-center justify-center">
