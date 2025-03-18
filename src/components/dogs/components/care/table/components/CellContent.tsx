@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { DogFlag } from '@/types/dailyCare';
 import { Check } from 'lucide-react';
 
 interface CellContentProps {
@@ -9,17 +8,12 @@ interface CellContentProps {
   category: string;
   hasPottyBreak: boolean;
   hasCareLogged: boolean;
-  flags?: DogFlag[];
   isCurrentHour?: boolean;
 }
 
 const CellContent: React.FC<CellContentProps> = ({
-  dogName,
-  timeSlot,
-  category,
   hasPottyBreak,
   hasCareLogged,
-  flags = [],
   isCurrentHour = false
 }) => {
   // Return checkmark if any type of care is logged (potty break or other care)

@@ -24,7 +24,7 @@ const PottyBreaksTab: React.FC<PottyBreaksTabProps> = ({ onRefreshDogs }) => {
   
   return (
     <div className="space-y-6">
-      {/* Reminder Card */}
+      {/* Reminder Card with Enhanced Observation Capabilities */}
       {dogStatuses && dogStatuses.length > 0 && (
         <PottyBreakReminderCard 
           dogs={dogStatuses}

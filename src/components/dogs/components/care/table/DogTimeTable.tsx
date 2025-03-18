@@ -50,10 +50,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     hasPottyBreak, 
     hasCareLogged, 
     handleCellClick, 
-    handleRefresh,
-    hasObservation,
-    addObservation,
-    observations
+    handleRefresh
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
   
   // Memo-ize the timeslot headers to prevent re-renders
@@ -117,9 +114,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
               onCellClick={handleCellClick}
               onCareLogClick={handleCareLogClick}
               currentHour={currentHour}
-              hasObservation={hasObservation}
-              onAddObservation={addObservation}
-              observations={observations}
               isMobile={isMobile}
             />
           </TableContainer>
@@ -145,9 +139,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
               onCellClick={handleCellClick}
               onCareLogClick={handleCareLogClick}
               currentHour={currentHour}
-              hasObservation={hasObservation}
-              onAddObservation={addObservation}
-              observations={observations}
               isMobile={isMobile}
             />
           </TableContainer>
@@ -173,9 +164,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
               onCellClick={handleCellClick}
               onCareLogClick={handleCareLogClick}
               currentHour={currentHour}
-              hasObservation={hasObservation}
-              onAddObservation={addObservation}
-              observations={observations}
               isMobile={isMobile}
             />
           </TableContainer>
@@ -201,9 +189,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
               onCellClick={handleCellClick}
               onCareLogClick={handleCareLogClick}
               currentHour={currentHour}
-              hasObservation={hasObservation}
-              onAddObservation={addObservation}
-              observations={observations}
               isMobile={isMobile}
             />
           </TableContainer>

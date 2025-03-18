@@ -3,7 +3,6 @@ import React from 'react';
 import { TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import DogAvatar from '../DogAvatar';
-import { getGenderColor } from '@/components/dogs/utils/dogFormUtils';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
@@ -16,7 +15,8 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
   onCareLogClick, 
   activeCategory 
 }) => {
-  const genderColor = getGenderColor(dog.gender);
+  // Get gender color based on sex property
+  const genderColor = dog.sex === 'male' ? 'bg-blue-500' : 'bg-pink-500';
   
   return (
     <TableCell 
@@ -25,11 +25,15 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
       <div className="flex items-center gap-3 max-w-[160px]">
         <div 
           className={`w-1 h-10 rounded-full ${genderColor}`}
-          aria-label={`${dog.gender === 'male' ? 'Male' : 'Female'} dog indicator`}
+          aria-label={`${dog.sex === 'male' ? 'Male' : 'Female'} dog indicator`}
         ></div>
         
         <div className="flex-shrink-0 h-10 w-10">
-          <DogAvatar dog={dog} />
+          <img 
+            src={dog.dog_photo || '/placeholder.svg'} 
+            alt={dog.dog_name}
+            className="h-full w-full rounded-full object-cover"
+          />
         </div>
         
         <div className="overflow-hidden">
