@@ -31,7 +31,17 @@ export const useCellActions = (
       setIsLoading(true);
       
       if (category === 'pottybreaks') {
-        // Optimistically update UI first
+        // Determine the current status of the cell
+        const hasBreak = pottyBreaks[dogId]?.includes(timeSlot) || false;
+        const hasFailed = false; // We'll need to implement this with a separate map or flag in pottyBreaks
+        
+        // Handle different click scenarios:
+        // 1. No status → success (✓)
+        // 2. Success (✓) → failure (X)
+        // 3. Failure (X) → clear
+        
+        // For now, just toggle between no status and success
+        // First update UI immediately for responsive feeling
         const updatedBreaks = { ...pottyBreaks };
         
         // If the dog doesn't have an entry yet, create one
@@ -42,29 +52,39 @@ export const useCellActions = (
         // Toggle the state - if already marked, remove it, otherwise add it
         const timeSlotIndex = updatedBreaks[dogId].indexOf(timeSlot);
         if (timeSlotIndex >= 0) {
-          // Remove the time slot from the dog's breaks
+          // Remove the time slot from the dog's breaks (success → nothing)
           updatedBreaks[dogId].splice(timeSlotIndex, 1);
           
           // Update UI immediately
           setPottyBreaks(updatedBreaks);
           
+          // Log an X mark in the database (this is a placeholder - we'll need to add this functionality)
+          // For now, log a care event with a different category to distinguish it
+          await addCareLog({
+            dog_id: dogId,
+            category: 'pottybreaks', 
+            task_name: 'Potty Break Refused',
+            timestamp: new Date(),
+            notes: `Failed potty break for ${dogName} at ${timeSlot}`
+          });
+          
           toast({
-            title: 'Potty Break Removed',
-            description: `Removed potty break for ${dogName} at ${timeSlot}`,
+            title: 'Potty Break Refused',
+            description: `Marked that ${dogName} refused potty break at ${timeSlot}`,
           });
         } else {
-          // Add the time slot to the dog's breaks
+          // Add the time slot to the dog's breaks (nothing → success)
           updatedBreaks[dogId].push(timeSlot);
           
           // Update UI immediately
           setPottyBreaks(updatedBreaks);
           
-          // Log this in the database as a potty break event
+          // Log this in the database as a successful potty break event
           await logDogPottyBreak(dogId, timeSlot);
           
           toast({
             title: 'Potty Break Logged',
-            description: `${dogName} was taken out at ${timeSlot}`,
+            description: `${dogName} was successfully taken out at ${timeSlot}`,
           });
         }
         

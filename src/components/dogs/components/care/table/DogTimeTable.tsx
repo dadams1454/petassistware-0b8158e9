@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -29,6 +28,18 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     addObservation,
     observations
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
+  
+  // Auto-refresh the data every 5 minutes to keep it fresh
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (handleRefresh) {
+        console.log('Auto-refreshing potty break data...');
+        handleRefresh();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    return () => clearInterval(intervalId);
+  }, [handleRefresh]);
   
   return (
     <Card className="p-0 overflow-hidden">

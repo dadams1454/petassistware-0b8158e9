@@ -10,7 +10,7 @@ export const usePottyBreakData = (currentDate: Date) => {
   
   // Add caching mechanism
   const cacheExpiryRef = useRef<number>(0);
-  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+  const CACHE_DURATION = 3 * 60 * 1000; // 3 minutes cache - shorter to ensure freshness
   const isFetchingRef = useRef(false);
   
   // Fetch potty breaks data with caching
@@ -39,7 +39,7 @@ export const usePottyBreakData = (currentDate: Date) => {
       
       setPottyBreaks(breaks);
       
-      // Update cache expiry
+      // Update cache expiry - shorter duration for more fresh data
       cacheExpiryRef.current = Date.now() + CACHE_DURATION;
     } catch (error) {
       console.error('❌ Error fetching potty breaks:', error);
@@ -57,8 +57,14 @@ export const usePottyBreakData = (currentDate: Date) => {
   // Initial fetch
   useEffect(() => {
     fetchPottyBreaks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate]);
+    
+    // Set up auto-refresh for potty breaks every 3 minutes
+    const intervalId = setInterval(() => {
+      fetchPottyBreaks(true);
+    }, CACHE_DURATION);
+    
+    return () => clearInterval(intervalId);
+  }, [fetchPottyBreaks]);
 
   // Check if a dog has a potty break at a specific time slot
   const hasPottyBreak = useCallback((dogId: string, timeSlot: string) => {

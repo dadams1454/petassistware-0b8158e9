@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { DogFlag } from '@/types/dailyCare';
-import { Check, MessageCircle } from 'lucide-react';
+import { Check, X, MessageCircle } from 'lucide-react';
 
 interface CellContentProps {
   dogName: string;
@@ -36,19 +36,37 @@ const CellContent: React.FC<CellContentProps> = ({
     );
   }
   
-  // Return checkmark if any type of care is logged (potty break or other care)
-  if (hasPottyBreak || hasCareLogged) {
+  // Return checkmark if potty break is logged
+  if (hasPottyBreak) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <Check 
-          className={`h-5 w-5 ${
-            isCurrentHour 
-              ? 'text-blue-600 dark:text-blue-400' 
-              : hasPottyBreak 
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-purple-600 dark:text-purple-400'
-          }`} 
-          aria-label={hasPottyBreak ? "Potty break logged" : "Care logged"}
+          className="h-5 w-5 text-green-600 dark:text-green-400" 
+          aria-label="Potty break successful"
+        />
+      </div>
+    );
+  }
+  
+  // Return X mark if care is logged but not potty break (indicating the dog refused or had an accident)
+  if (hasCareLogged && category === 'pottybreaks') {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <X
+          className="h-5 w-5 text-red-500 dark:text-red-400"
+          aria-label="Potty break refused or accident"
+        />
+      </div>
+    );
+  }
+  
+  // Return regular checkmark for other types of care logged
+  if (hasCareLogged) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Check 
+          className="h-5 w-5 text-purple-600 dark:text-purple-400" 
+          aria-label="Care logged"
         />
       </div>
     );

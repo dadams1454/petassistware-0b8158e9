@@ -9,18 +9,28 @@ import { useMemo, useState, useEffect } from 'react';
  *   - currentHour: Number representing the current hour in 24-hour format
  */
 export const useTimeSlots = () => {
-  // Create time slots array once with useMemo to prevent recreation on each render
+  // Create time slots array with a dynamic 7-hour window (6 hours before current hour + current hour)
   const timeSlots = useMemo(() => {
     const slots = [];
-    // Generate time slots from 6 AM (6) to 10 PM (22) in 24-hour format
-    for (let hour = 6; hour <= 22; hour++) {
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Start 6 hours before current hour (showing 7 hours total including current hour)
+    let startHour = currentHour - 6;
+    
+    // Generate 7 hours (current hour + 6 hours before)
+    for (let i = 0; i < 7; i++) {
+      // Normalize hour (handle wrapping around 24-hour clock)
+      const hour = (startHour + i + 24) % 24;
+      
       // Convert to 12-hour format for display
-      const displayHour = hour > 12 ? hour - 12 : hour;
+      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
       const amPm = hour >= 12 ? 'PM' : 'AM';
       slots.push(`${displayHour}:00 ${amPm}`);
     }
+    
     return slots;
-  }, []); // Empty dependency array ensures this runs only once
+  }, []); // Empty dependency array still works because we'll refresh the component
   
   // Track current hour for highlighting the current time slot
   const [currentHour, setCurrentHour] = useState<number>(() => new Date().getHours());
