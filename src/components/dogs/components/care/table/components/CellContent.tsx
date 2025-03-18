@@ -30,6 +30,7 @@ const CellContent: React.FC<CellContentProps> = ({
       <div className="w-full h-full flex items-center justify-center">
         <MessageCircle 
           className="h-4 w-4 text-amber-600 dark:text-amber-400 fill-amber-100 dark:fill-amber-900/30" 
+          aria-label="Has observation"
         />
       </div>
     );
@@ -47,6 +48,7 @@ const CellContent: React.FC<CellContentProps> = ({
                 ? 'text-green-600 dark:text-green-400'
                 : 'text-purple-600 dark:text-purple-400'
           }`} 
+          aria-label={hasPottyBreak ? "Potty break logged" : "Care logged"}
         />
       </div>
     );

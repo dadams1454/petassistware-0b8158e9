@@ -80,7 +80,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
         }`}
         onClick={onClick}
         onContextMenu={handleContextMenu}
-        title={`${dogName} - ${timeSlot}${isCurrentHour ? ' (Current hour)' : ''}${hasObservation ? ' - Has observation' : ''}`}
+        title={`${dogName} - ${timeSlot}${isCurrentHour ? ' (Current hour)' : ''}${hasObservation ? ' - Has observation' : ''}${hasObservation ? ' (Right-click to view)' : ' (Right-click to add observation)'}`}
         data-cell-id={cellIdentifier}
         data-dog-id={dogId}
         data-flags-count={dogFlags.length}
