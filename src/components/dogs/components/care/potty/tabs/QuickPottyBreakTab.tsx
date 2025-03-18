@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DogCareStatus } from '@/types/dailyCare';
-import { Check, FileText, Clock } from 'lucide-react';
+import { FileText, Clock, PenLine } from 'lucide-react';
 
 interface QuickPottyBreakTabProps {
   dogs: DogCareStatus[];
@@ -47,15 +47,6 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
     }
   };
 
-  const handleQuickLog = async (dog: DogCareStatus) => {
-    try {
-      setActionInProgress(dog.dog_id);
-      await handleQuickPottyBreak(dog.dog_id, dog.dog_name);
-    } finally {
-      setActionInProgress(null);
-    }
-  };
-
   if (dogs.length === 0) {
     return (
       <Card className="p-4 text-center text-muted-foreground">
@@ -89,30 +80,16 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
                 </div>
               </div>
             </div>
-            <div className="flex space-x-2 mt-auto pt-2">
+            <div className="mt-auto pt-2">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm" 
-                className="flex-1"
+                className="w-full"
                 onClick={() => handleOpenNotes(dog)}
                 disabled={isLoading || actionInProgress !== null}
               >
-                <FileText className="h-4 w-4 mr-1" />
-                Add Notes & Log
-              </Button>
-              <Button
-                size="sm"
-                variant="default"
-                className="flex-none gap-1"
-                onClick={() => handleQuickLog(dog)}
-                disabled={isLoading || actionInProgress !== null}
-              >
-                {actionInProgress === dog.dog_id ? (
-                  <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-1" />
-                ) : (
-                  <Check className="h-4 w-4" />
-                )}
-                Log
+                <PenLine className="h-4 w-4 mr-2" />
+                Add Potty Break Notes
               </Button>
             </div>
           </Card>
@@ -123,25 +100,34 @@ const QuickPottyBreakTab: React.FC<QuickPottyBreakTabProps> = ({
       <Dialog open={notesOpen} onOpenChange={setNotesOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Notes for {selectedDog?.dog_name}'s Potty Break</DialogTitle>
+            <DialogTitle>Potty Break Observations for {selectedDog?.dog_name}</DialogTitle>
           </DialogHeader>
-          <Textarea
-            placeholder="Enter any observations (e.g., unusual color, consistency, duration, etc.)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="min-h-[120px]"
-          />
+          <div className="py-2">
+            <p className="text-sm text-muted-foreground mb-4">
+              Record observations about {selectedDog?.dog_name}'s potty break. 
+              This helps track patterns and health indicators over time.
+            </p>
+            <Textarea
+              placeholder="Enter observations (e.g., unusual color, consistency, duration, frequency, straining, etc.)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="min-h-[120px]"
+            />
+          </div>
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setNotesOpen(false)} disabled={actionInProgress !== null}>
               Cancel
             </Button>
-            <Button onClick={handleLogWithNotes} disabled={isLoading || actionInProgress !== null}>
+            <Button 
+              onClick={handleLogWithNotes} 
+              disabled={isLoading || actionInProgress !== null || !notes.trim()}
+            >
               {actionInProgress !== null ? (
                 <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-1" />
               ) : (
-                <Check className="h-4 w-4 mr-1" />
+                <FileText className="h-4 w-4 mr-1" />
               )}
-              Log with Notes
+              Log Potty Break
             </Button>
           </DialogFooter>
         </DialogContent>

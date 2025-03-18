@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DogCareStatus } from '@/types/dailyCare';
-import { Clock, AlertTriangle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Clock, FileText, AlertTriangle } from 'lucide-react';
+import { DogCareStatus } from '@/types/dailyCare';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
 interface PottyBreakReminderCardProps {
@@ -15,90 +15,81 @@ const PottyBreakReminderCard: React.FC<PottyBreakReminderCardProps> = ({
   dogs, 
   onLogPottyBreak 
 }) => {
-  // Filter dogs that need potty breaks
-  const dogsNeedingPottyBreaks = dogs.filter(dog => {
-    // If there's no last_care, or last_care is not a potty break
+  // Filter dogs that need potty breaks (more than 3 hours since last break)
+  const getLastPottyBreakTime = (dog: DogCareStatus) => {
     if (!dog.last_care || dog.last_care.category !== 'pottybreaks') {
-      return true;
+      return null;
     }
-    
-    // Check if it's been over 4 hours since the last potty break
-    const lastBreakTime = parseISO(dog.last_care.timestamp);
-    const now = new Date();
-    const hoursSinceLastBreak = (now.getTime() - lastBreakTime.getTime()) / (1000 * 60 * 60);
-    
-    return hoursSinceLastBreak >= 4;
-  });
-  
-  // Sort dogs by how long it's been since their last potty break
-  const sortedDogs = [...dogsNeedingPottyBreaks].sort((a, b) => {
-    if (!a.last_care && !b.last_care) return 0;
-    if (!a.last_care) return -1; // No last_care comes first
-    if (!b.last_care) return 1;
-    
-    return new Date(a.last_care.timestamp).getTime() - new Date(b.last_care.timestamp).getTime();
-  });
-  
-  // Take top 3 dogs for the reminder
-  const topUrgentDogs = sortedDogs.slice(0, 3);
-  
-  // Get time since last potty break
-  const getTimeSinceLastPottyBreak = (dog: DogCareStatus): string => {
-    if (!dog.last_care || dog.last_care.category !== 'pottybreaks') {
-      return 'No record';
-    }
-    
-    return formatDistanceToNow(parseISO(dog.last_care.timestamp), { addSuffix: true });
+    return new Date(dog.last_care.timestamp);
   };
+
+  const getTimeSinceLastPottyBreak = (dog: DogCareStatus) => {
+    const lastTime = getLastPottyBreakTime(dog);
+    if (!lastTime) return 'Never';
+    return formatDistanceToNow(lastTime, { addSuffix: true });
+  };
+
+  // Look for dogs that haven't had a potty break in over 3 hours
+  const threeHoursAgo = new Date();
+  threeHoursAgo.setHours(threeHoursAgo.getHours() - 3);
   
-  // If no dogs need potty breaks, don't render the card
-  if (dogsNeedingPottyBreaks.length === 0) {
-    return null;
+  const needsPottyBreak = dogs.filter(dog => {
+    const lastBreakTime = getLastPottyBreakTime(dog);
+    return !lastBreakTime || lastBreakTime < threeHoursAgo;
+  });
+
+  if (needsPottyBreak.length === 0) {
+    return null; // Don't show the card if no dogs need potty breaks
   }
 
   return (
-    <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900/50">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-amber-800 dark:text-amber-300 flex items-center text-base">
-          <AlertTriangle className="h-5 w-5 mr-2 text-amber-500" />
-          Potty Break Reminder
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-amber-700 dark:text-amber-400 mb-3">
-          {dogsNeedingPottyBreaks.length === 1 
-            ? '1 dog needs a potty break' 
-            : `${dogsNeedingPottyBreaks.length} dogs need potty breaks`}
-        </p>
-        
-        <div className="space-y-2 mb-3">
-          {topUrgentDogs.map(dog => (
-            <div 
-              key={dog.dog_id} 
-              className="flex items-center justify-between text-sm p-2 bg-white dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-800/50"
-            >
-              <div className="font-medium">{dog.dog_name}</div>
-              <div className="flex items-center text-amber-600 dark:text-amber-400">
-                <Clock className="h-3 w-3 mr-1" />
-                {getTimeSinceLastPottyBreak(dog)}
-              </div>
+    <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+      <CardContent className="pt-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
             </div>
-          ))}
+            <div>
+              <h3 className="font-medium text-amber-800 dark:text-amber-400 mb-1">
+                Potty Break Reminder
+              </h3>
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                {needsPottyBreak.length === 1 
+                  ? `${needsPottyBreak[0].dog_name} hasn't had a potty break recorded ${getTimeSinceLastPottyBreak(needsPottyBreak[0])}.`
+                  : `${needsPottyBreak.length} dogs haven't had potty breaks recorded in over 3 hours.`
+                }
+              </p>
+              
+              {/* Show the dogs if there are many */}
+              {needsPottyBreak.length > 1 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {needsPottyBreak.slice(0, 5).map(dog => (
+                    <div key={dog.dog_id} className="flex items-center text-xs bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 rounded-full px-2 py-0.5">
+                      <span>{dog.dog_name}</span>
+                      <span className="ml-1 text-amber-500">•</span>
+                      <Clock className="h-3 w-3 mx-0.5 text-amber-500" />
+                      <span>{getTimeSinceLastPottyBreak(dog)}</span>
+                    </div>
+                  ))}
+                  {needsPottyBreak.length > 5 && (
+                    <div className="text-xs bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 rounded-full px-2 py-0.5">
+                      +{needsPottyBreak.length - 5} more
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
           
-          {dogsNeedingPottyBreaks.length > 3 && (
-            <div className="text-xs text-amber-600 dark:text-amber-400 text-center">
-              +{dogsNeedingPottyBreaks.length - 3} more dogs need potty breaks
-            </div>
-          )}
+          <Button 
+            onClick={onLogPottyBreak}
+            className="bg-amber-600 hover:bg-amber-700 text-white gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Record Potty Observations
+          </Button>
         </div>
-        
-        <Button 
-          className="w-full"
-          variant="default"
-          onClick={onLogPottyBreak}
-        >
-          Log Potty Break
-        </Button>
       </CardContent>
     </Card>
   );

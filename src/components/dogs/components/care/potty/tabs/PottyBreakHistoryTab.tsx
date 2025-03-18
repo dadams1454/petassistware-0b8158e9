@@ -24,6 +24,7 @@ const PottyBreakHistoryTab: React.FC<PottyBreakHistoryTabProps> = ({
 }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [sessionToDelete, setSessionToDelete] = React.useState<string | null>(null);
+  const [expandedNotes, setExpandedNotes] = React.useState<string | null>(null);
 
   const handleDeleteClick = (sessionId: string) => {
     setSessionToDelete(sessionId);
@@ -38,10 +39,14 @@ const PottyBreakHistoryTab: React.FC<PottyBreakHistoryTabProps> = ({
     }
   };
 
+  const toggleExpandNotes = (sessionId: string) => {
+    setExpandedNotes(expandedNotes === sessionId ? null : sessionId);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium">Recent Potty Breaks</h3>
+        <h3 className="text-sm font-medium">Recent Potty Break Observations</h3>
         <Button 
           variant="outline" 
           size="sm" 
@@ -63,61 +68,74 @@ const PottyBreakHistoryTab: React.FC<PottyBreakHistoryTabProps> = ({
         </Card>
       ) : (
         <div className="space-y-3">
-          {sessions.map(session => (
-            <Card key={session.id} className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                  <span className="text-sm font-medium">
-                    {format(parseISO(session.session_time), 'MMM d, h:mm a')}
-                  </span>
-                </div>
-                {onDelete && (
-                  <Button
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                    onClick={() => handleDeleteClick(session.id)}
-                    disabled={deletingSessionId === session.id}
-                  >
-                    {deletingSessionId === session.id ? (
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
-                )}
-              </div>
-              
-              {/* Dogs in this session */}
-              <div className="mt-2">
-                <span className="text-sm text-muted-foreground">Dogs:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {session.dogs?.map(dogEntry => (
-                    <span 
-                      key={dogEntry.id} 
-                      className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5"
-                    >
-                      {dogEntry.dog?.name || 'Unknown dog'}
+          {sessions.map(session => {
+            const hasNotes = session.notes && session.notes.trim().length > 0;
+            const isExpanded = expandedNotes === session.id;
+            
+            return (
+              <Card key={session.id} className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <span className="text-sm font-medium">
+                      {format(parseISO(session.session_time), 'MMM d, h:mm a')}
                     </span>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Notes section */}
-              {session.notes && (
-                <div className="mt-3 border-t pt-2">
-                  <div className="flex items-center text-sm text-muted-foreground mb-1">
-                    <FileText className="h-4 w-4 mr-1" />
-                    <span>Notes:</span>
                   </div>
-                  <CardDescription className="whitespace-pre-wrap text-sm">
-                    {session.notes}
-                  </CardDescription>
+                  {onDelete && (
+                    <Button
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                      onClick={() => handleDeleteClick(session.id)}
+                      disabled={deletingSessionId === session.id}
+                    >
+                      {deletingSessionId === session.id ? (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
                 </div>
-              )}
-            </Card>
-          ))}
+                
+                {/* Dogs in this session */}
+                <div className="mt-2">
+                  <span className="text-sm text-muted-foreground">Dogs:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {session.dogs?.map(dogEntry => (
+                      <span 
+                        key={dogEntry.id} 
+                        className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5"
+                      >
+                        {dogEntry.dog?.name || 'Unknown dog'}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Notes section with expand/collapse */}
+                {hasNotes && (
+                  <div className="mt-3 border-t pt-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="flex items-center text-sm text-muted-foreground p-0 h-auto"
+                      onClick={() => toggleExpandNotes(session.id)}
+                    >
+                      <FileText className="h-4 w-4 mr-1" />
+                      <span>Observations {isExpanded ? '(click to collapse)' : '(click to expand)'}</span>
+                    </Button>
+                    
+                    {isExpanded && (
+                      <CardDescription className="whitespace-pre-wrap text-sm mt-2 p-2 bg-muted/50 rounded">
+                        {session.notes}
+                      </CardDescription>
+                    )}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 

@@ -21,7 +21,7 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
     const fetchRecentSessions = async () => {
       try {
         setIsLoading(true);
-        const sessions = await getRecentPottyBreakSessions(5);
+        const sessions = await getRecentPottyBreakSessions(10); // Increased to show more history
         setRecentSessions(sessions);
       } catch (error) {
         console.error('Error fetching recent potty break sessions:', error);
@@ -40,12 +40,22 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
 
   // Handler for quick potty break logging
   const handleQuickPottyBreak = async (dogId: string, dogName: string, notes?: string) => {
+    // Validate that notes is provided (now required)
+    if (!notes || notes.trim() === '') {
+      toast({
+        title: 'Notes Required',
+        description: 'Please enter some observations about the potty break.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     try {
       setIsLoading(true);
       await createPottyBreakSession({ dogs: [dogId], notes });
       toast({
         title: 'Potty Break Logged',
-        description: `${dogName} was taken out for a potty break${notes ? ' with notes' : ''}.`,
+        description: `Recorded observations for ${dogName}'s potty break.`,
       });
       setRefreshTrigger(prev => prev + 1);
       onRefresh();
@@ -71,16 +81,26 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
       });
       return;
     }
+    
+    // Validate that notes is provided (now required)
+    if (!groupNotes || groupNotes.trim() === '') {
+      toast({
+        title: 'Notes Required',
+        description: 'Please enter some observations about the potty break.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     try {
       setIsLoading(true);
       await createPottyBreakSession({ 
         dogs: selectedDogs,
-        notes: groupNotes.trim() || undefined
+        notes: groupNotes
       });
       toast({
         title: 'Group Potty Break Logged',
-        description: `${selectedDogs.length} dogs were taken out for a potty break${groupNotes ? ' with notes' : ''}.`,
+        description: `Recorded observations for ${selectedDogs.length} dogs.`,
       });
       setDialogOpen(false);
       setSelectedDogs([]);
@@ -105,8 +125,8 @@ export const usePottyBreakManager = (dogs: DogCareStatus[], onRefresh: () => voi
       setDeletingSessionId(sessionId);
       await deletePottyBreakSession(sessionId);
       toast({
-        title: 'Potty Break Deleted',
-        description: 'The potty break record has been successfully deleted.',
+        title: 'Potty Break Record Deleted',
+        description: 'The potty break observations have been successfully deleted.',
       });
       setRefreshTrigger(prev => prev + 1);
       onRefresh();

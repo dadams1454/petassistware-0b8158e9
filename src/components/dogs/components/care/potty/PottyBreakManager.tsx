@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Check } from 'lucide-react';
+import { Users, FileText } from 'lucide-react';
 import { DialogContent, DialogHeader, DialogTitle, Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,16 +44,16 @@ const PottyBreakManager: React.FC<PottyBreakManagerProps> = ({ dogs, onRefresh }
     <Card className="border shadow-sm">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center text-xl">
-          <Users className="h-5 w-5 mr-2" />
-          Dog Potty Break Manager
+          <FileText className="h-5 w-5 mr-2" />
+          Potty Break Observations
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
-            <TabsTrigger value="quick">Quick Potty Break</TabsTrigger>
-            <TabsTrigger value="group">Group Potty Break</TabsTrigger>
-            <TabsTrigger value="history">Recent History</TabsTrigger>
+            <TabsTrigger value="quick">Individual Observations</TabsTrigger>
+            <TabsTrigger value="group">Group Observations</TabsTrigger>
+            <TabsTrigger value="history">Observation History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="quick" className="p-2">
@@ -90,7 +90,7 @@ const PottyBreakManager: React.FC<PottyBreakManagerProps> = ({ dogs, onRefresh }
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="max-w-3xl">
             <DialogHeader>
-              <DialogTitle>Select dogs for potty break</DialogTitle>
+              <DialogTitle>Record Potty Break Observations</DialogTitle>
             </DialogHeader>
             
             <PottyBreakDogSelection
@@ -100,12 +100,12 @@ const PottyBreakManager: React.FC<PottyBreakManagerProps> = ({ dogs, onRefresh }
             />
             
             <div className="mt-4">
-              <label className="text-sm font-medium mb-2 block">Notes (Optional)</label>
+              <label className="text-sm font-medium mb-2 block">Observations</label>
               <Textarea
-                placeholder="Enter any observations about this potty break session..."
+                placeholder="Record any observations about this group potty break (e.g., behavior patterns, duration, any unusual activity)"
                 value={groupNotes}
                 onChange={(e) => setGroupNotes(e.target.value)}
-                className="min-h-[100px]"
+                className="min-h-[120px]"
               />
             </div>
             
@@ -118,11 +118,11 @@ const PottyBreakManager: React.FC<PottyBreakManagerProps> = ({ dogs, onRefresh }
               </Button>
               <Button
                 onClick={handleGroupPottyBreak}
-                disabled={selectedDogs.length === 0 || isLoading}
+                disabled={selectedDogs.length === 0 || isLoading || !groupNotes.trim()}
                 className="gap-2"
               >
-                <Check className="h-4 w-4" />
-                {isLoading ? 'Logging...' : 'Log Potty Break'}
+                <FileText className="h-4 w-4" />
+                {isLoading ? 'Logging...' : 'Log Observations'}
               </Button>
             </div>
           </DialogContent>
