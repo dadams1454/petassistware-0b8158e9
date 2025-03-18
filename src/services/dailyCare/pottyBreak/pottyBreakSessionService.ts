@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { PottyBreakSession, PottyBreakCreate } from './types';
 
@@ -77,4 +76,32 @@ export const deletePottyBreakSession = async (sessionId: string): Promise<void> 
     console.error('Error deleting potty break session:', error);
     throw error;
   }
+};
+
+// Get recent potty break sessions
+export const getRecentPottyBreakSessions = async (limit: number = 5): Promise<PottyBreakSession[]> => {
+  const { data, error } = await supabase
+    .from('potty_break_sessions')
+    .select(`
+      *,
+      dogs:potty_break_dogs(
+        *,
+        dog:dog_id(
+          id, 
+          name,
+          photo_url,
+          breed,
+          color
+        )
+      )
+    `)
+    .order('session_time', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent potty break sessions:', error);
+    throw error;
+  }
+
+  return data || [];
 };
