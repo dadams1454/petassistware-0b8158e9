@@ -75,7 +75,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
               <MessageCircle 
                 size={14} 
                 className="text-amber-500 dark:text-amber-400 fill-amber-100 dark:fill-amber-900/30" 
-                title={`${dog.dog_name} has observations`}
+                aria-label={`${dog.dog_name} has observations`}
               />
             )}
           </div>
@@ -86,4 +86,3 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
 };
 
 export default DogNameCell;
-
