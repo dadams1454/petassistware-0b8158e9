@@ -4,14 +4,13 @@ export const generateTimeSlots = (currentTime = new Date(), viewType = 'pottybre
   const slots: string[] = [];
   
   if (viewType === 'feeding') {
-    // Fixed time slots for feeding from 6:00 AM to 9:00 PM
-    const feedingHours = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
-    
-    for (const hour of feedingHours) {
-      const formattedHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      const period = hour >= 12 ? 'PM' : 'AM';
-      slots.push(`${formattedHour}:00 ${period}`);
-    }
+    // Only show 3 main feeding times for feeding view
+    // Morning (7 AM), Noon (12 PM), Evening (6 PM)
+    return [
+      '7:00 AM',  // Morning feeding
+      '12:00 PM', // Noon feeding 
+      '6:00 PM',  // Evening feeding
+    ];
   } else {
     // Dynamic time slots for potty breaks (original functionality)
     const currentHour = currentTime.getHours();

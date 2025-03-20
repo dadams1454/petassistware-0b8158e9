@@ -58,6 +58,28 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   });
   
   const cellIdentifier = `${dogId}-${timeSlot}-${category}`;
+
+  // Get background color based on category and status
+  const getBgColor = () => {
+    if (category === 'feeding') {
+      if (hasCareLogged) {
+        return 'bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/40';
+      }
+      return 'hover:bg-amber-50 dark:hover:bg-amber-900/10';
+    }
+    
+    if (isIncident) {
+      return 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20';
+    } 
+    if (hasPottyBreak) {
+      return 'bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/40'; 
+    }
+    if (isCurrentHour) {
+      return 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20';
+    }
+    
+    return customDogColor || 'hover:bg-blue-50 dark:hover:bg-blue-900/20';
+  };
   
   // Touch event handlers for quick click
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -82,22 +104,28 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     };
   }, []);
   
+  // Get border color based on category and status
+  const getBorderColor = () => {
+    if (category === 'feeding' && hasCareLogged) {
+      return 'border-l-2 border-r-2 border-amber-400 dark:border-amber-600';
+    }
+    if (isIncident) {
+      return 'border-l-2 border-r-2 border-red-400 dark:border-red-600';
+    }
+    if (isCurrentHour) {
+      return 'border-l-2 border-r-2 border-blue-400 dark:border-blue-600';
+    }
+    return '';
+  };
+  
   return (
     <TableCell 
       ref={cellRef}
       key={cellIdentifier}
       className={`${cellClassNames} cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden transition-all duration-200 relative ${
-        isIncident
-          ? 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20'
-          : hasPottyBreak 
-            ? 'bg-green-100 dark:bg-green-900/30' 
-            : isCurrentHour
-              ? 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20'
-              : customDogColor || 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+        getBgColor()
       } ${
-        isCurrentHour ? 'border-l-2 border-r-2 border-blue-400 dark:border-blue-600' : ''
-      } ${
-        isIncident ? 'border-l-2 border-r-2 border-red-400 dark:border-red-600' : ''
+        getBorderColor()
       } touch-manipulation`}
       onClick={onClick}
       onTouchStart={handleTouchStart}
@@ -111,6 +139,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       data-is-incident={isIncident ? 'true' : 'false'}
       data-mobile-cell={isMobile ? "true" : "false"}
       data-custom-color={customDogColor ? "true" : "false"}
+      data-category={category}
     >
       <div className="w-full h-full p-1 flex items-center justify-center">
         <CellContent 

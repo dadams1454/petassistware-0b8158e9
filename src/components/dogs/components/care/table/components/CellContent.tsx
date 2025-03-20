@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, AlertTriangle } from 'lucide-react';
+import { Check, AlertTriangle, UtensilsCrossed } from 'lucide-react';
 
 export interface CellContentProps {
   dogName: string;
@@ -13,11 +13,36 @@ export interface CellContentProps {
 }
 
 const CellContent: React.FC<CellContentProps> = ({
+  dogName,
+  timeSlot,
+  category,
   hasPottyBreak,
   hasCareLogged,
   isCurrentHour = false,
   isIncident = false
 }) => {
+  // Show feeding icon for feeding category
+  if (category === 'feeding') {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        {hasCareLogged ? (
+          <Check 
+            className="h-4 w-4 text-amber-600 dark:text-amber-400" 
+            aria-label="Feeding logged"
+          />
+        ) : (
+          <UtensilsCrossed 
+            className={`h-4 w-4 text-gray-300 dark:text-gray-600 opacity-50 ${
+              isCurrentHour ? 'text-blue-200 dark:text-blue-700' : ''
+            }`} 
+            aria-label="Feeding scheduled"
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Original potty break content
   return (
     <div className="w-full h-full flex items-center justify-center">
       {/* Show appropriate icon based on content type */}

@@ -77,12 +77,18 @@ export const useCellActions = (
         // Handle feeding log action
         const timestamp = getTimestampFromTimeSlot(timeSlot, currentDate);
         
+        // Map meal names based on time slot
+        let mealName = "Regular Feeding";
+        if (timeSlot === "7:00 AM") mealName = "Morning Feeding";
+        if (timeSlot === "12:00 PM") mealName = "Noon Feeding";
+        if (timeSlot === "6:00 PM") mealName = "Evening Feeding";
+        
         await addCareLog({
           dog_id: dogId,
           category: 'feeding',
-          task_name: 'Regular Feeding',
+          task_name: mealName,
           timestamp: timestamp,
-          notes: `Dog fed at ${timeSlot}`
+          notes: `${dogName} fed at ${timeSlot}`
         }, user?.id || '');
         
         toast({
