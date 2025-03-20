@@ -1,16 +1,15 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState } from 'react';
 import TimeTableHeader from './components/TimeTableHeader';
-import TimeTableContent from './components/TimeTableContent';
 import TimeTableFooter from './components/TimeTableFooter';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TableContainer from './components/TableContainer';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import usePottyBreakTable from './hooks/usePottyBreakTable';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { generateTimeSlots } from './dogGroupColors';
-import ObservationDialog from './components/ObservationDialog';
+import ActiveTabContent from './components/ActiveTabContent';
+import ObservationDialogManager from './components/ObservationDialogManager';
+import { useTimeManager } from './components/TimeManager';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -25,54 +24,20 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const [observationDialogOpen, setObservationDialogOpen] = useState(false);
   const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
   
-  // Get current time and hour
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  const [currentHour, setCurrentHour] = useState<number>(currentTime.getHours());
-  
-  // Generate timeSlots based on current time
-  const timeSlots = useMemo(() => {
-    return generateTimeSlots(currentTime);
-  }, [currentTime]);
-  
-  // Update current time and hour every minute
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const now = new Date();
-      setCurrentTime(now);
-      setCurrentHour(now.getHours());
-    }, 60000); // 60000ms = 1 minute
-    
-    return () => clearInterval(intervalId);
-  }, []);
+  // Use the time manager hook
+  const { currentHour, timeSlots } = useTimeManager();
   
   // Use the potty break table hook for data management
   const { 
     isLoading, 
     sortedDogs, 
     hasPottyBreak, 
-    hasCareLogged, 
-    hasObservation,
+    hasCareLogged,
     addObservation,
     observations,
     handleCellClick, 
     handleRefresh
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
-  
-  // Memo-ize the timeslot headers to prevent re-renders
-  const timeSlotHeaders = useMemo(() => {
-    return timeSlots.map(slot => {
-      const [hours, minutesPart] = slot.split(':');
-      const [minutes, period] = minutesPart.split(' ');
-      let hour = parseInt(hours);
-      if (period === 'PM' && hour !== 12) hour += 12;
-      if (period === 'AM' && hour === 12) hour = 0;
-      
-      return {
-        slot,
-        isCurrent: hour === currentHour
-      };
-    });
-  }, [timeSlots, currentHour]);
   
   // Handle care log button click - open observation dialog for dog
   const handleCareLogClick = (dogId: string, dogName: string) => {
@@ -109,103 +74,63 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         </div>
         
         <TabsContent value="pottybreaks" className="mt-0">
-          <TableContainer 
-            dogs={sortedDogs}
+          <ActiveTabContent
             activeCategory="pottybreaks"
+            sortedDogs={sortedDogs}
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
             onRefresh={handleRefresh}
-          >
-            <TimeTableContent 
-              sortedDogs={sortedDogs}
-              timeSlots={timeSlots}
-              activeCategory="pottybreaks"
-              hasPottyBreak={hasPottyBreak}
-              hasCareLogged={hasCareLogged}
-              onCellClick={handleCellClick}
-              onCareLogClick={handleCareLogClick}
-              currentHour={currentHour}
-              isMobile={isMobile}
-            />
-          </TableContainer>
+            currentHour={currentHour}
+            isMobile={isMobile}
+          />
         </TabsContent>
         
         <TabsContent value="feeding" className="mt-0">
-          <TableContainer 
-            dogs={sortedDogs}
+          <ActiveTabContent
             activeCategory="feeding"
+            sortedDogs={sortedDogs}
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
             onRefresh={handleRefresh}
-          >
-            <TimeTableContent 
-              sortedDogs={sortedDogs}
-              timeSlots={timeSlots}
-              activeCategory="feeding"
-              hasPottyBreak={hasPottyBreak}
-              hasCareLogged={hasCareLogged}
-              onCellClick={handleCellClick}
-              onCareLogClick={handleCareLogClick}
-              currentHour={currentHour}
-              isMobile={isMobile}
-            />
-          </TableContainer>
+            currentHour={currentHour}
+            isMobile={isMobile}
+          />
         </TabsContent>
         
         <TabsContent value="medications" className="mt-0">
-          <TableContainer 
-            dogs={sortedDogs}
+          <ActiveTabContent
             activeCategory="medications"
+            sortedDogs={sortedDogs}
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
             onRefresh={handleRefresh}
-          >
-            <TimeTableContent 
-              sortedDogs={sortedDogs}
-              timeSlots={timeSlots}
-              activeCategory="medications"
-              hasPottyBreak={hasPottyBreak}
-              hasCareLogged={hasCareLogged}
-              onCellClick={handleCellClick}
-              onCareLogClick={handleCareLogClick}
-              currentHour={currentHour}
-              isMobile={isMobile}
-            />
-          </TableContainer>
+            currentHour={currentHour}
+            isMobile={isMobile}
+          />
         </TabsContent>
         
         <TabsContent value="exercise" className="mt-0">
-          <TableContainer 
-            dogs={sortedDogs}
+          <ActiveTabContent
             activeCategory="exercise"
+            sortedDogs={sortedDogs}
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
             onRefresh={handleRefresh}
-          >
-            <TimeTableContent 
-              sortedDogs={sortedDogs}
-              timeSlots={timeSlots}
-              activeCategory="exercise"
-              hasPottyBreak={hasPottyBreak}
-              hasCareLogged={hasCareLogged}
-              onCellClick={handleCellClick}
-              onCareLogClick={handleCareLogClick}
-              currentHour={currentHour}
-              isMobile={isMobile}
-            />
-          </TableContainer>
+            currentHour={currentHour}
+            isMobile={isMobile}
+          />
         </TabsContent>
         
         <div className="p-2 bg-gray-50 dark:bg-slate-900/60 border-t border-gray-200 dark:border-gray-800">
@@ -218,21 +143,14 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
       </Tabs>
       
       {/* Observation Dialog */}
-      {selectedDog && (
-        <ObservationDialog
-          open={observationDialogOpen}
-          onOpenChange={setObservationDialogOpen}
-          dogId={selectedDog.dog_id}
-          dogName={selectedDog.dog_name}
-          onSubmit={handleObservationSubmit}
-          existingObservations={observations[selectedDog.dog_id]?.map(obs => ({
-            observation: obs.observation,
-            observation_type: obs.observation_type,
-            created_at: obs.created_at
-          })) || []}
-          isMobile={isMobile}
-        />
-      )}
+      <ObservationDialogManager
+        selectedDog={selectedDog}
+        observationDialogOpen={observationDialogOpen}
+        onOpenChange={setObservationDialogOpen}
+        onSubmit={handleObservationSubmit}
+        observations={observations}
+        isMobile={isMobile}
+      />
     </Card>
   );
 };
