@@ -9,17 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TableContainer from './components/TableContainer';
 import usePottyBreakTable from './hooks/usePottyBreakTable';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-// Create timeslots array once, not on every render
-const createTimeSlots = () => {
-  const slots = [];
-  for (let hour = 6; hour <= 22; hour++) {
-    const displayHour = hour > 12 ? hour - 12 : hour;
-    const amPm = hour >= 12 ? 'PM' : 'AM';
-    slots.push(`${displayHour}:00 ${amPm}`);
-  }
-  return slots;
-};
+import { generateTimeSlots } from './dogGroupColors';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -29,15 +19,22 @@ interface DogTimeTableProps {
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
-  const timeSlots = useMemo(() => createTimeSlots(), []);
   
-  // Get current hour
-  const [currentHour, setCurrentHour] = useState<number>(new Date().getHours());
+  // Get current time and hour
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [currentHour, setCurrentHour] = useState<number>(currentTime.getHours());
   
-  // Update current hour every minute
+  // Generate timeSlots based on current time
+  const timeSlots = useMemo(() => {
+    return generateTimeSlots(currentTime);
+  }, [currentTime]);
+  
+  // Update current time and hour every minute
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setCurrentHour(new Date().getHours());
+      const now = new Date();
+      setCurrentTime(now);
+      setCurrentHour(now.getHours());
     }, 60000); // 60000ms = 1 minute
     
     return () => clearInterval(intervalId);
