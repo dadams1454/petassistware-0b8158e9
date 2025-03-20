@@ -65,12 +65,9 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!observation.trim()) return;
     
-    // Add timestamp to observation if provided
-    const observationWithTimestamp = timestamp 
-      ? `[${timestamp}] ${observation}` 
-      : observation;
+    // Allow empty observation text, just use the observation type as the text if needed
+    const observationText = observation.trim() || `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
     
     setIsSubmitting(true);
     try {
@@ -93,7 +90,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         timestampDate.setHours(hour24, minute, 0, 0);
       }
       
-      await onSubmit(dogId, observationWithTimestamp, observationType, timestampDate);
+      await onSubmit(dogId, observationText, observationType, timestampDate);
       setObservation('');
       setObservationType('other');
       onOpenChange(false);

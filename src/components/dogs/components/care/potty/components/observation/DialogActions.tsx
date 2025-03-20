@@ -6,7 +6,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 interface DialogActionsProps {
   onClose: () => void;
   onSubmit: () => void;
-  isValid: boolean;
+  isValid?: boolean; // Make this optional since we're no longer requiring text input
   isLoading?: boolean;
   isMobile: boolean;
 }
@@ -14,7 +14,7 @@ interface DialogActionsProps {
 const DialogActions: React.FC<DialogActionsProps> = ({
   onClose,
   onSubmit,
-  isValid,
+  isValid = true, // Default to true since observation notes are now optional
   isLoading = false,
   isMobile
 }) => {
@@ -32,7 +32,7 @@ const DialogActions: React.FC<DialogActionsProps> = ({
         <Button 
           type="button"
           onClick={onSubmit}
-          disabled={!isValid || isLoading}
+          disabled={isLoading}
           className="flex-1"
         >
           {isLoading ? 'Saving...' : 'Save'}
@@ -53,7 +53,7 @@ const DialogActions: React.FC<DialogActionsProps> = ({
       <Button 
         type="button"
         onClick={onSubmit}
-        disabled={!isValid || isLoading}
+        disabled={isLoading}
       >
         {isLoading ? 'Saving...' : 'Save Observation'}
       </Button>

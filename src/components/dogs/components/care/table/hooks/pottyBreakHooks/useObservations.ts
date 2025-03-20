@@ -100,12 +100,16 @@ export const useObservations = (dogs: DogCareStatus[]) => {
   ) => {
     setIsLoading(true);
     try {
+      // If observation text is empty, use the observation type as the text
+      const defaultText = observationText.trim() || 
+        `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
+      
       const result = await addCareLog({
         dog_id: dogId,
         category: 'observation',
         task_name: observationType,
         timestamp,
-        notes: observationText
+        notes: defaultText
       });
       
       if (result) {
@@ -119,7 +123,7 @@ export const useObservations = (dogs: DogCareStatus[]) => {
             id: result.id,
             dog_id: result.dog_id,
             created_at: result.created_at,
-            observation: result.notes || '',
+            observation: result.notes || defaultText,
             observation_type: observationType,
             created_by: result.created_by,
             expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),

@@ -49,7 +49,6 @@ const DialogContent: React.FC<DialogContentProps> = ({
         <DialogActions 
           onClose={onClose}
           onSubmit={onSubmit}
-          isValid={observationNote.trim().length > 0}
           isLoading={isLoading}
           isMobile={isMobile}
         />

@@ -71,16 +71,16 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
         
         <div>
           <div className="flex items-center justify-between">
-            <Label htmlFor="observation">Observation Notes</Label>
+            <Label htmlFor="observation">Observation Notes (Optional)</Label>
             <span className="text-xs text-muted-foreground">
-              {timeSlot ? `Time slot: ${timeSlot}` : timestamp ? `Current time: ${timestamp}` : ''}
+              {timeSlot ? `Time slot: ${timeSlot}` : timestamp ? `Time: ${timestamp}` : ''}
             </span>
           </div>
           <Textarea
             id="observation"
             value={observation}
             onChange={(e) => setObservation(e.target.value)}
-            placeholder="Enter your observation (e.g., 'Dog had an accident in kennel' or 'Showing early signs of heat')"
+            placeholder="Optional details about the observation"
             className="mt-1"
             rows={isMobile ? 3 : 4}
           />
@@ -99,7 +99,7 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
           </Button>
           <Button 
             type="submit" 
-            disabled={!observation.trim() || isSubmitting}
+            disabled={isSubmitting}
             className="flex-1"
           >
             {isSubmitting ? 'Saving...' : 'Save'}
@@ -116,7 +116,7 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
           </Button>
           <Button 
             type="submit" 
-            disabled={!observation.trim() || isSubmitting}
+            disabled={isSubmitting}
           >
             {isSubmitting ? 'Saving...' : 'Save Observation'}
           </Button>

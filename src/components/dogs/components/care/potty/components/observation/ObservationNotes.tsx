@@ -14,12 +14,12 @@ const ObservationNotes: React.FC<ObservationNotesProps> = ({
 }) => {
   return (
     <div>
-      <Label htmlFor="observation">Observation Notes</Label>
+      <Label htmlFor="observation">Observation Notes (Optional)</Label>
       <Textarea
         id="observation"
         value={observationNote}
         onChange={(e) => setObservationNote(e.target.value)}
-        placeholder="Enter your observation (e.g., 'Dog had an accident in kennel' or 'Showing early signs of heat')"
+        placeholder="Optional details about the observation"
         className="mt-1"
         rows={4}
       />
