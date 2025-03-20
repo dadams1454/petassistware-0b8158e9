@@ -1,7 +1,9 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
+import { format } from 'date-fns';
 
 type ObservationType = {
   id: string;
@@ -11,6 +13,7 @@ type ObservationType = {
   observation_type: 'accident' | 'heat' | 'behavior' | 'other';
   created_by: string;
   expires_at: string;
+  timeSlot?: string; // Add time slot to track when the observation occurred
 }
 
 type ObservationsMap = Record<string, ObservationType[]>;
@@ -20,6 +23,23 @@ export const useObservations = (dogs: DogCareStatus[]) => {
   const [isLoading, setIsLoading] = useState(false);
   const { addCareLog, fetchDogCareLogs } = useDailyCare();
   const { toast } = useToast();
+
+  // Function to convert a timestamp to the nearest time slot format
+  const getTimeSlotFromTimestamp = (timestamp: string): string => {
+    const date = new Date(timestamp);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    // Convert to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12 in 12-hour format
+    
+    // Round to nearest hour for now (we could add logic for half-hours if needed)
+    const formattedHour = `${hours}:00 ${ampm}`;
+    
+    return formattedHour;
+  };
 
   // Load observations for all dogs
   const fetchObservations = useCallback(async () => {
@@ -49,7 +69,8 @@ export const useObservations = (dogs: DogCareStatus[]) => {
             observation: log.notes || '',
             observation_type: log.task_name as 'accident' | 'heat' | 'behavior' | 'other',
             created_by: log.created_by,
-            expires_at: new Date(new Date(log.timestamp).getTime() + 24 * 60 * 60 * 1000).toISOString()
+            expires_at: new Date(new Date(log.timestamp).getTime() + 24 * 60 * 60 * 1000).toISOString(),
+            timeSlot: getTimeSlotFromTimestamp(log.timestamp)
           }));
           
         if (dogObservations.length > 0) {
@@ -74,7 +95,8 @@ export const useObservations = (dogs: DogCareStatus[]) => {
   const addObservation = useCallback(async (
     dogId: string, 
     observationText: string, 
-    observationType: 'accident' | 'heat' | 'behavior' | 'other'
+    observationType: 'accident' | 'heat' | 'behavior' | 'other',
+    timestamp = new Date()
   ) => {
     setIsLoading(true);
     try {
@@ -82,11 +104,14 @@ export const useObservations = (dogs: DogCareStatus[]) => {
         dog_id: dogId,
         category: 'observation',
         task_name: observationType,
-        timestamp: new Date(),
+        timestamp,
         notes: observationText
       });
       
       if (result) {
+        // Get the time slot from the timestamp
+        const timeSlot = getTimeSlotFromTimestamp(timestamp.toString());
+        
         // Update local state
         setObservations(prev => {
           const newObservations = { ...prev };
@@ -97,7 +122,8 @@ export const useObservations = (dogs: DogCareStatus[]) => {
             observation: result.notes || '',
             observation_type: observationType,
             created_by: result.created_by,
-            expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString()
+            expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
+            timeSlot
           };
           
           if (!newObservations[dogId]) {
@@ -132,8 +158,24 @@ export const useObservations = (dogs: DogCareStatus[]) => {
       return !!observations[dogId]?.length;
     }
     
-    // Otherwise, return the default behavior checking by dog ID
-    return !!observations[dogId]?.length;
+    // If time slot is provided, check if there's an observation matching this time slot
+    return !!observations[dogId]?.some(obs => obs.timeSlot === timeSlot);
+  }, [observations]);
+  
+  // Get observation details including the time slot
+  const getObservationDetails = useCallback((dogId: string) => {
+    if (!observations[dogId] || observations[dogId].length === 0) {
+      return null;
+    }
+    
+    // Get the most recent observation for this dog
+    const latestObservation = observations[dogId][0];
+    
+    return {
+      text: latestObservation.observation,
+      type: latestObservation.observation_type,
+      timeSlot: latestObservation.timeSlot
+    };
   }, [observations]);
   
   // Load observations on component mount
@@ -145,6 +187,7 @@ export const useObservations = (dogs: DogCareStatus[]) => {
     observations,
     addObservation,
     hasObservation,
+    getObservationDetails,
     fetchObservations,
     isLoading
   };

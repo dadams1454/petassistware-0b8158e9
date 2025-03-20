@@ -7,12 +7,13 @@ interface ObservationDialogManagerProps {
   selectedDog: DogCareStatus | null;
   observationDialogOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => Promise<void>;
+  onSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other', timestamp?: Date) => Promise<void>;
   observations: Record<string, Array<{
     observation: string;
     observation_type: 'accident' | 'heat' | 'behavior' | 'other';
     created_at: string;
   }>>;
+  timeSlots: string[];
   isMobile: boolean;
 }
 
@@ -22,6 +23,7 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
   onOpenChange,
   onSubmit,
   observations,
+  timeSlots,
   isMobile
 }) => {
   if (!selectedDog) return null;
@@ -38,6 +40,7 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
         observation_type: obs.observation_type,
         created_at: obs.created_at
       })) || []}
+      timeSlots={timeSlots}
       isMobile={isMobile}
     />
   );

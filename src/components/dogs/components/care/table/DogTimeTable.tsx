@@ -52,9 +52,14 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     }
   };
   
-  // Handle observation submission
-  const handleObservationSubmit = async (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => {
-    await addObservation(dogId, observation, observationType);
+  // Handle observation submission with optional timestamp
+  const handleObservationSubmit = async (
+    dogId: string, 
+    observation: string, 
+    observationType: 'accident' | 'heat' | 'behavior' | 'other',
+    timestamp?: Date
+  ) => {
+    await addObservation(dogId, observation, observationType, timestamp || new Date());
     handleRefresh();
   };
   
@@ -164,6 +169,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         onOpenChange={setObservationDialogOpen}
         onSubmit={handleObservationSubmit}
         observations={observations}
+        timeSlots={timeSlots}
         isMobile={isMobile}
       />
     </Card>

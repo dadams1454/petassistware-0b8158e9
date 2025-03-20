@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ObservationTypeSelector from './ObservationTypeSelector';
 
 interface ObservationFormProps {
@@ -16,6 +17,9 @@ interface ObservationFormProps {
   onCancel: () => void;
   timestamp: string;
   timeSlot?: string;
+  timeSlots?: string[];
+  selectedTimeSlot?: string;
+  setSelectedTimeSlot?: (timeSlot: string) => void;
   isMobile?: boolean;
 }
 
@@ -29,6 +33,9 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
   onCancel,
   timestamp,
   timeSlot = '',
+  timeSlots = [],
+  selectedTimeSlot = '',
+  setSelectedTimeSlot = () => {},
   isMobile = false
 }) => {
   return (
@@ -39,6 +46,28 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
           onChange={setObservationType} 
           isMobile={isMobile}
         />
+        
+        {/* Time slot selector when available */}
+        {timeSlots.length > 0 && setSelectedTimeSlot && (
+          <div>
+            <Label htmlFor="time-slot">When did this occur?</Label>
+            <Select 
+              value={selectedTimeSlot} 
+              onValueChange={setSelectedTimeSlot}
+            >
+              <SelectTrigger id="time-slot" className="w-full">
+                <SelectValue placeholder="Select time" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeSlots.map((slot) => (
+                  <SelectItem key={slot} value={slot}>
+                    {slot}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         
         <div>
           <div className="flex items-center justify-between">

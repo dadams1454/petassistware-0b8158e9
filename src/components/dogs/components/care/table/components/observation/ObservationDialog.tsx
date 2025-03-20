@@ -10,13 +10,14 @@ interface ObservationDialogProps {
   onOpenChange: (open: boolean) => void;
   dogId: string;
   dogName: string;
-  onSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => Promise<void>;
+  onSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other', timestamp?: Date) => Promise<void>;
   existingObservations?: Array<{
     observation: string;
     observation_type: 'accident' | 'heat' | 'behavior' | 'other';
     created_at: string;
   }>;
   timeSlot?: string;
+  timeSlots?: string[];
   isMobile?: boolean;
 }
 
@@ -28,12 +29,14 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   onSubmit,
   existingObservations = [],
   timeSlot = '',
+  timeSlots = [],
   isMobile = false
 }) => {
   const [observation, setObservation] = useState('');
   const [observationType, setObservationType] = useState<'accident' | 'heat' | 'behavior' | 'other'>('other');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timestamp, setTimestamp] = useState<string>('');
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
 
   // Update the timestamp whenever the dialog opens
   useEffect(() => {
@@ -41,8 +44,24 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       const now = new Date();
       const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setTimestamp(timeString);
+      
+      // Default to current time slot if available
+      if (timeSlots.length > 0) {
+        // Find current hour
+        const currentHour = now.getHours();
+        const isPM = currentHour >= 12;
+        let hour12 = currentHour % 12;
+        if (hour12 === 0) hour12 = 12;
+        
+        // Create a time slot string in the expected format (e.g. "1:00 PM")
+        const currentTimeSlot = `${hour12}:00 ${isPM ? 'PM' : 'AM'}`;
+        
+        // Find the closest match in timeSlots
+        const closestSlot = timeSlots.find(slot => slot === currentTimeSlot) || timeSlots[0];
+        setSelectedTimeSlot(closestSlot);
+      }
     }
-  }, [open]);
+  }, [open, timeSlots]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +74,26 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
     
     setIsSubmitting(true);
     try {
-      await onSubmit(dogId, observationWithTimestamp, observationType);
+      // Create a date object for the selected time slot if one was selected
+      let timestampDate: Date | undefined;
+      
+      if (selectedTimeSlot) {
+        // Parse the time slot (e.g., "2:00 PM")
+        const [hourMinute, period] = selectedTimeSlot.split(' ');
+        const [hour, minute] = hourMinute.split(':').map(Number);
+        
+        // Create a new date object for today
+        timestampDate = new Date();
+        
+        // Set the hours and minutes
+        let hour24 = hour;
+        if (period === 'PM' && hour !== 12) hour24 += 12;
+        if (period === 'AM' && hour === 12) hour24 = 0;
+        
+        timestampDate.setHours(hour24, minute, 0, 0);
+      }
+      
+      await onSubmit(dogId, observationWithTimestamp, observationType, timestampDate);
       setObservation('');
       setObservationType('other');
       onOpenChange(false);
@@ -81,6 +119,9 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         onCancel={() => onOpenChange(false)}
         timestamp={timestamp}
         timeSlot={timeSlot}
+        timeSlots={timeSlots}
+        selectedTimeSlot={selectedTimeSlot}
+        setSelectedTimeSlot={setSelectedTimeSlot}
         isMobile={isMobile}
       />
     </>

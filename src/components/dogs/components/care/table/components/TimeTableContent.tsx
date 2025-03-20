@@ -12,7 +12,7 @@ interface TimeTableContentProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string } | null;
+  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
@@ -75,6 +75,10 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                 <th className="sticky left-0 z-10 bg-gray-100 dark:bg-slate-800/60 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[180px] border-b border-r border-gray-200 dark:border-gray-700">
                   Dog / {categoryTitle}
                 </th>
+                {/* Add observation column */}
+                <th className="sticky left-[180px] z-10 bg-gray-100 dark:bg-slate-800/60 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[220px] max-w-[220px] border-b border-r border-gray-200 dark:border-gray-700">
+                  Daily Observations
+                </th>
                 {timeSlots.map((slot) => (
                   <th 
                     key={slot} 
@@ -115,7 +119,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                 ))
               ) : (
                 <TableRow>
-                  <td colSpan={timeSlots.length + 1} className="px-6 py-8 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
+                  <td colSpan={timeSlots.length + 2} className="px-6 py-8 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
                     No dogs available
                   </td>
                 </TableRow>

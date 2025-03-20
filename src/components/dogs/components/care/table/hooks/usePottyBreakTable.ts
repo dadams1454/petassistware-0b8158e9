@@ -22,7 +22,7 @@ const usePottyBreakTable = (
   const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh);
   const { pottyBreaks, setPottyBreaks, isLoading: pottyBreaksLoading, fetchPottyBreaks, hasPottyBreak } = usePottyBreakData(currentDate);
   const { careLogs, fetchCareLogs, isLoading: careLogsLoading, hasCareLogged } = useCareLogsData(sortedDogs);
-  const { observations, addObservation, hasObservation, isLoading: observationsLoading } = useObservations(sortedDogs);
+  const { observations, addObservation, hasObservation, getObservationDetails, isLoading: observationsLoading } = useObservations(sortedDogs);
   
   // Create optimized cell actions handler with debounced refresh
   const { handleCellClick, isLoading: cellActionsLoading } = useCellActions(
@@ -45,21 +45,6 @@ const usePottyBreakTable = (
     // Pass the arguments directly to the underlying hasObservation function
     return hasObservation(dogId, timeSlot);
   }, [hasObservation]);
-
-  // New function to get observation details (text and type)
-  const getObservationDetails = useCallback((dogId: string) => {
-    if (!observations[dogId] || observations[dogId].length === 0) {
-      return null;
-    }
-    
-    // Get the most recent observation for this dog
-    const latestObservation = observations[dogId][0];
-    
-    return {
-      text: latestObservation.observation,
-      type: latestObservation.observation_type
-    };
-  }, [observations]);
 
   // Handle dog click to navigate to dog details page
   const handleDogClick = useCallback((dogId: string) => {

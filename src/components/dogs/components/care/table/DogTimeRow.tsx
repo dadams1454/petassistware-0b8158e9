@@ -1,9 +1,10 @@
 
 import React, { memo } from 'react';
-import { TableRow } from '@/components/ui/table';
+import { TableRow, TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
 import DogNameCell from './components/DogNameCell';
+import { AlertTriangle, Heart, Activity, MessageCircle } from 'lucide-react';
 
 interface DogTimeRowProps {
   dog: DogCareStatus;
@@ -13,7 +14,7 @@ interface DogTimeRowProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string } | null;
+  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
@@ -62,25 +63,71 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   const dogHasObservation = hasObservation(dogId, '');
   const observationDetails = dogHasObservation ? getObservationDetails(dogId) : null;
   
+  // Function to get observation icon based on type
+  const getObservationIcon = (type: string) => {
+    switch (type) {
+      case 'accident':
+        return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
+      case 'heat':
+        return <Heart className="h-4 w-4 text-red-500 flex-shrink-0" />;
+      case 'behavior':
+        return <Activity className="h-4 w-4 text-blue-500 flex-shrink-0" />;
+      default:
+        return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
+    }
+  };
+
+  // Extract the time from an observation if available
+  const getObservationTimeSlot = () => {
+    if (!observationDetails || !observationDetails.timeSlot) return null;
+    return observationDetails.timeSlot;
+  };
+
+  const observationTimeSlot = getObservationTimeSlot();
+  
   return (
     <TableRow key={`${dogId}-row`} className={rowColor} data-dog-id={dogId}>
-      {/* Dog name cell with photo, gender color, and observation text */}
+      {/* Dog name cell with photo, gender color */}
       <DogNameCell 
         dog={dog} 
         onCareLogClick={() => onCareLogClick(dogId, dogName)}
         onDogClick={() => onDogClick(dogId)}
         activeCategory={activeCategory}
-        hasObservation={dogHasObservation}
-        observationText={observationDetails?.text || ''}
-        observationType={observationDetails?.type || ''}
+        hasObservation={false} // We're now showing observations in a separate column
+        observationText=""
+        observationType=""
       />
       
-      {/* Time slot cells - now without observation indicators */}
+      {/* Observation column */}
+      <TableCell className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px]">
+        {dogHasObservation && observationDetails ? (
+          <div className="flex items-start gap-2">
+            {getObservationIcon(observationDetails.type)}
+            <div className="overflow-hidden">
+              <div className="text-xs font-medium capitalize text-gray-700 dark:text-gray-300">
+                {observationDetails.type}
+              </div>
+              <div className="text-xs line-clamp-2 text-gray-600 dark:text-gray-400">
+                {observationDetails.text}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <span className="text-xs text-gray-400 dark:text-gray-600">No observations</span>
+        )}
+      </TableCell>
+      
+      {/* Time slot cells */}
       {timeSlots.map((timeSlot) => {
         const cellKey = `${dogId}-${timeSlot}`;
         const hasPottyBreakForSlot = hasPottyBreak(dogId, timeSlot);
         const hasCareLoggedForSlot = hasCareLogged(dogId, timeSlot, activeCategory);
         const isCurrentTimeSlot = isCurrentHourSlot(timeSlot);
+        
+        // Check if this time slot matches the observation time
+        const isIncidentTimeSlot = dogHasObservation && 
+                                  observationTimeSlot && 
+                                  observationTimeSlot === timeSlot;
         
         return (
           <TimeSlotCell 
@@ -94,6 +141,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             onClick={() => onCellClick(dogId, dogName, timeSlot, activeCategory)}
             flags={dogFlags}
             isCurrentHour={isCurrentTimeSlot}
+            isIncident={isIncidentTimeSlot}
           />
         );
       })}

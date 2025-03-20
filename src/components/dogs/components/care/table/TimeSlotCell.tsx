@@ -16,6 +16,7 @@ interface TimeSlotCellProps {
   onClick: () => void;
   flags?: DogFlag[];
   isCurrentHour?: boolean;
+  isIncident?: boolean;
 }
 
 // Use memo to prevent unnecessary re-renders that could cause flag flickering
@@ -28,7 +29,8 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   hasCareLogged,
   onClick,
   flags = [],
-  isCurrentHour = false
+  isCurrentHour = false,
+  isIncident = false
 }) => {
   // Create a stable copy of flags to prevent reference issues
   // This helps ensure each dog's flags stay with that dog
@@ -80,23 +82,28 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       ref={cellRef}
       key={cellIdentifier}
       className={`${cellClassNames} cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden transition-all duration-200 relative ${
-        hasPottyBreak 
-          ? 'bg-green-100 dark:bg-green-900/30' 
-          : isCurrentHour
-            ? 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20'
-            : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+        isIncident
+          ? 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20'
+          : hasPottyBreak 
+            ? 'bg-green-100 dark:bg-green-900/30' 
+            : isCurrentHour
+              ? 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20'
+              : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
       } ${
         isCurrentHour ? 'border-l-2 border-r-2 border-blue-400 dark:border-blue-600' : ''
+      } ${
+        isIncident ? 'border-l-2 border-r-2 border-red-400 dark:border-red-600' : ''
       } touch-manipulation`}
       onClick={onClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
-      title={`${dogName} - ${timeSlot}${isCurrentHour ? ' (Current hour)' : ''}`}
+      title={`${dogName} - ${timeSlot}${isIncident ? ' (Incident reported)' : ''}${isCurrentHour ? ' (Current hour)' : ''}`}
       data-cell-id={cellIdentifier}
       data-dog-id={dogId}
       data-flags-count={dogFlags.length}
       data-is-current-hour={isCurrentHour ? 'true' : 'false'}
+      data-is-incident={isIncident ? 'true' : 'false'}
       data-mobile-cell={isMobile ? "true" : "false"}
     >
       <div className="w-full h-full p-1 flex items-center justify-center">
@@ -107,6 +114,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
           hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
           isCurrentHour={isCurrentHour}
+          isIncident={isIncident}
         />
       </div>
     </TableCell>
