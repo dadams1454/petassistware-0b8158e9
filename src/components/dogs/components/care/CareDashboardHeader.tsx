@@ -1,57 +1,77 @@
 
 import React from 'react';
+import { RefreshCw, Filter, Download, Paintbrush } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Grid3X3, RefreshCw } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import PersonalizationPanel from '@/components/personalization/PersonalizationPanel';
 
 interface CareDashboardHeaderProps {
-  view: string;
-  onViewChange: (value: string) => void;
+  title: string;
   onRefresh?: () => void;
+  isLoading?: boolean;
 }
 
-const CareDashboardHeader: React.FC<CareDashboardHeaderProps> = ({ 
-  view, 
-  onViewChange,
-  onRefresh 
+const CareDashboardHeader: React.FC<CareDashboardHeaderProps> = ({
+  title,
+  onRefresh,
+  isLoading = false,
 }) => {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Daily Care</h1>
-        <p className="text-muted-foreground">
-          Monitor and log care activities for all dogs
-        </p>
-      </div>
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 gap-2">
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+        {title}
+      </h1>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+        <PersonalizationPanel 
+          trigger={
+            <Button
+              variant="outline"
+              size={isMobile ? "icon" : "default"}
+              className={isMobile ? "h-9 w-9" : "gap-1"}
+              title="Personalize Interface"
+            >
+              <Paintbrush className="h-4 w-4" />
+              {!isMobile && <span>Personalize</span>}
+            </Button>
+          }
+        />
+        
+        <Button
+          variant="outline"
+          size={isMobile ? "icon" : "default"}
+          className={isMobile ? "h-9 w-9" : "gap-1"}
+          title="Filter"
+        >
+          <Filter className="h-4 w-4" />
+          {!isMobile && <span>Filter</span>}
+        </Button>
+        
+        <Button
+          variant="outline"
+          size={isMobile ? "icon" : "default"}
+          className={isMobile ? "h-9 w-9" : "gap-1"}
+          title="Export Data"
+        >
+          <Download className="h-4 w-4" />
+          {!isMobile && <span>Export</span>}
+        </Button>
+        
         {onRefresh && (
-          <Button 
-            variant="outline" 
-            size="sm"
+          <Button
+            variant="default"
+            size={isMobile ? "icon" : "default"}
+            className={`${isMobile ? "h-9 w-9" : "gap-1"} ${isLoading ? "animate-spin" : ""}`}
             onClick={onRefresh}
+            disabled={isLoading}
+            title="Refresh Data"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            {!isMobile && <span>Refresh</span>}
           </Button>
         )}
-        
-        <Tabs 
-          value={view} 
-          onValueChange={onViewChange}
-          className="w-[200px]"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="table">
-              <Calendar className="h-4 w-4 mr-2" />
-              Table
-            </TabsTrigger>
-            <TabsTrigger value="cards">
-              <Grid3X3 className="h-4 w-4 mr-2" />
-              Cards
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
     </div>
   );

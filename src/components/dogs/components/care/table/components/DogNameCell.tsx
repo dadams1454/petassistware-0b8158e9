@@ -2,7 +2,9 @@
 import React from 'react';
 import { TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Paintbrush } from 'lucide-react';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import DogColorPicker from '@/components/personalization/DogColorPicker';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
@@ -84,11 +86,24 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
           <div className="flex items-center gap-1 mt-1">
             <button
               onClick={onCareLogClick}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[100px]"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[60px]"
               title={`Log ${activeCategory} for ${dog.dog_name}`}
             >
               Log {getButtonText()}
             </button>
+            
+            <DogColorPicker 
+              dogId={dog.dog_id}
+              dogName={dog.dog_name}
+              trigger={
+                <button
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 ml-1"
+                  title={`Customize ${dog.dog_name}'s appearance`}
+                >
+                  <Paintbrush className="h-3 w-3" />
+                </button>
+              }
+            />
           </div>
           
           {/* Observation display - show text instead of icon */}

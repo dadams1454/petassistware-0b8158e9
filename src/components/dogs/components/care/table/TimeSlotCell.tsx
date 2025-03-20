@@ -5,6 +5,7 @@ import { DogFlag } from '@/types/dailyCare';
 import CellContent from './components/CellContent';
 import { useCellStyles } from './components/useCellStyles';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 interface TimeSlotCellProps {
   dogId: string;
@@ -44,6 +45,10 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   
   // Check if we're on a mobile device
   const isMobile = useIsMobile();
+  
+  // Get user preferences for dog color
+  const { getDogColor } = useUserPreferences();
+  const customDogColor = getDogColor(dogId);
   
   const { cellClassNames } = useCellStyles({
     category,
@@ -88,7 +93,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
             ? 'bg-green-100 dark:bg-green-900/30' 
             : isCurrentHour
               ? 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20'
-              : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+              : customDogColor || 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
       } ${
         isCurrentHour ? 'border-l-2 border-r-2 border-blue-400 dark:border-blue-600' : ''
       } ${
@@ -105,6 +110,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       data-is-current-hour={isCurrentHour ? 'true' : 'false'}
       data-is-incident={isIncident ? 'true' : 'false'}
       data-mobile-cell={isMobile ? "true" : "false"}
+      data-custom-color={customDogColor ? "true" : "false"}
     >
       <div className="w-full h-full p-1 flex items-center justify-center">
         <CellContent 
