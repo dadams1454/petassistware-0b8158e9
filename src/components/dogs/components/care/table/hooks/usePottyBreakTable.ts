@@ -1,5 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDogSorting } from './pottyBreakHooks/useDogSorting';
 import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
@@ -14,6 +15,7 @@ const usePottyBreakTable = (
   activeCategory: string = 'pottybreaks'
 ) => {
   const [currentDate] = useState(new Date());
+  const navigate = useNavigate();
   
   // Use the refactored hooks
   const { sortedDogs } = useDogSorting(dogsStatus);
@@ -38,6 +40,11 @@ const usePottyBreakTable = (
     return hasCareLogged(dogId, timeSlot, category, hasPottyBreak);
   }, [hasCareLogged, hasPottyBreak]);
 
+  // Handle dog click to navigate to dog details page
+  const handleDogClick = useCallback((dogId: string) => {
+    navigate(`/dogs/${dogId}`);
+  }, [navigate]);
+
   return {
     currentDate,
     isLoading,
@@ -49,7 +56,8 @@ const usePottyBreakTable = (
     addObservation,
     observations,
     handleCellClick,
-    handleRefresh
+    handleRefresh,
+    handleDogClick
   };
 };
 

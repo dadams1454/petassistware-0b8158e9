@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, MessageCircle } from 'lucide-react';
 
 export interface CellContentProps {
   dogName: string;
@@ -8,18 +8,20 @@ export interface CellContentProps {
   category: string;
   hasPottyBreak: boolean;
   hasCareLogged: boolean;
+  hasObservation?: boolean;
   isCurrentHour?: boolean;
 }
 
 const CellContent: React.FC<CellContentProps> = ({
   hasPottyBreak,
   hasCareLogged,
+  hasObservation = false,
   isCurrentHour = false
 }) => {
-  // Return checkmark if any type of care is logged (potty break or other care)
-  if (hasPottyBreak || hasCareLogged) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      {/* Show checkmark if any type of care is logged */}
+      {(hasPottyBreak || hasCareLogged) && (
         <Check 
           className={`h-4 w-4 ${
             isCurrentHour 
@@ -30,20 +32,24 @@ const CellContent: React.FC<CellContentProps> = ({
           }`} 
           aria-label={hasPottyBreak ? "Potty break logged" : "Care logged"}
         />
-      </div>
-    );
-  }
-  
-  // Show current hour indicator
-  if (isCurrentHour) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
+      )}
+      
+      {/* Show observation indicator */}
+      {hasObservation && (
+        <div className={`${(hasPottyBreak || hasCareLogged) ? 'ml-1' : ''}`}>
+          <MessageCircle 
+            className="h-4 w-4 text-amber-500 dark:text-amber-400"
+            aria-label="Observation logged"
+          />
+        </div>
+      )}
+      
+      {/* Show current hour indicator when no other indicators are present */}
+      {isCurrentHour && !hasPottyBreak && !hasCareLogged && !hasObservation && (
         <div className="h-1.5 w-1.5 rounded-full bg-blue-400 dark:bg-blue-600"></div>
-      </div>
-    );
-  }
-  
-  return null;
+      )}
+    </div>
+  );
 };
 
 export default CellContent;

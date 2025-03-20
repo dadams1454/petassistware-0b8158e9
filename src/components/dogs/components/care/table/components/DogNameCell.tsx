@@ -7,12 +7,14 @@ import DogAvatar from '../DogAvatar';
 interface DogNameCellProps {
   dog: DogCareStatus;
   onCareLogClick: () => void;
+  onDogClick: () => void;
   activeCategory: string;
 }
 
 const DogNameCell: React.FC<DogNameCellProps> = ({ 
   dog, 
   onCareLogClick, 
+  onDogClick,
   activeCategory 
 }) => {
   // Get gender color based on sex property
@@ -36,7 +38,11 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
           aria-label={`${dog.sex === 'male' ? 'Male' : 'Female'} dog indicator`}
         ></div>
         
-        <div className="flex-shrink-0 h-10 w-10">
+        <div 
+          className="flex-shrink-0 h-10 w-10 cursor-pointer" 
+          onClick={onDogClick}
+          title={`View ${dog.dog_name}'s details`}
+        >
           <img 
             src={dog.dog_photo || '/placeholder.svg'} 
             alt={dog.dog_name}
@@ -45,7 +51,11 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
         </div>
         
         <div className="overflow-hidden">
-          <div className="font-medium truncate max-w-[100px]" title={dog.dog_name}>
+          <div 
+            className="font-medium truncate max-w-[100px] cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" 
+            title={dog.dog_name}
+            onClick={onDogClick}
+          >
             {dog.dog_name}
           </div>
           

@@ -10,8 +10,10 @@ interface ActiveTabContentProps {
   timeSlots: string[];
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasObservation: (dogId: string, timeSlot: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
+  onDogClick: (dogId: string) => void;
   onRefresh: () => void;
   currentHour: number;
   isMobile: boolean;
@@ -23,8 +25,10 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   timeSlots,
   hasPottyBreak,
   hasCareLogged,
+  hasObservation,
   onCellClick,
   onCareLogClick,
+  onDogClick,
   onRefresh,
   currentHour,
   isMobile
@@ -36,8 +40,10 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
       timeSlots={timeSlots}
       hasPottyBreak={hasPottyBreak}
       hasCareLogged={hasCareLogged}
+      hasObservation={hasObservation}
       onCellClick={onCellClick}
       onCareLogClick={onCareLogClick}
+      onDogClick={onDogClick}
       onRefresh={onRefresh}
     >
       <TimeTableContent 
@@ -46,8 +52,10 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
         activeCategory={activeCategory}
         hasPottyBreak={hasPottyBreak}
         hasCareLogged={hasCareLogged}
+        hasObservation={hasObservation}
         onCellClick={onCellClick}
         onCareLogClick={onCareLogClick}
+        onDogClick={onDogClick}
         currentHour={currentHour}
         isMobile={isMobile}
       />

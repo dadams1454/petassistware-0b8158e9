@@ -11,8 +11,10 @@ interface TimeTableContentProps {
   activeCategory?: string;
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasObservation: (dogId: string, timeSlot: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
+  onDogClick: (dogId: string) => void;
   currentHour?: number;
   isMobile?: boolean;
 }
@@ -23,8 +25,10 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   activeCategory = 'pottybreaks',
   hasPottyBreak, 
   hasCareLogged,
+  hasObservation,
   onCellClick,
   onCareLogClick,
+  onDogClick,
   currentHour,
   isMobile = false
 }) => {
@@ -98,8 +102,10 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                     activeCategory={activeCategory}
                     hasPottyBreak={hasPottyBreak}
                     hasCareLogged={hasCareLogged}
+                    hasObservation={hasObservation}
                     onCellClick={onCellClick}
                     onCareLogClick={onCareLogClick}
+                    onDogClick={onDogClick}
                     currentHour={currentHour}
                     isMobile={isMobile}
                   />

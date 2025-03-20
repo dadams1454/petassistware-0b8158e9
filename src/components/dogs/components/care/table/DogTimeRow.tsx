@@ -12,8 +12,10 @@ interface DogTimeRowProps {
   activeCategory: string;
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasObservation: (dogId: string, timeSlot: string) => boolean;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
+  onDogClick: (dogId: string) => void;
   currentHour?: number;
   isMobile?: boolean;
 }
@@ -26,8 +28,10 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   activeCategory,
   hasPottyBreak,
   hasCareLogged,
+  hasObservation,
   onCellClick,
   onCareLogClick,
+  onDogClick,
   currentHour,
   isMobile = false
 }) => {
@@ -57,7 +61,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       {/* Dog name cell with photo, gender color, and condition symbols */}
       <DogNameCell 
         dog={dog} 
-        onCareLogClick={() => onCareLogClick(dogId, dogName)} 
+        onCareLogClick={() => onCareLogClick(dogId, dogName)}
+        onDogClick={() => onDogClick(dogId)}
         activeCategory={activeCategory}
       />
       
@@ -66,6 +71,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         const cellKey = `${dogId}-${timeSlot}`;
         const hasPottyBreakForSlot = hasPottyBreak(dogId, timeSlot);
         const hasCareLoggedForSlot = hasCareLogged(dogId, timeSlot, activeCategory);
+        const hasObservationForSlot = hasObservation(dogId, timeSlot);
         const isCurrentTimeSlot = isCurrentHourSlot(timeSlot);
         
         return (
@@ -77,6 +83,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             category={activeCategory}
             hasPottyBreak={hasPottyBreakForSlot}
             hasCareLogged={hasCareLoggedForSlot}
+            hasObservation={hasObservationForSlot}
             onClick={() => onCellClick(dogId, dogName, timeSlot, activeCategory)}
             flags={dogFlags}
             isCurrentHour={isCurrentTimeSlot}
