@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDailyCare } from '@/contexts/dailyCare';
@@ -127,7 +126,13 @@ export const useObservations = (dogs: DogCareStatus[]) => {
   }, [addCareLog, toast]);
   
   // Check if a dog has an observation
-  const hasObservation = useCallback((dogId: string) => {
+  const hasObservation = useCallback((dogId: string, timeSlot: string = '') => {
+    // If no timeSlot is provided, just check if the dog has any observations
+    if (!timeSlot) {
+      return !!observations[dogId]?.length;
+    }
+    
+    // Otherwise, return the default behavior checking by dog ID
     return !!observations[dogId]?.length;
   }, [observations]);
   

@@ -2,6 +2,7 @@
 import React from 'react';
 import { TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
+import { MessageCircle } from 'lucide-react';
 import DogAvatar from '../DogAvatar';
 
 interface DogNameCellProps {
@@ -9,13 +10,15 @@ interface DogNameCellProps {
   onCareLogClick: () => void;
   onDogClick: () => void;
   activeCategory: string;
+  hasObservation?: boolean;
 }
 
 const DogNameCell: React.FC<DogNameCellProps> = ({ 
   dog, 
   onCareLogClick, 
   onDogClick,
-  activeCategory 
+  activeCategory,
+  hasObservation = false
 }) => {
   // Get gender color based on sex property
   const genderColor = dog.sex === 'male' ? 'bg-blue-500' : 'bg-pink-500';
@@ -59,13 +62,23 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
             {dog.dog_name}
           </div>
           
-          <button
-            onClick={onCareLogClick}
-            className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[100px]"
-            title={`Log ${activeCategory} for ${dog.dog_name}`}
-          >
-            Log {getButtonText()}
-          </button>
+          <div className="flex items-center gap-1 mt-1">
+            <button
+              onClick={onCareLogClick}
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[100px]"
+              title={`Log ${activeCategory} for ${dog.dog_name}`}
+            >
+              Log {getButtonText()}
+            </button>
+            
+            {hasObservation && (
+              <MessageCircle 
+                size={14} 
+                className="text-amber-500 dark:text-amber-400 fill-amber-100 dark:fill-amber-900/30" 
+                title={`${dog.dog_name} has observations`}
+              />
+            )}
+          </div>
         </div>
       </div>
     </TableCell>
@@ -73,3 +86,4 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
 };
 
 export default DogNameCell;
+

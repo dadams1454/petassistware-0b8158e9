@@ -42,7 +42,8 @@ const usePottyBreakTable = (
 
   // Enhanced hasObservation function that handles both dog ID and time slot
   const handleHasObservation = useCallback((dogId: string, timeSlot: string) => {
-    return hasObservation(dogId);
+    // Pass the arguments directly to the underlying hasObservation function
+    return hasObservation(dogId, timeSlot);
   }, [hasObservation]);
 
   // Handle dog click to navigate to dog details page

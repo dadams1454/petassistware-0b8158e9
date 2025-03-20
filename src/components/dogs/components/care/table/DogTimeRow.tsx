@@ -55,6 +55,9 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
     
     return slot24Hour === currentHour;
   };
+
+  // Check if the dog has any observations
+  const dogHasObservation = hasObservation(dogId, '');
   
   return (
     <TableRow key={`${dogId}-row`} className={rowColor} data-dog-id={dogId}>
@@ -64,6 +67,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         onCareLogClick={() => onCareLogClick(dogId, dogName)}
         onDogClick={() => onDogClick(dogId)}
         activeCategory={activeCategory}
+        hasObservation={dogHasObservation}
       />
       
       {/* Time slot cells */}
@@ -98,3 +102,4 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
 DogTimeRow.displayName = 'DogTimeRow';
 
 export default DogTimeRow;
+

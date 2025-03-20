@@ -1,13 +1,11 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableHeader, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Scissors, RefreshCw, Calendar } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { Scissors } from 'lucide-react';
-import { format, getDaysInMonth, startOfMonth, addDays } from 'date-fns';
+import { format, addDays, isAfter, isBefore, parseISO } from 'date-fns';
 import DogNameCell from './components/DogNameCell';
-import { useToast } from '@/components/ui/use-toast';
-import { getDogRowColor } from './dogGroupColors';
 import { useNavigate } from 'react-router-dom';
 
 interface GroomingScheduleProps {
@@ -16,143 +14,144 @@ interface GroomingScheduleProps {
 }
 
 const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) => {
-  const [currentMonth] = useState(new Date());
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [groomingData, setGroomingData] = useState<any[]>([]);
   const navigate = useNavigate();
-  const [groomingRecords, setGroomingRecords] = useState<Record<string, boolean>>({});
   
-  // Generate days for the current month
-  const daysInMonth = getDaysInMonth(currentMonth);
-  const monthStart = startOfMonth(currentMonth);
+  // Mock grooming schedule data - in a real app, this would come from an API
+  useEffect(() => {
+    const mockGroomingData = dogs.map(dog => {
+      const lastGrooming = new Date();
+      lastGrooming.setDate(lastGrooming.getDate() - Math.floor(Math.random() * 30));
+      
+      const nextGrooming = addDays(lastGrooming, 30); // Schedule next grooming 30 days after last
+      
+      return {
+        dogId: dog.dog_id,
+        lastGrooming: lastGrooming.toISOString(),
+        nextGrooming: nextGrooming.toISOString(),
+        groomingType: Math.random() > 0.5 ? 'Full Groom' : 'Bath & Brush',
+        notes: Math.random() > 0.7 ? 'Special coat care needed' : ''
+      };
+    });
+    
+    setGroomingData(mockGroomingData);
+  }, [dogs]);
   
-  const dayNumbers = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  
-  // Get day date objects for the current month
-  const days = dayNumbers.map(day => addDays(monthStart, day - 1));
-  
-  // Check if grooming is recorded for a specific day
-  const isGroomingRecorded = (dogId: string, day: number) => {
-    const key = `${dogId}-${day}-grooming`;
-    return groomingRecords[key] || false;
+  const handleRefresh = () => {
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      if (onRefresh) onRefresh();
+    }, 1000);
   };
   
-  // Handle cell click to log grooming
-  const handleGroomingClick = (dogId: string, dogName: string, day: number) => {
-    const key = `${dogId}-${day}-grooming`;
-    const dayDate = addDays(monthStart, day - 1);
-    const formattedDay = format(dayDate, 'MMM d');
-    
-    if (groomingRecords[key]) {
-      // Remove grooming record
-      const updatedRecords = { ...groomingRecords };
-      delete updatedRecords[key];
-      setGroomingRecords(updatedRecords);
-      
-      toast({
-        title: "Grooming removed",
-        description: `Removed grooming for ${dogName} on ${formattedDay}`,
-      });
-    } else {
-      // Add grooming record
-      setGroomingRecords(prev => ({
-        ...prev,
-        [key]: true
-      }));
-      
-      toast({
-        title: "Grooming scheduled",
-        description: `Scheduled grooming for ${dogName} on ${formattedDay}`,
-      });
-    }
-    
-    // Trigger refresh if provided
-    if (onRefresh) {
-      onRefresh();
-    }
+  const handleScheduleGrooming = (dogId: string) => {
+    // Navigate to grooming scheduling page
+    navigate(`/dogs/${dogId}/grooming`);
   };
   
-  // Sort dogs alphabetically by name
-  const sortedDogs = [...dogs].sort((a, b) => 
-    a.dog_name.toLowerCase().localeCompare(b.dog_name.toLowerCase())
-  );
-
-  // Empty function for DogNameCell compatibility
-  const handleCareLogClick = () => {};
+  const handleCareLogClick = (dogId: string, dogName: string) => {
+    console.log(`Opening grooming dialog for ${dogName} (ID: ${dogId})`);
+    // In a real app, this would open a dialog to log grooming
+  };
   
-  // Navigate to dog details
   const handleDogClick = (dogId: string) => {
     navigate(`/dogs/${dogId}`);
   };
-
+  
+  const getDueStatus = (nextGroomingDate: string) => {
+    const today = new Date();
+    const nextDate = parseISO(nextGroomingDate);
+    
+    if (isBefore(nextDate, today)) {
+      return <span className="text-red-500 font-medium">Overdue</span>;
+    }
+    
+    if (isBefore(nextDate, addDays(today, 7))) {
+      return <span className="text-amber-500 font-medium">Due Soon</span>;
+    }
+    
+    return <span className="text-green-500 font-medium">Scheduled</span>;
+  };
+  
   return (
-    <Card className="shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl flex items-center">
-          <Scissors className="h-5 w-5 mr-2" />
-          Monthly Grooming Schedule
-          <span className="ml-2 text-sm font-normal text-muted-foreground">
-            ({format(currentMonth, 'MMMM yyyy')})
-          </span>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-xl font-bold flex items-center gap-2">
+          <Scissors className="h-5 w-5" />
+          Grooming Schedule
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Click on a day to schedule or remove grooming for each dog
-        </p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleRefresh}
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </CardHeader>
-      
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
+      <CardContent>
+        <div className="rounded-md border">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="w-40 sticky left-0 z-10 bg-muted/50">Dog Name</TableHead>
-                {dayNumbers.map(day => (
-                  <TableHead 
-                    key={`day-${day}`} 
-                    className="text-center px-2 py-1 w-12 border-x border-slate-200"
-                  >
-                    {day}
-                  </TableHead>
-                ))}
+              <TableRow>
+                <TableHead className="w-[180px]">Dog</TableHead>
+                <TableHead>Last Grooming</TableHead>
+                <TableHead>Next Due</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedDogs.map((dog, index) => (
-                <TableRow 
-                  key={`${dog.dog_id}-grooming-row`}
-                  className={getDogRowColor(index)}
-                >
-                  <DogNameCell 
-                    dog={dog} 
-                    onCareLogClick={handleCareLogClick} 
-                    onDogClick={() => handleDogClick(dog.dog_id)}
-                    activeCategory="grooming" 
-                  />
+              {dogs.length > 0 ? (
+                dogs.map((dog, index) => {
+                  const groomingInfo = groomingData.find(g => g.dogId === dog.dog_id);
+                  if (!groomingInfo) return null;
                   
-                  {dayNumbers.map(day => {
-                    const hasGrooming = isGroomingRecorded(dog.dog_id, day);
-                    
-                    return (
-                      <TableCell
-                        key={`${dog.dog_id}-day-${day}`}
-                        className={`
-                          text-center py-2 px-1 relative border cursor-pointer
-                          ${hasGrooming 
-                            ? 'bg-pink-100 dark:bg-pink-900/30 border-pink-200 dark:border-pink-800' 
-                            : 'bg-white dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-pink-900/20'}
-                        `}
-                        onClick={() => handleGroomingClick(dog.dog_id, dog.dog_name, day)}
-                        title={`${dog.dog_name} - ${format(days[day-1], 'MMM d')}`}
-                      >
-                        {hasGrooming ? (
-                          <div className="flex items-center justify-center">
-                            <Scissors className="h-3 w-3 text-pink-600 dark:text-pink-400" />
-                          </div>
-                        ) : null}
+                  return (
+                    <TableRow key={dog.dog_id}>
+                      <DogNameCell 
+                        dog={dog} 
+                        onCareLogClick={() => handleCareLogClick(dog.dog_id, dog.dog_name)}
+                        onDogClick={() => handleDogClick(dog.dog_id)}
+                        activeCategory="grooming"
+                        hasObservation={false}
+                      />
+                      <TableCell>
+                        {format(parseISO(groomingInfo.lastGrooming), 'MMM d, yyyy')}
                       </TableCell>
-                    );
-                  })}
+                      <TableCell>
+                        {format(parseISO(groomingInfo.nextGrooming), 'MMM d, yyyy')}
+                      </TableCell>
+                      <TableCell>
+                        {getDueStatus(groomingInfo.nextGrooming)}
+                      </TableCell>
+                      <TableCell>{groomingInfo.groomingType}</TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleScheduleGrooming(dog.dog_id)}
+                        >
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Schedule
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-4">
+                    No dogs available for grooming schedule
+                  </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
