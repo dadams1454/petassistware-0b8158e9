@@ -18,6 +18,14 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
   // Get gender color based on sex property
   const genderColor = dog.sex === 'male' ? 'bg-blue-500' : 'bg-pink-500';
   
+  // Determine button text based on category
+  const getButtonText = () => {
+    if (activeCategory === 'pottybreaks') {
+      return 'Note';
+    }
+    return activeCategory;
+  };
+  
   return (
     <TableCell 
       className="whitespace-nowrap sticky left-0 z-10 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700"
@@ -46,7 +54,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
             className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[100px]"
             title={`Log ${activeCategory} for ${dog.dog_name}`}
           >
-            Log {activeCategory === 'pottybreaks' ? 'break' : activeCategory}
+            Log {getButtonText()}
           </button>
         </div>
       </div>
