@@ -9,8 +9,10 @@ interface TableContainerProps {
   timeSlots?: string[];
   hasPottyBreak?: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged?: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasObservation?: (dogId: string, timeSlot: string) => boolean;
   onCellClick?: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick?: (dogId: string, dogName: string) => void;
+  onDogClick?: (dogId: string) => void;
   onRefresh?: () => void;
 }
 
@@ -21,9 +23,11 @@ const TableContainer: React.FC<TableContainerProps> = ({
   timeSlots = [],
   hasPottyBreak = () => false,
   hasCareLogged = () => false,
+  hasObservation = () => false,
   onCellClick = () => {},
-  onCareLogClick,
-  onRefresh
+  onCareLogClick = () => {},
+  onDogClick = () => {},
+  onRefresh = () => {}
 }) => {
   return (
     <div className="mb-4 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">

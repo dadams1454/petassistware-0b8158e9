@@ -33,10 +33,12 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     sortedDogs, 
     hasPottyBreak, 
     hasCareLogged,
+    hasObservation,
     addObservation,
     observations,
     handleCellClick, 
-    handleRefresh
+    handleRefresh,
+    handleDogClick
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
   
   // Handle care log button click - open observation dialog for dog
@@ -80,8 +82,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
+            hasObservation={hasObservation}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
+            onDogClick={handleDogClick}
             onRefresh={handleRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
@@ -95,8 +99,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
+            hasObservation={hasObservation}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
+            onDogClick={handleDogClick}
             onRefresh={handleRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
@@ -110,8 +116,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
+            hasObservation={hasObservation}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
+            onDogClick={handleDogClick}
             onRefresh={handleRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
@@ -125,8 +133,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
+            hasObservation={hasObservation}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
+            onDogClick={handleDogClick}
             onRefresh={handleRefresh}
             currentHour={currentHour}
             isMobile={isMobile}

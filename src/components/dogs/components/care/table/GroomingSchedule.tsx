@@ -8,6 +8,7 @@ import { format, getDaysInMonth, startOfMonth, addDays } from 'date-fns';
 import DogNameCell from './components/DogNameCell';
 import { useToast } from '@/components/ui/use-toast';
 import { getDogRowColor } from './dogGroupColors';
+import { useNavigate } from 'react-router-dom';
 
 interface GroomingScheduleProps {
   dogs: DogCareStatus[];
@@ -17,6 +18,7 @@ interface GroomingScheduleProps {
 const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) => {
   const [currentMonth] = useState(new Date());
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [groomingRecords, setGroomingRecords] = useState<Record<string, boolean>>({});
   
   // Generate days for the current month
@@ -76,6 +78,11 @@ const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) 
 
   // Empty function for DogNameCell compatibility
   const handleCareLogClick = () => {};
+  
+  // Navigate to dog details
+  const handleDogClick = (dogId: string) => {
+    navigate(`/dogs/${dogId}`);
+  };
 
   return (
     <Card className="shadow-md">
@@ -117,6 +124,7 @@ const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) 
                   <DogNameCell 
                     dog={dog} 
                     onCareLogClick={handleCareLogClick} 
+                    onDogClick={() => handleDogClick(dog.dog_id)}
                     activeCategory="grooming" 
                   />
                   
