@@ -117,42 +117,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
           />
         </TabsContent>
         
-        <TabsContent value="medications" className="mt-0">
-          <ActiveTabContent
-            activeCategory="medications"
-            sortedDogs={sortedDogs}
-            timeSlots={timeSlots}
-            hasPottyBreak={hasPottyBreak}
-            hasCareLogged={hasCareLogged}
-            hasObservation={hasObservation}
-            getObservationDetails={getObservationDetails}
-            onCellClick={handleCellClick}
-            onCareLogClick={handleCareLogClick}
-            onDogClick={handleDogClick}
-            onRefresh={handleRefresh}
-            currentHour={currentHour}
-            isMobile={isMobile}
-          />
-        </TabsContent>
-        
-        <TabsContent value="exercise" className="mt-0">
-          <ActiveTabContent
-            activeCategory="exercise"
-            sortedDogs={sortedDogs}
-            timeSlots={timeSlots}
-            hasPottyBreak={hasPottyBreak}
-            hasCareLogged={hasCareLogged}
-            hasObservation={hasObservation}
-            getObservationDetails={getObservationDetails}
-            onCellClick={handleCellClick}
-            onCareLogClick={handleCareLogClick}
-            onDogClick={handleDogClick}
-            onRefresh={handleRefresh}
-            currentHour={currentHour}
-            isMobile={isMobile}
-          />
-        </TabsContent>
-        
         <div className="p-2 bg-gray-50 dark:bg-slate-900/60 border-t border-gray-200 dark:border-gray-800">
           <TimeTableFooter
             isLoading={isLoading}

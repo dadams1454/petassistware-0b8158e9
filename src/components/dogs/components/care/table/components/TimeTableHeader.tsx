@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Dog, Apple, Pill, Activity, MessageCircle } from 'lucide-react';
+import { RefreshCw, Dog, Apple, MessageCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CustomButton } from '@/components/ui/custom-button';
 
@@ -32,10 +32,6 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
         return <Dog className="h-3 w-3 md:h-4 md:w-4" />;
       case 'feeding':
         return <Apple className="h-3 w-3 md:h-4 md:w-4" />;
-      case 'medications':
-        return <Pill className="h-3 w-3 md:h-4 md:w-4" />;
-      case 'exercise':
-        return <Activity className="h-3 w-3 md:h-4 md:w-4" />;
       default:
         return null;
     }
@@ -59,22 +55,6 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
         >
           {getIcon('feeding')}
           <span className={isMobile ? 'text-xs' : ''}>Feeding</span>
-        </TabsTrigger>
-        <TabsTrigger 
-          value="medications" 
-          onClick={() => handleCategoryChange('medications')}
-          className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
-        >
-          {getIcon('medications')}
-          <span className={isMobile ? 'text-xs' : ''}>Meds</span>
-        </TabsTrigger>
-        <TabsTrigger 
-          value="exercise" 
-          onClick={() => handleCategoryChange('exercise')}
-          className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
-        >
-          {getIcon('exercise')}
-          <span className={isMobile ? 'text-xs' : ''}>Exercise</span>
         </TabsTrigger>
       </TabsList>
       
