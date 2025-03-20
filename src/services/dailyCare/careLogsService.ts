@@ -31,6 +31,12 @@ export const fetchDogCareLogs = async (dogId: string): Promise<DailyCarelog[]> =
  */
 export const addCareLog = async (data: CareLogFormData, userId: string): Promise<DailyCarelog | null> => {
   try {
+    // Ensure the timestamp is in a format Supabase can handle
+    let timestamp = data.timestamp;
+    if (!(timestamp instanceof Date)) {
+      timestamp = new Date(timestamp);
+    }
+    
     // We'll need to store flags in a separate table in a real implementation
     // For now, store them in the notes field as JSON for simplicity
     const notesWithFlags = data.flags && data.flags.length > 0
@@ -44,7 +50,7 @@ export const addCareLog = async (data: CareLogFormData, userId: string): Promise
         created_by: userId,
         category: data.category,
         task_name: data.task_name,
-        timestamp: data.timestamp.toISOString(),
+        timestamp: timestamp.toISOString(),
         notes: notesWithFlags || null,
       })
       .select()
@@ -75,5 +81,36 @@ export const deleteCareLog = async (id: string): Promise<boolean> => {
   } catch (error) {
     console.error('Error deleting care log:', error);
     return false;
+  }
+};
+
+/**
+ * Fetches feeding logs for a specific date
+ * @param date The date to fetch feeding logs for
+ * @returns Array of feeding logs with dog information
+ */
+export const fetchFeedingLogsByDate = async (date: Date): Promise<any[]> => {
+  try {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const { data, error } = await supabase
+      .from('daily_care_logs')
+      .select(`
+        *,
+        dog:dog_id(id, name)
+      `)
+      .eq('category', 'feeding')
+      .gte('timestamp', startOfDay.toISOString())
+      .lte('timestamp', endOfDay.toISOString());
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching feeding logs for day:', error);
+    throw error;
   }
 };

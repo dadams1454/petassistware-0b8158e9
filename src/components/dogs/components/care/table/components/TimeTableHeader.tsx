@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Dog, Apple, MessageCircle } from 'lucide-react';
+import { RefreshCw, Dog, UtensilsCrossed, MessageCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CustomButton } from '@/components/ui/custom-button';
 
@@ -31,7 +31,7 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
       case 'pottybreaks':
         return <Dog className="h-3 w-3 md:h-4 md:w-4" />;
       case 'feeding':
-        return <Apple className="h-3 w-3 md:h-4 md:w-4" />;
+        return <UtensilsCrossed className="h-3 w-3 md:h-4 md:w-4" />;
       default:
         return null;
     }

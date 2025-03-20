@@ -24,8 +24,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const [observationDialogOpen, setObservationDialogOpen] = useState(false);
   const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
   
-  // Use the time manager hook
-  const { currentHour, timeSlots } = useTimeManager();
+  // Use the time manager hook with activeCategory
+  const { currentHour, timeSlots } = useTimeManager(activeCategory);
   
   // Use the potty break table hook for data management
   const { 

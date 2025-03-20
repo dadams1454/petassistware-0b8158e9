@@ -21,7 +21,7 @@ const usePottyBreakTable = (
   const { sortedDogs } = useDogSorting(dogsStatus);
   const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh);
   const { pottyBreaks, setPottyBreaks, isLoading: pottyBreaksLoading, fetchPottyBreaks, hasPottyBreak } = usePottyBreakData(currentDate);
-  const { careLogs, fetchCareLogs, isLoading: careLogsLoading, hasCareLogged } = useCareLogsData(sortedDogs);
+  const { careLogs, fetchCareLogs, isLoading: careLogsLoading, hasCareLogged } = useCareLogsData(sortedDogs, activeCategory);
   const { observations, addObservation, hasObservation, getObservationDetails, isLoading: observationsLoading } = useObservations(sortedDogs);
   
   // Create optimized cell actions handler with debounced refresh
@@ -29,7 +29,8 @@ const usePottyBreakTable = (
     currentDate, 
     pottyBreaks, 
     setPottyBreaks, 
-    handleRefresh
+    handleRefresh,
+    activeCategory
   );
   
   // Combined loading state
@@ -37,7 +38,10 @@ const usePottyBreakTable = (
   
   // Wrapper for hasCareLogged to incorporate hasPottyBreak
   const handleHasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
-    return hasCareLogged(dogId, timeSlot, category, hasPottyBreak);
+    if (category === 'pottybreaks') {
+      return hasPottyBreak(dogId, timeSlot);
+    }
+    return hasCareLogged(dogId, timeSlot, category);
   }, [hasCareLogged, hasPottyBreak]);
 
   // Enhanced hasObservation function that handles both dog ID and time slot

@@ -2,15 +2,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { generateTimeSlots } from '../dogGroupColors';
 
-export const useTimeManager = () => {
+export const useTimeManager = (activeCategory = 'pottybreaks') => {
   // Get current time and hour
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [currentHour, setCurrentHour] = useState<number>(currentTime.getHours());
   
-  // Generate timeSlots based on current time
+  // Generate timeSlots based on current time and active category
   const timeSlots = useMemo(() => {
-    return generateTimeSlots(currentTime);
-  }, [currentTime]);
+    return generateTimeSlots(currentTime, activeCategory);
+  }, [currentTime, activeCategory]);
   
   // Update current time and hour every minute
   useEffect(() => {
