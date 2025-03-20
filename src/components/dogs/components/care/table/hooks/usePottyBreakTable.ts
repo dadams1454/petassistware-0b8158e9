@@ -46,6 +46,21 @@ const usePottyBreakTable = (
     return hasObservation(dogId, timeSlot);
   }, [hasObservation]);
 
+  // New function to get observation details (text and type)
+  const getObservationDetails = useCallback((dogId: string) => {
+    if (!observations[dogId] || observations[dogId].length === 0) {
+      return null;
+    }
+    
+    // Get the most recent observation for this dog
+    const latestObservation = observations[dogId][0];
+    
+    return {
+      text: latestObservation.observation,
+      type: latestObservation.observation_type
+    };
+  }, [observations]);
+
   // Handle dog click to navigate to dog details page
   const handleDogClick = useCallback((dogId: string) => {
     navigate(`/dogs/${dogId}`);
@@ -59,6 +74,7 @@ const usePottyBreakTable = (
     hasPottyBreak,
     hasCareLogged: handleHasCareLogged,
     hasObservation: handleHasObservation,
+    getObservationDetails,
     addObservation,
     observations,
     handleCellClick,

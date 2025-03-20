@@ -34,6 +34,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     hasPottyBreak, 
     hasCareLogged,
     hasObservation,
+    getObservationDetails,
     addObservation,
     observations,
     handleCellClick, 
@@ -83,6 +84,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             hasObservation={hasObservation}
+            getObservationDetails={getObservationDetails}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
             onDogClick={handleDogClick}
@@ -100,6 +102,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             hasObservation={hasObservation}
+            getObservationDetails={getObservationDetails}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
             onDogClick={handleDogClick}
@@ -117,6 +120,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             hasObservation={hasObservation}
+            getObservationDetails={getObservationDetails}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
             onDogClick={handleDogClick}
@@ -134,6 +138,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
             hasObservation={hasObservation}
+            getObservationDetails={getObservationDetails}
             onCellClick={handleCellClick}
             onCareLogClick={handleCareLogClick}
             onDogClick={handleDogClick}

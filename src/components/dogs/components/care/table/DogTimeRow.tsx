@@ -13,6 +13,7 @@ interface DogTimeRowProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
+  getObservationDetails: (dogId: string) => { text: string; type: string } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
@@ -29,6 +30,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   hasPottyBreak,
   hasCareLogged,
   hasObservation,
+  getObservationDetails,
   onCellClick,
   onCareLogClick,
   onDogClick,
@@ -56,26 +58,28 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
     return slot24Hour === currentHour;
   };
 
-  // Check if the dog has any observations
+  // Check if the dog has any observations and get details if available
   const dogHasObservation = hasObservation(dogId, '');
+  const observationDetails = dogHasObservation ? getObservationDetails(dogId) : null;
   
   return (
     <TableRow key={`${dogId}-row`} className={rowColor} data-dog-id={dogId}>
-      {/* Dog name cell with photo, gender color, and condition symbols */}
+      {/* Dog name cell with photo, gender color, and observation text */}
       <DogNameCell 
         dog={dog} 
         onCareLogClick={() => onCareLogClick(dogId, dogName)}
         onDogClick={() => onDogClick(dogId)}
         activeCategory={activeCategory}
         hasObservation={dogHasObservation}
+        observationText={observationDetails?.text || ''}
+        observationType={observationDetails?.type || ''}
       />
       
-      {/* Time slot cells */}
+      {/* Time slot cells - now without observation indicators */}
       {timeSlots.map((timeSlot) => {
         const cellKey = `${dogId}-${timeSlot}`;
         const hasPottyBreakForSlot = hasPottyBreak(dogId, timeSlot);
         const hasCareLoggedForSlot = hasCareLogged(dogId, timeSlot, activeCategory);
-        const hasObservationForSlot = hasObservation(dogId, timeSlot);
         const isCurrentTimeSlot = isCurrentHourSlot(timeSlot);
         
         return (
@@ -87,7 +91,6 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             category={activeCategory}
             hasPottyBreak={hasPottyBreakForSlot}
             hasCareLogged={hasCareLoggedForSlot}
-            hasObservation={hasObservationForSlot}
             onClick={() => onCellClick(dogId, dogName, timeSlot, activeCategory)}
             flags={dogFlags}
             isCurrentHour={isCurrentTimeSlot}
@@ -102,4 +105,3 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
 DogTimeRow.displayName = 'DogTimeRow';
 
 export default DogTimeRow;
-

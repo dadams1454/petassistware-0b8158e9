@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, MessageCircle } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 export interface CellContentProps {
   dogName: string;
@@ -8,14 +8,12 @@ export interface CellContentProps {
   category: string;
   hasPottyBreak: boolean;
   hasCareLogged: boolean;
-  hasObservation?: boolean;
   isCurrentHour?: boolean;
 }
 
 const CellContent: React.FC<CellContentProps> = ({
   hasPottyBreak,
   hasCareLogged,
-  hasObservation = false,
   isCurrentHour = false
 }) => {
   return (
@@ -34,18 +32,8 @@ const CellContent: React.FC<CellContentProps> = ({
         />
       )}
       
-      {/* Show observation indicator */}
-      {hasObservation && (
-        <div className={`${(hasPottyBreak || hasCareLogged) ? 'ml-1' : ''}`}>
-          <MessageCircle 
-            className="h-4 w-4 text-amber-500 dark:text-amber-400"
-            aria-label="Observation logged"
-          />
-        </div>
-      )}
-      
       {/* Show current hour indicator when no other indicators are present */}
-      {isCurrentHour && !hasPottyBreak && !hasCareLogged && !hasObservation && (
+      {isCurrentHour && !hasPottyBreak && !hasCareLogged && (
         <div className="h-1.5 w-1.5 rounded-full bg-blue-400 dark:bg-blue-600"></div>
       )}
     </div>
