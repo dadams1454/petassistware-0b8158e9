@@ -36,16 +36,13 @@ const ObservationList: React.FC<ObservationListProps> = ({ existingObservations 
             key={index} 
             className="p-2 bg-muted rounded-md text-sm"
           >
-            <div className="flex justify-between mb-1">
-              <span className="font-medium capitalize flex items-center gap-1">
-                {getObservationTypeIcon(obs.observation_type)}
+            <div className="flex items-center gap-1 mb-1">
+              {getObservationTypeIcon(obs.observation_type)}
+              <span className="font-medium capitalize">
                 {obs.observation_type}
               </span>
-              <span className="text-xs text-muted-foreground">
-                {new Date(obs.created_at).toLocaleString()}
-              </span>
             </div>
-            <p>{obs.observation}</p>
+            <p className="mt-1">{obs.observation}</p>
           </div>
         ))}
       </div>

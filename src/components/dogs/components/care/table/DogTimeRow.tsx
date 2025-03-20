@@ -93,7 +93,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         onCareLogClick={() => onCareLogClick(dogId, dogName)}
         onDogClick={() => onDogClick(dogId)}
         activeCategory={activeCategory}
-        hasObservation={false} // We're now showing observations in a separate column
+        hasObservation={false}
         observationText=""
         observationType=""
       />
@@ -107,7 +107,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
               <div className="text-xs font-medium capitalize text-gray-700 dark:text-gray-300">
                 {observationDetails.type}
               </div>
-              <div className="text-xs line-clamp-2 text-gray-600 dark:text-gray-400">
+              <div className="text-xs line-clamp-3 text-gray-600 dark:text-gray-400">
                 {observationDetails.text}
               </div>
             </div>

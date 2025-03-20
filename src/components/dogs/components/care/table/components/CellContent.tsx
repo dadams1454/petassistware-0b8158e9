@@ -24,7 +24,7 @@ const CellContent: React.FC<CellContentProps> = ({
       {(hasPottyBreak || hasCareLogged) && (
         isIncident ? (
           <AlertTriangle 
-            className="h-4 w-4 text-red-600 dark:text-red-400" 
+            className="h-5 w-5 text-red-600 dark:text-red-400" 
             aria-label="Incident reported at this time"
           />
         ) : (
