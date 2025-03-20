@@ -39,9 +39,9 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <CareDashboardHeader 
-          view={activeView} 
-          onViewChange={setActiveView}
+          title="Care Dashboard"
           onRefresh={handleRefresh}
+          isLoading={loading}
         />
         
         <Button 

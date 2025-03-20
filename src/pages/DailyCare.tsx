@@ -71,8 +71,8 @@ const DailyCare: React.FC = () => {
       });
   }, [fetchAllDogsWithCareStatus, refreshTrigger]);
 
-  return (
-    <MainLayout>
+  const content = (
+    <>
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -118,8 +118,10 @@ const DailyCare: React.FC = () => {
           <Button onClick={handleManualRefresh} className="mt-4">Refresh Dogs</Button>
         </Card>
       )}
-    </MainLayout>
+    </>
   );
+
+  return <MainLayout>{content}</MainLayout>;
 };
 
 export default DailyCare;

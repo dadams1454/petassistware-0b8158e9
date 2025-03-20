@@ -9,12 +9,16 @@ interface CareDashboardHeaderProps {
   title: string;
   onRefresh?: () => void;
   isLoading?: boolean;
+  view?: string;
+  onViewChange?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const CareDashboardHeader: React.FC<CareDashboardHeaderProps> = ({
   title,
   onRefresh,
   isLoading = false,
+  view,
+  onViewChange,
 }) => {
   const isMobile = useIsMobile();
 
