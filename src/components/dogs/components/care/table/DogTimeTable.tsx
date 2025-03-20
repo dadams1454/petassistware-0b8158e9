@@ -10,6 +10,7 @@ import TableContainer from './components/TableContainer';
 import usePottyBreakTable from './hooks/usePottyBreakTable';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { generateTimeSlots } from './dogGroupColors';
+import ObservationDialog from './components/ObservationDialog';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -19,6 +20,10 @@ interface DogTimeTableProps {
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
+  
+  // State for observation dialog
+  const [observationDialogOpen, setObservationDialogOpen] = useState(false);
+  const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
   
   // Get current time and hour
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -46,6 +51,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     sortedDogs, 
     hasPottyBreak, 
     hasCareLogged, 
+    hasObservation,
+    addObservation,
+    observations,
     handleCellClick, 
     handleRefresh
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
@@ -66,11 +74,20 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     });
   }, [timeSlots, currentHour]);
   
-  // Handle care log button click - redirect to individual dog care page
+  // Handle care log button click - open observation dialog for dog
   const handleCareLogClick = (dogId: string, dogName: string) => {
-    console.log(`Redirecting to care logs for ${dogName} (ID: ${dogId})`);
-    // Here you would typically navigate to the dog's care page
-    // For now, just log it
+    console.log(`Opening observation dialog for ${dogName} (ID: ${dogId})`);
+    const dog = sortedDogs.find(d => d.dog_id === dogId);
+    if (dog) {
+      setSelectedDog(dog);
+      setObservationDialogOpen(true);
+    }
+  };
+  
+  // Handle observation submission
+  const handleObservationSubmit = async (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other') => {
+    await addObservation(dogId, observation, observationType);
+    handleRefresh();
   };
   
   return (
@@ -199,6 +216,23 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
           />
         </div>
       </Tabs>
+      
+      {/* Observation Dialog */}
+      {selectedDog && (
+        <ObservationDialog
+          open={observationDialogOpen}
+          onOpenChange={setObservationDialogOpen}
+          dogId={selectedDog.dog_id}
+          dogName={selectedDog.dog_name}
+          onSubmit={handleObservationSubmit}
+          existingObservations={observations[selectedDog.dog_id]?.map(obs => ({
+            observation: obs.observation,
+            observation_type: obs.observation_type,
+            created_at: obs.created_at
+          })) || []}
+          isMobile={isMobile}
+        />
+      )}
     </Card>
   );
 };
