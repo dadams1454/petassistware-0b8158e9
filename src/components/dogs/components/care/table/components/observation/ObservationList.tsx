@@ -5,13 +5,16 @@ import { format, parseISO } from 'date-fns';
 import { AlertTriangle, Heart, Activity, MessageCircle, UtensilsCrossed } from 'lucide-react';
 import { ObservationType } from './ObservationDialog';
 
+// Define a stronger type for the observation object
+interface ObservationItem {
+  observation: string;
+  observation_type: ObservationType;
+  created_at: string;
+  category?: string;
+}
+
 interface ObservationListProps {
-  existingObservations: Array<{
-    observation: string;
-    observation_type: ObservationType;
-    created_at: string;
-    category?: string;
-  }>;
+  existingObservations: ObservationItem[];
   activeCategory?: string;
 }
 
@@ -19,8 +22,10 @@ const ObservationList: React.FC<ObservationListProps> = ({
   existingObservations,
   activeCategory = 'pottybreaks'
 }) => {
+  // If there are no observations, don't render anything
   if (existingObservations.length === 0) return null;
   
+  // Get the appropriate icon for each observation type
   const getObservationIcon = (type: ObservationType) => {
     switch (type) {
       case 'accident':
@@ -36,7 +41,12 @@ const ObservationList: React.FC<ObservationListProps> = ({
     }
   };
   
-  const getTimeAgo = (dateStr: string) => {
+  /**
+   * Format a timestamp string into a human-readable relative time
+   * @param dateStr ISO datetime string
+   * @returns Formatted relative time string (e.g., "Just now", "5m ago", "2h ago", or the date)
+   */
+  const getTimeAgo = (dateStr: string): string => {
     try {
       const date = parseISO(dateStr);
       const now = new Date();
