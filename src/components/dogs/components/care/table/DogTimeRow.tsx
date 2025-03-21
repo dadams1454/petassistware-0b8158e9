@@ -1,5 +1,5 @@
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
