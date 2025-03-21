@@ -1,102 +1,99 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { debounce } from '@/utils/debounce';
 
 interface UseAutoRefreshProps {
-  onRefresh: () => Promise<boolean | void>;
+  onRefresh: () => Promise<void>;
   isRefreshing: boolean;
   interval?: number;
-  initialRefreshOnMount?: boolean;
 }
 
 export const useAutoRefresh = ({ 
   onRefresh, 
   isRefreshing, 
-  interval = 30 * 60 * 1000,  // 30 minutes by default
-  initialRefreshOnMount = true
+  interval = 30 * 60 * 1000  // 30 minutes by default
 }: UseAutoRefreshProps) => {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const isRefreshingRef = useRef(false);
+  const initialRefreshDone = useRef(false);
   const { toast } = useToast();
   
-  // Create an AbortController ref for cancellable fetches
-  const abortControllerRef = useRef<AbortController | null>(null);
-  
-  // Silent refresh without toast notifications
-  const silentRefresh = useCallback(async () => {
+  // Enhanced refresh function with more robust error handling and debouncing
+  const handleRefresh = useCallback(async (showToast = true) => {
+    // Skip if refresh is already in progress
     if (isRefreshingRef.current || isRefreshing) {
-      console.log('🔄 Silent refresh skipped - refresh already in progress');
+      console.log('🔄 Refresh skipped - refresh already in progress');
       return;
     }
     
-    console.log('🔄 Silent auto-refresh triggered');
+    console.log('🔄 Manual refresh triggered');
     isRefreshingRef.current = true;
     
-    // Create a new AbortController for this fetch
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
-    
     try {
-      // Add a timeout of 30 seconds for any refresh operation
-      const timeoutId = setTimeout(() => {
-        if (abortControllerRef.current) {
-          console.log('⏱️ Auto-refresh timeout reached, aborting');
-          abortControllerRef.current.abort();
-        }
-      }, 30000);
-      
-      // Execute the refresh with the signal
+      // Execute the refresh
       await onRefresh();
       
-      clearTimeout(timeoutId);
       setLastRefresh(new Date());
+      
+      if (showToast) {
+        toast({
+          title: "Data refreshed",
+          description: "All dog care data has been refreshed.",
+        });
+      }
     } catch (error) {
-      // Only log errors (no toast) for silent refreshes
-      if ((error as Error).name !== 'AbortError') {
-        console.error('❌ Error during silent refresh:', error);
+      console.error('❌ Error during refresh:', error);
+      
+      if (showToast) {
+        toast({
+          title: "Refresh failed",
+          description: "Could not refresh dog data. Please try again.",
+          variant: "destructive"
+        });
       }
     } finally {
-      isRefreshingRef.current = false;
-      abortControllerRef.current = null;
+      // Reset the flag after completion (with a small delay to prevent rapid re-clicking)
+      setTimeout(() => {
+        isRefreshingRef.current = false;
+      }, 1000);
     }
-  }, [onRefresh, isRefreshing]);
+  }, [onRefresh, isRefreshing, toast]);
+  
+  // Debounced version of the refresh handler to prevent UI jitter
+  const debouncedRefresh = useCallback(
+    debounce((showToast: boolean) => handleRefresh(showToast), 300),
+    [handleRefresh]
+  );
   
   // Auto-refresh at specified interval
   useEffect(() => {
-    const intervalId = setInterval(silentRefresh, interval);
-    
-    // Setup a check for user activity/visibility
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('🔍 Document became visible, triggering refresh');
-        silentRefresh();
+    const intervalId = setInterval(() => {
+      // Skip if refresh is already in progress
+      if (isRefreshingRef.current || isRefreshing) {
+        console.log('🔄 Auto refresh skipped - refresh already in progress');
+        return;
       }
-    };
-    
-    // Listen for visibility changes (user returns to tab)
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       
-      // Abort any in-progress fetch when component unmounts
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [silentRefresh, interval]);
+      console.log('🔄 Auto refresh triggered');
+      handleRefresh(false); // Don't show toast for auto-refresh
+    }, interval);
+    
+    return () => clearInterval(intervalId);
+  }, [handleRefresh, isRefreshing, interval]);
   
-  // Initial fetch when hook is initialized
+  // Initial fetch when hook is initialized - only once
   useEffect(() => {
-    if (initialRefreshOnMount) {
+    if (!initialRefreshDone.current) {
       console.log('🚀 Initial refresh triggered');
-      silentRefresh().catch(console.error);
+      initialRefreshDone.current = true;
+      handleRefresh(false).catch(console.error);
     }
-  }, [initialRefreshOnMount, silentRefresh]);
+  }, [handleRefresh]);
   
   return {
     lastRefresh,
+    handleRefresh: (showToast = true) => debouncedRefresh(showToast),
     isRefreshingInternal: isRefreshingRef.current
   };
 };

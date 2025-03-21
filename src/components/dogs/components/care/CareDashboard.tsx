@@ -6,6 +6,8 @@ import LoadingState from './dashboard/LoadingState';
 import NoDogsState from './dashboard/NoDogsState';
 import LoadedDogsContent from './dashboard/LoadedDogsContent';
 import { useCareDashboard } from './dashboard/useCareDashboard';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 interface CareDashboardProps {}
 
@@ -42,7 +44,14 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
           isLoading={loading}
         />
         
-        {/* Removed duplicate button here */}
+        <Button 
+          onClick={handleRefresh} 
+          variant="outline" 
+          className="gap-2 bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh Dogs
+        </Button>
       </div>
       
       {categories.length > 0 && (

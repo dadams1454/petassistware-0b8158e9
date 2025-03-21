@@ -1,5 +1,5 @@
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
@@ -8,48 +8,60 @@ import { useAutoRefresh } from './hooks/useAutoRefresh';
 import EmptyDogState from './components/EmptyDogState';
 import RefreshIndicator from './components/RefreshIndicator';
 
-const DailyCareTab: React.FC = () => {
+interface DailyCareTabProps {
+  onRefreshDogs: () => void;
+  isRefreshing: boolean;
+}
+
+const DailyCareTab: React.FC<DailyCareTabProps> = React.memo(({ onRefreshDogs, isRefreshing }) => {
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
   const { toast } = useToast();
+  const [visible, setVisible] = useState(false);
   
-  // Combined refresh function with improved error handling
-  const handleCombinedRefresh = useCallback(async (): Promise<boolean> => {
-    console.log('🔄 Auto refresh triggered in DailyCareTab');
+  // Combined refresh function that handles both parent and local refresh
+  const handleCombinedRefresh = useCallback(async () => {
+    console.log('🔄 Combined refresh triggered in DailyCareTab');
     
-    try {
-      // Call the parent refresh (no need for onRefreshDogs prop anymore)
-      await fetchAllDogsWithCareStatus(new Date(), true);
-      
-      return true;
-    } catch (error) {
-      console.error('Error during refresh:', error);
-      return false;
-    }
-  }, [fetchAllDogsWithCareStatus]);
+    // First call the parent refresh
+    onRefreshDogs();
+    
+    // Then do our own refresh for feeding status
+    await fetchAllDogsWithCareStatus(new Date(), true);
+    
+    // Display toast about feeding functionality
+    toast({
+      title: "Daily Care Management",
+      description: "Switch to the Feeding tab to manage dog feeding records.",
+    });
+  }, [onRefreshDogs, fetchAllDogsWithCareStatus, toast]);
   
-  // Use auto-refresh hook with longer interval (1 hour)
-  const { lastRefresh } = useAutoRefresh({
+  // Memoize dog statuses to prevent unnecessary renders
+  const memoizedDogStatuses = useMemo(() => dogStatuses, [dogStatuses]);
+  
+  // Use our auto-refresh hook with increased interval to reduce frequency
+  const { handleRefresh } = useAutoRefresh({
     onRefresh: handleCombinedRefresh,
-    isRefreshing: false,
-    interval: 60 * 60 * 1000 // 60 minutes
+    isRefreshing,
+    interval: 60 * 60 * 1000 // Increased to 60 minutes to reduce refreshes
   });
   
-  // Memoize the empty state component
-  const emptyState = useMemo(() => (
-    <EmptyDogState />
-  ), []);
+  // Add a smooth fade-in effect when the component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
   
-  if (!dogStatuses || dogStatuses.length === 0) {
-    return emptyState;
+  if (!memoizedDogStatuses || memoizedDogStatuses.length === 0) {
+    return <EmptyDogState onRefresh={handleRefresh} isRefreshing={isRefreshing} />;
   }
   
   return (
-    <div className="space-y-6">
-      <RefreshIndicator refreshInterval={60} lastRefresh={lastRefresh} />
+    <div className={`space-y-6 transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+      <RefreshIndicator refreshInterval={60} />
       
       {/* Reminder Card */}
       <PottyBreakReminderCard 
-        dogs={dogStatuses}
+        dogs={memoizedDogStatuses}
         onLogPottyBreak={() => {
           // Just scroll to the timetable on click
           const timeTableSection = document.getElementById('dog-time-table');
@@ -59,14 +71,17 @@ const DailyCareTab: React.FC = () => {
         }}
       />
       
-      {/* Time Table (now without manual refresh button) */}
+      {/* Time Table (now the main and only component) */}
       <div id="dog-time-table">
         <DogTimeTable 
-          dogsStatus={dogStatuses}
+          dogsStatus={memoizedDogStatuses} 
+          onRefresh={handleRefresh} 
         />
       </div>
     </div>
   );
-};
+});
 
-export default React.memo(DailyCareTab);
+DailyCareTab.displayName = 'DailyCareTab';
+
+export default DailyCareTab;

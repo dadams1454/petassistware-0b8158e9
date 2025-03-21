@@ -1,32 +1,42 @@
 
-import { useRef, useCallback, useEffect } from 'react';
-import { useDebounce } from './cellActions/useDebounce';
+import { useRef, useCallback, useState, useEffect } from 'react';
+import { debounce } from '@/utils/debounce';
 
 export const useRefreshHandler = (onRefresh?: () => void) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const isRefreshingRef = useRef(false);
   const lastRefreshRef = useRef<number>(Date.now());
-  const MIN_REFRESH_INTERVAL = 3000; // 3 seconds between refreshes
-  const { debounce } = useDebounce(300);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const MIN_REFRESH_INTERVAL = 5000; // Increased to 5 seconds to reduce frequent refreshes
   
-  // Centralized refresh function with debouncing and throttling
-  const handleRefresh = useCallback(() => {
-    // Skip if refresh already in progress
-    if (isRefreshingRef.current) {
-      console.log('🔄 Refresh already in progress, skipping');
-      return;
-    }
-    
-    // Check refresh interval
-    const now = Date.now();
-    if (now - lastRefreshRef.current < MIN_REFRESH_INTERVAL) {
-      console.log('🔄 Skipping refresh - too soon after last refresh');
-      return;
-    }
-    
-    // Use debounce to prevent multiple rapid refreshes
+  // Cleanup function to clear any pending timeouts
+  useEffect(() => {
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, []);
+  
+  // Create debounced refresh function with a longer delay
+  const debouncedRefresh = useRef(
     debounce(async () => {
+      // Skip if refresh already in progress
+      if (isRefreshingRef.current) {
+        console.log('🔄 Refresh already in progress, skipping');
+        return;
+      }
+      
+      // Check refresh interval
+      const now = Date.now();
+      if (now - lastRefreshRef.current < MIN_REFRESH_INTERVAL) {
+        console.log('🔄 Skipping refresh - too soon after last refresh');
+        return;
+      }
+      
       console.log('🔄 Performing refresh of data');
       isRefreshingRef.current = true;
+      setIsRefreshing(true);
       lastRefreshRef.current = now;
       
       try {
@@ -34,17 +44,25 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
         if (onRefresh) {
           await onRefresh();
         }
-      } catch (error) {
-        console.error('Error during refresh:', error);
       } finally {
-        // Ensure we always reset the refreshing flag
-        isRefreshingRef.current = false;
+        // Always make sure to reset the refreshing flag
+        // Add a small delay before setting isRefreshing to false to avoid UI flicker
+        refreshTimeoutRef.current = setTimeout(() => {
+          isRefreshingRef.current = false;
+          setIsRefreshing(false);
+        }, 300);
       }
-    });
-  }, [debounce, onRefresh]);
+    }, 500) // Increased debounce delay to 500ms
+  ).current;
   
+  // Handle manual refresh with debouncing
+  const handleRefresh = useCallback(() => {
+    console.log('🔄 Manual refresh requested in useRefreshHandler');
+    debouncedRefresh();
+  }, [debouncedRefresh]);
+
   return {
     handleRefresh,
-    isRefreshing: isRefreshingRef.current
+    isRefreshing
   };
 };
