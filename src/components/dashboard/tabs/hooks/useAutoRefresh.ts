@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface UseAutoRefreshProps {
-  onRefresh: () => Promise<void>;
+  onRefresh: () => Promise<boolean | void>;
   isRefreshing: boolean;
   interval?: number;
 }
@@ -29,7 +29,7 @@ export const useAutoRefresh = ({
     isRefreshingRef.current = true;
     
     try {
-      // Execute the refresh
+      // Execute the refresh and ignore the returned boolean
       await onRefresh();
       
       setLastRefresh(new Date());

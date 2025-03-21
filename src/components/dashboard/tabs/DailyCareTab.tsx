@@ -18,7 +18,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
   const { toast } = useToast();
   
   // Combined refresh function with improved error handling
-  const handleCombinedRefresh = useCallback(async () => {
+  const handleCombinedRefresh = useCallback(async (): Promise<boolean> => {
     console.log('🔄 Combined refresh triggered in DailyCareTab');
     
     try {
