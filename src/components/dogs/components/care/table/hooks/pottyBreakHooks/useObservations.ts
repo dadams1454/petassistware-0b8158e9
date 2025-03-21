@@ -10,10 +10,11 @@ type ObservationType = {
   dog_id: string;
   created_at: string;
   observation: string;
-  observation_type: 'accident' | 'heat' | 'behavior' | 'other';
+  observation_type: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
   created_by: string;
   expires_at: string;
   timeSlot?: string; // Add time slot to track when the observation occurred
+  category?: string;  // Add category to differentiate feeding observations
 }
 
 type ObservationsMap = Record<string, ObservationType[]>;
@@ -25,20 +26,31 @@ export const useObservations = (dogs: DogCareStatus[]) => {
   const { toast } = useToast();
 
   // Function to convert a timestamp to the nearest time slot format
-  const getTimeSlotFromTimestamp = (timestamp: string): string => {
-    const date = new Date(timestamp);
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    
-    // Convert to 12-hour format
-    hours = hours % 12;
-    hours = hours ? hours : 12; // 0 should be 12 in 12-hour format
-    
-    // Round to nearest hour for now (we could add logic for half-hours if needed)
-    const formattedHour = `${hours}:00 ${ampm}`;
-    
-    return formattedHour;
+  const getTimeSlotFromTimestamp = (timestamp: string, category: string = 'observation'): string => {
+    if (category === 'feeding_observation') {
+      // For feeding, extract hour to determine meal time
+      const date = new Date(timestamp);
+      const hour = date.getHours();
+      
+      // Morning: 5-10, Noon: 10-3, Evening: 3-8
+      if (hour >= 5 && hour < 10) return 'Morning';
+      if (hour >= 10 && hour < 15) return 'Noon';
+      return 'Evening';
+    } else {
+      // For potty breaks, use the original logic
+      const date = new Date(timestamp);
+      let hours = date.getHours();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      
+      // Convert to 12-hour format
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 should be 12 in 12-hour format
+      
+      // Round to nearest hour for now
+      const formattedHour = `${hours}:00 ${ampm}`;
+      
+      return formattedHour;
+    }
   };
 
   // Load observations for all dogs
@@ -50,11 +62,11 @@ export const useObservations = (dogs: DogCareStatus[]) => {
       // Create a map to store observations for each dog
       const observationsMap: ObservationsMap = {};
       
-      // For each dog, fetch care logs with "observation" category
+      // For each dog, fetch care logs with "observation" or "feeding_observation" category
       for (const dog of dogs) {
         const logs = await fetchDogCareLogs(dog.dog_id);
         const dogObservations = logs
-          .filter(log => log.category === 'observation')
+          .filter(log => (log.category === 'observation' || log.category === 'feeding_observation'))
           .filter(log => {
             // Filter observations that are not expired (less than 24 hours old)
             const timestamp = new Date(log.timestamp);
@@ -67,10 +79,11 @@ export const useObservations = (dogs: DogCareStatus[]) => {
             dog_id: log.dog_id,
             created_at: log.created_at,
             observation: log.notes || '',
-            observation_type: log.task_name as 'accident' | 'heat' | 'behavior' | 'other',
+            observation_type: log.task_name as 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
             created_by: log.created_by,
             expires_at: new Date(new Date(log.timestamp).getTime() + 24 * 60 * 60 * 1000).toISOString(),
-            timeSlot: getTimeSlotFromTimestamp(log.timestamp)
+            timeSlot: getTimeSlotFromTimestamp(log.timestamp, log.category),
+            category: log.category
           }));
           
         if (dogObservations.length > 0) {
@@ -95,26 +108,32 @@ export const useObservations = (dogs: DogCareStatus[]) => {
   const addObservation = useCallback(async (
     dogId: string, 
     observationText: string, 
-    observationType: 'accident' | 'heat' | 'behavior' | 'other',
+    observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
+    timeSlot: string = '',
+    category: string = 'observation',
     timestamp = new Date()
   ) => {
     setIsLoading(true);
     try {
       // If observation text is empty, use the observation type as the text
       const defaultText = observationText.trim() || 
-        `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
+        observationType === 'feeding' 
+          ? `Didn't eat ${timeSlot} meal`
+          : `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
       
       const result = await addCareLog({
         dog_id: dogId,
-        category: 'observation',
+        category: category,
         task_name: observationType,
         timestamp,
         notes: defaultText
       });
       
       if (result) {
-        // Get the time slot from the timestamp
-        const timeSlot = getTimeSlotFromTimestamp(timestamp.toString());
+        // Calculate the time slot based on category
+        const calculatedTimeSlot = category === 'feeding_observation'
+          ? timeSlot // Use the provided time slot for feeding
+          : getTimeSlotFromTimestamp(timestamp.toString());
         
         // Update local state
         setObservations(prev => {
@@ -127,7 +146,8 @@ export const useObservations = (dogs: DogCareStatus[]) => {
             observation_type: observationType,
             created_by: result.created_by,
             expires_at: new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(),
-            timeSlot
+            timeSlot: calculatedTimeSlot,
+            category: category
           };
           
           if (!newObservations[dogId]) {
@@ -139,7 +159,7 @@ export const useObservations = (dogs: DogCareStatus[]) => {
         });
         
         toast({
-          title: 'Observation Added',
+          title: category === 'feeding_observation' ? 'Feeding Issue Recorded' : 'Observation Added',
           description: 'Your observation has been recorded and will be visible for 24 hours'
         });
       }
@@ -178,7 +198,8 @@ export const useObservations = (dogs: DogCareStatus[]) => {
     return {
       text: latestObservation.observation,
       type: latestObservation.observation_type,
-      timeSlot: latestObservation.timeSlot
+      timeSlot: latestObservation.timeSlot,
+      category: latestObservation.category
     };
   }, [observations]);
   

@@ -23,6 +23,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   // State for observation dialog
   const [observationDialogOpen, setObservationDialogOpen] = useState(false);
   const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   
   // Use the time manager hook with activeCategory
   const { currentHour, timeSlots } = useTimeManager(activeCategory);
@@ -42,12 +43,24 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     handleDogClick
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
   
+  // Handle cell right-click (context menu) for observations
+  const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
+    console.log(`Opening observation dialog for ${dogName} (ID: ${dogId}) at ${timeSlot} for ${category}`);
+    const dog = sortedDogs.find(d => d.dog_id === dogId);
+    if (dog) {
+      setSelectedDog(dog);
+      setSelectedTimeSlot(timeSlot);
+      setObservationDialogOpen(true);
+    }
+  };
+  
   // Handle care log button click - open observation dialog for dog
   const handleCareLogClick = (dogId: string, dogName: string) => {
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId})`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
       setSelectedDog(dog);
+      setSelectedTimeSlot('');
       setObservationDialogOpen(true);
     }
   };
@@ -56,10 +69,20 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
   const handleObservationSubmit = async (
     dogId: string, 
     observation: string, 
-    observationType: 'accident' | 'heat' | 'behavior' | 'other',
+    observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
     timestamp?: Date
   ) => {
-    await addObservation(dogId, observation, observationType, timestamp || new Date());
+    // For feeding observations, use the category 'feeding_observation'
+    const category = activeCategory === 'feeding' ? 'feeding_observation' : 'observation';
+    
+    await addObservation(
+      dogId, 
+      observation, 
+      observationType, 
+      selectedTimeSlot, 
+      category,
+      timestamp || new Date()
+    );
     handleRefresh();
   };
   
@@ -91,6 +114,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasObservation={hasObservation}
             getObservationDetails={getObservationDetails}
             onCellClick={handleCellClick}
+            onCellContextMenu={handleCellContextMenu}
             onCareLogClick={handleCareLogClick}
             onDogClick={handleDogClick}
             onRefresh={handleRefresh}
@@ -109,6 +133,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             hasObservation={hasObservation}
             getObservationDetails={getObservationDetails}
             onCellClick={handleCellClick}
+            onCellContextMenu={handleCellContextMenu}
             onCareLogClick={handleCareLogClick}
             onDogClick={handleDogClick}
             onRefresh={handleRefresh}
@@ -135,6 +160,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
         observations={observations}
         timeSlots={timeSlots}
         isMobile={isMobile}
+        activeCategory={activeCategory}
+        selectedTimeSlot={selectedTimeSlot}
       />
     </Card>
   );

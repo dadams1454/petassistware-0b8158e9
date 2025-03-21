@@ -15,6 +15,7 @@ interface TimeSlotCellProps {
   hasPottyBreak: boolean;
   hasCareLogged: boolean;
   onClick: () => void;
+  onContextMenu?: (event: React.MouseEvent) => void;
   flags?: DogFlag[];
   isCurrentHour?: boolean;
   isIncident?: boolean;
@@ -29,6 +30,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   hasPottyBreak,
   hasCareLogged,
   onClick,
+  onContextMenu,
   flags = [],
   isCurrentHour = false,
   isIncident = false
@@ -62,10 +64,13 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   // Get background color based on category and status
   const getBgColor = () => {
     if (category === 'feeding') {
-      if (hasCareLogged) {
-        return 'bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/40';
+      if (isIncident) {
+        return 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20';
       }
-      return 'hover:bg-amber-50 dark:hover:bg-amber-900/10';
+      if (hasCareLogged) {
+        return 'bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/40';
+      }
+      return 'hover:bg-green-50 dark:hover:bg-green-900/10';
     }
     
     if (isIncident) {
@@ -95,6 +100,29 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     isTouchActiveRef.current = false;
   };
   
+  // Handle long press for mobile context menu alternative
+  const handleTouchStart2 = (e: React.TouchEvent) => {
+    if (onContextMenu) {
+      touchTimeoutRef.current = setTimeout(() => {
+        if (isTouchActiveRef.current) {
+          // Long press detected, trigger context menu handler
+          const touch = e.touches[0];
+          const mouseEvent = new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: touch.clientX,
+            clientY: touch.clientY
+          });
+          
+          onContextMenu(mouseEvent as unknown as React.MouseEvent);
+        }
+      }, 800); // 800ms long press
+    }
+    
+    handleTouchStart(e);
+  };
+  
   // Clean up any timeouts when component unmounts
   useEffect(() => {
     return () => {
@@ -106,9 +134,16 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   
   // Get border color based on category and status
   const getBorderColor = () => {
-    if (category === 'feeding' && hasCareLogged) {
-      return 'border-l-2 border-r-2 border-amber-400 dark:border-amber-600';
+    if (category === 'feeding') {
+      if (isIncident) {
+        return 'border-l-2 border-r-2 border-red-400 dark:border-red-600';
+      }
+      if (hasCareLogged) {
+        return 'border-l-2 border-r-2 border-green-400 dark:border-green-600';
+      }
+      return '';
     }
+    
     if (isIncident) {
       return 'border-l-2 border-r-2 border-red-400 dark:border-red-600';
     }
@@ -128,7 +163,8 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
         getBorderColor()
       } touch-manipulation`}
       onClick={onClick}
-      onTouchStart={handleTouchStart}
+      onContextMenu={onContextMenu}
+      onTouchStart={handleTouchStart2}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
       title={`${dogName} - ${timeSlot}${isIncident ? ' (Incident reported)' : ''}${isCurrentHour ? ' (Current hour)' : ''}`}

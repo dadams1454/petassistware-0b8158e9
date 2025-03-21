@@ -7,9 +7,9 @@ export const generateTimeSlots = (currentTime = new Date(), viewType = 'pottybre
     // Only show 3 main feeding times for feeding view
     // Morning (7 AM), Noon (12 PM), Evening (6 PM)
     return [
-      '7:00 AM',  // Morning feeding
-      '12:00 PM', // Noon feeding 
-      '6:00 PM',  // Evening feeding
+      'Morning',  // Morning feeding
+      'Noon',     // Noon feeding 
+      'Evening',  // Evening feeding
     ];
   } else {
     // Dynamic time slots for potty breaks (original functionality)

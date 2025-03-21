@@ -2,21 +2,27 @@
 import React from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Heart, Activity, MessageCircle } from 'lucide-react';
-
-type ObservationType = 'accident' | 'heat' | 'behavior' | 'other';
+import { AlertTriangle, Heart, Activity, MessageCircle, UtensilsCrossed } from 'lucide-react';
+import { ObservationType } from './ObservationDialog';
 
 interface ObservationTypeSelectorProps {
   value: ObservationType;
   onChange: (value: ObservationType) => void;
   isMobile?: boolean;
+  activeCategory?: string;
 }
 
 const ObservationTypeSelector: React.FC<ObservationTypeSelectorProps> = ({
   value,
   onChange,
-  isMobile = false
+  isMobile = false,
+  activeCategory = 'pottybreaks'
 }) => {
+  // If this is a feeding observation, we don't need to show the type selector
+  if (activeCategory === 'feeding') {
+    return null;
+  }
+  
   return (
     <div>
       <Label htmlFor="observation-type">Observation Type</Label>

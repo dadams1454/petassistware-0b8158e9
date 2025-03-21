@@ -1,24 +1,29 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import ObservationForm from './ObservationForm';
 import ObservationList from './ObservationList';
 
+export type ObservationType = 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
+
 interface ObservationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dogId: string;
   dogName: string;
-  onSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other', timestamp?: Date) => Promise<void>;
+  onSubmit: (dogId: string, observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
   existingObservations?: Array<{
     observation: string;
-    observation_type: 'accident' | 'heat' | 'behavior' | 'other';
+    observation_type: ObservationType;
     created_at: string;
+    category?: string;
   }>;
-  timeSlot?: string;
   timeSlots?: string[];
   isMobile?: boolean;
+  activeCategory?: string;
+  defaultObservationType?: ObservationType;
+  selectedTimeSlot?: string;
+  dialogTitle?: string;
 }
 
 const ObservationDialog: React.FC<ObservationDialogProps> = ({
@@ -28,55 +33,66 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   dogName,
   onSubmit,
   existingObservations = [],
-  timeSlot = '',
   timeSlots = [],
-  isMobile = false
+  isMobile = false,
+  activeCategory = 'pottybreaks',
+  defaultObservationType = 'other',
+  selectedTimeSlot = '',
+  dialogTitle = 'Observation'
 }) => {
   const [observation, setObservation] = useState('');
-  const [observationType, setObservationType] = useState<'accident' | 'heat' | 'behavior' | 'other'>('other');
+  const [observationType, setObservationType] = useState<ObservationType>(defaultObservationType);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timestamp, setTimestamp] = useState<string>('');
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
+  const [dialogSelectedTimeSlot, setDialogSelectedTimeSlot] = useState<string>(selectedTimeSlot);
 
-  // Update the timestamp whenever the dialog opens
+  // Update dialog state when props change
   useEffect(() => {
     if (open) {
+      // Set the observation type based on the active category
+      setObservationType(activeCategory === 'feeding' ? 'feeding' : defaultObservationType);
+      
+      // Set the selected time slot if provided
+      if (selectedTimeSlot) {
+        setDialogSelectedTimeSlot(selectedTimeSlot);
+      } else if (timeSlots.length > 0) {
+        // Default to first time slot if none selected
+        setDialogSelectedTimeSlot(timeSlots[0]);
+      }
+      
+      // Update timestamp
       const now = new Date();
       const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setTimestamp(timeString);
-      
-      // Default to current time slot if available
-      if (timeSlots.length > 0) {
-        // Find current hour
-        const currentHour = now.getHours();
-        const isPM = currentHour >= 12;
-        let hour12 = currentHour % 12;
-        if (hour12 === 0) hour12 = 12;
-        
-        // Create a time slot string in the expected format (e.g. "1:00 PM")
-        const currentTimeSlot = `${hour12}:00 ${isPM ? 'PM' : 'AM'}`;
-        
-        // Find the closest match in timeSlots
-        const closestSlot = timeSlots.find(slot => slot === currentTimeSlot) || timeSlots[0];
-        setSelectedTimeSlot(closestSlot);
-      }
     }
-  }, [open, timeSlots]);
+  }, [open, activeCategory, defaultObservationType, selectedTimeSlot, timeSlots]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Allow empty observation text, just use the observation type as the text if needed
-    const observationText = observation.trim() || `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
+    let observationText = observation.trim();
+    
+    if (!observationText) {
+      // Default text based on observation type
+      if (observationType === 'feeding') {
+        observationText = `Didn't eat ${dialogSelectedTimeSlot} meal`;
+      } else {
+        observationText = `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
+      }
+    }
     
     setIsSubmitting(true);
     try {
-      // Create a date object for the selected time slot if one was selected
+      // Create a date object for the selected time slot
       let timestampDate: Date | undefined;
       
-      if (selectedTimeSlot) {
-        // Parse the time slot (e.g., "2:00 PM")
-        const [hourMinute, period] = selectedTimeSlot.split(' ');
+      if (activeCategory === 'feeding') {
+        // For feeding, just use current time with observation type
+        timestampDate = new Date();
+      } else if (dialogSelectedTimeSlot) {
+        // For potty breaks, parse the time slot (e.g., "2:00 PM")
+        const [hourMinute, period] = dialogSelectedTimeSlot.split(' ');
         const [hour, minute] = hourMinute.split(':').map(Number);
         
         // Create a new date object for today
@@ -92,7 +108,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       
       await onSubmit(dogId, observationText, observationType, timestampDate);
       setObservation('');
-      setObservationType('other');
+      // Keep the observation type the same for easier repeated entries
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -103,7 +119,10 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   const dialogContent = (
     <>
       {existingObservations.length > 0 && (
-        <ObservationList existingObservations={existingObservations} />
+        <ObservationList 
+          existingObservations={existingObservations} 
+          activeCategory={activeCategory}
+        />
       )}
       
       <ObservationForm
@@ -115,11 +134,12 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         isSubmitting={isSubmitting}
         onCancel={() => onOpenChange(false)}
         timestamp={timestamp}
-        timeSlot={timeSlot}
+        timeSlot={dialogSelectedTimeSlot}
         timeSlots={timeSlots}
-        selectedTimeSlot={selectedTimeSlot}
-        setSelectedTimeSlot={setSelectedTimeSlot}
+        selectedTimeSlot={dialogSelectedTimeSlot}
+        setSelectedTimeSlot={setDialogSelectedTimeSlot}
         isMobile={isMobile}
+        activeCategory={activeCategory}
       />
     </>
   );
@@ -130,7 +150,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       <SheetContent side="bottom" className="h-auto max-h-[85vh] overflow-auto pb-10">
         <SheetHeader className="mb-4">
           <SheetTitle className="flex items-center gap-2">
-            <span>Observation for {dogName}</span>
+            <span>{dialogTitle}</span>
           </SheetTitle>
         </SheetHeader>
         {dialogContent}
@@ -141,7 +161,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span>Daily Observation for {dogName}</span>
+            <span>{dialogTitle}</span>
           </DialogTitle>
         </DialogHeader>
         {dialogContent}

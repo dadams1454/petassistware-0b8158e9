@@ -74,26 +74,32 @@ export const useCellActions = (
           });
         }
       } else if (category === 'feeding') {
-        // Handle feeding log action
-        const timestamp = getTimestampFromTimeSlot(timeSlot, currentDate);
+        // Handle feeding log action with named times (Morning, Noon, Evening)
+        const timestamp = new Date();
+        
+        // Set appropriate hours based on meal time
+        if (timeSlot === "Morning") {
+          timestamp.setHours(7, 0, 0, 0);  // 7:00 AM
+        } else if (timeSlot === "Noon") {
+          timestamp.setHours(12, 0, 0, 0); // 12:00 PM
+        } else if (timeSlot === "Evening") {
+          timestamp.setHours(18, 0, 0, 0); // 6:00 PM
+        }
         
         // Map meal names based on time slot
-        let mealName = "Regular Feeding";
-        if (timeSlot === "7:00 AM") mealName = "Morning Feeding";
-        if (timeSlot === "12:00 PM") mealName = "Noon Feeding";
-        if (timeSlot === "6:00 PM") mealName = "Evening Feeding";
+        const mealName = `${timeSlot} Feeding`;
         
         await addCareLog({
           dog_id: dogId,
           category: 'feeding',
           task_name: mealName,
           timestamp: timestamp,
-          notes: `${dogName} fed at ${timeSlot}`
+          notes: `${dogName} fed at ${timeSlot.toLowerCase()}`
         }, user?.id || '');
         
         toast({
           title: 'Feeding logged',
-          description: `${dogName} was fed at ${timeSlot}`,
+          description: `${dogName} was fed at ${timeSlot.toLowerCase()}`,
         });
       }
       
@@ -120,27 +126,6 @@ export const useCellActions = (
       setIsLoading(false);
     }
   }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, currentDate, user, toast, onRefresh]);
-  
-  // Helper function to convert a time slot string to a Date
-  const getTimestampFromTimeSlot = (timeSlot: string, date: Date): Date => {
-    const [hourStr, rest] = timeSlot.split(':');
-    const [minuteStr, period] = rest.split(' ');
-    
-    let hour = parseInt(hourStr);
-    const minute = parseInt(minuteStr);
-    
-    // Convert to 24-hour format
-    if (period === 'PM' && hour < 12) {
-      hour += 12;
-    } else if (period === 'AM' && hour === 12) {
-      hour = 0;
-    }
-    
-    const timestamp = new Date(date);
-    timestamp.setHours(hour, minute, 0, 0);
-    
-    return timestamp;
-  };
   
   return {
     isLoading,

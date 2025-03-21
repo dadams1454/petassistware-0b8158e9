@@ -16,6 +16,7 @@ interface DogTimeRowProps {
   hasObservation: (dogId: string, timeSlot: string) => boolean;
   getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCellContextMenu: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
   currentHour?: number;
@@ -33,6 +34,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   hasObservation,
   getObservationDetails,
   onCellClick,
+  onCellContextMenu,
   onCareLogClick,
   onDogClick,
   currentHour,
@@ -45,8 +47,12 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   
   // Helper function to determine if a time slot is the current hour
   const isCurrentHourSlot = (timeSlot: string) => {
-    if (currentHour === undefined) return false;
+    if (currentHour === undefined || activeCategory === 'feeding') return false;
     
+    // For feeding, we don't need current hour highlighting
+    if (activeCategory === 'feeding') return false;
+    
+    // For potty breaks, check if the time slot matches current hour
     const hour = parseInt(timeSlot.split(':')[0]);
     const isPM = timeSlot.includes('PM');
     const is12Hour = hour === 12;
@@ -72,6 +78,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         return <Heart className="h-4 w-4 text-red-500 flex-shrink-0" />;
       case 'behavior':
         return <Activity className="h-4 w-4 text-blue-500 flex-shrink-0" />;
+      case 'feeding':
+        return <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />;
       default:
         return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
     }
@@ -126,8 +134,16 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         
         // Check if this time slot matches the observation time
         const isIncidentTimeSlot = dogHasObservation && 
-                                  observationTimeSlot && 
-                                  observationTimeSlot === timeSlot;
+                                  observationDetails && 
+                                  (
+                                    // Match specific time slot for potty breaks
+                                    (activeCategory === 'pottybreaks' && 
+                                    observationTimeSlot === timeSlot) ||
+                                    // Match meal time for feeding observations
+                                    (activeCategory === 'feeding' && 
+                                    observationDetails.type === 'feeding' && 
+                                    observationDetails.timeSlot === timeSlot)
+                                  );
         
         return (
           <TimeSlotCell 
@@ -139,6 +155,10 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             hasPottyBreak={hasPottyBreakForSlot}
             hasCareLogged={hasCareLoggedForSlot}
             onClick={() => onCellClick(dogId, dogName, timeSlot, activeCategory)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              onCellContextMenu(dogId, dogName, timeSlot, activeCategory);
+            }}
             flags={dogFlags}
             isCurrentHour={isCurrentTimeSlot}
             isIncident={isIncidentTimeSlot}

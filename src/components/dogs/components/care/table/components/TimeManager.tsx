@@ -25,6 +25,15 @@ export const useTimeManager = (activeCategory = 'pottybreaks') => {
   
   // Memo-ize the timeslot headers to prevent re-renders
   const timeSlotHeaders = useMemo(() => {
+    if (activeCategory === 'feeding') {
+      // For feeding, we don't need current hour highlighting
+      return timeSlots.map(slot => ({
+        slot,
+        isCurrent: false
+      }));
+    }
+    
+    // For potty breaks, use the original logic
     return timeSlots.map(slot => {
       const [hours, minutesPart] = slot.split(':');
       const [minutes, period] = minutesPart.split(' ');
@@ -37,7 +46,7 @@ export const useTimeManager = (activeCategory = 'pottybreaks') => {
         isCurrent: hour === currentHour
       };
     });
-  }, [timeSlots, currentHour]);
+  }, [timeSlots, currentHour, activeCategory]);
 
   return {
     currentTime,

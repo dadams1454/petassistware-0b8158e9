@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, AlertTriangle, UtensilsCrossed } from 'lucide-react';
+import { Check, AlertTriangle, UtensilsCrossed, Clock } from 'lucide-react';
 
 export interface CellContentProps {
   dogName: string;
@@ -23,20 +23,40 @@ const CellContent: React.FC<CellContentProps> = ({
 }) => {
   // Show feeding icon for feeding category
   if (category === 'feeding') {
+    // If there's an incident for feeding (didn't eat), show alert icon
+    if (isIncident) {
+      return (
+        <div className="w-full h-full flex items-center justify-center">
+          <AlertTriangle 
+            className="h-5 w-5 text-red-600 dark:text-red-400" 
+            aria-label={`${dogName} didn't eat ${timeSlot} meal`}
+          />
+        </div>
+      );
+    }
+    
     return (
       <div className="w-full h-full flex items-center justify-center">
         {hasCareLogged ? (
-          <Check 
-            className="h-4 w-4 text-amber-600 dark:text-amber-400" 
-            aria-label="Feeding logged"
-          />
+          <div className="flex flex-col items-center">
+            <Check 
+              className="h-4 w-4 text-green-600 dark:text-green-400" 
+              aria-label={`${timeSlot} feeding completed`}
+            />
+            <div className="text-[9px] text-green-600 dark:text-green-400 mt-0.5 font-medium">
+              Fed
+            </div>
+          </div>
         ) : (
-          <UtensilsCrossed 
-            className={`h-4 w-4 text-gray-300 dark:text-gray-600 opacity-50 ${
-              isCurrentHour ? 'text-blue-200 dark:text-blue-700' : ''
-            }`} 
-            aria-label="Feeding scheduled"
-          />
+          <div className="flex flex-col items-center">
+            <UtensilsCrossed 
+              className="h-4 w-4 text-gray-400 dark:text-gray-600" 
+              aria-label={`${timeSlot} feeding not recorded yet`}
+            />
+            <div className="text-[9px] text-gray-400 dark:text-gray-600 mt-0.5">
+              {timeSlot}
+            </div>
+          </div>
         )}
       </div>
     );
