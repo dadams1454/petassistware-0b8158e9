@@ -3,11 +3,13 @@ import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import ObservationDialog from './observation/ObservationDialog';
 
+type ObservationType = 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
+
 interface ObservationDialogManagerProps {
   selectedDog: DogCareStatus | null;
   observationDialogOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other', timestamp?: Date) => Promise<void>;
+  onSubmit: (dogId: string, observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
   observations: Array<{dogId: string, text: string, type: string, timeSlot?: string, category?: string, timestamp?: string}>;
   timeSlots: string[];
   isMobile: boolean;
@@ -39,7 +41,9 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
       dog={selectedDog}
       open={observationDialogOpen}
       onOpenChange={onOpenChange}
-      onSubmit={onSubmit}
+      onSubmit={(observation, observationType, timestamp) => 
+        onSubmit(selectedDog.dog_id, observation, observationType as ObservationType, timestamp)
+      }
       observations={dogObservations}
       timeSlots={timeSlots}
       isMobile={isMobile}
