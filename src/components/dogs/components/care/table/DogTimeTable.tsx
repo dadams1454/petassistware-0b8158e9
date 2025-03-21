@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -51,29 +51,29 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     isCellActive
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
 
-  // Handle category change with cache cleanup
-  const handleCategoryChange = (newCategory: string) => {
+  // Memoize the sorted dogs to prevent unnecessary re-renders
+  const memoizedSortedDogs = useMemo(() => sortedDogs, [sortedDogs]);
+  const observationsArray = useMemo(() => Array.isArray(observations) ? observations : [], [observations]);
+
+  // Handle category change with optimized state updates
+  const handleCategoryChange = useCallback((newCategory: string) => {
+    if (newCategory === activeCategory) return;
+    
     console.log(`🔄 Category changing from ${activeCategory} to ${newCategory}`);
     previousCategoryRef.current = activeCategory;
     setActiveCategory(newCategory);
     
-    // Force a refresh when switching tabs to ensure fresh data
-    setTimeout(() => {
-      console.log(`🔄 Forcing refresh after tab change to ${newCategory}`);
-      handleRefresh();
-      
-      // Show toast when switching to feeding tab
-      if (newCategory === 'feeding' && previousCategoryRef.current !== 'feeding') {
-        toast({
-          title: "Feeding Management",
-          description: "Click a time slot to toggle whether a dog has been fed.",
-        });
-      }
-    }, 50);
-  };
+    // Only show toast when switching to feeding tab
+    if (newCategory === 'feeding' && previousCategoryRef.current !== 'feeding') {
+      toast({
+        title: "Feeding Management",
+        description: "Click a time slot to toggle whether a dog has been fed.",
+      });
+    }
+  }, [activeCategory, toast]);
   
   // Handle cell right-click (context menu) for observations
-  const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
+  const handleCellContextMenu = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId}) at ${timeSlot} for ${category}`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
@@ -81,10 +81,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       setSelectedTimeSlot(timeSlot);
       setObservationDialogOpen(true);
     }
-  };
+  }, [sortedDogs]);
   
   // Handle care log button click - open observation dialog for dog
-  const handleCareLogClick = (dogId: string, dogName: string) => {
+  const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId})`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
@@ -92,10 +92,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       setSelectedTimeSlot('');
       setObservationDialogOpen(true);
     }
-  };
+  }, [sortedDogs]);
   
   // Handle observation submission with optional timestamp
-  const handleObservationSubmit = async (
+  const handleObservationSubmit = useCallback(async (
     dogId: string, 
     observation: string, 
     observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
@@ -113,20 +113,14 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       timestamp || new Date()
     );
     handleRefresh();
-  };
-  
-  // Force a refresh on initial load and when switching tabs
-  useEffect(() => {
-    console.log(`🚀 DogTimeTable mounted or tab changed to ${activeCategory}`);
-    handleRefresh();
-  }, [activeCategory, handleRefresh]);
+  }, [activeCategory, addObservation, handleRefresh, selectedTimeSlot]);
   
   return (
     <TimeManagerProvider activeCategory={activeCategory}>
       <DogTimeTableContent 
         activeCategory={activeCategory}
-        sortedDogs={sortedDogs}
-        observations={Array.isArray(observations) ? observations : []} // Ensure observations is an array
+        sortedDogs={memoizedSortedDogs}
+        observations={observationsArray}
         isLoading={isLoading}
         handleCategoryChange={handleCategoryChange}
         handleRefresh={handleRefresh}
@@ -151,8 +145,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   );
 };
 
-// Separate the content component to keep main component cleaner
-const DogTimeTableContent: React.FC<{
+// Separate the content component with React.memo to prevent unnecessary re-renders
+const DogTimeTableContent = React.memo<{
   activeCategory: string;
   sortedDogs: DogCareStatus[];
   observations: any[];
@@ -175,7 +169,7 @@ const DogTimeTableContent: React.FC<{
   selectedDog: DogCareStatus | null;
   selectedTimeSlot: string;
   currentDate: Date;
-}> = ({
+}>(({
   activeCategory,
   sortedDogs,
   observations,
@@ -202,7 +196,7 @@ const DogTimeTableContent: React.FC<{
   const { currentHour, timeSlots } = useTimeManager();
   
   return (
-    <Card className="p-0 overflow-hidden">
+    <Card className="p-0 overflow-hidden transition-all duration-200">
       <Tabs
         defaultValue="pottybreaks"
         value={activeCategory}
@@ -220,7 +214,7 @@ const DogTimeTableContent: React.FC<{
           />
         </div>
         
-        <TabsContent value="pottybreaks" className="mt-0">
+        <TabsContent value="pottybreaks" className="mt-0 transition-opacity duration-200">
           <ActiveTabContent
             activeCategory="pottybreaks"
             sortedDogs={sortedDogs}
@@ -240,7 +234,7 @@ const DogTimeTableContent: React.FC<{
           />
         </TabsContent>
         
-        <TabsContent value="feeding" className="mt-0">
+        <TabsContent value="feeding" className="mt-0 transition-opacity duration-200">
           <ActiveTabContent
             activeCategory="feeding"
             sortedDogs={sortedDogs}
@@ -284,6 +278,8 @@ const DogTimeTableContent: React.FC<{
       />
     </Card>
   );
-};
+});
+
+DogTimeTableContent.displayName = 'DogTimeTableContent';
 
 export default DogTimeTable;

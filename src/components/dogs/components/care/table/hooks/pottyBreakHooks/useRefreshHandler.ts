@@ -1,6 +1,6 @@
 
 import { useRef, useCallback } from 'react';
-import { debounce } from 'lodash';
+import { debounce } from '@/utils/debounce';
 
 export const useRefreshHandler = (onRefresh?: () => void) => {
   const isRefreshingRef = useRef(false);
@@ -27,12 +27,15 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
       isRefreshingRef.current = true;
       lastRefreshRef.current = now;
       
-      // Call the provided refresh function if available
-      if (onRefresh) {
-        await onRefresh();
+      try {
+        // Call the provided refresh function if available
+        if (onRefresh) {
+          await onRefresh();
+        }
+      } finally {
+        // Always make sure to reset the refreshing flag
+        isRefreshingRef.current = false;
       }
-      
-      isRefreshingRef.current = false;
     }, 300)
   ).current;
   

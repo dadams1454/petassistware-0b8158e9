@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
@@ -16,6 +16,7 @@ interface DailyCareTabProps {
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing }) => {
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
   const { toast } = useToast();
+  const [visible, setVisible] = useState(false);
   
   // Combined refresh function that handles both parent and local refresh
   const handleCombinedRefresh = useCallback(async () => {
@@ -41,12 +42,18 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
     interval: 30 * 60 * 1000 // 30 minutes
   });
   
+  // Add a fade-in effect when the component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+  
   if (!dogStatuses || dogStatuses.length === 0) {
     return <EmptyDogState onRefresh={handleRefresh} isRefreshing={isRefreshing} />;
   }
   
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
       <RefreshIndicator refreshInterval={30} />
       
       {/* Reminder Card */}
