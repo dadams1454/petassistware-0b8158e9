@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -8,11 +7,11 @@ import ObservationList from './ObservationList';
 export type ObservationType = 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
 
 interface ObservationDialogProps {
-  dogId: string;
-  dogName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
+  dogId: string;
+  dogName: string;
+  onSubmit: (dogId: string, observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
   existingObservations?: Array<{
     observation: string;
     observation_type: ObservationType;
@@ -85,10 +84,29 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
     
     setIsSubmitting(true);
     try {
-      // Always use current time for the timestamp
-      const currentTimestamp = new Date();
+      // Create a date object for the selected time slot
+      let timestampDate: Date | undefined;
       
-      await onSubmit(observationText, observationType, currentTimestamp);
+      if (activeCategory === 'feeding') {
+        // For feeding, just use current time with observation type
+        timestampDate = new Date();
+      } else if (dialogSelectedTimeSlot) {
+        // For potty breaks, parse the time slot (e.g., "2:00 PM")
+        const [hourMinute, period] = dialogSelectedTimeSlot.split(' ');
+        const [hour, minute] = hourMinute.split(':').map(Number);
+        
+        // Create a new date object for today
+        timestampDate = new Date();
+        
+        // Set the hours and minutes
+        let hour24 = hour;
+        if (period === 'PM' && hour !== 12) hour24 += 12;
+        if (period === 'AM' && hour === 12) hour24 = 0;
+        
+        timestampDate.setHours(hour24, minute, 0, 0);
+      }
+      
+      await onSubmit(dogId, observationText, observationType, timestampDate);
       setObservation('');
       // Keep the observation type the same for easier repeated entries
       onOpenChange(false);

@@ -1,24 +1,13 @@
 
-import { useRef, useCallback, useState, useEffect } from 'react';
-import { debounce } from '@/utils/debounce';
+import { useRef, useCallback } from 'react';
+import { debounce } from 'lodash';
 
 export const useRefreshHandler = (onRefresh?: () => void) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const isRefreshingRef = useRef(false);
   const lastRefreshRef = useRef<number>(Date.now());
-  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const MIN_REFRESH_INTERVAL = 5000; // Increased to 5 seconds to reduce frequent refreshes
+  const MIN_REFRESH_INTERVAL = 3000; // 3 seconds between refreshes
   
-  // Cleanup function to clear any pending timeouts
-  useEffect(() => {
-    return () => {
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
-      }
-    };
-  }, []);
-  
-  // Create debounced refresh function with a longer delay
+  // Create debounced refresh function
   const debouncedRefresh = useRef(
     debounce(async () => {
       // Skip if refresh already in progress
@@ -34,25 +23,17 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
         return;
       }
       
-      console.log('🔄 Performing refresh of data');
+      console.log('🔄 Performing refresh of potty break data');
       isRefreshingRef.current = true;
-      setIsRefreshing(true);
       lastRefreshRef.current = now;
       
-      try {
-        // Call the provided refresh function if available
-        if (onRefresh) {
-          await onRefresh();
-        }
-      } finally {
-        // Always make sure to reset the refreshing flag
-        // Add a small delay before setting isRefreshing to false to avoid UI flicker
-        refreshTimeoutRef.current = setTimeout(() => {
-          isRefreshingRef.current = false;
-          setIsRefreshing(false);
-        }, 300);
+      // Call the provided refresh function if available
+      if (onRefresh) {
+        await onRefresh();
       }
-    }, 500) // Increased debounce delay to 500ms
+      
+      isRefreshingRef.current = false;
+    }, 300)
   ).current;
   
   // Handle manual refresh with debouncing
@@ -63,6 +44,6 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
 
   return {
     handleRefresh,
-    isRefreshing
+    isRefreshing: isRefreshingRef.current
   };
 };

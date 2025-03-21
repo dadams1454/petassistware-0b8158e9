@@ -1,39 +1,32 @@
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState } from 'react';
+import TimeTableHeader from './components/TimeTableHeader';
+import TimeTableFooter from './components/TimeTableFooter';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import usePottyBreakTable from './hooks/usePottyBreakTable';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useToast } from '@/components/ui/use-toast';
-
-// Import our refactored components
 import ActiveTabContent from './components/ActiveTabContent';
 import ObservationDialogManager from './components/ObservationDialogManager';
-import TimeTableHeader from './components/TimeTableHeader';
-import TimeTableFooter from './components/TimeTableFooter';
-import { TimeManagerProvider, useTimeManager } from './components/TimeManager';
+import { useTimeManager } from './components/TimeManager';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
   onRefresh?: () => void;
-  currentDate?: Date;
 }
 
-const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
-  dogsStatus, 
-  onRefresh,
-  currentDate = new Date() 
-}) => {
+const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
-  const previousCategoryRef = React.useRef('pottybreaks');
-  const { toast } = useToast();
   
   // State for observation dialog
   const [observationDialogOpen, setObservationDialogOpen] = useState(false);
   const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
+  
+  // Use the time manager hook with activeCategory
+  const { currentHour, timeSlots } = useTimeManager(activeCategory);
   
   // Use the potty break table hook for data management
   const { 
@@ -47,68 +40,33 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     observations,
     handleCellClick, 
     handleRefresh,
-    handleDogClick,
-    isCellActive
-  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
-
-  // Memoize the sorted dogs to prevent unnecessary re-renders
-  const memoizedSortedDogs = useMemo(() => {
-    // Ensure care_logs is defined for each dog, defaulting to empty array if missing
-    return sortedDogs.map(dog => ({
-      ...dog,
-      care_logs: dog.care_logs || []
-    }));
-  }, [sortedDogs]);
-  
-  const observationsArray = useMemo(() => Array.isArray(observations) ? observations : [], [observations]);
-
-  // Handle category change with optimized state updates
-  const handleCategoryChange = useCallback((newCategory: string) => {
-    if (newCategory === activeCategory) return;
-    
-    console.log(`🔄 Category changing from ${activeCategory} to ${newCategory}`);
-    previousCategoryRef.current = activeCategory;
-    setActiveCategory(newCategory);
-    
-    // Only show toast when switching to feeding tab
-    if (newCategory === 'feeding' && previousCategoryRef.current !== 'feeding') {
-      toast({
-        title: "Feeding Management",
-        description: "Click a time slot to toggle whether a dog has been fed.",
-      });
-    }
-  }, [activeCategory, toast]);
+    handleDogClick
+  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
   
   // Handle cell right-click (context menu) for observations
-  const handleCellContextMenu = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
+  const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId}) at ${timeSlot} for ${category}`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
-      setSelectedDog({
-        ...dog,
-        care_logs: dog.care_logs || [] // Ensure care_logs exists
-      });
+      setSelectedDog(dog);
       setSelectedTimeSlot(timeSlot);
       setObservationDialogOpen(true);
     }
-  }, [sortedDogs]);
+  };
   
   // Handle care log button click - open observation dialog for dog
-  const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
+  const handleCareLogClick = (dogId: string, dogName: string) => {
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId})`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
-      setSelectedDog({
-        ...dog,
-        care_logs: dog.care_logs || [] // Ensure care_logs exists
-      });
+      setSelectedDog(dog);
       setSelectedTimeSlot('');
       setObservationDialogOpen(true);
     }
-  }, [sortedDogs]);
+  };
   
   // Handle observation submission with optional timestamp
-  const handleObservationSubmit = useCallback(async (
+  const handleObservationSubmit = async (
     dogId: string, 
     observation: string, 
     observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
@@ -126,108 +84,27 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       timestamp || new Date()
     );
     handleRefresh();
-  }, [activeCategory, addObservation, handleRefresh, selectedTimeSlot]);
+  };
   
   return (
-    <TimeManagerProvider activeCategory={activeCategory}>
-      <DogTimeTableContent 
-        activeCategory={activeCategory}
-        sortedDogs={memoizedSortedDogs}
-        observations={observationsArray}
-        isLoading={isLoading}
-        handleCategoryChange={handleCategoryChange}
-        handleRefresh={handleRefresh}
-        handleCellClick={handleCellClick}
-        handleCellContextMenu={handleCellContextMenu}
-        handleCareLogClick={handleCareLogClick}
-        handleObservationSubmit={handleObservationSubmit}
-        hasPottyBreak={hasPottyBreak}
-        hasCareLogged={hasCareLogged}
-        hasObservation={hasObservation}
-        getObservationDetails={getObservationDetails}
-        handleDogClick={handleDogClick}
-        isCellActive={isCellActive}
-        isMobile={isMobile}
-        observationDialogOpen={observationDialogOpen}
-        setObservationDialogOpen={setObservationDialogOpen}
-        selectedDog={selectedDog}
-        selectedTimeSlot={selectedTimeSlot}
-        currentDate={currentDate}
-      />
-    </TimeManagerProvider>
-  );
-};
-
-// Separate the content component with React.memo to prevent unnecessary re-renders
-const DogTimeTableContent = React.memo<{
-  activeCategory: string;
-  sortedDogs: DogCareStatus[];
-  observations: any[];
-  isLoading: boolean;
-  handleCategoryChange: (category: string) => void;
-  handleRefresh: () => void;
-  handleCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  handleCellContextMenu: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  handleCareLogClick: (dogId: string, dogName: string) => void;
-  handleObservationSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other', timestamp?: Date) => Promise<void>;
-  hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
-  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
-  hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
-  handleDogClick: (dogId: string) => void;
-  isCellActive: (dogId: string, timeSlot: string, category: string) => boolean;
-  isMobile: boolean;
-  observationDialogOpen: boolean;
-  setObservationDialogOpen: (open: boolean) => void;
-  selectedDog: DogCareStatus | null;
-  selectedTimeSlot: string;
-  currentDate: Date;
-}>(({
-  activeCategory,
-  sortedDogs,
-  observations,
-  isLoading,
-  handleCategoryChange,
-  handleRefresh,
-  handleCellClick,
-  handleCellContextMenu,
-  handleCareLogClick,
-  handleObservationSubmit,
-  hasPottyBreak,
-  hasCareLogged,
-  hasObservation,
-  getObservationDetails,
-  handleDogClick,
-  isCellActive,
-  isMobile,
-  observationDialogOpen,
-  setObservationDialogOpen,
-  selectedDog,
-  selectedTimeSlot,
-  currentDate
-}) => {
-  const { currentHour, timeSlots } = useTimeManager();
-  
-  return (
-    <Card className="p-0 overflow-hidden transition-all duration-200">
+    <Card className="p-0 overflow-hidden">
       <Tabs
         defaultValue="pottybreaks"
         value={activeCategory}
-        onValueChange={handleCategoryChange}
+        onValueChange={setActiveCategory}
         className="w-full"
       >
         <div className="p-3 bg-white dark:bg-slate-950/60 border-b border-gray-200 dark:border-gray-800">
           <TimeTableHeader 
             activeCategory={activeCategory} 
-            onCategoryChange={handleCategoryChange}
+            onCategoryChange={setActiveCategory}
             isLoading={isLoading}
             onRefresh={handleRefresh} 
             isMobile={isMobile}
-            currentDate={currentDate}
           />
         </div>
         
-        <TabsContent value="pottybreaks" className="mt-0 transition-opacity duration-200">
+        <TabsContent value="pottybreaks" className="mt-0">
           <ActiveTabContent
             activeCategory="pottybreaks"
             sortedDogs={sortedDogs}
@@ -243,11 +120,10 @@ const DogTimeTableContent = React.memo<{
             onRefresh={handleRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
-            isCellActive={isCellActive}
           />
         </TabsContent>
         
-        <TabsContent value="feeding" className="mt-0 transition-opacity duration-200">
+        <TabsContent value="feeding" className="mt-0">
           <ActiveTabContent
             activeCategory="feeding"
             sortedDogs={sortedDogs}
@@ -263,7 +139,6 @@ const DogTimeTableContent = React.memo<{
             onRefresh={handleRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
-            isCellActive={isCellActive}
           />
         </TabsContent>
         
@@ -272,7 +147,6 @@ const DogTimeTableContent = React.memo<{
             isLoading={isLoading}
             onRefresh={handleRefresh}
             lastUpdateTime={new Date().toLocaleTimeString()}
-            currentDate={currentDate}
           />
         </div>
       </Tabs>
@@ -291,8 +165,6 @@ const DogTimeTableContent = React.memo<{
       />
     </Card>
   );
-});
-
-DogTimeTableContent.displayName = 'DogTimeTableContent';
+};
 
 export default DogTimeTable;

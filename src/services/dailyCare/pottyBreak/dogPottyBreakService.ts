@@ -46,15 +46,12 @@ export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<
 };
 
 // Log a potty break for a specific dog at a specific time slot
-// Modified to always use current time for timestamp
 export const logDogPottyBreak = async (dogId: string, timeSlot: string): Promise<any> => {
-  // Create a new potty break session with current timestamp
-  const currentTime = new Date().toISOString();
-  
+  // Create a new potty break session
   const { data: sessionData, error: sessionError } = await supabase
     .from('potty_break_sessions')
     .insert({
-      session_time: currentTime, // Always use current time
+      session_time: new Date().toISOString(),
       notes: `Potty break at ${timeSlot}`
     })
     .select()

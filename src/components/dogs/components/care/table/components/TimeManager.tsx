@@ -1,52 +1,59 @@
 
-import React, { createContext, useContext, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { generateTimeSlots } from '../dogGroupColors';
 
-interface TimeManagerContextType {
-  currentHour: number;
-  timeSlots: string[];
-}
-
-const TimeManagerContext = createContext<TimeManagerContextType>({
-  currentHour: new Date().getHours(),
-  timeSlots: []
-});
-
-interface TimeManagerProviderProps {
-  children: React.ReactNode;
-  activeCategory: string;
-}
-
-/**
- * Provides time-related data for the care table
- */
-export const TimeManagerProvider: React.FC<TimeManagerProviderProps> = ({ 
-  children,
-  activeCategory
-}) => {
-  // Current hour (0-23) for highlighting the current time slot
-  const currentHour = useMemo(() => new Date().getHours(), []);
+export const useTimeManager = (activeCategory = 'pottybreaks') => {
+  // Get current time and hour
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [currentHour, setCurrentHour] = useState<number>(currentTime.getHours());
   
-  // Generate time slots based on category and current time
-  const timeSlots = useMemo(() => 
-    generateTimeSlots(new Date(), activeCategory), 
-    [activeCategory]
-  );
+  // Generate timeSlots based on current time and active category
+  const timeSlots = useMemo(() => {
+    return generateTimeSlots(currentTime, activeCategory);
+  }, [currentTime, activeCategory]);
   
-  return (
-    <TimeManagerContext.Provider value={{ currentHour, timeSlots }}>
-      {children}
-    </TimeManagerContext.Provider>
-  );
+  // Update current time and hour every minute
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now);
+      setCurrentHour(now.getHours());
+    }, 60000); // 60000ms = 1 minute
+    
+    return () => clearInterval(intervalId);
+  }, []);
+  
+  // Memo-ize the timeslot headers to prevent re-renders
+  const timeSlotHeaders = useMemo(() => {
+    if (activeCategory === 'feeding') {
+      // For feeding, we don't need current hour highlighting
+      return timeSlots.map(slot => ({
+        slot,
+        isCurrent: false
+      }));
+    }
+    
+    // For potty breaks, use the original logic
+    return timeSlots.map(slot => {
+      const [hours, minutesPart] = slot.split(':');
+      const [minutes, period] = minutesPart.split(' ');
+      let hour = parseInt(hours);
+      if (period === 'PM' && hour !== 12) hour += 12;
+      if (period === 'AM' && hour === 12) hour = 0;
+      
+      return {
+        slot,
+        isCurrent: hour === currentHour
+      };
+    });
+  }, [timeSlots, currentHour, activeCategory]);
+
+  return {
+    currentTime,
+    currentHour,
+    timeSlots,
+    timeSlotHeaders
+  };
 };
 
-/**
- * Hook to access time manager context
- */
-export const useTimeManager = () => {
-  const context = useContext(TimeManagerContext);
-  if (!context) {
-    throw new Error('useTimeManager must be used within a TimeManagerProvider');
-  }
-  return context;
-};
+export default useTimeManager;
