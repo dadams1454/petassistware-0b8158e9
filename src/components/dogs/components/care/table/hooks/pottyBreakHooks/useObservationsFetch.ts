@@ -7,14 +7,13 @@ import { ObservationsMap } from './observationTypes';
 import { isObservationValid, convertCareLogToObservation } from './observationsUtils';
 
 export const useObservationsFetch = (dogs: DogCareStatus[]) => {
-  const [observations, setObservations] = useState<ObservationsMap>({});
   const [isLoading, setIsLoading] = useState(false);
   const { fetchDogCareLogs } = useDailyCare();
   const { toast } = useToast();
 
   // Load observations for all dogs
   const fetchObservations = useCallback(async () => {
-    if (!dogs.length) return;
+    if (!dogs.length) return {};
     
     setIsLoading(true);
     try {
@@ -34,7 +33,7 @@ export const useObservationsFetch = (dogs: DogCareStatus[]) => {
         }
       }
       
-      setObservations(observationsMap);
+      return observationsMap;
     } catch (error) {
       console.error('Failed to fetch observations:', error);
       toast({
@@ -42,18 +41,13 @@ export const useObservationsFetch = (dogs: DogCareStatus[]) => {
         description: 'Failed to load dog observations',
         variant: 'destructive'
       });
+      return {};
     } finally {
       setIsLoading(false);
     }
   }, [dogs, fetchDogCareLogs, toast]);
 
-  // Load observations on component mount
-  useEffect(() => {
-    fetchObservations();
-  }, [fetchObservations]);
-
   return {
-    observations,
     fetchObservations,
     isLoading
   };
