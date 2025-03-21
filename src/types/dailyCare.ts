@@ -31,7 +31,6 @@ export interface CareLogFormData {
 export interface DogFlag {
   type: 'in_heat' | 'pregnant' | 'incompatible' | 'special_attention' | 'other';
   value?: string;
-  notes?: string; // Added notes property to handle test cases
   incompatible_with?: string[];
 }
 
@@ -48,5 +47,4 @@ export interface DogCareStatus {
     timestamp: string;
   } | null;
   flags: DogFlag[];
-  gender?: string; // Added gender property for backward compatibility with tests
 }

@@ -1,27 +1,29 @@
 
 import { useRef, useCallback } from 'react';
 
-export const useDebounce = (delay: number = 300) => {
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const debounce = useCallback((fn: () => void) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
+export const useDebounce = (delay: number = 1000) => {
+  const debounceTimerRef = useRef<number | null>(null);
+  
+  const debounce = useCallback((callback: () => void) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
     
-    timerRef.current = setTimeout(() => {
-      fn();
-      timerRef.current = null;
+    debounceTimerRef.current = window.setTimeout(() => {
+      callback();
+      debounceTimerRef.current = null;
     }, delay);
   }, [delay]);
   
-  // Clear debounce timer when component unmounts
-  const cleanup = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
+  const cancelDebounce = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
     }
   }, []);
-
-  return { debounce, cleanup };
+  
+  return {
+    debounce,
+    cancelDebounce
+  };
 };

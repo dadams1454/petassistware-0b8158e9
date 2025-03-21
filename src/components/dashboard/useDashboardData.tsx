@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   fetchDashboardStats, 
@@ -21,48 +21,40 @@ export const useDashboardData = () => {
   });
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
-  const initialLoadComplete = useRef(false);
 
-  const loadDashboardData = useCallback(async () => {
-    if (!initialLoadComplete.current) {
-      setIsLoading(true);
-    }
-    
-    try {
-      // Fetch all data in parallel
-      const [dashboardStats, upcomingEvents, recentActivities] = await Promise.all([
-        fetchDashboardStats(),
-        fetchUpcomingEvents(),
-        fetchRecentActivities()
-      ]);
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch all data in parallel
+        const [dashboardStats, upcomingEvents, recentActivities] = await Promise.all([
+          fetchDashboardStats(),
+          fetchUpcomingEvents(),
+          fetchRecentActivities()
+        ]);
 
-      // Use functional updates to prevent unnecessary re-renders
-      setStats(prev => ({...prev, ...dashboardStats}));
-      setEvents(prev => upcomingEvents.length > 0 ? upcomingEvents : prev);
-      setActivities(prev => recentActivities.length > 0 ? recentActivities : prev);
-      initialLoadComplete.current = true;
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-      if (!initialLoadComplete.current) {
+        setStats(dashboardStats);
+        setEvents(upcomingEvents);
+        setActivities(recentActivities);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
         toast({
           title: "Error",
           description: "Failed to load dashboard data. Please try again.",
           variant: "destructive"
         });
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    loadDashboardData();
   }, [toast]);
 
-  // Initial load
+  // Mock activities if none are found in the database
   useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
-
-  // Mock activities if none are found only on initial load
-  useEffect(() => {
-    if (!isLoading && activities.length === 0 && initialLoadComplete.current) {
+    if (!isLoading && activities.length === 0) {
       const mockActivities: RecentActivity[] = [
         {
           id: '1',
@@ -102,11 +94,11 @@ export const useDashboardData = () => {
       ];
       setActivities(mockActivities);
     }
-  }, [isLoading, activities.length]);
+  }, [isLoading, activities]);
 
-  // Mock events if none are found only on initial load
+  // Mock events if none are found in the database
   useEffect(() => {
-    if (!isLoading && events.length === 0 && initialLoadComplete.current) {
+    if (!isLoading && events.length === 0) {
       const today = new Date();
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -146,13 +138,12 @@ export const useDashboardData = () => {
       ];
       setEvents(mockEvents);
     }
-  }, [isLoading, events.length]);
+  }, [isLoading, events]);
 
   return {
     isLoading,
     stats,
     events,
-    activities,
-    refreshData: loadDashboardData
+    activities
   };
 };

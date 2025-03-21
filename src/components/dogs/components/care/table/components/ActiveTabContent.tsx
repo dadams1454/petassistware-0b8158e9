@@ -2,6 +2,7 @@
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeTableContent from './TimeTableContent';
+import TableContainer from './TableContainer';
 
 interface ActiveTabContentProps {
   activeCategory: string;
@@ -10,21 +11,17 @@ interface ActiveTabContentProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
+  getObservationDetails: (dogId: string) => { text: string; type: string } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCellContextMenu: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
   onRefresh: () => void;
   currentHour?: number;
-  isMobile: boolean;
-  isCellActive?: (dogId: string, timeSlot: string, category: string) => boolean;
+  isMobile?: boolean;
 }
 
-/**
- * Content for the active tab (pottybreaks or feeding)
- */
-const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
+const ActiveTabContent: React.FC<ActiveTabContentProps> = ({ 
   activeCategory,
   sortedDogs,
   timeSlots,
@@ -36,13 +33,18 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   onCellContextMenu,
   onCareLogClick,
   onDogClick,
+  onRefresh,
   currentHour,
-  isMobile,
-  isCellActive = () => false
+  isMobile = false
 }) => {
   return (
-    <div className="relative overflow-x-auto">
-      <TimeTableContent
+    <TableContainer 
+      activeCategory={activeCategory}
+      dogsCount={sortedDogs.length}
+      isMobile={isMobile}
+      onRefresh={onRefresh}
+    >
+      <TimeTableContent 
         sortedDogs={sortedDogs}
         timeSlots={timeSlots}
         activeCategory={activeCategory}
@@ -56,9 +58,8 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
         onDogClick={onDogClick}
         currentHour={currentHour}
         isMobile={isMobile}
-        isCellActive={isCellActive}
       />
-    </div>
+    </TableContainer>
   );
 };
 

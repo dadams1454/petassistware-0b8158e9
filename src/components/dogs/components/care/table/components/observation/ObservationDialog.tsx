@@ -8,10 +8,10 @@ import ObservationList from './ObservationList';
 export type ObservationType = 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
 
 interface ObservationDialogProps {
-  dogId: string;
-  dogName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  dogId: string;
+  dogName: string;
   onSubmit: (observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
   existingObservations?: Array<{
     observation: string;

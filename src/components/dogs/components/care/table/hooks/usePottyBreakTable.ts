@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDogSorting } from './pottyBreakHooks/useDogSorting';
@@ -8,7 +8,6 @@ import { usePottyBreakData } from './pottyBreakHooks/usePottyBreakData';
 import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
 import { useCellActions } from './pottyBreakHooks/useCellActions';
 import { useObservations } from './pottyBreakHooks/useObservations';
-import { debounce } from '@/utils/debounce';
 
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
@@ -17,8 +16,6 @@ const usePottyBreakTable = (
   currentDate: Date = new Date()
 ) => {
   const navigate = useNavigate();
-  const prevActiveCategoryRef = useRef(activeCategory);
-  const isInitialRender = useRef(true);
   
   // Use the refactored hooks
   const { sortedDogs } = useDogSorting(dogsStatus);
@@ -28,7 +25,7 @@ const usePottyBreakTable = (
   const { observations, addObservation, hasObservation, getObservationDetails, isLoading: observationsLoading } = useObservations(sortedDogs);
   
   // Create optimized cell actions handler with debounced refresh
-  const { handleCellClick, isLoading: cellActionsLoading, isCellActive } = useCellActions(
+  const { handleCellClick, isLoading: cellActionsLoading } = useCellActions(
     currentDate, 
     pottyBreaks, 
     setPottyBreaks, 
@@ -38,14 +35,6 @@ const usePottyBreakTable = (
   
   // Combined loading state
   const isLoading = pottyBreaksLoading || careLogsLoading || cellActionsLoading || observationsLoading || isRefreshing;
-  
-  // Debounced refresh to prevent UI jitter
-  const debouncedRefresh = useCallback(
-    debounce(() => {
-      handleRefresh();
-    }, 300),
-    [handleRefresh]
-  );
   
   // Wrapper for hasCareLogged to incorporate hasPottyBreak
   const handleHasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
@@ -71,18 +60,6 @@ const usePottyBreakTable = (
   const handleDogClick = useCallback((dogId: string) => {
     navigate(`/dogs/${dogId}`);
   }, [navigate]);
-  
-  // Only force refresh when active category changes or on initial render
-  useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      debouncedRefresh();
-    } else if (prevActiveCategoryRef.current !== activeCategory) {
-      console.log(`🔄 Category changed from ${prevActiveCategoryRef.current} to ${activeCategory} - refreshing`);
-      prevActiveCategoryRef.current = activeCategory;
-      debouncedRefresh();
-    }
-  }, [activeCategory, debouncedRefresh]);
 
   return {
     currentDate,
@@ -96,9 +73,8 @@ const usePottyBreakTable = (
     addObservation,
     observations,
     handleCellClick,
-    handleRefresh: debouncedRefresh,
-    handleDogClick,
-    isCellActive
+    handleRefresh,
+    handleDogClick
   };
 };
 

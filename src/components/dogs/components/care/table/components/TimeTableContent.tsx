@@ -5,7 +5,7 @@ import { DogCareStatus } from '@/types/dailyCare';
 import DogTimeRow from '../DogTimeRow';
 import { getDogRowColor } from '../dogGroupColors';
 
-export interface TimeTableContentProps {
+interface TimeTableContentProps {
   sortedDogs: DogCareStatus[];
   timeSlots: string[];
   activeCategory: string;
@@ -19,7 +19,6 @@ export interface TimeTableContentProps {
   onDogClick: (dogId: string) => void;
   currentHour?: number;
   isMobile?: boolean;
-  isCellActive?: (dogId: string, timeSlot: string, category: string) => boolean;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({
@@ -35,8 +34,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onCareLogClick,
   onDogClick,
   currentHour,
-  isMobile = false,
-  isCellActive = () => false
+  isMobile = false
 }) => {
   return (
     <Table>
@@ -80,7 +78,6 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
             onDogClick={onDogClick}
             currentHour={currentHour}
             isMobile={isMobile}
-            isCellActive={isCellActive}
           />
         ))}
       </TableBody>

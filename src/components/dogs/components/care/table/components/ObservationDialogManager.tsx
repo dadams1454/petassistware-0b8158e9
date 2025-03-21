@@ -3,23 +3,23 @@ import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import ObservationDialog from './observation/ObservationDialog';
 
-type ObservationType = 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
-
 interface ObservationDialogManagerProps {
   selectedDog: DogCareStatus | null;
   observationDialogOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (dogId: string, observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
-  observations: Array<{dogId: string, text: string, type: string, timeSlot?: string, category?: string, timestamp?: string}>;
+  onSubmit: (
+    dogId: string, 
+    observation: string, 
+    observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
+    timestamp?: Date
+  ) => Promise<void>;
+  observations: Record<string, any[]>;
   timeSlots: string[];
   isMobile: boolean;
   activeCategory: string;
   selectedTimeSlot: string;
 }
 
-/**
- * Manages the observation dialog for adding/viewing dog observations
- */
 const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
   selectedDog,
   observationDialogOpen,
@@ -33,28 +33,27 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
 }) => {
   if (!selectedDog) return null;
   
-  // Filter observations to only show those for the selected dog
-  const dogObservations = observations.filter(o => o.dogId === selectedDog.dog_id);
+  // Create a dialog title based on the active category
+  const dialogTitle = activeCategory === 'feeding' 
+    ? `Feeding Observation for ${selectedDog.dog_name}`
+    : `Observation for ${selectedDog.dog_name}`;
   
   return (
     <ObservationDialog
-      dogId={selectedDog.dog_id}
-      dogName={selectedDog.dog_name}
       open={observationDialogOpen}
       onOpenChange={onOpenChange}
+      dogId={selectedDog.dog_id}
+      dogName={selectedDog.dog_name}
       onSubmit={(observation, observationType, timestamp) => 
-        onSubmit(selectedDog.dog_id, observation, observationType as ObservationType, timestamp)
+        onSubmit(selectedDog.dog_id, observation, observationType, timestamp)
       }
-      existingObservations={dogObservations.map(o => ({
-        observation: o.text,
-        observation_type: o.type as ObservationType,
-        created_at: o.timestamp || new Date().toISOString(),
-        category: o.category
-      }))}
+      existingObservations={observations[selectedDog.dog_id] || []}
       timeSlots={timeSlots}
       isMobile={isMobile}
       activeCategory={activeCategory}
+      defaultObservationType={activeCategory === 'feeding' ? 'feeding' : 'other'}
       selectedTimeSlot={selectedTimeSlot}
+      dialogTitle={dialogTitle}
     />
   );
 };

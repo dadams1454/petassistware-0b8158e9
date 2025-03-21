@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { debounce } from '@/utils/debounce';
 
 interface UseAutoRefreshProps {
   onRefresh: () => Promise<void>;
@@ -16,11 +15,10 @@ export const useAutoRefresh = ({
 }: UseAutoRefreshProps) => {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const isRefreshingRef = useRef(false);
-  const initialRefreshDone = useRef(false);
   const { toast } = useToast();
   
-  // Enhanced refresh function with more robust error handling and debouncing
-  const handleRefresh = useCallback(async (showToast = true) => {
+  // Enhanced refresh function with more robust error handling
+  const handleRefresh = useCallback(async () => {
     // Skip if refresh is already in progress
     if (isRefreshingRef.current || isRefreshing) {
       console.log('🔄 Refresh skipped - refresh already in progress');
@@ -35,23 +33,17 @@ export const useAutoRefresh = ({
       await onRefresh();
       
       setLastRefresh(new Date());
-      
-      if (showToast) {
-        toast({
-          title: "Data refreshed",
-          description: "All dog care data has been refreshed.",
-        });
-      }
+      toast({
+        title: "Data refreshed",
+        description: "All dog care data has been refreshed.",
+      });
     } catch (error) {
       console.error('❌ Error during refresh:', error);
-      
-      if (showToast) {
-        toast({
-          title: "Refresh failed",
-          description: "Could not refresh dog data. Please try again.",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Refresh failed",
+        description: "Could not refresh dog data. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       // Reset the flag after completion (with a small delay to prevent rapid re-clicking)
       setTimeout(() => {
@@ -59,12 +51,6 @@ export const useAutoRefresh = ({
       }, 1000);
     }
   }, [onRefresh, isRefreshing, toast]);
-  
-  // Debounced version of the refresh handler to prevent UI jitter
-  const debouncedRefresh = useCallback(
-    debounce((showToast: boolean) => handleRefresh(showToast), 300),
-    [handleRefresh]
-  );
   
   // Auto-refresh at specified interval
   useEffect(() => {
@@ -76,24 +62,31 @@ export const useAutoRefresh = ({
       }
       
       console.log('🔄 Auto refresh triggered');
-      handleRefresh(false); // Don't show toast for auto-refresh
+      isRefreshingRef.current = true;
+      
+      // Execute the refresh
+      handleRefresh()
+        .catch(error => {
+          console.error('❌ Error during auto refresh:', error);
+        })
+        .finally(() => {
+          // Reset the flag after auto-refresh is complete
+          isRefreshingRef.current = false;
+        });
     }, interval);
     
     return () => clearInterval(intervalId);
   }, [handleRefresh, isRefreshing, interval]);
   
-  // Initial fetch when hook is initialized - only once
+  // Initial fetch when hook is initialized
   useEffect(() => {
-    if (!initialRefreshDone.current) {
-      console.log('🚀 Initial refresh triggered');
-      initialRefreshDone.current = true;
-      handleRefresh(false).catch(console.error);
-    }
-  }, [handleRefresh]);
+    console.log('🚀 Initial refresh triggered');
+    handleRefresh().catch(console.error);
+  }, []);
   
   return {
     lastRefresh,
-    handleRefresh: (showToast = true) => debouncedRefresh(showToast),
+    handleRefresh,
     isRefreshingInternal: isRefreshingRef.current
   };
 };
