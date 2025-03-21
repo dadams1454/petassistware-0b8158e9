@@ -46,7 +46,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     observations,
     handleCellClick, 
     handleRefresh,
-    handleDogClick
+    handleDogClick,
+    isCellActive
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
 
   // Handle category change with cache cleanup
@@ -154,6 +155,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
             onRefresh={handleRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
+            isCellActive={isCellActive}
           />
         </TabsContent>
         
@@ -173,6 +175,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
             onRefresh={handleRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
+            isCellActive={isCellActive}
           />
         </TabsContent>
         

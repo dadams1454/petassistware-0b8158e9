@@ -25,7 +25,7 @@ const usePottyBreakTable = (
   const { observations, addObservation, hasObservation, getObservationDetails, isLoading: observationsLoading } = useObservations(sortedDogs);
   
   // Create optimized cell actions handler with debounced refresh
-  const { handleCellClick, isLoading: cellActionsLoading } = useCellActions(
+  const { handleCellClick, isLoading: cellActionsLoading, isCellActive } = useCellActions(
     currentDate, 
     pottyBreaks, 
     setPottyBreaks, 
@@ -74,7 +74,8 @@ const usePottyBreakTable = (
     observations,
     handleCellClick,
     handleRefresh,
-    handleDogClick
+    handleDogClick,
+    isCellActive
   };
 };
 

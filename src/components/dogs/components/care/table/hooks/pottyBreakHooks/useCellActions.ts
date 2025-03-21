@@ -17,6 +17,7 @@ export const useCellActions = (
   // Import specialized handlers for different categories
   const { 
     handlePottyCellClick,
+    isCellActive: isPottyCellActive,
     isLoading: pottyLoading 
   } = usePottyCellActions({ 
     pottyBreaks, 
@@ -28,6 +29,7 @@ export const useCellActions = (
     handleFeedingCellClick, 
     refreshFeedingLogsCache,
     resetCache,
+    isCellActive: isFeedingCellActive,
     isLoading: feedingLoading 
   } = useFeedingCellActions({ 
     currentDate, 
@@ -59,11 +61,6 @@ export const useCellActions = (
     timeSlot: string, 
     category: string
   ) => {
-    if (isLoading) {
-      console.log('🔄 Cell click ignored - loading in progress');
-      return;
-    }
-    
     if (category !== activeCategory) {
       console.log('Cell click ignored - category mismatch:', category, activeCategory);
       return;
@@ -77,31 +74,30 @@ export const useCellActions = (
       } else if (category === 'feeding') {
         await handleFeedingCellClick(dogId, dogName, timeSlot, user?.id);
       }
-      
-      // Schedule a refresh after a brief delay to limit API calls
-      debounce(() => {
-        if (onRefresh) {
-          console.log('🔄 Executing debounced refresh');
-          onRefresh();
-        }
-      });
-      
     } catch (error) {
       console.error(`Error handling ${category} cell click:`, error);
     }
   }, [
-    isLoading, 
     activeCategory, 
     handlePottyCellClick, 
     handleFeedingCellClick, 
-    user, 
-    debounce, 
-    onRefresh
+    user
   ]);
+  
+  // Check if a cell is active for UI purposes
+  const isCellActive = useCallback((dogId: string, timeSlot: string, category: string) => {
+    if (category === 'pottybreaks') {
+      return isPottyCellActive(dogId, timeSlot);
+    } else if (category === 'feeding') {
+      return isFeedingCellActive(dogId, timeSlot);
+    }
+    return false;
+  }, [isPottyCellActive, isFeedingCellActive]);
   
   return {
     isLoading,
     handleCellClick,
-    refreshCache: refreshFeedingLogsCache
+    refreshCache: refreshFeedingLogsCache,
+    isCellActive
   };
 };

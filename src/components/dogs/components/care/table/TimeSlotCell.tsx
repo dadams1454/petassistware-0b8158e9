@@ -6,6 +6,7 @@ import CellContent from './components/CellContent';
 import { useCellStyles } from './components/useCellStyles';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import AnimatedCell from './components/AnimatedCell';
 
 interface TimeSlotCellProps {
   dogId: string;
@@ -19,6 +20,7 @@ interface TimeSlotCellProps {
   flags?: DogFlag[];
   isCurrentHour?: boolean;
   isIncident?: boolean;
+  isActive?: boolean; // New prop for optimistic UI
 }
 
 // Use memo to prevent unnecessary re-renders that could cause flag flickering
@@ -33,7 +35,8 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   onContextMenu,
   flags = [],
   isCurrentHour = false,
-  isIncident = false
+  isIncident = false,
+  isActive = false
 }) => {
   // Create a stable copy of flags to prevent reference issues
   // This helps ensure each dog's flags stay with that dog
@@ -67,7 +70,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       if (isIncident) {
         return 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20';
       }
-      if (hasCareLogged) {
+      if (hasCareLogged || isActive) {
         return 'bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/40';
       }
       return 'hover:bg-green-50 dark:hover:bg-green-900/10';
@@ -76,7 +79,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     if (isIncident) {
       return 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20';
     } 
-    if (hasPottyBreak) {
+    if (hasPottyBreak || isActive) {
       return 'bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/40'; 
     }
     if (isCurrentHour) {
@@ -138,7 +141,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       if (isIncident) {
         return 'border-l-2 border-r-2 border-red-400 dark:border-red-600';
       }
-      if (hasCareLogged) {
+      if (hasCareLogged || isActive) {
         return 'border-l-2 border-r-2 border-green-400 dark:border-green-600';
       }
       return '';
@@ -152,6 +155,9 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     }
     return '';
   };
+  
+  // Determine if cell should be considered active for animation
+  const isAnimatedActive = hasPottyBreak || hasCareLogged || isActive;
   
   return (
     <TableCell 
@@ -176,18 +182,19 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       data-mobile-cell={isMobile ? "true" : "false"}
       data-custom-color={customDogColor ? "true" : "false"}
       data-category={category}
+      data-active={isAnimatedActive ? "true" : "false"}
     >
-      <div className="w-full h-full p-1 flex items-center justify-center">
+      <AnimatedCell isActive={isAnimatedActive} className="p-1 flex items-center justify-center">
         <CellContent 
           dogName={dogName}
           timeSlot={timeSlot}
           category={category}
-          hasPottyBreak={hasPottyBreak}
-          hasCareLogged={hasCareLogged}
+          hasPottyBreak={hasPottyBreak || isActive}
+          hasCareLogged={hasCareLogged || isActive}
           isCurrentHour={isCurrentHour}
           isIncident={isIncident}
         />
-      </div>
+      </AnimatedCell>
     </TableCell>
   );
 });

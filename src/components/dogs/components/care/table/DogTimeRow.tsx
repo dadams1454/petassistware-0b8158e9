@@ -21,6 +21,7 @@ interface DogTimeRowProps {
   onDogClick: (dogId: string) => void;
   currentHour?: number;
   isMobile?: boolean;
+  isCellActive?: (dogId: string, timeSlot: string, category: string) => boolean;
 }
 
 // Use memo to prevent unnecessary row re-renders
@@ -38,7 +39,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   onCareLogClick,
   onDogClick,
   currentHour,
-  isMobile = false
+  isMobile = false,
+  isCellActive = () => false
 }) => {
   // Create stable copies of important data to prevent reference issues
   const dogId = dog.dog_id;
@@ -135,6 +137,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         const hasPottyBreakForSlot = hasPottyBreak(dogId, timeSlot);
         const hasCareLoggedForSlot = hasCareLogged(dogId, timeSlot, activeCategory);
         const isCurrentTimeSlot = isCurrentHourSlot(timeSlot);
+        const isActive = isCellActive(dogId, timeSlot, activeCategory);
         
         // Check if this time slot matches the observation time for the current category
         const isIncidentTimeSlot = dogHasObservation && 
@@ -158,6 +161,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             flags={dogFlags}
             isCurrentHour={isCurrentTimeSlot}
             isIncident={isIncidentTimeSlot}
+            isActive={isActive}
           />
         );
       })}
