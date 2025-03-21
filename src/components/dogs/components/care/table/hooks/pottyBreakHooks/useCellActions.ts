@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { logDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
 import { addCareLog, deleteCareLog } from '@/services/dailyCare/careLogsService';
@@ -193,7 +193,7 @@ export const useCellActions = (
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, currentDate, user, toast, onRefresh, feedingLogs, contextDeleteCareLog]);
+  }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, user, toast, onRefresh, feedingLogs, contextDeleteCareLog]);
   
   return {
     isLoading,
@@ -202,5 +202,3 @@ export const useCellActions = (
   };
 };
 
-// Add missing import
-import { useEffect } from 'react';

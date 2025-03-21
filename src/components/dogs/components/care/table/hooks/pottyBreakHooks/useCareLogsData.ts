@@ -8,6 +8,7 @@ interface CareLog {
   category: string;
   task_name: string;
   timestamp: string;
+  id: string;
 }
 
 export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 'pottybreaks') => {
@@ -64,7 +65,10 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
       
       // For feeding with named time slots
       if (category === 'feeding') {
-        // Parse timestamp and check if it matches the time slot (Morning, Noon, Evening)
+        // Check if task name includes the time slot (Morning, Noon, Evening)
+        if (log.task_name.includes(timeSlot)) return true;
+        
+        // Another approach is to check the timestamp
         const logDate = new Date(log.timestamp);
         const logHour = logDate.getHours();
         
@@ -74,8 +78,7 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
         if (timeSlot === 'Noon' && (logHour >= 10 && logHour < 15)) return true;
         if (timeSlot === 'Evening' && ((logHour >= 15 && logHour < 24) || (logHour >= 0 && logHour < 5))) return true;
         
-        // Another option is to check the task_name directly
-        return log.task_name === `${timeSlot} Feeding`;
+        return false;
       } else {
         // Original logic for other categories
         const logDate = new Date(log.timestamp);
