@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { addCareLog, deleteCareLog, fetchFeedingLogsByDate } from '@/services/dailyCare/careLogsService';
 
