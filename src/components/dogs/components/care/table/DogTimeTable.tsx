@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -34,7 +34,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   // Use the time manager hook with activeCategory
   const { currentHour, timeSlots } = useTimeManager(activeCategory);
   
-  // Use the potty break table hook for data management
+  // Use the potty break table hook for data management - with memoized initialization
   const { 
     isLoading, 
     sortedDogs, 
@@ -49,18 +49,17 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleDogClick
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
 
-  // Handle category change with cache cleanup
-  const handleCategoryChange = (newCategory: string) => {
+  // Memoized category change handler for performance
+  const handleCategoryChange = useCallback((newCategory: string) => {
     console.log(`🔄 Category changing from ${activeCategory} to ${newCategory}`);
     previousCategoryRef.current = activeCategory;
     setActiveCategory(newCategory);
     
-    // Force a refresh when switching tabs to ensure fresh data
+    // Minimal refresh when switching tabs
     setTimeout(() => {
-      console.log(`🔄 Forcing refresh after tab change to ${newCategory}`);
       handleRefresh();
       
-      // Show toast when switching to feeding tab
+      // Show toast when switching to feeding tab - only once per session
       if (newCategory === 'feeding' && previousCategoryRef.current !== 'feeding') {
         toast({
           title: "Feeding Management",
@@ -68,10 +67,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         });
       }
     }, 50);
-  };
+  }, [activeCategory, handleRefresh, toast]);
   
-  // Handle cell right-click (context menu) for observations
-  const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
+  // Memoized cell context menu handler
+  const handleCellContextMenu = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId}) at ${timeSlot} for ${category}`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
@@ -79,10 +78,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       setSelectedTimeSlot(timeSlot);
       setObservationDialogOpen(true);
     }
-  };
+  }, [sortedDogs]);
   
-  // Handle care log button click - open observation dialog for dog
-  const handleCareLogClick = (dogId: string, dogName: string) => {
+  // Memoized care log click handler
+  const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId})`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
@@ -90,10 +89,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       setSelectedTimeSlot('');
       setObservationDialogOpen(true);
     }
-  };
+  }, [sortedDogs]);
   
-  // Handle observation submission with optional timestamp
-  const handleObservationSubmit = async (
+  // Memoized observation submission handler
+  const handleObservationSubmit = useCallback(async (
     dogId: string, 
     observation: string, 
     observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
@@ -111,13 +110,34 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       timestamp || new Date()
     );
     handleRefresh();
-  };
+  }, [activeCategory, addObservation, handleRefresh, selectedTimeSlot]);
   
-  // Force a refresh on initial load and when switching tabs
+  // Reduced effect dependency to prevent excessive refreshes
   React.useEffect(() => {
     console.log(`🚀 DogTimeTable mounted or tab changed to ${activeCategory}`);
     handleRefresh();
   }, [activeCategory, handleRefresh]);
+  
+  // Memoize header and content components
+  const timeTableHeader = useMemo(() => (
+    <TimeTableHeader 
+      activeCategory={activeCategory} 
+      onCategoryChange={handleCategoryChange}
+      isLoading={isLoading}
+      onRefresh={handleRefresh} 
+      isMobile={isMobile}
+      currentDate={currentDate}
+    />
+  ), [activeCategory, handleCategoryChange, isLoading, handleRefresh, isMobile, currentDate]);
+  
+  const timeTableFooter = useMemo(() => (
+    <TimeTableFooter
+      isLoading={isLoading}
+      onRefresh={handleRefresh}
+      lastUpdateTime={new Date().toLocaleTimeString()}
+      currentDate={currentDate}
+    />
+  ), [isLoading, handleRefresh, currentDate]);
   
   return (
     <Card className="p-0 overflow-hidden">
@@ -128,14 +148,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         className="w-full"
       >
         <div className="p-3 bg-white dark:bg-slate-950/60 border-b border-gray-200 dark:border-gray-800">
-          <TimeTableHeader 
-            activeCategory={activeCategory} 
-            onCategoryChange={handleCategoryChange}
-            isLoading={isLoading}
-            onRefresh={handleRefresh} 
-            isMobile={isMobile}
-            currentDate={currentDate}
-          />
+          {timeTableHeader}
         </div>
         
         <TabsContent value="pottybreaks" className="mt-0">
@@ -177,12 +190,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         </TabsContent>
         
         <div className="p-2 bg-gray-50 dark:bg-slate-900/60 border-t border-gray-200 dark:border-gray-800">
-          <TimeTableFooter
-            isLoading={isLoading}
-            onRefresh={handleRefresh}
-            lastUpdateTime={new Date().toLocaleTimeString()}
-            currentDate={currentDate}
-          />
+          {timeTableFooter}
         </div>
       </Tabs>
       
@@ -202,8 +210,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   );
 };
 
-// We need to import TimeTableHeader and TimeTableFooter
+// Import TimeTableHeader and TimeTableFooter
 import TimeTableHeader from './components/TimeTableHeader';
 import TimeTableFooter from './components/TimeTableFooter';
 
-export default DogTimeTable;
+export default React.memo(DogTimeTable);

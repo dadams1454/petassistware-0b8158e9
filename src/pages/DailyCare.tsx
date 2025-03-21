@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, Clock, Calendar } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { startOfDay, format } from 'date-fns';
+import { useToast } from '@/components/ui/use-toast';
 
 const DailyCare: React.FC = () => {
   const { loading, dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
@@ -15,9 +16,11 @@ const DailyCare: React.FC = () => {
   const [lastAutoRefresh, setLastAutoRefresh] = useState<Date>(new Date());
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
+  const isManualRefreshingRef = useRef(false);
+  const { toast } = useToast();
   
-  // Autorefresh every 15 minutes
-  const AUTO_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
+  // Increase auto-refresh interval to reduce server load
+  const AUTO_REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes in milliseconds
 
   // Setup midnight check to refresh data at midnight
   const setupMidnightCheck = useCallback(() => {
@@ -61,24 +64,56 @@ const DailyCare: React.FC = () => {
     };
   }, [fetchAllDogsWithCareStatus]);
 
-  // Manually trigger refresh function
-  const handleManualRefresh = () => {
+  // Optimized manual refresh function with debounce pattern
+  const handleManualRefresh = useCallback(() => {
+    // Prevent multiple simultaneous refreshes
+    if (isManualRefreshingRef.current) {
+      toast({
+        title: "Refresh in progress",
+        description: "Please wait for the current refresh to complete.",
+      });
+      return;
+    }
+    
     console.log('🔄 Manual refresh triggered in DailyCare page');
+    isManualRefreshingRef.current = true;
     setRefreshTrigger(prev => prev + 1);
     setLastAutoRefresh(new Date());
+    
     // Force fetch with refresh flag
     fetchAllDogsWithCareStatus(currentDate, true)
       .then(dogs => {
         console.log(`✅ Manually refreshed: ${dogs.length} dogs loaded`);
+        toast({
+          title: "Data refreshed",
+          description: `Successfully loaded ${dogs.length} dogs.`,
+        });
       })
       .catch(error => {
         console.error('❌ Error during manual refresh:', error);
+        toast({
+          title: "Refresh failed",
+          description: "Could not refresh data. Please try again.",
+          variant: "destructive"
+        });
+      })
+      .finally(() => {
+        // Reset refreshing state after a short delay to prevent rapid re-clicks
+        setTimeout(() => {
+          isManualRefreshingRef.current = false;
+        }, 1000);
       });
-  };
+  }, [fetchAllDogsWithCareStatus, currentDate, toast]);
 
-  // Set up auto-refresh
+  // Set up auto-refresh with optimized interval
   useEffect(() => {
     const intervalId = setInterval(() => {
+      // Skip if a manual refresh is in progress
+      if (isManualRefreshingRef.current) {
+        console.log('🔄 Auto refresh skipped - manual refresh in progress');
+        return;
+      }
+      
       console.log('🔄 Auto refresh triggered');
       setRefreshTrigger(prev => prev + 1);
       setLastAutoRefresh(new Date());
@@ -102,25 +137,19 @@ const DailyCare: React.FC = () => {
     return () => cleanupMidnightCheck();
   }, [setupMidnightCheck]);
 
-  // Fetch all dogs on component mount, when fetchAllDogsWithCareStatus changes,
-  // when refreshTrigger is updated, or when currentDate changes
+  // Initial fetch only once on component mount
   useEffect(() => {
-    console.log(`🚀 DailyCare page - fetching dogs data for ${format(currentDate, 'PP')}`);
+    console.log(`🚀 DailyCare page - initial fetch for ${format(currentDate, 'PP')}`);
     
     // Force a fetch on component mount to ensure we have data
     fetchAllDogsWithCareStatus(currentDate, true)
       .then(dogs => {
-        console.log('✅ Fetched dogs count:', dogs.length);
-        if (dogs.length > 0) {
-          console.log('🐕 Dog names:', dogs.map(d => d.dog_name).join(', '));
-        } else {
-          console.warn('⚠️ No dogs returned from API call');
-        }
+        console.log('✅ Initial fetch - dogs count:', dogs.length);
       })
       .catch(error => {
-        console.error('❌ Error fetching dogs on DailyCare mount:', error);
+        console.error('❌ Error on initial fetch:', error);
       });
-  }, [fetchAllDogsWithCareStatus, refreshTrigger, currentDate]);
+  }, [fetchAllDogsWithCareStatus, currentDate]);
 
   const content = (
     <>
@@ -129,12 +158,12 @@ const DailyCare: React.FC = () => {
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Daily Care Time Table
           </h1>
-          <p className="mt-1 text-slate-500 dark:text-slate-400 flex items-center">
-            Track potty breaks, feeding, medications and exercise for all your dogs
-            {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
+          <p className="mt-1 text-slate-500 dark:text-slate-400 flex items-center flex-wrap">
+            <span className="mr-2">Track potty breaks, feeding, medications and exercise</span>
+            <span className="mr-2">{dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}</span>
             <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
               <Clock className="h-3 w-3" />
-              Auto-refreshes every 15 minutes
+              Auto-refreshes every 30 minutes
             </span>
             <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
               <Calendar className="h-3 w-3" />
@@ -142,9 +171,14 @@ const DailyCare: React.FC = () => {
             </span>
           </p>
         </div>
-        <Button onClick={handleManualRefresh} className="gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Refresh Dogs
+        {/* Single refresh button for the page */}
+        <Button 
+          onClick={handleManualRefresh} 
+          disabled={isManualRefreshingRef.current}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isManualRefreshingRef.current ? 'animate-spin' : ''}`} />
+          Refresh Data
         </Button>
       </div>
 
@@ -162,7 +196,7 @@ const DailyCare: React.FC = () => {
             }}
           />
           
-          {/* Time Table */}
+          {/* Time Table - pass the handleManualRefresh function instead of creating a new one */}
           <div id="dog-time-table">
             <DogTimeTable 
               dogsStatus={dogStatuses} 

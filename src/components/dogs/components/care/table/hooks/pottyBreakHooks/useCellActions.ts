@@ -1,7 +1,8 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
-import { usePottyCellActions, useFeedingCellActions, useDebounce } from './cellActions';
+import { usePottyCellActions, useFeedingCellActions } from './cellActions';
+import { useDebounce } from './cellActions/useDebounce';
 
 export const useCellActions = (
   currentDate: Date,
@@ -12,7 +13,7 @@ export const useCellActions = (
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
-  const { debounce } = useDebounce(1000);
+  const { debounce } = useDebounce(300); // Reduce debounce time for better responsiveness
   
   // Import specialized handlers for different categories
   const { 
@@ -34,25 +35,28 @@ export const useCellActions = (
     onRefresh 
   });
   
-  // Clear cache when category changes or date changes
+  // Clear cache when category changes or date changes - with proper dependency tracking
   useEffect(() => {
     console.log(`🔄 Category changed to ${activeCategory} or date changed - clearing feeding logs cache`);
     resetCache();
   }, [activeCategory, currentDate, resetCache]);
   
-  // Initialize cache when the hook is mounted
+  // Initialize cache when the hook is mounted and category is 'feeding'
   useEffect(() => {
     if (activeCategory === 'feeding') {
       refreshFeedingLogsCache();
     }
   }, [activeCategory, refreshFeedingLogsCache]);
   
-  // Combined loading state
+  // Combined loading state with proper dependency tracking
   useEffect(() => {
     setIsLoading(pottyLoading || feedingLoading);
   }, [pottyLoading, feedingLoading]);
   
-  // Handler for cell clicks - routes to appropriate handler based on category
+  // Memoize the user ID to prevent unnecessary re-renders
+  const userId = useMemo(() => user?.id, [user]);
+  
+  // Optimized handler for cell clicks with proper dependency tracking
   const handleCellClick = useCallback(async (
     dogId: string, 
     dogName: string, 
@@ -75,7 +79,7 @@ export const useCellActions = (
       if (category === 'pottybreaks') {
         await handlePottyCellClick(dogId, dogName, timeSlot);
       } else if (category === 'feeding') {
-        await handleFeedingCellClick(dogId, dogName, timeSlot, user?.id);
+        await handleFeedingCellClick(dogId, dogName, timeSlot, userId);
       }
       
       // Schedule a refresh after a brief delay to limit API calls
@@ -94,7 +98,7 @@ export const useCellActions = (
     activeCategory, 
     handlePottyCellClick, 
     handleFeedingCellClick, 
-    user, 
+    userId, 
     debounce, 
     onRefresh
   ]);

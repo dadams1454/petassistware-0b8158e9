@@ -1,19 +1,19 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { getPottyBreaksByDogAndTimeSlot2 } from '@/services/dailyCare/pottyBreak/queries/timeSlotQueries';
 import { toast } from '@/components/ui/use-toast';
-import { useCallback } from 'react';
 
 export const usePottyBreakData = (currentDate: Date) => {
   const [pottyBreaks, setPottyBreaks] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(false);
   
-  // Add caching mechanism
+  // Enhanced caching mechanism with more robust state tracking
   const cacheExpiryRef = useRef<number>(0);
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
   const isFetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   
-  // Fetch potty breaks data with caching
+  // Fetch potty breaks data with improved caching
   const fetchPottyBreaks = useCallback(async (forceRefresh = false) => {
     // Skip if already fetching
     if (isFetchingRef.current) {
@@ -29,6 +29,14 @@ export const usePottyBreakData = (currentDate: Date) => {
       return;
     }
     
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create a new abort controller
+    abortControllerRef.current = new AbortController();
+    
     try {
       isFetchingRef.current = true;
       setIsLoading(true);
@@ -42,6 +50,12 @@ export const usePottyBreakData = (currentDate: Date) => {
       // Update cache expiry
       cacheExpiryRef.current = Date.now() + CACHE_DURATION;
     } catch (error) {
+      // Ignore aborted requests
+      if ((error as Error).name === 'AbortError') {
+        console.log('🛑 Potty breaks fetch aborted');
+        return;
+      }
+      
       console.error('❌ Error fetching potty breaks:', error);
       toast({
         title: 'Error',
@@ -54,13 +68,26 @@ export const usePottyBreakData = (currentDate: Date) => {
     }
   }, [currentDate]);
   
-  // Initial fetch
+  // Cleanup function for abort controller
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+  
+  // Initial fetch - only when date changes
   useEffect(() => {
     fetchPottyBreaks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate]);
+    
+    // Reset cache on date change
+    return () => {
+      cacheExpiryRef.current = 0;
+    };
+  }, [currentDate, fetchPottyBreaks]);
 
-  // Check if a dog has a potty break at a specific time slot
+  // Optimized hasPottyBreak function with memoization potential
   const hasPottyBreak = useCallback((dogId: string, timeSlot: string) => {
     return pottyBreaks[dogId]?.includes(timeSlot) || false;
   }, [pottyBreaks]);

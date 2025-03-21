@@ -31,6 +31,7 @@ const TabsList: React.FC<TabsListProps> = ({
         </TabsTrigger>
       </ShadcnTabsList>
       
+      {/* Main refresh button - only one needed at this level */}
       <Button 
         onClick={onRefreshDogs} 
         disabled={isRefreshing}
@@ -38,8 +39,8 @@ const TabsList: React.FC<TabsListProps> = ({
         size="sm"
         className="gap-1"
       >
-        <RefreshCw className="h-3.5 w-3.5" />
-        {isRefreshing ? 'Refreshing...' : 'Refresh Dogs'}
+        <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+        {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
       </Button>
     </div>
   );
