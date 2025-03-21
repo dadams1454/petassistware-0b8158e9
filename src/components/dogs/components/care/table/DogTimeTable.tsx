@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   Table,
@@ -9,19 +10,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
-import TimeTableHeader from './components/TimeTableHeader';
 import TimeTableFooter from './components/TimeTableFooter';
 import EmptyTableRow from './EmptyTableRow';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { CareLog } from '@/types/dailyCare';
 import { format } from 'date-fns';
-import { MoreVertical, CheckCircle, Circle, Utensils, Droplets } from 'lucide-react';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from '@/components/ui/context-menu';
-import { useToast } from '@/components/ui/use-toast';
-import { useRefreshHandler } from './hooks/pottyBreakHooks/useRefreshHandler';
-import { useCategoryData } from './hooks/useCategoryData';
 import { Category } from './types/category';
+import { useCategoryData } from './hooks/useCategoryData';
 import { useCellActions } from './hooks/pottyBreakHooks/cellActions/useCellActions';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
+import { Circle, CheckCircle } from 'lucide-react';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -29,26 +26,28 @@ interface DogTimeTableProps {
   currentDate?: Date;
 }
 
-const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh, currentDate = new Date() }) => {
+const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
+  dogsStatus, 
+  onRefresh, 
+  currentDate = new Date() 
+}) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState<Category>('pottybreaks');
-  const { toast } = useToast();
-  const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh);
   const { categoryData, isLoading: isCategoryDataLoading } = useCategoryData(dogsStatus, activeCategory, currentDate);
-  const { handleLogCare } = useCellActions(handleRefresh);
+  const { handleLogCare } = useCellActions(onRefresh);
   
-  // Function to get the appropriate icon based on category and care log status
+  // Function to get the appropriate icon based on care log status
   const getStatusIcon = useCallback((dog: DogCareStatus, timeSlot: string) => {
-    const careLog: CareLog | undefined = dog.care_logs?.find(log => {
+    if (!dog.care_logs) return <Circle className="h-4 w-4 text-gray-300 dark:text-gray-600" />;
+    
+    const careLog = dog.care_logs.find(log => {
       const logTime = format(new Date(log.timestamp), 'HH:mm');
       return logTime === timeSlot;
     });
     
-    if (careLog) {
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
-    } else {
-      return <Circle className="h-4 w-4 text-gray-300 dark:text-gray-600" />;
-    }
+    return careLog 
+      ? <CheckCircle className="h-4 w-4 text-green-500" /> 
+      : <Circle className="h-4 w-4 text-gray-300 dark:text-gray-600" />;
   }, []);
   
   // Memoize the generation of time slots
@@ -70,12 +69,14 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh, curr
     // Find the most recent timestamp among all care logs
     let latestTimestamp = 0;
     dogsStatus.forEach(dog => {
-      dog.care_logs?.forEach(log => {
-        const timestamp = new Date(log.timestamp).getTime();
-        if (timestamp > latestTimestamp) {
-          latestTimestamp = timestamp;
-        }
-      });
+      if (dog.care_logs) {
+        dog.care_logs.forEach(log => {
+          const timestamp = new Date(log.timestamp).getTime();
+          if (timestamp > latestTimestamp) {
+            latestTimestamp = timestamp;
+          }
+        });
+      }
     });
     
     // Format the latest timestamp
@@ -121,7 +122,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh, curr
               </TableRow>
             ))
           ) : (
-            <EmptyTableRow onRefresh={handleRefresh} />
+            <EmptyTableRow onRefresh={() => {
+              if (onRefresh) onRefresh();
+            }} />
           )}
         </TableBody>
       </Table>

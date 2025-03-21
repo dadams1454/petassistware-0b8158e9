@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
@@ -91,6 +90,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsContent value="grooming">
           <GroomingTab 
             dogStatuses={dogStatuses} 
+            onRefreshDogs={() => fetchAllDogsWithCareStatus(new Date(), true)}
           />
         </TabsContent>
       </Tabs>
