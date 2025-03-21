@@ -2,9 +2,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Dog, UtensilsCrossed, MessageCircle } from 'lucide-react';
+import { RefreshCw, Dog, UtensilsCrossed, MessageCircle, Calendar } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CustomButton } from '@/components/ui/custom-button';
+import { format } from 'date-fns';
 
 interface TimeTableHeaderProps {
   activeCategory: string;
@@ -12,6 +13,7 @@ interface TimeTableHeaderProps {
   isLoading?: boolean;
   onRefresh?: () => void;
   isMobile?: boolean;
+  currentDate?: Date;
 }
 
 const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({ 
@@ -19,7 +21,8 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
   onCategoryChange, 
   isLoading = false,
   onRefresh,
-  isMobile = false
+  isMobile = false,
+  currentDate = new Date()
 }) => {
   const handleCategoryChange = (category: string) => {
     onCategoryChange(category);
@@ -39,24 +42,33 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
   
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-      <TabsList className={`gap-1 ${isMobile ? 'w-full' : ''}`}>
-        <TabsTrigger 
-          value="pottybreaks" 
-          onClick={() => handleCategoryChange('pottybreaks')}
-          className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
-        >
-          {getIcon('pottybreaks')}
-          <span className={isMobile ? 'text-xs' : ''}>Potty</span>
-        </TabsTrigger>
-        <TabsTrigger 
-          value="feeding" 
-          onClick={() => handleCategoryChange('feeding')}
-          className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
-        >
-          {getIcon('feeding')}
-          <span className={isMobile ? 'text-xs' : ''}>Feeding</span>
-        </TabsTrigger>
-      </TabsList>
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
+        <TabsList className={`gap-1 ${isMobile ? 'w-full' : ''}`}>
+          <TabsTrigger 
+            value="pottybreaks" 
+            onClick={() => handleCategoryChange('pottybreaks')}
+            className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+          >
+            {getIcon('pottybreaks')}
+            <span className={isMobile ? 'text-xs' : ''}>Potty</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="feeding" 
+            onClick={() => handleCategoryChange('feeding')}
+            className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+          >
+            {getIcon('feeding')}
+            <span className={isMobile ? 'text-xs' : ''}>Feeding</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        {!isMobile && (
+          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 ml-2">
+            <Calendar className="h-3 w-3 mr-1" />
+            <span>{format(currentDate, 'MMMM d, yyyy')}</span>
+          </div>
+        )}
+      </div>
       
       <div className="flex items-center gap-2">
         {!isMobile && (

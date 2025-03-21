@@ -1,7 +1,8 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { fetchDogCareLogs } from '@/services/dailyCare';
+import { compareDesc, isSameDay, startOfDay } from 'date-fns';
 
 interface CareLog {
   dog_id: string;
@@ -13,6 +14,48 @@ interface CareLog {
 export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 'pottybreaks') => {
   const [careLogs, setCareLogs] = useState<CareLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Function to check if it's midnight and trigger a refresh
+  const setupMidnightCheck = useCallback(() => {
+    // Clear any existing interval
+    if (midnightCheckRef.current) {
+      clearInterval(midnightCheckRef.current);
+    }
+    
+    // Get current time and calculate time until next midnight
+    const now = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    // Time until midnight in milliseconds
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    console.log(`⏰ Setting up midnight check: ${timeUntilMidnight / 1000 / 60} minutes until midnight refresh`);
+    
+    // Set timeout for immediate midnight reset
+    midnightCheckRef.current = setTimeout(() => {
+      console.log('🕛 Midnight reached - refreshing feeding data...');
+      setCurrentDate(new Date());
+      fetchCareLogs();
+      
+      // Set up daily check after first trigger
+      midnightCheckRef.current = setInterval(() => {
+        console.log('🕛 Daily midnight refresh triggered');
+        setCurrentDate(new Date());
+        fetchCareLogs();
+      }, 24 * 60 * 60 * 1000); // Check every 24 hours
+    }, timeUntilMidnight);
+    
+    return () => {
+      if (midnightCheckRef.current) {
+        clearTimeout(midnightCheckRef.current);
+        clearInterval(midnightCheckRef.current);
+      }
+    };
+  }, []);
   
   const fetchCareLogs = useCallback(async () => {
     if (!dogs || dogs.length === 0) return;
@@ -28,27 +71,42 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
       // Flatten the array of arrays into a single array
       const allLogs = logsArrays.flat();
       
-      // Filter logs to include only the active category if it's feeding
-      // (potty breaks are handled separately)
+      // Filter logs to include only the active category and current date
+      const today = startOfDay(currentDate);
+      
       const filteredLogs = allLogs.filter(log => {
+        // First check if log is from today
+        const logDate = new Date(log.timestamp);
+        const isToday = isSameDay(logDate, today);
+        
+        if (!isToday) return false;
+        
+        // Then check category
         if (activeCategory === 'feeding') {
           return log.category === 'feeding';
         }
         return true; // When on potty tab, we show all logs in the observation column
       });
       
+      console.log(`📊 Filtered ${filteredLogs.length} care logs for ${activeCategory} on ${today.toDateString()}`);
       setCareLogs(filteredLogs);
     } catch (error) {
       console.error('Error fetching care logs:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [dogs, activeCategory]);
+  }, [dogs, activeCategory, currentDate]);
   
-  // Fetch care logs when dogs list changes or active category changes
+  // Fetch care logs when dogs list changes, active category changes, or current date changes
   useEffect(() => {
     fetchCareLogs();
   }, [fetchCareLogs]);
+  
+  // Set up midnight check when component mounts
+  useEffect(() => {
+    const cleanupMidnightCheck = setupMidnightCheck();
+    return () => cleanupMidnightCheck();
+  }, [setupMidnightCheck]);
   
   // Check if a dog has care logged at a specific time slot
   const hasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
@@ -97,6 +155,7 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
     careLogs,
     fetchCareLogs,
     isLoading,
-    hasCareLogged
+    hasCareLogged,
+    currentDate
   };
 };

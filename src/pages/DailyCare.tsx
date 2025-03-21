@@ -1,20 +1,65 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Clock } from 'lucide-react';
+import { RefreshCw, Clock, Calendar } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
+import { startOfDay, format } from 'date-fns';
 
 const DailyCare: React.FC = () => {
   const { loading, dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [lastAutoRefresh, setLastAutoRefresh] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
   
   // Autorefresh every 15 minutes
   const AUTO_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+  // Setup midnight check to refresh data at midnight
+  const setupMidnightCheck = useCallback(() => {
+    // Clear any existing interval
+    if (midnightCheckRef.current) {
+      clearTimeout(midnightCheckRef.current);
+    }
+    
+    // Get current time and calculate time until next midnight
+    const now = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    // Time until midnight in milliseconds
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    console.log(`⏰ Setting up midnight check: ${timeUntilMidnight / 1000 / 60} minutes until midnight refresh`);
+    
+    // Set timeout for midnight reset
+    midnightCheckRef.current = setTimeout(() => {
+      console.log('🕛 Midnight reached - refreshing all dog data!');
+      const newDate = new Date();
+      setCurrentDate(newDate);
+      setRefreshTrigger(prev => prev + 1);
+      
+      // Force refresh at midnight
+      fetchAllDogsWithCareStatus(newDate, true)
+        .then(dogs => {
+          console.log(`✅ Midnight refresh: ${dogs.length} dogs loaded for ${format(newDate, 'PP')}`);
+        })
+        .catch(error => {
+          console.error('❌ Error during midnight refresh:', error);
+        });
+    }, timeUntilMidnight);
+    
+    return () => {
+      if (midnightCheckRef.current) {
+        clearTimeout(midnightCheckRef.current);
+      }
+    };
+  }, [fetchAllDogsWithCareStatus]);
 
   // Manually trigger refresh function
   const handleManualRefresh = () => {
@@ -22,7 +67,7 @@ const DailyCare: React.FC = () => {
     setRefreshTrigger(prev => prev + 1);
     setLastAutoRefresh(new Date());
     // Force fetch with refresh flag
-    fetchAllDogsWithCareStatus(new Date(), true)
+    fetchAllDogsWithCareStatus(currentDate, true)
       .then(dogs => {
         console.log(`✅ Manually refreshed: ${dogs.length} dogs loaded`);
       })
@@ -38,7 +83,7 @@ const DailyCare: React.FC = () => {
       setRefreshTrigger(prev => prev + 1);
       setLastAutoRefresh(new Date());
       
-      fetchAllDogsWithCareStatus(new Date(), true)
+      fetchAllDogsWithCareStatus(currentDate, true)
         .then(dogs => {
           console.log(`✅ Auto refreshed: ${dogs.length} dogs loaded`);
         })
@@ -49,15 +94,21 @@ const DailyCare: React.FC = () => {
     
     // Clean up on unmount
     return () => clearInterval(intervalId);
-  }, [fetchAllDogsWithCareStatus]);
+  }, [fetchAllDogsWithCareStatus, currentDate]);
+
+  // Set up midnight check
+  useEffect(() => {
+    const cleanupMidnightCheck = setupMidnightCheck();
+    return () => cleanupMidnightCheck();
+  }, [setupMidnightCheck]);
 
   // Fetch all dogs on component mount, when fetchAllDogsWithCareStatus changes,
-  // or when refreshTrigger is updated
+  // when refreshTrigger is updated, or when currentDate changes
   useEffect(() => {
-    console.log('🚀 DailyCare page mount or refresh triggered - fetching dogs data');
+    console.log(`🚀 DailyCare page - fetching dogs data for ${format(currentDate, 'PP')}`);
     
     // Force a fetch on component mount to ensure we have data
-    fetchAllDogsWithCareStatus(new Date(), true)
+    fetchAllDogsWithCareStatus(currentDate, true)
       .then(dogs => {
         console.log('✅ Fetched dogs count:', dogs.length);
         if (dogs.length > 0) {
@@ -69,7 +120,7 @@ const DailyCare: React.FC = () => {
       .catch(error => {
         console.error('❌ Error fetching dogs on DailyCare mount:', error);
       });
-  }, [fetchAllDogsWithCareStatus, refreshTrigger]);
+  }, [fetchAllDogsWithCareStatus, refreshTrigger, currentDate]);
 
   const content = (
     <>
@@ -84,6 +135,10 @@ const DailyCare: React.FC = () => {
             <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
               <Clock className="h-3 w-3" />
               Auto-refreshes every 15 minutes
+            </span>
+            <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
+              <Calendar className="h-3 w-3" />
+              {format(currentDate, 'PPPP')}
             </span>
           </p>
         </div>
@@ -109,7 +164,11 @@ const DailyCare: React.FC = () => {
           
           {/* Time Table */}
           <div id="dog-time-table">
-            <DogTimeTable dogsStatus={dogStatuses} onRefresh={handleManualRefresh} />
+            <DogTimeTable 
+              dogsStatus={dogStatuses} 
+              onRefresh={handleManualRefresh} 
+              currentDate={currentDate}
+            />
           </div>
         </div>
       ) : (

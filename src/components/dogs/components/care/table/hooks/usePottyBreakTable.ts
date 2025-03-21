@@ -12,9 +12,9 @@ import { useObservations } from './pottyBreakHooks/useObservations';
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
   onRefresh?: () => void,
-  activeCategory: string = 'pottybreaks'
+  activeCategory: string = 'pottybreaks',
+  currentDate: Date = new Date()
 ) => {
-  const [currentDate] = useState(new Date());
   const navigate = useNavigate();
   
   // Use the refactored hooks

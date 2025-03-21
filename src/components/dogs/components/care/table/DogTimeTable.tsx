@@ -14,9 +14,14 @@ import { useTimeManager } from './components/TimeManager';
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
   onRefresh?: () => void;
+  currentDate?: Date;
 }
 
-const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
+const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
+  dogsStatus, 
+  onRefresh,
+  currentDate = new Date() 
+}) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
   
@@ -41,7 +46,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     handleCellClick, 
     handleRefresh,
     handleDogClick
-  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
+  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
   
   // Handle cell right-click (context menu) for observations
   const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
@@ -101,6 +106,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             isLoading={isLoading}
             onRefresh={handleRefresh} 
             isMobile={isMobile}
+            currentDate={currentDate}
           />
         </div>
         
@@ -147,6 +153,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             isLoading={isLoading}
             onRefresh={handleRefresh}
             lastUpdateTime={new Date().toLocaleTimeString()}
+            currentDate={currentDate}
           />
         </div>
       </Tabs>
