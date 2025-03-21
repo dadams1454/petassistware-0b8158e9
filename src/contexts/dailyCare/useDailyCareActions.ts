@@ -41,6 +41,20 @@ export const useDailyCareActions = (userId: string | undefined) => {
     return newLog;
   }, [careLogs, dogCareStatus]);
 
+  // Special handler for deleting care log that clears the cache
+  const deleteCareLogWithCacheClear = useCallback(async (logId: string): Promise<boolean> => {
+    console.log('Deleting care log with cache clear...', logId);
+    const success = await careLogs.deleteCareLog(logId);
+    if (success) {
+      console.log('Care log deleted successfully, clearing cache and refreshing');
+      // Clear cache to force refresh on next fetch
+      dogCareStatus.clearCache();
+      // Re-fetch to update the UI immediately with force refresh
+      await dogCareStatus.fetchAllDogsWithCareStatus(new Date(), true);
+    }
+    return success;
+  }, [careLogs, dogCareStatus]);
+
   // Enhanced fetchAllDogsWithCareStatus with better logging
   const fetchWithEnhancedLogging = useCallback(async (date = new Date(), forceRefresh = false): Promise<DogCareStatus[]> => {
     console.log(`🔍 Enhanced fetch called with: date=${date.toISOString().slice(0, 10)}, forceRefresh=${forceRefresh}`);
@@ -71,7 +85,7 @@ export const useDailyCareActions = (userId: string | undefined) => {
     dogStatuses: dogCareStatus.dogStatuses, // Expose dog statuses directly
     // Override addCareLog to include cache clearing
     addCareLog: addCareLogWithCacheClear,
-    deleteCareLog: careLogs.deleteCareLog,
+    deleteCareLog: deleteCareLogWithCacheClear,
     addCareTaskPreset: careTaskPresets.addCareTaskPreset,
     deleteCareTaskPreset: careTaskPresets.deleteCareTaskPreset,
   };

@@ -2,8 +2,9 @@
 import { useState, useCallback, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { logDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
-import { addCareLog } from '@/services/dailyCare/careLogsService';
+import { addCareLog, deleteCareLog } from '@/services/dailyCare/careLogsService';
 import { useAuth } from '@/contexts/AuthProvider';
+import { useDailyCare } from '@/contexts/dailyCare';
 
 export const useCellActions = (
   currentDate: Date,
@@ -15,9 +16,48 @@ export const useCellActions = (
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { deleteCareLog: contextDeleteCareLog } = useDailyCare();
+  
+  // State to track feeding logs for each dog & time slot
+  const [feedingLogs, setFeedingLogs] = useState<Record<string, string>>({});
   
   // Debounce timer references
   const debounceTimerRef = useRef<number | null>(null);
+  
+  // Get start of day for date calculations
+  const getStartOfDay = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
+  
+  // Check if it's a new day since the app was last used
+  const isNewDay = () => {
+    const lastUsed = localStorage.getItem('lastFeedingCheckDate');
+    if (!lastUsed) return true;
+    
+    const lastUsedDate = new Date(lastUsed);
+    const today = getStartOfDay();
+    
+    // Return true if the stored date is from a previous day
+    return lastUsedDate.getTime() < today.getTime();
+  };
+  
+  // Reset feeding logs at midnight
+  const checkAndResetFeedingLogs = useCallback(() => {
+    if (isNewDay()) {
+      console.log('New day detected, resetting feeding logs');
+      setFeedingLogs({});
+      localStorage.setItem('lastFeedingCheckDate', new Date().toISOString());
+    }
+  }, []);
+  
+  // Run check when component mounts and when active category changes
+  useEffect(() => {
+    if (activeCategory === 'feeding') {
+      checkAndResetFeedingLogs();
+    }
+  }, [activeCategory, checkAndResetFeedingLogs]);
   
   // Handler for cell clicks
   const handleCellClick = useCallback(async (dogId: string, dogName: string, timeSlot: string, category: string) => {
@@ -76,6 +116,8 @@ export const useCellActions = (
       } else if (category === 'feeding') {
         // Handle feeding log action with named times (Morning, Noon, Evening)
         const timestamp = new Date();
+        const cellKey = `${dogId}-${timeSlot}`;
+        const existingLogId = feedingLogs[cellKey];
         
         // Set appropriate hours based on meal time
         if (timeSlot === "Morning") {
@@ -89,18 +131,44 @@ export const useCellActions = (
         // Map meal names based on time slot
         const mealName = `${timeSlot} Feeding`;
         
-        await addCareLog({
-          dog_id: dogId,
-          category: 'feeding',
-          task_name: mealName,
-          timestamp: timestamp,
-          notes: `${dogName} fed at ${timeSlot.toLowerCase()}`
-        }, user?.id || '');
-        
-        toast({
-          title: 'Feeding logged',
-          description: `${dogName} was fed at ${timeSlot.toLowerCase()}`,
-        });
+        if (existingLogId) {
+          // Delete the existing log
+          const success = await contextDeleteCareLog(existingLogId);
+          
+          if (success) {
+            // Remove from local state
+            const updatedFeedingLogs = { ...feedingLogs };
+            delete updatedFeedingLogs[cellKey];
+            setFeedingLogs(updatedFeedingLogs);
+            
+            toast({
+              title: 'Feeding log removed',
+              description: `Removed ${timeSlot.toLowerCase()} feeding record for ${dogName}`,
+            });
+          }
+        } else {
+          // Add a new feeding log
+          const newLog = await addCareLog({
+            dog_id: dogId,
+            category: 'feeding',
+            task_name: mealName,
+            timestamp: timestamp,
+            notes: `${dogName} fed at ${timeSlot.toLowerCase()}`
+          }, user?.id || '');
+          
+          if (newLog) {
+            // Store the log ID so we can delete it later if needed
+            setFeedingLogs(prev => ({
+              ...prev,
+              [cellKey]: newLog.id
+            }));
+            
+            toast({
+              title: 'Feeding logged',
+              description: `${dogName} was fed at ${timeSlot.toLowerCase()}`,
+            });
+          }
+        }
       }
       
       // Schedule a refresh after a brief delay to limit API calls
@@ -125,10 +193,14 @@ export const useCellActions = (
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, currentDate, user, toast, onRefresh]);
+  }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, currentDate, user, toast, onRefresh, feedingLogs, contextDeleteCareLog]);
   
   return {
     isLoading,
-    handleCellClick
+    handleCellClick,
+    feedingLogs
   };
 };
+
+// Add missing import
+import { useEffect } from 'react';
