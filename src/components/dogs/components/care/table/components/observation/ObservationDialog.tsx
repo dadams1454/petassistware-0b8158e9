@@ -84,29 +84,10 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
     
     setIsSubmitting(true);
     try {
-      // Create a date object for the selected time slot
-      let timestampDate: Date | undefined;
+      // Always use current time for the timestamp
+      const currentTimestamp = new Date();
       
-      if (activeCategory === 'feeding') {
-        // For feeding, just use current time with observation type
-        timestampDate = new Date();
-      } else if (dialogSelectedTimeSlot) {
-        // For potty breaks, parse the time slot (e.g., "2:00 PM")
-        const [hourMinute, period] = dialogSelectedTimeSlot.split(' ');
-        const [hour, minute] = hourMinute.split(':').map(Number);
-        
-        // Create a new date object for today
-        timestampDate = new Date();
-        
-        // Set the hours and minutes
-        let hour24 = hour;
-        if (period === 'PM' && hour !== 12) hour24 += 12;
-        if (period === 'AM' && hour === 12) hour24 = 0;
-        
-        timestampDate.setHours(hour24, minute, 0, 0);
-      }
-      
-      await onSubmit(dogId, observationText, observationType, timestampDate);
+      await onSubmit(dogId, observationText, observationType, currentTimestamp);
       setObservation('');
       // Keep the observation type the same for easier repeated entries
       onOpenChange(false);

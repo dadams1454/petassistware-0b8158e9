@@ -30,11 +30,14 @@ export const useObservationActions = (
           ? `Didn't eat ${timeSlot} meal`
           : `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
       
+      // Always use current timestamp
+      const currentTimestamp = new Date();
+      
       const result = await addCareLog({
         dog_id: dogId,
         category: category,
         task_name: observationType,
-        timestamp,
+        timestamp: currentTimestamp,
         notes: defaultText
       });
       
@@ -42,7 +45,7 @@ export const useObservationActions = (
         // Calculate the time slot based on category
         const calculatedTimeSlot = category === 'feeding_observation'
           ? timeSlot // Use the provided time slot for feeding
-          : getTimeSlotFromTimestamp(timestamp.toString());
+          : getTimeSlotFromTimestamp(currentTimestamp.toString());
         
         // Update local state
         setObservations(prev => {

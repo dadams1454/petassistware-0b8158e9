@@ -111,7 +111,7 @@ export const useCellActions = (
             description: `Removed potty break for ${dogName} at ${timeSlot}`,
           });
         } else {
-          // Add a new potty break and update UI state
+          // Add a new potty break and update UI state - always using current time for the timestamp
           await logDogPottyBreak(dogId, timeSlot);
           
           // Update local state for immediate UI update
@@ -169,16 +169,8 @@ export const useCellActions = (
             });
           }
         } else {
-          // Set appropriate hours based on meal time
-          const timestamp = new Date(currentDate);
-          
-          if (timeSlot === "Morning") {
-            timestamp.setHours(7, 0, 0, 0);  // 7:00 AM
-          } else if (timeSlot === "Noon") {
-            timestamp.setHours(12, 0, 0, 0); // 12:00 PM
-          } else if (timeSlot === "Evening") {
-            timestamp.setHours(18, 0, 0, 0); // 6:00 PM
-          }
+          // Always use current timestamp for the actual log time
+          const timestamp = new Date();
           
           // Map meal names based on time slot
           const mealName = `${timeSlot} Feeding`;
