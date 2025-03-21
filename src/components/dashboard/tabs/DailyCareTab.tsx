@@ -1,5 +1,5 @@
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
@@ -13,7 +13,7 @@ interface DailyCareTabProps {
   isRefreshing: boolean;
 }
 
-const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing }) => {
+const DailyCareTab: React.FC<DailyCareTabProps> = React.memo(({ onRefreshDogs, isRefreshing }) => {
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
   const { toast } = useToast();
   const [visible, setVisible] = useState(false);
@@ -35,30 +35,33 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
     });
   }, [onRefreshDogs, fetchAllDogsWithCareStatus, toast]);
   
-  // Use our new auto-refresh hook
+  // Memoize dog statuses to prevent unnecessary renders
+  const memoizedDogStatuses = useMemo(() => dogStatuses, [dogStatuses]);
+  
+  // Use our auto-refresh hook with increased interval to reduce frequency
   const { handleRefresh } = useAutoRefresh({
     onRefresh: handleCombinedRefresh,
     isRefreshing,
-    interval: 30 * 60 * 1000 // 30 minutes
+    interval: 60 * 60 * 1000 // Increased to 60 minutes to reduce refreshes
   });
   
-  // Add a fade-in effect when the component mounts
+  // Add a smooth fade-in effect when the component mounts
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), 50);
     return () => clearTimeout(timer);
   }, []);
   
-  if (!dogStatuses || dogStatuses.length === 0) {
+  if (!memoizedDogStatuses || memoizedDogStatuses.length === 0) {
     return <EmptyDogState onRefresh={handleRefresh} isRefreshing={isRefreshing} />;
   }
   
   return (
-    <div className={`space-y-6 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-      <RefreshIndicator refreshInterval={30} />
+    <div className={`space-y-6 transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+      <RefreshIndicator refreshInterval={60} />
       
       {/* Reminder Card */}
       <PottyBreakReminderCard 
-        dogs={dogStatuses}
+        dogs={memoizedDogStatuses}
         onLogPottyBreak={() => {
           // Just scroll to the timetable on click
           const timeTableSection = document.getElementById('dog-time-table');
@@ -71,12 +74,14 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
       {/* Time Table (now the main and only component) */}
       <div id="dog-time-table">
         <DogTimeTable 
-          dogsStatus={dogStatuses} 
+          dogsStatus={memoizedDogStatuses} 
           onRefresh={handleRefresh} 
         />
       </div>
     </div>
   );
-};
+});
+
+DailyCareTab.displayName = 'DailyCareTab';
 
 export default DailyCareTab;

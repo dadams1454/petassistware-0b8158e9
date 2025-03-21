@@ -1,13 +1,24 @@
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { debounce } from '@/utils/debounce';
 
 export const useRefreshHandler = (onRefresh?: () => void) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const isRefreshingRef = useRef(false);
   const lastRefreshRef = useRef<number>(Date.now());
-  const MIN_REFRESH_INTERVAL = 3000; // 3 seconds between refreshes
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const MIN_REFRESH_INTERVAL = 5000; // Increased to 5 seconds to reduce frequent refreshes
   
-  // Create debounced refresh function
+  // Cleanup function to clear any pending timeouts
+  useEffect(() => {
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, []);
+  
+  // Create debounced refresh function with a longer delay
   const debouncedRefresh = useRef(
     debounce(async () => {
       // Skip if refresh already in progress
@@ -23,8 +34,9 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
         return;
       }
       
-      console.log('🔄 Performing refresh of potty break data');
+      console.log('🔄 Performing refresh of data');
       isRefreshingRef.current = true;
+      setIsRefreshing(true);
       lastRefreshRef.current = now;
       
       try {
@@ -34,9 +46,13 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
         }
       } finally {
         // Always make sure to reset the refreshing flag
-        isRefreshingRef.current = false;
+        // Add a small delay before setting isRefreshing to false to avoid UI flicker
+        refreshTimeoutRef.current = setTimeout(() => {
+          isRefreshingRef.current = false;
+          setIsRefreshing(false);
+        }, 300);
       }
-    }, 300)
+    }, 500) // Increased debounce delay to 500ms
   ).current;
   
   // Handle manual refresh with debouncing
@@ -47,6 +63,6 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
 
   return {
     handleRefresh,
-    isRefreshing: isRefreshingRef.current
+    isRefreshing
   };
 };
