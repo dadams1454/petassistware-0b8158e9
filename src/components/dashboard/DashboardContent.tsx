@@ -28,7 +28,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
   const { toast } = useToast();
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const initialFetchCompleted = useRef(false);
 
   // Force fetch all dogs on component mount, but only once
@@ -52,31 +51,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     }
   }, [fetchAllDogsWithCareStatus, toast]);
 
-  // Handler for manually refreshing the dog list
-  const handleRefreshDogs = () => {
-    console.log('🔄 Manual refresh triggered in DashboardContent');
-    setIsRefreshing(true);
-    fetchAllDogsWithCareStatus(new Date(), true)
-      .then(dogs => {
-        console.log(`✅ Manually refreshed: ${dogs.length} dogs loaded`);
-        toast({
-          title: 'Refresh Complete',
-          description: `Successfully loaded ${dogs.length} dogs.`,
-        });
-      })
-      .catch(error => {
-        console.error('❌ Error during manual refresh:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to refresh dogs. Please try again.',
-          variant: 'destructive',
-        });
-      })
-      .finally(() => {
-        setIsRefreshing(false);
-      });
-  };
-
   const handleCareLogClick = () => {
     setCareLogDialogOpen(true);
   };
@@ -98,8 +72,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsList 
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          onRefreshDogs={handleRefreshDogs}
-          isRefreshing={isRefreshing}
         />
         
         <TabsContent value="overview">
@@ -113,16 +85,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         </TabsContent>
         
         <TabsContent value="dailycare">
-          <DailyCareTab 
-            onRefreshDogs={handleRefreshDogs} 
-            isRefreshing={isRefreshing} 
-          />
+          <DailyCareTab />
         </TabsContent>
         
         <TabsContent value="grooming">
           <GroomingTab 
             dogStatuses={dogStatuses} 
-            onRefreshDogs={handleRefreshDogs} 
           />
         </TabsContent>
       </Tabs>

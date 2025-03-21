@@ -1,19 +1,14 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { RefreshCw, Clock, Calendar } from 'lucide-react';
+import { Clock, Calendar } from 'lucide-react';
 
 interface TimeTableFooterProps {
-  isLoading?: boolean;
-  onRefresh?: () => void;
   lastUpdateTime?: string;
   currentDate?: Date;
 }
 
 const TimeTableFooter: React.FC<TimeTableFooterProps> = ({ 
-  isLoading = false, 
-  onRefresh, 
   lastUpdateTime = new Date().toLocaleTimeString(),
   currentDate = new Date()
 }) => {
@@ -34,19 +29,6 @@ const TimeTableFooter: React.FC<TimeTableFooterProps> = ({
           </div>
         )}
       </div>
-      
-      {onRefresh && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onRefresh}
-          disabled={isLoading}
-          className="text-xs"
-        >
-          <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      )}
     </div>
   );
 };

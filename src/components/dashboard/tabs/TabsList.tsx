@@ -1,24 +1,18 @@
 
 import React from 'react';
 import { TabsList as ShadcnTabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
 
 interface TabsListProps {
   activeTab: string;
   onTabChange: (value: string) => void;
-  onRefreshDogs: () => void;
-  isRefreshing: boolean;
 }
 
 const TabsList: React.FC<TabsListProps> = ({
   activeTab,
-  onTabChange,
-  onRefreshDogs,
-  isRefreshing
+  onTabChange
 }) => {
   return (
-    <div className="flex justify-between items-center mb-4">
+    <div className="mb-4">
       <ShadcnTabsList>
         <TabsTrigger value="overview" onClick={() => onTabChange('overview')}>
           Overview
@@ -30,18 +24,6 @@ const TabsList: React.FC<TabsListProps> = ({
           Grooming
         </TabsTrigger>
       </ShadcnTabsList>
-      
-      {/* Main refresh button - only one needed at this level */}
-      <Button 
-        onClick={onRefreshDogs} 
-        disabled={isRefreshing}
-        variant="outline"
-        size="sm"
-        className="gap-1"
-      >
-        <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-        {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-      </Button>
     </div>
   );
 };
