@@ -49,4 +49,5 @@ export interface DogCareStatus {
   } | null;
   flags: DogFlag[];
   gender?: string; // Added gender property for backward compatibility with tests
+  care_logs?: DailyCarelog[]; // Added optional care_logs property to fix the errors
 }

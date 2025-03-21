@@ -52,7 +52,14 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
 
   // Memoize the sorted dogs to prevent unnecessary re-renders
-  const memoizedSortedDogs = useMemo(() => sortedDogs, [sortedDogs]);
+  const memoizedSortedDogs = useMemo(() => {
+    // Ensure care_logs is defined for each dog, defaulting to empty array if missing
+    return sortedDogs.map(dog => ({
+      ...dog,
+      care_logs: dog.care_logs || []
+    }));
+  }, [sortedDogs]);
+  
   const observationsArray = useMemo(() => Array.isArray(observations) ? observations : [], [observations]);
 
   // Handle category change with optimized state updates
@@ -77,7 +84,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId}) at ${timeSlot} for ${category}`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
-      setSelectedDog(dog);
+      setSelectedDog({
+        ...dog,
+        care_logs: dog.care_logs || [] // Ensure care_logs exists
+      });
       setSelectedTimeSlot(timeSlot);
       setObservationDialogOpen(true);
     }
@@ -88,7 +98,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     console.log(`Opening observation dialog for ${dogName} (ID: ${dogId})`);
     const dog = sortedDogs.find(d => d.dog_id === dogId);
     if (dog) {
-      setSelectedDog(dog);
+      setSelectedDog({
+        ...dog,
+        care_logs: dog.care_logs || [] // Ensure care_logs exists
+      });
       setSelectedTimeSlot('');
       setObservationDialogOpen(true);
     }
