@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import AnimatedCell from '../AnimatedCell';
 
 // Mock framer-motion

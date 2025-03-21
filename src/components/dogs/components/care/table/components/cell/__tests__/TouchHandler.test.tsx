@@ -1,5 +1,6 @@
 
 import { renderHook, act } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { useTouchHandler } from '../TouchHandler';
 
 // Mock timers
