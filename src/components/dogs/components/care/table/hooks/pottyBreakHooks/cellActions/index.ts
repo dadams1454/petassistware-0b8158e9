@@ -1,4 +1,4 @@
 
 export * from './usePottyCellActions';
-export * from './useFeedingCellActions';
+export * from './feeding';
 export * from './useDebounce';
