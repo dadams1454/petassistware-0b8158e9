@@ -1,5 +1,5 @@
 
-import React, { memo, useRef, useEffect } from 'react';
+import React, { memo, useRef, useEffect, useCallback } from 'react';
 import { TableCell } from '@/components/ui/table';
 import { DogFlag } from '@/types/dailyCare';
 import CellContent from './components/CellContent';
@@ -62,7 +62,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   const cellIdentifier = `${dogId}-${timeSlot}-${category}`;
 
   // Get background color based on category and status
-  const getBgColor = () => {
+  const getBgColor = useCallback(() => {
     if (category === 'feeding') {
       if (isIncident) {
         return 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20';
@@ -84,24 +84,24 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     }
     
     return customDogColor || 'hover:bg-blue-50 dark:hover:bg-blue-900/20';
-  };
+  }, [category, isIncident, hasCareLogged, hasPottyBreak, isCurrentHour, customDogColor]);
   
   // Touch event handlers for quick click
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartTimeRef.current = Date.now();
     isTouchActiveRef.current = true;
-  };
+  }, []);
   
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     isTouchActiveRef.current = false;
-  };
+  }, []);
   
-  const handleTouchMove = () => {
+  const handleTouchMove = useCallback(() => {
     isTouchActiveRef.current = false;
-  };
+  }, []);
   
   // Handle long press for mobile context menu alternative
-  const handleTouchStart2 = (e: React.TouchEvent) => {
+  const handleTouchStart2 = useCallback((e: React.TouchEvent) => {
     if (onContextMenu) {
       touchTimeoutRef.current = setTimeout(() => {
         if (isTouchActiveRef.current) {
@@ -121,7 +121,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     }
     
     handleTouchStart(e);
-  };
+  }, [onContextMenu, handleTouchStart]);
   
   // Clean up any timeouts when component unmounts
   useEffect(() => {
@@ -133,7 +133,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   }, []);
   
   // Get border color based on category and status
-  const getBorderColor = () => {
+  const getBorderColor = useCallback(() => {
     if (category === 'feeding') {
       if (isIncident) {
         return 'border-l-2 border-r-2 border-red-400 dark:border-red-600';
@@ -151,7 +151,20 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       return 'border-l-2 border-r-2 border-blue-400 dark:border-blue-600';
     }
     return '';
-  };
+  }, [category, isIncident, hasCareLogged, isCurrentHour]);
+  
+  // Memoized content component to prevent re-renders
+  const cellContent = React.useMemo(() => (
+    <CellContent 
+      dogName={dogName}
+      timeSlot={timeSlot}
+      category={category}
+      hasPottyBreak={hasPottyBreak}
+      hasCareLogged={hasCareLogged}
+      isCurrentHour={isCurrentHour}
+      isIncident={isIncident}
+    />
+  ), [dogName, timeSlot, category, hasPottyBreak, hasCareLogged, isCurrentHour, isIncident]);
   
   return (
     <TableCell 
@@ -178,15 +191,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       data-category={category}
     >
       <div className="w-full h-full p-1 flex items-center justify-center">
-        <CellContent 
-          dogName={dogName}
-          timeSlot={timeSlot}
-          category={category}
-          hasPottyBreak={hasPottyBreak}
-          hasCareLogged={hasCareLogged}
-          isCurrentHour={isCurrentHour}
-          isIncident={isIncident}
-        />
+        {cellContent}
       </div>
     </TableCell>
   );
