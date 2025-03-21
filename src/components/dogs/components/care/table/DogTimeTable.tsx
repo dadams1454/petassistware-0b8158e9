@@ -1,7 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import TimeTableHeader from './components/TimeTableHeader';
-import TimeTableFooter from './components/TimeTableFooter';
+import React, { useState } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -25,7 +23,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
-  const previousCategoryRef = useRef('pottybreaks');
+  const previousCategoryRef = React.useRef('pottybreaks');
   const { toast } = useToast();
   
   // State for observation dialog
@@ -116,10 +114,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   };
   
   // Force a refresh on initial load and when switching tabs
-  useEffect(() => {
+  React.useEffect(() => {
     console.log(`🚀 DogTimeTable mounted or tab changed to ${activeCategory}`);
     handleRefresh();
-  }, [activeCategory]);
+  }, [activeCategory, handleRefresh]);
   
   return (
     <Card className="p-0 overflow-hidden">
@@ -203,5 +201,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     </Card>
   );
 };
+
+// We need to import TimeTableHeader and TimeTableFooter
+import TimeTableHeader from './components/TimeTableHeader';
+import TimeTableFooter from './components/TimeTableFooter';
 
 export default DogTimeTable;
