@@ -1,14 +1,17 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import usePottyBreakTable from './hooks/usePottyBreakTable';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from '@/components/ui/use-toast';
+
+// Import our refactored components
 import ActiveTabContent from './components/ActiveTabContent';
 import ObservationDialogManager from './components/ObservationDialogManager';
-import { useTimeManager } from './components/TimeManager';
-import { useToast } from '@/components/ui/use-toast';
+import TimeTableHeader from './components/TimeTableHeader';
+import TimeTableFooter from './components/TimeTableFooter';
+import { TimeManagerProvider, useTimeManager } from './components/TimeManager';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -30,9 +33,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const [observationDialogOpen, setObservationDialogOpen] = useState(false);
   const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
-  
-  // Use the time manager hook with activeCategory
-  const { currentHour, timeSlots } = useTimeManager(activeCategory);
   
   // Use the potty break table hook for data management
   const { 
@@ -115,10 +115,90 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   };
   
   // Force a refresh on initial load and when switching tabs
-  React.useEffect(() => {
+  useEffect(() => {
     console.log(`🚀 DogTimeTable mounted or tab changed to ${activeCategory}`);
     handleRefresh();
   }, [activeCategory, handleRefresh]);
+  
+  return (
+    <TimeManagerProvider activeCategory={activeCategory}>
+      <DogTimeTableContent 
+        activeCategory={activeCategory}
+        sortedDogs={sortedDogs}
+        observations={observations}
+        isLoading={isLoading}
+        handleCategoryChange={handleCategoryChange}
+        handleRefresh={handleRefresh}
+        handleCellClick={handleCellClick}
+        handleCellContextMenu={handleCellContextMenu}
+        handleCareLogClick={handleCareLogClick}
+        handleObservationSubmit={handleObservationSubmit}
+        hasPottyBreak={hasPottyBreak}
+        hasCareLogged={hasCareLogged}
+        hasObservation={hasObservation}
+        getObservationDetails={getObservationDetails}
+        handleDogClick={handleDogClick}
+        isCellActive={isCellActive}
+        isMobile={isMobile}
+        observationDialogOpen={observationDialogOpen}
+        setObservationDialogOpen={setObservationDialogOpen}
+        selectedDog={selectedDog}
+        selectedTimeSlot={selectedTimeSlot}
+        currentDate={currentDate}
+      />
+    </TimeManagerProvider>
+  );
+};
+
+// Separate the content component to keep main component cleaner
+const DogTimeTableContent: React.FC<{
+  activeCategory: string;
+  sortedDogs: DogCareStatus[];
+  observations: any[];
+  isLoading: boolean;
+  handleCategoryChange: (category: string) => void;
+  handleRefresh: () => void;
+  handleCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  handleCellContextMenu: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  handleCareLogClick: (dogId: string, dogName: string) => void;
+  handleObservationSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other', timestamp?: Date) => Promise<void>;
+  hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasObservation: (dogId: string, timeSlot: string) => boolean;
+  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
+  handleDogClick: (dogId: string) => void;
+  isCellActive: (dogId: string, timeSlot: string, category: string) => boolean;
+  isMobile: boolean;
+  observationDialogOpen: boolean;
+  setObservationDialogOpen: (open: boolean) => void;
+  selectedDog: DogCareStatus | null;
+  selectedTimeSlot: string;
+  currentDate: Date;
+}> = ({
+  activeCategory,
+  sortedDogs,
+  observations,
+  isLoading,
+  handleCategoryChange,
+  handleRefresh,
+  handleCellClick,
+  handleCellContextMenu,
+  handleCareLogClick,
+  handleObservationSubmit,
+  hasPottyBreak,
+  hasCareLogged,
+  hasObservation,
+  getObservationDetails,
+  handleDogClick,
+  isCellActive,
+  isMobile,
+  observationDialogOpen,
+  setObservationDialogOpen,
+  selectedDog,
+  selectedTimeSlot,
+  currentDate
+}) => {
+  const { currentHour, timeSlots } = useTimeManager();
   
   return (
     <Card className="p-0 overflow-hidden">
@@ -204,9 +284,5 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     </Card>
   );
 };
-
-// We need to import TimeTableHeader and TimeTableFooter
-import TimeTableHeader from './components/TimeTableHeader';
-import TimeTableFooter from './components/TimeTableFooter';
 
 export default DogTimeTable;
