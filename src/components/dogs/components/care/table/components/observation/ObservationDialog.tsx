@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -11,7 +12,7 @@ interface ObservationDialogProps {
   onOpenChange: (open: boolean) => void;
   dogId: string;
   dogName: string;
-  onSubmit: (dogId: string, observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
+  onSubmit: (observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
   existingObservations?: Array<{
     observation: string;
     observation_type: ObservationType;
@@ -87,7 +88,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       // Always use current time for the timestamp
       const currentTimestamp = new Date();
       
-      await onSubmit(dogId, observationText, observationType, currentTimestamp);
+      await onSubmit(observationText, observationType, currentTimestamp);
       setObservation('');
       // Keep the observation type the same for easier repeated entries
       onOpenChange(false);

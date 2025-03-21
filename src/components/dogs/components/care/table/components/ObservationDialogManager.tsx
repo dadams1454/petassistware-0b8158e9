@@ -33,19 +33,27 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
 }) => {
   if (!selectedDog) return null;
   
+  // Create a dialog title based on the active category
+  const dialogTitle = activeCategory === 'feeding' 
+    ? `Feeding Observation for ${selectedDog.dog_name}`
+    : `Observation for ${selectedDog.dog_name}`;
+  
   return (
     <ObservationDialog
-      dog={selectedDog}
       open={observationDialogOpen}
       onOpenChange={onOpenChange}
-      onSubmit={(observation, type, timestamp) => 
-        onSubmit(selectedDog.dog_id, observation, type, timestamp)
+      dogId={selectedDog.dog_id}
+      dogName={selectedDog.dog_name}
+      onSubmit={(observation, observationType, timestamp) => 
+        onSubmit(selectedDog.dog_id, observation, observationType, timestamp)
       }
-      observations={observations[selectedDog.dog_id] || []}
+      existingObservations={observations[selectedDog.dog_id] || []}
       timeSlots={timeSlots}
       isMobile={isMobile}
       activeCategory={activeCategory}
+      defaultObservationType={activeCategory === 'feeding' ? 'feeding' : 'other'}
       selectedTimeSlot={selectedTimeSlot}
+      dialogTitle={dialogTitle}
     />
   );
 };

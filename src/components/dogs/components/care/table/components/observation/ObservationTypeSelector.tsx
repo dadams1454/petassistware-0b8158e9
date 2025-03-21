@@ -53,6 +53,13 @@ const ObservationTypeSelector: React.FC<ObservationTypeSelectorProps> = ({
           </Label>
         </div>
         <div className="flex items-center space-x-2">
+          <RadioGroupItem value="feeding" id="feeding" />
+          <Label htmlFor="feeding" className="flex items-center gap-1">
+            <UtensilsCrossed className="h-4 w-4 text-orange-500" />
+            Feeding
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
           <RadioGroupItem value="other" id="other" />
           <Label htmlFor="other" className="flex items-center gap-1">
             <MessageCircle className="h-4 w-4 text-gray-500" />
