@@ -4,8 +4,10 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { useDailyCareActions } from './useDailyCareActions';
 import { DailyCareContextType } from './types';
 
+// Create the context with undefined as initial value
 const DailyCareContext = createContext<DailyCareContextType | undefined>(undefined);
 
+// Provider component
 export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const careActions = useDailyCareActions(user?.id);
@@ -29,6 +31,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
 };
 
+// Custom hook to use the context
 export const useDailyCare = () => {
   const context = useContext(DailyCareContext);
   if (context === undefined) {
