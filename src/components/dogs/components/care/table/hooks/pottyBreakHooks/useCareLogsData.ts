@@ -16,6 +16,8 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
   const [isLoading, setIsLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
+  const cacheTimeoutRef = useRef<number>(0);
+  const CACHE_TTL = 20000; // 20 seconds cache time-to-live
   
   // Function to check if it's midnight and trigger a refresh
   const setupMidnightCheck = useCallback(() => {
@@ -39,13 +41,13 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
     midnightCheckRef.current = setTimeout(() => {
       console.log('🕛 Midnight reached - refreshing feeding data...');
       setCurrentDate(new Date());
-      fetchCareLogs();
+      fetchCareLogs(true);
       
       // Set up daily check after first trigger
       midnightCheckRef.current = setInterval(() => {
         console.log('🕛 Daily midnight refresh triggered');
         setCurrentDate(new Date());
-        fetchCareLogs();
+        fetchCareLogs(true);
       }, 24 * 60 * 60 * 1000); // Check every 24 hours
     }, timeUntilMidnight);
     
@@ -57,9 +59,20 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
     };
   }, []);
   
-  const fetchCareLogs = useCallback(async () => {
+  const fetchCareLogs = useCallback(async (forceRefresh = false) => {
     if (!dogs || dogs.length === 0) return;
+    
+    const now = Date.now();
+    
+    // Skip refresh if it's been less than CACHE_TTL milliseconds since last refresh
+    // unless forceRefresh=true is passed
+    if (!forceRefresh && now - cacheTimeoutRef.current < CACHE_TTL) {
+      console.log('⏳ Skipping care logs refresh - recently refreshed');
+      return;
+    }
+    
     setIsLoading(true);
+    console.log(`🔄 Fetching care logs for ${dogs.length} dogs (category: ${activeCategory})`);
     
     try {
       // Create an array of promises to fetch all dogs' care logs
@@ -90,8 +103,9 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
       
       console.log(`📊 Filtered ${filteredLogs.length} care logs for ${activeCategory} on ${today.toDateString()}`);
       setCareLogs(filteredLogs);
+      cacheTimeoutRef.current = now;
     } catch (error) {
-      console.error('Error fetching care logs:', error);
+      console.error('❌ Error fetching care logs:', error);
     } finally {
       setIsLoading(false);
     }
@@ -99,8 +113,11 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
   
   // Fetch care logs when dogs list changes, active category changes, or current date changes
   useEffect(() => {
-    fetchCareLogs();
-  }, [fetchCareLogs]);
+    console.log(`🔄 Care logs effect triggered - category: ${activeCategory}`);
+    // Reset cache timeout when category or date changes
+    cacheTimeoutRef.current = 0;
+    fetchCareLogs(true);
+  }, [fetchCareLogs, activeCategory, currentDate]);
   
   // Set up midnight check when component mounts
   useEffect(() => {
@@ -115,6 +132,28 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
     
     // Skip for potty breaks as they're handled separately
     if (category === 'pottybreaks') return false;
+    
+    // For debugging
+    if (category === 'feeding' && dogId) {
+      const dogName = dogs.find(d => d.dog_id === dogId)?.dog_name || dogId;
+      const hasRecord = careLogs.some(log => {
+        if (log.dog_id === dogId && log.category === category) {
+          const logDate = new Date(log.timestamp);
+          const logHour = logDate.getHours();
+          
+          if (timeSlot === 'Morning' && (logHour >= 5 && logHour < 10)) return true;
+          if (timeSlot === 'Noon' && (logHour >= 10 && logHour < 15)) return true;
+          if (timeSlot === 'Evening' && ((logHour >= 15 && logHour < 24) || (logHour >= 0 && logHour < 5))) return true;
+          
+          return log.task_name === `${timeSlot} Feeding`;
+        }
+        return false;
+      });
+      
+      if (hasRecord) {
+        console.log(`🍽️ Found feeding record for ${dogName} at ${timeSlot}`);
+      }
+    }
     
     return careLogs.some(log => {
       // Only consider logs for this dog and category
@@ -149,7 +188,7 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
         return timeSlot === formattedLogTime;
       }
     });
-  }, [careLogs, activeCategory]);
+  }, [careLogs, activeCategory, dogs]);
   
   return {
     careLogs,
