@@ -27,12 +27,14 @@ export const fetchCareTaskPresets = async (): Promise<CareTaskPreset[]> => {
  * @param category The category of the task
  * @param taskName The name of the task
  * @param breederId The ID of the breeder creating the preset
+ * @param isDefault Whether this is a default preset
  * @returns The created CareTaskPreset or null if unsuccessful
  */
 export const addCareTaskPreset = async (
   category: string, 
   taskName: string, 
-  breederId: string
+  breederId: string,
+  isDefault: boolean = false
 ): Promise<CareTaskPreset | null> => {
   try {
     const { data: newPreset, error } = await supabase
@@ -40,7 +42,7 @@ export const addCareTaskPreset = async (
       .insert({
         category,
         task_name: taskName,
-        is_default: false,
+        is_default: isDefault,
         breeder_id: breederId,
       })
       .select()

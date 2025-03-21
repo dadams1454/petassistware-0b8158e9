@@ -26,7 +26,11 @@ export const useCareTaskPresets = (userId: string | undefined) => {
     }
   }, [toast]);
 
-  const addCareTaskPreset = useCallback(async (category: string, taskName: string): Promise<CareTaskPreset | null> => {
+  const addCareTaskPreset = useCallback(async (
+    category: string, 
+    taskName: string, 
+    isDefault: boolean = false
+  ): Promise<CareTaskPreset | null> => {
     if (!userId) {
       toast({
         title: 'Authentication Required',
@@ -38,7 +42,7 @@ export const useCareTaskPresets = (userId: string | undefined) => {
 
     setLoading(true);
     try {
-      const newPreset = await dailyCareService.addCareTaskPreset(category, taskName, userId);
+      const newPreset = await dailyCareService.addCareTaskPreset(category, taskName, userId, isDefault);
       
       if (newPreset) {
         toast({

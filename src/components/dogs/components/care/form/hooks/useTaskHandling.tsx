@@ -42,23 +42,23 @@ export const useTaskHandling = ({
           // Add exercise presets if needed
           if (needsExercisePresets) {
             console.log('No exercise presets found, adding defaults...');
-            await addCareTaskPreset('exercise', 'Walk');
-            await addCareTaskPreset('exercise', 'Play fetch');
-            await addCareTaskPreset('exercise', 'Run');
-            await addCareTaskPreset('exercise', 'Swim');
-            await addCareTaskPreset('exercise', 'Training session');
+            await addCareTaskPreset('exercise', 'Walk', true);
+            await addCareTaskPreset('exercise', 'Play fetch', true);
+            await addCareTaskPreset('exercise', 'Run', true);
+            await addCareTaskPreset('exercise', 'Swim', true);
+            await addCareTaskPreset('exercise', 'Training session', true);
           }
           
           // Add medication presets if needed  
           if (needsMedicationPresets) {
             console.log('No medication presets found, adding defaults...');
-            await addCareTaskPreset('medications', 'Heartworm Prevention');
-            await addCareTaskPreset('medications', 'Flea/Tick Prevention');
-            await addCareTaskPreset('medications', 'Dewormer');
-            await addCareTaskPreset('medications', 'Antibiotics');
-            await addCareTaskPreset('medications', 'Pain Medication');
-            await addCareTaskPreset('medications', 'Eye Medication');
-            await addCareTaskPreset('medications', 'Ear Medication');
+            await addCareTaskPreset('medications', 'Heartworm Prevention', true);
+            await addCareTaskPreset('medications', 'Flea/Tick Prevention', true);
+            await addCareTaskPreset('medications', 'Dewormer', true);
+            await addCareTaskPreset('medications', 'Antibiotics', true);
+            await addCareTaskPreset('medications', 'Pain Medication', true);
+            await addCareTaskPreset('medications', 'Eye Medication', true);
+            await addCareTaskPreset('medications', 'Ear Medication', true);
           }
           
           // Fetch again after adding defaults
@@ -100,7 +100,7 @@ export const useTaskHandling = ({
 
   const handleAddPreset = async () => {
     if (newCategoryName.trim() && newTaskName.trim()) {
-      const result = await addCareTaskPreset(newCategoryName.trim(), newTaskName.trim());
+      const result = await addCareTaskPreset(newCategoryName.trim(), newTaskName.trim(), false);
       if (result) {
         // Refresh presets
         const updatedPresets = await fetchCareTaskPresets();
