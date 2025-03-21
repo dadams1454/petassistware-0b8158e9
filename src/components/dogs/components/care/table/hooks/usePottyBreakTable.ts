@@ -44,11 +44,17 @@ const usePottyBreakTable = (
     return hasCareLogged(dogId, timeSlot, category);
   }, [hasCareLogged, hasPottyBreak]);
 
-  // Enhanced hasObservation function that handles both dog ID and time slot
+  // Enhanced hasObservation function that handles both dog ID and time slot with category
   const handleHasObservation = useCallback((dogId: string, timeSlot: string) => {
-    // Pass the arguments directly to the underlying hasObservation function
-    return hasObservation(dogId, timeSlot);
-  }, [hasObservation]);
+    // Pass the current active category to filter observations appropriately
+    return hasObservation(dogId, timeSlot, activeCategory);
+  }, [hasObservation, activeCategory]);
+
+  // Enhanced getObservationDetails that passes the active category
+  const handleGetObservationDetails = useCallback((dogId: string) => {
+    // Pass the active category to filter observations
+    return getObservationDetails(dogId, activeCategory);
+  }, [getObservationDetails, activeCategory]);
 
   // Handle dog click to navigate to dog details page
   const handleDogClick = useCallback((dogId: string) => {
@@ -63,7 +69,7 @@ const usePottyBreakTable = (
     hasPottyBreak,
     hasCareLogged: handleHasCareLogged,
     hasObservation: handleHasObservation,
-    getObservationDetails,
+    getObservationDetails: handleGetObservationDetails,
     addObservation,
     observations,
     handleCellClick,

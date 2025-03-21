@@ -14,7 +14,7 @@ interface DogTimeRowProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string } | null;
+  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCellContextMenu: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
@@ -65,8 +65,10 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
     return slot24Hour === currentHour;
   };
 
-  // Check if the dog has any observations and get details if available
+  // Check if the dog has any observations in the current category
   const dogHasObservation = hasObservation(dogId, '');
+  
+  // Get observation details for the current category if available
   const observationDetails = dogHasObservation ? getObservationDetails(dogId) : null;
   
   // Function to get observation icon based on type
@@ -106,7 +108,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         observationType=""
       />
       
-      {/* Observation column */}
+      {/* Observation column - shows only observations for the current category */}
       <TableCell className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px]">
         {dogHasObservation && observationDetails ? (
           <div className="flex items-start gap-2">
@@ -121,7 +123,9 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             </div>
           </div>
         ) : (
-          <span className="text-xs text-gray-400 dark:text-gray-600">No observations</span>
+          <span className="text-xs text-gray-400 dark:text-gray-600">
+            {activeCategory === 'feeding' ? 'No feeding issues' : 'No observations'}
+          </span>
         )}
       </TableCell>
       
@@ -132,18 +136,10 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         const hasCareLoggedForSlot = hasCareLogged(dogId, timeSlot, activeCategory);
         const isCurrentTimeSlot = isCurrentHourSlot(timeSlot);
         
-        // Check if this time slot matches the observation time
+        // Check if this time slot matches the observation time for the current category
         const isIncidentTimeSlot = dogHasObservation && 
                                   observationDetails && 
-                                  (
-                                    // Match specific time slot for potty breaks
-                                    (activeCategory === 'pottybreaks' && 
-                                    observationTimeSlot === timeSlot) ||
-                                    // Match meal time for feeding observations
-                                    (activeCategory === 'feeding' && 
-                                    observationDetails.type === 'feeding' && 
-                                    observationDetails.timeSlot === timeSlot)
-                                  );
+                                  observationDetails.timeSlot === timeSlot;
         
         return (
           <TimeSlotCell 
