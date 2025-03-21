@@ -7,17 +7,18 @@ import ObservationDialogManager from '../ObservationDialogManager';
 jest.mock('../observation/ObservationDialog', () => ({
   __esModule: true,
   default: ({ 
-    dog, 
+    dogId, 
+    dogName, 
     open, 
-    observations, 
+    existingObservations, 
     timeSlots, 
     activeCategory,
     selectedTimeSlot
   }) => (
     <div data-testid="observation-dialog" style={{ display: open ? 'block' : 'none' }}>
-      <div data-testid="dog-id">{dog.dog_id}</div>
-      <div data-testid="dog-name">{dog.dog_name}</div>
-      <div data-testid="observations-count">{observations.length}</div>
+      <div data-testid="dog-id">{dogId}</div>
+      <div data-testid="dog-name">{dogName}</div>
+      <div data-testid="observations-count">{existingObservations.length}</div>
       <div data-testid="time-slots-count">{timeSlots.length}</div>
       <div data-testid="active-category">{activeCategory}</div>
       <div data-testid="selected-time-slot">{selectedTimeSlot}</div>
@@ -30,12 +31,15 @@ describe('ObservationDialogManager Component', () => {
     dog_id: 'dog1',
     dog_name: 'Buddy',
     breed: 'Newfoundland',
-    weight: 120,
+    color: 'black',
+    sex: 'male',
     gender: 'male',
+    weight: 120,
     flags: [],
     age: 3,
     next_vaccination: null,
     last_potty_break: null,
+    last_care: null,
     status: 'active'
   };
   

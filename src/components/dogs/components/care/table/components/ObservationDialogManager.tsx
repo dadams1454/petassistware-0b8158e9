@@ -38,13 +38,19 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
   
   return (
     <ObservationDialog
-      dog={selectedDog}
+      dogId={selectedDog.dog_id}
+      dogName={selectedDog.dog_name}
       open={observationDialogOpen}
       onOpenChange={onOpenChange}
       onSubmit={(observation, observationType, timestamp) => 
         onSubmit(selectedDog.dog_id, observation, observationType as ObservationType, timestamp)
       }
-      observations={dogObservations}
+      existingObservations={dogObservations.map(o => ({
+        observation: o.text,
+        observation_type: o.type as ObservationType,
+        created_at: o.timestamp || new Date().toISOString(),
+        category: o.category
+      }))}
       timeSlots={timeSlots}
       isMobile={isMobile}
       activeCategory={activeCategory}

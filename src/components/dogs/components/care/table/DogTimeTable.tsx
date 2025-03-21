@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card } from '@/components/ui/card';
@@ -125,7 +126,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       <DogTimeTableContent 
         activeCategory={activeCategory}
         sortedDogs={sortedDogs}
-        observations={observations}
+        observations={Array.isArray(observations) ? observations : []} // Ensure observations is an array
         isLoading={isLoading}
         handleCategoryChange={handleCategoryChange}
         handleRefresh={handleRefresh}
