@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 export const useClickProtection = (activeCategory?: string) => {
   const { toast } = useToast();
   const clickCountRef = useRef<number>(0);
+  const lastClickTimeRef = useRef<number>(0);
   
   // Reset click counter when category changes
   useEffect(() => {
@@ -19,24 +20,38 @@ export const useClickProtection = (activeCategory?: string) => {
   
   // Track clicks with protection logic
   const trackClick = useCallback((dogName: string, timeSlot: string) => {
-    // Increment click counter for debugging
-    clickCountRef.current += 1;
-    const clickNumber = clickCountRef.current;
-    console.log(`Cell clicked: ${clickNumber} times (${dogName}, ${timeSlot})`);
+    const now = Date.now();
+    const timeSinceLastClick = now - lastClickTimeRef.current;
+    lastClickTimeRef.current = now;
     
-    // Special handling around the 6-click threshold to prevent the issue
-    if (clickNumber === 5) {
-      console.log('⚠️ WARNING: Approaching 6 clicks! Adding protection');
+    // If the click is very rapid (less than 100ms since the last click), 
+    // we'll increment the counter. Otherwise, we reset it.
+    if (timeSinceLastClick < 100) {
+      clickCountRef.current += 1;
+    } else if (timeSinceLastClick > 500) {
+      // Reset counter if it's been a while since the last click
+      clickCountRef.current = 0;
     }
     
-    if (clickNumber >= 6) {
-      console.log('⚠️ 6+ CLICKS DETECTED: Applying extra safeguards');
+    const clickNumber = clickCountRef.current;
+    console.log(`Cell clicked: ${clickNumber} times (${dogName}, ${timeSlot}), ${timeSinceLastClick}ms since last click`);
+    
+    // Only block if there are truly excessive clicks
+    if (clickNumber >= 12) {
+      console.log('⚠️ EXCESSIVE CLICKING DETECTED: Applying temporary throttle');
       
-      // Show a toast to let the user know we detected rapid clicking
+      // Show a toast to let the user know, but make it less intrusive
       toast({
         title: 'Multiple clicks detected',
         description: 'Please wait a moment before making more changes',
+        duration: 3000,
       });
+      
+      // Set a timeout to auto-reset the click counter after 1.5 seconds
+      setTimeout(() => {
+        clickCountRef.current = 0;
+        console.log('Click counter auto-reset after timeout');
+      }, 1500);
       
       return false; // Block further processing
     }

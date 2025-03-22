@@ -31,6 +31,7 @@ const TimeSlotCell = memo(({
   isIncident = false
 }: TimeSlotCellProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
 
   // Get the base color for the cell
   const getCellColor = useCallback(() => {
@@ -40,11 +41,15 @@ const TimeSlotCell = memo(({
     return '';
   }, [hasPottyBreak, hasCareLogged, isCurrentHour, isIncident]);
 
-  // Handle cell click with improved event prevention
+  // Handle cell click with improved event prevention and a visual feedback
   const handleCellClick = useCallback((e: React.MouseEvent) => {
     // Completely stop event propagation and default behavior
     e.preventDefault();
     e.stopPropagation();
+    
+    // Show immediate visual feedback
+    setIsClicked(true);
+    setTimeout(() => setIsClicked(false), 300);
     
     // Call the click handler
     onClick();
@@ -77,11 +82,12 @@ const TimeSlotCell = memo(({
     <TableCell
       key={`${dogId}-${timeSlot}`}
       className={`
-        p-0 text-center h-10 transition-all duration-200 border-r border-slate-200 dark:border-slate-700 relative
+        p-0 text-center h-10 transition-all duration-100 border-r border-slate-200 dark:border-slate-700 relative
         cell-status-transition
         ${getCellColor()}
         ${isHovered ? 'bg-opacity-80 dark:bg-opacity-40' : 'bg-opacity-60 dark:bg-opacity-20'}
         ${isCurrentHour ? 'border-l-4 border-l-blue-400 dark:border-l-blue-600' : ''}
+        ${isClicked ? 'scale-95' : ''} 
         cursor-pointer select-none
       `}
       onMouseEnter={() => setIsHovered(true)}
@@ -102,6 +108,13 @@ const TimeSlotCell = memo(({
           ${isHovered ? 'opacity-100' : ''}
         `}>
           {cellContent}
+        </span>
+      )}
+      
+      {/* Subtle loading indicator */}
+      {isClicked && !hasPottyBreak && !hasCareLogged && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-ping"></span>
         </span>
       )}
     </TableCell>

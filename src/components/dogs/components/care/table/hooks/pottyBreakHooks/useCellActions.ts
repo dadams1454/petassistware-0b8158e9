@@ -29,9 +29,10 @@ export const useCellActions = (
       return;
     }
     
-    // Use click protection to track and potentially block excessive clicks
+    // Use click protection to track and potentially block excessive clicks, but allow most
     if (!trackClick(dogName, timeSlot)) {
-      return; // Block processing if click protection is triggered
+      // Even if we block API operations, still perform optimistic UI updates
+      console.log("Click throttled but UI will still update");
     }
     
     if (category !== activeCategory) {
@@ -44,9 +45,29 @@ export const useCellActions = (
         // Check if this dog already has a potty break at this time
         const hasPottyBreak = pottyBreaks[dogId]?.includes(timeSlot);
         
+        // Perform immediate optimistic UI update, even if we're throttling API calls
         if (hasPottyBreak) {
+          // Immediately remove from local state
+          const updatedBreaks = { ...pottyBreaks };
+          if (updatedBreaks[dogId]) {
+            updatedBreaks[dogId] = updatedBreaks[dogId].filter(t => t !== timeSlot);
+            setPottyBreaks(updatedBreaks);
+          }
+          
+          // Then queue the actual API operation
           removePottyBreak(dogId, dogName, timeSlot, queueOperation);
         } else {
+          // Immediately add to local state
+          const updatedBreaks = { ...pottyBreaks };
+          if (!updatedBreaks[dogId]) {
+            updatedBreaks[dogId] = [];
+          }
+          if (!updatedBreaks[dogId].includes(timeSlot)) {
+            updatedBreaks[dogId] = [...updatedBreaks[dogId], timeSlot];
+            setPottyBreaks(updatedBreaks);
+          }
+          
+          // Then queue the actual API operation
           addPottyBreak(dogId, dogName, timeSlot, queueOperation);
         }
       } else if (category === 'feeding') {
@@ -66,6 +87,7 @@ export const useCellActions = (
     isLoading, 
     activeCategory, 
     pottyBreaks, 
+    setPottyBreaks,
     trackClick, 
     queueOperation, 
     addPottyBreak, 
@@ -74,9 +96,17 @@ export const useCellActions = (
     toast
   ]);
   
-  // Reset click counter when unmounting
+  // Reset click counter periodically
   useEffect(() => {
+    const resetInterval = setInterval(() => {
+      if (clickCount.current > 0) {
+        console.log(`Auto-resetting click counter from ${clickCount.current} to 0`);
+        resetClicks();
+      }
+    }, 5000); // Reset the click counter every 5 seconds
+    
     return () => {
+      clearInterval(resetInterval);
       console.log(`Cleanup: ${clickCount.current} clicks cleared`);
       resetClicks();
       totalOperations.current = 0;
