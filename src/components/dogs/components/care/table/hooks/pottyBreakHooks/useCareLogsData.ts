@@ -1,76 +1,75 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { fetchDogCareLogs } from '@/services/dailyCare/careLogsService';
-import { isSameDay, startOfDay } from 'date-fns';
-import { useMidnightRefresh } from './useMidnightRefresh';
-import { useCacheTimer } from './useCacheTimer';
-import { CareLog } from './careLogsContext';
-import { useHasCareLogged } from './useHasCareLogged';
-import { useToast } from '@/components/ui/use-toast';
+import { fetchDogCareLogs } from '@/services/dailyCare';
+import { compareDesc, isSameDay, startOfDay } from 'date-fns';
+
+interface CareLog {
+  dog_id: string;
+  category: string;
+  task_name: string;
+  timestamp: string;
+}
 
 export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 'pottybreaks') => {
   const [careLogs, setCareLogs] = useState<CareLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [fetchErrors, setFetchErrors] = useState(0);
-  const { toast } = useToast();
+  const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Cache for individual dog logs to prevent repeated failures
-  const dogLogsCache = useRef<Record<string, CareLog[]>>({});
-  
-  // Use our specialized hooks
-  const { shouldRefresh, updateCacheTimestamp, resetCache } = useCacheTimer();
-  const { hasCareLogged } = useHasCareLogged(careLogs, activeCategory, dogs);
-  
-  // Fetch care logs function
-  const fetchCareLogs = useCallback(async (forceRefresh = false) => {
-    if (!dogs || dogs.length === 0) return [];
-    
-    // Check cache before proceeding
-    if (!shouldRefresh(forceRefresh)) {
-      return careLogs;
+  // Function to check if it's midnight and trigger a refresh
+  const setupMidnightCheck = useCallback(() => {
+    // Clear any existing interval
+    if (midnightCheckRef.current) {
+      clearInterval(midnightCheckRef.current);
     }
     
+    // Get current time and calculate time until next midnight
+    const now = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    // Time until midnight in milliseconds
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    console.log(`⏰ Setting up midnight check: ${timeUntilMidnight / 1000 / 60} minutes until midnight refresh`);
+    
+    // Set timeout for immediate midnight reset
+    midnightCheckRef.current = setTimeout(() => {
+      console.log('🕛 Midnight reached - refreshing feeding data...');
+      setCurrentDate(new Date());
+      fetchCareLogs();
+      
+      // Set up daily check after first trigger
+      midnightCheckRef.current = setInterval(() => {
+        console.log('🕛 Daily midnight refresh triggered');
+        setCurrentDate(new Date());
+        fetchCareLogs();
+      }, 24 * 60 * 60 * 1000); // Check every 24 hours
+    }, timeUntilMidnight);
+    
+    return () => {
+      if (midnightCheckRef.current) {
+        clearTimeout(midnightCheckRef.current);
+        clearInterval(midnightCheckRef.current);
+      }
+    };
+  }, []);
+  
+  const fetchCareLogs = useCallback(async () => {
+    if (!dogs || dogs.length === 0) return;
     setIsLoading(true);
-    console.log(`🔄 Fetching care logs for ${dogs.length} dogs (category: ${activeCategory})`);
     
     try {
-      // Reset error counter
-      setFetchErrors(0);
-      
       // Create an array of promises to fetch all dogs' care logs
-      const logsPromises = dogs.map(dog => {
-        // Check if we have cached logs for this dog
-        if (dogLogsCache.current[dog.dog_id] && !forceRefresh) {
-          console.log(`📋 Using cached logs for dog ${dog.dog_id}`);
-          return Promise.resolve(dogLogsCache.current[dog.dog_id]);
-        }
-        
-        // Otherwise fetch fresh logs
-        return fetchDogCareLogs(dog.dog_id)
-          .then(logs => {
-            // Cache successful results
-            if (logs && logs.length > 0) {
-              dogLogsCache.current[dog.dog_id] = logs;
-            }
-            return logs;
-          })
-          .catch(err => {
-            console.error(`Failed to fetch logs for dog ${dog.dog_id}:`, err);
-            setFetchErrors(prev => prev + 1);
-            // Return cached data if available, empty array otherwise
-            return dogLogsCache.current[dog.dog_id] || [];
-          });
-      });
+      const promises = dogs.map(dog => fetchDogCareLogs(dog.dog_id));
       
-      // Wait for all promises to resolve, handling any errors
-      const logsArrays = await Promise.allSettled(logsPromises);
+      // Wait for all promises to resolve
+      const logsArrays = await Promise.all(promises);
       
-      // Process results, using fulfilled values and ignoring rejected promises
-      const allLogs = logsArrays.flatMap(result => 
-        result.status === 'fulfilled' ? result.value : []
-      );
+      // Flatten the array of arrays into a single array
+      const allLogs = logsArrays.flat();
       
       // Filter logs to include only the active category and current date
       const today = startOfDay(currentDate);
@@ -91,52 +90,66 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
       
       console.log(`📊 Filtered ${filteredLogs.length} care logs for ${activeCategory} on ${today.toDateString()}`);
       setCareLogs(filteredLogs);
-      updateCacheTimestamp();
-      
-      // Show toast if there were errors but we still have some data
-      if (fetchErrors > 0 && filteredLogs.length > 0) {
-        toast({
-          title: "Partial data loaded",
-          description: `Some dogs' data couldn't be loaded. Using cached data where available.`,
-          variant: "default" // Changed from "warning" to "default"
-        });
-      }
-      
-      return filteredLogs;
     } catch (error) {
-      console.error('❌ Error fetching care logs:', error);
-      
-      // Show toast only for complete failures
-      if (careLogs.length === 0) {
-        toast({
-          title: "Data loading error",
-          description: "Failed to load care logs. Please try refreshing.",
-          variant: "destructive"
-        });
-      }
-      
-      return careLogs;
+      console.error('Error fetching care logs:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [dogs, activeCategory, currentDate, careLogs, shouldRefresh, updateCacheTimestamp, toast]);
-  
-  // Handler for midnight refresh
-  const handleMidnightRefresh = useCallback(() => {
-    setCurrentDate(new Date());
-    fetchCareLogs(true);
-  }, [fetchCareLogs]);
-  
-  // Use the midnight refresh hook
-  useMidnightRefresh(handleMidnightRefresh);
+  }, [dogs, activeCategory, currentDate]);
   
   // Fetch care logs when dogs list changes, active category changes, or current date changes
   useEffect(() => {
-    console.log(`🔄 Care logs effect triggered - category: ${activeCategory}`);
-    // Reset cache timeout when category or date changes
-    resetCache();
-    fetchCareLogs(true);
-  }, [fetchCareLogs, activeCategory, currentDate, resetCache]);
+    fetchCareLogs();
+  }, [fetchCareLogs]);
+  
+  // Set up midnight check when component mounts
+  useEffect(() => {
+    const cleanupMidnightCheck = setupMidnightCheck();
+    return () => cleanupMidnightCheck();
+  }, [setupMidnightCheck]);
+  
+  // Check if a dog has care logged at a specific time slot
+  const hasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
+    // If category doesn't match active category, return false
+    if (category !== activeCategory) return false;
+    
+    // Skip for potty breaks as they're handled separately
+    if (category === 'pottybreaks') return false;
+    
+    return careLogs.some(log => {
+      // Only consider logs for this dog and category
+      if (log.dog_id !== dogId || log.category !== category) return false;
+      
+      // For feeding with named time slots
+      if (category === 'feeding') {
+        // Parse timestamp and check if it matches the time slot (Morning, Noon, Evening)
+        const logDate = new Date(log.timestamp);
+        const logHour = logDate.getHours();
+        
+        // Check time ranges:
+        // Morning: 5-10, Noon: 10-3, Evening: 3-8
+        if (timeSlot === 'Morning' && (logHour >= 5 && logHour < 10)) return true;
+        if (timeSlot === 'Noon' && (logHour >= 10 && logHour < 15)) return true;
+        if (timeSlot === 'Evening' && ((logHour >= 15 && logHour < 24) || (logHour >= 0 && logHour < 5))) return true;
+        
+        // Another option is to check the task_name directly
+        return log.task_name === `${timeSlot} Feeding`;
+      } else {
+        // Original logic for other categories
+        const logDate = new Date(log.timestamp);
+        const logHour = logDate.getHours();
+        const logMinutes = logDate.getMinutes();
+        
+        // Format for comparison (e.g., "8:00 AM")
+        const period = logHour >= 12 ? 'PM' : 'AM';
+        const hour12 = logHour === 0 ? 12 : logHour > 12 ? logHour - 12 : logHour;
+        const formattedLogTime = `${hour12}:${logMinutes === 0 ? '00' : logMinutes} ${period}`;
+        
+        // Check if the normalized time matches the time slot
+        return timeSlot === formattedLogTime;
+      }
+    });
+  }, [careLogs, activeCategory]);
   
   return {
     careLogs,
