@@ -124,7 +124,7 @@ const InterestedPuppyField = () => {
           <FormLabel>Interested Puppy</FormLabel>
           <Select
             onValueChange={field.onChange}
-            value={field.value}
+            value={field.value || "none"}
             disabled={isLoading || selectedLitterId === "none"}
           >
             <FormControl>
@@ -142,7 +142,7 @@ const InterestedPuppyField = () => {
             <SelectContent>
               <SelectItem value="none">No puppy selected</SelectItem>
               {puppies.length === 0 && !isLoading ? (
-                <SelectItem value="none" disabled>
+                <SelectItem value="no-puppies" disabled>
                   {selectedLitterId === "none" 
                     ? "Select a litter first" 
                     : "No available puppies found"}

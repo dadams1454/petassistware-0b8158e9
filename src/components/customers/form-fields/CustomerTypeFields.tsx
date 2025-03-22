@@ -30,7 +30,7 @@ const CustomerTypeFields = () => {
             <FormLabel>Customer Type</FormLabel>
             <Select 
               onValueChange={field.onChange} 
-              defaultValue={field.value}
+              defaultValue={field.value || "new"}
             >
               <FormControl>
                 <SelectTrigger>

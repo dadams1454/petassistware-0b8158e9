@@ -63,7 +63,7 @@ const ExistingTaskSelection: React.FC<ExistingTaskSelectionProps> = ({
             <FormItem>
               <FormLabel>Task</FormLabel>
               <Select
-                value={field.value || ''}
+                value={field.value || 'none'}
                 onValueChange={handleTaskNameChange}
               >
                 <FormControl>

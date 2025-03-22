@@ -73,14 +73,14 @@ const DogGroupFilter: React.FC<DogGroupFilterProps> = ({
       {/* Show on mobile */}
       <div className="md:hidden w-full mt-2">
         <Select 
-          value={activeGroupId || ""} 
-          onValueChange={(value) => onGroupChange(value === "" ? null : value)}
+          value={activeGroupId || "all"} 
+          onValueChange={(value) => onGroupChange(value === "all" ? null : value)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a group" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Dogs</SelectItem>
+            <SelectItem value="all">All Dogs</SelectItem>
             {groups.map(group => (
               <SelectItem key={group.id} value={group.id}>
                 {group.name}

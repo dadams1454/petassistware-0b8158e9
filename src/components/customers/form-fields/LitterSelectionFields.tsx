@@ -118,7 +118,7 @@ const LitterSelectionFields = () => {
                   // Reset puppy selection when litter changes
                   form.setValue("interested_puppy_id", "none");
                 }}
-                value={field.value}
+                value={field.value || "none"}
                 disabled={isLoading}
               >
                 <FormControl>
@@ -136,7 +136,7 @@ const LitterSelectionFields = () => {
                 <SelectContent>
                   <SelectItem value="none">No litter selected</SelectItem>
                   {litters.length === 0 && !isLoading ? (
-                    <SelectItem value="none" disabled>No active litters found</SelectItem>
+                    <SelectItem value="no-litters" disabled>No active litters found</SelectItem>
                   ) : (
                     litters.map((litter) => (
                       <SelectItem key={litter.id} value={litter.id}>
