@@ -3,6 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import usePottyBreakTable from './usePottyBreakTable';
 import { useNavigate } from 'react-router-dom';
+import { useObservations } from './pottyBreakHooks/useObservations';
 
 export const useTimeTableState = (
   dogsStatus: DogCareStatus[], 
@@ -11,6 +12,7 @@ export const useTimeTableState = (
   currentDate: Date
 ) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [observationDialogOpen, setObservationDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('pottybreaks');
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -29,13 +31,20 @@ export const useTimeTableState = (
     getObservationDetails,
     handleCellClick,
     handleRefresh,
-    isLoading
+    isLoading,
+    timeSlots
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
+  
+  // Get observations and add observation function
+  const { observations, addObservation } = useObservations(dogsStatus);
   
   // Auto-close dialog when changing categories
   useEffect(() => {
     if (isDialogOpen) {
       setIsDialogOpen(false);
+    }
+    if (observationDialogOpen) {
+      setObservationDialogOpen(false);
     }
   }, [activeCategory]);
   
@@ -59,6 +68,43 @@ export const useTimeTableState = (
     // This ensures we've updated the selectedDogId first
     console.log(`Selected dog set to ${dogId}, dialog will open via LogCareButton effect`);
   }, [activeCategory]);
+  
+  // Handler for observation clicks
+  const handleObservationClick = useCallback((dogId: string, dogName: string) => {
+    console.log(`🔍 Observation click for ${dogName} (${dogId}) in category ${activeCategory}`);
+    
+    // Set the selected dog ID
+    setSelectedDogId(dogId);
+    
+    // Open the observation dialog
+    setObservationDialogOpen(true);
+    
+    // Update debug info
+    setDebugInfo(`Observation dialog opened for ${dogName}`);
+  }, [activeCategory]);
+  
+  // Handler for observation submission
+  const handleObservationSubmit = useCallback(async (
+    dogId: string, 
+    observationText: string, 
+    observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
+    timestamp?: Date
+  ) => {
+    // Determine the category based on the active category
+    const category = activeCategory === 'feeding' ? 'feeding_observation' : 'observation';
+    
+    // Determine the time slot based on timestamp
+    const timeSlot = timestamp ? `${timestamp.getHours() % 12 || 12}:00 ${timestamp.getHours() >= 12 ? 'PM' : 'AM'}` : '';
+    
+    // Add the observation
+    await addObservation(dogId, observationText, observationType, timeSlot, category, timestamp);
+    
+    // Refresh data
+    onRefresh();
+    
+    // Close the dialog
+    setObservationDialogOpen(false);
+  }, [activeCategory, addObservation, onRefresh]);
   
   // Safe tab change handler with logging
   const handleCategoryChange = useCallback((value: string) => {
@@ -153,6 +199,12 @@ export const useTimeTableState = (
     handleRefresh,
     showLoading,
     selectedDogId,
-    setSelectedDogId
+    setSelectedDogId,
+    observationDialogOpen,
+    setObservationDialogOpen,
+    observations,
+    handleObservationClick,
+    handleObservationSubmit,
+    timeSlots
   };
 };

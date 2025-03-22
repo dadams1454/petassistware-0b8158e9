@@ -8,6 +8,8 @@ import TableActions from './components/TableActions';
 import DebugInfoPanel from './components/DebugInfoPanel';
 import CategoryTabs from './components/CategoryTabs';
 import TableContentManager from './components/TableContentManager';
+import ObservationDialogManager from './components/ObservationDialogManager';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -22,6 +24,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   isRefreshing,
   currentDate 
 }) => {
+  const isMobile = useIsMobile();
+  
   const {
     isDialogOpen,
     setIsDialogOpen,
@@ -41,8 +45,19 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleCareLogClick,
     handleErrorReset,
     handleRefresh,
-    showLoading
+    showLoading,
+    selectedDogId,
+    setSelectedDogId,
+    observationDialogOpen,
+    setObservationDialogOpen,
+    observations,
+    handleObservationClick,
+    handleObservationSubmit,
+    timeSlots
   } = useTimeTableState(dogsStatus, onRefresh, isRefreshing, currentDate);
+
+  // Find the selected dog based on selectedDogId
+  const selectedDog = dogsStatus.find(dog => dog.dog_id === selectedDogId);
 
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DogTimeTable">
@@ -81,12 +96,25 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onCellContextMenu={handleCellContextMenu}
           onCareLogClick={handleCareLogClick}
           onDogClick={handleDogClick}
+          onObservationClick={handleObservationClick}
           onRefresh={handleRefresh}
           showLoading={showLoading}
         />
 
         {/* Add Group Dialog */}
         <AddGroupDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} />
+        
+        {/* Observation Dialog */}
+        <ObservationDialogManager 
+          selectedDog={selectedDog}
+          observationDialogOpen={observationDialogOpen}
+          onOpenChange={setObservationDialogOpen}
+          onSubmit={handleObservationSubmit}
+          observations={observations}
+          timeSlots={timeSlots}
+          isMobile={isMobile}
+          activeCategory={activeCategory}
+        />
       </div>
     </ErrorBoundary>
   );

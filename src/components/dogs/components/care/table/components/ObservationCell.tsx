@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { TableCell } from '@/components/ui/table';
-import { AlertTriangle, Heart, Activity, MessageCircle } from 'lucide-react';
+import { AlertTriangle, Heart, Activity, MessageCircle, PencilLine } from 'lucide-react';
 
 interface ObservationDetails {
   text: string;
@@ -14,12 +14,18 @@ interface ObservationCellProps {
   dogHasObservation: boolean;
   observationDetails: ObservationDetails | null;
   activeCategory: string;
+  dogId: string;
+  dogName: string;
+  onObservationClick: (dogId: string, dogName: string) => void;
 }
 
 const ObservationCell: React.FC<ObservationCellProps> = ({
   dogHasObservation,
   observationDetails,
-  activeCategory
+  activeCategory,
+  dogId,
+  dogName,
+  onObservationClick
 }) => {
   // Function to get observation icon based on type
   const getObservationIcon = (type: string) => {
@@ -37,8 +43,15 @@ const ObservationCell: React.FC<ObservationCellProps> = ({
     }
   };
 
+  const handleClick = () => {
+    onObservationClick(dogId, dogName);
+  };
+
   return (
-    <TableCell className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px] cell-status-transition">
+    <TableCell 
+      className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px] cell-status-transition cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+      onClick={handleClick}
+    >
       {dogHasObservation && observationDetails ? (
         <div className="flex items-start gap-2">
           {getObservationIcon(observationDetails.type)}
@@ -52,9 +65,12 @@ const ObservationCell: React.FC<ObservationCellProps> = ({
           </div>
         </div>
       ) : (
-        <span className="text-xs text-gray-400 dark:text-gray-600">
-          {activeCategory === 'feeding' ? 'No feeding issues' : 'No observations'}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400 dark:text-gray-600">
+            {activeCategory === 'feeding' ? 'No feeding issues' : 'No observations'}
+          </span>
+          <PencilLine className="h-3 w-3 text-gray-400 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
       )}
     </TableCell>
   );

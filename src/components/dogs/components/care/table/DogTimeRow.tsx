@@ -21,6 +21,7 @@ interface DogTimeRowProps {
   onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
+  onObservationClick: (dogId: string, dogName: string) => void;
   currentHour?: number;
   isMobile?: boolean;
 }
@@ -39,6 +40,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   onCellContextMenu,
   onCareLogClick,
   onDogClick,
+  onObservationClick,
   currentHour,
   isMobile = false
 }) => {
@@ -111,6 +113,9 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         dogHasObservation={dogHasObservation}
         observationDetails={observationDetails}
         activeCategory={activeCategory}
+        dogId={dogId}
+        dogName={dogName}
+        onObservationClick={onObservationClick}
       />
       
       {/* Time slot cells */}

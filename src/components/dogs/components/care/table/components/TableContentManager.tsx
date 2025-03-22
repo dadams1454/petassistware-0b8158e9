@@ -18,6 +18,7 @@ interface TableContentManagerProps {
   onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
+  onObservationClick: (dogId: string, dogName: string) => void;
   onRefresh: () => void;
   showLoading: boolean;
 }
@@ -34,6 +35,7 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
   onCellContextMenu,
   onCareLogClick,
   onDogClick,
+  onObservationClick,
   onRefresh,
   showLoading
 }) => {
@@ -58,6 +60,7 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
           onCellContextMenu={onCellContextMenu}
           onCareLogClick={onCareLogClick}
           onDogClick={onDogClick}
+          onObservationClick={onObservationClick}
           onRefresh={onRefresh}
           currentHour={currentHour}
           isMobile={false}

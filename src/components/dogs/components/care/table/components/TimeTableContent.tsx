@@ -17,6 +17,7 @@ interface TimeTableContentProps {
   onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
+  onObservationClick: (dogId: string, dogName: string) => void;
   currentHour?: number;
   isMobile?: boolean;
 }
@@ -33,6 +34,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onCellContextMenu,
   onCareLogClick,
   onDogClick,
+  onObservationClick,
   currentHour,
   isMobile = false
 }) => {
@@ -76,6 +78,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
             onCellContextMenu={onCellContextMenu}
             onCareLogClick={onCareLogClick}
             onDogClick={onDogClick}
+            onObservationClick={onObservationClick}
             currentHour={currentHour}
             isMobile={isMobile}
           />
