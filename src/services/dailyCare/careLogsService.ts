@@ -9,35 +9,19 @@ import { DailyCarelog, CareLogFormData } from '@/types/dailyCare';
  */
 export const fetchDogCareLogs = async (dogId: string): Promise<DailyCarelog[]> => {
   try {
-    // Add retry mechanism with exponential backoff
-    let retries = 3;
-    let lastError;
-    
-    for (let attempt = 0; attempt < retries; attempt++) {
-      try {
-        // Actual fetch operation
-        const { data, error } = await supabase
-          .from('daily_care_logs')
-          .select('*')
-          .eq('dog_id', dogId)
-          .order('timestamp', { ascending: false });
+    // Simple direct fetch - removing the complex retry logic that might be causing issues
+    const { data, error } = await supabase
+      .from('daily_care_logs')
+      .select('*')
+      .eq('dog_id', dogId)
+      .order('timestamp', { ascending: false });
 
-        if (error) throw error;
-        return data || [];
-      } catch (error) {
-        lastError = error;
-        // Exponential backoff with jitter (100ms, 200ms, 400ms)
-        const delay = Math.min(100 * Math.pow(2, attempt), 1000) + Math.random() * 100;
-        console.log(`Retry attempt ${attempt + 1} for dog ${dogId} in ${delay}ms`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-    }
-    
-    // If we've exhausted all retries, throw the last error
-    throw lastError || new Error('Failed to fetch care logs after multiple attempts');
+    if (error) throw error;
+    return data || [];
   } catch (error) {
     console.error('Error fetching care logs:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent cascading failures
+    return [];
   }
 };
 
@@ -74,7 +58,11 @@ export const addCareLog = async (data: CareLogFormData, userId: string): Promise
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error adding care log:', error);
+      return null;
+    }
+    
     return newLog;
   } catch (error) {
     console.error('Error adding care log:', error);
@@ -94,7 +82,11 @@ export const deleteCareLog = async (id: string): Promise<boolean> => {
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error deleting care log:', error);
+      return false;
+    }
+    
     return true;
   } catch (error) {
     console.error('Error deleting care log:', error);
@@ -125,10 +117,14 @@ export const fetchFeedingLogsByDate = async (date: Date): Promise<any[]> => {
       .gte('timestamp', startOfDay.toISOString())
       .lte('timestamp', endOfDay.toISOString());
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching feeding logs:', error);
+      return [];
+    }
+    
     return data || [];
   } catch (error) {
     console.error('Error fetching feeding logs for day:', error);
-    throw error;
+    return [];
   }
 };

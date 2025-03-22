@@ -185,13 +185,23 @@ export const useCellActions = (
           
           console.log(`🍽️ Adding new feeding log: ${dogName} - ${mealName} at ${timestamp.toISOString()}`);
           
+          if (!user || !user.id) {
+            console.error('No user ID available for adding care log');
+            toast({
+              title: 'Error logging feeding',
+              description: 'User authentication required. Please log in again.',
+              variant: 'destructive',
+            });
+            return;
+          }
+          
           const newLog = await addCareLog({
             dog_id: dogId,
             category: 'feeding',
             task_name: mealName,
             timestamp: timestamp,
             notes: `${dogName} fed at ${timeSlot.toLowerCase()}`
-          }, user?.id || '');
+          }, user.id);
           
           if (newLog) {
             // Add to the cache immediately
@@ -210,14 +220,24 @@ export const useCellActions = (
             }
           } else {
             console.error(`❌ Failed to add feeding log for ${dogName}`);
+            toast({
+              title: 'Error logging feeding',
+              description: 'Could not log feeding. Please try again.',
+              variant: 'destructive',
+            });
           }
         }
-        
-        // Always refresh the cache after a feeding operation
-        setTimeout(() => {
-          refreshFeedingLogsCache(true);
-        }, 500);
       }
+      
+    } catch (error) {
+      console.error(`Error handling ${category} cell click:`, error);
+      toast({
+        title: `Error logging ${category}`,
+        description: `Could not log ${category} for ${dogName}. Please try again.`,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
       
       // Schedule a refresh after a brief delay to limit API calls
       if (debounceTimerRef.current) {
@@ -231,16 +251,6 @@ export const useCellActions = (
         }
         debounceTimerRef.current = null;
       }, 1000);
-      
-    } catch (error) {
-      console.error(`Error handling ${category} cell click:`, error);
-      toast({
-        title: `Error logging ${category}`,
-        description: `Could not log ${category} for ${dogName}. Please try again.`,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
     }
   }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, currentDate, user, toast, onRefresh, refreshFeedingLogsCache]);
   
