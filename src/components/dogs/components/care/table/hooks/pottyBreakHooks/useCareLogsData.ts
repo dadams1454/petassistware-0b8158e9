@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { fetchDogCareLogs } from '@/services/dailyCare/careLogsService';
@@ -97,7 +98,7 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
         toast({
           title: "Partial data loaded",
           description: `Some dogs' data couldn't be loaded. Using cached data where available.`,
-          variant: "warning"
+          variant: "default" // Changed from "warning" to "default"
         });
       }
       
