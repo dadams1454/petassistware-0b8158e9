@@ -6,12 +6,15 @@ interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onReset?: () => void;
+  name?: string; // Add a name prop for better error tracking
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
+  errorCount: number; // Track error count
+  lastErrorTime: number; // Track when errors occur
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -20,30 +23,40 @@ class ErrorBoundary extends Component<Props, State> {
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
+      errorCount: 0,
+      lastErrorTime: 0
     };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     // Update state so the next render will show the fallback UI
     return {
       hasError: true,
-      error,
-      errorInfo: null
+      error
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log the error to console 
-    console.error('Error caught by ErrorBoundary:', error, errorInfo);
-    this.setState({
+    // Log the error to console with component name if available
+    const componentName = this.props.name || 'UnnamedComponent';
+    console.error(`Error caught by ErrorBoundary in ${componentName}:`, error);
+    console.error('Component stack:', errorInfo.componentStack);
+    
+    // Update error tracking state
+    this.setState(prevState => ({
       error,
-      errorInfo
-    });
+      errorInfo,
+      errorCount: prevState.errorCount + 1,
+      lastErrorTime: Date.now()
+    }));
   }
 
   resetErrorBoundary = (): void => {
+    // Call the onReset prop if provided
     this.props.onReset?.();
+    
+    // Reset the error state
     this.setState({
       hasError: false,
       error: null,
@@ -67,7 +80,7 @@ class ErrorBoundary extends Component<Props, State> {
           </div>
           
           <p className="text-sm mb-4">
-            We've encountered an error in this component. Try refreshing the page or clicking the button below to reset.
+            We've encountered an error in {this.props.name || 'this component'}. Try refreshing the page or clicking the button below to reset.
           </p>
           
           {this.state.error && (
@@ -78,6 +91,9 @@ class ErrorBoundary extends Component<Props, State> {
                   {this.state.errorInfo.componentStack}
                 </pre>
               )}
+              <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                Error count: {this.state.errorCount}
+              </p>
             </div>
           )}
           

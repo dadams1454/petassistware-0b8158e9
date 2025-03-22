@@ -1,11 +1,6 @@
 
-import React, { memo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { TableCell } from '@/components/ui/table';
-import { DogFlag } from '@/types/dailyCare';
-import CellContent from './components/CellContent';
-import { useCellStyles } from './components/useCellStyles';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 interface TimeSlotCellProps {
   dogId: string;
@@ -15,14 +10,14 @@ interface TimeSlotCellProps {
   hasPottyBreak: boolean;
   hasCareLogged: boolean;
   onClick: () => void;
-  onContextMenu?: (event: React.MouseEvent) => void;
-  flags?: DogFlag[];
+  onContextMenu: (e: React.MouseEvent) => void;
+  flags?: string[];
   isCurrentHour?: boolean;
   isIncident?: boolean;
 }
 
-// Use memo to prevent unnecessary re-renders that could cause flag flickering
-const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
+// Use memo to prevent unnecessary re-renders
+const TimeSlotCell = memo(({
   dogId,
   dogName,
   timeSlot,
@@ -34,188 +29,70 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   flags = [],
   isCurrentHour = false,
   isIncident = false
-}) => {
-  // Create a stable copy of flags to prevent reference issues
-  // This helps ensure each dog's flags stay with that dog
-  const dogFlags = [...flags];
-  
-  // Refs for touch handling
-  const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const touchStartTimeRef = useRef<number>(0);
-  const cellRef = useRef<HTMLTableCellElement>(null);
-  const isTouchActiveRef = useRef<boolean>(false);
-  
-  // Add click counter for debugging
-  const clickCountRef = useRef<number>(0);
-  
-  // Check if we're on a mobile device
-  const isMobile = useIsMobile();
-  
-  // Get user preferences for dog color
-  const { getDogColor } = useUserPreferences();
-  const customDogColor = getDogColor(dogId);
-  
-  const { cellClassNames } = useCellStyles({
-    category,
-    hasPottyBreak,
-    hasCareLogged,
-    flags: dogFlags
-  });
-  
-  const cellIdentifier = `${dogId}-${timeSlot}-${category}`;
+}: TimeSlotCellProps) => {
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Get background color based on category and status
-  const getBgColor = () => {
-    if (category === 'feeding') {
-      if (isIncident) {
-        return 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20';
-      }
-      if (hasCareLogged) {
-        return 'bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/40';
-      }
-      return 'hover:bg-green-50 dark:hover:bg-green-900/10';
-    }
-    
-    if (isIncident) {
-      return 'bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20';
-    } 
-    if (hasPottyBreak) {
-      return 'bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/40'; 
-    }
-    if (isCurrentHour) {
-      return 'bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20';
-    }
-    
-    return customDogColor || 'hover:bg-blue-50 dark:hover:bg-blue-900/20';
-  };
-  
-  // Touch event handlers for quick click
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartTimeRef.current = Date.now();
-    isTouchActiveRef.current = true;
-  };
-  
-  const handleTouchEnd = () => {
-    isTouchActiveRef.current = false;
-  };
-  
-  const handleTouchMove = () => {
-    isTouchActiveRef.current = false;
-  };
-  
-  // Handle long press for mobile context menu alternative
-  const handleTouchStart2 = (e: React.TouchEvent) => {
-    if (onContextMenu) {
-      touchTimeoutRef.current = setTimeout(() => {
-        if (isTouchActiveRef.current) {
-          // Long press detected, trigger context menu handler
-          const touch = e.touches[0];
-          const mouseEvent = new MouseEvent('contextmenu', {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-            clientX: touch.clientX,
-            clientY: touch.clientY
-          });
-          
-          onContextMenu(mouseEvent as unknown as React.MouseEvent);
-        }
-      }, 800); // 800ms long press
-    }
-    
-    handleTouchStart(e);
-  };
-  
-  // Custom click handler with preventDefault to avoid page refreshes
-  const handleCellClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default to avoid page refresh
-    
-    // Increment and log click count for debugging
-    clickCountRef.current += 1;
-    console.log(`Cell clicked: ${clickCountRef.current} times (${dogName}, ${timeSlot})`);
-    
-    // Log if we're approaching the critical count
-    if (clickCountRef.current === 5) {
-      console.log('WARNING: Next click will be number 6 - watch for issues');
-    }
-    
-    onClick();
-  };
-  
-  // Custom context menu handler with preventDefault
-  const handleContextMenu = (e: React.MouseEvent) => {
-    if (onContextMenu) {
-      e.preventDefault(); // Prevent default context menu
-      onContextMenu(e);
-    }
-  };
-  
-  // Clean up any timeouts when component unmounts
-  useEffect(() => {
-    return () => {
-      if (touchTimeoutRef.current) {
-        clearTimeout(touchTimeoutRef.current);
-        touchTimeoutRef.current = null;
-      }
-    };
-  }, []);
-  
-  // Get border color based on category and status
-  const getBorderColor = () => {
-    if (category === 'feeding') {
-      if (isIncident) {
-        return 'border-l-2 border-r-2 border-red-400 dark:border-red-600';
-      }
-      if (hasCareLogged) {
-        return 'border-l-2 border-r-2 border-green-400 dark:border-green-600';
-      }
-      return '';
-    }
-    
-    if (isIncident) {
-      return 'border-l-2 border-r-2 border-red-400 dark:border-red-600';
-    }
-    if (isCurrentHour) {
-      return 'border-l-2 border-r-2 border-blue-400 dark:border-blue-600';
-    }
+  // Get the base color for the cell
+  const getCellColor = useCallback(() => {
+    if (isIncident) return 'bg-amber-100 dark:bg-amber-950/20';
+    if (hasPottyBreak || hasCareLogged) return 'bg-green-100 dark:bg-green-900/30';
+    if (isCurrentHour) return 'bg-blue-50 dark:bg-blue-900/10';
     return '';
-  };
-  
+  }, [hasPottyBreak, hasCareLogged, isCurrentHour, isIncident]);
+
+  // Handle cell click while preventing default behavior
+  const handleCellClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClick();
+    return false;
+  }, [onClick]);
+
+  // Handle context menu while preventing default behavior
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onContextMenu(e);
+    return false;
+  }, [onContextMenu]);
+
+  // Render the content of the cell
+  const cellContent = hasPottyBreak || hasCareLogged 
+    ? '✓' 
+    : isHovered 
+      ? '+'
+      : '';
+
   return (
-    <TableCell 
-      ref={cellRef}
-      key={cellIdentifier}
-      className={`${cellClassNames} cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden dog-table-cell cell-status-transition ${
-        getBgColor()
-      } ${
-        getBorderColor()
-      } touch-manipulation`}
+    <TableCell
+      key={`${dogId}-${timeSlot}`}
+      className={`
+        p-0 text-center h-10 transition-all duration-200 border-r border-slate-200 dark:border-slate-700 relative
+        cell-status-transition
+        ${getCellColor()}
+        ${isHovered ? 'bg-opacity-80 dark:bg-opacity-40' : 'bg-opacity-60 dark:bg-opacity-20'}
+        ${isCurrentHour ? 'border-l-4 border-l-blue-400 dark:border-l-blue-600' : ''}
+        cursor-pointer select-none
+      `}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onClick={handleCellClick}
       onContextMenu={handleContextMenu}
-      onTouchStart={handleTouchStart2}
-      onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchMove}
-      title={`${dogName} - ${timeSlot}${isIncident ? ' (Incident reported)' : ''}${isCurrentHour ? ' (Current hour)' : ''}`}
-      data-cell-id={cellIdentifier}
       data-dog-id={dogId}
-      data-flags-count={dogFlags.length}
-      data-is-current-hour={isCurrentHour ? 'true' : 'false'}
-      data-is-incident={isIncident ? 'true' : 'false'}
-      data-mobile-cell={isMobile ? "true" : "false"}
-      data-custom-color={customDogColor ? "true" : "false"}
-      data-category={category}
+      data-time-slot={timeSlot}
+      data-has-care={hasCareLogged ? 'true' : 'false'}
     >
-      <div className="w-full h-full p-1 flex items-center justify-center">
-        <CellContent 
-          dogName={dogName}
-          timeSlot={timeSlot}
-          category={category}
-          hasPottyBreak={hasPottyBreak}
-          hasCareLogged={hasCareLogged}
-          isCurrentHour={isCurrentHour}
-          isIncident={isIncident}
-        />
-      </div>
+      {isIncident ? (
+        <span className="text-amber-600 dark:text-amber-400 font-bold">!</span>
+      ) : (
+        <span className={`
+          transition-opacity duration-200
+          ${hasPottyBreak || hasCareLogged ? 'text-green-600 dark:text-green-400 font-semibold' : 'text-gray-400 opacity-40'}
+          ${isHovered ? 'opacity-100' : ''}
+        `}>
+          {cellContent}
+        </span>
+      )}
     </TableCell>
   );
 });

@@ -1,5 +1,5 @@
 
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
@@ -49,20 +49,21 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   const clickCounter = React.useRef<number>(0);
 
   // Safe click handlers with click counting
-  const handleCellClickSafe = React.useCallback((id: string, name: string, timeSlot: string, category: string) => {
+  const handleCellClickSafe = useCallback((id: string, name: string, timeSlot: string, category: string) => {
     clickCounter.current += 1;
     console.log(`Row handle cell click #${clickCounter.current} for ${name}`);
     onCellClick(id, name, timeSlot, category);
   }, [onCellClick]);
 
-  const handleCellContextMenuSafe = React.useCallback((e: React.MouseEvent, id: string, name: string, timeSlot: string, category: string) => {
+  const handleCellContextMenuSafe = useCallback((e: React.MouseEvent, id: string, name: string, timeSlot: string, category: string) => {
     e.preventDefault(); // Prevent default context menu
+    e.stopPropagation(); // Stop event bubbling
     onCellContextMenu(id, name, timeSlot, category);
     return false; // Prevent bubbling
   }, [onCellContextMenu]);
   
   // Helper function to determine if a time slot is the current hour
-  const isCurrentHourSlot = (timeSlot: string) => {
+  const isCurrentHourSlot = useCallback((timeSlot: string) => {
     if (currentHour === undefined || activeCategory === 'feeding') return false;
     
     // For feeding, we don't need current hour highlighting
@@ -79,7 +80,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
     if (!isPM && is12Hour) slot24Hour = 0;
     
     return slot24Hour === currentHour;
-  };
+  }, [currentHour, activeCategory]);
 
   // Check if the dog has any observations in the current category
   const dogHasObservation = hasObservation(dogId, '');
@@ -88,7 +89,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   const observationDetails = dogHasObservation ? getObservationDetails(dogId) : null;
   
   // Function to get observation icon based on type
-  const getObservationIcon = (type: string) => {
+  const getObservationIcon = useCallback((type: string) => {
     switch (type) {
       case 'accident':
         return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
@@ -101,23 +102,23 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       default:
         return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
     }
-  };
+  }, []);
 
   // Extract the time from an observation if available
-  const getObservationTimeSlot = () => {
+  const getObservationTimeSlot = useCallback(() => {
     if (!observationDetails || !observationDetails.timeSlot) return null;
     return observationDetails.timeSlot;
-  };
+  }, [observationDetails]);
 
   const observationTimeSlot = getObservationTimeSlot();
   
   // Handle dog name click with preventDefault
-  const handleDogCellClick = React.useCallback(() => {
+  const handleDogCellClick = useCallback(() => {
     onDogClick(dogId);
   }, [dogId, onDogClick]);
   
   // Handle care log click with preventDefault
-  const handleCareLogCellClick = React.useCallback(() => {
+  const handleCareLogCellClick = useCallback(() => {
     onCareLogClick(dogId, dogName);
   }, [dogId, dogName, onCareLogClick]);
   

@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CareCategories from './CareCategories';
@@ -28,8 +28,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('pottybreaks');
   
-  // Track tab change count for debugging
-  const tabChangeCountRef = React.useRef<number>(0);
+  // Track total clicks for debugging refresh issue
+  const clickCountRef = useRef<number>(0);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   
   // Use the time manager hook to get time slots and current hour
   const { timeSlots, currentHour } = useTimeManager(activeCategory);
@@ -49,32 +50,58 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   
   // Safe tab change handler with logging
   const handleCategoryChange = useCallback((value: string) => {
-    tabChangeCountRef.current += 1;
-    console.log(`Tab changed to ${value} (change #${tabChangeCountRef.current})`);
+    console.log(`Tab changed to ${value}`);
     setActiveCategory(value);
   }, []);
   
-  // Create a stable cell click handler
+  // Create a stable cell click handler with click tracking
   const memoizedCellClickHandler = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
-    console.log(`Cell clicked: ${dogName}, ${timeSlot}, ${category}`);
-    handleCellClick(dogId, dogName, timeSlot, category);
+    // Increment click count
+    clickCountRef.current += 1;
+    const clickNumber = clickCountRef.current;
+    
+    // Log debug info
+    console.log(`Cell clicked: ${clickNumber} times (${dogName}, ${timeSlot})`);
+    setDebugInfo(`Last click: ${dogName} at ${timeSlot} (Click #${clickNumber})`);
+    
+    // Add extra protection to prevent refresh
+    try {
+      handleCellClick(dogId, dogName, timeSlot, category);
+    } catch (error) {
+      console.error('Error in cell click handler:', error);
+      // Don't rethrow - contain the error
+    }
+    
+    // Check if we're near the 6-click threshold
+    if (clickNumber === 5) {
+      console.log('⚠️ WARNING: Approaching 6 clicks - watch for refresh issue');
+    }
+    
+    // Return false to prevent default behavior
+    return false;
   }, [handleCellClick]);
   
-  // Handle cell right-click for observations/notes
-  const handleCellContextMenu = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
-    // Display a context menu or add observation
+  // Handle cell right-click for observations/notes with click tracking
+  const handleCellContextMenu = useCallback((e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => {
+    // Prevent default context menu
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log('Right-clicked on cell:', dogId, dogName, timeSlot, category);
+    return false;
   }, []);
   
-  // Handle care log click
+  // Handle care log click with prevention
   const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
-    // Navigate to care log page or open care log dialog
     console.log('Care log clicked for:', dogId, dogName);
   }, []);
 
   // Error reset handler
   const handleErrorReset = useCallback(() => {
     console.log("Resetting after error");
+    // Reset click counter
+    clickCountRef.current = 0;
+    setDebugInfo('Clicks reset after error');
     onRefresh();
   }, [onRefresh]);
 
@@ -82,7 +109,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const showLoading = isRefreshing || isLoading;
 
   return (
-    <ErrorBoundary onReset={handleErrorReset}>
+    <ErrorBoundary onReset={handleErrorReset} name="DogTimeTable">
       <div className="w-full space-y-4 relative">
         {/* Table actions with title and add group button */}
         <TableActions
@@ -90,6 +117,13 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           isRefreshing={showLoading}
           currentDate={currentDate}
         />
+
+        {/* Debug info (only visible in development) */}
+        {process.env.NODE_ENV !== 'production' && debugInfo && (
+          <div className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 p-2 rounded mb-2">
+            Debug: {debugInfo} | Total clicks: {clickCountRef.current}
+          </div>
+        )}
 
         {/* Category Tabs */}
         <Tabs 
@@ -107,6 +141,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
                 onClick={(e) => {
                   // Prevent default to avoid any navigation
                   e.preventDefault();
+                  e.stopPropagation();
                 }}
               >
                 {category.icon}

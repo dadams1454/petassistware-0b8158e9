@@ -21,11 +21,14 @@ export const useCellActions = (
   const isProcessingQueueRef = useRef(false);
   
   // Debounce timer references
-  const debounceTimerRef = useRef<number | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Track total operations to prevent memory leaks
   const totalOperationsRef = useRef<number>(0);
-  const MAX_QUEUE_SIZE = 50; // Limit queue size to prevent memory issues
+  const MAX_QUEUE_SIZE = 10; // Reduced from 50 to prevent potential memory issues
+  
+  // Track clicks for debugging refresh issue
+  const clickCountRef = useRef<number>(0);
   
   // Process the operation queue
   const processQueue = useCallback(async () => {
@@ -53,16 +56,18 @@ export const useCellActions = (
       } else {
         // Queue is empty, trigger a gentle refresh if needed
         if (onRefresh && debounceTimerRef.current === null) {
-          debounceTimerRef.current = window.setTimeout(() => {
+          debounceTimerRef.current = setTimeout(() => {
             onRefresh();
-            debounceTimerRef.current = null;
+            if (debounceTimerRef.current) {
+              debounceTimerRef.current = null;
+            }
           }, 2000); // Longer delay for the final refresh
         }
       }
     }
   }, [onRefresh]);
   
-  // Add operation to queue and start processing
+  // Add operation to queue and start processing with safeguards
   const queueOperation = useCallback((operation: () => Promise<void>) => {
     // Limit queue size to prevent memory leaks
     if (operationQueueRef.current.length >= MAX_QUEUE_SIZE) {
@@ -78,9 +83,18 @@ export const useCellActions = (
     }
   }, [processQueue]);
   
-  // Handler for cell clicks with optimistic updates
+  // Handler for cell clicks with optimistic updates and error prevention
   const handleCellClick = useCallback(async (dogId: string, dogName: string, timeSlot: string, category: string) => {
     if (isLoading) return;
+    
+    // Increment click counter for debugging
+    clickCountRef.current += 1;
+    console.log(`Cell clicked: ${clickCountRef.current} times (${dogName}, ${timeSlot})`);
+    
+    // Check if we're approaching the 6-click threshold
+    if (clickCountRef.current === 5) {
+      console.log('⚠️ WARNING: useCellActions approaching 6 clicks!');
+    }
     
     if (category !== activeCategory) {
       console.log('Cell click ignored - category mismatch:', category, activeCategory);
@@ -221,7 +235,13 @@ export const useCellActions = (
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, currentDate, user, toast, queueOperation]);
+  }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, user, toast, queueOperation]);
+  
+  // Reset click counter when category changes
+  useEffect(() => {
+    clickCountRef.current = 0;
+    console.log('Click counter reset due to category change:', activeCategory);
+  }, [activeCategory]);
   
   // Clean up any timers when unmounting
   useEffect(() => {
@@ -237,6 +257,7 @@ export const useCellActions = (
       operationQueueRef.current = [];
       isProcessingQueueRef.current = false;
       totalOperationsRef.current = 0;
+      clickCountRef.current = 0;
     };
   }, []);
   
