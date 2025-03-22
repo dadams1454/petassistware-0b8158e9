@@ -1,5 +1,5 @@
 
-import React, { useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
@@ -7,26 +7,28 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Clock, Calendar } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
-import { startOfDay, format } from 'date-fns';
+import { format } from 'date-fns';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 
 const DailyCare: React.FC = () => {
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
   const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Local state for current date
+  const [currentDate, setCurrentDate] = useState(new Date());
+  
   // Use the centralized auto-refresh system
   const { 
     isRefreshing,
     handleRefresh,
-    formatTimeRemaining,
-    currentDate
+    formatTimeRemaining
   } = useAutoRefresh({
     interval: 15 * 60 * 1000, // 15 minutes
     refreshLabel: 'dog care data',
-    midnightReset: true,
+    refreshOnMount: true,
     onRefresh: async () => {
       console.log('🔄 Auto-refresh triggered in DailyCare page');
-      const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
+      const dogs = await fetchAllDogsWithCareStatus(currentDate, true);
       console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
       return dogs;
     }

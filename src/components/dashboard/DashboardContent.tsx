@@ -1,21 +1,20 @@
 
-import React, { useState, useRef } from 'react';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
+import React from 'react';
 import DashboardOverview from './DashboardOverview';
-import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
-import { useDailyCare } from '@/contexts/dailyCare';
-import { useToast } from '@/components/ui/use-toast';
+import RecentActivities from './RecentActivities';
+import UpcomingEvents from './UpcomingEvents';
+import QuickActions from './QuickActions';
 import TabsList from './tabs/TabsList';
-import DailyCareTab from './tabs/DailyCareTab';
-import GroomingTab from './tabs/GroomingTab';
-import CareLogDialog from './dialogs/CareLogDialog';
-import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { Clock, RefreshCw } from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface DashboardContentProps {
   isLoading: boolean;
-  stats: DashboardStats;
-  events: UpcomingEvent[];
-  activities: RecentActivity[];
+  stats: any;
+  events: any[];
+  activities: any[];
+  onRefresh?: () => void;
+  nextRefreshTime?: string;
 }
 
 const DashboardContent: React.FC<DashboardContentProps> = ({
@@ -23,89 +22,57 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   stats,
   events,
   activities,
+  onRefresh,
+  nextRefreshTime
 }) => {
-  const [activeTab, setActiveTab] = useState('overview'); // Default to overview tab
-  const [careLogDialogOpen, setCareLogDialogOpen] = useState(false);
-  const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
-  const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
-  const { toast } = useToast();
-
-  // Set up auto-refresh with our custom hook - centralized refresh logic
-  const { 
-    isRefreshing, 
-    handleRefresh: refreshDogs,
-    formatTimeRemaining
-  } = useAutoRefresh({
-    interval: 15 * 60 * 1000, // 15 minutes
-    refreshLabel: 'dog data',
-    onRefresh: async () => {
-      console.log('🔄 Auto-refresh triggered in DashboardContent');
-      const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
-      console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
-      return dogs;
-    }
-  });
-
-  const handleCareLogClick = () => {
-    setCareLogDialogOpen(true);
-  };
-
-  const handleCareLogSuccess = () => {
-    setCareLogDialogOpen(false);
-    setSelectedDogId(null);
-    // Refresh dog statuses
-    refreshDogs(true);
-  };
-
-  const handleDogSelected = (dogId: string) => {
-    setSelectedDogId(dogId);
-  };
-
   return (
-    <>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onRefreshDogs={() => refreshDogs(true)}
-          isRefreshing={isRefreshing}
-          nextRefreshTime={formatTimeRemaining()}
-        />
-        
-        <TabsContent value="overview">
-          <DashboardOverview 
+    <div className="space-y-6">
+      {/* Header with refresh button */}
+      {onRefresh && (
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center">
+            <Clock className="h-4 w-4 mr-1" />
+            <span>Next auto-refresh: {nextRefreshTime || '15:00'}</span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh Dashboard
+          </Button>
+        </div>
+      )}
+      
+      {/* Stats overview */}
+      <DashboardOverview stats={stats} isLoading={isLoading} />
+      
+      {/* Quick actions */}
+      <QuickActions />
+      
+      {/* Main content layout */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 space-y-6">
+          {/* Tabs for daily care, exercise, etc. */}
+          <TabsList
             isLoading={isLoading}
-            stats={stats}
-            events={events}
-            activities={activities}
-            onCareLogClick={handleCareLogClick}
+            onRefresh={onRefresh}
+            isRefreshing={isLoading}
           />
-        </TabsContent>
+        </div>
         
-        <TabsContent value="dailycare">
-          <DailyCareTab 
-            onRefreshDogs={() => refreshDogs(true)} 
-            isRefreshing={isRefreshing} 
-          />
-        </TabsContent>
-        
-        <TabsContent value="grooming">
-          <GroomingTab 
-            dogStatuses={dogStatuses} 
-            onRefreshDogs={() => refreshDogs(true)} 
-          />
-        </TabsContent>
-      </Tabs>
-
-      {/* Daily Care Log Dialog */}
-      <CareLogDialog 
-        open={careLogDialogOpen}
-        onOpenChange={setCareLogDialogOpen}
-        selectedDogId={selectedDogId}
-        onDogSelected={handleDogSelected}
-        onSuccess={handleCareLogSuccess}
-      />
-    </>
+        <div className="space-y-6">
+          {/* Upcoming events card */}
+          <UpcomingEvents events={events} isLoading={isLoading} />
+          
+          {/* Recent activities card */}
+          <RecentActivities activities={activities} isLoading={isLoading} />
+        </div>
+      </div>
+    </div>
   );
 };
 
