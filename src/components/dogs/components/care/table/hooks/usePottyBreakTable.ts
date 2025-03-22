@@ -1,80 +1,76 @@
 
-import { useState, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { useDogSorting } from './pottyBreakHooks/useDogSorting';
-import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
-import { usePottyBreakData } from './pottyBreakHooks/usePottyBreakData';
-import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
-import { useCellActions } from './pottyBreakHooks/useCellActions';
 import { useObservations } from './pottyBreakHooks/useObservations';
+import { usePottyBreakData } from './pottyBreakHooks/usePottyBreakData';
+import { useDogSorting } from './pottyBreakHooks/useDogSorting';
+import { useCellActions } from './pottyBreakHooks/useCellActions';
+import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
+import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
 
 const usePottyBreakTable = (
-  dogsStatus: DogCareStatus[], 
+  dogs: DogCareStatus[],
   onRefresh?: () => void,
   activeCategory: string = 'pottybreaks'
 ) => {
-  const [currentDate] = useState(new Date());
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const { pottyBreaks, setPottyBreaks } = usePottyBreakData(dogs);
+  const { sortedDogs } = useDogSorting(dogs);
   
-  // Use the refactored hooks
-  const { sortedDogs } = useDogSorting(dogsStatus);
-  const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh);
-  const { pottyBreaks, setPottyBreaks, isLoading: pottyBreaksLoading, fetchPottyBreaks, hasPottyBreak } = usePottyBreakData(currentDate);
-  const { careLogs, fetchCareLogs, isLoading: careLogsLoading, hasCareLogged } = useCareLogsData(sortedDogs, activeCategory);
-  const { observations, addObservation, hasObservation, getObservationDetails, isLoading: observationsLoading } = useObservations(sortedDogs);
-  
-  // Create optimized cell actions handler with debounced refresh
-  const { handleCellClick, isLoading: cellActionsLoading } = useCellActions(
-    currentDate, 
-    pottyBreaks, 
-    setPottyBreaks, 
-    handleRefresh,
-    activeCategory
-  );
-  
-  // Combined loading state
-  const isLoading = pottyBreaksLoading || careLogsLoading || cellActionsLoading || observationsLoading || isRefreshing;
-  
-  // Wrapper for hasCareLogged to incorporate hasPottyBreak
-  const handleHasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
-    if (category === 'pottybreaks') {
-      return hasPottyBreak(dogId, timeSlot);
-    }
-    return hasCareLogged(dogId, timeSlot, category);
-  }, [hasCareLogged, hasPottyBreak]);
+  const today = useMemo(() => new Date(), []);
 
-  // Enhanced hasObservation function that handles both dog ID and time slot with category
-  const handleHasObservation = useCallback((dogId: string, timeSlot: string) => {
-    // Pass the current active category to filter observations appropriately
-    return hasObservation(dogId, timeSlot, activeCategory);
-  }, [hasObservation, activeCategory]);
+  // Set up cell actions
+  const { 
+    isLoading: isCellActionsLoading, 
+    handleCellClick, 
+    feedingLogs,
+    resetFeedingLogs 
+  } = useCellActions(today, pottyBreaks, setPottyBreaks, onRefresh, activeCategory);
 
-  // Enhanced getObservationDetails that passes the active category
-  const handleGetObservationDetails = useCallback((dogId: string) => {
-    // Pass the active category to filter observations
-    return getObservationDetails(dogId, activeCategory);
-  }, [getObservationDetails, activeCategory]);
+  // Set up refresh handler
+  const { isRefreshing, handleRefresh } = useRefreshHandler(onRefresh, setLoading);
 
-  // Handle dog click to navigate to dog details page
+  // Set up care logs data for feeding
+  const { careLogs, hasCareLogged } = useCareLogsData(dogs, activeCategory);
+
+  // Set up observations
+  const { 
+    observations, 
+    hasObservation, 
+    getObservationDetails,
+    addObservation 
+  } = useObservations(dogs);
+
+  // Function to check if a dog has a potty break at a specific time
+  const hasPottyBreak = useCallback((dogId: string, timeSlot: string) => {
+    return pottyBreaks[dogId]?.includes(timeSlot) || false;
+  }, [pottyBreaks]);
+
+  // Function to handle dog name click
   const handleDogClick = useCallback((dogId: string) => {
-    navigate(`/dogs/${dogId}`);
-  }, [navigate]);
+    // Navigate to dog detail page or open dog info dialog
+    console.log('Dog clicked:', dogId);
+  }, []);
+
+  // Derive isLoading state
+  const isLoading = loading || isRefreshing || isCellActionsLoading;
 
   return {
-    currentDate,
     isLoading,
-    pottyBreaks,
     sortedDogs,
+    pottyBreaks,
     hasPottyBreak,
-    hasCareLogged: handleHasCareLogged,
-    hasObservation: handleHasObservation,
-    getObservationDetails: handleGetObservationDetails,
+    hasCareLogged,
+    hasObservation,
+    getObservationDetails,
     addObservation,
     observations,
+    careLogs,
     handleCellClick,
     handleRefresh,
-    handleDogClick
+    handleDogClick,
+    feedingLogs,
+    resetFeedingLogs
   };
 };
 

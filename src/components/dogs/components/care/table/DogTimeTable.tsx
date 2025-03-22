@@ -40,7 +40,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     observations,
     handleCellClick, 
     handleRefresh,
-    handleDogClick
+    handleDogClick,
+    resetFeedingLogs
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
   
   // Handle cell right-click (context menu) for observations
@@ -101,6 +102,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             isLoading={isLoading}
             onRefresh={handleRefresh} 
             isMobile={isMobile}
+            onResetFeeding={activeCategory === 'feeding' ? resetFeedingLogs : undefined}
           />
         </div>
         

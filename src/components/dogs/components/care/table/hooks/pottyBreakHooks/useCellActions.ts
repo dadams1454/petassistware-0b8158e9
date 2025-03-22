@@ -43,7 +43,7 @@ export const useCellActions = (
     return lastUsedDate.getTime() < today.getTime();
   };
   
-  // Reset feeding logs at midnight
+  // Reset feeding logs at midnight or when switching to the feeding category
   const checkAndResetFeedingLogs = useCallback(() => {
     if (isNewDay()) {
       console.log('New day detected, resetting feeding logs');
@@ -55,9 +55,25 @@ export const useCellActions = (
   // Run check when component mounts and when active category changes
   useEffect(() => {
     if (activeCategory === 'feeding') {
+      console.log('Checking if feeding logs need to be reset');
       checkAndResetFeedingLogs();
     }
   }, [activeCategory, checkAndResetFeedingLogs]);
+  
+  // Manual reset function
+  const resetFeedingLogs = useCallback(() => {
+    console.log('Manually resetting feeding logs');
+    setFeedingLogs({});
+    localStorage.setItem('lastFeedingCheckDate', new Date().toISOString());
+    if (onRefresh) {
+      onRefresh();
+    }
+    
+    toast({
+      title: 'Feeding logs reset',
+      description: 'All feeding data has been reset for today.',
+    });
+  }, [onRefresh, toast]);
   
   // Handler for cell clicks
   const handleCellClick = useCallback(async (dogId: string, dogName: string, timeSlot: string, category: string) => {
@@ -198,7 +214,7 @@ export const useCellActions = (
   return {
     isLoading,
     handleCellClick,
-    feedingLogs
+    feedingLogs,
+    resetFeedingLogs  // Export the reset function
   };
 };
-
