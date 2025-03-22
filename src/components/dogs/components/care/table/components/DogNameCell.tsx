@@ -7,6 +7,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import DogColorPicker from '@/components/personalization/DogColorPicker';
 import { fetchDogGroups } from '@/services/dailyCare/dogGroupsService';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
@@ -64,7 +65,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
     if (activeCategory === 'pottybreaks') {
       return 'Note';
     }
-    return activeCategory;
+    return activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1);
   };
   
   // Format the observation type for display
@@ -169,15 +170,17 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
           )}
           
           <div className="flex items-center gap-1 mt-1">
-            <button
+            <Button
               onClick={handleLogCareClick}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[60px] z-20 relative"
+              className="h-7 px-2 py-0 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 z-20 relative"
               title={`Log ${activeCategory} for ${dog.dog_name}`}
+              variant="ghost"
+              size="sm"
             >
               Log {activeCategory === 'pottybreaks' 
                 ? 'Note' 
                 : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
-            </button>
+            </Button>
             
             <DogColorPicker 
               dogId={dog.dog_id}

@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import usePottyBreakTable from './usePottyBreakTable';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +32,13 @@ export const useTimeTableState = (
     isLoading
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
   
+  // Auto-close dialog when changing categories
+  useEffect(() => {
+    if (isDialogOpen) {
+      setIsDialogOpen(false);
+    }
+  }, [activeCategory]);
+  
   // Navigation handler for dog clicks
   const handleDogClick = useCallback((dogId: string) => {
     console.log('Navigating to dog details:', dogId);
@@ -40,7 +47,7 @@ export const useTimeTableState = (
   
   // Handler for care log clicks - improved implementation
   const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
-    console.log(`🔍 Care log click for ${dogName} (${dogId}) in category ${activeCategory}`);
+    console.log(`🚨 Care log click for ${dogName} (${dogId}) in category ${activeCategory}`);
     
     // Update debug info
     setDebugInfo(`Care log clicked for ${dogName}`);
@@ -49,6 +56,8 @@ export const useTimeTableState = (
     setSelectedDogId(dogId);
     
     // Note: The dialog opening is now handled directly in the LogCareButton component
+    // This ensures we've updated the selectedDogId first
+    console.log(`Selected dog set to ${dogId}, dialog will open via LogCareButton effect`);
   }, [activeCategory]);
   
   // Safe tab change handler with logging

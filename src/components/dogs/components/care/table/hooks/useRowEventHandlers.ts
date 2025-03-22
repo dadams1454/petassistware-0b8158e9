@@ -73,7 +73,7 @@ export const useRowEventHandlers = ({
     e.stopPropagation();
     e.preventDefault();
     
-    console.log(`Care log cell clicked for ${dogName} (${dogId})`);
+    console.log(`🔥 Care log cell clicked for ${dogName} (${dogId})`);
     
     try {
       // Call with both parameters

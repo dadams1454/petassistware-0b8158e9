@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CareLogForm from '../CareLogForm';
 
 interface LogCareButtonProps {
@@ -25,6 +25,18 @@ const LogCareButton: React.FC<LogCareButtonProps> = ({
   onCareLogSuccess,
   selectedCategory
 }) => {
+  // Auto-focus effect - when the component is selected, ensure dialog opens
+  useEffect(() => {
+    if (isSelected && !dialogOpen) {
+      console.log(`Auto-opening dialog for dog ${dogId} because it was selected`);
+      // Small delay to ensure state updates have propagated
+      const timer = setTimeout(() => {
+        setDialogOpen(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isSelected, dialogOpen, setDialogOpen, dogId]);
+
   const handleClick = (e: React.MouseEvent) => {
     // Stop event propagation to prevent parent elements from handling it
     e.stopPropagation();
@@ -37,8 +49,9 @@ const LogCareButton: React.FC<LogCareButtonProps> = ({
     
     // Then explicitly open the dialog
     setTimeout(() => {
+      console.log(`Opening dialog for dog ${dogId}`);
       setDialogOpen(true);
-    }, 0);
+    }, 100);
   };
 
   return (
@@ -47,11 +60,11 @@ const LogCareButton: React.FC<LogCareButtonProps> = ({
         variant={hasLastCare ? "ghost" : "secondary"} 
         size="sm"
         onClick={handleClick}
-        className="z-20 relative"
+        className="z-30 relative hover:bg-blue-100"
       >
         {hasLastCare ? "Update" : "Log Care"}
       </Button>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md z-50">
         {isSelected && (
           <CareLogForm 
             dogId={dogId} 

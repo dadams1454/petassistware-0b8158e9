@@ -31,11 +31,18 @@ const DogCareTable: React.FC<DogCareTableProps> = ({
   onCareLogSuccess,
   selectedCategory
 }) => {
+  console.log(`DogCareTable: selectedDogId=${selectedDogId}, dialogOpen=${dialogOpen}`);
+  
   return (
     <Card>
       <CardContent className="p-0">
         {/* Debug information */}
-        <TableDebugger dogsStatus={dogsStatus} selectedCategory={selectedCategory} />
+        <TableDebugger 
+          dogsStatus={dogsStatus} 
+          selectedCategory={selectedCategory} 
+          selectedDogId={selectedDogId}
+          dialogOpen={dialogOpen}
+        />
         
         <ScrollArea className="h-[60vh]">
           <Table>
