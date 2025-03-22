@@ -99,6 +99,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
   // Handle the log care click with proper event handling
   const handleLogCareClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Stop propagation to prevent other handlers from firing
+    e.preventDefault(); // Prevent default behavior
     console.log(`Log care button clicked for ${dog.dog_name}`);
     onCareLogClick(e);
   };
@@ -112,7 +113,9 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
   
   return (
     <TableCell 
-      className={`whitespace-nowrap sticky left-0 z-10 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 ${genderBackgroundColor}`}
+      className={`whitespace-nowrap sticky left-0 z-10 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 ${dog.sex === 'male' 
+        ? 'bg-blue-50 dark:bg-blue-950/30' 
+        : 'bg-pink-50 dark:bg-pink-950/30'}`}
     >
       <div className="flex items-center gap-3 max-w-[160px]">
         <div 
@@ -171,7 +174,9 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
               className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[60px] z-20 relative"
               title={`Log ${activeCategory} for ${dog.dog_name}`}
             >
-              Log {getButtonText()}
+              Log {activeCategory === 'pottybreaks' 
+                ? 'Note' 
+                : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
             </button>
             
             <DogColorPicker 
@@ -197,7 +202,10 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
                 aria-label="Observation"
               />
               <span className="truncate" title={observationText}>
-                <span className="font-medium">{getObservationTypeLabel()}:</span> {observationText}
+                <span className="font-medium">{observationType === 'accident' ? 'Accident' : 
+                  observationType === 'heat' ? 'Heat cycle' : 
+                  observationType === 'behavior' ? 'Behavior' : 
+                  observationType === 'other' ? 'Note' : 'Observation'}:</span> {observationText}
               </span>
             </div>
           )}

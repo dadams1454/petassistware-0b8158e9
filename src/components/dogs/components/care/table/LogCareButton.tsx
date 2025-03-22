@@ -31,24 +31,26 @@ const LogCareButton: React.FC<LogCareButtonProps> = ({
     e.preventDefault();
     
     console.log(`🔍 Log care clicked for dog: ${dogId}`);
+    
+    // Call the handler first (which should select the dog)
     onLogCare(dogId);
     
-    // Explicitly open the dialog (optional if DialogTrigger handles this)
-    setDialogOpen(true);
+    // Then explicitly open the dialog
+    setTimeout(() => {
+      setDialogOpen(true);
+    }, 0);
   };
 
   return (
     <Dialog open={dialogOpen && isSelected} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant={hasLastCare ? "ghost" : "secondary"} 
-          size="sm"
-          onClick={handleClick}
-          className="z-10 relative"
-        >
-          {hasLastCare ? "Update" : "Log Care"}
-        </Button>
-      </DialogTrigger>
+      <Button 
+        variant={hasLastCare ? "ghost" : "secondary"} 
+        size="sm"
+        onClick={handleClick}
+        className="z-20 relative"
+      >
+        {hasLastCare ? "Update" : "Log Care"}
+      </Button>
       <DialogContent className="max-w-md">
         {isSelected && (
           <CareLogForm 

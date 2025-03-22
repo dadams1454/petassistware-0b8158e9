@@ -12,6 +12,7 @@ export const useTimeTableState = (
 ) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('pottybreaks');
+  const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const navigate = useNavigate();
   
   // Debug tracking
@@ -37,29 +38,17 @@ export const useTimeTableState = (
     navigate(`/dogs/${dogId}`);
   }, [navigate]);
   
-  // Handler for care log clicks - updated to properly handle this functionality
+  // Handler for care log clicks - improved implementation
   const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
-    console.log('Opening care log dialog for:', dogId, dogName);
-    // Set a dialog state or navigate to the care log page
-    // For now we'll add better logging for debugging
     console.log(`🔍 Care log click for ${dogName} (${dogId}) in category ${activeCategory}`);
     
-    // Show this in debug info for visibility
+    // Update debug info
     setDebugInfo(`Care log clicked for ${dogName}`);
     
-    // Here you would typically open a dialog for care log
-    // This could be the missing functionality
-    try {
-      // If we have a global dialog controller, call it here
-      // For example: openCareLogDialog(dogId, dogName);
-      
-      // Or navigate to a care log page
-      // navigate(`/dogs/${dogId}/care-log`);
-      
-      // Or toggle a local dialog state if it exists
-    } catch (error) {
-      console.error('Error handling care log click:', error);
-    }
+    // Set the selected dog ID 
+    setSelectedDogId(dogId);
+    
+    // Note: The dialog opening is now handled directly in the LogCareButton component
   }, [activeCategory]);
   
   // Safe tab change handler with logging
@@ -153,6 +142,8 @@ export const useTimeTableState = (
     handleCareLogClick,
     handleErrorReset,
     handleRefresh,
-    showLoading
+    showLoading,
+    selectedDogId,
+    setSelectedDogId
   };
 };

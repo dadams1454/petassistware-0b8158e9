@@ -69,13 +69,14 @@ export const useRowEventHandlers = ({
   
   // Handle care log click with improved event handling
   const handleCareLogCellClick = useCallback((e: React.MouseEvent) => {
-    // Stop propagation but don't prevent default for care log click
+    // Stop propagation and prevent default to ensure the button click works correctly
     e.stopPropagation();
+    e.preventDefault();
     
     console.log(`Care log cell clicked for ${dogName} (${dogId})`);
     
     try {
-      // Make sure we're calling with both parameters
+      // Call with both parameters
       onCareLogClick(dogId, dogName);
     } catch (error) {
       console.error('Error in care log click handler:', error);
