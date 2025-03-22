@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react'; // Fixed: Added explicit React import
 import { useToast } from '@/components/ui/use-toast';
 import { logDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
 import { addCareLog } from '@/services/dailyCare/careLogsService';
@@ -203,7 +203,7 @@ export const useCellActions = (
   }, [isLoading, pottyBreaks, setPottyBreaks, activeCategory, currentDate, user, toast, queueOperation]);
   
   // Clean up any timers when unmounting
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);

@@ -64,7 +64,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         onRefresh();
       }
       refreshTimerRef.current = null;
-    }, a3000); // 3 seconds delay
+    }, 3000); // Fixed: Changed a3000 to 3000 (3 seconds delay)
   }, [onRefresh]);
   
   // Use the potty break table hook for data management
