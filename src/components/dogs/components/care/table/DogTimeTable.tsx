@@ -15,12 +15,14 @@ interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
   onRefresh?: () => void;
   currentDate?: Date;
+  isRefreshing?: boolean;
 }
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
   dogsStatus, 
   onRefresh,
-  currentDate = new Date() 
+  currentDate = new Date(),
+  isRefreshing = false
 }) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
@@ -35,7 +37,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   
   // Use the potty break table hook for data management
   const { 
-    isLoading, 
     sortedDogs, 
     hasPottyBreak, 
     hasCareLogged,
@@ -43,10 +44,19 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     getObservationDetails,
     addObservation,
     observations,
-    handleCellClick, 
-    handleRefresh,
+    handleCellClick,
+    handleRefresh: innerHandleRefresh,
     handleDogClick
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
+  
+  // Use the parent's refresh handler if provided
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+    } else {
+      innerHandleRefresh();
+    }
+  };
   
   // Handle cell right-click (context menu) for observations
   const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
@@ -103,10 +113,11 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           <TimeTableHeader 
             activeCategory={activeCategory} 
             onCategoryChange={setActiveCategory}
-            isLoading={isLoading}
+            isLoading={isRefreshing}
             onRefresh={handleRefresh} 
             isMobile={isMobile}
             currentDate={currentDate}
+            showRefreshButton={false} // Hide redundant refresh button
           />
         </div>
         
@@ -150,8 +161,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         
         <div className="p-2 bg-gray-50 dark:bg-slate-900/60 border-t border-gray-200 dark:border-gray-800">
           <TimeTableFooter
-            isLoading={isLoading}
-            onRefresh={handleRefresh}
+            isLoading={isRefreshing}
+            onRefresh={null} // Remove the refresh button
             lastUpdateTime={new Date().toLocaleTimeString()}
             currentDate={currentDate}
           />

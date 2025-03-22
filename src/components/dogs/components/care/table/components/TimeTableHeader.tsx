@@ -14,6 +14,7 @@ interface TimeTableHeaderProps {
   onRefresh?: () => void;
   isMobile?: boolean;
   currentDate?: Date;
+  showRefreshButton?: boolean;
 }
 
 const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({ 
@@ -22,7 +23,8 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
   isLoading = false,
   onRefresh,
   isMobile = false,
-  currentDate = new Date()
+  currentDate = new Date(),
+  showRefreshButton = true
 }) => {
   const handleCategoryChange = (category: string) => {
     onCategoryChange(category);
@@ -78,7 +80,7 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
           </div>
         )}
         
-        {onRefresh && (
+        {showRefreshButton && onRefresh && (
           <Button
             variant="outline"
             size={isMobile ? "sm" : "default"}

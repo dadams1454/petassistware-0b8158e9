@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
@@ -9,6 +9,7 @@ import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
 import GroomingTab from './tabs/GroomingTab';
 import CareLogDialog from './dialogs/CareLogDialog';
+import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -28,54 +29,22 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
   const { toast } = useToast();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const initialFetchCompleted = useRef(false);
 
-  // Force fetch all dogs on component mount, but only once
-  useEffect(() => {
-    if (!initialFetchCompleted.current) {
-      console.log('🚀 DashboardContent mounted - initial dogs fetch');
-      
-      fetchAllDogsWithCareStatus(new Date(), true)
-        .then(dogs => {
-          console.log(`✅ Initial fetch: Loaded ${dogs.length} dogs`);
-          initialFetchCompleted.current = true;
-        })
-        .catch(error => {
-          console.error('❌ Error fetching dogs in DashboardContent:', error);
-          toast({
-            title: 'Error',
-            description: 'Failed to load dogs. Please try refreshing the page.',
-            variant: 'destructive',
-          });
-        });
+  // Set up auto-refresh with our custom hook - centralized refresh logic
+  const { 
+    isRefreshing, 
+    handleRefresh: refreshDogs,
+    formatTimeRemaining
+  } = useAutoRefresh({
+    interval: 15 * 60 * 1000, // 15 minutes
+    refreshLabel: 'dog data',
+    onRefresh: async () => {
+      console.log('🔄 Auto-refresh triggered in DashboardContent');
+      const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
+      console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
+      return dogs;
     }
-  }, [fetchAllDogsWithCareStatus, toast]);
-
-  // Handler for manually refreshing the dog list
-  const handleRefreshDogs = () => {
-    console.log('🔄 Manual refresh triggered in DashboardContent');
-    setIsRefreshing(true);
-    fetchAllDogsWithCareStatus(new Date(), true)
-      .then(dogs => {
-        console.log(`✅ Manually refreshed: ${dogs.length} dogs loaded`);
-        toast({
-          title: 'Refresh Complete',
-          description: `Successfully loaded ${dogs.length} dogs.`,
-        });
-      })
-      .catch(error => {
-        console.error('❌ Error during manual refresh:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to refresh dogs. Please try again.',
-          variant: 'destructive',
-        });
-      })
-      .finally(() => {
-        setIsRefreshing(false);
-      });
-  };
+  });
 
   const handleCareLogClick = () => {
     setCareLogDialogOpen(true);
@@ -85,7 +54,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     setCareLogDialogOpen(false);
     setSelectedDogId(null);
     // Refresh dog statuses
-    fetchAllDogsWithCareStatus(new Date(), true);
+    refreshDogs(true);
   };
 
   const handleDogSelected = (dogId: string) => {
@@ -98,8 +67,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsList 
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          onRefreshDogs={handleRefreshDogs}
+          onRefreshDogs={() => refreshDogs(true)}
           isRefreshing={isRefreshing}
+          nextRefreshTime={formatTimeRemaining()}
         />
         
         <TabsContent value="overview">
@@ -114,7 +84,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         
         <TabsContent value="dailycare">
           <DailyCareTab 
-            onRefreshDogs={handleRefreshDogs} 
+            onRefreshDogs={() => refreshDogs(true)} 
             isRefreshing={isRefreshing} 
           />
         </TabsContent>
@@ -122,7 +92,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsContent value="grooming">
           <GroomingTab 
             dogStatuses={dogStatuses} 
-            onRefreshDogs={handleRefreshDogs} 
+            onRefreshDogs={() => refreshDogs(true)} 
           />
         </TabsContent>
       </Tabs>

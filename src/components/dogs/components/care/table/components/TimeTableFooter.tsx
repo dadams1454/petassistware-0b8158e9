@@ -6,7 +6,7 @@ import { RefreshCw, Clock, Calendar } from 'lucide-react';
 
 interface TimeTableFooterProps {
   isLoading?: boolean;
-  onRefresh?: () => void;
+  onRefresh?: (() => void) | null;
   lastUpdateTime?: string;
   currentDate?: Date;
 }
