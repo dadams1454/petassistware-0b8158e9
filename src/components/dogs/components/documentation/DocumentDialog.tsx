@@ -21,8 +21,9 @@ interface DocumentDialogProps {
   isEdit?: boolean;
 }
 
+// Define the schema with required fields
 const formSchema = z.object({
-  document_type: z.string(),
+  document_type: z.string().min(1, 'Document type is required'),
   title: z.string().min(1, 'Title is required'),
   notes: z.string().optional(),
   file_url: z.string().optional(),
@@ -41,17 +42,18 @@ const DocumentDialog: React.FC<DocumentDialogProps> = ({
   const [file, setFile] = React.useState<File | null>(null);
   const [uploading, setUploading] = React.useState(false);
 
-  // Fix: Create a properly typed defaultValues object that ensures document_type is not optional
-  const initialValues: FormValues = {
+  // Ensure we have non-optional values for required fields
+  const initialValues = {
     document_type: defaultValues?.document_type || 'other',
     title: defaultValues?.title || '',
     notes: defaultValues?.notes || '',
     file_url: defaultValues?.file_url || '',
   };
 
+  // Use as const to ensure TypeScript treats this as a non-optional value
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialValues,
+    defaultValues: initialValues as FormValues,
   });
 
   const onSubmit = async (values: FormValues) => {
