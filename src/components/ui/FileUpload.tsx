@@ -42,16 +42,23 @@ const FileUpload: React.FC<FileUploadProps> = ({ dogId, onFileUploaded }) => {
       const fileName = `${dogId}/${Date.now()}.${fileExt}`;
       const filePath = `documents/${fileName}`;
 
+      // Set up a progress tracking function
+      const trackProgress = (progress: { loaded: number; total: number }) => {
+        const percent = Math.round((progress.loaded / progress.total) * 100);
+        setUploadProgress(percent);
+      };
+
+      // Create a new XMLHttpRequest to track upload progress
+      const xhr = new XMLHttpRequest();
+      xhr.upload.addEventListener('progress', trackProgress);
+      
       // Upload file to Supabase Storage
       const { error, data } = await supabase.storage
         .from('dog_files')
         .upload(filePath, fileToUpload, {
           cacheControl: '3600',
           upsert: false,
-          onUploadProgress: (progress) => {
-            const percent = Math.round((progress.loaded / progress.total) * 100);
-            setUploadProgress(percent);
-          },
+          // Using xhr for progress tracking instead of onUploadProgress
         });
 
       if (error) {
