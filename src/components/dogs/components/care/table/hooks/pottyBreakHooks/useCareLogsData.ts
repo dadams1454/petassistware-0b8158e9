@@ -5,17 +5,17 @@ import { fetchDogCareLogs } from '@/services/dailyCare';
 import { isSameDay, startOfDay } from 'date-fns';
 import { useMidnightRefresh } from './useMidnightRefresh';
 import { useCacheTimer } from './useCacheTimer';
-import { useTimeSlotMatching } from './useTimeSlotMatching';
 import { CareLog } from './careLogsContext';
+import { useHasCareLogged } from './useHasCareLogged';
 
 export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 'pottybreaks') => {
   const [careLogs, setCareLogs] = useState<CareLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   
-  // Use our new hooks
+  // Use our specialized hooks
   const { shouldRefresh, updateCacheTimestamp, resetCache } = useCacheTimer();
-  const { matchTimeSlot } = useTimeSlotMatching();
+  const { hasCareLogged } = useHasCareLogged(careLogs, activeCategory, dogs);
   
   // Fetch care logs function
   const fetchCareLogs = useCallback(async (forceRefresh = false) => {
@@ -84,38 +84,6 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
     resetCache();
     fetchCareLogs(true);
   }, [fetchCareLogs, activeCategory, currentDate, resetCache]);
-  
-  // Check if a dog has care logged at a specific time slot
-  const hasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
-    // If category doesn't match active category, return false
-    if (category !== activeCategory) return false;
-    
-    // Skip for potty breaks as they're handled separately
-    if (category === 'pottybreaks') return false;
-    
-    // For debugging
-    if (category === 'feeding' && dogId) {
-      const dogName = dogs.find(d => d.dog_id === dogId)?.dog_name || dogId;
-      const hasRecord = careLogs.some(log => {
-        if (log.dog_id === dogId && log.category === category) {
-          return matchTimeSlot(log, timeSlot, category);
-        }
-        return false;
-      });
-      
-      if (hasRecord) {
-        console.log(`🍽️ Found feeding record for ${dogName} at ${timeSlot}`);
-      }
-    }
-    
-    return careLogs.some(log => {
-      // Only consider logs for this dog and category
-      if (log.dog_id !== dogId || log.category !== category) return false;
-      
-      // Use our new helper to match the time slot
-      return matchTimeSlot(log, timeSlot, category);
-    });
-  }, [careLogs, activeCategory, dogs, matchTimeSlot]);
   
   return {
     careLogs,
