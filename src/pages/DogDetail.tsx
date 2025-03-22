@@ -6,8 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import MainLayout from '@/layouts/MainLayout';
 import DogDetails from '@/components/dogs/DogDetails';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import BackButton from '@/components/common/BackButton';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 const DogDetailPage = () => {
@@ -41,10 +40,6 @@ const DogDetailPage = () => {
     },
   });
 
-  const handleBack = () => {
-    navigate('/dogs');
-  };
-
   if (isLoading) {
     return (
       <ProtectedRoute>
@@ -64,10 +59,8 @@ const DogDetailPage = () => {
       <ProtectedRoute>
         <MainLayout>
           <div className="container mx-auto py-8">
-            <Button variant="outline" onClick={handleBack} className="mb-6">
-              <ChevronLeft className="h-4 w-4 mr-2" /> Back to Dogs
-            </Button>
-            <div className="p-8 bg-muted rounded-lg text-center">
+            <BackButton fallbackPath="/dogs" />
+            <div className="p-8 bg-muted rounded-lg text-center mt-6">
               <h2 className="text-xl font-semibold mb-2">Dog not found</h2>
               <p className="text-muted-foreground">The requested dog could not be found or you don't have permission to view it.</p>
             </div>
@@ -81,9 +74,7 @@ const DogDetailPage = () => {
     <ProtectedRoute>
       <MainLayout>
         <div className="container mx-auto py-8">
-          <Button variant="outline" onClick={handleBack} className="mb-6">
-            <ChevronLeft className="h-4 w-4 mr-2" /> Back to Dogs
-          </Button>
+          <BackButton fallbackPath="/dogs" className="mb-6" />
           <DogDetails dog={dog} isFullPage={true} />
         </div>
       </MainLayout>
