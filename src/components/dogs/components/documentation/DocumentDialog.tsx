@@ -7,24 +7,11 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle,
-  DialogFooter
+  DialogTitle
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { DocumentType, DOCUMENT_TYPE_LABELS } from '../../types/document';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { compressImage } from '@/utils/imageOptimization';
+import { DocumentType } from '../../types/document';
 import { useToast } from '@/hooks/use-toast';
+import DocumentDialogForm from './DocumentDialogForm';
 
 interface DocumentDialogProps {
   open: boolean;
@@ -64,35 +51,6 @@ const DocumentDialog: React.FC<DocumentDialogProps> = ({
     },
   });
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    
-    const selectedFile = e.target.files[0];
-    const fileSize = selectedFile.size / 1024 / 1024;
-    
-    if (fileSize > 10) {
-      toast({
-        title: 'File too large',
-        description: 'Maximum file size is 10MB',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    // Only compress images
-    if (selectedFile.type.startsWith('image/')) {
-      try {
-        const compressedFile = await compressImage(selectedFile, 1920, 0.8, 1);
-        setFile(compressedFile);
-      } catch (error) {
-        console.error('Error compressing file:', error);
-        setFile(selectedFile); // Use original file if compression fails
-      }
-    } else {
-      setFile(selectedFile);
-    }
-  };
-
   const onSubmit = async (values: FormValues) => {
     try {
       setUploading(true);
@@ -119,100 +77,15 @@ const DocumentDialog: React.FC<DocumentDialogProps> = ({
           <DialogTitle>{isEdit ? 'Edit Document' : 'Add Document'}</DialogTitle>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="document_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Document Type</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select document type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Document title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Add any additional notes here..." 
-                      {...field} 
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {!isEdit && (
-              <div className="space-y-2">
-                <FormLabel>File</FormLabel>
-                <Input 
-                  id="file-upload" 
-                  type="file" 
-                  onChange={handleFileChange}
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                />
-                {file && (
-                  <p className="text-sm text-muted-foreground">
-                    Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                  </p>
-                )}
-              </div>
-            )}
-            
-            <DialogFooter className="mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={uploading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={uploading || (!isEdit && !file)}>
-                {uploading ? 'Saving...' : 'Save'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <DocumentDialogForm 
+          form={form}
+          onSubmit={onSubmit}
+          onCancel={() => onOpenChange(false)}
+          isEdit={isEdit}
+          uploading={uploading}
+          file={file}
+          setFile={setFile}
+        />
       </DialogContent>
     </Dialog>
   );
