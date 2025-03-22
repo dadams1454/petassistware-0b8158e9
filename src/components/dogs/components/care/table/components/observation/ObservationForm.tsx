@@ -1,10 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { CalendarIcon, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import ObservationTypeSelector from './ObservationTypeSelector';
 import { ObservationType } from './ObservationDialog';
 
@@ -23,6 +29,8 @@ interface ObservationFormProps {
   setSelectedTimeSlot?: (timeSlot: string) => void;
   isMobile?: boolean;
   activeCategory?: string;
+  observationDate: Date;
+  setObservationDate: (date: Date) => void;
 }
 
 const ObservationForm: React.FC<ObservationFormProps> = ({
@@ -39,8 +47,16 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
   selectedTimeSlot = '',
   setSelectedTimeSlot = () => {},
   isMobile = false,
-  activeCategory = 'pottybreaks'
+  activeCategory = 'pottybreaks',
+  observationDate,
+  setObservationDate
 }) => {
+  const [timeInput, setTimeInput] = useState(() => {
+    const hours = observationDate.getHours();
+    const minutes = observationDate.getMinutes();
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  });
+
   // Get placeholder text based on observation type and category
   const getPlaceholderText = () => {
     if (activeCategory === 'feeding') {
@@ -57,6 +73,33 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
     }
     
     return isSubmitting ? 'Saving...' : 'Save Observation';
+  };
+
+  // Handle time input change
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTimeInput(e.target.value);
+    
+    // Update the date object with the new time
+    if (e.target.value) {
+      const [hours, minutes] = e.target.value.split(':').map(Number);
+      const newDate = new Date(observationDate);
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        newDate.setHours(hours, minutes);
+        setObservationDate(newDate);
+      }
+    }
+  };
+
+  // Handle date selection
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      const newDate = new Date(date);
+      // Preserve the current time
+      const hours = observationDate.getHours();
+      const minutes = observationDate.getMinutes();
+      newDate.setHours(hours, minutes);
+      setObservationDate(newDate);
+    }
   };
   
   return (
@@ -97,6 +140,48 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
             </Select>
           </div>
         )}
+
+        {/* Date and Time selector */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label htmlFor="observation-date">Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  id="observation-date"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !observationDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {observationDate ? format(observationDate, 'MMMM d, yyyy') : <span>Select date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={observationDate}
+                  onSelect={handleDateSelect}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div>
+            <Label htmlFor="observation-time">Time</Label>
+            <div className="flex">
+              <Input
+                id="observation-time"
+                type="time"
+                value={timeInput}
+                onChange={handleTimeChange}
+                className="w-full"
+              />
+            </div>
+          </div>
+        </div>
         
         <div>
           <div className="flex items-center justify-between">
@@ -106,9 +191,6 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
                 : 'Observation Notes (Optional)'
               }
             </Label>
-            <span className="text-xs text-muted-foreground">
-              {timeSlot ? `Time slot: ${timeSlot}` : timestamp ? `Time: ${timestamp}` : ''}
-            </span>
           </div>
           <Textarea
             id="observation"

@@ -45,6 +45,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timestamp, setTimestamp] = useState<string>('');
   const [dialogSelectedTimeSlot, setDialogSelectedTimeSlot] = useState<string>(selectedTimeSlot);
+  const [observationDate, setObservationDate] = useState<Date>(new Date());
 
   // Update dialog state when props change
   useEffect(() => {
@@ -62,6 +63,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       
       // Update timestamp
       const now = new Date();
+      setObservationDate(now);
       const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setTimestamp(timeString);
     }
@@ -84,29 +86,8 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
     
     setIsSubmitting(true);
     try {
-      // Create a date object for the selected time slot
-      let timestampDate: Date | undefined;
-      
-      if (activeCategory === 'feeding') {
-        // For feeding, just use current time with observation type
-        timestampDate = new Date();
-      } else if (dialogSelectedTimeSlot) {
-        // For potty breaks, parse the time slot (e.g., "2:00 PM")
-        const [hourMinute, period] = dialogSelectedTimeSlot.split(' ');
-        const [hour, minute] = hourMinute.split(':').map(Number);
-        
-        // Create a new date object for today
-        timestampDate = new Date();
-        
-        // Set the hours and minutes
-        let hour24 = hour;
-        if (period === 'PM' && hour !== 12) hour24 += 12;
-        if (period === 'AM' && hour === 12) hour24 = 0;
-        
-        timestampDate.setHours(hour24, minute, 0, 0);
-      }
-      
-      await onSubmit(dogId, observationText, observationType, timestampDate);
+      // Use the custom observationDate that the user may have modified
+      await onSubmit(dogId, observationText, observationType, observationDate);
       setObservation('');
       // Keep the observation type the same for easier repeated entries
       onOpenChange(false);
@@ -140,6 +121,8 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         setSelectedTimeSlot={setDialogSelectedTimeSlot}
         isMobile={isMobile}
         activeCategory={activeCategory}
+        observationDate={observationDate}
+        setObservationDate={setObservationDate}
       />
     </>
   );
@@ -162,7 +145,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span>{dialogTitle}</span>
-          </DialogTitle>
+          </SheetTitle>
         </DialogHeader>
         {dialogContent}
       </DialogContent>

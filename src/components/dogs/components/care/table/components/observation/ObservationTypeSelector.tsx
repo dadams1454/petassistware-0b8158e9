@@ -32,29 +32,29 @@ const ObservationTypeSelector: React.FC<ObservationTypeSelectorProps> = ({
         className={`flex ${isMobile ? 'flex-wrap' : ''} gap-4 mt-2`}
       >
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="accident" id="accident" />
-          <Label htmlFor="accident" className="flex items-center gap-1">
+          <RadioGroupItem value="accident" id="accident-radio" />
+          <Label htmlFor="accident-radio" className="flex items-center gap-1">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             Accident
           </Label>
         </div>
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="heat" id="heat" />
-          <Label htmlFor="heat" className="flex items-center gap-1">
+          <RadioGroupItem value="heat" id="heat-radio" />
+          <Label htmlFor="heat-radio" className="flex items-center gap-1">
             <Heart className="h-4 w-4 text-red-500" />
             Heat Signs
           </Label>
         </div>
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="behavior" id="behavior" />
-          <Label htmlFor="behavior" className="flex items-center gap-1">
+          <RadioGroupItem value="behavior" id="behavior-radio" />
+          <Label htmlFor="behavior-radio" className="flex items-center gap-1">
             <Activity className="h-4 w-4 text-blue-500" />
             Behavior
           </Label>
         </div>
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="other" id="other" />
-          <Label htmlFor="other" className="flex items-center gap-1">
+          <RadioGroupItem value="other" id="other-radio" />
+          <Label htmlFor="other-radio" className="flex items-center gap-1">
             <MessageCircle className="h-4 w-4 text-gray-500" />
             Other
           </Label>
