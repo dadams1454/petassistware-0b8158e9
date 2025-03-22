@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Upload, X, Package } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { compressImage } from '@/utils/imageOptimization';
+import FilePreview from './components/FilePreview';
+import UploadPlaceholder from './components/UploadPlaceholder';
+import { handlePhotoUpload, formatFileSize } from './utils/fileUploadUtils';
 
 interface PhotoUploadProps {
   form: UseFormReturn<any>;
@@ -31,113 +30,29 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
     }
   }, [currentPhotoUrl]);
 
-  const formatFileSize = (sizeInBytes: number): string => {
-    if (sizeInBytes < 1024) {
-      return `${sizeInBytes} B`;
-    } else if (sizeInBytes < 1024 * 1024) {
-      return `${(sizeInBytes / 1024).toFixed(1)} KB`;
-    } else {
-      return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
-    }
-  };
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      if (!event.target.files || event.target.files.length === 0) {
-        return;
-      }
-
-      const file = event.target.files[0];
-      const originalSize = file.size;
-      setFileSize(formatFileSize(originalSize));
-
-      // Validate file size before compression (max 20 MB)
-      if (originalSize > 20 * 1024 * 1024) {
-        toast({
-          title: 'File too large',
-          description: 'Maximum file size is 20MB before compression',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      // Create a temporary file preview
-      const objectUrl = URL.createObjectURL(file);
-      setFilePreview(objectUrl);
-
-      setUploading(true);
-      
-      // Show toast for large files
-      if (originalSize > 5 * 1024 * 1024) {
-        toast({
-          title: 'Compressing image...',
-          description: 'Large image detected. Compressing to optimize file size.',
-        });
-      }
-      
-      // Apply compression with progressive settings based on file size
-      let compressedFile: File;
-      
-      if (originalSize > 10 * 1024 * 1024) {
-        // Very large file - aggressive compression
-        compressedFile = await compressImage(file, 1200, 0.6, 0.5);
-      } else if (originalSize > 5 * 1024 * 1024) {
-        // Large file - medium compression
-        compressedFile = await compressImage(file, 1600, 0.7, 0.8);
-      } else {
-        // Normal file - standard compression
-        compressedFile = await compressImage(file, 1920, 0.85, 1);
-      }
-      
-      // Show compression result
-      const compressionRatio = (1 - (compressedFile.size / originalSize)) * 100;
-      if (compressionRatio > 10) {
-        toast({
-          title: 'Image compressed',
-          description: `Reduced by ${compressionRatio.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(compressedFile.size)})`,
-        });
-      }
-      
-      // Generate a unique file name
-      const fileName = `${Date.now()}_${file.name}`;
-      
-      // Upload compressed file to Supabase storage
-      const { data, error } = await supabase.storage
-        .from('dog-photos')
-        .upload(fileName, compressedFile);
-
-      if (error) {
-        throw error;
-      }
-
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('dog-photos')
-        .getPublicUrl(fileName);
-
-      // Update the form with the public URL
-      form.setValue(name, publicUrl);
-
-      toast({
-        title: 'Image uploaded',
-        description: 'The image has been optimized and uploaded successfully',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Upload failed',
-        description: error.message || 'Failed to upload image',
-        variant: 'destructive',
-      });
-      console.error('Error uploading file:', error);
-    } finally {
-      setUploading(false);
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
     }
+
+    const file = event.target.files[0];
+    
+    // Create a temporary file preview
+    const objectUrl = URL.createObjectURL(file);
+    setFilePreview(objectUrl);
+    
+    // Process and upload the file
+    await handlePhotoUpload(file, form, name, toast, setUploading, setFileSize);
   };
 
   const clearImage = () => {
     form.setValue(name, '');
     setFilePreview(null);
     setFileSize(null);
+  };
+
+  const handleUploadClick = () => {
+    document.getElementById(`${name}-upload`)?.click();
   };
 
   return (
@@ -150,39 +65,13 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
           <FormControl>
             <div className="space-y-2">
               {filePreview ? (
-                <div className="relative w-40 h-40 mx-auto">
-                  <Avatar className="w-40 h-40 border rounded-md shadow">
-                    <AvatarImage src={filePreview} alt="Dog photo" className="object-cover" />
-                    <AvatarFallback className="text-xl">Dog</AvatarFallback>
-                  </Avatar>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-2 -right-2 rounded-full w-7 h-7"
-                    onClick={clearImage}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  {fileSize && (
-                    <div className="absolute -bottom-6 w-full text-center text-xs text-muted-foreground">
-                      {fileSize}
-                    </div>
-                  )}
-                </div>
+                <FilePreview 
+                  filePreview={filePreview}
+                  fileSize={fileSize}
+                  onClear={clearImage}
+                />
               ) : (
-                <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 h-40 w-full cursor-pointer"
-                  onClick={() => document.getElementById(`${field.name}-upload`)?.click()}>
-                  <div className="space-y-2 text-center">
-                    <Upload className="h-10 w-10 text-gray-400 mx-auto" />
-                    <div className="text-sm text-gray-500">
-                      Click to upload a photo
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      Photos are automatically compressed
-                    </div>
-                  </div>
-                </div>
+                <UploadPlaceholder onClick={handleUploadClick} />
               )}
               <input
                 id={`${field.name}-upload`}
@@ -198,7 +87,7 @@ const PhotoUpload = ({ form, name, label }: PhotoUploadProps) => {
                   variant="outline"
                   className="w-full"
                   disabled={uploading}
-                  onClick={() => document.getElementById(`${field.name}-upload`)?.click()}
+                  onClick={handleUploadClick}
                 >
                   {uploading ? 'Uploading...' : 'Select image'}
                 </Button>
