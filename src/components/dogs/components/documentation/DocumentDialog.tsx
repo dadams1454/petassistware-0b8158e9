@@ -41,13 +41,14 @@ const DocumentDialog: React.FC<DocumentDialogProps> = ({
   const [file, setFile] = React.useState<File | null>(null);
   const [uploading, setUploading] = React.useState(false);
 
+  // Fix: Initialize form with non-optional document_type default value
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: defaultValues || {
-      document_type: 'other',
-      title: '',
-      notes: '',
-      file_url: '',
+    defaultValues: {
+      document_type: defaultValues?.document_type || 'other',
+      title: defaultValues?.title || '',
+      notes: defaultValues?.notes || '',
+      file_url: defaultValues?.file_url || '',
     },
   });
 
