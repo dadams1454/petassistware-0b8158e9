@@ -1,26 +1,27 @@
-import React, { useState, useCallback } from 'react';
+
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { ImageIcon } from 'lucide-react';
 import { addDogDocument } from '@/services/dogs/dogDocumentsService';
 import { useAuth } from '@/contexts/AuthProvider';
 import { DocumentType } from '@/types/dog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FileUpload from '@/components/ui/FileUpload';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DOCUMENT_TYPE_LABELS } from '../../types/document';
 
 const formSchema = z.object({
   document_type: z.string().min(2, {
@@ -35,84 +36,88 @@ const formSchema = z.object({
   }),
 });
 
-interface FormValues {
-  document_type: string;
-  title: string;
-  notes: string;
-  file_url: string;
-}
-
-const formDefaultValues: FormValues = {
-  document_type: '',
-  title: '',
-  notes: '',
-  file_url: ''
-};
-
 interface DocumentDialogProps {
-  dogId: string;
   open: boolean;
-  setOpen: (open: boolean) => void;
-  onDocumentAdded: () => void;
+  onOpenChange: (open: boolean) => void;
+  onSave: (values: z.infer<typeof formSchema>, file?: File) => Promise<void>;
+  defaultValues?: {
+    document_type: string;
+    title: string;
+    notes: string;
+    file_url: string;
+  };
+  isEdit?: boolean;
 }
 
-const DocumentDialog: React.FC<DocumentDialogProps> = ({ dogId, open, setOpen, onDocumentAdded }) => {
+const DocumentDialog: React.FC<DocumentDialogProps> = ({
+  open,
+  onOpenChange,
+  onSave,
+  defaultValues = {
+    document_type: '',
+    title: '',
+    notes: '',
+    file_url: ''
+  },
+  isEdit = false
+}) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const form = useForm<FormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: formDefaultValues
+    defaultValues
   });
 
-  const onSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSaving(true);
     try {
-      await addDogDocument({
-        dog_id: dogId,
-        document_type: values.document_type,
-        title: values.title,
-        notes: values.notes,
-        file_url: values.file_url,
-      }, user?.id || '');
-
-      toast({
-        title: "Success!",
-        description: "Document added successfully.",
-      });
+      await onSave(values, selectedFile || undefined);
       form.reset();
-      setOpen(false);
-      onDocumentAdded();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error.",
-        description: "There was an error adding the document.",
+        description: error.message || "There was an error processing the document.",
         variant: "destructive",
       });
     } finally {
       setIsSaving(false);
     }
-  }, [dogId, form, setOpen, toast, user, onDocumentAdded]);
+  };
 
   const handleFileUploaded = (url: string) => {
     form.setValue("file_url", url);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>Add Document</DialogTitle>
+          <DialogTitle>{isEdit ? 'Edit Document' : 'Add Document'}</DialogTitle>
           <DialogDescription>
-            Attach relevant documents to the dog.
+            {isEdit ? 'Update document information.' : 'Attach relevant documents to the dog.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="document_type">Document Type</Label>
-            <Input id="document_type" type="text" placeholder="e.g., Vaccination Record" {...form.register("document_type")} />
+            <Select 
+              onValueChange={(value) => form.setValue("document_type", value)}
+              defaultValue={form.getValues("document_type")}
+            >
+              <SelectTrigger id="document_type">
+                <SelectValue placeholder="Select document type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {form.formState.errors.document_type && (
               <p className="text-sm text-red-500">{form.formState.errors.document_type.message}</p>
             )}
@@ -128,22 +133,24 @@ const DocumentDialog: React.FC<DocumentDialogProps> = ({ dogId, open, setOpen, o
             <Label htmlFor="notes">Notes</Label>
             <Textarea id="notes" placeholder="Additional notes about the document" className="min-h-[80px]" {...form.register("notes")} />
           </div>
+          {!isEdit && (
+            <FileUpload
+              dogId="temp"
+              onFileUploaded={handleFileUploaded}
+            />
+          )}
           <div className="grid gap-2">
             <Label htmlFor="file_url">File URL</Label>
-             <FileUpload
-                dogId={dogId}
-                onFileUploaded={handleFileUploaded}
-              />
             <Input id="file_url" type="url" placeholder="https://example.com/document.pdf" {...form.register("file_url")} />
             {form.formState.errors.file_url && (
               <p className="text-sm text-red-500">{form.formState.errors.file_url.message}</p>
             )}
           </div>
-          <div className="flex justify-end">
+          <DialogFooter>
             <Button type="submit" disabled={isSaving}>
-              {isSaving ? "Saving..." : "Add Document"}
+              {isSaving ? "Saving..." : isEdit ? "Update Document" : "Add Document"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
