@@ -1,5 +1,6 @@
 
-import { format } from 'date-fns';
+import { DailyCarelog } from '@/types/dailyCare';
+import { ObservationType } from './observationTypes';
 
 // Function to convert a timestamp to the nearest time slot format
 export const getTimeSlotFromTimestamp = (timestamp: string, category: string = 'observation'): string => {
@@ -38,7 +39,7 @@ export const isObservationValid = (timestamp: string): boolean => {
 };
 
 // Helper function to convert care log to observation format
-export const convertCareLogToObservation = (log: any, category: string = 'observation') => ({
+export const convertCareLogToObservation = (log: DailyCarelog): ObservationType => ({
   id: log.id,
   dog_id: log.dog_id,
   created_at: log.created_at,

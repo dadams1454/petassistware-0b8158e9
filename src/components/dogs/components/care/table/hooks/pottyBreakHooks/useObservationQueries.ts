@@ -4,7 +4,11 @@ import { ObservationsMap } from './observationTypes';
 
 export const useObservationQueries = (observations: ObservationsMap) => {
   // Check if a dog has an observation based on category and time slot
-  const hasObservation = useCallback((dogId: string, timeSlot: string = '', activeCategory: string = 'pottybreaks') => {
+  const hasObservation = useCallback((
+    dogId: string, 
+    timeSlot: string = '', 
+    activeCategory: string = 'pottybreaks'
+  ): boolean => {
     // Determine which category to filter by
     const targetCategory = activeCategory === 'feeding' ? 'feeding_observation' : 'observation';
     
@@ -25,7 +29,10 @@ export const useObservationQueries = (observations: ObservationsMap) => {
   }, [observations]);
   
   // Get observation details filtered by category
-  const getObservationDetails = useCallback((dogId: string, activeCategory: string = 'pottybreaks') => {
+  const getObservationDetails = useCallback((
+    dogId: string, 
+    activeCategory: string = 'pottybreaks'
+  ): { text: string; type: string; timeSlot?: string; category?: string } | null => {
     // Determine which category to filter by
     const targetCategory = activeCategory === 'feeding' ? 'feeding_observation' : 'observation';
     

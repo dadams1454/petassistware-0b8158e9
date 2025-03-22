@@ -5,8 +5,9 @@ import { ObservationsMap } from './observationTypes';
 import { useObservationsFetch } from './useObservationsFetch';
 import { useObservationActions } from './useObservationActions';
 import { useObservationQueries } from './useObservationQueries';
+import { ObservationsContextValue } from './observationsContext';
 
-export const useObservations = (dogs: DogCareStatus[]) => {
+export const useObservations = (dogs: DogCareStatus[]): ObservationsContextValue => {
   const [observations, setObservations] = useState<ObservationsMap>({});
   const { fetchObservations, isLoading } = useObservationsFetch(dogs);
   const { addObservation } = useObservationActions(observations, setObservations);
@@ -30,6 +31,7 @@ export const useObservations = (dogs: DogCareStatus[]) => {
     fetchObservations: async () => {
       const fetchedObservations = await fetchObservations();
       setObservations(fetchedObservations);
+      return fetchedObservations;
     },
     isLoading
   };

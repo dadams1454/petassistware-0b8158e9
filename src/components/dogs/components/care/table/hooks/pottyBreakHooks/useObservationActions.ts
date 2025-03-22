@@ -21,14 +21,14 @@ export const useObservationActions = (
     timeSlot: string = '',
     category: string = 'observation',
     timestamp = new Date()
-  ) => {
+  ): Promise<boolean> => {
     setIsSubmitting(true);
     try {
       // If observation text is empty, use the observation type as the text
       const defaultText = observationText.trim() || 
-        observationType === 'feeding' 
+        (observationType === 'feeding' 
           ? `Didn't eat ${timeSlot} meal`
-          : `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
+          : `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`);
       
       const result = await addCareLog({
         dog_id: dogId,
@@ -71,7 +71,10 @@ export const useObservationActions = (
           title: category === 'feeding_observation' ? 'Feeding Issue Recorded' : 'Observation Added',
           description: 'Your observation has been recorded and will be visible for 24 hours'
         });
+        
+        return true;
       }
+      return false;
     } catch (error) {
       console.error('Failed to add observation:', error);
       toast({
@@ -79,11 +82,10 @@ export const useObservationActions = (
         description: 'Failed to add observation',
         variant: 'destructive'
       });
+      return false;
     } finally {
       setIsSubmitting(false);
     }
-    
-    return isSubmitting;
   }, [addCareLog, toast, setObservations]);
 
   return {

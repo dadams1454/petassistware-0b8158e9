@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
@@ -12,7 +12,7 @@ export const useObservationsFetch = (dogs: DogCareStatus[]) => {
   const { toast } = useToast();
 
   // Load observations for all dogs
-  const fetchObservations = useCallback(async () => {
+  const fetchObservations = useCallback(async (): Promise<ObservationsMap> => {
     if (!dogs.length) return {};
     
     setIsLoading(true);
