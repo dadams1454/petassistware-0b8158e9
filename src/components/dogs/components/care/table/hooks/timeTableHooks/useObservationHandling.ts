@@ -20,7 +20,7 @@ export const useObservationHandling = (
     observationText: string, 
     observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
     timestamp?: Date
-  ) => {
+  ): Promise<void> => {
     // Determine the category based on the active category
     const category = activeCategory === 'feeding' ? 'feeding_observation' : 'observation';
     
@@ -32,8 +32,6 @@ export const useObservationHandling = (
     
     // Refresh data
     onRefresh();
-    
-    return true; // Indicate successful submission
   }, [activeCategory, addObservation, onRefresh]);
 
   return {

@@ -21,7 +21,7 @@ export const useObservationActions = (
     timeSlot: string = '',
     category: string = 'observation',
     timestamp = new Date()
-  ) => {
+  ): Promise<void> => {
     setIsSubmitting(true);
     try {
       // If observation text is empty, use the observation type as the text
@@ -82,8 +82,6 @@ export const useObservationActions = (
     } finally {
       setIsSubmitting(false);
     }
-    
-    return isSubmitting;
   }, [addCareLog, toast, setObservations]);
 
   return {
