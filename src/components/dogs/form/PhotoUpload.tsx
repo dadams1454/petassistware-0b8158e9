@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import FilePreview from './components/FilePreview';
 import UploadPlaceholder from './components/UploadPlaceholder';
-import { handlePhotoUpload, formatFileSize } from './utils/fileUploadUtils';
+import { handlePhotoUpload } from './utils/fileUploadUtils';
 
 interface PhotoUploadProps {
   form: UseFormReturn<any>;

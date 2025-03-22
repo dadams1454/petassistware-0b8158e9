@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { compressImage } from '@/utils/imageOptimization';
 import PuppyPhoto from './PuppyPhoto';
+import { formatFileSize } from '@/components/dogs/utils/documentFileUtils';
 
 interface PuppyPhotoUploadProps {
   form: UseFormReturn<any>;
