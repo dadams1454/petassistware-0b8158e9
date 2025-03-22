@@ -75,6 +75,7 @@ export const useRowEventHandlers = ({
     console.log(`Care log cell clicked for ${dogName} (${dogId})`);
     
     try {
+      // Make sure we're calling with both parameters
       onCareLogClick(dogId, dogName);
     } catch (error) {
       console.error('Error in care log click handler:', error);

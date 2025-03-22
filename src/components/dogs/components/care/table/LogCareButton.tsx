@@ -25,9 +25,16 @@ const LogCareButton: React.FC<LogCareButtonProps> = ({
   onCareLogSuccess,
   selectedCategory
 }) => {
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    // Stop event propagation to prevent parent elements from handling it
+    e.stopPropagation();
+    e.preventDefault();
+    
     console.log(`🔍 Log care clicked for dog: ${dogId}`);
     onLogCare(dogId);
+    
+    // Explicitly open the dialog (optional if DialogTrigger handles this)
+    setDialogOpen(true);
   };
 
   return (
@@ -37,11 +44,12 @@ const LogCareButton: React.FC<LogCareButtonProps> = ({
           variant={hasLastCare ? "ghost" : "secondary"} 
           size="sm"
           onClick={handleClick}
+          className="z-10 relative"
         >
           {hasLastCare ? "Update" : "Log Care"}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         {isSelected && (
           <CareLogForm 
             dogId={dogId} 

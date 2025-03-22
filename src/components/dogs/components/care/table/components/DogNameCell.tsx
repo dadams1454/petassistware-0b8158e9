@@ -96,6 +96,20 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
     }
   };
   
+  // Handle the log care click with proper event handling
+  const handleLogCareClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop propagation to prevent other handlers from firing
+    console.log(`Log care button clicked for ${dog.dog_name}`);
+    onCareLogClick(e);
+  };
+  
+  // Handle the dog name/image click with proper event handling
+  const handleDogNameClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop propagation to prevent other handlers from firing
+    console.log(`Dog name clicked for ${dog.dog_name}`);
+    onDogClick(e);
+  };
+  
   return (
     <TableCell 
       className={`whitespace-nowrap sticky left-0 z-10 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 ${genderBackgroundColor}`}
@@ -103,7 +117,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
       <div className="flex items-center gap-3 max-w-[160px]">
         <div 
           className="flex-shrink-0 h-10 w-10 cursor-pointer relative" 
-          onClick={onDogClick}
+          onClick={handleDogNameClick}
           title={`View ${dog.dog_name}'s details`}
         >
           <img 
@@ -130,7 +144,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
           <div 
             className="font-medium truncate max-w-[100px] cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" 
             title={dog.dog_name}
-            onClick={onDogClick}
+            onClick={handleDogNameClick}
           >
             {dog.dog_name}
           </div>
@@ -153,8 +167,8 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
           
           <div className="flex items-center gap-1 mt-1">
             <button
-              onClick={onCareLogClick}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[60px]"
+              onClick={handleLogCareClick}
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[60px] z-20 relative"
               title={`Log ${activeCategory} for ${dog.dog_name}`}
             >
               Log {getButtonText()}

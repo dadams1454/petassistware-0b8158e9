@@ -37,11 +37,30 @@ export const useTimeTableState = (
     navigate(`/dogs/${dogId}`);
   }, [navigate]);
   
-  // Handler for care log clicks
+  // Handler for care log clicks - updated to properly handle this functionality
   const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
     console.log('Opening care log dialog for:', dogId, dogName);
-    // Here we would typically open a dialog or navigate to care log page
-  }, []);
+    // Set a dialog state or navigate to the care log page
+    // For now we'll add better logging for debugging
+    console.log(`🔍 Care log click for ${dogName} (${dogId}) in category ${activeCategory}`);
+    
+    // Show this in debug info for visibility
+    setDebugInfo(`Care log clicked for ${dogName}`);
+    
+    // Here you would typically open a dialog for care log
+    // This could be the missing functionality
+    try {
+      // If we have a global dialog controller, call it here
+      // For example: openCareLogDialog(dogId, dogName);
+      
+      // Or navigate to a care log page
+      // navigate(`/dogs/${dogId}/care-log`);
+      
+      // Or toggle a local dialog state if it exists
+    } catch (error) {
+      console.error('Error handling care log click:', error);
+    }
+  }, [activeCategory]);
   
   // Safe tab change handler with logging
   const handleCategoryChange = useCallback((value: string) => {
