@@ -9,14 +9,32 @@ import { DailyCarelog, CareLogFormData } from '@/types/dailyCare';
  */
 export const fetchDogCareLogs = async (dogId: string): Promise<DailyCarelog[]> => {
   try {
-    const { data, error } = await supabase
-      .from('daily_care_logs')
-      .select('*')
-      .eq('dog_id', dogId)
-      .order('timestamp', { ascending: false });
+    // Add retry mechanism with exponential backoff
+    let retries = 3;
+    let lastError;
+    
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        // Actual fetch operation
+        const { data, error } = await supabase
+          .from('daily_care_logs')
+          .select('*')
+          .eq('dog_id', dogId)
+          .order('timestamp', { ascending: false });
 
-    if (error) throw error;
-    return data || [];
+        if (error) throw error;
+        return data || [];
+      } catch (error) {
+        lastError = error;
+        // Exponential backoff with jitter (100ms, 200ms, 400ms)
+        const delay = Math.min(100 * Math.pow(2, attempt), 1000) + Math.random() * 100;
+        console.log(`Retry attempt ${attempt + 1} for dog ${dogId} in ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    // If we've exhausted all retries, throw the last error
+    throw lastError || new Error('Failed to fetch care logs after multiple attempts');
   } catch (error) {
     console.error('Error fetching care logs:', error);
     throw error;

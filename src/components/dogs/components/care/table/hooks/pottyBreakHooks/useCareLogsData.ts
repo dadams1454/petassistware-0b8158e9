@@ -12,12 +12,13 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
   const [careLogs, setCareLogs] = useState<CareLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [fetchErrors, setFetchErrors] = useState<Record<string, boolean>>({});
   
   // Use our specialized hooks
   const { shouldRefresh, updateCacheTimestamp, resetCache } = useCacheTimer();
   const { hasCareLogged } = useHasCareLogged(careLogs, activeCategory, dogs);
   
-  // Fetch care logs function
+  // Fetch care logs function with retry logic
   const fetchCareLogs = useCallback(async (forceRefresh = false) => {
     if (!dogs || dogs.length === 0) return [];
     
@@ -30,11 +31,23 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
     console.log(`🔄 Fetching care logs for ${dogs.length} dogs (category: ${activeCategory})`);
     
     try {
-      // Create an array of promises to fetch all dogs' care logs
-      const promises = dogs.map(dog => fetchDogCareLogs(dog.dog_id));
+      // Reset error state before new attempt
+      setFetchErrors({});
       
-      // Wait for all promises to resolve
-      const logsArrays = await Promise.all(promises);
+      // Create an array of promises to fetch all dogs' care logs with individual error handling
+      const logsArrays = await Promise.all(
+        dogs.map(async (dog) => {
+          try {
+            const logs = await fetchDogCareLogs(dog.dog_id);
+            return logs;
+          } catch (error) {
+            console.error(`❌ Failed to fetch logs for dog ${dog.dog_name} (${dog.dog_id}):`, error);
+            setFetchErrors(prev => ({ ...prev, [dog.dog_id]: true }));
+            // Return empty array on error for this specific dog
+            return [];
+          }
+        })
+      );
       
       // Flatten the array of arrays into a single array
       const allLogs = logsArrays.flat();
@@ -62,7 +75,8 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
       return filteredLogs;
     } catch (error) {
       console.error('❌ Error fetching care logs:', error);
-      return [];
+      // Still return the existing care logs on error
+      return careLogs;
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +104,8 @@ export const useCareLogsData = (dogs: DogCareStatus[], activeCategory: string = 
     fetchCareLogs,
     isLoading,
     hasCareLogged,
-    currentDate
+    currentDate,
+    hasErrors: Object.keys(fetchErrors).length > 0,
+    fetchErrors
   };
 };
