@@ -112,18 +112,14 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   const observationTimeSlot = getObservationTimeSlot();
   
   // Handle dog name click with preventDefault
-  const handleDogCellClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDogCellClick = React.useCallback(() => {
     onDogClick(dogId);
-  };
+  }, [dogId, onDogClick]);
   
   // Handle care log click with preventDefault
-  const handleCareLogCellClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleCareLogCellClick = React.useCallback(() => {
     onCareLogClick(dogId, dogName);
-  };
+  }, [dogId, dogName, onCareLogClick]);
   
   return (
     <TableRow 
