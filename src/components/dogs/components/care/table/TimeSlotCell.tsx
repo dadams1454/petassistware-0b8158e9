@@ -153,16 +153,11 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     return '';
   };
   
-  // Determine cursor style to show this is toggleable
-  const getCursorStyle = () => {
-    return 'cursor-pointer';
-  };
-  
   return (
     <TableCell 
       ref={cellRef}
       key={cellIdentifier}
-      className={`${cellClassNames} ${getCursorStyle()} border border-slate-200 dark:border-slate-700 p-0 overflow-hidden transition-all duration-200 relative ${
+      className={`${cellClassNames} cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden transition-all duration-200 relative ${
         getBgColor()
       } ${
         getBorderColor()
@@ -172,7 +167,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       onTouchStart={handleTouchStart2}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
-      title={`${dogName} - ${timeSlot}${isIncident ? ' (Incident reported)' : ''}${isCurrentHour ? ' (Current hour)' : ''}${hasCareLogged ? ' (Click to remove)' : ' (Click to log)'}`}
+      title={`${dogName} - ${timeSlot}${isIncident ? ' (Incident reported)' : ''}${isCurrentHour ? ' (Current hour)' : ''}`}
       data-cell-id={cellIdentifier}
       data-dog-id={dogId}
       data-flags-count={dogFlags.length}
@@ -181,7 +176,6 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       data-mobile-cell={isMobile ? "true" : "false"}
       data-custom-color={customDogColor ? "true" : "false"}
       data-category={category}
-      data-care-logged={hasCareLogged ? "true" : "false"}
     >
       <div className="w-full h-full p-1 flex items-center justify-center">
         <CellContent 

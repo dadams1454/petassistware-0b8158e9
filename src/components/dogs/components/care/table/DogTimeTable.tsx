@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TimeTableHeader from './components/TimeTableHeader';
 import TimeTableFooter from './components/TimeTableFooter';
 import { DogCareStatus } from '@/types/dailyCare';
@@ -10,15 +10,23 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import ActiveTabContent from './components/ActiveTabContent';
 import ObservationDialogManager from './components/ObservationDialogManager';
 import { useTimeManager } from './components/TimeManager';
+import { useToast } from '@/components/ui/use-toast';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
   onRefresh?: () => void;
+  currentDate?: Date;
 }
 
-const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) => {
+const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
+  dogsStatus, 
+  onRefresh,
+  currentDate = new Date() 
+}) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
+  const previousCategoryRef = useRef('pottybreaks');
+  const { toast } = useToast();
   
   // State for observation dialog
   const [observationDialogOpen, setObservationDialogOpen] = useState(false);
@@ -40,9 +48,29 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     observations,
     handleCellClick, 
     handleRefresh,
-    handleDogClick,
-    resetFeedingLogs
-  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory);
+    handleDogClick
+  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
+
+  // Handle category change with cache cleanup
+  const handleCategoryChange = (newCategory: string) => {
+    console.log(`🔄 Category changing from ${activeCategory} to ${newCategory}`);
+    previousCategoryRef.current = activeCategory;
+    setActiveCategory(newCategory);
+    
+    // Force a refresh when switching tabs to ensure fresh data
+    setTimeout(() => {
+      console.log(`🔄 Forcing refresh after tab change to ${newCategory}`);
+      handleRefresh();
+      
+      // Show toast when switching to feeding tab
+      if (newCategory === 'feeding' && previousCategoryRef.current !== 'feeding') {
+        toast({
+          title: "Feeding Management",
+          description: "Click a time slot to toggle whether a dog has been fed.",
+        });
+      }
+    }, 50);
+  };
   
   // Handle cell right-click (context menu) for observations
   const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
@@ -87,22 +115,28 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
     handleRefresh();
   };
   
+  // Force a refresh on initial load and when switching tabs
+  useEffect(() => {
+    console.log(`🚀 DogTimeTable mounted or tab changed to ${activeCategory}`);
+    handleRefresh();
+  }, [activeCategory]);
+  
   return (
     <Card className="p-0 overflow-hidden">
       <Tabs
         defaultValue="pottybreaks"
         value={activeCategory}
-        onValueChange={setActiveCategory}
+        onValueChange={handleCategoryChange}
         className="w-full"
       >
         <div className="p-3 bg-white dark:bg-slate-950/60 border-b border-gray-200 dark:border-gray-800">
           <TimeTableHeader 
             activeCategory={activeCategory} 
-            onCategoryChange={setActiveCategory}
+            onCategoryChange={handleCategoryChange}
             isLoading={isLoading}
             onRefresh={handleRefresh} 
             isMobile={isMobile}
-            onResetFeeding={activeCategory === 'feeding' ? resetFeedingLogs : undefined}
+            currentDate={currentDate}
           />
         </div>
         
@@ -149,6 +183,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ dogsStatus, onRefresh }) =>
             isLoading={isLoading}
             onRefresh={handleRefresh}
             lastUpdateTime={new Date().toLocaleTimeString()}
+            currentDate={currentDate}
           />
         </div>
       </Tabs>

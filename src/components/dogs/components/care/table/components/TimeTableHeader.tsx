@@ -1,67 +1,95 @@
 
 import React from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Dog, Utensils, RotateCcw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RefreshCw, Dog, UtensilsCrossed, MessageCircle, Calendar } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { CustomButton } from '@/components/ui/custom-button';
+import { format } from 'date-fns';
 
 interface TimeTableHeaderProps {
   activeCategory: string;
-  onCategoryChange: (value: string) => void;
-  isLoading: boolean;
-  onRefresh: () => void;
+  onCategoryChange: (category: string) => void;
+  isLoading?: boolean;
+  onRefresh?: () => void;
   isMobile?: boolean;
-  onResetFeeding?: () => void;
+  currentDate?: Date;
 }
 
-const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
-  activeCategory,
-  onCategoryChange,
-  isLoading,
+const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({ 
+  activeCategory, 
+  onCategoryChange, 
+  isLoading = false,
   onRefresh,
   isMobile = false,
-  onResetFeeding
+  currentDate = new Date()
 }) => {
+  const handleCategoryChange = (category: string) => {
+    onCategoryChange(category);
+  };
+  
+  // Get the icon for each category
+  const getIcon = (category: string) => {
+    switch (category) {
+      case 'pottybreaks':
+        return <Dog className="h-3 w-3 md:h-4 md:w-4" />;
+      case 'feeding':
+        return <UtensilsCrossed className="h-3 w-3 md:h-4 md:w-4" />;
+      default:
+        return null;
+    }
+  };
+  
   return (
-    <div className="flex justify-between items-center">
-      <Tabs
-        value={activeCategory}
-        onValueChange={onCategoryChange}
-        className="w-full mr-2"
-      >
-        <TabsList className="grid grid-cols-2 w-full max-w-[200px]">
-          <TabsTrigger value="pottybreaks" className="flex items-center gap-1.5">
-            <Dog className="h-3.5 w-3.5" />
-            <span>{isMobile ? "Potty" : "Potty Breaks"}</span>
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
+        <TabsList className={`gap-1 ${isMobile ? 'w-full' : ''}`}>
+          <TabsTrigger 
+            value="pottybreaks" 
+            onClick={() => handleCategoryChange('pottybreaks')}
+            className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+          >
+            {getIcon('pottybreaks')}
+            <span className={isMobile ? 'text-xs' : ''}>Potty</span>
           </TabsTrigger>
-          <TabsTrigger value="feeding" className="flex items-center gap-1.5">
-            <Utensils className="h-3.5 w-3.5" />
-            <span>Feeding</span>
+          <TabsTrigger 
+            value="feeding" 
+            onClick={() => handleCategoryChange('feeding')}
+            className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+          >
+            {getIcon('feeding')}
+            <span className={isMobile ? 'text-xs' : ''}>Feeding</span>
           </TabsTrigger>
         </TabsList>
-      </Tabs>
+        
+        {!isMobile && (
+          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 ml-2">
+            <Calendar className="h-3 w-3 mr-1" />
+            <span>{format(currentDate, 'MMMM d, yyyy')}</span>
+          </div>
+        )}
+      </div>
       
       <div className="flex items-center gap-2">
-        {activeCategory === 'feeding' && onResetFeeding && (
-          <Button 
-            onClick={onResetFeeding} 
-            variant="ghost" 
-            size="sm" 
-            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+        {!isMobile && (
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mr-2">
+            <MessageCircle className="h-4 w-4" />
+            <span>Right-click for observations</span>
+          </div>
+        )}
+        
+        {onRefresh && (
+          <Button
+            variant="outline"
+            size={isMobile ? "sm" : "default"}
+            onClick={onRefresh}
+            disabled={isLoading}
+            className="whitespace-nowrap"
           >
-            <RotateCcw className="h-3.5 w-3.5 mr-1" />
-            <span className={isMobile ? "sr-only" : ""}>Reset</span>
+            <RefreshCw className={`h-3 w-3 md:h-4 md:w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            {!isMobile && <span className="ml-2">Refresh</span>}
           </Button>
         )}
-        <Button 
-          onClick={onRefresh} 
-          variant="outline" 
-          size="sm" 
-          disabled={isLoading}
-          className="text-zinc-500 dark:text-zinc-400"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-          <span className="sr-only">Refresh</span>
-        </Button>
       </div>
     </div>
   );

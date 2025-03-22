@@ -29,42 +29,36 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Router>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              
-              {/* Protected routes */}
-              <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
-                <Route path="/dashboard" element={
-                  <DailyCareProvider>
-                    <Dashboard />
-                  </DailyCareProvider>
-                } />
-                <Route path="/dogs" element={<Dogs />} />
-                <Route path="/dogs/:id" element={<DogDetail />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/communications" element={<Communications />} />
-                <Route path="/litters" element={<Litters />} />
-                <Route path="/litters/new" element={<AddLitter />} />
-                <Route path="/litters/:id" element={<LitterDetail />} />
-                <Route path="/welping/:id" element={<WelpingPage />} />
-                <Route path="/daily-care" element={
-                  <DailyCareProvider>
-                    <DailyCare />
-                  </DailyCareProvider>
-                } />
-                <Route path="/profile" element={<Profile />} />
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
-        </TooltipProvider>
+        <DailyCareProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Router>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                
+                {/* Protected routes */}
+                <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dogs" element={<Dogs />} />
+                  <Route path="/dogs/:id" element={<DogDetail />} />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/communications" element={<Communications />} />
+                  <Route path="/litters" element={<Litters />} />
+                  <Route path="/litters/new" element={<AddLitter />} />
+                  <Route path="/litters/:id" element={<LitterDetail />} />
+                  <Route path="/welping/:id" element={<WelpingPage />} />
+                  <Route path="/daily-care" element={<DailyCare />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+          </TooltipProvider>
+        </DailyCareProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
