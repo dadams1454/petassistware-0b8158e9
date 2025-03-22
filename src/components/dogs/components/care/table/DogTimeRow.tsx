@@ -96,7 +96,11 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   const observationTimeSlot = getObservationTimeSlot();
   
   return (
-    <TableRow key={`${dogId}-row`} className={rowColor} data-dog-id={dogId}>
+    <TableRow 
+      key={`${dogId}-row`} 
+      className={`${rowColor} dog-table-row`} 
+      data-dog-id={dogId}
+    >
       {/* Dog name cell with photo, gender color based on dog sex */}
       <DogNameCell 
         dog={dog} 
@@ -109,7 +113,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       />
       
       {/* Observation column - shows only observations for the current category */}
-      <TableCell className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px]">
+      <TableCell className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px] cell-status-transition">
         {dogHasObservation && observationDetails ? (
           <div className="flex items-start gap-2">
             {getObservationIcon(observationDetails.type)}

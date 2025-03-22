@@ -9,6 +9,7 @@ import usePottyBreakTable from './hooks/usePottyBreakTable';
 import TableActions from './components/TableActions';
 import AddGroupDialog from './components/AddGroupDialog';
 import NoDogsState from './components/NoDogsState';
+import TableLoadingOverlay from './components/TableLoadingOverlay';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -39,6 +40,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleCellClick,
     handleRefresh,
     handleDogClick,
+    isLoading
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
   
   // Handle cell right-click for observations/notes
@@ -53,12 +55,15 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     console.log('Care log clicked for:', dogId, dogName);
   };
 
+  // Combine loading states
+  const showLoading = isRefreshing || isLoading;
+
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4 relative">
       {/* Table actions with title and add group button */}
       <TableActions
         onAddGroup={() => setIsDialogOpen(true)}
-        isRefreshing={isRefreshing}
+        isRefreshing={showLoading}
         currentDate={currentDate}
       />
 
@@ -79,26 +84,31 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         </TabsList>
       </Tabs>
 
-      {dogsStatus.length > 0 ? (
-        <ActiveTabContent
-          activeCategory={activeCategory}
-          sortedDogs={sortedDogs}
-          timeSlots={timeSlots}
-          hasPottyBreak={hasPottyBreak}
-          hasCareLogged={hasCareLogged}
-          hasObservation={hasObservation}
-          getObservationDetails={getObservationDetails}
-          onCellClick={handleCellClick}
-          onCellContextMenu={handleCellContextMenu}
-          onCareLogClick={handleCareLogClick}
-          onDogClick={handleDogClick}
-          onRefresh={handleRefresh}
-          currentHour={currentHour}
-          isMobile={false}
-        />
-      ) : (
-        <NoDogsState onRefresh={onRefresh} isRefreshing={isRefreshing} />
-      )}
+      <div className="relative table-refresh-transition">
+        {/* Loading Overlay */}
+        <TableLoadingOverlay isLoading={showLoading} />
+        
+        {dogsStatus.length > 0 ? (
+          <ActiveTabContent
+            activeCategory={activeCategory}
+            sortedDogs={sortedDogs}
+            timeSlots={timeSlots}
+            hasPottyBreak={hasPottyBreak}
+            hasCareLogged={hasCareLogged}
+            hasObservation={hasObservation}
+            getObservationDetails={getObservationDetails}
+            onCellClick={handleCellClick}
+            onCellContextMenu={handleCellContextMenu}
+            onCareLogClick={handleCareLogClick}
+            onDogClick={handleDogClick}
+            onRefresh={handleRefresh}
+            currentHour={currentHour}
+            isMobile={false}
+          />
+        ) : (
+          <NoDogsState onRefresh={onRefresh} isRefreshing={showLoading} />
+        )}
+      </div>
 
       {/* Add Group Dialog */}
       <AddGroupDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} />

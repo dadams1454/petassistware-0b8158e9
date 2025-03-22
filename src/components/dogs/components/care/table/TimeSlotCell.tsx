@@ -157,7 +157,7 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     <TableCell 
       ref={cellRef}
       key={cellIdentifier}
-      className={`${cellClassNames} cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden transition-all duration-200 relative ${
+      className={`${cellClassNames} cursor-pointer border border-slate-200 dark:border-slate-700 p-0 overflow-hidden dog-table-cell cell-status-transition ${
         getBgColor()
       } ${
         getBorderColor()
