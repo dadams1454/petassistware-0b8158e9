@@ -20,6 +20,7 @@ interface ActiveTabContentProps {
   onDogClick: (dogId: string) => void;
   onObservationClick: (dogId: string, dogName: string) => void;
   onRefresh: () => void;
+  onCategoryChange?: (category: string) => void;
   currentHour?: number;
   isMobile?: boolean;
 }
@@ -38,12 +39,16 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   onDogClick,
   onObservationClick,
   onRefresh,
+  onCategoryChange = () => {}, // Provide a default no-op function
   currentHour,
   isMobile = false
 }) => {
   return (
     <div className="rounded-md border">
-      <TimeTableHeader activeCategory={activeCategory} />
+      <TimeTableHeader 
+        activeCategory={activeCategory} 
+        onCategoryChange={onCategoryChange}
+      />
       
       <ScrollArea className="h-[60vh]">
         <TimeTableContent

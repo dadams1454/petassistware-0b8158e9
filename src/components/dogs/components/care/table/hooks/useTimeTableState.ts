@@ -205,6 +205,6 @@ export const useTimeTableState = (
     observations,
     handleObservationClick,
     handleObservationSubmit,
-    timeSlots
+    timeSlots // Ensure timeSlots is included in the return object
   };
 };

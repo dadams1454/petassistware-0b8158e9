@@ -8,6 +8,7 @@ import { useCellActions } from './pottyBreakHooks/useCellActions';
 import { useObservations } from './pottyBreakHooks/useObservations';
 import { fetchGroupMembers } from '@/services/dailyCare/dogGroupsService';
 import { DogCareStatus } from '@/types/dailyCare';
+import { generateTimeSlots } from '../dogGroupColors';
 
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
@@ -24,6 +25,9 @@ const usePottyBreakTable = (
   
   // Track click counts for debugging
   const clickCountRef = useRef(0);
+  
+  // Generate time slots for the active category
+  const timeSlots = generateTimeSlots(new Date(), activeCategory);
   
   // Update stable dogs status only when meaningful changes occur
   useEffect(() => {
@@ -132,7 +136,8 @@ const usePottyBreakTable = (
     handleCellClick,
     handleRefresh,
     handleDogClick,
-    filterDogsByGroup
+    filterDogsByGroup,
+    timeSlots // Explicitly include timeSlots in the return object
   };
 };
 

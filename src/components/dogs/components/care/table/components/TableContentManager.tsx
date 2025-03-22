@@ -20,6 +20,7 @@ interface TableContentManagerProps {
   onDogClick: (dogId: string) => void;
   onObservationClick: (dogId: string, dogName: string) => void;
   onRefresh: () => void;
+  onCategoryChange?: (category: string) => void;
   showLoading: boolean;
 }
 
@@ -37,6 +38,7 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
   onDogClick,
   onObservationClick,
   onRefresh,
+  onCategoryChange,
   showLoading
 }) => {
   // Use the time manager hook to get time slots and current hour
@@ -62,6 +64,7 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
           onDogClick={onDogClick}
           onObservationClick={onObservationClick}
           onRefresh={onRefresh}
+          onCategoryChange={onCategoryChange}
           currentHour={currentHour}
           isMobile={false}
         />
