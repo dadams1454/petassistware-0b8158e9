@@ -7,6 +7,7 @@ import QuickActions from './QuickActions';
 import TabsList from './tabs/TabsList';
 import { Clock, RefreshCw } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useDailyCare } from '@/contexts/dailyCare';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -15,6 +16,7 @@ interface DashboardContentProps {
   activities: any[];
   onRefresh?: () => void;
   nextRefreshTime?: string;
+  onCareLogClick?: () => void;
 }
 
 const DashboardContent: React.FC<DashboardContentProps> = ({
@@ -23,8 +25,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   events,
   activities,
   onRefresh,
-  nextRefreshTime
+  nextRefreshTime,
+  onCareLogClick = () => {}
 }) => {
+  // Get dog statuses for the tabs
+  const { dogStatuses } = useDailyCare();
+
   return (
     <div className="space-y-6">
       {/* Header with refresh button */}
@@ -48,10 +54,16 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       )}
       
       {/* Stats overview */}
-      <DashboardOverview stats={stats} isLoading={isLoading} />
+      <DashboardOverview 
+        stats={stats} 
+        isLoading={isLoading} 
+        events={events}
+        activities={activities}
+        onCareLogClick={onCareLogClick}
+      />
       
       {/* Quick actions */}
-      <QuickActions />
+      <QuickActions onCareLogClick={onCareLogClick} />
       
       {/* Main content layout */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -61,6 +73,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             isLoading={isLoading}
             onRefresh={onRefresh}
             isRefreshing={isLoading}
+            dogStatuses={dogStatuses}
           />
         </div>
         

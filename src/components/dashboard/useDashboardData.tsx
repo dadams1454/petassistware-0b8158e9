@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   fetchDashboardStats, 
@@ -22,35 +22,39 @@ export const useDashboardData = () => {
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
 
+  // Add a refetchData function that can be called externally
+  const refetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch all data in parallel
+      const [dashboardStats, upcomingEvents, recentActivities] = await Promise.all([
+        fetchDashboardStats(),
+        fetchUpcomingEvents(),
+        fetchRecentActivities()
+      ]);
+
+      setStats(dashboardStats);
+      setEvents(upcomingEvents);
+      setActivities(recentActivities);
+      
+      return { stats: dashboardStats, events: upcomingEvents, activities: recentActivities };
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data. Please try again.",
+        variant: "destructive"
+      });
+      return { stats, events, activities }; // Return current data on error
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast, stats, events, activities]);
+
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Fetch all data in parallel
-        const [dashboardStats, upcomingEvents, recentActivities] = await Promise.all([
-          fetchDashboardStats(),
-          fetchUpcomingEvents(),
-          fetchRecentActivities()
-        ]);
-
-        setStats(dashboardStats);
-        setEvents(upcomingEvents);
-        setActivities(recentActivities);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load dashboard data. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDashboardData();
-  }, [toast]);
+    refetchData();
+  }, [refetchData]);
 
   // Mock activities if none are found in the database
   useEffect(() => {
@@ -144,6 +148,7 @@ export const useDashboardData = () => {
     isLoading,
     stats,
     events,
-    activities
+    activities,
+    refetchData
   };
 };

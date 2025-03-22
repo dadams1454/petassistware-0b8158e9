@@ -7,7 +7,7 @@ import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 
 const Dashboard: React.FC = () => {
   // Use the hook for initial data fetching
-  const { isLoading: initialLoading, stats, events, activities } = useDashboardData();
+  const { isLoading: initialLoading, stats, events, activities, refetchData } = useDashboardData();
   
   // Store the data in state so we can update it with the auto-refresh
   const [dashboardStats, setDashboardStats] = useState(stats);
@@ -21,7 +21,9 @@ const Dashboard: React.FC = () => {
     refreshOnMount: false, // Don't refresh on mount since we already fetch data via useDashboardData
     onRefresh: async () => {
       console.log('🔄 Auto-refresh triggered in Dashboard');
-      const { stats: newStats, events: newEvents, activities: newActivities } = await useDashboardData().refetchData();
+      
+      // Now using the refetchData function that we explicitly export from the hook
+      const { stats: newStats, events: newEvents, activities: newActivities } = await refetchData();
       
       // Update the state with new data
       setDashboardStats(newStats);
@@ -48,6 +50,7 @@ const Dashboard: React.FC = () => {
           activities={dashboardActivities || activities}
           onRefresh={() => handleRefresh(true)}
           nextRefreshTime={formatTimeRemaining()}
+          onCareLogClick={() => {}} // Adding the required prop
         />
       </div>
     </PageContainer>
