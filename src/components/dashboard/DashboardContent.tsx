@@ -30,14 +30,16 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
   const { toast } = useToast();
 
-  // Set up auto-refresh with our custom hook - centralized refresh logic
+  // Set up auto-refresh with our enhanced hook
   const { 
     isRefreshing, 
     handleRefresh: refreshDogs,
-    formatTimeRemaining
+    formatTimeRemaining,
+    currentDate
   } = useAutoRefresh({
     interval: 15 * 60 * 1000, // 15 minutes
     refreshLabel: 'dog data',
+    midnightReset: true,
     onRefresh: async () => {
       console.log('🔄 Auto-refresh triggered in DashboardContent');
       const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
@@ -85,7 +87,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsContent value="dailycare">
           <DailyCareTab 
             onRefreshDogs={() => refreshDogs(true)} 
-            isRefreshing={isRefreshing} 
+            isRefreshing={isRefreshing}
+            currentDate={currentDate}
           />
         </TabsContent>
         

@@ -1,6 +1,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
+import { startOfDay, addDays } from 'date-fns';
 
 interface AutoRefreshOptions {
   interval?: number; // in milliseconds
@@ -8,6 +9,7 @@ interface AutoRefreshOptions {
   enableToasts?: boolean;
   refreshOnMount?: boolean;
   refreshLabel?: string;
+  midnightReset?: boolean; // Added this option
 }
 
 export const useAutoRefresh = ({
@@ -15,11 +17,14 @@ export const useAutoRefresh = ({
   onRefresh,
   enableToasts = false,
   refreshOnMount = true,
-  refreshLabel = 'data'
+  refreshLabel = 'data',
+  midnightReset = false // Default to false
 }: AutoRefreshOptions) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(new Date()); // Added current date state
   const intervalRef = useRef<number | null>(null);
+  const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(false);
   
   // Get time until next refresh in seconds
@@ -59,7 +64,9 @@ export const useAutoRefresh = ({
       }
       
       await onRefresh();
-      setLastRefreshTime(new Date());
+      const now = new Date();
+      setLastRefreshTime(now);
+      setCurrentDate(now); // Update current date on refresh
       
       if (showToast && enableToasts) {
         toast({
@@ -82,6 +89,44 @@ export const useAutoRefresh = ({
       setIsRefreshing(false);
     }
   }, [isRefreshing, onRefresh, enableToasts, refreshLabel]);
+  
+  // Setup midnight check/reset functionality
+  const setupMidnightCheck = useCallback(() => {
+    if (midnightCheckRef.current) {
+      clearTimeout(midnightCheckRef.current);
+    }
+    
+    // Get current time and calculate time until next midnight
+    const now = new Date();
+    const tomorrow = startOfDay(addDays(now, 1));
+    
+    // Time until midnight in milliseconds
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    console.log(`⏰ Setting up midnight check: ${timeUntilMidnight / 1000 / 60} minutes until midnight refresh`);
+    
+    // Set timeout for midnight reset
+    midnightCheckRef.current = setTimeout(() => {
+      console.log('🕛 Midnight reached - refreshing all data!');
+      const newDate = new Date();
+      setCurrentDate(newDate);
+      handleRefresh(true);
+    }, timeUntilMidnight);
+    
+    return () => {
+      if (midnightCheckRef.current) {
+        clearTimeout(midnightCheckRef.current);
+      }
+    };
+  }, [handleRefresh]);
+
+  // Setup the midnight reset if enabled
+  useEffect(() => {
+    if (midnightReset) {
+      const cleanup = setupMidnightCheck();
+      return cleanup;
+    }
+  }, [midnightReset, setupMidnightCheck]);
   
   // Set up the interval for auto-refresh
   useEffect(() => {
@@ -117,6 +162,7 @@ export const useAutoRefresh = ({
     lastRefreshTime,
     handleRefresh,
     timeUntilRefresh,
-    formatTimeRemaining
+    formatTimeRemaining,
+    currentDate // Now returning currentDate
   };
 };

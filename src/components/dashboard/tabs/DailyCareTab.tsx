@@ -8,9 +8,14 @@ import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
   isRefreshing: boolean;
+  currentDate?: Date;
 }
 
-const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing }) => {
+const DailyCareTab: React.FC<DailyCareTabProps> = ({ 
+  onRefreshDogs, 
+  isRefreshing,
+  currentDate = new Date() // Default to current date if not provided
+}) => {
   const { dogStatuses } = useDailyCare();
   
   if (!dogStatuses || dogStatuses.length === 0) {
@@ -50,6 +55,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs, isRefreshing
           dogsStatus={dogStatuses} 
           onRefresh={onRefreshDogs}
           isRefreshing={isRefreshing}
+          currentDate={currentDate}
         />
       </div>
     </div>

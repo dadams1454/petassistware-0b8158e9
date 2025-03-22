@@ -7,14 +7,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Clock, Calendar } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
-import { startOfDay, format } from 'date-fns';
+import { format } from 'date-fns';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 
 const DailyCare: React.FC = () => {
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
-  const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Use the centralized auto-refresh system
+  // Use the enhanced auto-refresh system with midnightReset
   const { 
     isRefreshing,
     handleRefresh,
@@ -26,42 +25,11 @@ const DailyCare: React.FC = () => {
     midnightReset: true,
     onRefresh: async () => {
       console.log('🔄 Auto-refresh triggered in DailyCare page');
-      const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
+      const dogs = await fetchAllDogsWithCareStatus(currentDate, true);
       console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
       return dogs;
     }
   });
-
-  // Setup midnight check to refresh data at midnight
-  const setupMidnightCheck = useCallback(() => {
-    // Clear any existing interval
-    if (midnightCheckRef.current) {
-      clearTimeout(midnightCheckRef.current);
-    }
-    
-    // Get current time and calculate time until next midnight
-    const now = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    
-    // Time until midnight in milliseconds
-    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
-    
-    console.log(`⏰ Setting up midnight check: ${timeUntilMidnight / 1000 / 60} minutes until midnight refresh`);
-    
-    // Set timeout for midnight reset
-    midnightCheckRef.current = setTimeout(() => {
-      console.log('🕛 Midnight reached - refreshing all dog data!');
-      handleRefresh(true);
-    }, timeUntilMidnight);
-    
-    return () => {
-      if (midnightCheckRef.current) {
-        clearTimeout(midnightCheckRef.current);
-      }
-    };
-  }, [handleRefresh]);
 
   const content = (
     <>
