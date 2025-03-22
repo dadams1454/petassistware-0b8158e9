@@ -13,7 +13,7 @@ import { DogCareStatus } from '@/types/dailyCare';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { CustomButton } from '@/components/ui/custom-button';
-import { Plus } from 'lucide-react';
+import { Plus, Coffee, UtensilsCrossed, Activity, Calendar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import TimeTableContent from './components/TimeTableContent';
+import usePottyBreakTable from './hooks/usePottyBreakTable';
+import ActiveTabContent from './components/ActiveTabContent';
+import CareCategories from './CareCategories';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import useTimeManager from './components/TimeManager';
+import { format } from 'date-fns';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -49,10 +55,22 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('pottybreaks');
-  const [timeSlots, setTimeSlots] = useState<string[]>([
-    '6:00 AM', '8:00 AM', '10:00 AM', '12:00 PM', 
-    '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM', '10:00 PM'
-  ]);
+  
+  // Use the time manager hook to get time slots and current hour
+  const { timeSlots, currentHour } = useTimeManager(activeCategory);
+  
+  // Use the potty break table hook to get all the necessary data and handlers
+  const {
+    sortedDogs,
+    hasPottyBreak,
+    hasCareLogged,
+    hasObservation,
+    getObservationDetails,
+    handleCellClick,
+    handleRefresh,
+    handleDogClick,
+    isLoading
+  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,18 +83,25 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const openDialog = () => setIsDialogOpen(true);
   const closeDialog = () => setIsDialogOpen(false);
   
-  // Placeholder functions for the TimeTableContent component
-  const hasPottyBreak = (dogId: string, timeSlot: string) => false;
-  const hasCareLogged = (dogId: string, timeSlot: string, category: string) => false;
-  const hasObservation = (dogId: string, timeSlot: string) => false;
-  const getObservationDetails = (dogId: string) => null;
-  const onCellClick = (dogId: string, dogName: string, timeSlot: string, category: string) => {};
-  const onCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {};
-  const onCareLogClick = (dogId: string, dogName: string) => {};
-  const onDogClick = (dogId: string) => {};
+  // Handle cell right-click for observations/notes
+  const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
+    // Display a context menu or add observation
+    console.log('Right-clicked on cell:', dogId, dogName, timeSlot, category);
+    toast({
+      title: "Add Observation",
+      description: `Add observation for ${dogName} at ${timeSlot}`,
+    });
+  };
   
-  // Get current hour for highlighting the current time slot
-  const currentHour = new Date().getHours();
+  // Handle care log click
+  const handleCareLogClick = (dogId: string, dogName: string) => {
+    // Navigate to care log page or open care log dialog
+    console.log('Care log clicked for:', dogId, dogName);
+    toast({
+      title: "View Care Logs",
+      description: `Viewing care logs for ${dogName}`,
+    });
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -98,27 +123,51 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   return (
     <div className="w-full space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Dog Time Table</h2>
+        <div>
+          <h2 className="text-lg font-semibold">Dog Time Table</h2>
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Calendar className="h-4 w-4" /> {format(currentDate, 'MMMM d, yyyy')}
+          </p>
+        </div>
         <CustomButton onClick={openDialog} disabled={isRefreshing}>
           <Plus className="h-4 w-4 mr-2" />
           Add Group
         </CustomButton>
       </div>
 
+      {/* Category Tabs */}
+      <Tabs 
+        defaultValue="pottybreaks" 
+        value={activeCategory} 
+        onValueChange={setActiveCategory}
+        className="w-full"
+      >
+        <TabsList>
+          {CareCategories.map(category => (
+            <TabsTrigger key={category.id} value={category.id} className="flex items-center">
+              {category.icon}
+              <span className="ml-2">{category.name}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       {dogsStatus.length > 0 ? (
-        <TimeTableContent
-          sortedDogs={dogsStatus}
-          timeSlots={timeSlots}
+        <ActiveTabContent
           activeCategory={activeCategory}
+          sortedDogs={sortedDogs}
+          timeSlots={timeSlots}
           hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
           hasObservation={hasObservation}
           getObservationDetails={getObservationDetails}
-          onCellClick={onCellClick}
-          onCellContextMenu={onCellContextMenu}
-          onCareLogClick={onCareLogClick}
-          onDogClick={onDogClick}
+          onCellClick={handleCellClick}
+          onCellContextMenu={handleCellContextMenu}
+          onCareLogClick={handleCareLogClick}
+          onDogClick={handleDogClick}
+          onRefresh={handleRefresh}
           currentHour={currentHour}
+          isMobile={false}
         />
       ) : (
         <div className="p-8 text-center border rounded-md bg-slate-50 dark:bg-slate-800/50">

@@ -42,17 +42,17 @@ const DocumentDialog: React.FC<DocumentDialogProps> = ({
   const [file, setFile] = React.useState<File | null>(null);
   const [uploading, setUploading] = React.useState(false);
 
-  // Create strictly typed default values
+  // Create properly typed default values that match the FormValues type exactly
   const formDefaultValues: FormValues = {
-    document_type: defaultValues?.document_type || 'other',
-    title: defaultValues?.title || '',
-    notes: defaultValues?.notes || '',
-    file_url: defaultValues?.file_url || '',
+    document_type: defaultValues?.document_type ?? 'other',
+    title: defaultValues?.title ?? '',
+    notes: defaultValues?.notes ?? '',
+    file_url: defaultValues?.file_url ?? '',
   };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: formDefaultValues, // Use our properly typed defaults
+    defaultValues: formDefaultValues,
   });
 
   const onSubmit = async (values: FormValues) => {
