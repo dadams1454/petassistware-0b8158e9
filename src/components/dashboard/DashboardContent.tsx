@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
@@ -29,6 +29,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
   const { toast } = useToast();
+  const pendingRefreshRef = useRef(false);
+  const [manualRefreshCounter, setManualRefreshCounter] = useState(0);
 
   // Set up auto-refresh with our enhanced hook
   const { 
@@ -48,6 +50,19 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     }
   });
 
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    
+    // If we have a pending refresh and tab changes, refresh the data
+    if (pendingRefreshRef.current) {
+      setTimeout(() => {
+        refreshDogs(false); // Silent refresh
+        pendingRefreshRef.current = false;
+      }, 100);
+    }
+  };
+
   const handleCareLogClick = () => {
     setCareLogDialogOpen(true);
   };
@@ -55,21 +70,44 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const handleCareLogSuccess = () => {
     setCareLogDialogOpen(false);
     setSelectedDogId(null);
-    // Refresh dog statuses
-    refreshDogs(true);
+    
+    // Instead of immediate refresh, set a flag for next tab change or use debounce
+    pendingRefreshRef.current = true;
+    
+    // Schedule a delayed silent refresh to catch changes
+    setTimeout(() => {
+      refreshDogs(false);
+      pendingRefreshRef.current = false;
+    }, 1000);
   };
 
   const handleDogSelected = (dogId: string) => {
     setSelectedDogId(dogId);
   };
+  
+  // Handler for manual refresh with UI feedback
+  const handleManualRefresh = () => {
+    // Show toast for feedback
+    toast({
+      title: 'Refreshing data...',
+      description: 'Updating the latest dog care information',
+      duration: 2000,
+    });
+    
+    // Increment counter to force child components to recognize the refresh
+    setManualRefreshCounter(prev => prev + 1);
+    
+    // Use the actual refresh function
+    refreshDogs(true);
+  };
 
   return (
     <>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
         <TabsList 
           activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onRefreshDogs={() => refreshDogs(true)}
+          onTabChange={handleTabChange}
+          onRefreshDogs={handleManualRefresh}
           isRefreshing={isRefreshing}
           nextRefreshTime={formatTimeRemaining()}
         />
@@ -86,16 +124,24 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         
         <TabsContent value="dailycare">
           <DailyCareTab 
-            onRefreshDogs={() => refreshDogs(true)} 
+            onRefreshDogs={() => {
+              handleManualRefresh();
+              setManualRefreshCounter(prev => prev + 1);
+            }} 
             isRefreshing={isRefreshing}
             currentDate={currentDate}
+            key={`daily-care-${manualRefreshCounter}`} // Force re-mount on manual refresh
           />
         </TabsContent>
         
         <TabsContent value="grooming">
           <GroomingTab 
             dogStatuses={dogStatuses} 
-            onRefreshDogs={() => refreshDogs(true)} 
+            onRefreshDogs={() => {
+              handleManualRefresh();
+              setManualRefreshCounter(prev => prev + 1);
+            }}
+            key={`grooming-${manualRefreshCounter}`} // Force re-mount on manual refresh
           />
         </TabsContent>
       </Tabs>

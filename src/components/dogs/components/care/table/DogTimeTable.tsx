@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import TimeTableHeader from './components/TimeTableHeader';
 import TimeTableFooter from './components/TimeTableFooter';
 import { DogCareStatus } from '@/types/dailyCare';
@@ -26,14 +26,46 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
+  const [localDogStatuses, setLocalDogStatuses] = useState<DogCareStatus[]>(dogsStatus);
+  const initialRenderRef = useRef(true);
+  
+  // Update local state when props change, but only after initial render
+  useEffect(() => {
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      return;
+    }
+    
+    // Use a deep comparison if needed
+    if (JSON.stringify(dogsStatus) !== JSON.stringify(localDogStatuses)) {
+      setLocalDogStatuses(dogsStatus);
+    }
+  }, [dogsStatus, localDogStatuses]);
   
   // State for observation dialog
   const [observationDialogOpen, setObservationDialogOpen] = useState(false);
   const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   
+  // Debounced refresh reference
+  const refreshTimerRef = useRef<number | null>(null);
+  
   // Use the time manager hook with activeCategory
   const { currentHour, timeSlots } = useTimeManager(activeCategory);
+  
+  // Debounced refresh handler - prevents excessive refreshes
+  const debouncedRefresh = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+    }
+    
+    refreshTimerRef.current = window.setTimeout(() => {
+      if (onRefresh) {
+        onRefresh();
+      }
+      refreshTimerRef.current = null;
+    }, a3000); // 3 seconds delay
+  }, [onRefresh]);
   
   // Use the potty break table hook for data management
   const { 
@@ -47,16 +79,17 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleCellClick,
     handleRefresh: innerHandleRefresh,
     handleDogClick
-  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
+  } = usePottyBreakTable(localDogStatuses, debouncedRefresh, activeCategory, currentDate);
   
-  // Use the parent's refresh handler if provided
-  const handleRefresh = () => {
+  // Handle manual refresh request - use immediate refresh
+  const handleManualRefresh = useCallback(() => {
+    // For manual refreshes, we want immediate feedback
     if (onRefresh) {
       onRefresh();
     } else {
       innerHandleRefresh();
     }
-  };
+  }, [onRefresh, innerHandleRefresh]);
   
   // Handle cell right-click (context menu) for observations
   const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
@@ -98,8 +131,17 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
       category,
       timestamp || new Date()
     );
-    handleRefresh();
+    debouncedRefresh();
   };
+  
+  // Clean up any timers when unmounting
+  useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+    };
+  }, []);
   
   return (
     <Card className="p-0 overflow-hidden">
@@ -114,7 +156,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
             activeCategory={activeCategory} 
             onCategoryChange={setActiveCategory}
             isLoading={isRefreshing}
-            onRefresh={handleRefresh} 
+            onRefresh={handleManualRefresh} 
             isMobile={isMobile}
             currentDate={currentDate}
             showRefreshButton={false} // Hide redundant refresh button
@@ -134,7 +176,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
             onCellContextMenu={handleCellContextMenu}
             onCareLogClick={handleCareLogClick}
             onDogClick={handleDogClick}
-            onRefresh={handleRefresh}
+            onRefresh={debouncedRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
           />
@@ -153,7 +195,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
             onCellContextMenu={handleCellContextMenu}
             onCareLogClick={handleCareLogClick}
             onDogClick={handleDogClick}
-            onRefresh={handleRefresh}
+            onRefresh={debouncedRefresh}
             currentHour={currentHour}
             isMobile={isMobile}
           />

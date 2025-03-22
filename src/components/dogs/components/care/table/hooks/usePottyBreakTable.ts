@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDogSorting } from './pottyBreakHooks/useDogSorting';
@@ -17,8 +17,28 @@ const usePottyBreakTable = (
 ) => {
   const navigate = useNavigate();
   
+  // Cache previous data to prevent UI flicker
+  const prevDogsRef = useRef<DogCareStatus[]>([]);
+  const [stableDogsStatus, setStableDogsStatus] = useState<DogCareStatus[]>(dogsStatus);
+  
+  // Update stable dogs status only when meaningful changes occur
+  useEffect(() => {
+    // Skip empty updates
+    if (dogsStatus.length === 0 && prevDogsRef.current.length > 0) {
+      return;
+    }
+    
+    // Compare arrays for meaningful differences (simplified)
+    const hasChanged = dogsStatus.length !== prevDogsRef.current.length;
+    
+    if (hasChanged) {
+      setStableDogsStatus(dogsStatus);
+      prevDogsRef.current = dogsStatus;
+    }
+  }, [dogsStatus]);
+  
   // Use the refactored hooks
-  const { sortedDogs } = useDogSorting(dogsStatus);
+  const { sortedDogs } = useDogSorting(stableDogsStatus);
   const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh);
   const { pottyBreaks, setPottyBreaks, isLoading: pottyBreaksLoading, fetchPottyBreaks, hasPottyBreak } = usePottyBreakData(currentDate);
   const { careLogs, fetchCareLogs, isLoading: careLogsLoading, hasCareLogged } = useCareLogsData(sortedDogs, activeCategory);
