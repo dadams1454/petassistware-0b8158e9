@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table,
@@ -8,9 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Dog } from '@/types';
-import { fetchActiveDogs } from '@/lib/api/dogs';
-import { DogTimeTableRow } from './DogTimeTableRow';
+import { DogCareStatus } from '@/types/dailyCare';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { CustomButton } from '@/components/ui/custom-button';
@@ -21,195 +20,118 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import DogTimeTableForm from './DogTimeTableForm';
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { useDogGroups } from '@/components/dogs/hooks/useDogGroups';
-import DogGroupFilter from './DogGroupFilter';
+} from "@/components/ui/dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import TimeTableContent from './components/TimeTableContent';
 
 interface DogTimeTableProps {
-  date: Date;
-  onObservationCreated: () => void;
+  dogsStatus: DogCareStatus[];
+  onRefresh: () => void;
+  isRefreshing: boolean;
+  currentDate: Date;
 }
 
-const MAX_DOGS_PER_GROUP = 8;
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Group name must be at least 2 characters.",
+  }),
+  color: z.string().optional(),
+});
 
-const DogTimeTable: React.FC<DogTimeTableProps> = ({ date, onObservationCreated }) => {
+const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
+  dogsStatus, 
+  onRefresh,
+  isRefreshing,
+  currentDate 
+}) => {
   const { toast } = useToast();
-  const [activeDogs, setActiveDogs] = useState<Dog[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedDog, setSelectedDog] = useState<Dog | null>(null);
-  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
-
-  const { groups, isLoading: isGroupsLoading, createGroup, updateGroup, deleteGroup } = useDogGroups();
-
-  const formSchema = z.object({
-    name: z.string().min(2, {
-      message: "Group name must be at least 2 characters.",
-    }),
-    color: z.string().optional(),
-  })
-
+  const [activeCategory, setActiveCategory] = useState<string>('pottybreaks');
+  const [timeSlots, setTimeSlots] = useState<string[]>([
+    '6:00 AM', '8:00 AM', '10:00 AM', '12:00 PM', 
+    '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM', '10:00 PM'
+  ]);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       color: undefined,
     },
-  })
+  });
 
   const openDialog = () => setIsDialogOpen(true);
   const closeDialog = () => setIsDialogOpen(false);
-
-  const handleDogSelect = (dog: Dog) => {
-    setSelectedDog(dog);
-    openDialog();
-  };
-
-  const handleGroupChange = (groupId: string | null) => {
-    setActiveGroupId(groupId);
-  };
-
-  const filteredDogs = activeGroupId
-    ? activeDogs.filter(dog => dog.group_id === activeGroupId)
-    : activeDogs;
-
-  const fetchActiveDogsData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const fetchedDogs = await fetchActiveDogs();
-      setActiveDogs(fetchedDogs || []);
-    } catch (error) {
-      console.error('Error fetching active dogs:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch active dogs.",
-        variant: "destructive",
-      });
-      setActiveDogs([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    fetchActiveDogsData();
-  }, [fetchActiveDogsData]);
-
-  const refreshActiveDogs = async () => {
-    setIsLoading(true);
-    try {
-      const fetchedDogs = await fetchActiveDogs();
-      setActiveDogs(fetchedDogs || []);
-    } catch (error) {
-      console.error('Error refreshing active dogs:', error);
-      toast({
-        title: "Error",
-        description: "Failed to refresh active dogs.",
-        variant: "destructive",
-      });
-      setActiveDogs([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchAndProcessActiveDogs = async () => {
-    try {
-      const result = await fetchActiveDogs();
-      const processedDogs = result || [];
-      setActiveDogs(processedDogs); // Fix the type issue by resolving the Promise
-    } catch (error) {
-      console.error('Error fetching active dogs:', error);
-      setActiveDogs([]); // Provide a fallback empty array
-    }
-  };
+  
+  // Placeholder functions for the TimeTableContent component
+  const hasPottyBreak = (dogId: string, timeSlot: string) => false;
+  const hasCareLogged = (dogId: string, timeSlot: string, category: string) => false;
+  const hasObservation = (dogId: string, timeSlot: string) => false;
+  const getObservationDetails = (dogId: string) => null;
+  const onCellClick = (dogId: string, dogName: string, timeSlot: string, category: string) => {};
+  const onCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {};
+  const onCareLogClick = (dogId: string, dogName: string) => {};
+  const onDogClick = (dogId: string) => {};
+  
+  // Get current hour for highlighting the current time slot
+  const currentHour = new Date().getHours();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // Here, you would handle the submission of the form.
-      // For example, you could call an API to save the data to a database.
-      console.log(values)
+      console.log(values);
       toast({
         title: "Success!",
         description: "You have successfully created a group.",
-      })
+      });
+      closeDialog();
     } catch (error) {
       toast({
         title: "Error.",
         description: "There was an error creating the group.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   return (
     <div className="w-full space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Dog Time Table</h2>
-        <CustomButton onClick={openDialog}>
+        <CustomButton onClick={openDialog} disabled={isRefreshing}>
           <Plus className="h-4 w-4 mr-2" />
           Add Group
         </CustomButton>
       </div>
 
-      <DogGroupFilter
-        groups={groups}
-        activeGroupId={activeGroupId}
-        onGroupChange={handleGroupChange}
-      />
-
-      <Table>
-        <TableCaption>A list of dogs that are currently active.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Name</TableHead>
-            <TableHead>Breed</TableHead>
-            <TableHead>Group</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            <>
-              {Array(5).fill(null).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </>
-          ) : filteredDogs.length > 0 ? (
-            filteredDogs.map((dog) => (
-              <DogTimeTableRow
-                key={dog.id}
-                dog={dog}
-                date={date}
-                onDogSelect={handleDogSelect}
-                onObservationCreated={onObservationCreated}
-                refreshActiveDogs={refreshActiveDogs}
-              />
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center">No active dogs found.</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      {dogsStatus.length > 0 ? (
+        <TimeTableContent
+          sortedDogs={dogsStatus}
+          timeSlots={timeSlots}
+          activeCategory={activeCategory}
+          hasPottyBreak={hasPottyBreak}
+          hasCareLogged={hasCareLogged}
+          hasObservation={hasObservation}
+          getObservationDetails={getObservationDetails}
+          onCellClick={onCellClick}
+          onCellContextMenu={onCellContextMenu}
+          onCareLogClick={onCareLogClick}
+          onDogClick={onDogClick}
+          currentHour={currentHour}
+        />
+      ) : (
+        <div className="p-8 text-center border rounded-md bg-slate-50 dark:bg-slate-800/50">
+          <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
+          <CustomButton 
+            onClick={onRefresh} 
+            className="mt-4"
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? "Refreshing..." : "Refresh Dogs"}
+          </CustomButton>
+        </div>
+      )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -219,7 +141,42 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({ date, onObservationCreated 
               Make changes to your group here. Click save when you're done.
             </DialogDescription>
           </DialogHeader>
-          <DogTimeTableForm form={form} onSubmit={onSubmit} />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">Group Name</label>
+              <input
+                {...form.register("name")}
+                id="name"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {form.formState.errors.name && (
+                <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="color" className="text-sm font-medium">Color (optional)</label>
+              <select
+                {...form.register("color")}
+                id="color"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select a color</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+                <option value="red">Red</option>
+                <option value="purple">Purple</option>
+                <option value="yellow">Yellow</option>
+              </select>
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <CustomButton type="button" variant="outline" onClick={closeDialog}>
+                Cancel
+              </CustomButton>
+              <CustomButton type="submit">
+                Save Group
+              </CustomButton>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
