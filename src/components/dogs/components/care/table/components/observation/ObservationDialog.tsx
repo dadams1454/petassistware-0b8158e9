@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -145,7 +146,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span>{dialogTitle}</span>
-          </SheetTitle>
+          </DialogTitle>
         </DialogHeader>
         {dialogContent}
       </DialogContent>
