@@ -23,41 +23,54 @@ export const useCellActions = (
   // Debounce timer references
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Track total operations to prevent memory leaks
+  // Track total operations and clicks to prevent memory leaks and detect 6-click issue
   const totalOperationsRef = useRef<number>(0);
-  const MAX_QUEUE_SIZE = 10; // Reduced from 50 to prevent potential memory issues
-  
-  // Track clicks for debugging refresh issue
   const clickCountRef = useRef<number>(0);
+  const MAX_QUEUE_SIZE = 5; // Reduced from 10 to prevent potential memory issues
   
-  // Process the operation queue
+  // Process the operation queue with enhanced error handling
   const processQueue = useCallback(async () => {
     if (isProcessingQueueRef.current || operationQueueRef.current.length === 0) return;
     
     isProcessingQueueRef.current = true;
+    console.log(`Processing queue: ${operationQueueRef.current.length} operations pending`);
     
     try {
       // Take the first operation from the queue
       const operation = operationQueueRef.current.shift();
       if (operation) {
-        await operation();
-        // Increment total operations counter
-        totalOperationsRef.current += 1;
-        console.log(`Processed operation #${totalOperationsRef.current}, queue size: ${operationQueueRef.current.length}`);
+        try {
+          await operation();
+          // Increment total operations counter
+          totalOperationsRef.current += 1;
+          console.log(`✅ Operation #${totalOperationsRef.current} successful, queue size: ${operationQueueRef.current.length}`);
+        } catch (error) {
+          console.error("❌ Error in queue operation:", error);
+          // Don't throw - we want to continue processing the queue
+        }
       }
     } catch (error) {
-      console.error("Error processing queue operation:", error);
+      console.error("⚠️ Critical error processing queue:", error);
     } finally {
       isProcessingQueueRef.current = false;
       
-      // Continue processing if there are more operations
+      // Continue processing if there are more operations, with a delay to prevent rapid processing
       if (operationQueueRef.current.length > 0) {
-        setTimeout(processQueue, 50); // Small delay between operations
+        setTimeout(processQueue, 100); // Increased delay between operations
       } else {
         // Queue is empty, trigger a gentle refresh if needed
         if (onRefresh && debounceTimerRef.current === null) {
+          console.log("Queue empty, scheduling refresh");
           debounceTimerRef.current = setTimeout(() => {
-            onRefresh();
+            console.log("Executing debounced refresh");
+            
+            // Only refresh if we're still mounted
+            try {
+              onRefresh();
+            } catch (error) {
+              console.error("Error in debounced refresh:", error);
+            }
+            
             if (debounceTimerRef.current) {
               debounceTimerRef.current = null;
             }
@@ -67,11 +80,17 @@ export const useCellActions = (
     }
   }, [onRefresh]);
   
-  // Add operation to queue and start processing with safeguards
+  // Add operation to queue with improved safeguards
   const queueOperation = useCallback((operation: () => Promise<void>) => {
+    // Clear refresh timer when adding new operations
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    
     // Limit queue size to prevent memory leaks
     if (operationQueueRef.current.length >= MAX_QUEUE_SIZE) {
-      console.warn(`Operation queue size limit reached (${MAX_QUEUE_SIZE}), dropping oldest operation`);
+      console.warn(`⚠️ Operation queue size limit reached (${MAX_QUEUE_SIZE}), dropping oldest operation`);
       operationQueueRef.current.shift(); // Remove oldest operation
     }
     
@@ -83,17 +102,35 @@ export const useCellActions = (
     }
   }, [processQueue]);
   
-  // Handler for cell clicks with optimistic updates and error prevention
+  // Handler for cell clicks with optimistic updates and enhanced error prevention
   const handleCellClick = useCallback(async (dogId: string, dogName: string, timeSlot: string, category: string) => {
-    if (isLoading) return;
+    if (isLoading) {
+      console.log("Ignoring click - loading in progress");
+      return;
+    }
     
     // Increment click counter for debugging
     clickCountRef.current += 1;
-    console.log(`Cell clicked: ${clickCountRef.current} times (${dogName}, ${timeSlot})`);
+    const clickNumber = clickCountRef.current;
+    console.log(`Cell clicked: ${clickNumber} times (${dogName}, ${timeSlot})`);
     
-    // Check if we're approaching the 6-click threshold
-    if (clickCountRef.current === 5) {
-      console.log('⚠️ WARNING: useCellActions approaching 6 clicks!');
+    // Special handling around the 6-click threshold to prevent the issue
+    if (clickNumber === 5) {
+      console.log('⚠️ WARNING: useCellActions approaching 6 clicks! Adding protection');
+    }
+    
+    if (clickNumber >= 6) {
+      console.log('⚠️ 6+ CLICKS DETECTED: Applying extra safeguards');
+      // Clear the queue to prevent overflow
+      operationQueueRef.current = [];
+      
+      // Show a toast to let the user know we detected rapid clicking
+      toast({
+        title: 'Multiple clicks detected',
+        description: 'Please wait a moment before making more changes',
+      });
+      
+      return; // Prevent further processing
     }
     
     if (category !== activeCategory) {

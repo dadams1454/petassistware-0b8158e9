@@ -40,19 +40,32 @@ const TimeSlotCell = memo(({
     return '';
   }, [hasPottyBreak, hasCareLogged, isCurrentHour, isIncident]);
 
-  // Handle cell click while preventing default behavior
+  // Handle cell click with improved event prevention
   const handleCellClick = useCallback((e: React.MouseEvent) => {
+    // Completely stop event propagation and default behavior
     e.preventDefault();
     e.stopPropagation();
+    
+    // Track click for debugging
+    console.log(`Cell click handled for ${dogName} at ${timeSlot}`);
+    
+    // Call the click handler
     onClick();
+    
+    // Return false to also prevent any native handlers
     return false;
-  }, [onClick]);
+  }, [onClick, dogName, timeSlot]);
 
-  // Handle context menu while preventing default behavior
+  // Handle context menu with improved event prevention
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    // Completely stop event propagation and default behavior
     e.preventDefault();
     e.stopPropagation();
+    
+    // Call the context menu handler
     onContextMenu(e);
+    
+    // Return false to also prevent any native handlers
     return false;
   }, [onContextMenu]);
 
@@ -81,6 +94,7 @@ const TimeSlotCell = memo(({
       data-dog-id={dogId}
       data-time-slot={timeSlot}
       data-has-care={hasCareLogged ? 'true' : 'false'}
+      data-category={category}
     >
       {isIncident ? (
         <span className="text-amber-600 dark:text-amber-400 font-bold">!</span>

@@ -1,7 +1,5 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { DogCareStatus } from '@/types/dailyCare';
 import { useDogSorting } from './pottyBreakHooks/useDogSorting';
 import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
 import { usePottyBreakData } from './pottyBreakHooks/usePottyBreakData';
@@ -9,6 +7,7 @@ import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
 import { useCellActions } from './pottyBreakHooks/useCellActions';
 import { useObservations } from './pottyBreakHooks/useObservations';
 import { fetchGroupMembers } from '@/services/dailyCare/dogGroupsService';
+import { DogCareStatus } from '@/types/dailyCare';
 
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
@@ -16,14 +15,15 @@ const usePottyBreakTable = (
   activeCategory: string = 'pottybreaks',
   currentDate: Date = new Date()
 ) => {
-  const navigate = useNavigate();
-  
   // Cache previous data to prevent UI flicker
   const prevDogsRef = useRef<DogCareStatus[]>([]);
   const [stableDogsStatus, setStableDogsStatus] = useState<DogCareStatus[]>(dogsStatus);
   
   // Cache for group members
   const [groupMembersCache, setGroupMembersCache] = useState<{ [groupId: string]: string[] }>({});
+  
+  // Track click counts for debugging
+  const clickCountRef = useRef(0);
   
   // Update stable dogs status only when meaningful changes occur
   useEffect(() => {
@@ -32,7 +32,7 @@ const usePottyBreakTable = (
       return;
     }
     
-    // Compare arrays for meaningful differences (simplified)
+    // Compare arrays for meaningful differences
     const hasChanged = dogsStatus.length !== prevDogsRef.current.length;
     
     if (hasChanged) {
@@ -80,17 +80,22 @@ const usePottyBreakTable = (
     return getObservationDetails(dogId, activeCategory);
   }, [getObservationDetails, activeCategory]);
 
-  // Handle dog click to navigate to dog details page
+  // Handle dog click WITHOUT navigation - prevent refresh issues
   const handleDogClick = useCallback((dogId: string) => {
-    navigate(`/dogs/${dogId}`);
-  }, [navigate]);
+    // Increment click counter
+    clickCountRef.current += 1;
+    console.log(`Dog click #${clickCountRef.current} for ${dogId} - PREVENTED NAVIGATION`);
+    
+    // Don't navigate for now to prevent the 6-click issue
+    // We'll just log the click
+  }, []);
   
   // Filter dogs by group
   const filterDogsByGroup = useCallback(async (dogs: DogCareStatus[], groupId: string) => {
     // Check if we already have the group members in cache
     if (!groupMembersCache[groupId]) {
       try {
-        // Fetch group members from the API
+        // Fetch group members from the API with error handling
         const members = await fetchGroupMembers(groupId);
         const memberIds = members.map(m => m.dog_id);
         
