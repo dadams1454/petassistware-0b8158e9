@@ -1,10 +1,12 @@
 
-import React, { memo, useCallback } from 'react';
+import React, { memo } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './TimeSlotCell';
 import DogNameCell from './components/DogNameCell';
-import { AlertTriangle, Heart, Activity, MessageCircle } from 'lucide-react';
+import ObservationCell from './components/ObservationCell';
+import { useRowEventHandlers } from './hooks/useRowEventHandlers';
+import { useObservationHelpers } from './hooks/useObservationHelpers';
 
 interface DogTimeRowProps {
   dog: DogCareStatus;
@@ -45,40 +47,22 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   const dogName = dog.dog_name;
   const dogFlags = dog.flags || [];
   
-  // Track click counts for debugging
-  const clickCounter = React.useRef<number>(0);
-
-  // Safe click handlers with improved event propagation protection
-  const handleCellClickSafe = useCallback((id: string, name: string, timeSlot: string, category: string) => {
-    // Increment the click counter for debugging
-    clickCounter.current += 1;
-    console.log(`Row cell click #${clickCounter.current} for ${name} at ${timeSlot} (${category})`);
-    
-    // Call the parent click handler but catch any errors
-    try {
-      onCellClick(id, name, timeSlot, category);
-    } catch (error) {
-      console.error('Error in cell click handler:', error);
-      // Don't rethrow to prevent refresh
-    }
-  }, [onCellClick]);
-
-  const handleCellContextMenuSafe = useCallback((e: React.MouseEvent) => {
-    // Prevent default context menu and stop propagation
-    e.preventDefault(); 
-    e.stopPropagation();
-    
-    try {
-      onCellContextMenu(e, dogId, dogName, e.currentTarget.getAttribute('data-time-slot') || '', activeCategory);
-    } catch (error) {
-      console.error('Error in context menu handler:', error);
-    }
-    
-    return false; // Explicitly return false to prevent bubbling
-  }, [onCellContextMenu, dogId, dogName, activeCategory]);
+  // Use custom hooks to separate logic
+  const { handleCellClickSafe, handleCellContextMenuSafe, handleDogCellClick, handleCareLogCellClick } = 
+    useRowEventHandlers({
+      dogId,
+      dogName,
+      onCellClick,
+      onCellContextMenu,
+      onCareLogClick,
+      onDogClick,
+      activeCategory
+    });
   
+  const { getObservationTimeSlot } = useObservationHelpers();
+
   // Helper function to determine if a time slot is the current hour
-  const isCurrentHourSlot = useCallback((timeSlot: string) => {
+  const isCurrentHourSlot = (timeSlot: string) => {
     if (currentHour === undefined || activeCategory === 'feeding') return false;
     
     // For feeding, we don't need current hour highlighting
@@ -95,7 +79,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
     if (!isPM && is12Hour) slot24Hour = 0;
     
     return slot24Hour === currentHour;
-  }, [currentHour, activeCategory]);
+  };
 
   // Check if the dog has any observations in the current category
   const dogHasObservation = hasObservation(dogId, '');
@@ -103,59 +87,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   // Get observation details for the current category if available
   const observationDetails = dogHasObservation ? getObservationDetails(dogId) : null;
   
-  // Function to get observation icon based on type
-  const getObservationIcon = useCallback((type: string) => {
-    switch (type) {
-      case 'accident':
-        return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
-      case 'heat':
-        return <Heart className="h-4 w-4 text-red-500 flex-shrink-0" />;
-      case 'behavior':
-        return <Activity className="h-4 w-4 text-blue-500 flex-shrink-0" />;
-      case 'feeding':
-        return <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />;
-      default:
-        return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
-    }
-  }, []);
-
-  // Extract the time from an observation if available
-  const getObservationTimeSlot = useCallback(() => {
-    if (!observationDetails || !observationDetails.timeSlot) return null;
-    return observationDetails.timeSlot;
-  }, [observationDetails]);
-
-  const observationTimeSlot = getObservationTimeSlot();
-  
-  // Handle dog name click with improved event handling
-  const handleDogCellClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log(`Dog name cell clicked for ${dogName} (${dogId})`);
-    
-    try {
-      onDogClick(dogId);
-    } catch (error) {
-      console.error('Error in dog click handler:', error);
-      // Don't rethrow to prevent refresh
-    }
-  }, [dogId, dogName, onDogClick]);
-  
-  // Handle care log click with improved event handling
-  const handleCareLogCellClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log(`Care log cell clicked for ${dogName} (${dogId})`);
-    
-    try {
-      onCareLogClick(dogId, dogName);
-    } catch (error) {
-      console.error('Error in care log click handler:', error);
-      // Don't rethrow to prevent refresh
-    }
-  }, [dogId, dogName, onCareLogClick]);
+  const observationTimeSlot = getObservationTimeSlot(observationDetails);
   
   return (
     <TableRow 
@@ -176,25 +108,11 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       />
       
       {/* Observation column - shows only observations for the current category */}
-      <TableCell className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px] cell-status-transition">
-        {dogHasObservation && observationDetails ? (
-          <div className="flex items-start gap-2">
-            {getObservationIcon(observationDetails.type)}
-            <div className="overflow-hidden">
-              <div className="text-xs font-medium capitalize text-gray-700 dark:text-gray-300">
-                {observationDetails.type}
-              </div>
-              <div className="text-xs line-clamp-3 text-gray-600 dark:text-gray-400">
-                {observationDetails.text}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <span className="text-xs text-gray-400 dark:text-gray-600">
-            {activeCategory === 'feeding' ? 'No feeding issues' : 'No observations'}
-          </span>
-        )}
-      </TableCell>
+      <ObservationCell 
+        dogHasObservation={dogHasObservation}
+        observationDetails={observationDetails}
+        activeCategory={activeCategory}
+      />
       
       {/* Time slot cells */}
       {timeSlots.map((timeSlot) => {

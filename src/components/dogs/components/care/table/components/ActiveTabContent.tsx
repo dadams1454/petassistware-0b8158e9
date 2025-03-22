@@ -13,7 +13,7 @@ interface ActiveTabContentProps {
   hasObservation: (dogId: string, timeSlot: string) => boolean;
   getObservationDetails: (dogId: string) => { text: string; type: string } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  onCellContextMenu: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
   onRefresh: () => void;
