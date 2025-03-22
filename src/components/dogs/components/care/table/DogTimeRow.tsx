@@ -63,23 +63,19 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
     }
   }, [onCellClick]);
 
-  const handleCellContextMenuSafe = useCallback((e: React.MouseEvent, id: string, name: string, timeSlot: string, category: string) => {
+  const handleCellContextMenuSafe = useCallback((e: React.MouseEvent) => {
     // Prevent default context menu and stop propagation
     e.preventDefault(); 
     e.stopPropagation();
     
-    console.log('Right-clicked on cell:', id, name, timeSlot, category);
-    
-    // Call the context menu handler but catch any errors
     try {
-      onCellContextMenu(e, id, name, timeSlot, category);
+      onCellContextMenu(e, dogId, dogName, e.currentTarget.getAttribute('data-time-slot') || '', activeCategory);
     } catch (error) {
       console.error('Error in context menu handler:', error);
-      // Don't rethrow to prevent refresh
     }
     
     return false; // Explicitly return false to prevent bubbling
-  }, [onCellContextMenu]);
+  }, [onCellContextMenu, dogId, dogName, activeCategory]);
   
   // Helper function to determine if a time slot is the current hour
   const isCurrentHourSlot = useCallback((timeSlot: string) => {
@@ -144,8 +140,6 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       console.error('Error in dog click handler:', error);
       // Don't rethrow to prevent refresh
     }
-    
-    return false;
   }, [dogId, dogName, onDogClick]);
   
   // Handle care log click with improved event handling
@@ -161,8 +155,6 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       console.error('Error in care log click handler:', error);
       // Don't rethrow to prevent refresh
     }
-    
-    return false;
   }, [dogId, dogName, onCareLogClick]);
   
   return (
@@ -226,8 +218,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             hasPottyBreak={hasPottyBreakForSlot}
             hasCareLogged={hasCareLoggedForSlot}
             onClick={() => handleCellClickSafe(dogId, dogName, timeSlot, activeCategory)}
-            onContextMenu={(e) => handleCellContextMenuSafe(e, dogId, dogName, timeSlot, activeCategory)}
-            flags={dogFlags}
+            onContextMenu={handleCellContextMenuSafe}
+            flags={dogFlags.map(flag => flag.type)} // Convert DogFlag[] to string[]
             isCurrentHour={isCurrentTimeSlot}
             isIncident={isIncidentTimeSlot}
           />
