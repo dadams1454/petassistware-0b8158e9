@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useDailyCare } from '@/contexts/dailyCare';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
@@ -19,10 +20,14 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   const { dogStatuses } = useDailyCare();
   const [localRefreshing, setLocalRefreshing] = useState(false);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const refreshCountRef = useRef<number>(0);
   
   // Handle local refresh state to show a smoother UI
   const handleLocalRefresh = () => {
     setLocalRefreshing(true);
+    refreshCountRef.current += 1;
+    
+    console.log(`DailyCareTab refresh #${refreshCountRef.current} triggered`);
     
     // Actual refresh
     onRefreshDogs();
@@ -43,6 +48,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     return () => {
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
       }
     };
   }, []);
@@ -56,6 +62,12 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
       }
     }
   }, [isRefreshing, localRefreshing]);
+
+  // Error reset handler
+  const handleErrorReset = () => {
+    console.log("Resetting after error in DailyCareTab");
+    handleLocalRefresh();
+  };
   
   if (!dogStatuses || dogStatuses.length === 0) {
     return (
@@ -75,29 +87,31 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   }
   
   return (
-    <div className="space-y-6">
-      {/* Reminder Card */}
-      <PottyBreakReminderCard 
-        dogs={dogStatuses}
-        onLogPottyBreak={() => {
-          // Just scroll to the timetable on click
-          const timeTableSection = document.getElementById('dog-time-table');
-          if (timeTableSection) {
-            timeTableSection.scrollIntoView({ behavior: 'smooth' });
-          }
-        }}
-      />
-      
-      {/* Time Table - use the centralized refresh from parent */}
-      <div id="dog-time-table">
-        <DogTimeTable 
-          dogsStatus={dogStatuses} 
-          onRefresh={handleLocalRefresh}
-          isRefreshing={localRefreshing || isRefreshing}
-          currentDate={currentDate}
+    <ErrorBoundary onReset={handleErrorReset}>
+      <div className="space-y-6">
+        {/* Reminder Card */}
+        <PottyBreakReminderCard 
+          dogs={dogStatuses}
+          onLogPottyBreak={() => {
+            // Just scroll to the timetable on click
+            const timeTableSection = document.getElementById('dog-time-table');
+            if (timeTableSection) {
+              timeTableSection.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
         />
+        
+        {/* Time Table - use the centralized refresh from parent */}
+        <div id="dog-time-table">
+          <DogTimeTable 
+            dogsStatus={dogStatuses} 
+            onRefresh={handleLocalRefresh}
+            isRefreshing={localRefreshing || isRefreshing}
+            currentDate={currentDate}
+          />
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

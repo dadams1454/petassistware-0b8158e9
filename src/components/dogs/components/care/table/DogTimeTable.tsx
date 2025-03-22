@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CareCategories from './CareCategories';
@@ -10,6 +10,7 @@ import TableActions from './components/TableActions';
 import AddGroupDialog from './components/AddGroupDialog';
 import NoDogsState from './components/NoDogsState';
 import TableLoadingOverlay from './components/TableLoadingOverlay';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -27,6 +28,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('pottybreaks');
   
+  // Track tab change count for debugging
+  const tabChangeCountRef = React.useRef<number>(0);
+  
   // Use the time manager hook to get time slots and current hour
   const { timeSlots, currentHour } = useTimeManager(activeCategory);
   
@@ -43,76 +47,105 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     isLoading
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
   
+  // Safe tab change handler with logging
+  const handleCategoryChange = useCallback((value: string) => {
+    tabChangeCountRef.current += 1;
+    console.log(`Tab changed to ${value} (change #${tabChangeCountRef.current})`);
+    setActiveCategory(value);
+  }, []);
+  
+  // Create a stable cell click handler
+  const memoizedCellClickHandler = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
+    console.log(`Cell clicked: ${dogName}, ${timeSlot}, ${category}`);
+    handleCellClick(dogId, dogName, timeSlot, category);
+  }, [handleCellClick]);
+  
   // Handle cell right-click for observations/notes
-  const handleCellContextMenu = (dogId: string, dogName: string, timeSlot: string, category: string) => {
+  const handleCellContextMenu = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
     // Display a context menu or add observation
     console.log('Right-clicked on cell:', dogId, dogName, timeSlot, category);
-  };
+  }, []);
   
   // Handle care log click
-  const handleCareLogClick = (dogId: string, dogName: string) => {
+  const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
     // Navigate to care log page or open care log dialog
     console.log('Care log clicked for:', dogId, dogName);
-  };
+  }, []);
+
+  // Error reset handler
+  const handleErrorReset = useCallback(() => {
+    console.log("Resetting after error");
+    onRefresh();
+  }, [onRefresh]);
 
   // Combine loading states
   const showLoading = isRefreshing || isLoading;
 
   return (
-    <div className="w-full space-y-4 relative">
-      {/* Table actions with title and add group button */}
-      <TableActions
-        onAddGroup={() => setIsDialogOpen(true)}
-        isRefreshing={showLoading}
-        currentDate={currentDate}
-      />
+    <ErrorBoundary onReset={handleErrorReset}>
+      <div className="w-full space-y-4 relative">
+        {/* Table actions with title and add group button */}
+        <TableActions
+          onAddGroup={() => setIsDialogOpen(true)}
+          isRefreshing={showLoading}
+          currentDate={currentDate}
+        />
 
-      {/* Category Tabs */}
-      <Tabs 
-        defaultValue="pottybreaks" 
-        value={activeCategory} 
-        onValueChange={setActiveCategory}
-        className="w-full"
-      >
-        <TabsList>
-          {CareCategories.map(category => (
-            <TabsTrigger key={category.id} value={category.id} className="flex items-center">
-              {category.icon}
-              <span className="ml-2">{category.name}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+        {/* Category Tabs */}
+        <Tabs 
+          defaultValue="pottybreaks" 
+          value={activeCategory} 
+          onValueChange={handleCategoryChange}
+          className="w-full"
+        >
+          <TabsList>
+            {CareCategories.map(category => (
+              <TabsTrigger 
+                key={category.id} 
+                value={category.id} 
+                className="flex items-center"
+                onClick={(e) => {
+                  // Prevent default to avoid any navigation
+                  e.preventDefault();
+                }}
+              >
+                {category.icon}
+                <span className="ml-2">{category.name}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
-      <div className="relative table-refresh-transition">
-        {/* Loading Overlay */}
-        <TableLoadingOverlay isLoading={showLoading} />
-        
-        {dogsStatus.length > 0 ? (
-          <ActiveTabContent
-            activeCategory={activeCategory}
-            sortedDogs={sortedDogs}
-            timeSlots={timeSlots}
-            hasPottyBreak={hasPottyBreak}
-            hasCareLogged={hasCareLogged}
-            hasObservation={hasObservation}
-            getObservationDetails={getObservationDetails}
-            onCellClick={handleCellClick}
-            onCellContextMenu={handleCellContextMenu}
-            onCareLogClick={handleCareLogClick}
-            onDogClick={handleDogClick}
-            onRefresh={handleRefresh}
-            currentHour={currentHour}
-            isMobile={false}
-          />
-        ) : (
-          <NoDogsState onRefresh={onRefresh} isRefreshing={showLoading} />
-        )}
+        <div className="relative table-refresh-transition">
+          {/* Loading Overlay */}
+          <TableLoadingOverlay isLoading={showLoading} />
+          
+          {dogsStatus.length > 0 ? (
+            <ActiveTabContent
+              activeCategory={activeCategory}
+              sortedDogs={sortedDogs}
+              timeSlots={timeSlots}
+              hasPottyBreak={hasPottyBreak}
+              hasCareLogged={hasCareLogged}
+              hasObservation={hasObservation}
+              getObservationDetails={getObservationDetails}
+              onCellClick={memoizedCellClickHandler}
+              onCellContextMenu={handleCellContextMenu}
+              onCareLogClick={handleCareLogClick}
+              onDogClick={handleDogClick}
+              onRefresh={handleRefresh}
+              currentHour={currentHour}
+              isMobile={false}
+            />
+          ) : (
+            <NoDogsState onRefresh={onRefresh} isRefreshing={showLoading} />
+          )}
+        </div>
+
+        {/* Add Group Dialog */}
+        <AddGroupDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} />
       </div>
-
-      {/* Add Group Dialog */}
-      <AddGroupDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} />
-    </div>
+    </ErrorBoundary>
   );
 };
 

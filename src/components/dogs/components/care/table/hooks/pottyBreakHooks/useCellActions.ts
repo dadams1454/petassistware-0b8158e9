@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react'; // Fixed: Added explicit React import
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { logDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
 import { addCareLog } from '@/services/dailyCare/careLogsService';
@@ -23,6 +23,10 @@ export const useCellActions = (
   // Debounce timer references
   const debounceTimerRef = useRef<number | null>(null);
   
+  // Track total operations to prevent memory leaks
+  const totalOperationsRef = useRef<number>(0);
+  const MAX_QUEUE_SIZE = 50; // Limit queue size to prevent memory issues
+  
   // Process the operation queue
   const processQueue = useCallback(async () => {
     if (isProcessingQueueRef.current || operationQueueRef.current.length === 0) return;
@@ -34,7 +38,12 @@ export const useCellActions = (
       const operation = operationQueueRef.current.shift();
       if (operation) {
         await operation();
+        // Increment total operations counter
+        totalOperationsRef.current += 1;
+        console.log(`Processed operation #${totalOperationsRef.current}, queue size: ${operationQueueRef.current.length}`);
       }
+    } catch (error) {
+      console.error("Error processing queue operation:", error);
     } finally {
       isProcessingQueueRef.current = false;
       
@@ -55,7 +64,14 @@ export const useCellActions = (
   
   // Add operation to queue and start processing
   const queueOperation = useCallback((operation: () => Promise<void>) => {
+    // Limit queue size to prevent memory leaks
+    if (operationQueueRef.current.length >= MAX_QUEUE_SIZE) {
+      console.warn(`Operation queue size limit reached (${MAX_QUEUE_SIZE}), dropping oldest operation`);
+      operationQueueRef.current.shift(); // Remove oldest operation
+    }
+    
     operationQueueRef.current.push(operation);
+    console.log(`Added operation to queue. Queue size: ${operationQueueRef.current.length}`);
     
     if (!isProcessingQueueRef.current) {
       processQueue();
@@ -101,6 +117,8 @@ export const useCellActions = (
             title: 'Potty break removed',
             description: `Removed potty break for ${dogName} at ${timeSlot}`,
           });
+          
+          console.log('🚫 Potty break removed for', dogName, 'at', timeSlot);
         } else {
           // Optimistically update UI first
           const updatedPottyBreaks = { ...pottyBreaks };
@@ -164,13 +182,16 @@ export const useCellActions = (
         // Queue the feeding operation
         queueOperation(async () => {
           try {
+            if (!user?.id) {
+              throw new Error("User ID not available");
+            }
             await addCareLog({
               dog_id: dogId,
               category: 'feeding',
               task_name: mealName,
               timestamp: timestamp,
               notes: `${dogName} fed at ${timeSlot.toLowerCase()}`
-            }, user?.id || '');
+            }, user.id);
             console.log('Feeding logged successfully:', { dogId, timeSlot });
           } catch (error) {
             console.error('Error in queued feeding operation:', error);
@@ -205,9 +226,17 @@ export const useCellActions = (
   // Clean up any timers when unmounting
   useEffect(() => {
     return () => {
+      // Clear debounce timer
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
       }
+      
+      // Clear queue
+      console.log(`Cleanup: ${operationQueueRef.current.length} pending operations cleared`);
+      operationQueueRef.current = [];
+      isProcessingQueueRef.current = false;
+      totalOperationsRef.current = 0;
     };
   }, []);
   

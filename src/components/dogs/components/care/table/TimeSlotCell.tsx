@@ -45,6 +45,9 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
   const cellRef = useRef<HTMLTableCellElement>(null);
   const isTouchActiveRef = useRef<boolean>(false);
   
+  // Add click counter for debugging
+  const clickCountRef = useRef<number>(0);
+  
   // Check if we're on a mobile device
   const isMobile = useIsMobile();
   
@@ -123,11 +126,36 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
     handleTouchStart(e);
   };
   
+  // Custom click handler with preventDefault to avoid page refreshes
+  const handleCellClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default to avoid page refresh
+    
+    // Increment and log click count for debugging
+    clickCountRef.current += 1;
+    console.log(`Cell clicked: ${clickCountRef.current} times (${dogName}, ${timeSlot})`);
+    
+    // Log if we're approaching the critical count
+    if (clickCountRef.current === 5) {
+      console.log('WARNING: Next click will be number 6 - watch for issues');
+    }
+    
+    onClick();
+  };
+  
+  // Custom context menu handler with preventDefault
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (onContextMenu) {
+      e.preventDefault(); // Prevent default context menu
+      onContextMenu(e);
+    }
+  };
+  
   // Clean up any timeouts when component unmounts
   useEffect(() => {
     return () => {
       if (touchTimeoutRef.current) {
         clearTimeout(touchTimeoutRef.current);
+        touchTimeoutRef.current = null;
       }
     };
   }, []);
@@ -162,8 +190,8 @@ const TimeSlotCell: React.FC<TimeSlotCellProps> = memo(({
       } ${
         getBorderColor()
       } touch-manipulation`}
-      onClick={onClick}
-      onContextMenu={onContextMenu}
+      onClick={handleCellClick}
+      onContextMenu={handleContextMenu}
       onTouchStart={handleTouchStart2}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}

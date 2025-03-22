@@ -45,6 +45,22 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   const dogName = dog.dog_name;
   const dogFlags = dog.flags || [];
   
+  // Track click counts for debugging
+  const clickCounter = React.useRef<number>(0);
+
+  // Safe click handlers with click counting
+  const handleCellClickSafe = React.useCallback((id: string, name: string, timeSlot: string, category: string) => {
+    clickCounter.current += 1;
+    console.log(`Row handle cell click #${clickCounter.current} for ${name}`);
+    onCellClick(id, name, timeSlot, category);
+  }, [onCellClick]);
+
+  const handleCellContextMenuSafe = React.useCallback((e: React.MouseEvent, id: string, name: string, timeSlot: string, category: string) => {
+    e.preventDefault(); // Prevent default context menu
+    onCellContextMenu(id, name, timeSlot, category);
+    return false; // Prevent bubbling
+  }, [onCellContextMenu]);
+  
   // Helper function to determine if a time slot is the current hour
   const isCurrentHourSlot = (timeSlot: string) => {
     if (currentHour === undefined || activeCategory === 'feeding') return false;
@@ -95,6 +111,20 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
 
   const observationTimeSlot = getObservationTimeSlot();
   
+  // Handle dog name click with preventDefault
+  const handleDogCellClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDogClick(dogId);
+  };
+  
+  // Handle care log click with preventDefault
+  const handleCareLogCellClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onCareLogClick(dogId, dogName);
+  };
+  
   return (
     <TableRow 
       key={`${dogId}-row`} 
@@ -104,8 +134,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       {/* Dog name cell with photo, gender color based on dog sex */}
       <DogNameCell 
         dog={dog} 
-        onCareLogClick={() => onCareLogClick(dogId, dogName)}
-        onDogClick={() => onDogClick(dogId)}
+        onCareLogClick={handleCareLogCellClick}
+        onDogClick={handleDogCellClick}
         activeCategory={activeCategory}
         hasObservation={false}
         observationText=""
@@ -154,11 +184,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
             category={activeCategory}
             hasPottyBreak={hasPottyBreakForSlot}
             hasCareLogged={hasCareLoggedForSlot}
-            onClick={() => onCellClick(dogId, dogName, timeSlot, activeCategory)}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              onCellContextMenu(dogId, dogName, timeSlot, activeCategory);
-            }}
+            onClick={() => handleCellClickSafe(dogId, dogName, timeSlot, activeCategory)}
+            onContextMenu={(e) => handleCellContextMenuSafe(e, dogId, dogName, timeSlot, activeCategory)}
             flags={dogFlags}
             isCurrentHour={isCurrentTimeSlot}
             isIncident={isIncidentTimeSlot}
