@@ -20,7 +20,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   const { dogStatuses } = useDailyCare();
   const [localRefreshing, setLocalRefreshing] = useState(false);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const refreshCountRef = useRef<number>(0);
   const unmountedRef = useRef<boolean>(false);
   
   // Handle local refresh state to show a smoother UI
@@ -28,9 +27,8 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     if (unmountedRef.current) return;
     
     setLocalRefreshing(true);
-    refreshCountRef.current += 1;
     
-    console.log(`DailyCareTab refresh #${refreshCountRef.current} triggered`);
+    console.log('DailyCareTab refresh triggered');
     
     // Actual refresh
     onRefreshDogs();
@@ -76,12 +74,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     handleLocalRefresh();
   };
   
-  // Track render count for debugging
-  const renderCountRef = useRef(0);
-  renderCountRef.current++;
-  
-  console.log(`DailyCareTab render #${renderCountRef.current}`);
-  
   if (!dogStatuses || dogStatuses.length === 0) {
     return (
       <Card className="p-8 text-center">
@@ -103,13 +95,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DailyCareTab">
       <div className="space-y-6">
-        {/* Debugging info */}
-        {process.env.NODE_ENV !== 'production' && (
-          <div className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mb-2">
-            DailyCareTab renders: {renderCountRef.current} | Refresh count: {refreshCountRef.current}
-          </div>
-        )}
-        
         {/* Reminder Card */}
         <PottyBreakReminderCard 
           dogs={dogStatuses}

@@ -21,8 +21,6 @@ export const useDogCareStatus = () => {
     // Convert date to string for caching
     const dateString = date.toISOString().split('T')[0];
     
-    console.log(`🔍 Hook: fetchAllDogsWithCareStatus called with forceRefresh=${forceRefresh}`);
-    
     // Prevent multiple simultaneous fetches unless forceRefresh is true
     if (fetchInProgressRef.current && !forceRefresh) {
       console.log('🔄 Fetch already in progress, skipping duplicate request');

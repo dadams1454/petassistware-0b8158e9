@@ -30,7 +30,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
   const { toast } = useToast();
   const pendingRefreshRef = useRef(false);
-  const [manualRefreshCounter, setManualRefreshCounter] = useState(0);
 
   // Set up auto-refresh with our enhanced hook
   const { 
@@ -94,9 +93,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       duration: 2000,
     });
     
-    // Increment counter to force child components to recognize the refresh
-    setManualRefreshCounter(prev => prev + 1);
-    
     // Use the actual refresh function
     refreshDogs(true);
   };
@@ -124,24 +120,16 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         
         <TabsContent value="dailycare">
           <DailyCareTab 
-            onRefreshDogs={() => {
-              handleManualRefresh();
-              setManualRefreshCounter(prev => prev + 1);
-            }} 
+            onRefreshDogs={handleManualRefresh} 
             isRefreshing={isRefreshing}
             currentDate={currentDate}
-            key={`daily-care-${manualRefreshCounter}`} // Force re-mount on manual refresh
           />
         </TabsContent>
         
         <TabsContent value="grooming">
           <GroomingTab 
             dogStatuses={dogStatuses} 
-            onRefreshDogs={() => {
-              handleManualRefresh();
-              setManualRefreshCounter(prev => prev + 1);
-            }}
-            key={`grooming-${manualRefreshCounter}`} // Force re-mount on manual refresh
+            onRefreshDogs={handleManualRefresh}
           />
         </TabsContent>
       </Tabs>
