@@ -42,18 +42,17 @@ const DocumentDialog: React.FC<DocumentDialogProps> = ({
   const [file, setFile] = React.useState<File | null>(null);
   const [uploading, setUploading] = React.useState(false);
 
-  // Ensure we have non-optional values for required fields
-  const initialValues = {
+  // Create strictly typed default values
+  const formDefaultValues: FormValues = {
     document_type: defaultValues?.document_type || 'other',
     title: defaultValues?.title || '',
     notes: defaultValues?.notes || '',
     file_url: defaultValues?.file_url || '',
   };
 
-  // Use as const to ensure TypeScript treats this as a non-optional value
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialValues as FormValues,
+    defaultValues: formDefaultValues, // Use our properly typed defaults
   });
 
   const onSubmit = async (values: FormValues) => {
