@@ -94,7 +94,6 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       key={`${dogId}-row`} 
       className={`${rowColor} dog-table-row`} 
       data-dog-id={dogId}
-      onClick={(e) => e.stopPropagation()} // Add row-level click prevention
     >
       {/* Dog name cell with photo, gender color based on dog sex */}
       <DogNameCell 
@@ -102,9 +101,9 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         onCareLogClick={handleCareLogCellClick}
         onDogClick={handleDogCellClick}
         activeCategory={activeCategory}
-        hasObservation={false}
-        observationText=""
-        observationType=""
+        hasObservation={dogHasObservation}
+        observationText={observationDetails?.text || ''}
+        observationType={observationDetails?.type || ''}
       />
       
       {/* Observation column - shows only observations for the current category */}

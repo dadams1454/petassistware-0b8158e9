@@ -10,8 +10,8 @@ import { Badge } from '@/components/ui/badge';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
-  onCareLogClick: () => void;
-  onDogClick: () => void;
+  onCareLogClick: (e: React.MouseEvent) => void;
+  onDogClick: (e: React.MouseEvent) => void;
   activeCategory: string;
   hasObservation?: boolean;
   observationText?: string;

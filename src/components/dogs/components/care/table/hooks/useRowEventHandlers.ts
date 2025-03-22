@@ -54,7 +54,10 @@ export const useRowEventHandlers = ({
   }, [onCellContextMenu, dogId, dogName, activeCategory]);
   
   // Handle dog name click with improved event handling
-  const handleDogCellClick = useCallback(() => {
+  const handleDogCellClick = useCallback((e: React.MouseEvent) => {
+    // Stop propagation but don't prevent default to allow navigation
+    e.stopPropagation();
+    
     console.log(`Dog name cell clicked for ${dogName} (${dogId})`);
     
     try {
@@ -65,7 +68,10 @@ export const useRowEventHandlers = ({
   }, [dogId, dogName, onDogClick]);
   
   // Handle care log click with improved event handling
-  const handleCareLogCellClick = useCallback(() => {
+  const handleCareLogCellClick = useCallback((e: React.MouseEvent) => {
+    // Stop propagation but don't prevent default for care log click
+    e.stopPropagation();
+    
     console.log(`Care log cell clicked for ${dogName} (${dogId})`);
     
     try {

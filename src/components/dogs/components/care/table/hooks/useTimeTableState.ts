@@ -2,6 +2,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import usePottyBreakTable from './usePottyBreakTable';
+import { useNavigate } from 'react-router-dom';
 
 export const useTimeTableState = (
   dogsStatus: DogCareStatus[], 
@@ -11,6 +12,7 @@ export const useTimeTableState = (
 ) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('pottybreaks');
+  const navigate = useNavigate();
   
   // Debug tracking
   const clickCountRef = useRef<number>(0);
@@ -29,13 +31,16 @@ export const useTimeTableState = (
     isLoading
   } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
   
-  // Use a custom dog click handler to prevent navigation
-  const handleSafeDogClick = useCallback((dogId: string) => {
-    // In normal use we'd navigate to dog details, but for now we'll disable this
-    // to prevent any routing issues that could cause the refresh problem
-    console.log('Dog click prevented to avoid navigation during bugfix', dogId);
-    // We won't call navigate here - this prevents any routing that might cause refresh
-    return false;
+  // Navigation handler for dog clicks
+  const handleDogClick = useCallback((dogId: string) => {
+    console.log('Navigating to dog details:', dogId);
+    navigate(`/dogs/${dogId}`);
+  }, [navigate]);
+  
+  // Handler for care log clicks
+  const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
+    console.log('Opening care log dialog for:', dogId, dogName);
+    // Here we would typically open a dialog or navigate to care log page
   }, []);
   
   // Safe tab change handler with logging
@@ -90,12 +95,6 @@ export const useTimeTableState = (
     return false;
   }, []);
   
-  // Handle care log click with error prevention
-  const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
-    console.log('Care log clicked for:', dogId, dogName);
-    // No navigation for now
-  }, []);
-  
   // Error reset handler with improved debugging
   const handleErrorReset = useCallback(() => {
     console.log("Resetting after error");
@@ -128,7 +127,7 @@ export const useTimeTableState = (
     hasCareLogged,
     hasObservation,
     getObservationDetails,
-    handleSafeDogClick,
+    handleDogClick,
     handleCategoryChange,
     memoizedCellClickHandler,
     handleCellContextMenu,
