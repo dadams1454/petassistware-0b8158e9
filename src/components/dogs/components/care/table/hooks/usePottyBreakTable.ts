@@ -14,11 +14,12 @@ const usePottyBreakTable = (
   activeCategory: string = 'pottybreaks'
 ) => {
   const [loading, setLoading] = useState(false);
-  const { pottyBreaks, setPottyBreaks } = usePottyBreakData(dogs);
+  const today = useMemo(() => new Date(), []);
+  
+  // Initialize data hooks
+  const { pottyBreaks, setPottyBreaks } = usePottyBreakData(today);
   const { sortedDogs } = useDogSorting(dogs);
   
-  const today = useMemo(() => new Date(), []);
-
   // Set up cell actions
   const { 
     isLoading: isCellActionsLoading, 
@@ -28,7 +29,7 @@ const usePottyBreakTable = (
   } = useCellActions(today, pottyBreaks, setPottyBreaks, onRefresh, activeCategory);
 
   // Set up refresh handler
-  const { isRefreshing, handleRefresh } = useRefreshHandler(onRefresh, setLoading);
+  const { isRefreshing, handleRefresh } = useRefreshHandler(onRefresh);
 
   // Set up care logs data for feeding
   const { careLogs, hasCareLogged } = useCareLogsData(dogs, activeCategory);

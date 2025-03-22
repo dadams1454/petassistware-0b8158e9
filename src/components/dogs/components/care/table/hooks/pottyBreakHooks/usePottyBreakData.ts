@@ -1,8 +1,7 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { getPottyBreaksByDogAndTimeSlot2 } from '@/services/dailyCare/pottyBreak/queries/timeSlotQueries';
 import { toast } from '@/components/ui/use-toast';
-import { useCallback } from 'react';
 
 export const usePottyBreakData = (currentDate: Date) => {
   const [pottyBreaks, setPottyBreaks] = useState<Record<string, string[]>>({});
