@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import PageContainer from '@/components/common/PageContainer';
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import { useDashboardData } from '@/components/dashboard/useDashboardData';
