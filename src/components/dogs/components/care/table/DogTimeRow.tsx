@@ -97,7 +97,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   
   return (
     <TableRow key={`${dogId}-row`} className={rowColor} data-dog-id={dogId}>
-      {/* Dog name cell with photo, gender color */}
+      {/* Dog name cell with photo, gender color based on dog sex */}
       <DogNameCell 
         dog={dog} 
         onCareLogClick={() => onCareLogClick(dogId, dogName)}

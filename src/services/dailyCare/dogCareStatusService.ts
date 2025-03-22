@@ -110,13 +110,16 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         });
       }
       
+      // Normalize gender to lowercase for consistent comparison
+      const normalizedGender = dog.gender ? dog.gender.toLowerCase() : 'unknown';
+      
       return {
         dog_id: dog.id || '',
         dog_name: dog.name || 'Unknown dog',
         dog_photo: dog.photo_url || '',
         breed: dog.breed || 'Unknown',
         color: dog.color || 'Unknown',
-        sex: dog.gender || 'Unknown', // Map gender from database to sex in DogCareStatus
+        sex: normalizedGender, // Normalize to lowercase for consistent comparison
         last_care: null, // We're not loading care data for simplicity
         flags: flags
       };

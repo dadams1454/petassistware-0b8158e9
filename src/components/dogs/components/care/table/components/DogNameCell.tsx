@@ -25,8 +25,10 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
   observationText = '',
   observationType = ''
 }) => {
-  // Get gender color based on sex property
-  const genderColor = dog.sex === 'male' ? 'bg-blue-500' : 'bg-pink-500';
+  // Get gender-based background color using pastel colors
+  const genderBackgroundColor = dog.sex === 'male' 
+    ? 'bg-blue-50 dark:bg-blue-950/30' 
+    : 'bg-pink-50 dark:bg-pink-950/30';
   
   // Determine button text based on category
   const getButtonText = () => {
@@ -54,14 +56,9 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
   
   return (
     <TableCell 
-      className="whitespace-nowrap sticky left-0 z-10 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700"
+      className={`whitespace-nowrap sticky left-0 z-10 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 ${genderBackgroundColor}`}
     >
       <div className="flex items-center gap-3 max-w-[160px]">
-        <div 
-          className={`w-1 h-10 rounded-full ${genderColor}`}
-          aria-label={`${dog.sex === 'male' ? 'Male' : 'Female'} dog indicator`}
-        ></div>
-        
         <div 
           className="flex-shrink-0 h-10 w-10 cursor-pointer" 
           onClick={onDogClick}
