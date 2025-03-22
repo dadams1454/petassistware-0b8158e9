@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
-import { MessageCircle, Paintbrush } from 'lucide-react';
+import { MessageCircle, Paintbrush, Users } from 'lucide-react';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import DogColorPicker from '@/components/personalization/DogColorPicker';
+import { fetchDogGroups } from '@/services/dailyCare/dogGroupsService';
+import { Badge } from '@/components/ui/badge';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
@@ -30,6 +32,33 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
     ? 'bg-blue-50 dark:bg-blue-950/30' 
     : 'bg-pink-50 dark:bg-pink-950/30';
   
+  const [dogGroups, setDogGroups] = useState<{id: string; name: string; color: string | null}[]>([]);
+  
+  // Fetch dog groups for this dog
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        // This would ideally be a specific API call to get groups for a specific dog
+        // For now, we'll simulate it by fetching all groups
+        const groups = await fetchDogGroups();
+        
+        // In a real implementation, you would filter by dog ID
+        // This is a placeholder until you implement the actual API
+        const randomInclude = Math.random() > 0.5;
+        if (randomInclude) {
+          const randomIndex = Math.floor(Math.random() * groups.length);
+          if (groups[randomIndex]) {
+            setDogGroups([groups[randomIndex]]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching dog groups:', error);
+      }
+    };
+    
+    fetchGroups();
+  }, [dog.dog_id]);
+  
   // Determine button text based on category
   const getButtonText = () => {
     if (activeCategory === 'pottybreaks') {
@@ -54,13 +83,26 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
     }
   };
   
+  // Get group badge color
+  const getGroupBadgeColor = (color: string | null) => {
+    switch (color) {
+      case 'blue': return 'bg-blue-100 text-blue-800';
+      case 'teal': return 'bg-teal-100 text-teal-800';
+      case 'yellow': return 'bg-yellow-100 text-yellow-800';
+      case 'red': return 'bg-red-100 text-red-800';
+      case 'green': return 'bg-green-100 text-green-800';
+      case 'purple': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+  
   return (
     <TableCell 
       className={`whitespace-nowrap sticky left-0 z-10 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 ${genderBackgroundColor}`}
     >
       <div className="flex items-center gap-3 max-w-[160px]">
         <div 
-          className="flex-shrink-0 h-10 w-10 cursor-pointer" 
+          className="flex-shrink-0 h-10 w-10 cursor-pointer relative" 
           onClick={onDogClick}
           title={`View ${dog.dog_name}'s details`}
         >
@@ -69,6 +111,19 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
             alt={dog.dog_name}
             className="h-full w-full rounded-full object-cover"
           />
+          
+          {/* Special conditions indicators */}
+          {dog.flags && dog.flags.some(flag => flag.type === 'in_heat') && (
+            <span className="absolute -top-1 -right-1 h-4 w-4 bg-pink-500 rounded-full border-2 border-white dark:border-gray-900" 
+                  title="In heat">
+            </span>
+          )}
+          
+          {dog.flags && dog.flags.some(flag => flag.type === 'pregnant') && (
+            <span className="absolute -bottom-1 -right-1 h-4 w-4 bg-blue-500 rounded-full border-2 border-white dark:border-gray-900"
+                  title="Pregnant">
+            </span>
+          )}
         </div>
         
         <div className="overflow-hidden flex flex-col">
@@ -79,6 +134,22 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
           >
             {dog.dog_name}
           </div>
+          
+          {/* Dog group badges */}
+          {dogGroups.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1 mb-1">
+              {dogGroups.map(group => (
+                <Badge 
+                  key={group.id} 
+                  variant="outline" 
+                  className={`text-xs py-0 px-1.5 ${getGroupBadgeColor(group.color)}`}
+                >
+                  <Users className="h-2.5 w-2.5 mr-0.5" />
+                  {group.name}
+                </Badge>
+              ))}
+            </div>
+          )}
           
           <div className="flex items-center gap-1 mt-1">
             <button

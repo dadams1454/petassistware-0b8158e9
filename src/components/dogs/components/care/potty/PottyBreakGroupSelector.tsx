@@ -92,6 +92,18 @@ const PottyBreakGroupSelector: React.FC<PottyBreakGroupSelectorProps> = ({
             <p className="text-muted-foreground mb-4">
               You need to set up dog groups first to use the group potty break feature.
             </p>
+            <Button 
+              onClick={() => {
+                // Navigate to the groups tab
+                const groupsTab = document.querySelector('[value="groups"]');
+                if (groupsTab) {
+                  (groupsTab as HTMLElement).click();
+                }
+              }}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Set Up Dog Groups
+            </Button>
           </CardContent>
         </Card>
       ) : (

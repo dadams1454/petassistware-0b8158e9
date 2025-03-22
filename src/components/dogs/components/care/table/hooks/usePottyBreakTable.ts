@@ -8,6 +8,7 @@ import { usePottyBreakData } from './pottyBreakHooks/usePottyBreakData';
 import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
 import { useCellActions } from './pottyBreakHooks/useCellActions';
 import { useObservations } from './pottyBreakHooks/useObservations';
+import { fetchGroupMembers } from '@/services/dailyCare/dogGroupsService';
 
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
@@ -20,6 +21,9 @@ const usePottyBreakTable = (
   // Cache previous data to prevent UI flicker
   const prevDogsRef = useRef<DogCareStatus[]>([]);
   const [stableDogsStatus, setStableDogsStatus] = useState<DogCareStatus[]>(dogsStatus);
+  
+  // Cache for group members
+  const [groupMembersCache, setGroupMembersCache] = useState<{ [groupId: string]: string[] }>({});
   
   // Update stable dogs status only when meaningful changes occur
   useEffect(() => {
@@ -80,6 +84,34 @@ const usePottyBreakTable = (
   const handleDogClick = useCallback((dogId: string) => {
     navigate(`/dogs/${dogId}`);
   }, [navigate]);
+  
+  // Filter dogs by group
+  const filterDogsByGroup = useCallback(async (dogs: DogCareStatus[], groupId: string) => {
+    // Check if we already have the group members in cache
+    if (!groupMembersCache[groupId]) {
+      try {
+        // Fetch group members from the API
+        const members = await fetchGroupMembers(groupId);
+        const memberIds = members.map(m => m.dog_id);
+        
+        // Update cache
+        setGroupMembersCache(prev => ({
+          ...prev,
+          [groupId]: memberIds
+        }));
+        
+        // Filter dogs by group members
+        return dogs.filter(dog => memberIds.includes(dog.dog_id));
+      } catch (error) {
+        console.error('Error fetching group members:', error);
+        return dogs;
+      }
+    } else {
+      // Use cached group members
+      const memberIds = groupMembersCache[groupId];
+      return dogs.filter(dog => memberIds.includes(dog.dog_id));
+    }
+  }, [groupMembersCache]);
 
   return {
     currentDate,
@@ -94,7 +126,8 @@ const usePottyBreakTable = (
     observations,
     handleCellClick,
     handleRefresh,
-    handleDogClick
+    handleDogClick,
+    filterDogsByGroup
   };
 };
 

@@ -10,6 +10,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import ActiveTabContent from './components/ActiveTabContent';
 import ObservationDialogManager from './components/ObservationDialogManager';
 import { useTimeManager } from './components/TimeManager';
+import DogGroupFilter from './components/DogGroupFilter';
+import { fetchDogGroups } from '@/services/dailyCare/dogGroupsService';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -28,6 +30,22 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const [activeCategory, setActiveCategory] = useState('pottybreaks');
   const [localDogStatuses, setLocalDogStatuses] = useState<DogCareStatus[]>(dogsStatus);
   const initialRenderRef = useRef(true);
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const [groups, setGroups] = useState<{ id: string; name: string; color: string | null }[]>([]);
+  
+  // Fetch dog groups on component mount
+  useEffect(() => {
+    const loadGroups = async () => {
+      try {
+        const dogGroups = await fetchDogGroups();
+        setGroups(dogGroups);
+      } catch (error) {
+        console.error('Error loading dog groups:', error);
+      }
+    };
+    
+    loadGroups();
+  }, []);
   
   // Update local state when props change, but only after initial render
   useEffect(() => {
@@ -78,8 +96,12 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     observations,
     handleCellClick,
     handleRefresh: innerHandleRefresh,
-    handleDogClick
+    handleDogClick,
+    filterDogsByGroup
   } = usePottyBreakTable(localDogStatuses, debouncedRefresh, activeCategory, currentDate);
+  
+  // Filter dogs by active group if one is selected
+  const filteredDogs = activeGroupId ? filterDogsByGroup(sortedDogs, activeGroupId) : sortedDogs;
   
   // Handle manual refresh request - use immediate refresh
   const handleManualRefresh = useCallback(() => {
@@ -161,12 +183,21 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
             currentDate={currentDate}
             showRefreshButton={false} // Hide redundant refresh button
           />
+          
+          {/* Dog Group Filter */}
+          <div className="mt-3">
+            <DogGroupFilter
+              groups={groups}
+              activeGroupId={activeGroupId}
+              onGroupChange={setActiveGroupId}
+            />
+          </div>
         </div>
         
         <TabsContent value="pottybreaks" className="mt-0">
           <ActiveTabContent
             activeCategory="pottybreaks"
-            sortedDogs={sortedDogs}
+            sortedDogs={filteredDogs}
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
@@ -185,7 +216,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         <TabsContent value="feeding" className="mt-0">
           <ActiveTabContent
             activeCategory="feeding"
-            sortedDogs={sortedDogs}
+            sortedDogs={filteredDogs}
             timeSlots={timeSlots}
             hasPottyBreak={hasPottyBreak}
             hasCareLogged={hasCareLogged}
