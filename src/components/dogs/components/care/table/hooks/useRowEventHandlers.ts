@@ -38,6 +38,7 @@ export const useRowEventHandlers = ({
     }
   }, [onCellClick]);
 
+  // Fix the error by making this accept the event argument
   const handleCellContextMenuSafe = useCallback((e: React.MouseEvent) => {
     // Prevent default context menu and stop propagation
     e.preventDefault(); 
@@ -53,10 +54,7 @@ export const useRowEventHandlers = ({
   }, [onCellContextMenu, dogId, dogName, activeCategory]);
   
   // Handle dog name click with improved event handling
-  const handleDogCellClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleDogCellClick = useCallback(() => {
     console.log(`Dog name cell clicked for ${dogName} (${dogId})`);
     
     try {
@@ -67,10 +65,7 @@ export const useRowEventHandlers = ({
   }, [dogId, dogName, onDogClick]);
   
   // Handle care log click with improved event handling
-  const handleCareLogCellClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleCareLogCellClick = useCallback(() => {
     console.log(`Care log cell clicked for ${dogName} (${dogId})`);
     
     try {
