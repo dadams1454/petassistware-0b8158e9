@@ -34,7 +34,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     hasCareLogged,
     hasObservation,
     getObservationDetails,
-    handleSafeDogClick,
+    handleDogClick,
     handleCategoryChange,
     memoizedCellClickHandler,
     handleCellContextMenu,
@@ -80,7 +80,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onCellClick={memoizedCellClickHandler}
           onCellContextMenu={handleCellContextMenu}
           onCareLogClick={handleCareLogClick}
-          onDogClick={handleSafeDogClick}
+          onDogClick={handleDogClick}
           onRefresh={handleRefresh}
           showLoading={showLoading}
         />
