@@ -68,14 +68,12 @@ const ChartContent: React.FC<ChartContentProps> = ({
             strokeWidth={2} 
             activeDot={{ 
               r: isMobile ? 6 : 8, 
-              onClick: (payload: any, index: number, e: React.MouseEvent) => {
-                // Fixed: Use the MouseEvent type for the event parameter
-                if (e) {
-                  e.stopPropagation();
+              onClick: (data: any) => {
+                // Using the simpler signature that recharts expects
+                if (data && data.event) {
+                  data.event.stopPropagation();
                 }
-                if (payload && typeof payload === 'object') {
-                  onDataPointClick({ activePayload: [{ payload }] });
-                }
+                onDataPointClick({ activePayload: [{ payload: data.payload }] });
               }
             }} 
             name="Current Weight"
