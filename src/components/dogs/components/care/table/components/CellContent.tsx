@@ -94,4 +94,16 @@ const CellContent: React.FC<CellContentProps> = ({
   );
 };
 
-export default React.memo(CellContent);
+export default React.memo(CellContent, (prevProps, nextProps) => {
+  // Custom comparison function for memo
+  // Only re-render if these specific props change
+  return (
+    prevProps.dogName === nextProps.dogName &&
+    prevProps.timeSlot === nextProps.timeSlot &&
+    prevProps.category === nextProps.category &&
+    prevProps.hasPottyBreak === nextProps.hasPottyBreak &&
+    prevProps.hasCareLogged === nextProps.hasCareLogged &&
+    prevProps.isCurrentHour === nextProps.isCurrentHour &&
+    prevProps.isIncident === nextProps.isIncident
+  );
+});
