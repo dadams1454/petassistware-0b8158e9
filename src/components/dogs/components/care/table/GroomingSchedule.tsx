@@ -114,12 +114,16 @@ const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) 
                   const groomingInfo = groomingData.find(g => g.dogId === dog.dog_id);
                   if (!groomingInfo) return null;
                   
+                  // Create adapter functions that match the expected signatures
+                  const dogClickAdapter = () => handleDogClick(dog.dog_id);
+                  const careLogClickAdapter = () => handleCareLogClick(dog.dog_id, dog.dog_name);
+                  
                   return (
                     <TableRow key={dog.dog_id}>
                       <DogNameCell 
                         dog={dog} 
-                        onClick={() => handleDogClick(dog.dog_id)}
-                        onCareLogClick={(id, name) => handleCareLogClick(id, name)}
+                        onClick={dogClickAdapter}
+                        onCareLogClick={careLogClickAdapter}
                         activeCategory="grooming"
                         hasObservation={false}
                       />

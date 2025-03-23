@@ -121,6 +121,15 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
               ? mapObservationToDetails(getObservationDetails(dog.dog_id)) 
               : null;
             
+            // Create adapter functions that match the expected signatures
+            const dogClickAdapter = () => onDogClick(dog.dog_id);
+            const careLogClickAdapter = () => {
+              if (onCareLogClick) {
+                onCareLogClick(dog.dog_id, dog.dog_name);
+              }
+            };
+            const observationClickAdapter = () => onObservationClick(dog.dog_id);
+            
             return (
               <TableRow
                 key={dog.dog_id}
@@ -129,8 +138,8 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                 {/* Dog name cell */}
                 <DogNameCell 
                   dog={dog} 
-                  onClick={onDogClick}
-                  onCareLogClick={onCareLogClick}
+                  onClick={dogClickAdapter}
+                  onCareLogClick={careLogClickAdapter}
                   activeCategory={activeCategory}
                   hasObservation={dogHasObservation}
                   observationText={observationDetails?.text || ''}
@@ -144,7 +153,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                   activeCategory={activeCategory}
                   dogId={dog.dog_id}
                   dogName={dog.dog_name}
-                  onObservationClick={() => onObservationClick(dog.dog_id)}
+                  onObservationClick={observationClickAdapter}
                 />
                 
                 {/* Time slot cells */}
