@@ -1,21 +1,18 @@
 
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import NavbarLogo from './NavbarLogo';
-import DesktopMenu from './DesktopMenu';
 import UserMenu from './UserMenu';
 import MobileMenuButton from './MobileMenuButton';
 import MobileMenu from './MobileMenu';
-import { getMenuItems } from './navbarUtils';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { signOut, user } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
-  const menuItems = getMenuItems();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -32,12 +29,12 @@ const Navbar: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <NavbarLogo />
-              <DesktopMenu 
-                menuItems={menuItems} 
-                currentPath={location.pathname} 
-              />
+              <SidebarTrigger className="md:mr-4" />
+              <div className="block md:hidden">
+                <NavbarLogo />
+              </div>
             </div>
+            
             <div className="hidden md:block">
               <UserMenu 
                 user={user} 
@@ -45,6 +42,7 @@ const Navbar: React.FC = () => {
                 navigate={navigate} 
               />
             </div>
+            
             <MobileMenuButton 
               isMenuOpen={isMenuOpen} 
               toggleMenu={toggleMenu} 
@@ -54,8 +52,6 @@ const Navbar: React.FC = () => {
 
         <MobileMenu 
           isOpen={isMenuOpen} 
-          menuItems={menuItems} 
-          currentPath={location.pathname} 
           user={user} 
           onLogout={handleLogout} 
           navigate={navigate}
