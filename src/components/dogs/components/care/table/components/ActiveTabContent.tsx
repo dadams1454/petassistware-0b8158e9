@@ -5,21 +5,20 @@ import TimeTableContent from './TimeTableContent';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TimeTableHeader from './TimeTableHeader';
 import TimeTableFooter from './TimeTableFooter';
-import { Observation } from '../hooks/useObservations';
 
 interface ActiveTabContentProps {
   activeCategory: string;
   sortedDogs: DogCareStatus[];
   timeSlots: string[];
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
-  hasCareLogged: (dogId: string, timeSlot: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => Observation | null;
-  onCellClick: (dogId: string, dogName: string, timeSlot: string, hasPottyBreak: boolean, hasCareLogged: boolean) => void;
-  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string) => void;
+  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
+  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
-  onObservationClick: (dogId: string) => void;
+  onObservationClick: (dogId: string, dogName: string) => void;
   onRefresh: () => void;
   onCategoryChange?: (category: string) => void;
   currentHour?: number;
@@ -44,22 +43,6 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   currentHour,
   isMobile = false
 }) => {
-  // Create isCurrentHourSlot function to pass to TimeTableContent
-  const isCurrentHourSlot = (timeSlot: string): boolean => {
-    if (currentHour === undefined) return false;
-    
-    const hour = parseInt(timeSlot.split(':')[0]);
-    const isPM = timeSlot.includes('PM');
-    const is12Hour = hour === 12;
-    
-    // Convert slot to 24-hour format
-    let slot24Hour = hour;
-    if (isPM && !is12Hour) slot24Hour += 12;
-    if (!isPM && is12Hour) slot24Hour = 0;
-    
-    return slot24Hour === currentHour;
-  };
-  
   return (
     <div className="rounded-md border">
       <TimeTableHeader 
@@ -78,10 +61,9 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
           getObservationDetails={getObservationDetails}
           onCellClick={onCellClick}
           onCellContextMenu={onCellContextMenu}
+          onCareLogClick={onCareLogClick}
           onDogClick={onDogClick}
           onObservationClick={onObservationClick}
-          onCareLogClick={onCareLogClick}
-          isCurrentHourSlot={isCurrentHourSlot}
           currentHour={currentHour}
           isMobile={isMobile}
         />

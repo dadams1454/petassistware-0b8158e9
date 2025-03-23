@@ -5,21 +5,20 @@ import ActiveTabContent from './ActiveTabContent';
 import useTimeManager from './TimeManager';
 import NoDogsState from './NoDogsState';
 import TableLoadingOverlay from './TableLoadingOverlay';
-import { Observation } from '../hooks/useObservations';
 
 interface TableContentManagerProps {
   activeCategory: string;
   dogsStatus: DogCareStatus[];
   sortedDogs: DogCareStatus[];
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
-  hasCareLogged: (dogId: string, timeSlot: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => Observation | null;
-  onCellClick: (dogId: string, dogName: string, timeSlot: string, hasPottyBreak: boolean, hasCareLogged: boolean) => void;
-  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string) => void;
+  getObservationDetails: (dogId: string) => { text: string; type: string } | null;
+  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
-  onObservationClick: (dogId: string) => void;
+  onObservationClick: (dogId: string, dogName: string) => void;
   onRefresh: () => void;
   onCategoryChange?: (category: string) => void;
   showLoading: boolean;
@@ -45,19 +44,6 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
   // Use the time manager hook to get time slots and current hour
   const { timeSlots, currentHour } = useTimeManager(activeCategory);
 
-  // Create adapter functions for compatibility
-  const adaptedHasPottyBreak = (dogId: string, timeSlot: string) => {
-    return hasPottyBreak(dogId, timeSlot);
-  };
-  
-  const adaptedHasCareLogged = (dogId: string, timeSlot: string) => {
-    return hasCareLogged(dogId, timeSlot);
-  };
-  
-  const adaptedOnCellClick = (dogId: string, dogName: string, timeSlot: string, hasPottyBreakValue: boolean, hasCareLoggedValue: boolean) => {
-    onCellClick(dogId, dogName, timeSlot, hasPottyBreakValue, hasCareLoggedValue);
-  };
-
   return (
     <div className="relative table-refresh-transition" onClick={(e) => e.stopPropagation()}>
       {/* Loading Overlay */}
@@ -68,11 +54,11 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
           activeCategory={activeCategory}
           sortedDogs={sortedDogs}
           timeSlots={timeSlots}
-          hasPottyBreak={adaptedHasPottyBreak}
-          hasCareLogged={adaptedHasCareLogged}
+          hasPottyBreak={hasPottyBreak}
+          hasCareLogged={hasCareLogged}
           hasObservation={hasObservation}
           getObservationDetails={getObservationDetails}
-          onCellClick={adaptedOnCellClick}
+          onCellClick={onCellClick}
           onCellContextMenu={onCellContextMenu}
           onCareLogClick={onCareLogClick}
           onDogClick={onDogClick}

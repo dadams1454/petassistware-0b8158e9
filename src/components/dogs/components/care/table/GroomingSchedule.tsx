@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,16 +113,12 @@ const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) 
                   const groomingInfo = groomingData.find(g => g.dogId === dog.dog_id);
                   if (!groomingInfo) return null;
                   
-                  // Create adapter functions that match the expected signatures
-                  const dogClickAdapter = () => handleDogClick(dog.dog_id);
-                  const careLogClickAdapter = () => handleCareLogClick(dog.dog_id, dog.dog_name);
-                  
                   return (
                     <TableRow key={dog.dog_id}>
                       <DogNameCell 
                         dog={dog} 
-                        onClick={dogClickAdapter}
-                        onCareLogClick={careLogClickAdapter}
+                        onCareLogClick={() => handleCareLogClick(dog.dog_id, dog.dog_name)}
+                        onDogClick={() => handleDogClick(dog.dog_id)}
                         activeCategory="grooming"
                         hasObservation={false}
                       />
