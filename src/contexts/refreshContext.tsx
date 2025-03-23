@@ -286,7 +286,7 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({
       
       cleanupMidnightCheck();
     };
-  }, []);
+  }, [refreshInterval, setupMidnightCheck, handleRefresh]);
   
   const contextValue: RefreshContextType = {
     isRefreshing,
