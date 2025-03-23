@@ -10,8 +10,10 @@ import Litters from './pages/Litters';
 import DailyCare from './pages/DailyCare';
 import NotFound from './pages/NotFound';
 
-// Import the RefreshProvider
+// Import the Providers
 import { RefreshProvider } from './contexts/refreshContext';
+import { AuthProvider } from './contexts/AuthProvider';
+import { DailyCareProvider } from './contexts/dailyCare';
 
 const queryClient = new QueryClient();
 
@@ -20,17 +22,21 @@ function App() {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="light" storageKey="theme">
-          <RefreshProvider enableToasts={true}>
-            <Toaster />
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} /> {/* Add explicit dashboard route */}
-              <Route path="/dogs" element={<Dogs />} />
-              <Route path="/litters" element={<Litters />} />
-              <Route path="/dailycare" element={<DailyCare />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </RefreshProvider>
+          <AuthProvider>
+            <RefreshProvider enableToasts={true}>
+              <DailyCareProvider>
+                <Toaster />
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dogs" element={<Dogs />} />
+                  <Route path="/litters" element={<Litters />} />
+                  <Route path="/dailycare" element={<DailyCare />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </DailyCareProvider>
+            </RefreshProvider>
+          </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </BrowserRouter>
