@@ -29,8 +29,7 @@ export function useQueryWithRefresh<TData, TError = Error>({
   // Use the centralized refresh context
   const { 
     lastRefreshTime,
-    handleRefresh, 
-    registerCallback,
+    handleRefresh
   } = useRefresh(area);
   
   // React Query setup with staleTime
@@ -84,17 +83,11 @@ export function useQueryWithRefresh<TData, TError = Error>({
 
   // Listen to the refresh context's lastRefreshTime changes
   useEffect(() => {
-    // Register this component's refresh callback
-    const unregister = registerCallback(area, {
-      onRefresh: async () => {
-        console.log(`🔄 Refresh callback triggered from context for ${queryKey.join('.')}`);
-        await queryResult.refetch();
-        return true;
-      }
-    });
-    
-    return unregister;
-  }, [registerCallback, area, queryResult, queryKey]);
+    // Trigger a refetch whenever the lastRefreshTime for this area changes
+    if (lastRefreshTime) {
+      queryResult.refetch();
+    }
+  }, [lastRefreshTime, queryResult]);
   
   // Return both React Query result and our manual refresh function
   return {

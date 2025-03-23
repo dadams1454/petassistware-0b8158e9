@@ -1,23 +1,15 @@
 
 import { useContext, useEffect } from 'react';
 import { RefreshContext } from './RefreshProvider';
-import { RefreshableArea, RefreshCallbacks, UseRefreshResult } from './types';
+import { RefreshableArea, UseRefreshResult } from './types';
 
 // Custom hook to use refresh context
-export const useRefresh = (area: RefreshableArea = 'all', callbacks?: RefreshCallbacks): UseRefreshResult => {
+export const useRefresh = (area: RefreshableArea = 'all'): UseRefreshResult => {
   const context = useContext(RefreshContext);
   
   if (!context) {
     throw new Error('useRefresh must be used within a RefreshProvider');
   }
-  
-  // Register callbacks if provided
-  useEffect(() => {
-    if (callbacks) {
-      const unregister = context.registerCallback(area, callbacks);
-      return unregister;
-    }
-  }, [area, callbacks, context]);
   
   return {
     isRefreshing: context.isRefreshing[area],

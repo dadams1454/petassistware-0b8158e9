@@ -22,13 +22,16 @@ const Dashboard: React.FC = () => {
     handleRefresh(true);
   };
   
+  // Format the timestamp safely
+  const formattedTime = lastRefreshTime ? format(lastRefreshTime, 'HH:mm:ss') : format(new Date(), 'HH:mm:ss');
+  
   return (
     <PageContainer>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-500">
-            Last refreshed: {format(lastRefreshTime.dashboard || new Date(), 'HH:mm:ss')}
+            Last refreshed: {formattedTime}
           </span>
           <Button 
             variant="outline" 
@@ -56,8 +59,8 @@ const Dashboard: React.FC = () => {
         <DashboardContent 
           isLoading={isLoading}
           stats={stats}
-          events={events}
-          activities={activities}
+          events={events || []}
+          activities={activities || []}
         />
       </div>
 

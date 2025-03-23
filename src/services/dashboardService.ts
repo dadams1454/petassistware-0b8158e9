@@ -33,6 +33,6 @@ export interface RecentActivity {
   title: string;
 }
 
-// For backward compatibility with existing code
-export type DashboardEvent = Partial<UpcomingEvent>;
-export type ActivityItem = Partial<RecentActivity>;
+// Export the types
+export type DashboardEvent = UpcomingEvent;
+export type ActivityItem = RecentActivity;
