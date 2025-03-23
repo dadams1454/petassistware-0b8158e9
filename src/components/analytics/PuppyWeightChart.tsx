@@ -203,9 +203,10 @@ const PuppyWeightChart: React.FC<PuppyWeightChartProps> = ({
                   activeDot={{ 
                     r: isMobile ? 6 : 8, 
                     onClick: (_, payload) => {
-                      // Fixed TypeScript error - proper handling of payload
                       if (payload && typeof payload === 'object') {
-                        setSelectedPuppy(payload as WeightData);
+                        // Cast to WeightData after verifying it's an object
+                        const puppy = payload as unknown as WeightData;
+                        setSelectedPuppy(puppy);
                         setDetailDialogOpen(true);
                       }
                     }
