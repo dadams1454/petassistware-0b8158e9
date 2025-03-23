@@ -35,6 +35,12 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     console.log(`🐕 dogStatuses available: ${dogStatuses?.length || 0} dogs`);
   }, [dogStatuses]);
 
+  // Create a wrapper function to handle the onClick event
+  const onRefreshClick = (event: React.MouseEvent) => {
+    event.preventDefault();
+    handleRefresh(true);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -45,7 +51,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
         />
         
         <Button 
-          onClick={handleRefresh} 
+          onClick={onRefreshClick} 
           variant="outline" 
           className="gap-2 bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800"
         >
