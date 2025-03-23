@@ -1,13 +1,14 @@
 
 import { useQuery, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
-import { useRefresh, RefreshableArea } from '@/contexts/refreshContext';
+import { useRefreshTimestamp } from '@/contexts/refreshTimestamp';
+import { useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { useState, useEffect, useCallback } from 'react';
 
-interface QueryWithRefreshOptions<TData, TError> extends Omit<UseQueryOptions<TData, TError, TData, string[]>, 'queryKey' | 'queryFn'> {
-  queryKey: string[];
+interface QueryWithRefreshOptions<TData, TError> extends 
+  Omit<UseQueryOptions<TData, TError>, 'queryKey' | 'queryFn'> {
+  queryKey: unknown[];
   queryFn: () => Promise<TData>;
-  area?: RefreshableArea;
+  area?: string;
   enableToasts?: boolean;
   refreshLabel?: string;
 }
@@ -15,83 +16,62 @@ interface QueryWithRefreshOptions<TData, TError> extends Omit<UseQueryOptions<TD
 export function useQueryWithRefresh<TData, TError = Error>({
   queryKey,
   queryFn,
-  area = 'dashboard',
+  area = 'data',
   enableToasts = false,
   refreshLabel = 'data',
-  staleTime = 15 * 60 * 1000, // Default to 15 minutes
   ...options
-}: QueryWithRefreshOptions<TData, TError>): UseQueryResult<TData, TError> & { 
-  manualRefresh: (showToast?: boolean) => Promise<void>
+}: QueryWithRefreshOptions<TData, TError>): UseQueryResult<TData, TError> & {
+  manualRefresh: (showToast?: boolean) => Promise<void>;
 } {
-  const [error, setError] = useState<Error | null>(null);
+  const { lastRefresh } = useRefreshTimestamp();
   const { toast } = useToast();
   
-  // Use the centralized refresh context
-  const { 
-    lastRefreshTime,
-    handleRefresh
-  } = useRefresh(area);
+  // Include the refresh timestamp in the query key to trigger refetches
+  const enhancedQueryKey = [...queryKey, lastRefresh.toISOString()];
   
-  // React Query setup with staleTime
-  const queryResult = useQuery({
-    queryKey,
+  // Create the query
+  const query = useQuery<TData, TError>({
+    queryKey: enhancedQueryKey,
     queryFn,
-    staleTime,
-    ...options
+    ...options,
   });
   
-  // Manual refresh function that triggers both React Query refetch and notifies the refresh context
-  const manualRefresh = useCallback(async (showToast: boolean = false) => {
+  // Manual refresh function
+  const manualRefresh = useCallback(async (showToast = false) => {
+    if (showToast && enableToasts) {
+      toast({
+        title: `Refreshing ${refreshLabel}...`,
+        description: "Fetching the latest information",
+        duration: 2000,
+      });
+    }
+    
     try {
-      console.log(`🔄 Manual refresh triggered for ${queryKey.join('.')}${showToast ? ' with toast' : ''}`);
-      
-      if (showToast && enableToasts) {
-        toast({
-          title: `Refreshing ${refreshLabel}...`,
-          description: "Please wait while we update the latest information.",
-          duration: 3000,
-        });
-      }
-      
-      // Trigger React Query's refetch
-      await queryResult.refetch();
-      
-      // Notify the refresh context
-      handleRefresh(false);
+      await query.refetch();
       
       if (showToast && enableToasts) {
         toast({
           title: "Refresh complete",
-          description: `${refreshLabel} has been updated successfully.`,
-          duration: 3000,
+          description: `Latest ${refreshLabel} loaded successfully`,
+          duration: 2000,
         });
       }
-    } catch (err) {
-      console.error(`❌ Manual refresh for ${queryKey.join('.')} failed:`, err);
-      setError(err instanceof Error ? err : new Error(String(err)));
+    } catch (error) {
+      console.error(`Error refreshing ${area}:`, error);
       
       if (showToast && enableToasts) {
         toast({
-          title: `Failed to refresh ${refreshLabel}`,
-          description: err instanceof Error ? err.message : 'Unknown error',
+          title: "Refresh failed",
+          description: `Unable to update ${refreshLabel}. Please try again.`,
           variant: "destructive",
-          duration: 5000,
+          duration: 3000,
         });
       }
     }
-  }, [queryResult, handleRefresh, queryKey, enableToasts, refreshLabel, toast]);
-
-  // Listen to the refresh context's lastRefreshTime changes
-  useEffect(() => {
-    // Trigger a refetch whenever the lastRefreshTime for this area changes
-    if (lastRefreshTime) {
-      queryResult.refetch();
-    }
-  }, [lastRefreshTime, queryResult]);
+  }, [query, area, enableToasts, toast, refreshLabel]);
   
-  // Return both React Query result and our manual refresh function
   return {
-    ...queryResult,
+    ...query,
     manualRefresh
   };
 }
