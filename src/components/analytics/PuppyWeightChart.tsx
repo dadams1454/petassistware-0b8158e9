@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WeightData {
   name: string;
@@ -76,6 +77,7 @@ const PuppyWeightChart: React.FC<PuppyWeightChartProps> = ({
 }) => {
   const [selectedPuppy, setSelectedPuppy] = useState<WeightData | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const chartData: WeightData[] = useMemo(() => {
     return puppies
@@ -159,36 +161,55 @@ const PuppyWeightChart: React.FC<PuppyWeightChartProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
+          <div className={isMobile ? "h-64" : "h-80"}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={litterAverageData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 40 }}
+                margin={isMobile ? 
+                  { top: 5, right: 10, left: 0, bottom: 40 } : 
+                  { top: 5, right: 30, left: 20, bottom: 40 }
+                }
                 onClick={handleDataPointClick}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="name" 
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
                   interval={0}
                   angle={-45}
                   textAnchor="end"
+                  height={60}
                 />
                 <YAxis
-                  label={{ value: 'Weight (oz)', angle: -90, position: 'insideLeft' }}
-                  width={60}
+                  label={isMobile ? 
+                    { value: 'oz', angle: -90, position: 'insideLeft', offset: -5 } : 
+                    { value: 'Weight (oz)', angle: -90, position: 'insideLeft' }
+                  }
+                  width={isMobile ? 40 : 60}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{strokeDasharray: '3 3'}} />
-                <Legend />
+                <Legend 
+                  wrapperStyle={isMobile ? { fontSize: '10px' } : undefined}
+                  layout={isMobile ? "horizontal" : "vertical"}
+                  verticalAlign={isMobile ? "bottom" : "middle"}
+                  align={isMobile ? "center" : "right"}
+                />
                 <Line 
                   type="monotone" 
                   dataKey="weight" 
                   stroke="#2563eb" 
                   strokeWidth={2} 
-                  activeDot={{ r: 8, onClick: (e, payload) => {
-                    setSelectedPuppy(payload);
-                    setDetailDialogOpen(true);
-                  }}} 
+                  activeDot={{ 
+                    r: isMobile ? 6 : 8, 
+                    onClick: (_, payload) => {
+                      // Fixed TypeScript error - proper handling of payload
+                      if (payload && typeof payload === 'object') {
+                        setSelectedPuppy(payload as WeightData);
+                        setDetailDialogOpen(true);
+                      }
+                    }
+                  }} 
                   name="Current Weight"
                 />
                 <Line 
@@ -196,7 +217,7 @@ const PuppyWeightChart: React.FC<PuppyWeightChartProps> = ({
                   dataKey="birthWeight" 
                   stroke="#9333ea" 
                   strokeWidth={2} 
-                  activeDot={{ r: 6 }} 
+                  activeDot={{ r: isMobile ? 5 : 6 }} 
                   name="Birth Weight"
                 />
                 <Line 
@@ -207,13 +228,15 @@ const PuppyWeightChart: React.FC<PuppyWeightChartProps> = ({
                   strokeWidth={2} 
                   name="Litter Average"
                 />
-                <Brush 
-                  dataKey="name" 
-                  height={30} 
-                  stroke="#8884d8"
-                  startIndex={0}
-                  endIndex={Math.min(5, litterAverageData.length - 1)}
-                />
+                {!isMobile && (
+                  <Brush 
+                    dataKey="name" 
+                    height={30} 
+                    stroke="#8884d8"
+                    startIndex={0}
+                    endIndex={Math.min(5, litterAverageData.length - 1)}
+                  />
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>

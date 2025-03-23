@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GenderDistributionChartProps {
   puppies: Puppy[];
@@ -20,6 +21,8 @@ const GenderDistributionChart: React.FC<GenderDistributionChartProps> = ({
   puppies,
   title = "Gender Distribution"
 }) => {
+  const isMobile = useIsMobile();
+  
   const chartData = useMemo(() => {
     const maleCount = puppies.filter(puppy => 
       puppy.gender?.toLowerCase() === 'male').length;
@@ -73,25 +76,33 @@ const GenderDistributionChart: React.FC<GenderDistributionChartProps> = ({
         <CardTitle className="text-xl">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64">
+        <div className={isMobile ? "h-60" : "h-64"}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                labelLine={true}
-                outerRadius={80}
+                labelLine={!isMobile}
+                outerRadius={isMobile ? 60 : 80}
                 fill="#8884d8"
                 dataKey="value"
-                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={isMobile ? 
+                  undefined : 
+                  ({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`
+                }
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip formatter={(value) => [`${value} puppies`, 'Count']} />
-              <Legend />
+              <Legend 
+                layout={isMobile ? "horizontal" : "vertical"}
+                verticalAlign={isMobile ? "bottom" : "middle"}
+                align={isMobile ? "center" : "right"}
+                wrapperStyle={isMobile ? { fontSize: '10px', marginTop: '10px' } : undefined}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>

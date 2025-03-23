@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ColorDistributionChartProps {
   puppies: Puppy[];
@@ -23,6 +24,8 @@ const ColorDistributionChart: React.FC<ColorDistributionChartProps> = ({
   puppies,
   title = "Color Distribution"
 }) => {
+  const isMobile = useIsMobile();
+  
   const chartData = useMemo(() => {
     const colorCounts: { [key: string]: number } = {};
     
@@ -79,27 +82,48 @@ const ColorDistributionChart: React.FC<ColorDistributionChartProps> = ({
         <CardTitle className="text-xl">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64">
+        <div className={isMobile ? "h-60" : "h-64"}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              margin={isMobile ? 
+                { top: 5, right: 10, left: 0, bottom: 50 } : 
+                { top: 5, right: 30, left: 20, bottom: 5 }
+              }
+              layout={isMobile ? "vertical" : "horizontal"}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fontSize: 12 }}
-                interval={0}
-                angle={-45}
-                textAnchor="end"
-              />
-              <YAxis 
-                label={{ value: 'Count', angle: -90, position: 'insideLeft' }}
-              />
+              {isMobile ? (
+                <>
+                  <XAxis type="number" />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    tick={{ fontSize: 10 }}
+                    width={70}
+                  />
+                </>
+              ) : (
+                <>
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 12 }}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                  />
+                  <YAxis 
+                    label={{ value: 'Count', angle: -90, position: 'insideLeft' }}
+                  />
+                </>
+              )}
               <Tooltip 
                 formatter={(value) => [`${value} puppies`, 'Count']}
               />
-              <Legend />
+              <Legend 
+                wrapperStyle={isMobile ? { fontSize: '10px' } : undefined}
+                verticalAlign={isMobile ? "top" : "bottom"}
+              />
               <Bar 
                 dataKey="count" 
                 name="Number of Puppies" 
