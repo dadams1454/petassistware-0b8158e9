@@ -24,22 +24,32 @@ export const usePottyReminder = (dogs: DogCareStatus[]) => {
   useEffect(() => {
     const fetchLastBreakTimes = async () => {
       setIsLoading(true);
-      const promises = dogs.map(async (dog) => {
-        try {
-          const lastBreak = await getLastDogPottyBreak(dog.dog_id);
-          return { 
-            dog, 
-            lastBreak: lastBreak ? lastBreak.session_time : null 
-          };
-        } catch (error) {
-          console.error(`Error fetching last potty break for ${dog.dog_name}:`, error);
-          return { dog, lastBreak: null };
-        }
-      });
+      try {
+        const promises = dogs.map(async (dog) => {
+          try {
+            const lastBreak = await getLastDogPottyBreak(dog.dog_id);
+            return { 
+              dog, 
+              lastBreak: lastBreak ? lastBreak.session_time : null 
+            };
+          } catch (error) {
+            console.error(`Error fetching last potty break for ${dog.dog_name}:`, error);
+            return { dog, lastBreak: null };
+          }
+        });
 
-      const results = await Promise.all(promises);
-      setDogsWithTimes(results);
-      setIsLoading(false);
+        const results = await Promise.all(promises);
+        setDogsWithTimes(results);
+      } catch (error) {
+        console.error('Error fetching potty break times:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load potty break information.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     if (dogs.length > 0) {
@@ -47,7 +57,7 @@ export const usePottyReminder = (dogs: DogCareStatus[]) => {
     } else {
       setIsLoading(false);
     }
-  }, [dogs]);
+  }, [dogs, toast]);
 
   // Filter dogs that need potty breaks (more than 3 hours since last break)
   const threeHoursAgo = new Date();
