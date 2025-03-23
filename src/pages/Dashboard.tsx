@@ -1,29 +1,25 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import { useDashboardData } from '@/components/dashboard/useDashboardData';
 import { Button } from '@/components/ui/button';
 import { Settings, RefreshCw } from 'lucide-react';
 import DashboardSettingsDialog from '@/components/dashboard/settings/DashboardSettingsDialog';
-import { useRefreshTimestamp } from '@/contexts/refreshTimestamp';
 import { format } from 'date-fns';
+import { useRefresh } from '@/contexts/refreshContext';
 
 const Dashboard: React.FC = () => {
-  // Use the hook to fetch all dashboard data
+  // Use the hook to fetch all dashboard data with React Query
   const { isLoading, stats, events, activities, refetch } = useDashboardData();
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
-  const { lastRefresh, refresh } = useRefreshTimestamp();
+  const { lastRefreshTime, handleRefresh } = useRefresh('dashboard');
   
-  // Listen to lastRefresh changes and refetch data
-  useEffect(() => {
-    console.log('📅 Dashboard detected refresh timestamp change:', format(lastRefresh, 'HH:mm:ss'));
-    refetch();
-  }, [lastRefresh, refetch]);
-  
-  const handleRefresh = () => {
+  const handleRefreshClick = () => {
     console.log('🔄 Manual refresh triggered from Dashboard');
-    refresh();
+    // Use our manual refetch function from React Query
+    refetch(true);
+    handleRefresh(true);
   };
   
   return (
@@ -32,12 +28,12 @@ const Dashboard: React.FC = () => {
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-500">
-            Last refreshed: {format(lastRefresh, 'HH:mm:ss')}
+            Last refreshed: {format(lastRefreshTime.dashboard || new Date(), 'HH:mm:ss')}
           </span>
           <Button 
             variant="outline" 
             size="sm"
-            onClick={handleRefresh}
+            onClick={handleRefreshClick}
             className="flex items-center gap-2"
           >
             <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />

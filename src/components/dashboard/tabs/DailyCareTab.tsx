@@ -5,33 +5,62 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { useQueryWithRefresh } from '@/hooks/useQueryWithRefresh';
 
 interface DailyCareTabProps {
-  onRefreshDogs: () => void;
-  isRefreshing: boolean;
+  onRefreshDogs?: () => void;
+  isRefreshing?: boolean;
   currentDate?: Date;
 }
 
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ 
   onRefreshDogs, 
-  isRefreshing,
-  currentDate = new Date() // Default to current date if not provided
+  isRefreshing: externalRefreshing,
+  currentDate = new Date()
 }) => {
-  const { dogStatuses } = useDailyCare();
+  const { fetchAllDogsWithCareStatus } = useDailyCare();
   const [localRefreshing, setLocalRefreshing] = useState(false);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const unmountedRef = useRef<boolean>(false);
+  
+  // Use React Query with our custom hook
+  const { 
+    data: dogStatuses, 
+    isLoading, 
+    isRefetching,
+    manualRefresh,
+    error 
+  } = useQueryWithRefresh({
+    queryKey: ['dogs', 'careStatus', currentDate.toISOString().split('T')[0]],
+    queryFn: async () => {
+      console.log('📊 Fetching dog care statuses via React Query');
+      const dogs = await fetchAllDogsWithCareStatus(currentDate);
+      console.log(`✅ Fetched ${dogs.length} dog statuses`);
+      return dogs;
+    },
+    area: 'dailyCare',
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    enableToasts: true,
+    refreshLabel: 'dog care data',
+  });
+  
+  // Combine all loading states
+  const isRefreshing = isLoading || isRefetching || externalRefreshing || localRefreshing;
   
   // Handle local refresh state to show a smoother UI
   const handleLocalRefresh = () => {
     if (unmountedRef.current) return;
     
     setLocalRefreshing(true);
+    console.log('DailyCareTab refresh triggered via React Query');
     
-    console.log('DailyCareTab refresh triggered');
+    // Use our manual refresh function
+    manualRefresh(true);
     
-    // Actual refresh
-    onRefreshDogs();
+    // Call external refresh if provided
+    if (onRefreshDogs) {
+      onRefreshDogs();
+    }
     
     // Ensure we show the loading state for at least 500ms to avoid flicker
     if (refreshTimeoutRef.current) {
@@ -58,16 +87,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     };
   }, []);
   
-  // Update local refreshing state based on prop
-  useEffect(() => {
-    if (!isRefreshing && localRefreshing && !unmountedRef.current) {
-      // The parent says we're done refreshing, but maintain local state for min duration
-      if (!refreshTimeoutRef.current) {
-        setLocalRefreshing(false);
-      }
-    }
-  }, [isRefreshing, localRefreshing]);
-
   // Error reset handler
   const handleErrorReset = () => {
     console.log("Resetting after error in DailyCareTab");
@@ -82,10 +101,10 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
           <button 
             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
             onClick={handleLocalRefresh} 
-            disabled={localRefreshing || isRefreshing}
+            disabled={isRefreshing}
             onMouseDown={(e) => e.preventDefault()}
           >
-            {localRefreshing || isRefreshing ? 'Refreshing...' : 'Refresh Dogs'}
+            {isRefreshing ? 'Refreshing...' : 'Refresh Dogs'}
           </button>
         </CardContent>
       </Card>
@@ -107,12 +126,12 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
           }}
         />
         
-        {/* Time Table - use the centralized refresh from parent */}
+        {/* Time Table */}
         <div id="dog-time-table">
           <DogTimeTable 
             dogsStatus={dogStatuses} 
             onRefresh={handleLocalRefresh}
-            isRefreshing={localRefreshing || isRefreshing}
+            isRefreshing={isRefreshing}
             currentDate={currentDate}
           />
         </div>
