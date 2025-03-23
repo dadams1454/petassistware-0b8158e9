@@ -68,9 +68,12 @@ const ChartContent: React.FC<ChartContentProps> = ({
             strokeWidth={2} 
             activeDot={{ 
               r: isMobile ? 6 : 8, 
-              onClick: (e, payload) => {
+              onClick: (payload: any, event: any) => {
+                if (event) {
+                  // Fixed: Use event from recharts instead of e
+                  event.stopPropagation();
+                }
                 if (payload && typeof payload === 'object') {
-                  e.stopPropagation();
                   onDataPointClick({ activePayload: [{ payload }] });
                 }
               }
