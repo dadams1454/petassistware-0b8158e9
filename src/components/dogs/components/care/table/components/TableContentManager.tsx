@@ -22,6 +22,7 @@ interface TableContentManagerProps {
   onRefresh: () => void;
   onCategoryChange?: (category: string) => void;
   showLoading: boolean;
+  isPending?: boolean;
 }
 
 const TableContentManager: React.FC<TableContentManagerProps> = ({
@@ -39,15 +40,16 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
   onObservationClick,
   onRefresh,
   onCategoryChange,
-  showLoading
+  showLoading,
+  isPending = false
 }) => {
   // Use the time manager hook to get time slots and current hour
   const { timeSlots, currentHour } = useTimeManager(activeCategory);
 
   return (
-    <div className="relative table-refresh-transition" onClick={(e) => e.stopPropagation()}>
-      {/* Loading Overlay */}
-      <TableLoadingOverlay isLoading={showLoading} />
+    <div className={`relative table-refresh-transition ${isPending ? 'opacity-70' : ''}`} onClick={(e) => e.stopPropagation()}>
+      {/* Loading Overlay with improved visuals */}
+      <TableLoadingOverlay isLoading={showLoading} isPending={isPending} />
       
       {dogsStatus.length > 0 ? (
         <ActiveTabContent

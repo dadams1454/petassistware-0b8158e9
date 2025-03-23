@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useTransition } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import AddGroupDialog from './components/AddGroupDialog';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -25,6 +25,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   currentDate 
 }) => {
   const isMobile = useIsMobile();
+  // Add useTransition to prevent UI blocking during expensive updates
+  const [isPending, startTransition] = useTransition();
   
   const {
     isDialogOpen,
@@ -56,8 +58,25 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     timeSlots
   } = useTimeTableState(dogsStatus, onRefresh, isRefreshing, currentDate);
 
+  // Enhanced refresh handler with useTransition
+  const handleRefreshWithTransition = () => {
+    startTransition(() => {
+      handleRefresh();
+    });
+  };
+  
+  // Enhanced category change handler with useTransition
+  const handleCategoryChangeWithTransition = (category: string) => {
+    startTransition(() => {
+      handleCategoryChange(category);
+    });
+  };
+
   // Find the selected dog based on selectedDogId
   const selectedDog = dogsStatus.find(dog => dog.dog_id === selectedDogId);
+
+  // Combined loading state including transition state
+  const isLoadingOrTransitioning = showLoading || isPending;
 
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DogTimeTable">
@@ -65,7 +84,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         {/* Table actions with title and add group button */}
         <TableActions
           onAddGroup={() => setIsDialogOpen(true)}
-          isRefreshing={showLoading}
+          isRefreshing={isLoadingOrTransitioning}
           currentDate={currentDate}
         />
 
@@ -80,7 +99,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         {/* Category Tabs */}
         <CategoryTabs 
           activeCategory={activeCategory} 
-          onValueChange={handleCategoryChange} 
+          onValueChange={handleCategoryChangeWithTransition} 
         />
 
         {/* Table Content */}
@@ -97,9 +116,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onCareLogClick={handleCareLogClick}
           onDogClick={handleDogClick}
           onObservationClick={handleObservationClick}
-          onRefresh={handleRefresh}
-          onCategoryChange={handleCategoryChange}
-          showLoading={showLoading}
+          onRefresh={handleRefreshWithTransition}
+          onCategoryChange={handleCategoryChangeWithTransition}
+          showLoading={isLoadingOrTransitioning}
+          isPending={isPending}
         />
 
         {/* Add Group Dialog */}
