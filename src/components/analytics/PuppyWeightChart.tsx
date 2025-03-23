@@ -202,7 +202,8 @@ const PuppyWeightChart: React.FC<PuppyWeightChartProps> = ({
                   strokeWidth={2} 
                   activeDot={{ 
                     r: isMobile ? 6 : 8, 
-                    onClick: (_, payload) => {
+                    onClick: (event, payload) => {
+                      // Fix: Convert the payload to WeightData before setting state
                       if (payload && typeof payload === 'object') {
                         // Cast to WeightData after verifying it's an object
                         const puppy = payload as unknown as WeightData;
