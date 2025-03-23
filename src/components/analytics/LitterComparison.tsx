@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AlertCircle, Users, Scale, Palette } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface LitterComparisonProps {
   className?: string;
@@ -167,6 +168,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
 
   // Combined loading state from parent and local queries
   const isLoadingAll = isLoading || isLoadingDams;
+  const isContentLoading = isLoadingAll || (selectedDamId && isLoadingLitters);
 
   if (isLoadingAll) {
     return (
@@ -193,6 +195,14 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
     );
   }
 
+  // Render the loading skeleton when content is loading
+  const renderLoadingState = () => (
+    <div className="space-y-6">
+      <Skeleton className="w-full h-10 mb-4" />
+      <Skeleton className="w-full h-[300px]" />
+    </div>
+  );
+
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
@@ -205,6 +215,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
           <Select
             value={selectedDamId || ''}
             onValueChange={(value) => setSelectedDamId(value)}
+            disabled={isContentLoading}
           >
             <SelectTrigger className="w-full md:w-[350px]">
               <SelectValue placeholder="Select a dam to view breeding history" />
@@ -219,202 +230,197 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
           </Select>
         </div>
 
-        {selectedDam && (
-          <div className="mb-4 p-4 bg-muted rounded-lg">
-            <h3 className="font-medium">{selectedDam.name}</h3>
-            <p className="text-sm text-muted-foreground">
-              Breed: {selectedDam.breed} • Color: {selectedDam.color || 'Not specified'} • 
-              Total Litters: {selectedDam.litters?.length || 0}
-            </p>
-          </div>
-        )}
+        {isContentLoading ? (
+          // Show a loading state for the entire component content
+          renderLoadingState()
+        ) : (
+          <>
+            {selectedDam && (
+              <div className="mb-4 p-4 bg-muted rounded-lg">
+                <h3 className="font-medium">{selectedDam.name}</h3>
+                <p className="text-sm text-muted-foreground">
+                  Breed: {selectedDam.breed} • Color: {selectedDam.color || 'Not specified'} • 
+                  Total Litters: {selectedDam.litters?.length || 0}
+                </p>
+              </div>
+            )}
 
-        {/* Comparison Tabs */}
-        {selectedDamId && (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-3 mb-6">
-              <TabsTrigger value="counts" className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">Puppy Counts</span>
-              </TabsTrigger>
-              <TabsTrigger value="weights" className="flex items-center gap-1">
-                <Scale className="h-4 w-4" />
-                <span className="hidden sm:inline">Weight Comparison</span>
-              </TabsTrigger>
-              <TabsTrigger value="colors" className="flex items-center gap-1">
-                <Palette className="h-4 w-4" />
-                <span className="hidden sm:inline">Color Distribution</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="counts">
-              {isLoadingLitters ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Loading litter data...</p>
-                </div>
-              ) : puppiesPerLitterData.length > 0 ? (
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={puppiesPerLitterData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 70 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 12 }}
-                        angle={-45}
-                        textAnchor="end"
-                        interval={0}
-                      />
-                      <YAxis 
-                        label={{ value: 'Number of Puppies', angle: -90, position: 'insideLeft' }}
-                      />
-                      <Tooltip 
-                        formatter={(value, name) => {
-                          if (name === 'male') return [`${value} males`, 'Males'];
-                          if (name === 'female') return [`${value} females`, 'Females'];
-                          return [`${value} puppies`, 'Total'];
-                        }}
-                        labelFormatter={(label) => {
-                          const item = puppiesPerLitterData.find(d => d.name === label);
-                          return `${label} (Sire: ${item?.sire})`;
-                        }}
-                      />
-                      <Legend />
-                      <Bar dataKey="male" name="Males" fill="#2563eb" />
-                      <Bar dataKey="female" name="Females" fill="#db2777" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="text-center py-8 border border-dashed rounded-md">
-                  <p className="text-muted-foreground">No litter data available for this dam.</p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="weights">
-              {isLoadingLitters ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Loading weight data...</p>
-                </div>
-              ) : weightComparisonData.length > 0 ? (
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={weightComparisonData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 70 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 12 }}
-                        angle={-45}
-                        textAnchor="end"
-                        interval={0}
-                      />
-                      <YAxis 
-                        label={{ value: 'Average Weight (oz)', angle: -90, position: 'insideLeft' }}
-                      />
-                      <Tooltip 
-                        formatter={(value, name) => {
-                          if (name === 'birthWeight') return [`${Number(value).toFixed(1)} oz`, 'Birth Weight'];
-                          return [`${Number(value).toFixed(1)} oz`, 'Current Weight'];
-                        }}
-                        labelFormatter={(label) => {
-                          const item = weightComparisonData.find(d => d.name === label);
-                          return `${label} (Sire: ${item?.sire}, Puppies: ${item?.puppyCount})`;
-                        }}
-                      />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="birthWeight" 
-                        name="Avg. Birth Weight" 
-                        stroke="#9333ea" 
-                        strokeWidth={2} 
-                        activeDot={{ r: 8 }} 
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="currentWeight" 
-                        name="Avg. Current Weight" 
-                        stroke="#16a34a" 
-                        strokeWidth={2} 
-                        activeDot={{ r: 8 }} 
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="text-center py-8 border border-dashed rounded-md">
-                  <p className="text-muted-foreground">No weight data available for puppies of this dam.</p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="colors">
-              {isLoadingLitters ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Loading color data...</p>
-                </div>
-              ) : colorDistributionData.length > 0 ? (
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={colorDistributionData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 12 }}
-                        interval={0}
-                      />
-                      <YAxis
-                        yAxisId="left"
-                        label={{ value: 'Count', angle: -90, position: 'insideLeft' }}
-                      />
-                      <YAxis
-                        yAxisId="right"
-                        orientation="right"
-                        label={{ value: 'Percentage', angle: 90, position: 'insideRight' }}
-                        unit="%"
-                      />
-                      <Tooltip 
-                        formatter={(value, name, props) => {
-                          if (name === 'percentage') return [`${value}%`, 'Percentage'];
-                          return [`${value} puppies`, 'Count'];
-                        }}
-                      />
-                      <Legend />
-                      <Bar 
-                        dataKey="count" 
-                        name="Number of Puppies" 
-                        fill="#2563eb"
-                        yAxisId="left"
-                      >
-                        {colorDistributionData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                      <Bar 
-                        dataKey="percentage" 
-                        name="Percentage" 
-                        fill="#16a34a"
-                        yAxisId="right"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="text-center py-8 border border-dashed rounded-md">
-                  <p className="text-muted-foreground">No color data available for puppies of this dam.</p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+            {/* Comparison Tabs */}
+            {selectedDamId && (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid grid-cols-3 mb-6">
+                  <TabsTrigger value="counts" className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    <span className="hidden sm:inline">Puppy Counts</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="weights" className="flex items-center gap-1">
+                    <Scale className="h-4 w-4" />
+                    <span className="hidden sm:inline">Weight Comparison</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="colors" className="flex items-center gap-1">
+                    <Palette className="h-4 w-4" />
+                    <span className="hidden sm:inline">Color Distribution</span>
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="counts">
+                  {puppiesPerLitterData.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={puppiesPerLitterData}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 70 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="name" 
+                            tick={{ fontSize: 12 }}
+                            angle={-45}
+                            textAnchor="end"
+                            interval={0}
+                          />
+                          <YAxis 
+                            label={{ value: 'Number of Puppies', angle: -90, position: 'insideLeft' }}
+                          />
+                          <Tooltip 
+                            formatter={(value, name) => {
+                              if (name === 'male') return [`${value} males`, 'Males'];
+                              if (name === 'female') return [`${value} females`, 'Females'];
+                              return [`${value} puppies`, 'Total'];
+                            }}
+                            labelFormatter={(label) => {
+                              const item = puppiesPerLitterData.find(d => d.name === label);
+                              return `${label} (Sire: ${item?.sire})`;
+                            }}
+                          />
+                          <Legend />
+                          <Bar dataKey="male" name="Males" fill="#2563eb" />
+                          <Bar dataKey="female" name="Females" fill="#db2777" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 border border-dashed rounded-md">
+                      <p className="text-muted-foreground">No litter data available for this dam.</p>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="weights">
+                  {weightComparisonData.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={weightComparisonData}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 70 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="name" 
+                            tick={{ fontSize: 12 }}
+                            angle={-45}
+                            textAnchor="end"
+                            interval={0}
+                          />
+                          <YAxis 
+                            label={{ value: 'Average Weight (oz)', angle: -90, position: 'insideLeft' }}
+                          />
+                          <Tooltip 
+                            formatter={(value, name) => {
+                              if (name === 'birthWeight') return [`${Number(value).toFixed(1)} oz`, 'Birth Weight'];
+                              return [`${Number(value).toFixed(1)} oz`, 'Current Weight'];
+                            }}
+                            labelFormatter={(label) => {
+                              const item = weightComparisonData.find(d => d.name === label);
+                              return `${label} (Sire: ${item?.sire}, Puppies: ${item?.puppyCount})`;
+                            }}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="birthWeight" 
+                            name="Avg. Birth Weight" 
+                            stroke="#9333ea" 
+                            strokeWidth={2} 
+                            activeDot={{ r: 8 }} 
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="currentWeight" 
+                            name="Avg. Current Weight" 
+                            stroke="#16a34a" 
+                            strokeWidth={2} 
+                            activeDot={{ r: 8 }} 
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 border border-dashed rounded-md">
+                      <p className="text-muted-foreground">No weight data available for puppies of this dam.</p>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="colors">
+                  {colorDistributionData.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={colorDistributionData}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="name" 
+                            tick={{ fontSize: 12 }}
+                            interval={0}
+                          />
+                          <YAxis
+                            yAxisId="left"
+                            label={{ value: 'Count', angle: -90, position: 'insideLeft' }}
+                          />
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            label={{ value: 'Percentage', angle: 90, position: 'insideRight' }}
+                            unit="%"
+                          />
+                          <Tooltip 
+                            formatter={(value, name, props) => {
+                              if (name === 'percentage') return [`${value}%`, 'Percentage'];
+                              return [`${value} puppies`, 'Count'];
+                            }}
+                          />
+                          <Legend />
+                          <Bar 
+                            dataKey="count" 
+                            name="Number of Puppies" 
+                            fill="#2563eb"
+                            yAxisId="left"
+                          >
+                            {colorDistributionData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Bar>
+                          <Bar 
+                            dataKey="percentage" 
+                            name="Percentage" 
+                            fill="#16a34a"
+                            yAxisId="right"
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 border border-dashed rounded-md">
+                      <p className="text-muted-foreground">No color data available for puppies of this dam.</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
