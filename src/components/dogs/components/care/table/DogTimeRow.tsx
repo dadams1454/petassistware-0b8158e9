@@ -96,6 +96,15 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
     onObservationClick(dogId, dogName);
   };
   
+  // Create adapter functions to convert from event handlers to dogId-based handlers
+  const adaptedDogClick = () => {
+    onDogClick(dogId);
+  };
+  
+  const adaptedCareLogClick = () => {
+    onCareLogClick(dogId, dogName);
+  };
+  
   return (
     <TableRow 
       key={`${dogId}-row`} 
@@ -105,8 +114,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       {/* Dog name cell with photo, gender color based on dog sex */}
       <DogNameCell 
         dog={dog} 
-        onClick={handleDogCellClick}
-        onCareLogClick={handleCareLogCellClick}
+        onClick={adaptedDogClick}
+        onCareLogClick={adaptedCareLogClick}
         activeCategory={activeCategory}
         hasObservation={dogHasObservation}
         observationText={observationDetails?.text || ''}

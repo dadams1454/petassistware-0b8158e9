@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils';
 
 interface DogNameCellProps {
   dog: DogCareStatus;
-  onClick: (dogId: string) => void;
-  onCareLogClick?: (dogId: string, dogName: string) => void;
+  onClick: () => void;
+  onCareLogClick?: () => void;
   activeCategory?: string;
   hasObservation?: boolean;
   observationText?: string;
@@ -37,7 +37,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
   };
 
   const handleClick = () => {
-    onClick(dog.dog_id);
+    onClick();
   };
 
   const handleCareLogClick = (e: React.MouseEvent) => {
@@ -45,7 +45,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
       e.stopPropagation();
     }
     if (onCareLogClick) {
-      onCareLogClick(dog.dog_id, dog.dog_name);
+      onCareLogClick();
     }
   };
   
