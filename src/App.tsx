@@ -13,6 +13,7 @@ import NotFound from './pages/NotFound';
 
 // Import the Providers
 import { RefreshProvider } from './contexts/refresh';
+import { RefreshTimestampProvider } from './contexts/refreshTimestamp';
 import { AuthProvider } from './contexts/AuthProvider';
 import { DailyCareProvider } from './contexts/dailyCare';
 
@@ -25,19 +26,21 @@ function App() {
         <ThemeProvider defaultTheme="light" storageKey="theme">
           <AuthProvider>
             <RefreshProvider enableToasts={true}>
-              <DailyCareProvider>
-                <Toaster />
-                <Routes>
-                  <Route element={<MainLayout />}>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/dogs" element={<Dogs />} />
-                    <Route path="/litters" element={<Litters />} />
-                    <Route path="/dailycare" element={<DailyCare />} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </DailyCareProvider>
+              <RefreshTimestampProvider>
+                <DailyCareProvider>
+                  <Toaster />
+                  <Routes>
+                    <Route element={<MainLayout />}>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/dogs" element={<Dogs />} />
+                      <Route path="/litters" element={<Litters />} />
+                      <Route path="/dailycare" element={<DailyCare />} />
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </DailyCareProvider>
+              </RefreshTimestampProvider>
             </RefreshProvider>
           </AuthProvider>
         </ThemeProvider>
