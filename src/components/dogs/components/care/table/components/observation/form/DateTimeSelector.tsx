@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { TimePickerDemo } from '@/components/ui/time-picker';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface DateTimeSelectorProps {
   observationDate: Date;
@@ -34,11 +34,19 @@ const DateTimeSelector: React.FC<DateTimeSelectorProps> = ({
     setObservationDate(newDate);
   };
   
-  // Handle time change from time picker
-  const handleTimeChange = (hours: number, minutes: number) => {
+  // Handle hour selection
+  const handleHourChange = (value: string) => {
+    const hour = parseInt(value, 10);
     const newDate = new Date(observationDate);
-    newDate.setHours(hours);
-    newDate.setMinutes(minutes);
+    newDate.setHours(hour);
+    setObservationDate(newDate);
+  };
+  
+  // Handle minute selection
+  const handleMinuteChange = (value: string) => {
+    const minute = parseInt(value, 10);
+    const newDate = new Date(observationDate);
+    newDate.setMinutes(minute);
     setObservationDate(newDate);
   };
   
@@ -83,12 +91,41 @@ const DateTimeSelector: React.FC<DateTimeSelectorProps> = ({
               {format(observationDate, 'h:mm a')}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-4" align="start">
-            <TimePickerDemo 
-              setHours={(hours) => handleTimeChange(hours, observationDate.getMinutes())}
-              setMinutes={(minutes) => handleTimeChange(observationDate.getHours(), minutes)}
-              date={observationDate}
-            />
+          <PopoverContent className="flex w-auto p-4" align="start">
+            <div className="flex gap-2">
+              {/* Hour selector */}
+              <Select value={observationDate.getHours().toString()} onValueChange={handleHourChange}>
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="Hour" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <SelectItem key={i} value={i.toString()}>
+                      {i.toString().padStart(2, '0')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <span className="flex items-center">:</span>
+              
+              {/* Minute selector */}
+              <Select 
+                value={observationDate.getMinutes().toString()} 
+                onValueChange={handleMinuteChange}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="Min" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 60 }, (_, i) => (
+                    <SelectItem key={i} value={i.toString()}>
+                      {i.toString().padStart(2, '0')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </PopoverContent>
         </Popover>
       </div>

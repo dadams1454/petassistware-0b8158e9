@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { addCareLog } from '@/services/dailyCare/careLogsService';
@@ -11,8 +12,8 @@ export interface Observation {
   observation: string;
   observation_type: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
   created_at: string;
-  timeSlot: string;
-  category: string;
+  timeSlot?: string;
+  category?: string;
 }
 
 /**

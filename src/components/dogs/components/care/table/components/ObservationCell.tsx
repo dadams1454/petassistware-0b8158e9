@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { TableCell } from '@/components/ui/table';
-import { AlertTriangle, Heart, Activity, MessageCircle, PencilLine } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, AlertCircle, Heart, Utensils, BadgeInfo } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ObservationDetails {
   text: string;
@@ -16,7 +17,7 @@ interface ObservationCellProps {
   activeCategory: string;
   dogId: string;
   dogName: string;
-  onObservationClick: (dogId: string, dogName: string) => void;
+  onObservationClick: () => void;
 }
 
 const ObservationCell: React.FC<ObservationCellProps> = ({
@@ -27,52 +28,66 @@ const ObservationCell: React.FC<ObservationCellProps> = ({
   dogName,
   onObservationClick
 }) => {
-  // Function to get observation icon based on type
+  if (!dogHasObservation || !observationDetails) {
+    return (
+      <td className="px-4 py-2 text-sm">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-muted-foreground" 
+          onClick={onObservationClick}
+        >
+          {activeCategory === 'feeding' ? 'Add feeding note' : 'Add observation'}
+        </Button>
+      </td>
+    );
+  }
+
+  // Get the appropriate icon based on observation type
   const getObservationIcon = (type: string) => {
     switch (type) {
       case 'accident':
-        return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
+        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
       case 'heat':
-        return <Heart className="h-4 w-4 text-red-500 flex-shrink-0" />;
-      case 'behavior':
-        return <Activity className="h-4 w-4 text-blue-500 flex-shrink-0" />;
+        return <Heart className="h-4 w-4 text-red-500" />;
       case 'feeding':
-        return <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />;
+        return <Utensils className="h-4 w-4 text-green-500" />;
+      case 'behavior':
+        return <AlertCircle className="h-4 w-4 text-purple-500" />;
       default:
-        return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
+        return <BadgeInfo className="h-4 w-4 text-blue-500" />;
     }
   };
 
-  const handleClick = () => {
-    onObservationClick(dogId, dogName);
-  };
-
   return (
-    <TableCell 
-      className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px] cell-status-transition cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
-      onClick={handleClick}
-    >
-      {dogHasObservation && observationDetails ? (
-        <div className="flex items-start gap-2">
-          {getObservationIcon(observationDetails.type)}
-          <div className="overflow-hidden">
-            <div className="text-xs font-medium capitalize text-gray-700 dark:text-gray-300">
-              {observationDetails.type}
-            </div>
-            <div className="text-xs line-clamp-3 text-gray-600 dark:text-gray-400">
-              {observationDetails.text}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 dark:text-gray-600">
-            {activeCategory === 'feeding' ? 'No feeding issues' : 'No observations'}
-          </span>
-          <PencilLine className="h-3 w-3 text-gray-400 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
-      )}
-    </TableCell>
+    <td className="px-4 py-2 text-sm">
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="flex items-center justify-start text-left font-normal w-full hover:bg-slate-100 dark:hover:bg-slate-800"
+        onClick={onObservationClick}
+      >
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 truncate">
+                {getObservationIcon(observationDetails.type)}
+                <span className="truncate">{observationDetails.text}</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[300px]">
+              <p className="font-semibold">{observationDetails.type.charAt(0).toUpperCase() + observationDetails.type.slice(1)}:</p>
+              <p>{observationDetails.text}</p>
+              {observationDetails.timeSlot && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Noted at: {observationDetails.timeSlot}
+                </p>
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </Button>
+    </td>
   );
 };
 

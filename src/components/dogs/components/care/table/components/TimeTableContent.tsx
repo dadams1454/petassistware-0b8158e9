@@ -9,6 +9,20 @@ import ObservationCell from './ObservationCell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Observation } from '../hooks/useObservations';
 
+// Define interface for DogNameCellProps to include onClick
+interface DogNameCellProps {
+  dog: DogCareStatus;
+  onClick: (dogId: string) => void;
+}
+
+// Define interface for ObservationDetails that maps to Observation properties
+interface ObservationDetails {
+  text: string;
+  type: string;
+  timeSlot?: string;
+  category?: string;
+}
+
 interface TimeTableContentProps {
   activeCategory: string;
   sortedDogs: DogCareStatus[];
@@ -57,6 +71,17 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
       </div>
     );
   }
+
+  // Convert Observation to ObservationDetails
+  const mapObservationToDetails = (obs: Observation | null): ObservationDetails | null => {
+    if (!obs) return null;
+    return {
+      text: obs.observation,
+      type: obs.observation_type,
+      timeSlot: obs.timeSlot,
+      category: obs.category
+    };
+  };
   
   return (
     <div className="relative">
@@ -92,7 +117,9 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
           {sortedDogs.map((dog, index) => {
             // Get observation details if any
             const dogHasObservation = hasObservation(dog.dog_id, '');
-            const observationDetails = dogHasObservation ? getObservationDetails(dog.dog_id) : null;
+            const observationDetails = dogHasObservation 
+              ? mapObservationToDetails(getObservationDetails(dog.dog_id)) 
+              : null;
             
             return (
               <TableRow

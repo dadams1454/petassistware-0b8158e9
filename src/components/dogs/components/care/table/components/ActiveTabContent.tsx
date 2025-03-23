@@ -5,20 +5,21 @@ import TimeTableContent from './TimeTableContent';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TimeTableHeader from './TimeTableHeader';
 import TimeTableFooter from './TimeTableFooter';
+import { Observation } from '../hooks/useObservations';
 
 interface ActiveTabContentProps {
   activeCategory: string;
   sortedDogs: DogCareStatus[];
   timeSlots: string[];
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
-  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
-  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  onCareLogClick: (dogId: string, dogName: string) => void;
+  getObservationDetails: (dogId: string) => Observation | null;
+  onCellClick: (dogId: string, dogName: string, timeSlot: string, hasPottyBreak: boolean, hasCareLogged: boolean) => void;
+  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string) => void;
+  onCareLogClick: (dogId: string) => void;
   onDogClick: (dogId: string) => void;
-  onObservationClick: (dogId: string, dogName: string) => void;
+  onObservationClick: (dogId: string) => void;
   onRefresh: () => void;
   onCategoryChange?: (category: string) => void;
   currentHour?: number;

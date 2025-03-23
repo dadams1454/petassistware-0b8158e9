@@ -11,9 +11,13 @@ export const useSortedDogs = (dogs: DogCareStatus[]) => {
     if (!dogs || dogs.length === 0) return [];
     
     return [...dogs].sort((a, b) => {
+      // Check if dogs have a group property via flags
+      const aGroup = a.flags?.find(f => f.type === 'group')?.value;
+      const bGroup = b.flags?.find(f => f.type === 'group')?.value;
+      
       // First sort by dog group if available
-      if (a.group_name && b.group_name && a.group_name !== b.group_name) {
-        return a.group_name.localeCompare(b.group_name);
+      if (aGroup && bGroup && aGroup !== bGroup) {
+        return aGroup.localeCompare(bGroup);
       }
       
       // Then sort by dog name
