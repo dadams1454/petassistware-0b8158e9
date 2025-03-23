@@ -13,9 +13,9 @@ import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashbo
 
 interface DashboardOverviewProps {
   isLoading: boolean;
-  stats: DashboardStats;
-  events: UpcomingEvent[];
-  activities: RecentActivity[];
+  stats: DashboardStats | null;
+  events: UpcomingEvent[] | any[];
+  activities: RecentActivity[] | any[];
   onCareLogClick: () => void;
 }
 
@@ -26,6 +26,14 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   activities,
   onCareLogClick
 }) => {
+  // Set default values to avoid null reference errors
+  const safeStats = stats || {
+    dogCount: 0,
+    litterCount: 0,
+    reservationCount: 0,
+    recentRevenue: 0
+  };
+  
   return (
     <>
       {/* Quick Actions */}
@@ -35,7 +43,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-6 mb-8">
         <StatCard
           title="Active Dogs"
-          value={isLoading ? "Loading..." : stats.dogCount.toString()}
+          value={isLoading ? "Loading..." : safeStats.dogCount.toString()}
           icon={<Dog size={18} className="text-blue-600" />}
           change={0}
           changeText="from database"
@@ -45,7 +53,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         />
         <StatCard
           title="Current Litters"
-          value={isLoading ? "Loading..." : stats.litterCount.toString()}
+          value={isLoading ? "Loading..." : safeStats.litterCount.toString()}
           icon={<PawPrint size={18} className="text-purple-600" />}
           change={0}
           changeText="from database"
@@ -55,7 +63,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         />
         <StatCard
           title="Reservations"
-          value={isLoading ? "Loading..." : stats.reservationCount.toString()}
+          value={isLoading ? "Loading..." : safeStats.reservationCount.toString()}
           icon={<Users size={18} className="text-amber-600" />}
           change={0}
           changeText="from database"
@@ -65,7 +73,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         />
         <StatCard
           title="Revenue (Last 30 Days)"
-          value={isLoading ? "Loading..." : `$${stats.recentRevenue.toLocaleString()}`}
+          value={isLoading ? "Loading..." : `$${safeStats.recentRevenue.toLocaleString()}`}
           icon={<DollarSign size={18} className="text-emerald-600" />}
           change={0}
           changeText="from database"

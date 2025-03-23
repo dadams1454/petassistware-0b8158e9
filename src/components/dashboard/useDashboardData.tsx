@@ -2,30 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthProvider';
-
-// Define the return types for the dashboard data
-interface DashboardStats {
-  totalDogs: number;
-  activeLitters: number;
-  upcomingEvents: number;
-  pendingTasks: number;
-}
-
-interface DashboardEvent {
-  id: string;
-  title: string;
-  date: string;
-  type: string;
-}
-
-interface ActivityItem {
-  id: string;
-  type: string;
-  description: string;
-  timestamp: string;
-  dogId?: string;
-  dogName?: string;
-}
+import { DashboardStats, DashboardEvent, ActivityItem } from '@/services/dashboardService';
 
 export const useDashboardData = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -55,8 +32,21 @@ export const useDashboardData = () => {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active');
       
+      // Fetch reservations count
+      const { count: reservationsCount } = await supabase
+        .from('reservations')
+        .select('*', { count: 'exact', head: true });
+      
+      // Calculate recent revenue (mock data for now)
+      const recentRevenue = 5000; // Mock value, replace with actual calculation
+      
       // Set stats
       setStats({
+        dogCount: dogsCount || 0,
+        litterCount: littersCount || 0,
+        reservationCount: reservationsCount || 0,
+        recentRevenue: recentRevenue,
+        // Include backward compatibility fields
         totalDogs: dogsCount || 0,
         activeLitters: littersCount || 0,
         upcomingEvents: 3, // Mock data
@@ -64,34 +54,48 @@ export const useDashboardData = () => {
       });
       
       // Fetch recent events
-      const { data: eventsData } = await supabase
+      const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select('*')
-        .order('date', { ascending: true })
+        .order('event_date', { ascending: true })
         .limit(5);
+      
+      if (eventsError) {
+        console.error('Error fetching events:', eventsError);
+      }
       
       if (eventsData) {
         setEvents(eventsData.map(event => ({
           id: event.id,
           title: event.title,
-          date: event.date,
-          type: event.type
+          date: event.event_date, // Map to the old field name for compatibility
+          event_date: event.event_date,
+          type: event.event_type, // Map to the old field name for compatibility
+          event_type: event.event_type,
+          description: event.description || '',
+          status: event.status
         })));
       }
       
-      // Fetch recent activities
-      const { data: activitiesData } = await supabase
-        .from('care_logs')
+      // Fetch recent activities from daily_care_logs
+      const { data: activitiesData, error: activitiesError } = await supabase
+        .from('daily_care_logs')
         .select('*, dogs(name)')
         .order('created_at', { ascending: false })
         .limit(10);
       
+      if (activitiesError) {
+        console.error('Error fetching activities:', activitiesError);
+      }
+      
       if (activitiesData) {
         setActivities(activitiesData.map(activity => ({
           id: activity.id,
-          type: activity.category,
-          description: activity.notes || `${activity.task} logged`,
-          timestamp: activity.created_at,
+          type: activity.category || 'care',
+          title: activity.task_name || 'Care Task', // Add a title field for the new interface
+          description: activity.notes || `${activity.task_name} logged`,
+          timestamp: activity.created_at, // Keep old field for compatibility
+          createdAt: activity.created_at,
           dogId: activity.dog_id,
           dogName: activity.dogs?.name
         })));

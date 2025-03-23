@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 interface RecentActivitiesProps {
-  activities: RecentActivity[];
+  activities: RecentActivity[] | any[];
   isLoading?: boolean;
   className?: string;
 }
@@ -56,16 +56,23 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
 
   // Format the date
   const formatTimeAgo = (dateString: string) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (!dateString) return 'unknown time';
     
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-    
-    return new Date(dateString).toLocaleDateString();
+    try {
+      const now = new Date();
+      const date = new Date(dateString);
+      const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+      
+      if (diffInSeconds < 60) return 'just now';
+      if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+      if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+      if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+      
+      return new Date(dateString).toLocaleDateString();
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'invalid date';
+    }
   };
 
   if (isLoading) {
@@ -105,12 +112,20 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
       </div>
       
       <div className="space-y-4">
-        {activities.length > 0 ? (
+        {activities && activities.length > 0 ? (
           activities.map((activity) => {
-            const { icon, bg } = getActivityStyle(activity.type);
+            // Safely extract properties with fallbacks
+            const id = activity.id || `activity-${Math.random()}`;
+            const type = activity.type || 'default';
+            const title = activity.title || 'Activity';
+            const description = activity.description || 'No description available';
+            const timestamp = activity.timestamp || activity.createdAt || new Date().toISOString();
+            
+            const { icon, bg } = getActivityStyle(type);
+            
             return (
               <div 
-                key={activity.id}
+                key={id}
                 className="flex items-start p-3 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50"
               >
                 <div className={cn('w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mr-3', bg)}>
@@ -119,13 +134,13 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
                 
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                    {activity.title}
+                    {title}
                   </p>
                   <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate">
-                    {activity.description}
+                    {description}
                   </p>
                   <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                    {formatTimeAgo(activity.createdAt)}
+                    {formatTimeAgo(timestamp)}
                   </p>
                 </div>
               </div>
