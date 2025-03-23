@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
@@ -38,12 +38,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     formatTimeRemaining,
     currentDate
   } = useAutoRefresh({
+    area: 'dashboard',
     interval: 15 * 60 * 1000, // 15 minutes
     refreshLabel: 'dog data',
     midnightReset: true,
-    onRefresh: async () => {
+    onRefresh: async (date = new Date(), force = false) => {
       console.log('🔄 Auto-refresh triggered in DashboardContent');
-      const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
+      const dogs = await fetchAllDogsWithCareStatus(date, force);
       console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
       return dogs;
     }

@@ -1,5 +1,5 @@
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
@@ -20,12 +20,13 @@ const DailyCare: React.FC = () => {
     formatTimeRemaining,
     currentDate
   } = useAutoRefresh({
+    area: 'dailyCare',
     interval: 15 * 60 * 1000, // 15 minutes
     refreshLabel: 'dog care data',
     midnightReset: true,
-    onRefresh: async () => {
+    onRefresh: async (date = new Date(), force = false) => {
       console.log('🔄 Auto-refresh triggered in DailyCare page');
-      const dogs = await fetchAllDogsWithCareStatus(currentDate, true);
+      const dogs = await fetchAllDogsWithCareStatus(date, force);
       console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
       return dogs;
     }
