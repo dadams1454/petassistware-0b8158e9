@@ -21,6 +21,9 @@ interface RefreshContextType {
   // Configuration
   refreshInterval: Record<RefreshableArea, number>;
   setRefreshInterval: (area: RefreshableArea, interval: number) => void;
+  
+  // Registration
+  registerCallback: (area: RefreshableArea, callbacks: RefreshCallbacks) => () => void;
 }
 
 export interface RefreshCallbacks {
@@ -293,7 +296,8 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({
     getTimeUntilNextRefresh,
     formatTimeRemaining,
     refreshInterval,
-    setRefreshInterval
+    setRefreshInterval,
+    registerCallback
   };
   
   return (
@@ -314,10 +318,10 @@ export const useRefresh = (area: RefreshableArea = 'all', callbacks?: RefreshCal
   // Register callbacks if provided
   useEffect(() => {
     if (callbacks) {
-      const unregister = (context as any).registerCallback(area, callbacks);
+      const unregister = context.registerCallback(area, callbacks);
       return unregister;
     }
-  }, [area, callbacks]);
+  }, [area, callbacks, context]);
   
   return {
     isRefreshing: context.isRefreshing[area],
