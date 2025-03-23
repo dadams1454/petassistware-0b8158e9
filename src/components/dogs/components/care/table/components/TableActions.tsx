@@ -1,34 +1,44 @@
 
 import React from 'react';
-import { CustomButton } from '@/components/ui/custom-button';
-import { Plus, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, Plus } from 'lucide-react';
 
 interface TableActionsProps {
-  onAddGroup: () => void;
+  activeCategory: string;
   isRefreshing: boolean;
-  currentDate: Date;
+  onRefresh: () => void;
+  onAddGroup?: () => void;
 }
 
-const TableActions: React.FC<TableActionsProps> = ({ 
-  onAddGroup, 
+export const TableActions: React.FC<TableActionsProps> = ({
+  activeCategory,
   isRefreshing,
-  currentDate 
+  onRefresh,
+  onAddGroup
 }) => {
   return (
-    <div className="flex justify-between items-center">
-      <div>
-        <h2 className="text-lg font-semibold">Dog Time Table</h2>
-        <p className="text-sm text-muted-foreground flex items-center gap-2">
-          <Calendar className="h-4 w-4" /> {format(currentDate, 'MMMM d, yyyy')}
-        </p>
-      </div>
-      <CustomButton onClick={onAddGroup} disabled={isRefreshing}>
-        <Plus className="h-4 w-4 mr-2" />
-        Add Group
-      </CustomButton>
+    <div className="flex items-center gap-2">
+      {onAddGroup && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onAddGroup}
+          className="mr-2"
+        >
+          <Plus className="h-4 w-4 mr-1" /> 
+          Add Group
+        </Button>
+      )}
+      
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onRefresh}
+        disabled={isRefreshing}
+      >
+        <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+        Refresh
+      </Button>
     </div>
   );
 };
-
-export default TableActions;
