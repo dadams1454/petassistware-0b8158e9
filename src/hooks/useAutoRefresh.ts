@@ -1,9 +1,10 @@
 
-import { useEffect, useCallback } from 'react';
-import { useRefresh, RefreshCallbacks } from '@/contexts/refreshContext';
+import { useEffect, useCallback, useState } from 'react';
+import { useRefresh, RefreshCallbacks, RefreshableArea } from '@/contexts/refreshContext';
+import { useToast } from '@/components/ui/use-toast';
 
 interface AutoRefreshOptions {
-  area?: 'dailyCare' | 'dashboard' | 'dogs' | 'puppies' | 'all';
+  area?: RefreshableArea;
   interval?: number; // in milliseconds
   onRefresh: (date?: Date, force?: boolean) => Promise<any>;
   enableToasts?: boolean;
@@ -21,10 +22,39 @@ export const useAutoRefresh = ({
   refreshLabel = 'data',
   midnightReset = false
 }: AutoRefreshOptions) => {
+  const [error, setError] = useState<Error | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const { toast } = useToast();
+
+  // Wrap the onRefresh callback with error handling
+  const safeOnRefresh = useCallback(async (date?: Date, force?: boolean) => {
+    try {
+      console.log(`🔄 Auto-refresh triggered for ${area} area`);
+      const result = await onRefresh(date, force);
+      console.log(`✅ Refresh for ${area} completed successfully`);
+      setError(null);
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error(`❌ Refresh for ${area} failed:`, err);
+      setError(err instanceof Error ? err : new Error(String(err)));
+      
+      if (enableToasts) {
+        toast({
+          title: `Failed to refresh ${refreshLabel}`,
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+      
+      return null;
+    }
+  }, [onRefresh, area, enableToasts, refreshLabel, toast]);
+  
   // Create callbacks object for the refresh context
   const callbacks: RefreshCallbacks = {
-    onRefresh,
-    onDateChange: midnightReset ? (newDate) => onRefresh(newDate, true) : undefined
+    onRefresh: safeOnRefresh,
+    onDateChange: midnightReset ? (newDate) => safeOnRefresh(newDate, true) : undefined
   };
   
   // Use the centralized refresh context
@@ -33,32 +63,55 @@ export const useAutoRefresh = ({
     handleRefresh, 
     currentDate, 
     formatTimeRemaining,
-    setRefreshInterval
+    setRefreshInterval,
+    timeUntilNextRefresh
   } = useRefresh(area, callbacks);
   
   // Set custom refresh interval if provided
   useEffect(() => {
     if (interval !== 15 * 60 * 1000) {
-      setRefreshInterval(interval);
+      try {
+        console.log(`⏱️ Setting custom refresh interval for ${area}: ${interval}ms`);
+        setRefreshInterval(interval);
+      } catch (err) {
+        console.error(`❌ Failed to set custom refresh interval for ${area}:`, err);
+      }
     }
-  }, [interval, setRefreshInterval]);
+  }, [interval, setRefreshInterval, area]);
   
   // Initial refresh on mount if requested
   useEffect(() => {
-    if (refreshOnMount) {
-      onRefresh(currentDate, false);
+    if (refreshOnMount && !isInitialized) {
+      console.log(`🔄 Initial refresh on mount for ${area}`);
+      safeOnRefresh(currentDate, false).then(() => {
+        setIsInitialized(true);
+        console.log(`✅ Initial refresh completed for ${area}`);
+      });
     }
-  }, [refreshOnMount, onRefresh, currentDate]);
+  }, [refreshOnMount, safeOnRefresh, currentDate, isInitialized, area]);
   
-  // Create a manual refresh handler
+  // Create a manual refresh handler with enhanced logging
   const manualRefresh = useCallback((showToast = true) => {
-    return handleRefresh(showToast);
-  }, [handleRefresh]);
+    console.log(`🖱️ Manual refresh triggered for ${area}${showToast ? ' with toast' : ''}`);
+    return handleRefresh(showToast).catch(err => {
+      console.error(`❌ Manual refresh for ${area} failed:`, err);
+      if (showToast && enableToasts) {
+        toast({
+          title: `Failed to refresh ${refreshLabel}`,
+          description: err instanceof Error ? err.message : 'Unknown error',
+          variant: "destructive",
+        });
+      }
+      return null;
+    });
+  }, [handleRefresh, area, enableToasts, refreshLabel, toast]);
   
   return {
     isRefreshing,
     handleRefresh: manualRefresh,
     formatTimeRemaining,
-    currentDate
+    currentDate,
+    error,
+    timeUntilNextRefresh
   };
 };
