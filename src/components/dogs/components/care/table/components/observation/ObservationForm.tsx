@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -57,6 +57,13 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   });
 
+  // Update time input when observation date changes
+  useEffect(() => {
+    const hours = observationDate.getHours();
+    const minutes = observationDate.getMinutes();
+    setTimeInput(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`);
+  }, [observationDate]);
+
   // Get placeholder text based on observation type and category
   const getPlaceholderText = () => {
     if (activeCategory === 'feeding') {
@@ -73,6 +80,16 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
     }
     
     return isSubmitting ? 'Saving...' : 'Save Observation';
+  };
+
+  // Generate human-readable time slot text
+  const getTimeSlotText = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour >= 5 && hour < 12) return "Morning";
+    if (hour >= 12 && hour < 17) return "Afternoon";
+    if (hour >= 17 && hour < 21) return "Evening";
+    return "Night";
   };
 
   // Handle time input change
@@ -101,6 +118,18 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
       setObservationDate(newDate);
     }
   };
+
+  // Format time for display
+  const formatTimeForDisplay = (date: Date) => {
+    return format(date, 'h:mm a');
+  };
+
+  // Set the "When did this occur?" field to use the current time slot
+  useEffect(() => {
+    if (timeSlots.length > 0 && !selectedTimeSlot) {
+      setSelectedTimeSlot(getTimeSlotText());
+    }
+  }, [timeSlots, selectedTimeSlot, setSelectedTimeSlot]);
   
   return (
     <form onSubmit={onSubmit}>
@@ -118,10 +147,7 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
         {timeSlots.length > 0 && setSelectedTimeSlot && (
           <div>
             <Label htmlFor="time-slot">
-              {activeCategory === 'feeding' 
-                ? 'Which meal was missed or had issues?' 
-                : 'When did this occur?'
-              }
+              When did this occur?
             </Label>
             <Select 
               value={selectedTimeSlot} 
@@ -141,7 +167,7 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
           </div>
         )}
 
-        {/* Date and Time selector */}
+        {/* Simplified Date and Time selector in a single row */}
         <div className="grid grid-cols-2 gap-2">
           <div>
             <Label htmlFor="observation-date">Date</Label>
@@ -156,7 +182,7 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {observationDate ? format(observationDate, 'MMMM d, yyyy') : <span>Select date</span>}
+                  {format(observationDate, 'MMM d, yyyy')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -165,21 +191,28 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
                   selected={observationDate}
                   onSelect={handleDateSelect}
                   initialFocus
+                  defaultMonth={observationDate}
                 />
               </PopoverContent>
             </Popover>
           </div>
           <div>
             <Label htmlFor="observation-time">Time</Label>
-            <div className="flex">
-              <Input
-                id="observation-time"
-                type="time"
-                value={timeInput}
-                onChange={handleTimeChange}
-                className="w-full"
-              />
-            </div>
+            <Button
+              variant="outline"
+              id="observation-time"
+              className="w-full justify-start text-left font-normal"
+              onClick={() => {
+                // Use current time on click
+                const now = new Date();
+                const newDate = new Date(observationDate);
+                newDate.setHours(now.getHours(), now.getMinutes());
+                setObservationDate(newDate);
+              }}
+            >
+              <Clock className="mr-2 h-4 w-4" />
+              {formatTimeForDisplay(observationDate)}
+            </Button>
           </div>
         </div>
         

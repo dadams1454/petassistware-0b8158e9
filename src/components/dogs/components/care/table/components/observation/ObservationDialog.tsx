@@ -62,7 +62,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         setDialogSelectedTimeSlot(timeSlots[0]);
       }
       
-      // Update timestamp
+      // Update timestamp to current time
       const now = new Date();
       setObservationDate(now);
       const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

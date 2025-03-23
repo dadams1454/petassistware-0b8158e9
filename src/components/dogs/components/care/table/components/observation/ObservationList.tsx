@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, parseISO } from 'date-fns';
-import { AlertTriangle, Heart, Activity, MessageCircle, UtensilsCrossed } from 'lucide-react';
+import { AlertTriangle, Heart, Activity, MessageCircle, UtensilsCrossed, X } from 'lucide-react';
 import { ObservationType } from './ObservationDialog';
+import { Button } from '@/components/ui/button';
 
 interface ObservationListProps {
   existingObservations: Array<{
@@ -19,7 +20,16 @@ const ObservationList: React.FC<ObservationListProps> = ({
   existingObservations,
   activeCategory = 'pottybreaks'
 }) => {
+  const [hiddenObservations, setHiddenObservations] = useState<string[]>([]);
+  
   if (existingObservations.length === 0) return null;
+  
+  // Filter out hidden observations
+  const visibleObservations = existingObservations.filter(
+    (obs, index) => !hiddenObservations.includes(`${obs.observation}-${index}`)
+  );
+  
+  if (visibleObservations.length === 0) return null;
   
   const getObservationIcon = (type: ObservationType) => {
     switch (type) {
@@ -54,19 +64,21 @@ const ObservationList: React.FC<ObservationListProps> = ({
     }
   };
   
+  const hideObservation = (obs: any, index: number) => {
+    setHiddenObservations([...hiddenObservations, `${obs.observation}-${index}`]);
+  };
+  
   return (
     <div className="mb-4">
       <div className="text-sm font-medium mb-2">
-        {activeCategory === 'feeding' 
-          ? 'Recent Feeding Issues' 
-          : 'Recent Observations'}
+        Recent Observations
       </div>
       <ScrollArea className="max-h-[150px] overflow-auto">
         <div className="space-y-2">
-          {existingObservations.map((obs, index) => (
+          {visibleObservations.map((obs, index) => (
             <div 
               key={index} 
-              className="flex items-start gap-2 p-2 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-900/50"
+              className="flex items-start gap-2 p-2 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-900/50 relative group"
             >
               {getObservationIcon(obs.observation_type)}
               <div className="flex-1 min-w-0">
@@ -78,6 +90,14 @@ const ObservationList: React.FC<ObservationListProps> = ({
                   {obs.observation}
                 </div>
               </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute right-1 top-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => hideObservation(obs, index)}
+              >
+                <X className="h-3 w-3" />
+              </Button>
             </div>
           ))}
         </div>
