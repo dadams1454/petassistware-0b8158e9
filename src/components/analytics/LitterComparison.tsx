@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -9,7 +9,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { AlertCircle, Users, Scale, Palette, ArrowLeftRight } from 'lucide-react';
+import { AlertCircle, Users, Scale, Palette } from 'lucide-react';
 
 interface LitterComparisonProps {
   className?: string;
@@ -23,6 +23,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
   isLoading = false 
 }) => {
   const [selectedDamId, setSelectedDamId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("counts");
 
   // We'll still need this query to get all dams, but we can use the litters prop for optimization
   const { data: dams, isLoading: isLoadingDams } = useQuery({
@@ -50,12 +51,17 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
     refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes in the background
   });
 
-  // Set the first dam as selected when data loads
-  React.useEffect(() => {
+  // Set the first dam as selected when data loads - removed selectedDamId from dependency array
+  useEffect(() => {
     if (dams && dams.length > 0 && !selectedDamId) {
       setSelectedDamId(dams[0].id);
     }
-  }, [dams]); // Simplified dependency array
+  }, [dams]);
+
+  // Reset active tab when dam changes
+  useEffect(() => {
+    setActiveTab("counts");
+  }, [selectedDamId]);
 
   // Fetch litter details for the selected dam, with improved caching
   const { data: litterDetails, isLoading: isLoadingLitters } = useQuery({
@@ -225,7 +231,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
 
         {/* Comparison Tabs */}
         {selectedDamId && (
-          <Tabs defaultValue="counts" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-3 mb-6">
               <TabsTrigger value="counts" className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
