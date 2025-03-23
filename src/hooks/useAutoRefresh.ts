@@ -2,6 +2,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useRefresh, RefreshableArea } from '@/contexts/refreshContext';
 import { useToast } from '@/components/ui/use-toast';
+import { debounce } from 'lodash';
 
 interface AutoRefreshOptions {
   area?: RefreshableArea;
@@ -84,21 +85,30 @@ export const useAutoRefresh = ({
     }
   }, [refreshOnMount, safeOnRefresh, currentDate, isInitialized, area]);
   
+  // Create a debounced manual refresh handler
+  const debouncedRefresh = useCallback(
+    debounce((showToast = true) => {
+      console.log(`🖱️ Debounced manual refresh triggered for ${area}${showToast ? ' with toast' : ''}`);
+      return handleRefresh(showToast).catch(err => {
+        console.error(`❌ Manual refresh for ${area} failed:`, err);
+        if (showToast && enableToasts) {
+          toast({
+            title: `Failed to refresh ${refreshLabel}`,
+            description: err instanceof Error ? err.message : 'Unknown error',
+            variant: "destructive",
+          });
+        }
+        return null;
+      });
+    }, 300),
+    [handleRefresh, area, enableToasts, refreshLabel, toast]
+  );
+  
   // Create a manual refresh handler with enhanced logging
   const manualRefresh = useCallback((showToast = true) => {
     console.log(`🖱️ Manual refresh triggered for ${area}${showToast ? ' with toast' : ''}`);
-    return handleRefresh(showToast).catch(err => {
-      console.error(`❌ Manual refresh for ${area} failed:`, err);
-      if (showToast && enableToasts) {
-        toast({
-          title: `Failed to refresh ${refreshLabel}`,
-          description: err instanceof Error ? err.message : 'Unknown error',
-          variant: "destructive",
-        });
-      }
-      return null;
-    });
-  }, [handleRefresh, area, enableToasts, refreshLabel, toast]);
+    return debouncedRefresh(showToast);
+  }, [debouncedRefresh, area]);
   
   return {
     isRefreshing,

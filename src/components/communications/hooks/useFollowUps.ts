@@ -3,9 +3,10 @@ import { useQueryWithRefresh } from '@/hooks/useQueryWithRefresh';
 import { supabase } from '@/integrations/supabase/client';
 import { FollowUpItem } from '../types/followUp';
 import { WaitlistEntry } from '@/components/waitlist/types';
+import { useMemo } from 'react';
 
 export const useFollowUps = () => {
-  return useQueryWithRefresh({
+  const result = useQueryWithRefresh({
     queryKey: ['follow-ups'],
     queryFn: async () => {
       console.log('📊 Fetching follow-ups data...');
@@ -41,6 +42,9 @@ export const useFollowUps = () => {
     area: 'dashboard',
     staleTime: 15 * 60 * 1000, // 15 minutes
     refetchOnWindowFocus: true,
-    refreshLabel: 'follow-ups'
+    refreshLabel: 'follow-ups',
+    enableToasts: true
   });
+
+  return result;
 };

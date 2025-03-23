@@ -1,5 +1,5 @@
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -10,14 +10,24 @@ import { useFollowUps } from './hooks/useFollowUps';
 import { FollowUpTable } from './components/FollowUpTable';
 import LoadingFollowUps from './components/LoadingFollowUps';
 import { CircleEllipsis } from 'lucide-react';
+import { useRefresh } from '@/contexts/refreshContext';
 
-const FollowUpManager = () => {
+const FollowUpManager = React.memo(() => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const { data: followUps, isLoading, refetch, isRefetching } = useFollowUps();
+  
+  // Use the centralized refresh context
+  const { handleRefresh: triggerRefresh } = useRefresh('dashboard');
+  
+  const { 
+    data: followUps, 
+    isLoading, 
+    refetch, 
+    isRefetching 
+  } = useFollowUps();
 
-  const handleMarkCompleted = (item: any) => {
+  const handleMarkCompleted = useCallback((item: any) => {
     toast({
       title: "Follow-up marked as completed",
       description: `Follow-up for ${item.customer.first_name} ${item.customer.last_name} has been marked as completed.`
@@ -27,28 +37,32 @@ const FollowUpManager = () => {
     startTransition(() => {
       // Void the promise to avoid type errors
       void refetch();
+      // Also notify the central refresh system
+      triggerRefresh(false);
     });
-  };
+  }, [refetch, triggerRefresh]);
 
-  const handleSendEmail = (item: any) => {
+  const handleSendEmail = useCallback((item: any) => {
     window.location.href = `/communications?customer=${item.customer_id}`;
-  };
+  }, []);
 
-  const handleCreateFollowUp = () => {
+  const handleCreateFollowUp = useCallback(() => {
     setSelectedCustomer(null);
     setIsCreateDialogOpen(true);
-  };
+  }, []);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     startTransition(() => {
       // Void the promise to avoid type errors
       void refetch();
+      // Also notify the central refresh system
+      triggerRefresh(false);
     });
-  };
+  }, [refetch, triggerRefresh]);
 
-  // Determine if we should show loading state
-  const showLoading = isLoading && !followUps;
-  const showRefreshIndicator = isRefetching || isPending;
+  // Determine if we should show loading state - memoized to prevent recalculation
+  const showLoading = useMemo(() => isLoading && !followUps, [isLoading, followUps]);
+  const showRefreshIndicator = useMemo(() => isRefetching || isPending, [isRefetching, isPending]);
 
   return (
     <Card>
@@ -143,11 +157,14 @@ const FollowUpManager = () => {
         onSuccess={() => {
           startTransition(() => {
             void refetch();
+            triggerRefresh(false);
           });
         }}
       />
     </Card>
   );
-};
+});
+
+FollowUpManager.displayName = 'FollowUpManager';
 
 export default FollowUpManager;

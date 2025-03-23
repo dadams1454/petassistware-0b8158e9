@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -22,16 +22,18 @@ interface FollowUpTableProps {
   customTableBody?: React.ReactNode;
 }
 
-export const FollowUpTable: React.FC<FollowUpTableProps> = ({ 
+export const FollowUpTable = React.memo<FollowUpTableProps>(({ 
   followUps, 
   onSendEmail, 
   onMarkCompleted, 
   showOnlyPending = false,
   customTableBody = null
 }) => {
-  const filteredItems = showOnlyPending 
-    ? followUps.filter(item => item.status === 'pending')
-    : followUps;
+  const filteredItems = useMemo(() => 
+    showOnlyPending 
+      ? followUps.filter(item => item.status === 'pending')
+      : followUps
+  , [followUps, showOnlyPending]);
 
   const isOverdue = (dueDate: string) => {
     return isBefore(new Date(dueDate), new Date());
@@ -103,4 +105,6 @@ export const FollowUpTable: React.FC<FollowUpTableProps> = ({
       </TableBody>
     </Table>
   );
-};
+});
+
+FollowUpTable.displayName = 'FollowUpTable';
