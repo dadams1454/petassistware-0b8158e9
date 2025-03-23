@@ -1,75 +1,119 @@
 
 import { useCallback } from 'react';
-import { addPottyBreakByDogAndTime, removePottyBreakByDogAndTime } from '@/services/dailyCare/pottyBreak/mutations';
+import { useToast } from '@/components/ui/use-toast';
+import { addDogPottyBreak, removeDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
 
+/**
+ * Hook for handling potty break specific operations
+ */
 export const usePottyBreakOperations = (
   pottyBreaks: Record<string, string[]>,
   setPottyBreaks: React.Dispatch<React.SetStateAction<Record<string, string[]>>>
 ) => {
-  // Add potty break operation
+  const { toast } = useToast();
+
+  // Handle adding a potty break with optimistic UI updates
   const addPottyBreak = useCallback((
-    dogId: string,
-    dogName: string,
-    timeSlot: string,
-    queueOperation: (op: () => Promise<void>) => void
+    dogId: string, 
+    dogName: string, 
+    timeSlot: string, 
+    queueOperation: (operation: () => Promise<void>) => void
   ) => {
+    // Optimistically update UI first
+    const updatedPottyBreaks = { ...pottyBreaks };
+    if (!updatedPottyBreaks[dogId]) {
+      updatedPottyBreaks[dogId] = [];
+    }
+    
+    if (!updatedPottyBreaks[dogId].includes(timeSlot)) {
+      updatedPottyBreaks[dogId] = [...updatedPottyBreaks[dogId], timeSlot];
+    }
+    
+    setPottyBreaks(updatedPottyBreaks);
+    
+    // Queue the actual API operation
     queueOperation(async () => {
-      console.log(`⏳ Adding potty break for ${dogName} at ${timeSlot}...`);
-      
       try {
-        // Make the API call
-        await addPottyBreakByDogAndTime(dogId, timeSlot);
-        console.log(`✅ Successfully added potty break for ${dogName} at ${timeSlot}`);
+        await addDogPottyBreak(dogId, timeSlot);
+        console.log('Potty break logged successfully:', { dogId, timeSlot });
       } catch (error) {
-        console.error(`❌ Error adding potty break for ${dogName}:`, error);
-        
-        // Revert the optimistic update on error
-        setPottyBreaks(prev => {
-          const updatedBreaks = { ...prev };
-          if (updatedBreaks[dogId]) {
-            updatedBreaks[dogId] = updatedBreaks[dogId].filter(t => t !== timeSlot);
+        console.error('Error in queued potty break operation:', error);
+        // If the API call fails, revert the optimistic update
+        const revertedBreaks = { ...updatedPottyBreaks };
+        if (revertedBreaks[dogId]) {
+          revertedBreaks[dogId] = revertedBreaks[dogId].filter(slot => slot !== timeSlot);
+          if (revertedBreaks[dogId].length === 0) {
+            delete revertedBreaks[dogId];
           }
-          return updatedBreaks;
-        });
+          setPottyBreaks(revertedBreaks);
+        }
         
-        throw error;
+        // Show error toast
+        toast({
+          title: 'Error logging potty break',
+          description: `Failed to log potty break for ${dogName}`,
+          variant: 'destructive',
+        });
       }
     });
-  }, [setPottyBreaks]);
-  
-  // Remove potty break operation
+    
+    toast({
+      title: 'Potty break logged',
+      description: `${dogName} was taken out at ${timeSlot}`,
+    });
+  }, [pottyBreaks, setPottyBreaks, toast]);
+
+  // Handle removing a potty break with optimistic UI updates
   const removePottyBreak = useCallback((
-    dogId: string,
-    dogName: string,
-    timeSlot: string,
-    queueOperation: (op: () => Promise<void>) => void
+    dogId: string, 
+    dogName: string, 
+    timeSlot: string, 
+    queueOperation: (operation: () => Promise<void>) => void
   ) => {
+    // Remove the potty break from UI state
+    const updatedDogBreaks = pottyBreaks[dogId]?.filter(slot => slot !== timeSlot) || [];
+    const updatedPottyBreaks = { ...pottyBreaks };
+    
+    if (updatedDogBreaks.length === 0) {
+      delete updatedPottyBreaks[dogId];
+    } else {
+      updatedPottyBreaks[dogId] = updatedDogBreaks;
+    }
+    
+    setPottyBreaks(updatedPottyBreaks);
+    
+    // Queue the actual operation
     queueOperation(async () => {
-      console.log(`⏳ Removing potty break for ${dogName} at ${timeSlot}...`);
-      
       try {
-        // Make the API call
-        await removePottyBreakByDogAndTime(dogId, timeSlot);
-        console.log(`✅ Successfully removed potty break for ${dogName} at ${timeSlot}`);
+        await removeDogPottyBreak(dogId, timeSlot);
+        console.log('Potty break removed successfully:', { dogId, timeSlot });
       } catch (error) {
-        console.error(`❌ Error removing potty break for ${dogName}:`, error);
+        console.error('Error removing potty break:', error);
         
         // Revert the optimistic update on error
-        setPottyBreaks(prev => {
-          const updatedBreaks = { ...prev };
-          if (!updatedBreaks[dogId]) {
-            updatedBreaks[dogId] = [];
-          }
-          if (!updatedBreaks[dogId].includes(timeSlot)) {
-            updatedBreaks[dogId] = [...updatedBreaks[dogId], timeSlot];
-          }
-          return updatedBreaks;
-        });
+        const revertedBreaks = { ...updatedPottyBreaks };
+        if (!revertedBreaks[dogId]) {
+          revertedBreaks[dogId] = [];
+        }
+        if (!revertedBreaks[dogId].includes(timeSlot)) {
+          revertedBreaks[dogId] = [...revertedBreaks[dogId], timeSlot];
+        }
+        setPottyBreaks(revertedBreaks);
         
-        throw error;
+        // Show error toast
+        toast({
+          title: 'Error removing potty break',
+          description: `Failed to remove potty break for ${dogName}`,
+          variant: 'destructive',
+        });
       }
     });
-  }, [setPottyBreaks]);
+    
+    toast({
+      title: 'Potty break removed',
+      description: `Removed potty break for ${dogName} at ${timeSlot}`,
+    });
+  }, [pottyBreaks, setPottyBreaks, toast]);
 
   return {
     addPottyBreak,
