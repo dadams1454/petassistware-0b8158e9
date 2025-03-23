@@ -12,8 +12,8 @@ export const useSortedDogs = (dogs: DogCareStatus[]) => {
     
     return [...dogs].sort((a, b) => {
       // Check if dogs have a group property via flags
-      const aGroup = a.flags?.find(f => f.type === 'group')?.value;
-      const bGroup = b.flags?.find(f => f.type === 'group')?.value;
+      const aGroup = a.flags?.find(f => f.type === 'other' && f.value === 'group')?.value;
+      const bGroup = b.flags?.find(f => f.type === 'other' && f.value === 'group')?.value;
       
       // First sort by dog group if available
       if (aGroup && bGroup && aGroup !== bGroup) {

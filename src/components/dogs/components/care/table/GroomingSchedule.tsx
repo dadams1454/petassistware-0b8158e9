@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -117,8 +118,8 @@ const GroomingSchedule: React.FC<GroomingScheduleProps> = ({ dogs, onRefresh }) 
                     <TableRow key={dog.dog_id}>
                       <DogNameCell 
                         dog={dog} 
-                        onCareLogClick={() => handleCareLogClick(dog.dog_id, dog.dog_name)}
-                        onDogClick={() => handleDogClick(dog.dog_id)}
+                        onClick={() => handleDogClick(dog.dog_id)}
+                        onCareLogClick={(id, name) => handleCareLogClick(id, name)}
                         activeCategory="grooming"
                         hasObservation={false}
                       />

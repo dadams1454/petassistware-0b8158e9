@@ -17,7 +17,7 @@ interface ActiveTabContentProps {
   getObservationDetails: (dogId: string) => Observation | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, hasPottyBreak: boolean, hasCareLogged: boolean) => void;
   onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string) => void;
-  onCareLogClick: (dogId: string) => void;
+  onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
   onObservationClick: (dogId: string) => void;
   onRefresh: () => void;
@@ -44,6 +44,22 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   currentHour,
   isMobile = false
 }) => {
+  // Create isCurrentHourSlot function to pass to TimeTableContent
+  const isCurrentHourSlot = (timeSlot: string): boolean => {
+    if (currentHour === undefined) return false;
+    
+    const hour = parseInt(timeSlot.split(':')[0]);
+    const isPM = timeSlot.includes('PM');
+    const is12Hour = hour === 12;
+    
+    // Convert slot to 24-hour format
+    let slot24Hour = hour;
+    if (isPM && !is12Hour) slot24Hour += 12;
+    if (!isPM && is12Hour) slot24Hour = 0;
+    
+    return slot24Hour === currentHour;
+  };
+  
   return (
     <div className="rounded-md border">
       <TimeTableHeader 
@@ -62,9 +78,10 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
           getObservationDetails={getObservationDetails}
           onCellClick={onCellClick}
           onCellContextMenu={onCellContextMenu}
-          onCareLogClick={onCareLogClick}
           onDogClick={onDogClick}
           onObservationClick={onObservationClick}
+          onCareLogClick={onCareLogClick}
+          isCurrentHourSlot={isCurrentHourSlot}
           currentHour={currentHour}
           isMobile={isMobile}
         />

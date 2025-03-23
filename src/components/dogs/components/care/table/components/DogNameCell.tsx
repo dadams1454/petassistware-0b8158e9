@@ -8,9 +8,22 @@ import { cn } from '@/lib/utils';
 interface DogNameCellProps {
   dog: DogCareStatus;
   onClick: (dogId: string) => void;
+  onCareLogClick?: (dogId: string, dogName: string) => void;
+  activeCategory?: string;
+  hasObservation?: boolean;
+  observationText?: string;
+  observationType?: string;
 }
 
-const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onClick }) => {
+const DogNameCell: React.FC<DogNameCellProps> = ({ 
+  dog, 
+  onClick,
+  onCareLogClick,
+  activeCategory,
+  hasObservation,
+  observationText,
+  observationType 
+}) => {
   const hasSpecialFlags = dog.flags && dog.flags.length > 0;
   
   // Get the dog's initials for the avatar fallback
@@ -22,11 +35,24 @@ const DogNameCell: React.FC<DogNameCellProps> = ({ dog, onClick }) => {
   const hasFlag = (type: string): boolean => {
     return dog.flags?.some(flag => flag.type === type) || false;
   };
+
+  const handleClick = () => {
+    onClick(dog.dog_id);
+  };
+
+  const handleCareLogClick = (e: React.MouseEvent) => {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+    if (onCareLogClick) {
+      onCareLogClick(dog.dog_id, dog.dog_name);
+    }
+  };
   
   return (
     <td 
       className="px-4 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-      onClick={() => onClick(dog.dog_id)}
+      onClick={handleClick}
     >
       <div className="flex items-center gap-3">
         <Avatar className="h-8 w-8">

@@ -9,12 +9,6 @@ import ObservationCell from './ObservationCell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Observation } from '../hooks/useObservations';
 
-// Define interface for DogNameCellProps to include onClick
-interface DogNameCellProps {
-  dog: DogCareStatus;
-  onClick: (dogId: string) => void;
-}
-
 // Define interface for ObservationDetails that maps to Observation properties
 interface ObservationDetails {
   text: string;
@@ -35,8 +29,11 @@ interface TimeTableContentProps {
   onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string) => void;
   onDogClick: (dogId: string) => void;
   onObservationClick: (dogId: string) => void;
-  isCurrentHourSlot: (timeSlot: string) => boolean;
-  isLoading: boolean;
+  onCareLogClick?: (dogId: string, dogName: string) => void;
+  isCurrentHourSlot?: (timeSlot: string) => boolean;
+  isLoading?: boolean;
+  currentHour?: number;
+  isMobile?: boolean;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({
@@ -51,8 +48,11 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onCellContextMenu,
   onDogClick,
   onObservationClick,
-  isCurrentHourSlot,
-  isLoading
+  onCareLogClick,
+  isCurrentHourSlot = () => false,
+  isLoading = false,
+  currentHour,
+  isMobile = false
 }) => {
   // Show loading skeleton
   if (isLoading && sortedDogs.length === 0) {
@@ -129,7 +129,12 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                 {/* Dog name cell */}
                 <DogNameCell 
                   dog={dog} 
-                  onClick={() => onDogClick(dog.dog_id)}
+                  onClick={onDogClick}
+                  onCareLogClick={onCareLogClick}
+                  activeCategory={activeCategory}
+                  hasObservation={dogHasObservation}
+                  observationText={observationDetails?.text || ''}
+                  observationType={observationDetails?.type || ''}
                 />
                 
                 {/* Observation cell */}

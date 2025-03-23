@@ -91,6 +91,11 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   
   const observationTimeSlot = getObservationTimeSlot(observationDetails);
   
+  // Adapter function for observation click
+  const handleObservationClick = () => {
+    onObservationClick(dogId, dogName);
+  };
+  
   return (
     <TableRow 
       key={`${dogId}-row`} 
@@ -100,8 +105,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
       {/* Dog name cell with photo, gender color based on dog sex */}
       <DogNameCell 
         dog={dog} 
+        onClick={handleDogCellClick}
         onCareLogClick={handleCareLogCellClick}
-        onDogClick={handleDogCellClick}
         activeCategory={activeCategory}
         hasObservation={dogHasObservation}
         observationText={observationDetails?.text || ''}
@@ -115,7 +120,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
         activeCategory={activeCategory}
         dogId={dogId}
         dogName={dogName}
-        onObservationClick={onObservationClick}
+        onObservationClick={handleObservationClick}
       />
       
       {/* Time slot cells */}
