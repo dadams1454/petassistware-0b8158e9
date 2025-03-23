@@ -19,8 +19,9 @@ interface BreedingAnalyticsProps {
 const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
   const [selectedLitterId, setSelectedLitterId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('single-litter');
+  const [innerTabValue, setInnerTabValue] = useState<string>("overview");
 
-  // Fetch all litters with puppies data
+  // Fetch all litters with puppies data with improved caching strategy
   const { data: litters, isLoading: isLoadingLitters, error: littersError } = useQuery({
     queryKey: ['litters-with-puppies'],
     queryFn: async () => {
@@ -38,19 +39,39 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
 
       if (error) throw error;
       return data || [];
-    }
+    },
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes in the background
   });
 
-  // Set the first litter as selected when data loads
+  // Set the first litter as selected when data loads - fixed dependency array
   useEffect(() => {
     if (litters && litters.length > 0 && !selectedLitterId) {
       setSelectedLitterId(litters[0].id);
     }
-  }, [litters, selectedLitterId]);
+  }, [litters]); // Removed selectedLitterId from dependencies
 
-  // Get the selected litter data
-  const selectedLitter = litters?.find(litter => litter.id === selectedLitterId);
+  // Reset inner tab when selectedLitterId changes
+  useEffect(() => {
+    setInnerTabValue("overview");
+  }, [selectedLitterId]);
+
+  // Get the selected litter data with null safety
+  const selectedLitter = litters?.find(litter => litter.id === selectedLitterId) || null;
   const puppies = selectedLitter?.puppies || [];
+
+  // Top-level loading state
+  if (isLoadingLitters) {
+    return (
+      <Card className={className}>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">Loading breeding data...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (littersError) {
     return (
@@ -120,9 +141,13 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
                 </Select>
               </div>
 
-              {/* Single Litter Analytics Tabs */}
+              {/* Single Litter Analytics Tabs - now controlled */}
               {selectedLitter ? (
-                <Tabs defaultValue="overview" className="w-full">
+                <Tabs 
+                  value={innerTabValue} 
+                  onValueChange={setInnerTabValue} 
+                  className="w-full"
+                >
                   <TabsList className="grid grid-cols-4 mb-6">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="weights">Weights</TabsTrigger>
@@ -134,7 +159,7 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
                     <div className="space-y-6">
                       <LitterStatistics 
                         puppies={puppies} 
-                        title={`Overview: ${selectedLitter.litter_name || 'Litter'}`}
+                        title={`Overview: ${selectedLitter?.litter_name || 'Litter'}`}
                       />
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <GenderDistributionChart puppies={puppies} />
@@ -146,21 +171,21 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
                   <TabsContent value="weights">
                     <PuppyWeightChart 
                       puppies={puppies} 
-                      title={`Weight Analysis: ${selectedLitter.litter_name || 'Litter'}`}
+                      title={`Weight Analysis: ${selectedLitter?.litter_name || 'Litter'}`}
                     />
                   </TabsContent>
                   
                   <TabsContent value="gender">
                     <GenderDistributionChart 
                       puppies={puppies} 
-                      title={`Gender Distribution: ${selectedLitter.litter_name || 'Litter'}`}
+                      title={`Gender Distribution: ${selectedLitter?.litter_name || 'Litter'}`}
                     />
                   </TabsContent>
                   
                   <TabsContent value="colors">
                     <ColorDistributionChart 
                       puppies={puppies} 
-                      title={`Color Distribution: ${selectedLitter.litter_name || 'Litter'}`}
+                      title={`Color Distribution: ${selectedLitter?.litter_name || 'Litter'}`}
                     />
                   </TabsContent>
                 </Tabs>
@@ -180,7 +205,7 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
               )}
             </>
           ) : (
-            <LitterComparison />
+            <LitterComparison litters={litters || []} isLoading={isLoadingLitters} />
           )}
         </div>
       </CardContent>

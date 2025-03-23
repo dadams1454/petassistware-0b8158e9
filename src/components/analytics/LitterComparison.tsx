@@ -13,12 +13,18 @@ import { AlertCircle, Users, Scale, Palette, ArrowLeftRight } from 'lucide-react
 
 interface LitterComparisonProps {
   className?: string;
+  litters?: any[]; // Passing the litters data from parent component
+  isLoading?: boolean; // Loading state from parent
 }
 
-const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
+const LitterComparison: React.FC<LitterComparisonProps> = ({ 
+  className, 
+  litters = [], // Default to empty array for type safety
+  isLoading = false 
+}) => {
   const [selectedDamId, setSelectedDamId] = useState<string | null>(null);
 
-  // Fetch female dogs that have had litters
+  // We'll still need this query to get all dams, but we can use the litters prop for optimization
   const { data: dams, isLoading: isLoadingDams } = useQuery({
     queryKey: ['dams-with-litters'],
     queryFn: async () => {
@@ -39,7 +45,9 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
       
       // Filter to only include dams with at least one litter
       return (data || []).filter(dam => dam.litters && dam.litters.length > 0);
-    }
+    },
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes in the background
   });
 
   // Set the first dam as selected when data loads
@@ -47,9 +55,9 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
     if (dams && dams.length > 0 && !selectedDamId) {
       setSelectedDamId(dams[0].id);
     }
-  }, [dams, selectedDamId]);
+  }, [dams]); // Simplified dependency array
 
-  // Fetch litter details for the selected dam
+  // Fetch litter details for the selected dam, with improved caching
   const { data: litterDetails, isLoading: isLoadingLitters } = useQuery({
     queryKey: ['dam-litters', selectedDamId],
     queryFn: async () => {
@@ -70,7 +78,9 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!selectedDamId
+    enabled: !!selectedDamId,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes in the background
   });
 
   // Generate comparison data for puppies per litter
@@ -149,7 +159,10 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
     return dams.find(dam => dam.id === selectedDamId);
   }, [dams, selectedDamId]);
 
-  if (isLoadingDams) {
+  // Combined loading state from parent and local queries
+  const isLoadingAll = isLoading || isLoadingDams;
+
+  if (isLoadingAll) {
     return (
       <Card className={className}>
         <CardContent className="p-6">
