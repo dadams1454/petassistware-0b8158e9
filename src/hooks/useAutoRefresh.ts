@@ -1,6 +1,6 @@
 
 import { useEffect, useCallback, useState } from 'react';
-import { useRefresh, RefreshCallbacks, RefreshableArea } from '@/contexts/refreshContext';
+import { useRefresh, RefreshableArea } from '@/contexts/refreshContext';
 import { useToast } from '@/components/ui/use-toast';
 
 interface AutoRefreshOptions {
@@ -51,12 +51,6 @@ export const useAutoRefresh = ({
     }
   }, [onRefresh, area, enableToasts, refreshLabel, toast]);
   
-  // Create callbacks object for the refresh context
-  const callbacks: RefreshCallbacks = {
-    onRefresh: safeOnRefresh,
-    onDateChange: midnightReset ? (newDate) => safeOnRefresh(newDate, true) : undefined
-  };
-  
   // Use the centralized refresh context
   const { 
     isRefreshing, 
@@ -65,7 +59,7 @@ export const useAutoRefresh = ({
     formatTimeRemaining,
     setRefreshInterval,
     timeUntilNextRefresh
-  } = useRefresh(area, callbacks);
+  } = useRefresh(area);
   
   // Set custom refresh interval if provided
   useEffect(() => {
