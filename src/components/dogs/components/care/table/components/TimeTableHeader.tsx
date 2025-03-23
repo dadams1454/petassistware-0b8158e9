@@ -45,24 +45,26 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
       <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
-        <TabsList className={`gap-1 ${isMobile ? 'w-full' : ''}`}>
-          <TabsTrigger 
-            value="pottybreaks" 
-            onClick={() => handleCategoryChange('pottybreaks')}
-            className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
-          >
-            {getIcon('pottybreaks')}
-            <span className={isMobile ? 'text-xs' : ''}>Potty</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="feeding" 
-            onClick={() => handleCategoryChange('feeding')}
-            className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
-          >
-            {getIcon('feeding')}
-            <span className={isMobile ? 'text-xs' : ''}>Feeding</span>
-          </TabsTrigger>
-        </TabsList>
+        <Tabs value={activeCategory}>
+          <TabsList className={`gap-1 ${isMobile ? 'w-full' : ''}`}>
+            <TabsTrigger 
+              value="pottybreaks" 
+              onClick={() => handleCategoryChange('pottybreaks')}
+              className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+            >
+              {getIcon('pottybreaks')}
+              <span className={isMobile ? 'text-xs' : ''}>Potty</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="feeding" 
+              onClick={() => handleCategoryChange('feeding')}
+              className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
+            >
+              {getIcon('feeding')}
+              <span className={isMobile ? 'text-xs' : ''}>Feeding</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
         
         {!isMobile && (
           <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 ml-2">
