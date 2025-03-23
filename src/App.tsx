@@ -10,6 +10,7 @@ import Dogs from './pages/Dogs';
 import Litters from './pages/Litters';
 import DailyCare from './pages/DailyCare';
 import NotFound from './pages/NotFound';
+import Communications from './pages/Communications';
 
 // Import the Providers
 import { RefreshProvider } from './contexts/refresh';
@@ -26,7 +27,7 @@ function App() {
         <ThemeProvider defaultTheme="light" storageKey="theme">
           <AuthProvider>
             <RefreshProvider enableToasts={true}>
-              <RefreshTimestampProvider>
+              <RefreshTimestampProvider initialInterval={15 * 60 * 1000}> {/* 15 minutes */}
                 <DailyCareProvider>
                   <Toaster />
                   <Routes>
@@ -36,6 +37,7 @@ function App() {
                       <Route path="/dogs" element={<Dogs />} />
                       <Route path="/litters" element={<Litters />} />
                       <Route path="/dailycare" element={<DailyCare />} />
+                      <Route path="/communications" element={<Communications />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
