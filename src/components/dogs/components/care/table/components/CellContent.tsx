@@ -94,4 +94,4 @@ const CellContent: React.FC<CellContentProps> = ({
   );
 };
 
-export default CellContent;
+export default React.memo(CellContent);

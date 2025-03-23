@@ -119,6 +119,21 @@ const TimeSlotCell = memo(({
       )}
     </TableCell>
   );
+}, (prevProps, nextProps) => {
+  // Custom comparison function for memo
+  // Only re-render if these specific props change
+  return (
+    prevProps.dogId === nextProps.dogId &&
+    prevProps.timeSlot === nextProps.timeSlot &&
+    prevProps.hasPottyBreak === nextProps.hasPottyBreak &&
+    prevProps.hasCareLogged === nextProps.hasCareLogged &&
+    prevProps.isCurrentHour === nextProps.isCurrentHour &&
+    prevProps.isIncident === nextProps.isIncident &&
+    // Deep comparison isn't necessary for these function props
+    // since they're already wrapped in useCallback
+    prevProps.onClick === nextProps.onClick &&
+    prevProps.onContextMenu === nextProps.onContextMenu
+  );
 });
 
 // Add display name for better debugging
