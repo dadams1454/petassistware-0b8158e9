@@ -2,7 +2,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from './components/ui/theme-provider';
+import { ThemeProvider } from '@/components/ui/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import Dashboard from './pages/Dashboard';
 import Dogs from './pages/Dogs';
@@ -24,6 +24,7 @@ function App() {
             <Toaster />
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} /> {/* Add explicit dashboard route */}
               <Route path="/dogs" element={<Dogs />} />
               <Route path="/litters" element={<Litters />} />
               <Route path="/dailycare" element={<DailyCare />} />

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Home, Dog as LucideDog, NotebookPen, Users, Calendar, Menu, X, MessageSquare } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -18,7 +17,7 @@ const Navbar: React.FC = () => {
 
   const menuItems = [{
     label: 'Dashboard',
-    path: '/dashboard',
+    path: '/', // Changed from '/dashboard' to '/' to match route in App.tsx
     icon: <Home className="h-5 w-5" />
   }, {
     label: 'Dogs',
@@ -56,7 +55,7 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link to="/dashboard" className="flex-shrink-0 font-bold text-xl">
+            <Link to="/" className="flex-shrink-0 font-bold text-xl">
               Bear Paw Kennels
             </Link>
             <div className="hidden md:block">
@@ -66,7 +65,8 @@ const Navbar: React.FC = () => {
                     key={item.label} 
                     to={item.path}
                     className={`px-3 py-2 rounded-md text-sm font-medium ${
-                      location.pathname === item.path 
+                      (location.pathname === item.path || 
+                       (item.path === '/' && location.pathname === '/dashboard'))
                         ? 'bg-primary text-primary-foreground' 
                         : 'text-foreground hover:bg-secondary hover:text-secondary-foreground'
                     } transition-colors duration-200`}
@@ -185,7 +185,7 @@ const Navbar: React.FC = () => {
             <Link 
               to="/auth" 
               className="block px-3 py-2 rounded-md text-base font-medium text-blue-500 hover:text-blue-700"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={()={() => setIsMenuOpen(false)}
             >
               Login
             </Link>
