@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Home, Dog as LucideDog, NotebookPen, Users, Calendar, Menu, X, MessageSquare } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -185,7 +186,7 @@ const Navbar: React.FC = () => {
             <Link 
               to="/auth" 
               className="block px-3 py-2 rounded-md text-base font-medium text-blue-500 hover:text-blue-700"
-              onClick={()={() => setIsMenuOpen(false)}
+              onClick={() => setIsMenuOpen(false)}
             >
               Login
             </Link>
