@@ -1,6 +1,6 @@
 
 import React from 'react';
-import MainLayout from '@/layouts/MainLayout';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -11,7 +11,13 @@ interface PageContainerProps {
  * Ensures consistent usage of MainLayout across all pages.
  */
 const PageContainer: React.FC<PageContainerProps> = ({ children }) => {
-  return <MainLayout>{children}</MainLayout>;
+  return (
+    <ErrorBoundary name="PageContainer">
+      <div className="container mx-auto">
+        {children}
+      </div>
+    </ErrorBoundary>
+  );
 };
 
 export default PageContainer;

@@ -5,6 +5,7 @@ import Navbar from '@/components/common/Navbar';
 import { Sidebar, SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface MainLayoutProps {
   children?: React.ReactNode;
@@ -12,20 +13,22 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
-    <UserPreferencesProvider>
-      <SidebarProvider defaultOpen={true}>
-        <div className="flex h-screen overflow-hidden bg-background">
-          <Sidebar />
-          <SidebarInset>
-            <Navbar />
-            <main className="flex-1 p-4 md:p-6 overflow-auto">
-              {children || <Outlet />}
-              <Toaster />
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
-    </UserPreferencesProvider>
+    <ErrorBoundary name="MainLayout">
+      <UserPreferencesProvider>
+        <SidebarProvider defaultOpen={true}>
+          <div className="flex h-screen overflow-hidden bg-background">
+            <Sidebar />
+            <SidebarInset>
+              <Navbar />
+              <main className="flex-1 p-4 md:p-6 overflow-auto">
+                {children || <Outlet />}
+                <Toaster />
+              </main>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
+      </UserPreferencesProvider>
+    </ErrorBoundary>
   );
 };
 
