@@ -6,6 +6,7 @@ import PottyBreakReminderCard from '@/components/dogs/components/care/potty/Pott
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useQueryWithRefresh } from '@/hooks/useQueryWithRefresh';
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 
 interface DailyCareTabProps {
   onRefreshDogs?: () => void;
@@ -56,7 +57,34 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     [dogStatuses]
   );
   
-  // Handle local refresh state to show a smoother UI
+  // Debounced refresh handler to prevent rapid consecutive refreshes
+  const debouncedHandleRefresh = useDebouncedCallback(() => {
+    if (unmountedRef.current) return;
+    
+    setLocalRefreshing(true);
+    console.log('DailyCareTab refresh triggered via debounced handler');
+    
+    // Use our manual refresh function
+    manualRefresh(true);
+    
+    // Call external refresh if provided
+    if (onRefreshDogs) {
+      onRefreshDogs();
+    }
+    
+    // Ensure we show the loading state for at least 500ms to avoid flicker
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+    
+    refreshTimeoutRef.current = setTimeout(() => {
+      if (unmountedRef.current) return;
+      setLocalRefreshing(false);
+      refreshTimeoutRef.current = null;
+    }, 500);
+  }, 300); // Debounce for 300ms
+  
+  // Original non-debounced handler for places where we need immediate refresh
   const handleLocalRefresh = useCallback(() => {
     if (unmountedRef.current) return;
     
@@ -138,13 +166,13 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
       <div id="dog-time-table">
         <DogTimeTable 
           dogsStatus={dogStatuses || []} 
-          onRefresh={handleLocalRefresh}
+          onRefresh={debouncedHandleRefresh} // Use debounced handler here
           isRefreshing={isRefreshing}
           currentDate={currentDate}
         />
       </div>
     </div>
-  ), [dogStatuses, handleLocalRefresh, isRefreshing, currentDate]);
+  ), [dogStatuses, debouncedHandleRefresh, isRefreshing, currentDate]);
   
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DailyCareTab">
