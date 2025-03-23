@@ -25,7 +25,8 @@ const FollowUpManager = () => {
     
     // Use transition to prevent UI blocking during refetch
     startTransition(() => {
-      refetch();
+      // Void the promise to avoid type errors
+      void refetch();
     });
   };
 
@@ -40,7 +41,8 @@ const FollowUpManager = () => {
 
   const handleRefresh = () => {
     startTransition(() => {
-      refetch();
+      // Void the promise to avoid type errors
+      void refetch();
     });
   };
 
@@ -138,7 +140,11 @@ const FollowUpManager = () => {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         customer={selectedCustomer}
-        onSuccess={() => startTransition(() => refetch())}
+        onSuccess={() => {
+          startTransition(() => {
+            void refetch();
+          });
+        }}
       />
     </Card>
   );

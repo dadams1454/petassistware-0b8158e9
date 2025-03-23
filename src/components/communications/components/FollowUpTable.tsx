@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { FollowUpItem } from '../types/followUp';
 import { format, isBefore } from 'date-fns';
 import { Check, Mail } from 'lucide-react';
-import FollowUpStatusIcon from './FollowUpStatusIcon';
+import { FollowUpStatusIcon } from './FollowUpStatusIcon';
 
 interface FollowUpTableProps {
   followUps: FollowUpItem[];
