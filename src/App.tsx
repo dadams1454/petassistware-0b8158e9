@@ -11,6 +11,7 @@ import Litters from './pages/Litters';
 import DailyCare from './pages/DailyCare';
 import NotFound from './pages/NotFound';
 import Communications from './pages/Communications';
+import Customers from './pages/Customers';
 
 // Import the Providers
 import { RefreshProvider } from './contexts/refresh';
@@ -38,6 +39,7 @@ function App() {
                       <Route path="/litters" element={<Litters />} />
                       <Route path="/dailycare" element={<DailyCare />} />
                       <Route path="/communications" element={<Communications />} />
+                      <Route path="/customers" element={<Customers />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
