@@ -12,7 +12,7 @@ import DailyCare from './pages/DailyCare';
 import NotFound from './pages/NotFound';
 
 // Import the Providers
-import { RefreshProvider } from './contexts/refreshContext';
+import { RefreshProvider } from './contexts/refresh';
 import { AuthProvider } from './contexts/AuthProvider';
 import { DailyCareProvider } from './contexts/dailyCare';
 
