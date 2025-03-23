@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import ObservationForm from './ObservationForm';
-import ObservationList from './ObservationList';
+import DialogContentComponent from './DialogContent';
 
 export type ObservationType = 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
 
@@ -99,33 +97,25 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   
   // The dialog content
   const dialogContent = (
-    <>
-      {existingObservations.length > 0 && (
-        <ObservationList 
-          existingObservations={existingObservations} 
-          activeCategory={activeCategory}
-        />
-      )}
-      
-      <ObservationForm
-        observation={observation}
-        setObservation={setObservation}
-        observationType={observationType}
-        setObservationType={setObservationType}
-        onSubmit={handleSubmit}
-        isSubmitting={isSubmitting}
-        onCancel={() => onOpenChange(false)}
-        timestamp={timestamp}
-        timeSlot={dialogSelectedTimeSlot}
-        timeSlots={timeSlots}
-        selectedTimeSlot={dialogSelectedTimeSlot}
-        setSelectedTimeSlot={setDialogSelectedTimeSlot}
-        isMobile={isMobile}
-        activeCategory={activeCategory}
-        observationDate={observationDate}
-        setObservationDate={setObservationDate}
-      />
-    </>
+    <DialogContentComponent
+      existingObservations={existingObservations}
+      observation={observation}
+      setObservation={setObservation}
+      observationType={observationType}
+      setObservationType={setObservationType}
+      onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
+      onCancel={() => onOpenChange(false)}
+      timestamp={timestamp}
+      timeSlot={dialogSelectedTimeSlot}
+      timeSlots={timeSlots}
+      selectedTimeSlot={dialogSelectedTimeSlot}
+      setSelectedTimeSlot={setDialogSelectedTimeSlot}
+      isMobile={isMobile}
+      activeCategory={activeCategory}
+      observationDate={observationDate}
+      setObservationDate={setObservationDate}
+    />
   );
   
   // Use regular Dialog on desktop, Sheet on mobile

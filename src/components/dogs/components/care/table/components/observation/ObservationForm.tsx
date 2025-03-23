@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { ObservationType } from './ObservationDialog';
 import ObservationTypeSelector from './ObservationTypeSelector';
 import DateTimeSelector from './form/DateTimeSelector';
