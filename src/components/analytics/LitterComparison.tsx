@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,8 +8,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { AlertCircle, Users, Scale, Palette } from 'lucide-react';
+import { AlertCircle, Users, Scale, Palette, FilterX } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { DateRange } from "react-day-picker";
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 
 interface LitterComparisonProps {
   className?: string;
@@ -25,32 +27,86 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
 }) => {
   const [selectedDamId, setSelectedDamId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("counts");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [filterBreed, setFilterBreed] = useState<string | undefined>(undefined);
+
+  // Fetch all breeds for filter dropdown
+  const { data: breeds } = useQuery({
+    queryKey: ['dog-breeds'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dogs')
+        .select('breed')
+        .not('breed', 'is', null)
+        .order('breed');
+      
+      if (error) throw error;
+      
+      // Extract unique breeds
+      const uniqueBreeds = Array.from(new Set(data.map(dog => dog.breed)))
+        .filter(Boolean)
+        .map(breed => ({ id: breed, name: breed }));
+      
+      return uniqueBreeds;
+    },
+    staleTime: 60 * 60 * 1000, // Cache for 1 hour
+  });
 
   // We'll still need this query to get all dams, but we can use the litters prop for optimization
   const { data: dams, isLoading: isLoadingDams } = useQuery({
-    queryKey: ['dams-with-litters'],
+    queryKey: ['dams-with-litters', dateRange, filterBreed],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('dogs')
         .select(`
           id, 
           name,
           breed,
           color,
-          litters:litters!litters_dam_id_fkey(id, litter_name, birth_date)
+          litters:litters!litters_dam_id_fkey(id, litter_name, birth_date, sire_id, sire:dogs!litters_sire_id_fkey(id, breed))
         `)
         .eq('gender', 'Female')
-        .filter('litters.id', 'not.is', null)
-        .order('name');
+        .filter('litters.id', 'not.is', null);
+      
+      if (filterBreed) {
+        query = query.eq('breed', filterBreed);
+      }
+      
+      const { data, error } = await query.order('name');
 
       if (error) throw error;
       
-      // Filter to only include dams with at least one litter
-      return (data || []).filter(dam => dam.litters && dam.litters.length > 0);
+      // Filter litters by date range if provided
+      let filteredData = data;
+      if (dateRange?.from || dateRange?.to) {
+        filteredData = data.map(dam => {
+          const filteredLitters = dam.litters.filter(litter => {
+            const litterDate = new Date(litter.birth_date);
+            if (dateRange.from && dateRange.to) {
+              return litterDate >= dateRange.from && litterDate <= dateRange.to;
+            } else if (dateRange.from) {
+              return litterDate >= dateRange.from;
+            } else if (dateRange.to) {
+              return litterDate <= dateRange.to;
+            }
+            return true;
+          });
+          
+          return { ...dam, litters: filteredLitters };
+        });
+      }
+      
+      // Filter to only include dams with at least one litter after date filtering
+      return (filteredData || []).filter(dam => dam.litters && dam.litters.length > 0);
     },
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
     refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes in the background
   });
+
+  // Reset selected dam when filters change
+  useEffect(() => {
+    setSelectedDamId(null);
+  }, [dateRange, filterBreed]);
 
   // Set the first dam as selected when data loads - removed selectedDamId from dependency array
   useEffect(() => {
@@ -66,11 +122,11 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
 
   // Fetch litter details for the selected dam, with improved caching
   const { data: litterDetails, isLoading: isLoadingLitters } = useQuery({
-    queryKey: ['dam-litters', selectedDamId],
+    queryKey: ['dam-litters', selectedDamId, dateRange],
     queryFn: async () => {
       if (!selectedDamId) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('litters')
         .select(`
           id,
@@ -79,8 +135,18 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
           sire:dogs!litters_sire_id_fkey(id, name, breed, color),
           puppies:puppies!puppies_litter_id_fkey(*)
         `)
-        .eq('dam_id', selectedDamId)
-        .order('birth_date', { ascending: false });
+        .eq('dam_id', selectedDamId);
+      
+      // Apply date range filter if provided
+      if (dateRange?.from) {
+        query = query.gte('birth_date', dateRange.from.toISOString().split('T')[0]);
+      }
+      
+      if (dateRange?.to) {
+        query = query.lte('birth_date', dateRange.to.toISOString().split('T')[0]);
+      }
+      
+      const { data, error } = await query.order('birth_date', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -170,6 +236,13 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
   const isLoadingAll = isLoading || isLoadingDams;
   const isContentLoading = isLoadingAll || (selectedDamId && isLoadingLitters);
 
+  // Reset all filters
+  const resetFilters = () => {
+    setDateRange(undefined);
+    setFilterBreed(undefined);
+    setSelectedDamId(null);
+  };
+
   if (isLoadingAll) {
     return (
       <Card className={className}>
@@ -209,6 +282,38 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
         <CardTitle className="text-xl">Breeding History Comparison</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
+        {/* Filter Controls */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <DateRangePicker
+            dateRange={dateRange}
+            onSelect={setDateRange}
+          />
+          
+          <Select
+            value={filterBreed}
+            onValueChange={setFilterBreed}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by breed" />
+            </SelectTrigger>
+            <SelectContent>
+              {breeds?.map(breed => (
+                <SelectItem key={breed.id} value={breed.id}>{breed.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Button 
+            variant="outline" 
+            onClick={resetFilters}
+            size="sm"
+            className="flex items-center gap-1"
+          >
+            <FilterX className="h-4 w-4" />
+            Reset Filters
+          </Button>
+        </div>
+        
         {/* Dam Selector */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">Select Dam:</label>
@@ -262,6 +367,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({
                     <span className="hidden sm:inline">Color Distribution</span>
                   </TabsTrigger>
                 </TabsList>
+                
                 
                 <TabsContent value="counts">
                   {puppiesPerLitterData.length > 0 ? (
