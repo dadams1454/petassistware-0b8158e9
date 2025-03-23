@@ -1,20 +1,21 @@
+
 import {
   LayoutDashboard,
-  Paw,
+  Dog,
   Users,
   CalendarCheck,
   MessageSquare,
 } from 'lucide-react';
 
-type MenuItem = {
+export type MenuItem = {
   label: string;
   path: string;
-  icon: LucideIcon;
+  icon: string;
 };
 
-type LucideIcon =
+export type LucideIcon =
   | typeof LayoutDashboard
-  | typeof Paw
+  | typeof Dog
   | typeof Users
   | typeof CalendarCheck
   | typeof MessageSquare;
@@ -29,7 +30,7 @@ export const getMenuItems = () => {
     {
       label: 'Dogs',
       path: '/dogs',
-      icon: 'Paw',
+      icon: 'Dog',
     },
     {
       label: 'Litters',
