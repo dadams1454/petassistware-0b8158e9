@@ -54,8 +54,8 @@ const usePottyBreakTable = (
     isLoading: pottyLoading 
   } = usePottyBreakData(currentDate);
   
-  // Use the care logs data hook for other care types - pass an empty object as fallback
-  const { hasCareLogged, isLoading: careLoading } = useCareLogsData({});
+  // Use the care logs data hook for other care types - pass an empty array as fallback
+  const { hasCareLogged, isLoading: careLoading } = useCareLogsData(dogsStatus || []);
   
   // Use the observations hook
   const { 
