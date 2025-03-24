@@ -8,12 +8,14 @@ interface TimeTableFooterProps {
   isLoading?: boolean;
   onRefresh?: (() => void) | null;
   currentDate?: Date;
+  lastUpdateTime?: string; // Added this optional prop
 }
 
 const TimeTableFooter: React.FC<TimeTableFooterProps> = ({ 
   isLoading = false, 
   onRefresh, 
-  currentDate = new Date()
+  currentDate = new Date(),
+  lastUpdateTime
 }) => {
   return (
     <div className="flex flex-wrap justify-between items-center text-xs text-gray-500 dark:text-gray-400 p-2 border-t">

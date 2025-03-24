@@ -10,13 +10,15 @@ interface TabsListProps {
   onTabChange: (value: string) => void;
   onRefreshDogs: () => void;
   isRefreshing: boolean;
+  nextRefreshTime?: string; // Added this optional prop
 }
 
 const TabsList: React.FC<TabsListProps> = ({
   activeTab,
   onTabChange,
   onRefreshDogs,
-  isRefreshing
+  isRefreshing,
+  nextRefreshTime
 }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">

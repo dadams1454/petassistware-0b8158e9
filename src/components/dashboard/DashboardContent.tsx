@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
@@ -108,7 +107,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           onTabChange={handleTabChange}
           onRefreshDogs={handleManualRefresh}
           isRefreshing={isRefreshing}
-          nextRefreshTime={formatTimeRemaining()}
         />
         
         <TabsContent value="overview">
