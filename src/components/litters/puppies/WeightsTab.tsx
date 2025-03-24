@@ -28,7 +28,7 @@ const WeightsTab: React.FC<WeightsTabProps> = ({ form }) => {
             form={form} 
             name="birth_weight" 
             label="Birth Weight" 
-            defaultUnit="oz" as WeightUnit
+            defaultUnit="oz"
           />
         </div>
         
@@ -41,7 +41,7 @@ const WeightsTab: React.FC<WeightsTabProps> = ({ form }) => {
             form={form} 
             name="current_weight" 
             label="Current Weight" 
-            defaultUnit="oz" as WeightUnit
+            defaultUnit="oz"
           />
         </div>
       </div>
