@@ -26,6 +26,13 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     handleCategoryChange
   } = useCareDashboard();
 
+  // Function to handle retry when loading fails
+  const handleRetry = () => {
+    console.log('Retrying data fetch');
+    // This will trigger a refresh through the useCareDashboard hook
+    window.location.reload();
+  };
+
   // Log when component mounts and when dogStatuses change
   React.useEffect(() => {
     console.log('🚀 CareDashboard mounted');
@@ -52,6 +59,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       <LoadingState 
         isLoading={loading} 
         error={loadError} 
+        onRetry={handleRetry}
       />
       
       {!loading && !loadError && dogStatuses && dogStatuses.length > 0 ? (

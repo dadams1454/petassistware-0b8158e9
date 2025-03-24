@@ -111,6 +111,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsContent value="grooming">
           <GroomingTab 
             dogStatuses={dogStatuses} 
+            onRefreshDogs={() => refreshDogs(true)}
           />
         </TabsContent>
       </Tabs>

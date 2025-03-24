@@ -116,6 +116,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onCareLogClick={handleCareLogClick}
           onDogClick={handleDogClick}
           onObservationClick={handleObservationClick}
+          onRefresh={onRefresh}
           onCategoryChange={handleCategoryChangeWithTransition}
           showLoading={isLoadingOrTransitioning}
           isPending={isPending}
