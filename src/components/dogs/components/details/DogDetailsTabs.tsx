@@ -5,7 +5,7 @@ import OverviewTab from '../tabs/OverviewTab';
 import HealthTab from '../tabs/HealthTab';
 import NotesTab from '../tabs/NotesTab';
 import GalleryTab from '../tabs/GalleryTab';
-import CareTsbs from '../tabs/CareTab';
+import CareTab from '../tabs/CareTab';
 import DocumentsTab from '../tabs/DocumentsTab';
 import PedigreeTab from '../tabs/PedigreeTab';
 
@@ -62,7 +62,7 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="care" className="space-y-4">
-        <CareTsbs dogId={dog.id} dogName={dog.name} isFullPage={isFullPage} />
+        <CareTab dogId={dog.id} dogName={dog.name} isFullPage={isFullPage} />
       </TabsContent>
       
       <TabsContent value="documents" className="space-y-4">
@@ -71,7 +71,7 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
       
       {dog.pedigree && (
         <TabsContent value="pedigree" className="space-y-4">
-          <PedigreeTab dogId={dog.id} />
+          <PedigreeTab dogId={dog.id} currentDog={dog} />
         </TabsContent>
       )}
     </Tabs>

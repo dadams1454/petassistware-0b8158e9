@@ -13,6 +13,48 @@ export const formatFileSize = (sizeInBytes: number): string => {
 };
 
 /**
+ * Process a document file for upload, including validation and optimization
+ */
+export const processDocumentFile = async (
+  file: File,
+  allowedTypes: string[] = ['application/pdf', 'image/jpeg', 'image/png']
+): Promise<{ file: File; isValid: boolean; errorMessage?: string }> => {
+  // Validate file type
+  if (!allowedTypes.includes(file.type)) {
+    return {
+      file,
+      isValid: false,
+      errorMessage: `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`
+    };
+  }
+
+  // Validate file size (10MB max)
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  if (file.size > maxSize) {
+    return {
+      file,
+      isValid: false,
+      errorMessage: `File is too large. Maximum size is ${formatFileSize(maxSize)}`
+    };
+  }
+
+  // Compress images if applicable
+  let processedFile = file;
+  if (file.type.startsWith('image/')) {
+    try {
+      processedFile = await compressImage(file);
+    } catch (error) {
+      console.warn('Image compression failed, using original file:', error);
+    }
+  }
+
+  return {
+    file: processedFile,
+    isValid: true
+  };
+};
+
+/**
  * Upload a file to Supabase storage and return the public URL
  */
 export const uploadFile = async (
