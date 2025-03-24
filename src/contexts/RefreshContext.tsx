@@ -48,14 +48,16 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({
   const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
   const activeRefreshesRef = useRef<Set<string>>(new Set());
   const refreshCallbacksRef = useRef<Map<string, () => Promise<any>>>(new Map());
+  const isInitialMount = useRef(true);
+  const debounceTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
 
-  // Setup timer for countdown display
+  // Setup timer for countdown display - but with less frequent updates to avoid UI flicker
   useEffect(() => {
     const timer = setInterval(() => {
       const elapsed = (new Date().getTime() - lastRefreshTime.getTime()) / 1000;
       const remaining = Math.max(0, Math.floor((refreshInterval / 1000) - elapsed));
       setTimeUntilRefresh(remaining);
-    }, 1000);
+    }, 15000); // Update only every 15 seconds to reduce UI updates
     
     return () => clearInterval(timer);
   }, [refreshInterval, lastRefreshTime]);
@@ -78,6 +80,12 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({
       clearTimeout(midnightCheckRef.current);
       midnightCheckRef.current = null;
     }
+    
+    // Clear any debounce timers
+    Object.values(debounceTimersRef.current).forEach(timer => {
+      clearTimeout(timer);
+    });
+    debounceTimersRef.current = {};
   }, []);
   
   // Handle midnight reset if enabled
@@ -113,7 +121,10 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({
   
   // Main refresh function for everything
   const refreshAll = useCallback(async (showToast = false) => {
-    if (isRefreshing) return;
+    if (isRefreshing) {
+      console.log('Global refresh already in progress, skipping');
+      return;
+    }
     
     try {
       setIsRefreshing(true);
@@ -132,6 +143,12 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({
       
       // Execute all registered callbacks
       for (const [key, callback] of refreshCallbacksRef.current.entries()) {
+        // Skip if this specific refresh is already in progress
+        if (activeRefreshesRef.current.has(key)) {
+          console.log(`Refresh for ${key} already in progress, skipping in refreshAll`);
+          continue;
+        }
+        
         newStatusMap[key] = true;
         activeRefreshesRef.current.add(key);
         
@@ -174,12 +191,17 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({
     }
   }, [isRefreshing, toast]);
   
-  // Function to refresh specific items
+  // Function to refresh specific items with debouncing to prevent rapid consecutive calls
   const refreshSpecific = useCallback(async (
     key: string, 
     callback: () => Promise<any>,
     showToast = false
   ) => {
+    // Clear any existing debounce timer for this key
+    if (debounceTimersRef.current[key]) {
+      clearTimeout(debounceTimersRef.current[key]);
+    }
+    
     // Register this callback if it's not already registered
     registerRefreshCallback(key, callback);
     
@@ -189,50 +211,63 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({
       return null;
     }
     
-    try {
-      // Set status for this specific refresh
-      setRefreshStatus(prev => ({ ...prev, [key]: true }));
-      activeRefreshesRef.current.add(key);
-      
-      if (showToast) {
-        toast({
-          title: `Refreshing ${key}...`,
-          description: "Please wait while we update the data",
-          duration: 2000,
-        });
-      }
-      
-      // Run the callback
-      const result = await callback();
-      
-      if (showToast) {
-        toast({
-          title: "Refresh complete",
-          description: `${key} data has been updated`,
-          duration: 2000,
-        });
-      }
-      
-      return result;
-    } catch (error) {
-      console.error(`Error refreshing ${key}:`, error);
-      if (showToast) {
-        toast({
-          title: "Refresh failed",
-          description: `Unable to update ${key} data`,
-          variant: "destructive",
-          duration: 3000,
-        });
-      }
-      return null;
-    } finally {
-      activeRefreshesRef.current.delete(key);
-      setRefreshStatus(prev => ({ ...prev, [key]: false }));
-    }
+    // Use debounce to prevent rapid consecutive calls
+    return new Promise<any>((resolve) => {
+      debounceTimersRef.current[key] = setTimeout(async () => {
+        try {
+          // Set status for this specific refresh
+          setRefreshStatus(prev => ({ ...prev, [key]: true }));
+          activeRefreshesRef.current.add(key);
+          
+          if (showToast) {
+            toast({
+              title: `Refreshing ${key}...`,
+              description: "Please wait while we update the data",
+              duration: 2000,
+            });
+          }
+          
+          // Run the callback
+          const result = await callback();
+          
+          if (showToast) {
+            toast({
+              title: "Refresh complete",
+              description: `${key} data has been updated`,
+              duration: 2000,
+            });
+          }
+          
+          resolve(result);
+          return result;
+        } catch (error) {
+          console.error(`Error refreshing ${key}:`, error);
+          if (showToast) {
+            toast({
+              title: "Refresh failed",
+              description: `Unable to update ${key} data`,
+              variant: "destructive",
+              duration: 3000,
+            });
+          }
+          resolve(null);
+          return null;
+        } finally {
+          activeRefreshesRef.current.delete(key);
+          setRefreshStatus(prev => ({ ...prev, [key]: false }));
+        }
+      }, 300); // 300ms debounce
+    });
   }, [registerRefreshCallback, toast]);
   
-  // Set up interval for regular refreshes
+  // Set up interval for regular refreshes - but only after initial render is complete
   useEffect(() => {
+    // Skip the first automatic refresh on mount to prevent too many initial refreshes
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }

@@ -1,21 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import { useDashboardData } from '@/components/dashboard/useDashboardData';
-import { useRefresh } from '@/contexts/RefreshContext';
 
 const Dashboard: React.FC = () => {
-  // Use the hook to fetch all dashboard data
-  const { isLoading, stats, events, activities, fetchDashboardData } = useDashboardData();
-  const { refreshSpecific } = useRefresh();
-  
-  // Register dashboard data refresh
-  useEffect(() => {
-    // Register the dashboard data refresh operation
-    refreshSpecific('dashboardData', fetchDashboardData, false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Use the hook to fetch all dashboard data - using the centralized refresh system
+  const { isLoading, stats, events, activities } = useDashboardData();
   
   return (
     <PageContainer>

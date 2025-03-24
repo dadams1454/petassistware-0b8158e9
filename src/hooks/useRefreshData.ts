@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRefresh } from '@/contexts/RefreshContext';
 
 interface UseRefreshDataOptions<T> {
@@ -24,6 +24,7 @@ export function useRefreshData<T>({
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(loadOnMount);
   const [error, setError] = useState<Error | null>(null);
+  const initialLoadDone = useRef(false);
   
   const { refreshSpecific, refreshStatus } = useRefresh();
   
@@ -49,9 +50,10 @@ export function useRefreshData<T>({
     }
   }, [key, fetchData, refreshSpecific]);
   
-  // Load data on mount if specified
+  // Load data on mount if specified - but only ONCE
   useEffect(() => {
-    if (loadOnMount) {
+    if (loadOnMount && !initialLoadDone.current) {
+      initialLoadDone.current = true;
       refresh(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,7 +61,8 @@ export function useRefreshData<T>({
   
   // Refresh when dependencies change if enabled
   useEffect(() => {
-    if (refreshOnDependencyChange && !loadOnMount) {
+    // Skip the initial run to avoid double fetching with loadOnMount
+    if (refreshOnDependencyChange && initialLoadDone.current) {
       refresh(false);
     }
     // We want to specifically exclude refresh from dependencies

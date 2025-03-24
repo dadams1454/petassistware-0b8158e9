@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
@@ -9,34 +9,28 @@ import { RefreshCw, Clock, Calendar } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { format } from 'date-fns';
 import { useRefresh } from '@/contexts/RefreshContext';
+import { useRefreshData } from '@/hooks/useRefreshData';
 
 const DailyCare: React.FC = () => {
-  const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
+  const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { 
-    isRefreshing,
-    refreshSpecific,
     formatTimeRemaining,
     currentDate
   } = useRefresh();
 
-  // Register the dog care data refresh with the RefreshContext
-  useEffect(() => {
-    const refreshDogCare = async () => {
-      console.log('🔄 Auto-refresh triggered in DailyCare page');
-      const dogs = await fetchAllDogsWithCareStatus(currentDate, true);
-      console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
-      return dogs;
-    };
-    
-    // Register the callback with the RefreshContext
-    refreshSpecific('dogCare', refreshDogCare, false);
-  }, [fetchAllDogsWithCareStatus, refreshSpecific, currentDate]);
-
-  const handleRefresh = (showToast = true) => {
-    refreshSpecific('dogCare', async () => {
+  // Use the centralized refresh hook
+  const { 
+    data: dogStatuses, 
+    isLoading, 
+    refresh: handleRefresh 
+  } = useRefreshData({
+    key: 'dogCare',
+    fetchData: async () => {
       return await fetchAllDogsWithCareStatus(currentDate, true);
-    }, showToast);
-  };
+    },
+    dependencies: [currentDate],
+    loadOnMount: true
+  });
 
   const content = (
     <>
@@ -58,8 +52,8 @@ const DailyCare: React.FC = () => {
             </span>
           </p>
         </div>
-        <Button onClick={() => handleRefresh(true)} className="gap-2" disabled={isRefreshing}>
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+        <Button onClick={() => handleRefresh(true)} className="gap-2" disabled={isLoading}>
+          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           Refresh Dogs
         </Button>
       </div>
@@ -83,7 +77,7 @@ const DailyCare: React.FC = () => {
             <DogTimeTable 
               dogsStatus={dogStatuses} 
               onRefresh={() => handleRefresh(true)} 
-              isRefreshing={isRefreshing}
+              isRefreshing={isLoading}
               currentDate={currentDate}
             />
           </div>
@@ -94,9 +88,9 @@ const DailyCare: React.FC = () => {
           <Button 
             onClick={() => handleRefresh(true)} 
             className="mt-4"
-            disabled={isRefreshing}
+            disabled={isLoading}
           >
-            {isRefreshing ? "Refreshing..." : "Refresh Dogs"}
+            {isLoading ? "Refreshing..." : "Refresh Dogs"}
           </Button>
         </Card>
       )}

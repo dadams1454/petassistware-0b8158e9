@@ -10,6 +10,7 @@ import DailyCareTab from './tabs/DailyCareTab';
 import GroomingTab from './tabs/GroomingTab';
 import CareLogDialog from './dialogs/CareLogDialog';
 import { useRefresh } from '@/contexts/RefreshContext';
+import { useRefreshData } from '@/hooks/useRefreshData';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -27,30 +28,29 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const [activeTab, setActiveTab] = useState('overview'); // Default to overview tab
   const [careLogDialogOpen, setCareLogDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
-  const { fetchAllDogsWithCareStatus, dogStatuses } = useDailyCare();
+  const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { toast } = useToast();
   const pendingRefreshRef = useRef(false);
 
   // Use the centralized refresh context
   const { 
-    isRefreshing, 
-    refreshSpecific,
     formatTimeRemaining,
     currentDate
   } = useRefresh();
-
-  // Register dog refresh callback with the RefreshContext
-  React.useEffect(() => {
-    const refreshAllDogs = async () => {
-      console.log('🔄 Auto-refresh triggered in DashboardContent');
-      const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
-      console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
-      return dogs;
-    };
-    
-    // Register the callback with the RefreshContext
-    refreshSpecific('allDogs', refreshAllDogs, false);
-  }, [fetchAllDogsWithCareStatus, refreshSpecific]);
+  
+  // Use the refresh data hook for dogs
+  const { 
+    data: dogStatuses, 
+    isLoading: isRefreshing, 
+    refresh: handleRefreshDogs 
+  } = useRefreshData({
+    key: 'allDogs',
+    fetchData: async () => {
+      return await fetchAllDogsWithCareStatus(currentDate, true);
+    },
+    dependencies: [currentDate],
+    loadOnMount: true
+  });
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -59,9 +59,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     // If we have a pending refresh and tab changes, refresh the data
     if (pendingRefreshRef.current) {
       setTimeout(() => {
-        refreshSpecific('allDogs', async () => {
-          return await fetchAllDogsWithCareStatus(new Date(), true);
-        }, false);
+        handleRefreshDogs(false);
         pendingRefreshRef.current = false;
       }, 100);
     }
@@ -80,9 +78,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     
     // Schedule a delayed silent refresh to catch changes
     setTimeout(() => {
-      refreshSpecific('allDogs', async () => {
-        return await fetchAllDogsWithCareStatus(new Date(), true);
-      }, false);
+      handleRefreshDogs(false);
       pendingRefreshRef.current = false;
     }, 1000);
   };
@@ -100,10 +96,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       duration: 2000,
     });
     
-    // Use the centralized refresh
-    refreshSpecific('allDogs', async () => {
-      return await fetchAllDogsWithCareStatus(new Date(), true);
-    }, false);
+    // Use the refresh function from the hook
+    handleRefreshDogs(false);
   };
 
   return (
@@ -137,7 +131,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         
         <TabsContent value="grooming">
           <GroomingTab 
-            dogStatuses={dogStatuses} 
+            dogStatuses={dogStatuses || []} 
             onRefreshDogs={handleManualRefresh}
           />
         </TabsContent>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useDailyCare } from '@/contexts/dailyCare';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
@@ -27,6 +27,9 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   const handleLocalRefresh = () => {
     if (unmountedRef.current) return;
     
+    // Don't set refresh state if we're already refreshing
+    if (isRefreshing || localRefreshing) return;
+    
     setLocalRefreshing(true);
     
     console.log('DailyCareTab refresh triggered');
@@ -47,7 +50,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   };
   
   // Clean up timeout on unmount
-  useEffect(() => {
+  React.useEffect(() => {
     unmountedRef.current = false;
     
     return () => {
@@ -60,7 +63,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   }, []);
   
   // Update local refreshing state based on prop
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isRefreshing && localRefreshing && !unmountedRef.current) {
       // The parent says we're done refreshing, but maintain local state for min duration
       if (!refreshTimeoutRef.current) {
