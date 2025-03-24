@@ -17,9 +17,24 @@ const DateTimeSelector: React.FC<DateTimeSelectorProps> = ({
   observationDate,
   setObservationDate
 }) => {
+  // When a new date is selected from the calendar, preserve the time
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    // Create a new date with the selected date but preserve the current time
+    const newDate = new Date(date);
+    newDate.setHours(
+      observationDate.getHours(),
+      observationDate.getMinutes(),
+      observationDate.getSeconds()
+    );
+    
+    setObservationDate(newDate);
+  };
+
   return (
     <div>
-      <Label htmlFor="observation-date">Date & Time</Label>
+      <Label htmlFor="observation-date">Date</Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -31,15 +46,16 @@ const DateTimeSelector: React.FC<DateTimeSelectorProps> = ({
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {observationDate ? format(observationDate, 'PPP') : <span>Pick a date</span>}
+            {format(observationDate, 'MMMM d, yyyy')}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
             selected={observationDate}
-            onSelect={(date) => date && setObservationDate(date)}
+            onSelect={handleDateSelect}
             initialFocus
+            className="pointer-events-auto"
           />
         </PopoverContent>
       </Popover>

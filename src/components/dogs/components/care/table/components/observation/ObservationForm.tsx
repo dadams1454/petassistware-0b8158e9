@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ObservationType } from './ObservationDialog';
 import ObservationTypeSelector from './ObservationTypeSelector';
 import DateTimeSelector from './form/DateTimeSelector';
@@ -15,15 +15,14 @@ interface ObservationFormProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
-  timestamp: string;
+  observationDate: Date;
+  setObservationDate: (date: Date) => void;
   timeSlot?: string;
   timeSlots?: string[];
   selectedTimeSlot?: string;
   setSelectedTimeSlot?: (timeSlot: string) => void;
   isMobile?: boolean;
   activeCategory?: string;
-  observationDate: Date;
-  setObservationDate: (date: Date) => void;
 }
 
 const ObservationForm: React.FC<ObservationFormProps> = ({
@@ -34,33 +33,15 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
   onSubmit,
   isSubmitting,
   onCancel,
-  timestamp,
+  observationDate,
+  setObservationDate,
   timeSlot = '',
   timeSlots = [],
   selectedTimeSlot = '',
   setSelectedTimeSlot = () => {},
   isMobile = false,
-  activeCategory = 'pottybreaks',
-  observationDate,
-  setObservationDate
+  activeCategory = 'pottybreaks'
 }) => {
-  // Set the "When did this occur?" field to use the current time slot
-  useEffect(() => {
-    if (timeSlots.length > 0 && !selectedTimeSlot) {
-      setSelectedTimeSlot(getTimeSlotText());
-    }
-  }, [timeSlots, selectedTimeSlot, setSelectedTimeSlot]);
-  
-  // Generate human-readable time slot text
-  const getTimeSlotText = () => {
-    const now = new Date();
-    const hour = now.getHours();
-    if (hour >= 5 && hour < 12) return "Morning";
-    if (hour >= 12 && hour < 17) return "Afternoon";
-    if (hour >= 17 && hour < 21) return "Evening";
-    return "Night";
-  };
-  
   return (
     <form onSubmit={onSubmit}>
       <div className="space-y-4">
@@ -83,7 +64,7 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
           />
         )}
 
-        {/* Date and Time selector */}
+        {/* Simplified Date and Time selector */}
         <DateTimeSelector 
           observationDate={observationDate}
           setObservationDate={setObservationDate}

@@ -22,13 +22,23 @@ export const useObservationActions = (
     category: string = 'observation',
     timestamp = new Date()
   ): Promise<void> => {
+    if (isSubmitting) return; // Prevent duplicate submissions
+    
     setIsSubmitting(true);
     try {
       // If observation text is empty, use the observation type as the text
       const defaultText = observationText.trim() || 
-        observationType === 'feeding' 
+        (observationType === 'feeding' 
           ? `Didn't eat ${timeSlot} meal`
-          : `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
+          : `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`);
+      
+      console.log('Submitting observation:', {
+        dog_id: dogId,
+        category,
+        task_name: observationType,
+        timestamp,
+        notes: defaultText
+      });
       
       const result = await addCareLog({
         dog_id: dogId,
@@ -82,7 +92,7 @@ export const useObservationActions = (
     } finally {
       setIsSubmitting(false);
     }
-  }, [addCareLog, toast, setObservations]);
+  }, [addCareLog, toast, setObservations, isSubmitting]);
 
   return {
     addObservation,

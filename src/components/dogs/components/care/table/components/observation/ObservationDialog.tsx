@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -42,14 +43,14 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   const [observation, setObservation] = useState('');
   const [observationType, setObservationType] = useState<ObservationType>(defaultObservationType);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timestamp, setTimestamp] = useState<string>('');
-  const [dialogSelectedTimeSlot, setDialogSelectedTimeSlot] = useState<string>(selectedTimeSlot);
+  // Use a single Date object for the timestamp instead of separate fields
   const [observationDate, setObservationDate] = useState<Date>(new Date());
+  const [dialogSelectedTimeSlot, setDialogSelectedTimeSlot] = useState<string>(selectedTimeSlot);
 
-  // Update dialog state when props change
+  // Update observation type and date when the dialog opens
   useEffect(() => {
     if (open) {
-      // Set the observation type based on the active category
+      // Reset the observation type based on the active category
       setObservationType(activeCategory === 'feeding' ? 'feeding' : defaultObservationType);
       
       // Set the selected time slot if provided
@@ -60,11 +61,8 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         setDialogSelectedTimeSlot(timeSlots[0]);
       }
       
-      // Update timestamp to current time
-      const now = new Date();
-      setObservationDate(now);
-      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      setTimestamp(timeString);
+      // Always reset to current date/time when dialog opens
+      setObservationDate(new Date());
     }
   }, [open, activeCategory, defaultObservationType, selectedTimeSlot, timeSlots]);
 
@@ -85,10 +83,9 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
     
     setIsSubmitting(true);
     try {
-      // Use the custom observationDate that the user may have modified
+      // Use the observation date that was set
       await onSubmit(dogId, observationText, observationType, observationDate);
       setObservation('');
-      // Keep the observation type the same for easier repeated entries
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -106,15 +103,14 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
       onCancel={() => onOpenChange(false)}
-      timestamp={timestamp}
+      observationDate={observationDate}
+      setObservationDate={setObservationDate}
       timeSlot={dialogSelectedTimeSlot}
       timeSlots={timeSlots}
       selectedTimeSlot={dialogSelectedTimeSlot}
       setSelectedTimeSlot={setDialogSelectedTimeSlot}
       isMobile={isMobile}
       activeCategory={activeCategory}
-      observationDate={observationDate}
-      setObservationDate={setObservationDate}
     />
   );
   
