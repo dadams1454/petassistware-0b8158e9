@@ -12,9 +12,14 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  TooltipProps
 } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  NameType, 
+  ValueType 
+} from 'recharts/types/component/DefaultTooltipContent';
 
 interface WeightTrackingSectionProps {
   weightHistory: WeightRecord[];
@@ -42,6 +47,23 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
         formattedDate: format(new Date(record.date), 'MMM d, yyyy')
       };
     });
+  
+  // Custom formatter for tooltip that handles all value types correctly
+  const weightFormatter = (value: ValueType, name: NameType) => {
+    // Make sure we handle string values safely
+    if (typeof value === 'number') {
+      return [`${value.toFixed(2)} kg`, 'Weight'];
+    }
+    return [value, name];
+  };
+  
+  // Custom label formatter handling tooltips safely
+  const labelFormatter = (label: string) => {
+    const dataPoint = chartData.find(item => item.date === label);
+    return dataPoint 
+      ? `${dataPoint.formattedDate}: ${dataPoint.originalWeight} ${dataPoint.unit}`
+      : label;
+  };
   
   if (isLoading) {
     return (
@@ -99,13 +121,8 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
                   }}
                 />
                 <Tooltip
-                  formatter={(value, name) => [`${value.toFixed(2)} kg`, 'Weight']}
-                  labelFormatter={(label) => {
-                    const dataPoint = chartData.find(item => item.date === label);
-                    return dataPoint 
-                      ? `${dataPoint.formattedDate}: ${dataPoint.originalWeight} ${dataPoint.unit}`
-                      : label;
-                  }}
+                  formatter={weightFormatter}
+                  labelFormatter={labelFormatter}
                 />
                 <Line 
                   type="monotone" 

@@ -26,11 +26,12 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { WeightRecord } from '@/types/health';
 
 interface WeightEntryDialogProps {
   dogId: string;
   onClose: () => void;
-  onSave: (weightRecord: WeightEntryValues) => void;
+  onSave: (weightRecord: Omit<WeightRecord, 'id' | 'created_at'>) => void;
 }
 
 // Schema for weight entry form
@@ -74,7 +75,16 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
   const handleSubmit = async (values: WeightEntryValues) => {
     setIsSubmitting(true);
     try {
-      onSave(values);
+      // Format the data for the API, converting Date to string
+      const weightRecord: Omit<WeightRecord, 'id' | 'created_at'> = {
+        dog_id: dogId,
+        date: values.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        weight: values.weight,
+        weight_unit: values.weight_unit,
+        notes: values.notes
+      };
+      
+      onSave(weightRecord);
       onClose();
     } catch (error) {
       console.error('Error saving weight record:', error);
@@ -200,6 +210,7 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
                 type="button"
                 variant="outline"
                 onClick={onClose}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>

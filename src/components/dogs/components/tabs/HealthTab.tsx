@@ -12,7 +12,7 @@ import VaccinationSection from '../health/VaccinationSection';
 import WeightTrackingSection from '../health/WeightTrackingSection';
 import HealthSummaryCard from '../health/HealthSummaryCard';
 import WeightEntryDialog from '../health/WeightEntryDialog';
-import HealthRecordDialog from '../../components/profile/records/HealthRecordDialog';
+import HealthRecordDialog from '../profile/records/HealthRecordDialog';
 
 interface HealthTabProps {
   dogId: string;
@@ -60,6 +60,18 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     await refetch();
   };
   
+  // Handler for saving weight records
+  const handleSaveWeight = (weightData: any) => {
+    // Convert Date object to ISO string for compatibility with the API
+    const formattedData = {
+      ...weightData,
+      dog_id: dogId,
+      date: typeof weightData.date === 'string' ? weightData.date : weightData.date.toISOString().split('T')[0]
+    };
+    
+    addWeightRecord(formattedData);
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -95,7 +107,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
             overdueVaccinations={getOverdueVaccinations()}
             recentExaminations={getRecordsByType(HealthRecordType.Examination).slice(0, 3)}
             currentMedications={getRecordsByType(HealthRecordType.Medication)}
-            latestWeight={weightHistory ? weightHistory[0] : undefined}
+            latestWeight={weightHistory?.[0]}
             growthStats={growthStats}
             isLoading={recordsLoading || weightLoading}
           />
@@ -238,7 +250,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         <WeightEntryDialog
           dogId={dogId}
           onClose={() => setWeightDialogOpen(false)}
-          onSave={(weightRecord) => addWeightRecord({ ...weightRecord, dog_id: dogId })}
+          onSave={handleSaveWeight}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -35,7 +35,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { HealthRecord, HealthRecordType } from '@/types/dog';
+import { HealthRecord, HealthRecordType } from '@/types/health';
 import { useHealthRecords } from '../../../hooks/useHealthRecords';
 
 // Define form validation schema
@@ -71,6 +71,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
   onSave
 }) => {
   const { addHealthRecord, updateHealthRecord } = useHealthRecords(dogId);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Initialize form with existing record data or defaults
   const form = useForm<HealthRecordFormValues>({
@@ -97,6 +98,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
   const hasNextDueDate = form.watch('has_next_due_date');
   
   const onSubmit = async (values: HealthRecordFormValues) => {
+    setIsSubmitting(true);
     try {
       const healthRecordData: Omit<HealthRecord, 'id' | 'created_at'> | HealthRecord = {
         dog_id: dogId,
@@ -112,19 +114,20 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
 
       if (record) {
         // Update existing record
-        await updateHealthRecord.mutateAsync({
+        await updateHealthRecord({
           id: record.id,
-          created_at: record.created_at, // Include the created_at property from the existing record
           ...healthRecordData
         });
       } else {
         // Add new record
-        await addHealthRecord.mutateAsync(healthRecordData);
+        await addHealthRecord(healthRecordData);
       }
       
       onSave();
     } catch (error) {
       console.error('Error saving health record:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -321,16 +324,15 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
                 type="button" 
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                disabled={addHealthRecord.isPending || updateHealthRecord.isPending}
+                disabled={isSubmitting}
               >
-                {addHealthRecord.isPending || updateHealthRecord.isPending 
-                  ? 'Saving...' 
-                  : 'Save Record'}
+                {isSubmitting ? 'Saving...' : 'Save Record'}
               </Button>
             </DialogFooter>
           </form>
