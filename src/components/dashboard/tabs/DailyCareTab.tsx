@@ -10,9 +10,15 @@ import { DogCareCard } from '@/components/dashboard/DogCareCard';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
+  isRefreshing?: boolean;
+  currentDate?: Date;
 }
 
-const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs }) => {
+const DailyCareTab: React.FC<DailyCareTabProps> = ({ 
+  onRefreshDogs,
+  isRefreshing = false,
+  currentDate 
+}) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -22,7 +28,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs }) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('dogs')
-        .select('id, name, photo_url, breed, color, status')
+        .select('id, name, photo_url, breed, color')
         .order('name');
       
       if (error) {
@@ -62,12 +68,12 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs }) => {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Daily Care</h2>
         <Button onClick={handleRefresh} variant="outline" size="sm" className="gap-2">
-          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 ${isLoading || isRefreshing ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
       
-      {isLoading ? (
+      {isLoading || isRefreshing ? (
         <div className="flex justify-center p-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
