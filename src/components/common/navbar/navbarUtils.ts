@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Dog,
   Users,
-  CalendarCheck,
   MessageSquare,
 } from 'lucide-react';
 
@@ -17,7 +16,6 @@ export type LucideIcon =
   | typeof LayoutDashboard
   | typeof Dog
   | typeof Users
-  | typeof CalendarCheck
   | typeof MessageSquare;
 
 export const getMenuItems = () => {
@@ -36,11 +34,6 @@ export const getMenuItems = () => {
       label: 'Litters',
       path: '/litters',
       icon: 'Users',
-    },
-    {
-      label: 'Daily Care',
-      path: '/dailycare',
-      icon: 'CalendarCheck',
     },
     {
       label: 'Customers',

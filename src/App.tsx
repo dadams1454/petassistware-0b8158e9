@@ -8,7 +8,6 @@ import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Dogs from './pages/Dogs';
 import Litters from './pages/Litters';
-import DailyCare from './pages/DailyCare';
 import NotFound from './pages/NotFound';
 import Communications from './pages/Communications';
 import Customers from './pages/Customers';
@@ -37,7 +36,6 @@ function App() {
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/dogs" element={<Dogs />} />
                       <Route path="/litters" element={<Litters />} />
-                      <Route path="/dailycare" element={<DailyCare />} />
                       <Route path="/communications" element={<Communications />} />
                       <Route path="/customers" element={<Customers />} />
                     </Route>

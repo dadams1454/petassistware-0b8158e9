@@ -18,7 +18,6 @@ import {
   LayoutDashboard, 
   Dog, 
   Users, 
-  CalendarCheck,
   MessageSquare,
   Settings
 } from 'lucide-react';
@@ -42,11 +41,6 @@ const AppSidebar: React.FC = () => {
       title: 'Litters',
       path: '/litters',
       icon: Users
-    },
-    {
-      title: 'Daily Care',
-      path: '/dailycare',
-      icon: CalendarCheck
     },
     {
       title: 'Customers',

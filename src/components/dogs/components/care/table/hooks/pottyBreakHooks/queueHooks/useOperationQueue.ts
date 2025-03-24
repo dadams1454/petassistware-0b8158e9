@@ -30,6 +30,7 @@ export const useOperationQueue = (onRefresh?: () => void) => {
       const operation = queue.current.shift();
       if (operation) {
         totalOperations.current++;
+        console.log(`⚙️ Starting operation #${totalOperations.current}`);
         await operation();
         console.log(`✅ Operation #${totalOperations.current} successful, queue size: ${queue.current.length}`);
       }
@@ -40,9 +41,11 @@ export const useOperationQueue = (onRefresh?: () => void) => {
       
       // If there are more items in the queue, process the next one
       if (queue.current.length > 0) {
+        console.log(`⏭️ Processing next operation in queue (${queue.current.length} remaining)`);
         processQueue();
       } else {
         console.log('📭 Queue empty, scheduling refresh');
+        // Force refresh to update UI when queue is empty
         debouncedRefresh();
       }
     }
@@ -55,7 +58,10 @@ export const useOperationQueue = (onRefresh?: () => void) => {
     
     // Only start processing if not already in progress
     if (!isProcessing.current) {
+      console.log('🚀 Starting queue processing');
       processQueue();
+    } else {
+      console.log('⏳ Queue processing already in progress, operation added to queue');
     }
   }, [processQueue]);
 
