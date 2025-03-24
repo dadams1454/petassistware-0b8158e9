@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 export interface PedigreeTabProps {
   dogId: string;
@@ -25,7 +25,7 @@ const PedigreeTab: React.FC<PedigreeTabProps> = ({ dogId, currentDog }) => {
         </CardHeader>
         <CardContent className="min-h-[300px] flex items-center justify-center">
           <div className="text-center text-muted-foreground">
-            <InfoCircle className="h-12 w-12 mx-auto mb-2" />
+            <Info className="h-12 w-12 mx-auto mb-2" />
             <p>Pedigree visualization coming soon.</p>
           </div>
         </CardContent>

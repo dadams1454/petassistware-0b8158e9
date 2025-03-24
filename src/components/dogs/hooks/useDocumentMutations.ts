@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DogDocument } from '../types/document';
-import { processDocumentFile } from '../utils/documentFileUtils';
+import { processDocumentFile, uploadFile } from '../utils/documentFileUtils';
 
 export const useDocumentMutations = (dogId: string) => {
   const { toast } = useToast();
@@ -16,12 +16,16 @@ export const useDocumentMutations = (dogId: string) => {
       
       if (documentData.file) {
         try {
-          const processedFile = await processDocumentFile(documentData.file);
+          const result = await processDocumentFile(documentData.file);
+          if (!result.isValid) {
+            throw new Error(result.errorMessage);
+          }
+          
           fileName = `${Date.now()}_${documentData.file.name}`;
           
           const { error: uploadError } = await supabase.storage
             .from('dog-documents')
-            .upload(fileName, processedFile);
+            .upload(fileName, result.file);
             
           if (uploadError) throw new Error(uploadError.message);
           
@@ -67,12 +71,16 @@ export const useDocumentMutations = (dogId: string) => {
       
       if (values.file) {
         try {
-          const processedFile = await processDocumentFile(values.file);
+          const result = await processDocumentFile(values.file);
+          if (!result.isValid) {
+            throw new Error(result.errorMessage);
+          }
+          
           const fileName = `${Date.now()}_${values.file.name}`;
           
           const { error: uploadError } = await supabase.storage
             .from('dog-documents')
-            .upload(fileName, processedFile);
+            .upload(fileName, result.file);
             
           if (uploadError) throw new Error(uploadError.message);
           
