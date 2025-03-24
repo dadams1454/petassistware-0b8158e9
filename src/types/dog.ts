@@ -1,4 +1,3 @@
-
 export type DogColor = 
   | 'black'
   | 'brown'
@@ -95,4 +94,7 @@ export interface DogProfile {
 
 // Re-export for backward compatibility
 // Using 'export type' instead of 'export' because of 'isolatedModules'
-export type { HealthRecord, HealthRecordType };
+export type { 
+  HealthRecord, 
+  HealthRecordType 
+};
