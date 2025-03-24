@@ -5,9 +5,8 @@ import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Calendar } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
-import { format } from 'date-fns';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
 
@@ -36,18 +35,14 @@ const DailyCare: React.FC = () => {
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Daily Care Time Table
           </h1>
-          <p className="mt-1 text-slate-500 dark:text-slate-400 flex items-center">
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
             Track potty breaks, feeding, medications and exercise for all your dogs
             {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
-            <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
-              <Calendar className="h-3 w-3" />
-              {format(currentDate, 'PPPP')}
-            </span>
           </p>
         </div>
         <Button onClick={() => handleRefresh(true)} className="gap-2" disabled={isLoading}>
           <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh Dogs
+          Refresh Now
         </Button>
       </div>
 

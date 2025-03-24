@@ -2,7 +2,6 @@
 import React from 'react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { Plus, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
 
 interface TableActionsProps {
   onAddGroup: () => void;
@@ -19,9 +18,9 @@ const TableActions: React.FC<TableActionsProps> = ({
     <div className="flex justify-between items-center">
       <div>
         <h2 className="text-lg font-semibold">Dog Time Table</h2>
-        <p className="text-sm text-muted-foreground flex items-center gap-2">
-          <Calendar className="h-4 w-4" /> {format(currentDate, 'MMMM d, yyyy')}
-        </p>
+        <div className="text-sm text-muted-foreground flex items-center gap-2">
+          <Calendar className="h-4 w-4" /> {new Date(currentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+        </div>
       </div>
       <CustomButton onClick={onAddGroup} disabled={isRefreshing}>
         <Plus className="h-4 w-4 mr-2" />

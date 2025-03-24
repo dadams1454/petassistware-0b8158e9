@@ -79,12 +79,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           />
         )}
 
-        {/* Category Tabs */}
-        <CategoryTabs 
-          activeCategory={activeCategory} 
-          onValueChange={handleCategoryChange} 
-        />
-
         {/* Table Content */}
         <TableContentManager 
           activeCategory={activeCategory}
