@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeSlotCell from './components/TimeSlotCell';
-import DogNameCell from './components/dog-name/DogNameCell';
+import DogNameCell from './components/DogNameCell';
 import ObservationCell from './components/ObservationCell';
 
 interface DogTimeRowProps {
@@ -72,8 +72,8 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
       {/* Dog Name Cell */}
       <DogNameCell 
         dog={dog} 
-        onCareLogClick={onCareLogClick} 
-        onDogClick={onDogClick} 
+        onCareLogClick={() => onCareLogClick(dog.dog_id, dog.dog_name)} 
+        onDogClick={() => onDogClick(dog.dog_id)} 
         activeCategory={activeCategory}
       />
       
@@ -81,7 +81,7 @@ const DogTimeRow: React.FC<DogTimeRowProps> = ({
       <ObservationCell 
         dogId={dog.dog_id}
         dogName={dog.dog_name}
-        hasObservation={hasObservation(dog.dog_id, '')}
+        dogHasObservation={hasObservation(dog.dog_id, '')}
         observationDetails={getObservationDetails(dog.dog_id)}
         onClick={() => onObservationClick(dog.dog_id, dog.dog_name)}
         activeCategory={activeCategory}

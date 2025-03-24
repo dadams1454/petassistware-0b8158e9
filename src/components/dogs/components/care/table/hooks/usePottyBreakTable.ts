@@ -75,7 +75,7 @@ const usePottyBreakTable = (
   );
   
   // Use the refresh handler hook
-  const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh);
+  const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh || (() => {}));
   
   // Use the dog sorting hook
   const { sortedDogs } = useDogSorting(dogsStatus);

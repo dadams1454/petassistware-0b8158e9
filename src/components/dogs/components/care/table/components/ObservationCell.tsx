@@ -11,21 +11,21 @@ interface ObservationDetails {
 }
 
 interface ObservationCellProps {
+  dogId: string;
+  dogName: string;
   dogHasObservation: boolean;
   observationDetails: ObservationDetails | null;
   activeCategory: string;
-  dogId: string;
-  dogName: string;
-  onObservationClick: (dogId: string, dogName: string) => void;
+  onClick: () => void;
 }
 
 const ObservationCell: React.FC<ObservationCellProps> = ({
+  dogId,
+  dogName,
   dogHasObservation,
   observationDetails,
   activeCategory,
-  dogId,
-  dogName,
-  onObservationClick
+  onClick
 }) => {
   // Function to get observation icon based on type
   const getObservationIcon = (type: string) => {
@@ -43,14 +43,10 @@ const ObservationCell: React.FC<ObservationCellProps> = ({
     }
   };
 
-  const handleClick = () => {
-    onObservationClick(dogId, dogName);
-  };
-
   return (
     <TableCell 
       className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px] cell-status-transition cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
-      onClick={handleClick}
+      onClick={onClick}
     >
       {dogHasObservation && observationDetails ? (
         <div className="flex items-start gap-2">

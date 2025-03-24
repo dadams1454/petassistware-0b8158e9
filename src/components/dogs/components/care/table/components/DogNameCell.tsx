@@ -60,32 +60,17 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
     fetchGroups();
   }, [dog.dog_id]);
   
-  // Handle the log care click with proper event handling
-  const handleLogCareClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Stop propagation to prevent other handlers from firing
-    e.preventDefault(); // Prevent default behavior
-    console.log(`Log care button clicked for ${dog.dog_name}`);
-    onCareLogClick(e);
-  };
-  
-  // Handle the dog name/image click with proper event handling
-  const handleDogNameClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Stop propagation to prevent other handlers from firing
-    console.log(`Dog name clicked for ${dog.dog_name}`);
-    onDogClick(e);
-  };
-  
   return (
     <TableCell 
       className={`whitespace-nowrap sticky left-0 z-10 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 ${genderBackgroundColor}`}
     >
       <div className="flex items-center gap-3 max-w-[160px]">
         {/* Dog Avatar with Status Indicators */}
-        <DogAvatar dog={dog} onClick={handleDogNameClick} />
+        <DogAvatar dog={dog} onClick={onDogClick} />
         
         <div className="overflow-hidden flex flex-col">
           {/* Dog Name Display */}
-          <DogNameDisplay dogName={dog.dog_name} onClick={handleDogNameClick} />
+          <DogNameDisplay dogName={dog.dog_name} onClick={onDogClick} />
           
           {/* Dog Group Badges */}
           <DogGroupBadges dogGroups={dogGroups} />
@@ -95,7 +80,7 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
             dogId={dog.dog_id} 
             dogName={dog.dog_name} 
             activeCategory={activeCategory} 
-            onLogCareClick={handleLogCareClick} 
+            onLogCareClick={onCareLogClick} 
           />
           
           {/* Observation Note */}

@@ -18,7 +18,7 @@ const TimeTableFooter: React.FC<TimeTableFooterProps> = ({
   currentDate = new Date()
 }) => {
   return (
-    <div className="flex flex-wrap justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+    <div className="flex flex-wrap justify-between items-center text-xs text-gray-500 dark:text-gray-400 p-2 border-t">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3" />

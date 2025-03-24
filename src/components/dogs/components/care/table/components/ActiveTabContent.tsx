@@ -50,10 +50,15 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
     <Card className="border p-0 overflow-hidden">
       <TimeTableHeader 
         activeCategory={activeCategory} 
-        onCategoryChange={onCategoryChange}
+        onCategoryChange={onCategoryChange || (() => {})}
       />
       
-      <TableContainer>
+      <TableContainer 
+        activeCategory={activeCategory}
+        dogsCount={sortedDogs.length}
+        onRefresh={onRefresh}
+        isMobile={isMobile}
+      >
         <TimeTableContent 
           sortedDogs={sortedDogs}
           timeSlots={timeSlots}
@@ -75,7 +80,9 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
       
       <TimeTableFooter 
         onRefresh={onRefresh} 
-        activeCategory={activeCategory} 
+        isLoading={false}
+        lastUpdateTime={new Date().toLocaleTimeString()}
+        currentDate={new Date()}
       />
     </Card>
   );
