@@ -3,7 +3,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import { Pill, Stethoscope, Syringe, AlertCircle, Activity, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { HealthRecord, HealthRecordType } from '@/types/dog';
+import { HealthRecord, HealthRecordType } from '@/types/health';
 
 interface HealthRecordCardProps {
   record: HealthRecord;
@@ -13,15 +13,15 @@ interface HealthRecordCardProps {
 const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) => {
   const getIcon = (recordType: HealthRecordType) => {
     switch (recordType) {
-      case 'vaccination':
+      case HealthRecordType.Vaccination:
         return <Syringe className="h-5 w-5 text-green-500" />;
-      case 'examination':
+      case HealthRecordType.Examination:
         return <Stethoscope className="h-5 w-5 text-blue-500" />;
-      case 'medication':
+      case HealthRecordType.Medication:
         return <Pill className="h-5 w-5 text-purple-500" />;
-      case 'surgery':
+      case HealthRecordType.Surgery:
         return <Activity className="h-5 w-5 text-red-500" />;
-      case 'observation':
+      case HealthRecordType.Observation:
         return <AlertCircle className="h-5 w-5 text-amber-500" />;
       default:
         return <FileText className="h-5 w-5 text-gray-500" />;

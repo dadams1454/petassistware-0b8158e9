@@ -56,13 +56,8 @@ export type RegistrationOrganization =
   | 'FCI'
   | 'other';
 
-export type HealthRecordType = 
-  | 'vaccination'
-  | 'examination'
-  | 'medication'
-  | 'surgery'
-  | 'observation'
-  | 'other';
+// Import from health.ts to ensure consistent types
+import { HealthRecordType } from '@/types/health';
 
 export interface DogProfile {
   id: string;
@@ -98,16 +93,8 @@ export interface DogProfile {
   last_vaccination_date?: string;
 }
 
-export interface HealthRecord {
-  id: string;
-  dog_id: string;
-  date: string; // ISO date format
-  record_type: HealthRecordType;
-  title: string;
-  description: string;
-  performed_by: string; // Vet or staff name
-  attachments?: string[]; // File references
-  next_due_date?: string; // For recurring items like vaccinations
-  created_at: string;
-  updated_at?: string;
-}
+// Import the HealthRecord from health.ts instead of defining it here
+import { HealthRecord } from '@/types/health';
+
+// Re-export for backward compatibility
+export { HealthRecord };

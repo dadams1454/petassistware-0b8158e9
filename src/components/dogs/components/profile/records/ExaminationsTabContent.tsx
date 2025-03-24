@@ -4,7 +4,7 @@ import { PlusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import HealthRecordCard from './HealthRecordCard';
-import { HealthRecord } from '@/types/dog';
+import { HealthRecord } from '@/types/health';
 
 interface ExaminationsTabContentProps {
   records: HealthRecord[];

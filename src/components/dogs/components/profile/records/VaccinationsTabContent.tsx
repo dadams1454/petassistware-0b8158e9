@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import HealthRecordCard from './HealthRecordCard';
-import { HealthRecord } from '@/types/dog';
+import { HealthRecord } from '@/types/health';
 
 interface VaccinationsTabContentProps {
   vaccinations: any[];
