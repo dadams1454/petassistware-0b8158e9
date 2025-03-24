@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -17,7 +18,7 @@ import Customers from '@/pages/Customers';
 import DailyCare from '@/pages/DailyCare';
 import Calendar from '@/pages/Calendar';
 import Communications from '@/pages/Communications';
-import WelpingPage from '@/pages/Welping';
+import WelpingPage from '@/pages/WelpingPage';
 import Profile from '@/pages/Profile';
 import CustomerPortal from '@/pages/CustomerPortal';
 import NotFound from '@/pages/NotFound';
