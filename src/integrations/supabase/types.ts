@@ -81,6 +81,44 @@ export type Database = {
         }
         Relationships: []
       }
+      care_activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          dog_id: string
+          id: string
+          notes: string | null
+          performed_by: string | null
+          timestamp: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          dog_id: string
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          timestamp: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          dog_id?: string
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_activities_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       care_task_presets: {
         Row: {
           breeder_id: string | null

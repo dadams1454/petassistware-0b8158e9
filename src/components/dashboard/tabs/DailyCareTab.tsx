@@ -1,113 +1,94 @@
 
-import React, { useState, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { useDailyCare } from '@/contexts/dailyCare';
-import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
-import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import { useRefresh } from '@/contexts/RefreshContext';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { RefreshCw } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { DogCareCard } from '@/components/dashboard/DogCareCard';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
-  isRefreshing: boolean;
-  currentDate?: Date;
 }
 
-const DailyCareTab: React.FC<DailyCareTabProps> = ({ 
-  onRefreshDogs, 
-  isRefreshing,
-  currentDate = new Date() // Default to current date if not provided
-}) => {
-  const { dogStatuses } = useDailyCare();
-  const [localRefreshing, setLocalRefreshing] = useState(false);
-  const unmountedRef = useRef<boolean>(false);
+const DailyCareTab: React.FC<DailyCareTabProps> = ({ onRefreshDogs }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  // Handle local refresh state to show a smoother UI
-  const handleLocalRefresh = () => {
-    if (unmountedRef.current) return;
-    
-    // Don't set refresh state if we're already refreshing
-    if (isRefreshing || localRefreshing) return;
-    
-    setLocalRefreshing(true);
-    
-    console.log('DailyCareTab refresh triggered');
-    
-    // Actual refresh
-    onRefreshDogs();
-    
-    // Reset local refreshing state if the parent refresh is complete
-    if (!isRefreshing) {
-      setLocalRefreshing(false);
+  // Fetch all dogs for care dashboard
+  const { data: dogs, isLoading, refetch } = useQuery({
+    queryKey: ['dashboardDogs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dogs')
+        .select('id, name, photo_url, breed, color, status')
+        .order('name');
+      
+      if (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load dogs.',
+          variant: 'destructive',
+        });
+        throw error;
+      }
+      
+      return data || [];
+    },
+  });
+  
+  const handleRefresh = async () => {
+    try {
+      await refetch();
+      // Also invalidate care activities
+      queryClient.invalidateQueries({ queryKey: ['careActivities'] });
+      queryClient.invalidateQueries({ queryKey: ['lastCareActivity'] });
+      toast({
+        title: 'Refreshed',
+        description: 'Dog data has been refreshed.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to refresh data.',
+        variant: 'destructive',
+      });
     }
   };
-  
-  // Clean up on unmount
-  React.useEffect(() => {
-    unmountedRef.current = false;
-    
-    return () => {
-      unmountedRef.current = true;
-    };
-  }, []);
-  
-  // Update local refreshing state based on prop
-  React.useEffect(() => {
-    if (!isRefreshing && localRefreshing && !unmountedRef.current) {
-      setLocalRefreshing(false);
-    }
-  }, [isRefreshing, localRefreshing]);
-
-  // Error reset handler
-  const handleErrorReset = () => {
-    console.log("Resetting after error in DailyCareTab");
-    handleLocalRefresh();
-  };
-  
-  if (!dogStatuses || dogStatuses.length === 0) {
-    return (
-      <Card className="p-8 text-center">
-        <CardContent>
-          <p className="text-muted-foreground mb-4">No dogs found. Please refresh or add dogs to the system.</p>
-          <button 
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-            onClick={handleLocalRefresh} 
-            disabled={localRefreshing || isRefreshing}
-            onMouseDown={(e) => e.preventDefault()}
-          >
-            {localRefreshing || isRefreshing ? 'Refreshing...' : 'Refresh Dogs'}
-          </button>
-        </CardContent>
-      </Card>
-    );
-  }
   
   return (
-    <ErrorBoundary onReset={handleErrorReset} name="DailyCareTab">
-      <div className="space-y-6">
-        {/* Reminder Card */}
-        <PottyBreakReminderCard 
-          dogs={dogStatuses}
-          onLogPottyBreak={() => {
-            // Just scroll to the timetable on click
-            const timeTableSection = document.getElementById('dog-time-table');
-            if (timeTableSection) {
-              timeTableSection.scrollIntoView({ behavior: 'smooth' });
-            }
-          }}
-        />
-        
-        {/* Time Table - use the centralized refresh from parent */}
-        <div id="dog-time-table">
-          <DogTimeTable 
-            dogsStatus={dogStatuses} 
-            onRefresh={handleLocalRefresh}
-            isRefreshing={localRefreshing || isRefreshing}
-            currentDate={currentDate}
-          />
-        </div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Daily Care</h2>
+        <Button onClick={handleRefresh} variant="outline" size="sm" className="gap-2">
+          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
-    </ErrorBoundary>
+      
+      {isLoading ? (
+        <div className="flex justify-center p-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      ) : dogs && dogs.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {dogs.map((dog) => (
+            <DogCareCard key={dog.id} dog={dog} />
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>No Dogs Found</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">Add dogs to start tracking their care activities.</p>
+            <Button onClick={onRefreshDogs} className="mt-4">Try Again</Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 
