@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -86,7 +85,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
   const form = useForm<HealthRecordFormValues>({
     resolver: zodResolver(healthRecordSchema),
     defaultValues: record ? {
-      date: new Date(record.date),
+      date: new Date(record.date || record.visit_date),
       record_type: record.record_type,
       title: record.title,
       description: record.description || '',
@@ -111,7 +110,8 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
     try {
       const healthRecordData = {
         dog_id: dogId,
-        date: values.date.toISOString(),
+        visit_date: values.date.toISOString(), // Save to visit_date field for database
+        date: values.date.toISOString(), // Include date for UI components
         record_type: values.record_type as HealthRecordType,
         title: values.title,
         description: values.description || '',

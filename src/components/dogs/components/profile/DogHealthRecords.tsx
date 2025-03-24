@@ -19,7 +19,8 @@ const adaptHealthRecord = (record: any): HealthRecord => {
   return {
     id: record.id,
     dog_id: record.dog_id,
-    date: record.date || record.visit_date,
+    visit_date: record.visit_date || record.date,
+    date: record.date || record.visit_date, // Add for UI components
     record_type: record.record_type as HealthRecordType,
     title: record.title,
     description: record.description || record.record_notes || '',

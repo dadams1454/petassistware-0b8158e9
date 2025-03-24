@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { HealthRecord, HealthRecordType, WeightRecord } from '@/types/health';
 import { formatDateForDatabase } from '@/utils/dateUtils';
@@ -16,10 +15,11 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
     throw error;
   }
   
-  // Map database fields to our interface
+  // Map database fields to our interface and add date alias for UI components
   return (data || []).map(record => ({
     ...record,
     record_type: record.record_type as HealthRecordType,
+    date: record.visit_date, // Add date alias for UI components
   }));
 };
 
@@ -43,15 +43,16 @@ export const getHealthRecordsByType = async (
   return (data || []).map(record => ({
     ...record,
     record_type: record.record_type as HealthRecordType,
+    date: record.visit_date, // Add date alias for UI components
   }));
 };
 
 // Add a new health record
 export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>): Promise<HealthRecord> => {
-  // Transform from our interface to database fields
+  // Transform from our interface to database fields, handle both date and visit_date
   const dbRecord = {
     dog_id: record.dog_id,
-    visit_date: record.visit_date,
+    visit_date: record.visit_date || record.date, // Support both properties
     record_type: record.record_type,
     title: record.title,
     record_notes: record.description || record.record_notes,
@@ -100,14 +101,26 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
   return {
     ...data![0],
     record_type: data![0].record_type as HealthRecordType,
+    date: data![0].visit_date, // Add date alias for UI components
   };
 };
 
 // Update a health record
 export const updateHealthRecord = async (id: string, updates: Partial<Omit<HealthRecord, 'id' | 'created_at'>>): Promise<HealthRecord> => {
+  // Handle date/visit_date mapping
+  const dbUpdates = { 
+    ...updates
+  };
+  
+  // If updates include date but not visit_date, map it
+  if (updates.date && !updates.visit_date) {
+    dbUpdates.visit_date = updates.date;
+    delete dbUpdates.date; // Remove date as it's not in the database schema
+  }
+  
   const { data, error } = await supabase
     .from('health_records')
-    .update(updates)
+    .update(dbUpdates)
     .eq('id', id)
     .select();
     
@@ -119,6 +132,7 @@ export const updateHealthRecord = async (id: string, updates: Partial<Omit<Healt
   return {
     ...data![0],
     record_type: data![0].record_type as HealthRecordType,
+    date: data![0].visit_date, // Add date alias for UI components
   };
 };
 

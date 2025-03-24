@@ -1,4 +1,3 @@
-
 // Health record types for the dog health management system
 export enum HealthRecordType {
   Vaccination = 'vaccination',
@@ -16,6 +15,7 @@ export interface HealthRecord {
   id: string;
   dog_id: string;
   visit_date: string; // Database field name
+  date?: string;      // Alias for visit_date for UI components
   record_type: HealthRecordType;
   title?: string;
   description?: string;
