@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Dog, UtensilsCrossed, MessageCircle, Calendar } from 'lucide-react';
+import { RefreshCw, Dog, UtensilsCrossed, Calendar } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CustomButton } from '@/components/ui/custom-button';
 import { format } from 'date-fns';
@@ -73,13 +73,6 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
       </div>
       
       <div className="flex items-center gap-2">
-        {!isMobile && (
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mr-2">
-            <MessageCircle className="h-4 w-4" />
-            <span>Right-click for observations</span>
-          </div>
-        )}
-        
         {showRefreshButton && onRefresh && (
           <Button
             variant="outline"

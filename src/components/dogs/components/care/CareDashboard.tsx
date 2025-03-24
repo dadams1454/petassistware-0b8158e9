@@ -29,12 +29,6 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     handleCategoryChange
   } = useCareDashboard();
 
-  // Log when component mounts and when dogStatuses change
-  React.useEffect(() => {
-    console.log('🚀 CareDashboard mounted');
-    console.log(`🐕 dogStatuses available: ${dogStatuses?.length || 0} dogs`);
-  }, [dogStatuses]);
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

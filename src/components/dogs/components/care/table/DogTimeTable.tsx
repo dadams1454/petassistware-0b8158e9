@@ -69,13 +69,15 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           currentDate={currentDate}
         />
 
-        {/* Enhanced Debug info (always visible during bugfix) */}
-        <DebugInfoPanel 
-          debugInfo={debugInfo}
-          clickCount={clickCountRef.current}
-          errorCount={errorCountRef.current}
-          activeCategory={activeCategory}
-        />
+        {/* Enhanced Debug info (only in development) */}
+        {process.env.NODE_ENV === 'development' && (
+          <DebugInfoPanel 
+            debugInfo={debugInfo}
+            clickCount={clickCountRef.current}
+            errorCount={errorCountRef.current}
+            activeCategory={activeCategory}
+          />
+        )}
 
         {/* Category Tabs */}
         <CategoryTabs 

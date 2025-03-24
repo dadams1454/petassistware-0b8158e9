@@ -5,7 +5,7 @@ import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Clock, Calendar } from 'lucide-react';
+import { RefreshCw, Calendar } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { format } from 'date-fns';
 import { useRefresh } from '@/contexts/RefreshContext';
@@ -13,10 +13,7 @@ import { useRefreshData } from '@/hooks/useRefreshData';
 
 const DailyCare: React.FC = () => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
-  const { 
-    formatTimeRemaining,
-    currentDate
-  } = useRefresh();
+  const { currentDate } = useRefresh();
 
   // Use the centralized refresh hook
   const { 
@@ -42,10 +39,6 @@ const DailyCare: React.FC = () => {
           <p className="mt-1 text-slate-500 dark:text-slate-400 flex items-center">
             Track potty breaks, feeding, medications and exercise for all your dogs
             {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
-            <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
-              <Clock className="h-3 w-3" />
-              Next refresh: {formatTimeRemaining()}
-            </span>
             <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
               <Calendar className="h-3 w-3" />
               {format(currentDate, 'PPPP')}
