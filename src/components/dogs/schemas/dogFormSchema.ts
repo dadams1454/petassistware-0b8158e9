@@ -9,7 +9,7 @@ export const dogFormSchema = z.object({
   gender: z.string().optional(),
   color: z.string().optional(),
   weight: z.string().optional().transform(val => val ? parseFloat(val) : null),
-  weight_unit: z.enum(['lbs', 'kg']).default('lbs').optional(),
+  weight_unit: z.enum(['lbs', 'kg', 'oz', 'g']).default('lbs').optional(),
   microchip_number: z.string().optional(),
   microchip_location: z.string().optional(),
   registration_number: z.string().optional(),

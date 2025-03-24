@@ -47,7 +47,7 @@ export type DocumentType =
   | 'vaccination_record'
   | 'other';
 
-export type WeightUnit = 'lbs' | 'kg';
+export type WeightUnit = 'lbs' | 'kg' | 'oz' | 'g';
 
 export type RegistrationOrganization = 
   | 'AKC'

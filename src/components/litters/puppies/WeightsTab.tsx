@@ -4,6 +4,7 @@ import { UseFormReturn } from 'react-hook-form';
 import WeightInput from '@/components/dogs/form/WeightInput';
 import { Weight, Scale, Info } from 'lucide-react';
 import { PuppyFormData } from './types';
+import { WeightUnit } from '@/types/dog';
 
 interface WeightsTabProps {
   form: UseFormReturn<PuppyFormData>;
@@ -27,7 +28,7 @@ const WeightsTab: React.FC<WeightsTabProps> = ({ form }) => {
             form={form} 
             name="birth_weight" 
             label="Birth Weight" 
-            defaultUnit="oz"
+            defaultUnit="oz" as WeightUnit
           />
         </div>
         
@@ -40,7 +41,7 @@ const WeightsTab: React.FC<WeightsTabProps> = ({ form }) => {
             form={form} 
             name="current_weight" 
             label="Current Weight" 
-            defaultUnit="oz"
+            defaultUnit="oz" as WeightUnit
           />
         </div>
       </div>

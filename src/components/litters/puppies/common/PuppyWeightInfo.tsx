@@ -1,12 +1,13 @@
 
 import React from 'react';
 import { Weight } from 'lucide-react';
+import { WeightUnit } from '@/types/dog';
 
 interface PuppyWeightInfoProps {
   birthWeight: string | number | null;
   currentWeight: string | number | null;
   layout?: 'vertical' | 'horizontal';
-  displayUnit?: 'oz' | 'g' | 'both';
+  displayUnit?: WeightUnit | 'both';
 }
 
 const PuppyWeightInfo: React.FC<PuppyWeightInfoProps> = ({ 
@@ -31,6 +32,10 @@ const PuppyWeightInfo: React.FC<PuppyWeightInfoProps> = ({
       case 'g':
         const inGrams = Math.round(numWeight * 28.35);
         return `${inGrams} g`;
+      case 'lbs':
+        return `${numWeight} lbs`;
+      case 'kg':
+        return `${numWeight} kg`;
       case 'both':
         const grams = Math.round(numWeight * 28.35);
         return `${numWeight} oz (${grams} g)`;

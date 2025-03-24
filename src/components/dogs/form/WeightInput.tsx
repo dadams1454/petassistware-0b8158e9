@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MinusCircle, PlusCircle, AlertCircle, Scale } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-type WeightUnit = 'lbs' | 'kg';
+import { WeightUnit } from '@/types/dog';
 
 interface WeightInputProps {
   form: UseFormReturn<any>;
@@ -42,15 +41,15 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' }: WeightInputProp
     const currentWeight = form.getValues(name);
     const currentWeightNum = currentWeight ? parseFloat(currentWeight) : 0;
     if (isNaN(currentWeightNum)) {
-      form.setValue(name, unit === 'lbs' ? '0.1' : '1');
+      form.setValue(name, getDefaultIncrement());
       setInputError(null);
       return;
     }
     
-    // Increment by 0.1 for lbs, 1 for kg
-    const incrementAmount = unit === 'lbs' ? 0.1 : 1;
+    // Increment based on the unit
+    const incrementAmount = getIncrementAmount();
     const newWeight = currentWeightNum + incrementAmount;
-    form.setValue(name, unit === 'lbs' ? newWeight.toFixed(1) : Math.round(newWeight));
+    form.setValue(name, formatWeight(newWeight));
     setInputError(null);
   };
 
@@ -65,11 +64,45 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' }: WeightInputProp
       return;
     }
     
-    // Decrement by 0.1 for lbs, 1 for kg
-    const decrementAmount = unit === 'lbs' ? 0.1 : 1;
+    // Decrement based on the unit
+    const decrementAmount = getIncrementAmount();
     const newWeight = Math.max(0, currentWeightNum - decrementAmount);
-    form.setValue(name, unit === 'lbs' ? newWeight.toFixed(1) : Math.round(newWeight));
+    form.setValue(name, formatWeight(newWeight));
     setInputError(null);
+  };
+
+  const getIncrementAmount = (): number => {
+    switch (unit) {
+      case 'lbs': return 0.1;
+      case 'kg': return 0.1;
+      case 'oz': return 0.5;
+      case 'g': return 5;
+      default: return 0.1;
+    }
+  };
+
+  const getDefaultIncrement = (): string => {
+    switch (unit) {
+      case 'lbs': return '0.1';
+      case 'kg': return '0.1';
+      case 'oz': return '0.5';
+      case 'g': return '5';
+      default: return '0.1';
+    }
+  };
+
+  const formatWeight = (value: number): string => {
+    switch (unit) {
+      case 'lbs':
+      case 'kg':
+        return value.toFixed(1);
+      case 'oz':
+        return value.toFixed(1);
+      case 'g':
+        return Math.round(value).toString();
+      default:
+        return value.toFixed(1);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,15 +117,28 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' }: WeightInputProp
       const numValue = parseFloat(currentWeight);
       if (!isNaN(numValue)) {
         // Convert between units
-        if (newUnit === 'kg' && unit === 'lbs') {
-          // Convert lbs to kg (1 lb ≈ 0.45 kg)
-          const kg = (numValue * 0.45).toFixed(1);
-          form.setValue(name, kg);
-        } else if (newUnit === 'lbs' && unit === 'kg') {
-          // Convert kg to lbs (1 kg ≈ 2.2 lbs)
-          const lbs = (numValue * 2.2).toFixed(1);
-          form.setValue(name, lbs);
+        let convertedWeight: number;
+        
+        // First convert current unit to grams (base unit)
+        let weightInGrams: number;
+        switch (unit) {
+          case 'lbs': weightInGrams = numValue * 453.59; break;
+          case 'kg': weightInGrams = numValue * 1000; break;
+          case 'oz': weightInGrams = numValue * 28.35; break;
+          case 'g': weightInGrams = numValue; break;
+          default: weightInGrams = numValue;
         }
+        
+        // Then convert from grams to new unit
+        switch (newUnit) {
+          case 'lbs': convertedWeight = weightInGrams / 453.59; break;
+          case 'kg': convertedWeight = weightInGrams / 1000; break;
+          case 'oz': convertedWeight = weightInGrams / 28.35; break;
+          case 'g': convertedWeight = weightInGrams; break;
+          default: convertedWeight = weightInGrams;
+        }
+        
+        form.setValue(name, formatWeight(convertedWeight));
       }
     }
     
@@ -165,6 +211,18 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' }: WeightInputProp
                     <div className="flex items-center gap-2">
                       <Scale className="h-4 w-4" />
                       <span>kg</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="oz">
+                    <div className="flex items-center gap-2">
+                      <Scale className="h-4 w-4" />
+                      <span>oz</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="g">
+                    <div className="flex items-center gap-2">
+                      <Scale className="h-4 w-4" />
+                      <span>g</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
