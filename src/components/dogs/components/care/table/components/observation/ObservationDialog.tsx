@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import DialogContentComponent from './DialogContent';
 
-export type ObservationType = 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
+export type ObservationType = 'accident' | 'heat' | 'behavior' | 'other';
 
 interface ObservationDialogProps {
   open: boolean;
@@ -52,8 +52,8 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   // Update observation type and reset form when the dialog opens
   useEffect(() => {
     if (open) {
-      // Reset the observation type based on the active category
-      setObservationType(activeCategory === 'feeding' ? 'feeding' : defaultObservationType);
+      // Reset the observation type to default
+      setObservationType(defaultObservationType);
       
       // Set the selected time slot if provided
       if (selectedTimeSlot) {
@@ -79,11 +79,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
     
     if (!observationText) {
       // Default text based on observation type
-      if (observationType === 'feeding') {
-        observationText = `Didn't eat ${dialogSelectedTimeSlot} meal`;
-      } else {
-        observationText = `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
-      }
+      observationText = `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
     }
     
     setIsSubmitting(true);

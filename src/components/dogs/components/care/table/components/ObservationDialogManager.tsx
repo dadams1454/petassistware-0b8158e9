@@ -7,10 +7,10 @@ interface ObservationDialogManagerProps {
   selectedDog: DogCareStatus | null;
   observationDialogOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other', timestamp?: Date) => Promise<void>;
+  onSubmit: (dogId: string, observation: string, observationType: 'accident' | 'heat' | 'behavior' | 'other', timestamp?: Date) => Promise<void>;
   observations: Record<string, Array<{
     observation: string;
-    observation_type: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
+    observation_type: 'accident' | 'heat' | 'behavior' | 'other';
     created_at: string;
     category?: string;
   }>>;
@@ -33,22 +33,11 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
 }) => {
   if (!selectedDog) return null;
   
-  // Filter observations based on the current category
-  const categoryObservations = observations[selectedDog.dog_id]?.filter(obs => {
-    if (activeCategory === 'feeding') {
-      return obs.category === 'feeding_observation';
-    } else {
-      return obs.category !== 'feeding_observation';
-    }
-  }) || [];
+  // Get all observations for this dog
+  const dogObservations = observations[selectedDog.dog_id] || [];
   
-  // Set default observation type based on active category
-  const defaultObservationType = activeCategory === 'feeding' ? 'feeding' : 'other';
-  
-  // Get the dialog title based on category
-  const dialogTitle = activeCategory === 'feeding' 
-    ? `Feeding Observation` 
-    : `Daily Observation`;
+  // Set default observation type as 'other'
+  const defaultObservationType = 'other';
   
   return (
     <ObservationDialog
@@ -57,7 +46,7 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
       dogId={selectedDog.dog_id}
       dogName={selectedDog.dog_name}
       onSubmit={onSubmit}
-      existingObservations={categoryObservations?.map(obs => ({
+      existingObservations={dogObservations?.map(obs => ({
         observation: obs.observation,
         observation_type: obs.observation_type,
         created_at: obs.created_at,
@@ -68,7 +57,7 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
       activeCategory={activeCategory}
       defaultObservationType={defaultObservationType}
       selectedTimeSlot={selectedTimeSlot}
-      dialogTitle={dialogTitle}
+      dialogTitle="Daily Observation"
     />
   );
 };

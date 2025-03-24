@@ -8,6 +8,7 @@ export const useCategoryManagement = (
   setDebugInfo: (info: string) => void,
   clickCountRef: React.MutableRefObject<number>
 ) => {
+  // Initialize with pottybreaks as the only option now
   const [activeCategory, setActiveCategory] = useState<string>('pottybreaks');
 
   // Safe tab change handler with logging

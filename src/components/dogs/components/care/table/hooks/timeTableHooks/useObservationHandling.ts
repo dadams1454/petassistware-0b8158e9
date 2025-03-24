@@ -18,11 +18,11 @@ export const useObservationHandling = (
   const handleObservationSubmit = useCallback(async (
     dogId: string, 
     observationText: string, 
-    observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
+    observationType: 'accident' | 'heat' | 'behavior' | 'other',
     timestamp?: Date
   ): Promise<void> => {
-    // Determine the category based on the active category
-    const category = activeCategory === 'feeding' ? 'feeding_observation' : 'observation';
+    // Always use 'observation' category now that we only have potty breaks
+    const category = 'observation';
     
     // Determine the time slot based on timestamp
     const timeSlot = timestamp ? `${timestamp.getHours() % 12 || 12}:00 ${timestamp.getHours() >= 12 ? 'PM' : 'AM'}` : '';

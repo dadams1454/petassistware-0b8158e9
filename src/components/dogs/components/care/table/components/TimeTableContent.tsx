@@ -45,15 +45,12 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
       <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
         <TableRow>
           <TableHead className="w-[160px] md:w-[250px]">Dog</TableHead>
-          <TableHead className="w-[220px]">
-            {activeCategory === 'feeding' ? 'Feeding Notes' : 'Observations'}
-          </TableHead>
+          <TableHead className="w-[220px]">Observations</TableHead>
           {timeSlots.map((slot) => (
             <TableHead 
               key={slot} 
               className={`text-center w-[80px] ${
                 currentHour !== undefined && 
-                activeCategory === 'pottybreaks' && 
                 slot.includes(`${currentHour > 12 ? currentHour - 12 : currentHour === 0 ? 12 : currentHour}:00 ${currentHour >= 12 ? 'PM' : 'AM'}`)
                   ? 'bg-blue-50 dark:bg-blue-900/10 font-medium'
                   : ''

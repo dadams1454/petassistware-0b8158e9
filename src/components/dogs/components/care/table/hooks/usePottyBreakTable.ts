@@ -7,7 +7,6 @@ import { useCellActions } from './pottyBreakHooks/useCellActions';
 import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
 import { useObservations } from './pottyBreakHooks/useObservations';
 import { useDogSorting } from './pottyBreakHooks/useDogSorting';
-import { useFeedingOperations } from './pottyBreakHooks/queueHooks/useFeedingOperations';
 
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
@@ -15,12 +14,8 @@ const usePottyBreakTable = (
   activeCategory: string = 'pottybreaks',
   currentDate: Date = new Date()
 ) => {
-  // Set up time slots for the table
+  // Set up time slots for the table - only potty break time slots now
   const [timeSlots] = useState(() => {
-    if (activeCategory === 'feeding') {
-      return ['Morning', 'Noon', 'Evening'];
-    }
-    
     const slots: string[] = [];
     for (let hour = 6; hour < 21; hour++) {
       const formattedHour = hour > 12 ? hour - 12 : hour;
@@ -79,9 +74,6 @@ const usePottyBreakTable = (
   
   // Use the dog sorting hook
   const { sortedDogs } = useDogSorting(dogsStatus);
-
-  // Use the feeding operations hook directly for isPendingFeeding
-  const { isPendingFeeding } = useFeedingOperations();
   
   // Overall loading state
   const isLoading = useMemo(() => {
@@ -100,7 +92,7 @@ const usePottyBreakTable = (
     handleCellClick,
     handleRefresh,
     isLoading,
-    isPendingFeeding
+    isPendingFeeding: () => false // Always return false since we removed feeding
   };
 };
 

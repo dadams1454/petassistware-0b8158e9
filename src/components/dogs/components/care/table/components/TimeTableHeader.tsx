@@ -1,10 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Dog, UtensilsCrossed, Calendar } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { CustomButton } from '@/components/ui/custom-button';
+import { TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RefreshCw, Dog, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface TimeTableHeaderProps {
@@ -30,18 +28,6 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
     onCategoryChange(category);
   };
   
-  // Get the icon for each category
-  const getIcon = (category: string) => {
-    switch (category) {
-      case 'pottybreaks':
-        return <Dog className="h-3 w-3 md:h-4 md:w-4" />;
-      case 'feeding':
-        return <UtensilsCrossed className="h-3 w-3 md:h-4 md:w-4" />;
-      default:
-        return null;
-    }
-  };
-  
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
       <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
@@ -51,16 +37,8 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
             onClick={() => handleCategoryChange('pottybreaks')}
             className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
           >
-            {getIcon('pottybreaks')}
-            <span className={isMobile ? 'text-xs' : ''}>Potty</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="feeding" 
-            onClick={() => handleCategoryChange('feeding')}
-            className={`gap-2 ${isMobile ? 'flex-1' : ''}`}
-          >
-            {getIcon('feeding')}
-            <span className={isMobile ? 'text-xs' : ''}>Feeding</span>
+            <Dog className="h-3 w-3 md:h-4 md:w-4" />
+            <span className={isMobile ? 'text-xs' : ''}>Potty Breaks</span>
           </TabsTrigger>
         </TabsList>
         

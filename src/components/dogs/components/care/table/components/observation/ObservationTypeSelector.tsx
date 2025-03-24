@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ObservationType } from './ObservationDialog';
-import { AlertTriangle, ThermometerSnowflake, Activity, MessageSquare, UtensilsCrossed } from 'lucide-react';
+import { AlertTriangle, ThermometerSnowflake, Activity, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ObservationTypeSelectorProps {
@@ -17,15 +17,13 @@ const ObservationTypeSelector: React.FC<ObservationTypeSelectorProps> = ({
   isMobile = false,
   activeCategory = 'pottybreaks'
 }) => {
-  // Define the types that should be available based on the active category
-  const types = activeCategory === 'feeding' 
-    ? [{ value: 'feeding', label: 'Feeding Issue', icon: UtensilsCrossed, color: 'text-red-500' }]
-    : [
-        { value: 'accident', label: 'Accident', icon: AlertTriangle, color: 'text-amber-500' },
-        { value: 'heat', label: 'Heat Signs', icon: ThermometerSnowflake, color: 'text-red-500' },
-        { value: 'behavior', label: 'Behavior', icon: Activity, color: 'text-blue-500' },
-        { value: 'other', label: 'Other', icon: MessageSquare, color: 'text-gray-500' }
-      ];
+  // Define the types for potty break observations only
+  const types = [
+    { value: 'accident', label: 'Accident', icon: AlertTriangle, color: 'text-amber-500' },
+    { value: 'heat', label: 'Heat Signs', icon: ThermometerSnowflake, color: 'text-red-500' },
+    { value: 'behavior', label: 'Behavior', icon: Activity, color: 'text-blue-500' },
+    { value: 'other', label: 'Other', icon: MessageSquare, color: 'text-gray-500' }
+  ];
 
   return (
     <div className="space-y-3">

@@ -4,7 +4,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useOperationQueue } from './queueHooks/useOperationQueue';
 import { useClickProtection } from './queueHooks/useClickProtection';
 import { usePottyBreakOperations } from './queueHooks/usePottyBreakOperations';
-import { useFeedingOperations } from './queueHooks/useFeedingOperations';
 import { throttle } from 'lodash';
 
 export const useCellActions = (
@@ -21,7 +20,6 @@ export const useCellActions = (
   const { queueOperation, totalOperations } = useOperationQueue(onRefresh);
   const { trackClick, clickCount, resetClicks } = useClickProtection(activeCategory);
   const { addPottyBreak, removePottyBreak } = usePottyBreakOperations(pottyBreaks, setPottyBreaks);
-  const { logFeeding, isPendingFeeding } = useFeedingOperations();
   
   // Create a throttled error toast to prevent spam
   const throttledErrorToast = useMemo(() => 
@@ -72,14 +70,6 @@ export const useCellActions = (
           // Immediately add to local state
           addPottyBreak(dogId, dogName, timeSlot, queueOperation);
         }
-      } else if (category === 'feeding') {
-        // Skip if already pending
-        if (isPendingFeeding(dogId, timeSlot)) {
-          return;
-        }
-        
-        // Log the feeding
-        logFeeding(dogId, dogName, timeSlot, queueOperation);
       }
     } catch (error) {
       console.error(`Error handling ${category} cell click:`, error);
@@ -100,8 +90,6 @@ export const useCellActions = (
     queueOperation, 
     addPottyBreak, 
     removePottyBreak, 
-    logFeeding,
-    isPendingFeeding,
     throttledErrorToast
   ]);
   
@@ -129,6 +117,6 @@ export const useCellActions = (
   return {
     isLoading,
     handleCellClick,
-    isPendingFeeding
+    isPendingFeeding: () => false // Always return false since we removed feeding
   };
 };
