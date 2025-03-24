@@ -1,117 +1,64 @@
 
 import React from 'react';
-import { format, differenceInYears, differenceInMonths } from 'date-fns';
+import { CalendarDays } from 'lucide-react';
 import { DogProfile } from '@/types/dog';
-import { Badge } from '@/components/ui/badge';
+import { useAgeCalculation } from '../../hooks/useAgeCalculation';
 
 interface DogCardContentProps {
   dog: DogProfile;
   appointmentCount: number;
 }
 
-// Displays the dog's age based on birthdate
-export const DogAge = ({ birthdate }: { birthdate: string | null }) => {
-  if (!birthdate) return null;
-  
-  const birthDate = new Date(birthdate);
-  const years = differenceInYears(new Date(), birthDate);
-  const months = differenceInMonths(new Date(), birthDate) % 12;
-  
-  if (years > 0) {
-    return (
-      <span className="text-muted-foreground">
-        {years} {years === 1 ? 'year' : 'years'}
-        {months > 0 ? `, ${months} ${months === 1 ? 'month' : 'months'}` : ''}
-      </span>
-    );
-  }
-  
-  return <span className="text-muted-foreground">{months} {months === 1 ? 'month' : 'months'}</span>;
-};
-
-// Status badge component
-export const DogStatusBadge = ({ status }: { status: string }) => {
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'retired':
-        return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300';
-      case 'deceased':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
-    }
-  };
-
-  return (
-    <Badge variant="outline" className={`${getStatusVariant(status)} border-none`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </Badge>
-  );
-};
-
-// Appointment badge component
-export const AppointmentBadge = ({ count }: { count: number }) => {
-  if (count === 0) return null;
+const DogCardContent = ({ dog, appointmentCount }: DogCardContentProps) => {
+  const age = useAgeCalculation(dog.birthdate);
   
   return (
-    <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-none ml-2">
-      {count} {count === 1 ? 'appointment' : 'appointments'}
-    </Badge>
-  );
-};
-
-// Card header component
-export const DogCardHeader = ({ dog, appointmentCount }: DogCardContentProps) => (
-  <div className="flex justify-between items-start mb-2">
-    <h3 className="font-semibold text-lg truncate pr-2">{dog.name}</h3>
-    <div className="flex flex-wrap gap-1 justify-end">
-      {dog.status && <DogStatusBadge status={dog.status} />}
-      <AppointmentBadge count={appointmentCount} />
-    </div>
-  </div>
-);
-
-// Card metadata component
-export const DogCardMetadata = ({ dog }: { dog: DogProfile }) => (
-  <div className="mt-2 space-y-1">
-    {dog.breed && (
-      <p className="text-sm font-medium">{dog.breed}</p>
-    )}
-    {dog.birthdate && (
-      <p className="text-sm">
-        <span className="text-muted-foreground">Born: </span>
-        {format(new Date(dog.birthdate), 'MMM d, yyyy')} 
-        <span className="mx-1">•</span>
-        <DogAge birthdate={dog.birthdate} />
-      </p>
-    )}
-    {dog.color && (
-      <p className="text-sm text-muted-foreground">
-        Color: {dog.color}
-      </p>
-    )}
-  </div>
-);
-
-const DogCardContent: React.FC<DogCardContentProps> = ({ dog, appointmentCount }) => {
-  return (
-    <>
-      <DogCardHeader dog={dog} appointmentCount={appointmentCount} />
+    <div>
+      <h3 className="font-medium text-lg">{dog.name}</h3>
       
-      <div className="flex items-center mt-1">
-        <div className="text-sm">
-          {dog.gender && (
-            <span className={`font-medium ${dog.gender === 'female' ? 'text-pink-600 dark:text-pink-400' : 'text-blue-600 dark:text-blue-400'}`}>
-              {dog.gender.charAt(0).toUpperCase() + dog.gender.slice(1)}
+      <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+        <span>{dog.breed}</span>
+        {dog.gender && (
+          <>
+            <span className="text-xs">•</span>
+            <span>{dog.gender}</span>
+          </>
+        )}
+      </div>
+      
+      {dog.birthdate && (
+        <div className="flex items-center text-xs text-muted-foreground mt-2">
+          <CalendarDays className="h-3 w-3 mr-1" />
+          <span>
+            {new Date(dog.birthdate).toLocaleDateString()} ({age})
+          </span>
+        </div>
+      )}
+      
+      {dog.group_ids && dog.group_ids.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {dog.group_ids.slice(0, 2).map(groupId => (
+            <span 
+              key={groupId} 
+              className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs"
+            >
+              Group {groupId}
+            </span>
+          ))}
+          {dog.group_ids.length > 2 && (
+            <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded-full text-xs">
+              +{dog.group_ids.length - 2} more
             </span>
           )}
         </div>
-      </div>
+      )}
       
-      <DogCardMetadata dog={dog} />
-    </>
+      {appointmentCount > 0 && (
+        <div className="mt-2 text-sm text-amber-600">
+          {appointmentCount} upcoming appointment{appointmentCount !== 1 ? 's' : ''}
+        </div>
+      )}
+    </div>
   );
 };
 

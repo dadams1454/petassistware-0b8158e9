@@ -31,7 +31,7 @@ const DogCard = ({ dog, appointmentCount }: DogCardProps) => {
             className="object-cover w-full h-full"
           />
         ) : (
-          <DogPhotoPlaceholder gender={dog.gender} />
+          <DogPhotoPlaceholder gender={dog.gender} size="lg" />
         )}
       </div>
       <CardContent className="pt-4">
