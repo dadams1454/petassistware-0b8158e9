@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDogDataForSubmission } from '../utils/dogFormUtils';
+import { DogProfile } from '@/types/dog';
 
 /**
  * Hook to handle dog creation and update mutations
@@ -11,7 +12,7 @@ import { formatDogDataForSubmission } from '../utils/dogFormUtils';
  * @param onSuccess Callback to run after successful mutation
  * @returns Mutation object for creating or updating dogs
  */
-export const useDogMutation = (dog: any, userId: string, onSuccess: () => void) => {
+export const useDogMutation = (dog: DogProfile | null, userId: string, onSuccess: () => void) => {
   const { toast } = useToast();
   const isEditing = !!dog;
 
@@ -22,7 +23,7 @@ export const useDogMutation = (dog: any, userId: string, onSuccess: () => void) 
       console.log('Submitting dog form with values:', values);
       console.log('User ID:', userId);
       console.log('Is editing existing dog:', isEditing);
-      if (isEditing) {
+      if (isEditing && dog) {
         console.log('Editing dog with ID:', dog.id);
       }
 
@@ -36,11 +37,16 @@ export const useDogMutation = (dog: any, userId: string, onSuccess: () => void) 
       if (!dogData.weight_unit && dogData.weight) {
         dogData.weight_unit = 'lbs';
       }
+
+      // Ensure gender is one of the allowed values
+      if (dogData.gender && !['male', 'female'].includes(dogData.gender)) {
+        dogData.gender = 'male'; // Default to male if invalid value
+      }
       
       console.log('Formatted dog data for submission:', dogData);
 
       try {
-        const { data, error } = isEditing
+        const { data, error } = isEditing && dog
           ? await supabase
               .from('dogs')
               .update(dogData)
