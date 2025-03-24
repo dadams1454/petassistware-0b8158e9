@@ -14,7 +14,7 @@ export const useCareDashboard = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   
   // Get daily care context and refresh context
-  const { fetchCareTaskPresets } = useDailyCare();
+  const { fetchCareTaskPresets, fetchAllDogsWithCareStatus } = useDailyCare();
   const { currentDate } = useRefresh();
   
   // Use centralized refresh for dog statuses
@@ -34,7 +34,7 @@ export const useCareDashboard = () => {
         setLoadError('Failed to load dogs. Please try refreshing the page.');
         return [];
       }
-    }, []),
+    }, [fetchAllDogsWithCareStatus]),
     loadOnMount: true
   });
 
