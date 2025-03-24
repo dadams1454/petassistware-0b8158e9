@@ -45,7 +45,7 @@ const DogCard: React.FC<DogCardProps> = ({ dog, appointmentCount = 0 }) => {
           )}
           
           <div className="absolute top-3 left-3 z-30 flex gap-2 flex-wrap">
-            {dog.gender === 'Female' && (
+            {dog.gender === 'female' && (
               <DogStatusCard dog={dog} />
             )}
             
