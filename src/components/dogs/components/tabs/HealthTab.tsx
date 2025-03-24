@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
-import { Plus, Syringe, Stethoscope, Pill, AlertCircle } from 'lucide-react';
+import { Syringe, Stethoscope, Pill } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useHealthRecords } from '../../hooks/useHealthRecords';
 import HealthRecordDialog from '../health/HealthRecordDialog';
-import HealthRecordList from '../health/HealthRecordList';
+import HealthTabHeader from '../health/HealthTabHeader';
+import AllRecordsTabContent from '../health/AllRecordsTabContent';
+import VaccinationsTabContent from '../health/VaccinationsTabContent';
+import ExaminationsTabContent from '../health/ExaminationsTabContent';
+import MedicationsTabContent from '../health/MedicationsTabContent';
 import { HealthRecord } from '../../types/healthRecord';
 
 interface HealthTabProps {
@@ -84,13 +86,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Health Records</h2>
-        <Button onClick={handleAddRecord}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Health Record
-        </Button>
-      </div>
+      <HealthTabHeader onAdd={handleAddRecord} />
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -119,71 +115,35 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsList>
         
         <TabsContent value="all" className="space-y-4 mt-4">
-          {healthRecords && healthRecords.length > 0 ? (
-            <HealthRecordList 
-              records={healthRecords}
-              onEdit={handleEditRecord}
-              onDelete={handleDeleteRecord}
-            />
-          ) : (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">No health records found. Use the "Add Health Record" button to add your first record.</p>
-              </CardContent>
-            </Card>
-          )}
+          <AllRecordsTabContent 
+            records={healthRecords}
+            onEdit={handleEditRecord}
+            onDelete={handleDeleteRecord}
+          />
         </TabsContent>
         
         <TabsContent value="vaccinations" className="space-y-4 mt-4">
-          {vaccinationRecords.length > 0 ? (
-            <HealthRecordList 
-              records={vaccinationRecords}
-              onEdit={handleEditRecord}
-              onDelete={handleDeleteRecord}
-            />
-          ) : (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <Syringe className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">No vaccination records found. Add a vaccination record to track your dog's vaccines.</p>
-              </CardContent>
-            </Card>
-          )}
+          <VaccinationsTabContent 
+            records={vaccinationRecords}
+            onEdit={handleEditRecord}
+            onDelete={handleDeleteRecord}
+          />
         </TabsContent>
         
         <TabsContent value="examinations" className="space-y-4 mt-4">
-          {examinationRecords.length > 0 ? (
-            <HealthRecordList 
-              records={examinationRecords}
-              onEdit={handleEditRecord}
-              onDelete={handleDeleteRecord}
-            />
-          ) : (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <Stethoscope className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">No examination records found. Add an examination record to track your dog's check-ups.</p>
-              </CardContent>
-            </Card>
-          )}
+          <ExaminationsTabContent 
+            records={examinationRecords}
+            onEdit={handleEditRecord}
+            onDelete={handleDeleteRecord}
+          />
         </TabsContent>
         
         <TabsContent value="medications" className="space-y-4 mt-4">
-          {medicationRecords.length > 0 ? (
-            <HealthRecordList 
-              records={medicationRecords}
-              onEdit={handleEditRecord}
-              onDelete={handleDeleteRecord}
-            />
-          ) : (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <Pill className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">No medication records found. Add a medication record to track your dog's treatments.</p>
-              </CardContent>
-            </Card>
-          )}
+          <MedicationsTabContent 
+            records={medicationRecords}
+            onEdit={handleEditRecord}
+            onDelete={handleDeleteRecord}
+          />
         </TabsContent>
       </Tabs>
       
