@@ -46,16 +46,16 @@ const usePottyBreakTable = (
     return () => clearInterval(intervalId);
   }, []);
   
-  // Use the potty breaks data hook
+  // Use the potty breaks data hook - pass the currentDate parameter
   const { 
     pottyBreaks, 
     setPottyBreaks, 
     hasPottyBreak, 
     isLoading: pottyLoading 
-  } = usePottyBreakData();
+  } = usePottyBreakData(currentDate);
   
-  // Use the care logs data hook for other care types
-  const { hasCareLogged, isLoading: careLoading } = useCareLogsData();
+  // Use the care logs data hook for other care types - pass an empty object as fallback
+  const { hasCareLogged, isLoading: careLoading } = useCareLogsData({});
   
   // Use the observations hook
   const { 
