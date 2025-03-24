@@ -77,7 +77,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     );
   }
 
-  // Get typed records from our local type definition
+  // Get typed records
   const vaccinationRecords: HealthRecord[] = getRecordsByType('vaccination');
   const examinationRecords: HealthRecord[] = getRecordsByType('examination');
   const medicationRecords: HealthRecord[] = getRecordsByType('medication');
