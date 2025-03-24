@@ -1,39 +1,35 @@
 
-import React, { useTransition } from 'react';
+import React, { useCallback, useRef } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
-import { format } from 'date-fns';
-import { Clock, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, Clock, Calendar } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
+import { format } from 'date-fns';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 
 const DailyCare: React.FC = () => {
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
-  // Add useTransition to prevent UI blocking
-  const [isPending, startTransition] = useTransition();
   
   // Use the enhanced auto-refresh system with midnightReset
   const { 
     isRefreshing,
-    currentDate,
-    formatTimeRemaining
+    handleRefresh,
+    formatTimeRemaining,
+    currentDate
   } = useAutoRefresh({
-    area: 'dailyCare',
     interval: 15 * 60 * 1000, // 15 minutes
     refreshLabel: 'dog care data',
     midnightReset: true,
-    onRefresh: async (date = new Date(), force = false) => {
+    onRefresh: async () => {
       console.log('🔄 Auto-refresh triggered in DailyCare page');
-      const dogs = await fetchAllDogsWithCareStatus(date, force);
+      const dogs = await fetchAllDogsWithCareStatus(currentDate, true);
       console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
       return dogs;
     }
   });
-
-  // Combined loading state
-  const isLoading = isRefreshing || isPending;
 
   const content = (
     <>
@@ -42,23 +38,27 @@ const DailyCare: React.FC = () => {
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Daily Care Time Table
           </h1>
-          <p className="mt-1 text-slate-500 dark:text-slate-400 flex items-center flex-wrap gap-2">
-            <span>Track potty breaks, feeding, medications and exercise for all your dogs
-            {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}</span>
-            <span className="text-xs flex items-center gap-1 text-slate-400">
+          <p className="mt-1 text-slate-500 dark:text-slate-400 flex items-center">
+            Track potty breaks, feeding, medications and exercise for all your dogs
+            {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
+            <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
               <Clock className="h-3 w-3" />
               Next refresh: {formatTimeRemaining()}
             </span>
-            <span className="text-xs flex items-center gap-1 text-slate-400">
+            <span className="ml-2 text-xs flex items-center gap-1 text-slate-400">
               <Calendar className="h-3 w-3" />
               {format(currentDate, 'PPPP')}
             </span>
           </p>
         </div>
+        <Button onClick={() => handleRefresh(true)} className="gap-2" disabled={isRefreshing}>
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          Refresh Dogs
+        </Button>
       </div>
 
       {dogStatuses && dogStatuses.length > 0 ? (
-        <div className={`space-y-6 transition-opacity duration-200 ${isPending ? 'opacity-90' : 'opacity-100'}`}>
+        <div className="space-y-6">
           {/* Reminder Card */}
           <PottyBreakReminderCard 
             dogs={dogStatuses}
@@ -75,7 +75,8 @@ const DailyCare: React.FC = () => {
           <div id="dog-time-table">
             <DogTimeTable 
               dogsStatus={dogStatuses} 
-              isRefreshing={isLoading}
+              onRefresh={() => handleRefresh(true)} 
+              isRefreshing={isRefreshing}
               currentDate={currentDate}
             />
           </div>
@@ -83,6 +84,13 @@ const DailyCare: React.FC = () => {
       ) : (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
+          <Button 
+            onClick={() => handleRefresh(true)} 
+            className="mt-4"
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? "Refreshing..." : "Refresh Dogs"}
+          </Button>
         </Card>
       )}
     </>

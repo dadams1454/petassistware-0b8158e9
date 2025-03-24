@@ -1,5 +1,5 @@
 
-import React, { useTransition } from 'react';
+import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import AddGroupDialog from './components/AddGroupDialog';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -10,39 +10,21 @@ import CategoryTabs from './components/CategoryTabs';
 import TableContentManager from './components/TableContentManager';
 import ObservationDialogManager from './components/ObservationDialogManager';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useRefresh } from '@/contexts/refreshContext';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
+  onRefresh: () => void;
   isRefreshing: boolean;
   currentDate: Date;
-  onRefresh?: () => void; // Make this optional to handle backward compatibility
 }
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
   dogsStatus, 
-  isRefreshing: externalRefreshing,
-  currentDate,
-  onRefresh: externalRefresh
+  onRefresh,
+  isRefreshing,
+  currentDate 
 }) => {
   const isMobile = useIsMobile();
-  // Add useTransition to prevent UI blocking
-  const [isPending, startTransition] = useTransition();
-  
-  // Use the centralized refresh system
-  const { handleRefresh: contextRefresh } = useRefresh('dailyCare');
-  
-  // Combined refresh function that calls both the external and context refreshes
-  const onRefresh = () => {
-    console.log('🔄 Combined refresh triggered in DogTimeTable');
-    startTransition(() => {
-      if (externalRefresh) {
-        externalRefresh();
-      } else {
-        contextRefresh(true);
-      }
-    });
-  };
   
   const {
     isDialogOpen,
@@ -62,6 +44,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleCellContextMenu,
     handleCareLogClick,
     handleErrorReset,
+    handleRefresh,
     showLoading,
     selectedDogId,
     setSelectedDogId,
@@ -71,20 +54,10 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleObservationClick,
     handleObservationSubmit,
     timeSlots
-  } = useTimeTableState(dogsStatus, onRefresh, externalRefreshing, currentDate);
-
-  // Enhanced category change handler with useTransition
-  const handleCategoryChangeWithTransition = (category: string) => {
-    startTransition(() => {
-      handleCategoryChange(category);
-    });
-  };
+  } = useTimeTableState(dogsStatus, onRefresh, isRefreshing, currentDate);
 
   // Find the selected dog based on selectedDogId
   const selectedDog = dogsStatus.find(dog => dog.dog_id === selectedDogId);
-
-  // Combined loading state including transition state
-  const isLoadingOrTransitioning = showLoading || isPending || externalRefreshing;
 
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DogTimeTable">
@@ -92,7 +65,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         {/* Table actions with title and add group button */}
         <TableActions
           onAddGroup={() => setIsDialogOpen(true)}
-          isRefreshing={isLoadingOrTransitioning}
+          isRefreshing={showLoading}
           currentDate={currentDate}
         />
 
@@ -107,7 +80,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         {/* Category Tabs */}
         <CategoryTabs 
           activeCategory={activeCategory} 
-          onValueChange={handleCategoryChangeWithTransition} 
+          onValueChange={handleCategoryChange} 
         />
 
         {/* Table Content */}
@@ -124,10 +97,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onCareLogClick={handleCareLogClick}
           onDogClick={handleDogClick}
           onObservationClick={handleObservationClick}
-          onRefresh={onRefresh}
-          onCategoryChange={handleCategoryChangeWithTransition}
-          showLoading={isLoadingOrTransitioning}
-          isPending={isPending}
+          onRefresh={handleRefresh}
+          onCategoryChange={handleCategoryChange}
+          showLoading={showLoading}
         />
 
         {/* Add Group Dialog */}

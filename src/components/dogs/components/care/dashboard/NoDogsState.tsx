@@ -1,30 +1,25 @@
 
 import React from 'react';
+import { Dog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useRefresh } from '@/contexts/refreshContext';
+import EmptyState from '@/components/ui/empty-state';
 
-interface NoDogsStateProps {}
+interface NoDogsStateProps {
+  onRefresh: () => void;
+}
 
-const NoDogsState: React.FC<NoDogsStateProps> = () => {
-  const { handleRefresh, isRefreshing } = useRefresh('dogs');
-  
+const NoDogsState: React.FC<NoDogsStateProps> = ({ onRefresh }) => {
   return (
-    <div className="p-8 text-center border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-950">
-      <h2 className="text-xl font-semibold mb-2">No Dogs Found</h2>
-      <p className="text-gray-500 dark:text-gray-400 mb-6">
-        Add dogs to your kennel to start tracking their daily care.
-      </p>
-      <div className="flex justify-center gap-4">
-        <Button
-          variant="outline"
-          disabled={isRefreshing}
-          onClick={() => handleRefresh(true)}
-        >
+    <EmptyState
+      icon={<Dog className="h-12 w-12 text-gray-400" />}
+      title="No dogs found"
+      description="No dogs found in the system. Please add dogs to start tracking their care."
+      action={
+        <Button onClick={onRefresh}>
           Refresh
         </Button>
-        <Button>Add Dogs</Button>
-      </div>
-    </div>
+      }
+    />
   );
 };
 

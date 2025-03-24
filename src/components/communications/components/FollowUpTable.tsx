@@ -1,17 +1,10 @@
 
-import React, { useMemo } from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import React from 'react';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { MailIcon, CheckCircle } from 'lucide-react';
 import { FollowUpItem } from '../types/followUp';
-import { format, isBefore } from 'date-fns';
-import { Check, Mail } from 'lucide-react';
 import { FollowUpStatusIcon } from './FollowUpStatusIcon';
 
 interface FollowUpTableProps {
@@ -19,92 +12,86 @@ interface FollowUpTableProps {
   onSendEmail: (item: FollowUpItem) => void;
   onMarkCompleted: (item: FollowUpItem) => void;
   showOnlyPending?: boolean;
-  customTableBody?: React.ReactNode;
 }
 
-export const FollowUpTable = React.memo<FollowUpTableProps>(({ 
-  followUps, 
-  onSendEmail, 
-  onMarkCompleted, 
-  showOnlyPending = false,
-  customTableBody = null
+export const FollowUpTable: React.FC<FollowUpTableProps> = ({
+  followUps,
+  onSendEmail,
+  onMarkCompleted,
+  showOnlyPending = false
 }) => {
-  const filteredItems = useMemo(() => 
-    showOnlyPending 
-      ? followUps.filter(item => item.status === 'pending')
-      : followUps
-  , [followUps, showOnlyPending]);
+  const displayedFollowUps = showOnlyPending 
+    ? followUps.filter(item => item.status === 'pending')
+    : followUps;
 
-  const isOverdue = (dueDate: string) => {
-    return isBefore(new Date(dueDate), new Date());
-  };
+  if (!displayedFollowUps.length) {
+    return (
+      <TableRow>
+        <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+          No follow-ups to display
+        </TableCell>
+      </TableRow>
+    );
+  }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Due Date</TableHead>
-          <TableHead>Customer</TableHead>
-          <TableHead>Notes</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead>Customer</TableHead>
+          <TableHead>Type</TableHead>
+          <TableHead>Due Date</TableHead>
+          <TableHead>Notes</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {customTableBody ? (
-          customTableBody
-        ) : filteredItems.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-              No follow-ups to display
+        {displayedFollowUps.map(item => (
+          <TableRow key={item.id}>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <FollowUpStatusIcon status={item.status} />
+                <span className="capitalize">{item.status}</span>
+              </div>
             </TableCell>
-          </TableRow>
-        ) : (
-          filteredItems.map((item) => (
-            <TableRow key={item.id} className={isOverdue(item.due_date) && item.status === 'pending' ? 'bg-red-50 dark:bg-red-950/10' : ''}>
-              <TableCell className={isOverdue(item.due_date) && item.status === 'pending' ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
-                {format(new Date(item.due_date), 'MMM d, yyyy')}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center">
-                  <FollowUpStatusIcon status={item.status} />
-                  <span className="ml-2">{item.customer.first_name} {item.customer.last_name}</span>
-                </div>
-              </TableCell>
-              <TableCell className="max-w-[300px] truncate">{item.notes}</TableCell>
-              <TableCell>
-                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium
-                  ${item.status === 'pending' 
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' 
-                    : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
-                  }`}>
-                  {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
+            <TableCell>
+              <div className="font-medium">
+                {item.customer.first_name} {item.customer.last_name}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {item.customer.email}
+              </div>
+            </TableCell>
+            <TableCell className="capitalize">{item.type}</TableCell>
+            <TableCell>{format(new Date(item.due_date), 'MMM d, yyyy')}</TableCell>
+            <TableCell className="max-w-[200px] truncate">{item.notes}</TableCell>
+            <TableCell>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
                   onClick={() => onSendEmail(item)}
                 >
-                  <Mail className="h-4 w-4" />
+                  <MailIcon className="h-4 w-4 mr-1" />
+                  Email
                 </Button>
-                {item.status === 'pending' && (
-                  <Button
-                    variant="ghost" 
-                    size="sm"
+                {item.status !== 'completed' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
                     onClick={() => onMarkCompleted(item)}
                   >
-                    <Check className="h-4 w-4" />
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Complete
                   </Button>
                 )}
-              </TableCell>
-            </TableRow>
-          ))
-        )}
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
   );
-});
+};
 
-FollowUpTable.displayName = 'FollowUpTable';

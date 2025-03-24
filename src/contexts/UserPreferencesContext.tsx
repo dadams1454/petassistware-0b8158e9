@@ -8,10 +8,6 @@ type DogColorPreference = {
 
 interface UserPreferences {
   dogColors: Record<string, string>; // dogId -> color
-  dashboardWidgets?: string[];
-  dashboardDefaultView?: string;
-  dashboardTheme?: string;
-  dashboardCompact?: boolean;
 }
 
 interface UserPreferencesContextType {
@@ -20,20 +16,10 @@ interface UserPreferencesContextType {
   getDogColor: (dogId: string) => string | undefined;
   resetDogColor: (dogId: string) => void;
   resetAllPreferences: () => void;
-  setDashboardPreferences: (prefs: {
-    widgets?: string[];
-    defaultView?: string;
-    theme?: string;
-    compact?: boolean;
-  }) => void;
 }
 
 const defaultPreferences: UserPreferences = {
   dogColors: {},
-  dashboardWidgets: undefined,
-  dashboardDefaultView: 'overview',
-  dashboardTheme: 'default',
-  dashboardCompact: false
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
@@ -78,21 +64,6 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     setPreferences(defaultPreferences);
   };
 
-  const setDashboardPreferences = (prefs: {
-    widgets?: string[];
-    defaultView?: string;
-    theme?: string;
-    compact?: boolean;
-  }) => {
-    setPreferences(prev => ({
-      ...prev,
-      dashboardWidgets: prefs.widgets !== undefined ? prefs.widgets : prev.dashboardWidgets,
-      dashboardDefaultView: prefs.defaultView || prev.dashboardDefaultView,
-      dashboardTheme: prefs.theme || prev.dashboardTheme,
-      dashboardCompact: prefs.compact !== undefined ? prefs.compact : prev.dashboardCompact
-    }));
-  };
-
   return (
     <UserPreferencesContext.Provider
       value={{
@@ -101,7 +72,6 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         getDogColor,
         resetDogColor,
         resetAllPreferences,
-        setDashboardPreferences,
       }}
     >
       {children}

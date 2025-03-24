@@ -40,12 +40,11 @@ export interface DogCareStatus {
   dog_photo?: string;
   breed: string;
   color: string;
-  sex: string;
+  sex: string; // Add sex property that matches what DogNameCell is trying to access
   last_care: {
     category: string;
     task_name: string;
     timestamp: string;
   } | null;
   flags: DogFlag[];
-  potty_alert_threshold?: number; // Added this property
 }

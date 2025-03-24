@@ -1,53 +1,109 @@
 
-/**
- * Service for managing dog potty breaks
- */
+import { supabase } from '@/integrations/supabase/client';
 
-// Define the interface for potty break data
-export interface DogPottyBreak {
-  dog_id: string;
-  session_time: string;
-  notes?: string;
-}
+// Get the last potty break for a specific dog
+export const getLastDogPottyBreak = async (dogId: string): Promise<{ session_time: string } | null> => {
+  const { data, error } = await supabase
+    .from('potty_break_dogs')
+    .select(`
+      session:session_id(
+        session_time
+      )
+    `)
+    .eq('dog_id', dogId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
 
-// Function to add a potty break for a dog at a specific time
-export const addDogPottyBreak = async (dogId: string, timeSlot: string): Promise<void> => {
-  console.log(`Adding potty break for dog ${dogId} at ${timeSlot}`);
-  // In a real implementation, this would make an API call to add the potty break
-  // For now, we'll simulate a successful API call with a delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return Promise.resolve();
+  if (error) {
+    if (error.code === 'PGRST116') {
+      // No rows returned
+      return null;
+    }
+    console.error('Error fetching last dog potty break:', error);
+    throw error;
+  }
+
+  return data?.session;
 };
 
-// Function to remove a potty break for a dog at a specific time
-export const removeDogPottyBreak = async (dogId: string, timeSlot: string): Promise<void> => {
-  console.log(`Removing potty break for dog ${dogId} at ${timeSlot}`);
-  // In a real implementation, this would make an API call to remove the potty break
-  // For now, we'll simulate a successful API call with a delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return Promise.resolve();
-};
-
-// Function to log a potty break (similar to addDogPottyBreak but for backward compatibility)
-export const logDogPottyBreak = async (dogId: string, timeSlot: string): Promise<void> => {
-  return addDogPottyBreak(dogId, timeSlot);
-};
-
-// Function to get the last potty break for a dog
-export const getLastDogPottyBreak = async (dogId: string): Promise<DogPottyBreak | null> => {
-  console.log(`Fetching last potty break for dog ${dogId}`);
-  // In a real implementation, this would fetch from an API or database
-  // For now, we'll simulate a successful API call with a delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+// Get dogs that haven't had a potty break in X minutes
+export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<any[]> => {
+  // Convert the threshold to a number to avoid type errors
+  const threshold = Number(thresholdMinutes);
   
-  // Return simulated data - in a real app this would come from the backend
-  // Generate a random time within the last 6 hours
-  const randomHoursAgo = Math.floor(Math.random() * 6);
-  const randomTime = new Date();
-  randomTime.setHours(randomTime.getHours() - randomHoursAgo);
+  // Fix the type error by correctly passing parameters to RPC function
+  const { data, error } = await supabase.functions.invoke('get_dogs_needing_potty_break', {
+    body: { threshold_minutes: threshold }
+  });
+
+  if (error) {
+    console.error('Error getting dogs needing potty break:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+// Log a potty break for a specific dog at a specific time slot
+export const logDogPottyBreak = async (dogId: string, timeSlot: string): Promise<any> => {
+  // Create a new potty break session
+  const { data: sessionData, error: sessionError } = await supabase
+    .from('potty_break_sessions')
+    .insert({
+      session_time: new Date().toISOString(),
+      notes: `Potty break at ${timeSlot}`
+    })
+    .select()
+    .single();
+
+  if (sessionError) {
+    console.error('Error creating potty break session:', sessionError);
+    throw sessionError;
+  }
+
+  // Associate the dog with the session
+  const { data: dogData, error: dogError } = await supabase
+    .from('potty_break_dogs')
+    .insert({
+      dog_id: dogId,
+      session_id: sessionData.id
+    })
+    .select()
+    .single();
+
+  if (dogError) {
+    console.error('Error associating dog with potty break:', dogError);
+    throw dogError;
+  }
+
+  return { session: sessionData, dogSession: dogData };
+};
+
+// Get all potty breaks for a specific day
+export const getPottyBreaksForDay = async (date: Date): Promise<any[]> => {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
   
-  return {
-    dog_id: dogId,
-    session_time: randomTime.toISOString()
-  };
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  const { data, error } = await supabase
+    .from('potty_break_sessions')
+    .select(`
+      *,
+      dogs:potty_break_dogs(
+        *,
+        dog:dog_id(id, name)
+      )
+    `)
+    .gte('session_time', startOfDay.toISOString())
+    .lte('session_time', endOfDay.toISOString());
+
+  if (error) {
+    console.error('Error fetching potty breaks for day:', error);
+    throw error;
+  }
+
+  return data || [];
 };

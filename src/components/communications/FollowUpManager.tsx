@@ -1,5 +1,5 @@
 
-import React, { useState, useTransition, useCallback, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -8,61 +8,28 @@ import { Customer } from '../customers/types/customer';
 import CreateFollowUpDialog from './CreateFollowUpDialog';
 import { useFollowUps } from './hooks/useFollowUps';
 import { FollowUpTable } from './components/FollowUpTable';
-import LoadingFollowUps from './components/LoadingFollowUps';
-import { CircleEllipsis } from 'lucide-react';
-import { useRefresh } from '@/contexts/refreshContext';
 
-const FollowUpManager = React.memo(() => {
+const FollowUpManager = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  
-  // Use the centralized refresh context
-  const { handleRefresh: triggerRefresh } = useRefresh('dashboard');
-  
-  const { 
-    data: followUps, 
-    isLoading, 
-    refetch, 
-    isRefetching 
-  } = useFollowUps();
+  const { data: followUps, isLoading, refetch } = useFollowUps();
 
-  const handleMarkCompleted = useCallback((item: any) => {
+  const handleMarkCompleted = (item: any) => {
     toast({
       title: "Follow-up marked as completed",
       description: `Follow-up for ${item.customer.first_name} ${item.customer.last_name} has been marked as completed.`
     });
-    
-    // Use transition to prevent UI blocking during refetch
-    startTransition(() => {
-      // Void the promise to avoid type errors
-      void refetch();
-      // Also notify the central refresh system
-      triggerRefresh(false);
-    });
-  }, [refetch, triggerRefresh]);
+    refetch();
+  };
 
-  const handleSendEmail = useCallback((item: any) => {
+  const handleSendEmail = (item: any) => {
     window.location.href = `/communications?customer=${item.customer_id}`;
-  }, []);
+  };
 
-  const handleCreateFollowUp = useCallback(() => {
+  const handleCreateFollowUp = () => {
     setSelectedCustomer(null);
     setIsCreateDialogOpen(true);
-  }, []);
-
-  const handleRefresh = useCallback(() => {
-    startTransition(() => {
-      // Void the promise to avoid type errors
-      void refetch();
-      // Also notify the central refresh system
-      triggerRefresh(false);
-    });
-  }, [refetch, triggerRefresh]);
-
-  // Determine if we should show loading state - memoized to prevent recalculation
-  const showLoading = useMemo(() => isLoading && !followUps, [isLoading, followUps]);
-  const showRefreshIndicator = useMemo(() => isRefetching || isPending, [isRefetching, isPending]);
+  };
 
   return (
     <Card>
@@ -74,12 +41,7 @@ const FollowUpManager = React.memo(() => {
               Track and manage customer follow-ups and communications
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            {showRefreshIndicator && (
-              <CircleEllipsis className="animate-spin text-muted-foreground h-4 w-4" />
-            )}
-            <Button onClick={handleCreateFollowUp}>Create Follow-Up</Button>
-          </div>
+          <Button onClick={handleCreateFollowUp}>Create Follow-Up</Button>
         </div>
       </CardHeader>
       
@@ -91,16 +53,8 @@ const FollowUpManager = React.memo(() => {
             <TabsTrigger value="all">All</TabsTrigger>
           </TabsList>
           
-          {showLoading ? (
-            <FollowUpTable
-              followUps={[]}
-              onSendEmail={() => {}}
-              onMarkCompleted={() => {}}
-              showOnlyPending
-              customTableBody={
-                <LoadingFollowUps count={3} />
-              }
-            />
+          {isLoading ? (
+            <div className="text-center py-6">Loading follow-ups...</div>
           ) : (followUps?.length || 0) === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               No follow-ups to display
@@ -138,33 +92,21 @@ const FollowUpManager = React.memo(() => {
       
       <CardFooter className="border-t pt-6 flex justify-between">
         <p className="text-sm text-muted-foreground">
-          {showLoading ? "Loading follow-ups..." : `Showing ${followUps?.length || 0} follow-ups`}
+          Showing {followUps?.length || 0} follow-ups
         </p>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={showLoading}>
-            Refresh
-          </Button>
-          <Button variant="outline" size="sm" disabled={showLoading}>
-            Export Follow-Ups
-          </Button>
-        </div>
+        <Button variant="outline" size="sm">
+          Export Follow-Ups
+        </Button>
       </CardFooter>
       
       <CreateFollowUpDialog 
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         customer={selectedCustomer}
-        onSuccess={() => {
-          startTransition(() => {
-            void refetch();
-            triggerRefresh(false);
-          });
-        }}
+        onSuccess={() => refetch()}
       />
     </Card>
   );
-});
-
-FollowUpManager.displayName = 'FollowUpManager';
+};
 
 export default FollowUpManager;

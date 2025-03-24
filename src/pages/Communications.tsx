@@ -1,23 +1,11 @@
 
-import React, { memo } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MainLayout from '@/layouts/MainLayout';
 import CommunicationTemplates from '@/components/communications/CommunicationTemplates';
 import CommunicationHistory from '@/components/communications/CommunicationHistory';
 import SendCommunication from '@/components/communications/SendCommunication';
 import FollowUpManager from '@/components/communications/FollowUpManager';
-
-const FollowUpTab = memo(() => <FollowUpManager />);
-FollowUpTab.displayName = 'FollowUpTab';
-
-const TemplatesTab = memo(() => <CommunicationTemplates />);
-TemplatesTab.displayName = 'TemplatesTab';
-
-const HistoryTab = memo(() => <CommunicationHistory />);
-HistoryTab.displayName = 'HistoryTab';
-
-const SendTab = memo(() => <SendCommunication />);
-SendTab.displayName = 'SendTab';
 
 const Communications = () => {
   return (
@@ -34,19 +22,19 @@ const Communications = () => {
           </TabsList>
           
           <TabsContent value="send" className="space-y-4">
-            <SendTab />
+            <SendCommunication />
           </TabsContent>
           
           <TabsContent value="followup" className="space-y-4">
-            <FollowUpTab />
+            <FollowUpManager />
           </TabsContent>
           
           <TabsContent value="templates" className="space-y-4">
-            <TemplatesTab />
+            <CommunicationTemplates />
           </TabsContent>
           
           <TabsContent value="history" className="space-y-4">
-            <HistoryTab />
+            <CommunicationHistory />
           </TabsContent>
         </Tabs>
       </div>

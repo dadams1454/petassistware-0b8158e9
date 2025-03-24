@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
-import { useRefresh } from '@/contexts/refreshContext';
 
 export const useCareDashboard = () => {
   // State variables
@@ -10,6 +9,8 @@ export const useCareDashboard = () => {
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const initialFetchRef = useRef(false);
   
@@ -20,8 +21,28 @@ export const useCareDashboard = () => {
     dogStatuses 
   } = useDailyCare();
 
-  // Use the centralized refresh system
-  const { isRefreshing: loading, handleRefresh } = useRefresh('dogs');
+  // Function to fetch all dogs care status
+  const loadDogsStatus = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      console.log('🔄 Loading dogs status...');
+      const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
+      console.log('✅ Dogs loaded successfully:', dogs.length);
+      if (dogs.length > 0) {
+        console.log('🐕 All dog names:', dogs.map(d => d.dog_name).join(', '));
+      } else {
+        console.warn('⚠️ No dogs were returned from the API');
+      }
+      return dogs;
+    } catch (error) {
+      console.error('❌ Error loading dogs status:', error);
+      setLoadError('Failed to load dogs. Please try refreshing the page.');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchAllDogsWithCareStatus]);
 
   // Function to fetch categories
   const loadCategories = useCallback(async () => {
@@ -45,27 +66,36 @@ export const useCareDashboard = () => {
 
   // Initial data loading - only once
   useEffect(() => {
-    if (!initialFetchRef.current) {
+    if (!initialLoadAttempted && !initialFetchRef.current) {
       console.log('🚀 Initial data loading for CareDashboard');
       initialFetchRef.current = true;
       
-      Promise.all([handleRefresh(), loadCategories()])
+      Promise.all([loadDogsStatus(), loadCategories()])
         .then(() => {
           console.log('✅ Initial data loaded successfully');
         })
         .catch(error => {
           console.error('❌ Error during initial data loading:', error);
+        })
+        .finally(() => {
+          setInitialLoadAttempted(true);
         });
     }
-  }, [handleRefresh, loadCategories]);
+  }, [initialLoadAttempted, loadDogsStatus, loadCategories]);
 
   // Check for missing dogs only when needed, not on every render
   useEffect(() => {
-    if (initialFetchRef.current && (!dogStatuses || dogStatuses.length === 0)) {
+    if (initialLoadAttempted && (!dogStatuses || dogStatuses.length === 0)) {
       console.log('⚠️ No dogs found after initial load, forcing a refresh');
-      handleRefresh();
+      loadDogsStatus();
     }
-  }, [dogStatuses, handleRefresh]);
+  }, [initialLoadAttempted, dogStatuses, loadDogsStatus]);
+
+  // Handler for refreshing data
+  const handleRefresh = useCallback(() => {
+    console.log('🔄 Manual refresh triggered');
+    loadDogsStatus();
+  }, [loadDogsStatus]);
 
   // Handler for selecting a dog to log care
   const handleLogCare = (dogId: string) => {
@@ -102,6 +132,7 @@ export const useCareDashboard = () => {
     setActiveView,
     setDialogOpen,
     handleLogCare,
+    handleRefresh,
     handleCareLogSuccess,
     handleCategoryChange
   };

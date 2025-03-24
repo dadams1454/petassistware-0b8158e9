@@ -1,63 +1,58 @@
 
 import React from 'react';
-import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { Clock, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
-import { DogWithPottyTime } from '../hooks/usePottyReminder';
 import { DogCareStatus } from '@/types/dailyCare';
-
-export const getTimeSinceLastPottyBreak = (lastBreak: string | null): string => {
-  if (!lastBreak) return 'in a long time';
-  
-  try {
-    const lastBreakDate = parseISO(lastBreak);
-    return formatDistanceToNow(lastBreakDate, { addSuffix: true });
-  } catch (error) {
-    console.error('Error parsing date:', error);
-    return 'at an unknown time';
-  }
-};
+import { formatDistanceToNow, parseISO } from 'date-fns';
 
 interface DogPottyListProps {
-  dogs: DogWithPottyTime[];
+  dogs: Array<{
+    dog: DogCareStatus;
+    lastBreak: string | null;
+  }>;
   onObservationClick: (dog: DogCareStatus) => void;
 }
 
+export const getTimeSinceLastPottyBreak = (lastBreakTime: string | null) => {
+  if (!lastBreakTime) return 'Never';
+  return formatDistanceToNow(parseISO(lastBreakTime), { addSuffix: true });
+};
+
 const DogPottyList: React.FC<DogPottyListProps> = ({ dogs, onObservationClick }) => {
   return (
-    <div className="space-y-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
       {dogs.map(({ dog, lastBreak }) => (
-        <div 
-          key={dog.dog_id} 
-          className="flex items-center justify-between bg-amber-50/50 dark:bg-amber-950/20 p-2 rounded-md"
-        >
-          <div className="flex items-center gap-2">
-            {dog.dog_photo && (
-              <div className="h-8 w-8 rounded-full overflow-hidden">
-                <img 
-                  src={dog.dog_photo} 
-                  alt={dog.dog_name} 
-                  className="h-full w-full object-cover"
-                />
+        <div key={dog.dog_id} className="flex items-center bg-white dark:bg-slate-800 rounded-md p-2 shadow-sm">
+          <div className="flex-shrink-0 mr-2">
+            {dog.dog_photo ? (
+              <img 
+                src={dog.dog_photo} 
+                alt={dog.dog_name} 
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <span className="text-gray-500 dark:text-gray-400 text-xs">{dog.dog_name.charAt(0)}</span>
               </div>
             )}
-            <div>
-              <p className="font-medium text-sm text-amber-800 dark:text-amber-300">
-                {dog.dog_name}
-              </p>
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                Last potty break: {getTimeSinceLastPottyBreak(lastBreak)}
-              </p>
+          </div>
+          
+          <div className="flex-grow min-w-0">
+            <div className="text-sm font-medium truncate">{dog.dog_name}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Clock className="h-3 w-3 mr-1" />
+              <span className="truncate">{getTimeSinceLastPottyBreak(lastBreak)}</span>
             </div>
           </div>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            className="text-amber-600 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30"
+          
+          <Button
+            size="sm"
+            variant="ghost"
+            className="ml-2 p-1 h-auto"
             onClick={() => onObservationClick(dog)}
+            title={`Add observation for ${dog.dog_name}`}
           >
-            <FileText className="h-4 w-4 mr-1" />
-            <span>Observe</span>
+            <MessageCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           </Button>
         </div>
       ))}

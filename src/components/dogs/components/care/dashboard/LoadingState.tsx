@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import LoadingSpinner from '../LoadingSpinner';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface LoadingStateProps {
   isLoading: boolean;
@@ -11,38 +10,27 @@ interface LoadingStateProps {
 }
 
 const LoadingState: React.FC<LoadingStateProps> = ({ isLoading, error, onRetry }) => {
-  if (!isLoading && !error) return null;
-
-  return (
-    <Card className="w-full">
-      <CardContent className="py-6 flex flex-col items-center justify-center">
-        {isLoading && (
-          <div className="flex flex-col items-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-muted-foreground">Loading care dashboard...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="flex flex-col items-center space-y-4">
-            <AlertCircle className="h-8 w-8 text-destructive" />
-            <div className="text-center">
-              <p className="text-destructive font-medium">Error loading data</p>
-              <p className="text-muted-foreground text-sm mt-1">{error}</p>
-            </div>
-            <Button 
-              variant="outline" 
-              className="mt-2 gap-2"
-              onClick={onRetry}
-            >
-              <RefreshCw className="h-4 w-4" />
-              Retry
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+  if (isLoading) {
+    return (
+      <div className="mt-4">
+        <LoadingSpinner />
+        <p className="text-center mt-2 text-gray-500">Loading dogs data...</p>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-md">
+        <p className="text-center text-red-600 dark:text-red-400">{error}</p>
+        <div className="flex justify-center mt-4">
+          <Button onClick={onRetry}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
+  
+  return null;
 };
 
 export default LoadingState;

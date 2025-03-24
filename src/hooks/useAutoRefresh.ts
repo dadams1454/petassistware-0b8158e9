@@ -1,119 +1,168 @@
 
-import { useEffect, useCallback, useState } from 'react';
-import { useRefresh, RefreshableArea } from '@/contexts/refreshContext';
-import { useToast } from '@/components/ui/use-toast';
-import { debounce } from 'lodash';
-import { useDebouncedCallback } from './useDebouncedCallback';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { toast } from '@/components/ui/use-toast';
+import { startOfDay, addDays } from 'date-fns';
 
 interface AutoRefreshOptions {
-  area?: RefreshableArea;
   interval?: number; // in milliseconds
-  onRefresh: (date?: Date, force?: boolean) => Promise<any>;
+  onRefresh: () => Promise<any>;
   enableToasts?: boolean;
   refreshOnMount?: boolean;
   refreshLabel?: string;
-  midnightReset?: boolean;
+  midnightReset?: boolean; // Added this option
 }
 
 export const useAutoRefresh = ({
-  area = 'dailyCare',
   interval = 15 * 60 * 1000, // Default: 15 minutes
   onRefresh,
   enableToasts = false,
   refreshOnMount = true,
   refreshLabel = 'data',
-  midnightReset = false
+  midnightReset = false // Default to false
 }: AutoRefreshOptions) => {
-  const [error, setError] = useState<Error | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const { toast } = useToast();
-
-  // Wrap the onRefresh callback with error handling
-  const safeOnRefresh = useCallback(async (date?: Date, force?: boolean) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(new Date()); // Added current date state
+  const intervalRef = useRef<number | null>(null);
+  const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(false);
+  
+  // Get time until next refresh in seconds
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(interval / 1000);
+  
+  // Counter for remaining time until next refresh
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const elapsed = (new Date().getTime() - lastRefreshTime.getTime()) / 1000;
+      const remaining = Math.max(0, Math.floor((interval / 1000) - elapsed));
+      setTimeUntilRefresh(remaining);
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [interval, lastRefreshTime]);
+  
+  // Format time until next refresh
+  const formatTimeRemaining = useCallback(() => {
+    const minutes = Math.floor(timeUntilRefresh / 60);
+    const seconds = Math.floor(timeUntilRefresh % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }, [timeUntilRefresh]);
+  
+  // Handle the refresh process
+  const handleRefresh = useCallback(async (showToast = false) => {
+    if (isRefreshing) return;
+    
     try {
-      console.log(`🔄 Auto-refresh triggered for ${area} area`);
-      const result = await onRefresh(date, force);
-      console.log(`✅ Refresh for ${area} completed successfully`);
-      setError(null);
-      return result;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error(`❌ Refresh for ${area} failed:`, err);
-      setError(err instanceof Error ? err : new Error(String(err)));
+      setIsRefreshing(true);
       
-      if (enableToasts) {
+      if (showToast) {
         toast({
-          title: `Failed to refresh ${refreshLabel}`,
-          description: errorMessage,
-          variant: "destructive",
+          title: `Refreshing ${refreshLabel}...`,
+          description: "Please wait while we update the latest information.",
+          duration: 3000,
         });
       }
       
-      return null;
-    }
-  }, [onRefresh, area, enableToasts, refreshLabel, toast]);
-  
-  // Use the centralized refresh context
-  const { 
-    isRefreshing, 
-    handleRefresh, 
-    currentDate, 
-    formatTimeRemaining,
-    setRefreshInterval,
-    timeUntilNextRefresh
-  } = useRefresh(area);
-  
-  // Set custom refresh interval if provided
-  useEffect(() => {
-    if (interval !== 15 * 60 * 1000) {
-      try {
-        console.log(`⏱️ Setting custom refresh interval for ${area}: ${interval}ms`);
-        setRefreshInterval(interval);
-      } catch (err) {
-        console.error(`❌ Failed to set custom refresh interval for ${area}:`, err);
-      }
-    }
-  }, [interval, setRefreshInterval, area]);
-  
-  // Initial refresh on mount if requested
-  useEffect(() => {
-    if (refreshOnMount && !isInitialized) {
-      console.log(`🔄 Initial refresh on mount for ${area}`);
-      safeOnRefresh(currentDate, false).then(() => {
-        setIsInitialized(true);
-        console.log(`✅ Initial refresh completed for ${area}`);
-      });
-    }
-  }, [refreshOnMount, safeOnRefresh, currentDate, isInitialized, area]);
-  
-  // Create a debounced manual refresh handler using our custom hook
-  const debouncedRefresh = useDebouncedCallback((showToast = true) => {
-    console.log(`🖱️ Debounced manual refresh triggered for ${area}${showToast ? ' with toast' : ''}`);
-    return handleRefresh(showToast).catch(err => {
-      console.error(`❌ Manual refresh for ${area} failed:`, err);
+      await onRefresh();
+      const now = new Date();
+      setLastRefreshTime(now);
+      setCurrentDate(now); // Update current date on refresh
+      
       if (showToast && enableToasts) {
         toast({
-          title: `Failed to refresh ${refreshLabel}`,
-          description: err instanceof Error ? err.message : 'Unknown error',
-          variant: "destructive",
+          title: "Refresh complete",
+          description: `${refreshLabel} has been updated successfully.`,
+          duration: 3000,
         });
       }
-      return null;
-    });
-  }, 300);
+    } catch (error) {
+      console.error("Error during refresh:", error);
+      if (showToast) {
+        toast({
+          title: "Refresh failed",
+          description: `Unable to update ${refreshLabel}. Please try again.`,
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing, onRefresh, enableToasts, refreshLabel]);
   
-  // Create a manual refresh handler with enhanced logging
-  const manualRefresh = useCallback((showToast = true) => {
-    console.log(`🖱️ Manual refresh triggered for ${area}${showToast ? ' with toast' : ''}`);
-    return debouncedRefresh(showToast);
-  }, [debouncedRefresh, area]);
+  // Setup midnight check/reset functionality
+  const setupMidnightCheck = useCallback(() => {
+    if (midnightCheckRef.current) {
+      clearTimeout(midnightCheckRef.current);
+    }
+    
+    // Get current time and calculate time until next midnight
+    const now = new Date();
+    const tomorrow = startOfDay(addDays(now, 1));
+    
+    // Time until midnight in milliseconds
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    console.log(`⏰ Setting up midnight check: ${timeUntilMidnight / 1000 / 60} minutes until midnight refresh`);
+    
+    // Set timeout for midnight reset
+    midnightCheckRef.current = setTimeout(() => {
+      console.log('🕛 Midnight reached - refreshing all data!');
+      const newDate = new Date();
+      setCurrentDate(newDate);
+      handleRefresh(true);
+    }, timeUntilMidnight);
+    
+    return () => {
+      if (midnightCheckRef.current) {
+        clearTimeout(midnightCheckRef.current);
+      }
+    };
+  }, [handleRefresh]);
+
+  // Setup the midnight reset if enabled
+  useEffect(() => {
+    if (midnightReset) {
+      const cleanup = setupMidnightCheck();
+      return cleanup;
+    }
+  }, [midnightReset, setupMidnightCheck]);
+  
+  // Set up the interval for auto-refresh
+  useEffect(() => {
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
+    // Set new interval
+    const id = setInterval(() => {
+      handleRefresh(enableToasts);
+    }, interval) as unknown as number;
+    
+    intervalRef.current = id;
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [interval, handleRefresh, enableToasts]);
+  
+  // Initial refresh on mount
+  useEffect(() => {
+    if (refreshOnMount && !isMountedRef.current) {
+      isMountedRef.current = true;
+      handleRefresh(false);
+    }
+  }, [refreshOnMount, handleRefresh]);
   
   return {
     isRefreshing,
-    handleRefresh: manualRefresh,
+    lastRefreshTime,
+    handleRefresh,
+    timeUntilRefresh,
     formatTimeRemaining,
-    currentDate,
-    error,
-    timeUntilNextRefresh
+    currentDate // Now returning currentDate
   };
 };

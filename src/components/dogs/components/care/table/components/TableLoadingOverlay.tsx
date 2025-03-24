@@ -1,29 +1,19 @@
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TableLoadingOverlayProps {
   isLoading: boolean;
-  isPending?: boolean;
 }
 
-const TableLoadingOverlay: React.FC<TableLoadingOverlayProps> = ({ 
-  isLoading,
-  isPending = false
-}) => {
-  if (!isLoading && !isPending) return null;
+const TableLoadingOverlay: React.FC<TableLoadingOverlayProps> = ({ isLoading }) => {
+  if (!isLoading) return null;
   
   return (
-    <div 
-      className={`absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center transition-opacity duration-200 ${
-        isLoading ? 'opacity-100' : isPending ? 'opacity-75' : 'opacity-0 pointer-events-none'
-      }`}
-    >
-      <div className="bg-background/90 rounded-lg shadow-lg p-4 flex items-center gap-3">
-        <Loader2 className={`h-6 w-6 text-primary ${isLoading || isPending ? 'animate-spin' : ''}`} />
-        <span className="text-sm font-medium">
-          {isLoading ? 'Loading data...' : isPending ? 'Updating UI...' : ''}
-        </span>
+    <div className="absolute inset-0 bg-white/30 dark:bg-black/30 backdrop-blur-[1px] z-30 flex items-center justify-center transition-opacity duration-300">
+      <div className="flex flex-col items-center space-y-4 p-4 rounded-lg bg-white/80 dark:bg-slate-900/80 shadow-sm">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <p className="text-sm font-medium text-muted-foreground">Saving changes...</p>
       </div>
     </div>
   );

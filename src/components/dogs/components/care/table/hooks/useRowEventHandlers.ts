@@ -1,6 +1,5 @@
 
 import { useCallback, useRef } from 'react';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 
 interface RowEventHandlersProps {
   dogId: string;
@@ -24,11 +23,11 @@ export const useRowEventHandlers = ({
   // Track click counts for debugging
   const clickCounter = useRef<number>(0);
 
-  // Debounced cell click handler
-  const debouncedCellClick = useDebouncedCallback((id: string, name: string, timeSlot: string, category: string) => {
+  // Safe click handlers with improved event propagation protection
+  const handleCellClickSafe = useCallback((id: string, name: string, timeSlot: string, category: string) => {
     // Increment the click counter for debugging
     clickCounter.current += 1;
-    console.log(`Row cell click #${clickCounter.current} for ${name} at ${timeSlot} (${category}) - debounced`);
+    console.log(`Row cell click #${clickCounter.current} for ${name} at ${timeSlot} (${category})`);
     
     // Call the parent click handler but catch any errors
     try {
@@ -37,12 +36,7 @@ export const useRowEventHandlers = ({
       console.error('Error in cell click handler:', error);
       // Don't rethrow to prevent refresh
     }
-  }, 300);
-
-  // Safe click handlers with improved event propagation protection
-  const handleCellClickSafe = useCallback((id: string, name: string, timeSlot: string, category: string) => {
-    debouncedCellClick(id, name, timeSlot, category);
-  }, [debouncedCellClick]);
+  }, [onCellClick]);
 
   // Fix the error by making this accept the event argument
   const handleCellContextMenuSafe = useCallback((e: React.MouseEvent) => {
@@ -59,33 +53,19 @@ export const useRowEventHandlers = ({
     return false; // Explicitly return false to prevent bubbling
   }, [onCellContextMenu, dogId, dogName, activeCategory]);
   
-  // Debounced dog click handler
-  const debouncedDogClick = useDebouncedCallback((id: string) => {
-    try {
-      onDogClick(id);
-    } catch (error) {
-      console.error('Error in dog click handler:', error);
-    }
-  }, 300);
-  
   // Handle dog name click with improved event handling
   const handleDogCellClick = useCallback((e: React.MouseEvent) => {
     // Stop propagation but don't prevent default to allow navigation
     e.stopPropagation();
     
     console.log(`Dog name cell clicked for ${dogName} (${dogId})`);
-    debouncedDogClick(dogId);
-  }, [dogId, dogName, debouncedDogClick]);
-  
-  // Debounced care log click handler
-  const debouncedCareLogClick = useDebouncedCallback((id: string, name: string) => {
+    
     try {
-      // Call with both parameters
-      onCareLogClick(id, name);
+      onDogClick(dogId);
     } catch (error) {
-      console.error('Error in care log click handler:', error);
+      console.error('Error in dog click handler:', error);
     }
-  }, 300);
+  }, [dogId, dogName, onDogClick]);
   
   // Handle care log click with improved event handling
   const handleCareLogCellClick = useCallback((e: React.MouseEvent) => {
@@ -94,8 +74,14 @@ export const useRowEventHandlers = ({
     e.preventDefault();
     
     console.log(`🔥 Care log cell clicked for ${dogName} (${dogId})`);
-    debouncedCareLogClick(dogId, dogName);
-  }, [dogId, dogName, debouncedCareLogClick]);
+    
+    try {
+      // Call with both parameters
+      onCareLogClick(dogId, dogName);
+    } catch (error) {
+      console.error('Error in care log click handler:', error);
+    }
+  }, [dogId, dogName, onCareLogClick]);
   
   return {
     handleCellClickSafe,

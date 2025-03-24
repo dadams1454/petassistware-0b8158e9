@@ -1,91 +1,127 @@
 
-import React, { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import React, { useState, useCallback, memo } from 'react';
+import { TableCell } from '@/components/ui/table';
 
 interface TimeSlotCellProps {
-  timeSlot: string;
   dogId: string;
   dogName: string;
-  activeCategory: string;
-  onClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  onContextMenu?: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  hasCareLogged: boolean;
+  timeSlot: string;
+  category: string;
   hasPottyBreak: boolean;
-  hasObservation: boolean;
+  hasCareLogged: boolean;
+  onClick: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
+  flags?: string[];
   isCurrentHour?: boolean;
-  children?: React.ReactNode;
+  isIncident?: boolean;
 }
 
-const TimeSlotCell: React.FC<TimeSlotCellProps> = ({
-  timeSlot,
+// Use memo to prevent unnecessary re-renders
+const TimeSlotCell = memo(({
   dogId,
   dogName,
-  activeCategory,
+  timeSlot,
+  category,
+  hasPottyBreak,
+  hasCareLogged,
   onClick,
   onContextMenu,
-  hasCareLogged,
-  hasPottyBreak,
-  hasObservation,
+  flags = [],
   isCurrentHour = false,
-  children
-}) => {
-  // Add local click state for immediate visual feedback
+  isIncident = false
+}: TimeSlotCellProps) => {
+  const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
-  
-  // Reset click state when props change
-  useEffect(() => {
-    setIsClicked(hasCareLogged);
-  }, [hasCareLogged, dogId, timeSlot, activeCategory]);
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Set local clicked state for immediate feedback
-    setIsClicked(true);
-    // Call the actual click handler
-    onClick(dogId, dogName, timeSlot, activeCategory);
-    
-    // For debugging
-    console.log(`Cell clicked: ${dogName} at ${timeSlot} for ${activeCategory} - Setting visual state to clicked`);
-  };
+  // Get the base color for the cell
+  const getCellColor = useCallback(() => {
+    if (isIncident) return 'bg-amber-100 dark:bg-amber-950/20';
+    if (hasPottyBreak || hasCareLogged) return 'bg-green-100 dark:bg-green-900/30';
+    if (isCurrentHour) return 'bg-blue-50 dark:bg-blue-900/10';
+    return '';
+  }, [hasPottyBreak, hasCareLogged, isCurrentHour, isIncident]);
 
-  const handleContextMenu = (e: React.MouseEvent) => {
+  // Handle cell click with improved event prevention and a visual feedback
+  const handleCellClick = useCallback((e: React.MouseEvent) => {
+    // Completely stop event propagation and default behavior
     e.preventDefault();
     e.stopPropagation();
-    if (onContextMenu) {
-      onContextMenu(e, dogId, dogName, timeSlot, activeCategory);
-    }
-  };
+    
+    // Show immediate visual feedback
+    setIsClicked(true);
+    setTimeout(() => setIsClicked(false), 300);
+    
+    // Call the click handler
+    onClick();
+    
+    // Return false to also prevent any native handlers
+    return false;
+  }, [onClick]);
 
-  const baseClasses = "relative h-10 border-r border-b p-0 text-center transition-colors";
-  
-  // Enhanced visual feedback including local click state
-  const cellClasses = cn(
-    baseClasses,
-    {
-      "bg-green-100 dark:bg-green-900/20": hasPottyBreak,
-      "bg-blue-50 dark:bg-blue-900/20": hasCareLogged && !hasPottyBreak,
-      "bg-yellow-50 dark:bg-yellow-900/20": hasObservation && !hasCareLogged && !hasPottyBreak,
-      "border-l-4 border-l-primary": isCurrentHour,
-      // Add visual feedback for clicked state
-      "ring-2 ring-inset ring-primary": isClicked && !hasCareLogged,
-      "animate-pulse bg-primary/10": isClicked && !hasCareLogged
-    }
-  );
+  // Handle context menu with improved event prevention
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    // Completely stop event propagation and default behavior
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Call the context menu handler
+    onContextMenu(e);
+    
+    // Return false to also prevent any native handlers
+    return false;
+  }, [onContextMenu]);
+
+  // Render the content of the cell
+  const cellContent = hasPottyBreak || hasCareLogged 
+    ? '✓' 
+    : isHovered 
+      ? '+'
+      : '';
 
   return (
-    <td 
-      className={cellClasses}
-      onClick={handleClick}
+    <TableCell
+      key={`${dogId}-${timeSlot}`}
+      className={`
+        p-0 text-center h-10 transition-all duration-100 border-r border-slate-200 dark:border-slate-700 relative
+        cell-status-transition
+        ${getCellColor()}
+        ${isHovered ? 'bg-opacity-80 dark:bg-opacity-40' : 'bg-opacity-60 dark:bg-opacity-20'}
+        ${isCurrentHour ? 'border-l-4 border-l-blue-400 dark:border-l-blue-600' : ''}
+        ${isClicked ? 'scale-95' : ''} 
+        cursor-pointer select-none
+      `}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCellClick}
       onContextMenu={handleContextMenu}
       data-dog-id={dogId}
       data-time-slot={timeSlot}
-      data-category={activeCategory}
-      aria-label={`${dogName} ${timeSlot} ${activeCategory}`}
-      role="gridcell"
+      data-has-care={hasCareLogged ? 'true' : 'false'}
+      data-category={category}
     >
-      {children}
-    </td>
+      {isIncident ? (
+        <span className="text-amber-600 dark:text-amber-400 font-bold">!</span>
+      ) : (
+        <span className={`
+          transition-opacity duration-200
+          ${hasPottyBreak || hasCareLogged ? 'text-green-600 dark:text-green-400 font-semibold' : 'text-gray-400 opacity-40'}
+          ${isHovered ? 'opacity-100' : ''}
+        `}>
+          {cellContent}
+        </span>
+      )}
+      
+      {/* Subtle loading indicator */}
+      {isClicked && !hasPottyBreak && !hasCareLogged && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-ping"></span>
+        </span>
+      )}
+    </TableCell>
   );
-};
+});
+
+// Add display name for better debugging
+TimeSlotCell.displayName = 'TimeSlotCell';
 
 export default TimeSlotCell;

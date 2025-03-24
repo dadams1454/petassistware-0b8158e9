@@ -25,26 +25,18 @@ export const useCellActions = (
   // Handler for cell clicks with optimistic updates and enhanced error prevention
   const handleCellClick = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
     if (isLoading) {
-      console.log("⚠️ Ignoring click - loading in progress");
+      console.log("Ignoring click - loading in progress");
       return;
     }
-    
-    // Set loading state to prevent rapid clicks
-    setIsLoading(true);
-    
-    // Log the click for debugging
-    console.log(`🔍 Cell clicked: ${dogName} at ${timeSlot} in ${category}`);
     
     // Use click protection to track and potentially block excessive clicks, but allow most
     if (!trackClick(dogName, timeSlot)) {
-      console.log("⚠️ Click throttled but UI will still update");
-      setIsLoading(false);
-      return;
+      // Even if we block API operations, still perform optimistic UI updates
+      console.log("Click throttled but UI will still update");
     }
     
     if (category !== activeCategory) {
-      console.log('❌ Cell click ignored - category mismatch:', category, activeCategory);
-      setIsLoading(false);
+      console.log('Cell click ignored - category mismatch:', category, activeCategory);
       return;
     }
     
@@ -53,35 +45,49 @@ export const useCellActions = (
         // Check if this dog already has a potty break at this time
         const hasPottyBreak = pottyBreaks[dogId]?.includes(timeSlot);
         
-        console.log(`${dogName} at ${timeSlot}: current potty break status = ${hasPottyBreak ? 'YES' : 'NO'}`);
-        
+        // Perform immediate optimistic UI update, even if we're throttling API calls
         if (hasPottyBreak) {
-          // Queue the removal operation which will handle optimistic UI updates
+          // Immediately remove from local state
+          const updatedBreaks = { ...pottyBreaks };
+          if (updatedBreaks[dogId]) {
+            updatedBreaks[dogId] = updatedBreaks[dogId].filter(t => t !== timeSlot);
+            setPottyBreaks(updatedBreaks);
+          }
+          
+          // Then queue the actual API operation
           removePottyBreak(dogId, dogName, timeSlot, queueOperation);
         } else {
-          // Queue the add operation which will handle optimistic UI updates
+          // Immediately add to local state
+          const updatedBreaks = { ...pottyBreaks };
+          if (!updatedBreaks[dogId]) {
+            updatedBreaks[dogId] = [];
+          }
+          if (!updatedBreaks[dogId].includes(timeSlot)) {
+            updatedBreaks[dogId] = [...updatedBreaks[dogId], timeSlot];
+            setPottyBreaks(updatedBreaks);
+          }
+          
+          // Then queue the actual API operation
           addPottyBreak(dogId, dogName, timeSlot, queueOperation);
         }
       } else if (category === 'feeding') {
         logFeeding(dogId, dogName, timeSlot, queueOperation);
       }
     } catch (error) {
-      console.error(`❌ Error handling ${category} cell click:`, error);
+      console.error(`Error handling ${category} cell click:`, error);
       toast({
         title: `Error logging ${category}`,
         description: `Could not log ${category} for ${dogName}. Please try again.`,
         variant: 'destructive',
       });
     } finally {
-      // Clear loading state after a short delay to prevent rapid clicks
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
+      setIsLoading(false);
     }
   }, [
     isLoading, 
     activeCategory, 
     pottyBreaks, 
+    setPottyBreaks,
     trackClick, 
     queueOperation, 
     addPottyBreak, 
@@ -94,14 +100,14 @@ export const useCellActions = (
   useEffect(() => {
     const resetInterval = setInterval(() => {
       if (clickCount.current > 0) {
-        console.log(`🔄 Auto-resetting click counter from ${clickCount.current} to 0`);
+        console.log(`Auto-resetting click counter from ${clickCount.current} to 0`);
         resetClicks();
       }
     }, 5000); // Reset the click counter every 5 seconds
     
     return () => {
       clearInterval(resetInterval);
-      console.log(`🧹 Cleanup: ${clickCount.current} clicks cleared`);
+      console.log(`Cleanup: ${clickCount.current} clicks cleared`);
       resetClicks();
       totalOperations.current = 0;
     };

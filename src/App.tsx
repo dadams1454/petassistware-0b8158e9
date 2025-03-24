@@ -1,51 +1,66 @@
 
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from '@/components/ui/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
-import MainLayout from './layouts/MainLayout';
-import Dashboard from './pages/Dashboard';
-import Dogs from './pages/Dogs';
-import Litters from './pages/Litters';
-import NotFound from './pages/NotFound';
-import Communications from './pages/Communications';
-import Customers from './pages/Customers';
-import { RefreshProvider } from './contexts/refresh';
-import { RefreshTimestampProvider } from './contexts/refreshTimestamp';
-import { AuthProvider } from './contexts/AuthProvider';
-import { DailyCareProvider } from './contexts/dailyCare';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthProvider";
+import { DailyCareProvider } from "@/contexts/dailyCare";
+import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
+import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Profile from "./pages/Profile";
+import Dogs from "./pages/Dogs";
+import DogDetail from "./pages/DogDetail";
+import Calendar from "./pages/Calendar";
+import Litters from "./pages/Litters";
+import LitterDetail from "./pages/LitterDetail";
+import AddLitter from "./pages/AddLitter";
+import Customers from "./pages/Customers";
+import Communications from "./pages/Communications";
+import WelpingPage from "./pages/WelpingPage";
+import DailyCare from "./pages/DailyCare";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light" storageKey="theme">
-          <AuthProvider>
-            <RefreshProvider enableToasts={true}>
-              <RefreshTimestampProvider initialInterval={15 * 60 * 1000}> {/* 15 minutes */}
-                <DailyCareProvider>
-                  <Toaster />
-                  <Routes>
-                    <Route element={<MainLayout />}>
-                      <Route path="/" element={<Dashboard />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/dogs" element={<Dogs />} />
-                      <Route path="/litters" element={<Litters />} />
-                      <Route path="/communications" element={<Communications />} />
-                      <Route path="/customers" element={<Customers />} />
-                    </Route>
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </DailyCareProvider>
-              </RefreshTimestampProvider>
-            </RefreshProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <DailyCareProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Router>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                
+                {/* Protected routes */}
+                <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dogs" element={<Dogs />} />
+                  <Route path="/dogs/:id" element={<DogDetail />} />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/communications" element={<Communications />} />
+                  <Route path="/litters" element={<Litters />} />
+                  <Route path="/litters/new" element={<AddLitter />} />
+                  <Route path="/litters/:id" element={<LitterDetail />} />
+                  <Route path="/welping/:id" element={<WelpingPage />} />
+                  <Route path="/daily-care" element={<DailyCare />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+          </TooltipProvider>
+        </DailyCareProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
