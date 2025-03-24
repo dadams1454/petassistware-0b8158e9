@@ -61,6 +61,7 @@ export const useHealthRecords = (dogId: string) => {
           title: record.title,
           record_notes: record.description,
           performed_by: record.performed_by,
+          vet_name: record.performed_by, // Add the missing vet_name property
           next_due_date: record.next_due_date,
         })
         .select();
@@ -94,6 +95,7 @@ export const useHealthRecords = (dogId: string) => {
           title: record.title,
           record_notes: record.description,
           performed_by: record.performed_by,
+          vet_name: record.performed_by, // Add the missing vet_name property
           next_due_date: record.next_due_date,
         })
         .eq('id', id)
