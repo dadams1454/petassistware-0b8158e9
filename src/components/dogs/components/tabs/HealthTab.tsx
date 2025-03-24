@@ -77,7 +77,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     );
   }
 
-  // We need to define these here to make sure they're actually HealthRecord[] from our types, not from the global type
+  // Get typed records from our local type definition
   const vaccinationRecordsFromLocalType: HealthRecord[] = getRecordsByType('vaccination');
   const examinationRecordsFromLocalType: HealthRecord[] = getRecordsByType('examination');
   const medicationRecordsFromLocalType: HealthRecord[] = getRecordsByType('medication');
