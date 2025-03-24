@@ -49,6 +49,7 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dogs" element={<Dogs />} />
+                <Route path="/dogs/:id" element={<DogDetail />} />
                 <Route path="/dog/:id" element={<DogDetail />} />
                 <Route path="/profile/dog/:id" element={<DogProfile />} />
                 <Route path="/daily-care" element={<DailyCare />} />
