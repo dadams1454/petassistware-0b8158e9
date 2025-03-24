@@ -140,9 +140,9 @@ export const useHealthRecords = (dogId: string) => {
     setIsAddingRecord,
     selectedRecord,
     setSelectedRecord,
-    addHealthRecord: addHealthRecordMutation.mutate,
-    updateHealthRecord: updateHealthRecordMutation.mutate,
-    deleteHealthRecord: deleteHealthRecordMutation.mutate,
+    addHealthRecord: (record: Omit<HealthRecord, 'id' | 'created_at'>) => addHealthRecordMutation.mutate(record),
+    updateHealthRecord: (record: HealthRecord) => updateHealthRecordMutation.mutate(record),
+    deleteHealthRecord: (recordId: string) => deleteHealthRecordMutation.mutate(recordId),
     getRecordsByType,
   };
 };

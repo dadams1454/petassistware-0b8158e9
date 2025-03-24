@@ -98,7 +98,7 @@ const HealthRecordList: React.FC<HealthRecordListProps> = ({
       
       if (isBefore(dueDate, inTwoWeeks)) {
         return (
-          <Badge variant="warning" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+          <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
             Due soon: {getFormattedDate(nextDueDate)}
           </Badge>
         );

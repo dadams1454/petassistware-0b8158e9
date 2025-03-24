@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useHealthRecords } from '../../hooks/useHealthRecords';
 import HealthRecordDialog from '../health/HealthRecordDialog';
 import HealthRecordList from '../health/HealthRecordList';
+import { HealthRecord } from '../../types/healthRecord';
 
 interface HealthTabProps {
   dogId: string;
@@ -35,7 +36,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     setIsDialogOpen(true);
   };
 
-  const handleEditRecord = (record: any) => {
+  const handleEditRecord = (record: HealthRecord) => {
     setSelectedRecord(record);
     setIsDialogOpen(true);
   };
