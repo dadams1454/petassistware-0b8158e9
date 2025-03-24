@@ -62,10 +62,13 @@ export const useDashboardData = () => {
 
   // Extract and provide default values
   const stats = data?.stats || {
-    dogCount: 0,
-    litterCount: 0,
-    reservationCount: 0,
-    recentRevenue: 0
+    totalDogs: 0,
+    totalLitters: 0,
+    activeDogs: 0,
+    activeLitters: 0,
+    totalPuppies: 0,
+    availablePuppies: 0,
+    totalCustomers: 0
   };
   
   const events = data?.events || [];

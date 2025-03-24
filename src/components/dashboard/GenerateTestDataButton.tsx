@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Check, Database, Loader2 } from 'lucide-react';
+import { Database, Loader2 } from 'lucide-react';
 import { generateTestData } from '@/utils/testDataGenerator';
 import { useToast } from '@/components/ui/use-toast';
 import { useRefreshData } from '@/hooks/useRefreshData';

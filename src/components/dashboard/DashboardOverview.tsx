@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardData } from '@/services/dashboardService';
@@ -8,9 +9,10 @@ import GenerateTestDataButton from './GenerateTestDataButton';
 interface DashboardOverviewProps {
   data: DashboardData;
   isLoading: boolean;
+  onCareLogClick?: () => void;
 }
 
-const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data, isLoading }) => {
+const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data, isLoading, onCareLogClick }) => {
   const { user } = useAuth();
   
   return (

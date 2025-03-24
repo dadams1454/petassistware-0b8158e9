@@ -1,10 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
-import { DogProfile } from '@/types/dog';
 
 // Sample data for the test account
-const sampleDogs: Partial<DogProfile>[] = [
+const sampleDogs = [
   {
     name: 'Bear',
     breed: 'newfoundland',
@@ -17,7 +16,6 @@ const sampleDogs: Partial<DogProfile>[] = [
     notes: 'Gentle giant with a heart of gold. Loves swimming and children.',
     microchip_number: 'TEST-123456789',
     registration_number: 'AKC-TEST-123',
-    registration_organization: 'AKC',
     pedigree: true
   },
   {
@@ -32,7 +30,6 @@ const sampleDogs: Partial<DogProfile>[] = [
     notes: 'Beautiful female with excellent temperament. Champion bloodlines.',
     microchip_number: 'TEST-987654321',
     registration_number: 'AKC-TEST-456',
-    registration_organization: 'AKC',
     pedigree: true,
     is_pregnant: false,
     last_heat_date: '2023-04-10'
@@ -49,7 +46,6 @@ const sampleDogs: Partial<DogProfile>[] = [
     notes: 'Young male with excellent structure. Training for water rescue.',
     microchip_number: 'TEST-456789123',
     registration_number: 'AKC-TEST-789',
-    registration_organization: 'AKC',
     pedigree: true
   }
 ];
@@ -83,6 +79,7 @@ const sampleCustomers = [
   }
 ];
 
+// Define health records with appropriate type structure based on DB schema
 const sampleHealthRecords = [
   {
     record_type: 'examination',
@@ -114,7 +111,8 @@ const sampleHealthRecords = [
     medication_name: 'HeartGuard Plus',
     dosage: 1,
     dosage_unit: 'tablet',
-    frequency: 'monthly'
+    frequency: 'monthly',
+    vet_name: 'Dr. Thompson' // Adding required field
   }
 ];
 
@@ -141,7 +139,7 @@ export const generateTestData = async (): Promise<{
       
       const { data, error } = await supabase
         .from('dogs')
-        .insert(newDog)
+        .upsert(newDog)
         .select('id');
         
       if (error) {
@@ -165,9 +163,23 @@ export const generateTestData = async (): Promise<{
           created_at: new Date().toISOString()
         };
         
+        // Handle different record types with appropriate fields
+        let recordToInsert;
+        
+        if (newRecord.record_type === 'examination') {
+          recordToInsert = newRecord;
+        } else if (newRecord.record_type === 'vaccination') {
+          recordToInsert = newRecord;
+        } else if (newRecord.record_type === 'medication') {
+          recordToInsert = {
+            ...newRecord,
+            visit_date: newRecord.start_date // Add visit_date which is required
+          };
+        }
+        
         const { error } = await supabase
           .from('health_records')
-          .insert(newRecord);
+          .upsert(recordToInsert);
           
         if (error) {
           console.error('Error creating health record:', error);
@@ -182,7 +194,7 @@ export const generateTestData = async (): Promise<{
     for (const customer of sampleCustomers) {
       const { data, error } = await supabase
         .from('customers')
-        .insert(customer)
+        .upsert(customer)
         .select('id');
         
       if (error) {
@@ -219,7 +231,7 @@ export const generateTestData = async (): Promise<{
       
       const { data: litterResponse, error: litterError } = await supabase
         .from('litters')
-        .insert(litterPayload)
+        .upsert(litterPayload)
         .select('id');
         
       if (litterError) {
@@ -264,7 +276,7 @@ export const generateTestData = async (): Promise<{
         for (const puppy of puppyData) {
           const { error: puppyError } = await supabase
             .from('puppies')
-            .insert(puppy);
+            .upsert(puppy);
             
           if (puppyError) {
             console.error('Error creating test puppy:', puppyError);

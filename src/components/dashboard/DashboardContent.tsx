@@ -1,7 +1,8 @@
+
 import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
-import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
+import { DashboardData, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import TabsList from './tabs/TabsList';
@@ -13,7 +14,7 @@ import { useRefreshData } from '@/hooks/useRefreshData';
 
 interface DashboardContentProps {
   isLoading: boolean;
-  stats: DashboardStats;
+  stats: DashboardData;
   events: UpcomingEvent[];
   activities: RecentActivity[];
 }
@@ -111,10 +112,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         
         <TabsContent value="overview">
           <DashboardOverview 
+            data={stats}
             isLoading={isLoading}
-            stats={stats}
-            events={events}
-            activities={activities}
             onCareLogClick={handleCareLogClick}
           />
         </TabsContent>
