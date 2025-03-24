@@ -20,7 +20,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
 }) => {
   const { dogStatuses } = useDailyCare();
   const [localRefreshing, setLocalRefreshing] = useState(false);
-  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const unmountedRef = useRef<boolean>(false);
   
   // Handle local refresh state to show a smoother UI
@@ -37,38 +36,25 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     // Actual refresh
     onRefreshDogs();
     
-    // Ensure we show the loading state for at least 500ms to avoid flicker
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-    
-    refreshTimeoutRef.current = setTimeout(() => {
-      if (unmountedRef.current) return;
+    // Reset local refreshing state if the parent refresh is complete
+    if (!isRefreshing) {
       setLocalRefreshing(false);
-      refreshTimeoutRef.current = null;
-    }, 500);
+    }
   };
   
-  // Clean up timeout on unmount
+  // Clean up on unmount
   React.useEffect(() => {
     unmountedRef.current = false;
     
     return () => {
       unmountedRef.current = true;
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
-        refreshTimeoutRef.current = null;
-      }
     };
   }, []);
   
   // Update local refreshing state based on prop
   React.useEffect(() => {
     if (!isRefreshing && localRefreshing && !unmountedRef.current) {
-      // The parent says we're done refreshing, but maintain local state for min duration
-      if (!refreshTimeoutRef.current) {
-        setLocalRefreshing(false);
-      }
+      setLocalRefreshing(false);
     }
   }, [isRefreshing, localRefreshing]);
 

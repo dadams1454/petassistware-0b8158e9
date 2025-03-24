@@ -5,7 +5,7 @@ import { debounce } from 'lodash';
 export const useRefreshHandler = (onRefresh?: () => void) => {
   const isRefreshingRef = useRef(false);
   const lastRefreshRef = useRef<number>(Date.now());
-  const MIN_REFRESH_INTERVAL = 5000; // 5s between refreshes to reduce server load
+  const MIN_REFRESH_INTERVAL = 3000; // 3s between refreshes to reduce server load
   
   // Create debounced refresh function with proper cleanup
   const debouncedRefresh = useRef(
@@ -42,9 +42,12 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
       } catch (error) {
         console.error('Error during refresh:', error);
       } finally {
-        isRefreshingRef.current = false;
+        // Small delay before clearing refresh state for smoother UI
+        setTimeout(() => {
+          isRefreshingRef.current = false;
+        }, 100);
       }
-    }, 500) // Increased from 300ms to 500ms to further reduce unnecessary refreshes
+    }, 300) // Reduced from 500ms to 300ms for more responsive UI
   ).current;
   
   // Ensure debounced function gets cleaned up properly

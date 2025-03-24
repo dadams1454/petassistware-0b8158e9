@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { TableCell } from '@/components/ui/table';
 import { AlertTriangle, Heart, Activity, MessageCircle, PencilLine } from 'lucide-react';
 
@@ -19,7 +19,8 @@ interface ObservationCellProps {
   onClick: () => void;
 }
 
-const ObservationCell: React.FC<ObservationCellProps> = ({
+// Memoize the component to prevent unnecessary re-renders
+const ObservationCell: React.FC<ObservationCellProps> = memo(({
   dogId,
   dogName,
   dogHasObservation,
@@ -68,6 +69,9 @@ const ObservationCell: React.FC<ObservationCellProps> = ({
       )}
     </TableCell>
   );
-};
+});
+
+// Add display name for better React DevTools debugging
+ObservationCell.displayName = 'ObservationCell';
 
 export default ObservationCell;
