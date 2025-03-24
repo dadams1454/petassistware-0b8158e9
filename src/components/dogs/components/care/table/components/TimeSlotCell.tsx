@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useMemo } from 'react';
 import { TableCell } from '@/components/ui/table';
 import CellContent from './CellContent';
 
@@ -36,8 +36,8 @@ const TimeSlotCell = memo(({
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
 
-  // Get the base color for the cell
-  const getCellColor = useCallback(() => {
+  // Memoize cell color to prevent recalculation
+  const cellColor = useMemo(() => {
     if (isIncident) return 'bg-amber-100 dark:bg-amber-950/20';
     if (hasPottyBreak || hasCareLogged) return 'bg-green-100 dark:bg-green-900/30';
     if (isPendingFeeding) return 'bg-blue-100 dark:bg-blue-900/20';
@@ -82,18 +82,23 @@ const TimeSlotCell = memo(({
     return false;
   }, [onContextMenu]);
 
+  // Memoize cell classNames to prevent reconstruction on every render
+  const cellClassNames = useMemo(() => {
+    return `
+      p-0 text-center h-10 transition-all duration-100 border-r border-slate-200 dark:border-slate-700 relative
+      cell-status-transition
+      ${cellColor}
+      ${isHovered ? 'bg-opacity-80 dark:bg-opacity-40' : 'bg-opacity-60 dark:bg-opacity-20'}
+      ${isCurrentHour ? 'border-l-4 border-l-blue-400 dark:border-l-blue-600' : ''}
+      ${isClicked ? 'scale-95' : ''} 
+      cursor-pointer select-none
+    `;
+  }, [cellColor, isHovered, isCurrentHour, isClicked]);
+
   return (
     <TableCell
       key={`${dogId}-${timeSlot}`}
-      className={`
-        p-0 text-center h-10 transition-all duration-100 border-r border-slate-200 dark:border-slate-700 relative
-        cell-status-transition
-        ${getCellColor()}
-        ${isHovered ? 'bg-opacity-80 dark:bg-opacity-40' : 'bg-opacity-60 dark:bg-opacity-20'}
-        ${isCurrentHour ? 'border-l-4 border-l-blue-400 dark:border-l-blue-600' : ''}
-        ${isClicked ? 'scale-95' : ''} 
-        cursor-pointer select-none
-      `}
+      className={cellClassNames}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCellClick}

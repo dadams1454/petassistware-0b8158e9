@@ -1,11 +1,13 @@
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { addCareLog } from '@/services/dailyCare/careLogsService';
 import { useAuth } from '@/contexts/AuthProvider';
+import { throttle } from 'lodash';
 
 /**
  * Hook for handling feeding-specific operations with optimistic UI updates
+ * and improved performance
  */
 export const useFeedingOperations = () => {
   const { toast } = useToast();
@@ -13,10 +15,20 @@ export const useFeedingOperations = () => {
   // Track pending feeding operations for optimistic UI updates
   const [pendingFeedings, setPendingFeedings] = useState<Record<string, Set<string>>>({});
 
-  // Check if a feeding operation is pending for a specific dog and time slot
+  // Memoize the isPendingFeeding function for consistent reference
   const isPendingFeeding = useCallback((dogId: string, timeSlot: string) => {
     return pendingFeedings[dogId]?.has(timeSlot) || false;
   }, [pendingFeedings]);
+
+  // Create a throttled toast function to prevent excessive UI updates
+  const throttledToast = useMemo(() => throttle((title: string, description: string, variant?: 'default' | 'destructive') => {
+    toast({
+      title,
+      description,
+      variant,
+      duration: 3000,
+    });
+  }, 1000), [toast]);
 
   // Handle logging feeding with meal times and optimistic updates
   const logFeeding = useCallback((
@@ -25,11 +37,16 @@ export const useFeedingOperations = () => {
     timeSlot: string, 
     queueOperation: (operation: () => Promise<void>) => void
   ) => {
-    // Show immediate toast feedback
-    toast({
-      title: 'Logging feeding...',
-      description: `Recording that ${dogName} was fed at ${timeSlot.toLowerCase()}`,
-    });
+    // Skip if this feeding is already pending
+    if (isPendingFeeding(dogId, timeSlot)) {
+      return;
+    }
+    
+    // Show immediate toast feedback (throttled)
+    throttledToast(
+      'Logging feeding...',
+      `Recording that ${dogName} was fed at ${timeSlot.toLowerCase()}`
+    );
     
     // Optimistic UI update - mark this feeding as pending
     setPendingFeedings(prev => {
@@ -69,17 +86,20 @@ export const useFeedingOperations = () => {
           timestamp: timestamp,
           notes: `${dogName} fed at ${timeSlot.toLowerCase()}`
         }, user.id);
-        console.log('Feeding logged successfully:', { dogId, timeSlot });
         
-        // Show success toast
-        toast({
-          title: 'Feeding logged',
-          description: `${dogName} was fed at ${timeSlot.toLowerCase()}`,
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Feeding logged successfully:', { dogId, timeSlot });
+        }
+        
+        // Show success toast (throttled)
+        throttledToast(
+          'Feeding logged',
+          `${dogName} was fed at ${timeSlot.toLowerCase()}`
+        );
       } catch (error) {
         console.error('Error in queued feeding operation:', error);
         
-        // Show error toast
+        // Show error toast (this one should always show)
         toast({
           title: 'Error logging feeding',
           description: `Failed to log feeding for ${dogName}`,
@@ -99,7 +119,7 @@ export const useFeedingOperations = () => {
         });
       }
     });
-  }, [user, toast]);
+  }, [user, toast, throttledToast, isPendingFeeding]);
 
   return {
     logFeeding,
