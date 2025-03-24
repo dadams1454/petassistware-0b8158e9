@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { HealthRecord, HealthRecordType, WeightRecord } from '@/types/health';
+import { formatDateForDatabase } from '@/utils/dateUtils';
 
 // Get all health records for a dog
 export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> => {
@@ -15,8 +16,11 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
     throw error;
   }
   
-  // Return data as HealthRecord type
-  return data || [];
+  // Map database fields to our interface
+  return (data || []).map(record => ({
+    ...record,
+    record_type: record.record_type as HealthRecordType,
+  }));
 };
 
 // Get health records by type
@@ -36,15 +40,55 @@ export const getHealthRecordsByType = async (
     throw error;
   }
   
-  return data || [];
+  return (data || []).map(record => ({
+    ...record,
+    record_type: record.record_type as HealthRecordType,
+  }));
 };
 
 // Add a new health record
 export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>): Promise<HealthRecord> => {
-  // We don't need to transform data as our interface now matches the database
+  // Transform from our interface to database fields
+  const dbRecord = {
+    dog_id: record.dog_id,
+    visit_date: record.visit_date,
+    record_type: record.record_type,
+    title: record.title,
+    record_notes: record.description || record.record_notes,
+    performed_by: record.performed_by,
+    next_due_date: record.next_due_date,
+    // Include all the specific fields
+    vaccine_name: record.vaccine_name,
+    manufacturer: record.manufacturer,
+    lot_number: record.lot_number,
+    administration_route: record.administration_route,
+    expiration_date: record.expiration_date,
+    reminder_sent: record.reminder_sent,
+    medication_name: record.medication_name,
+    dosage: record.dosage,
+    dosage_unit: record.dosage_unit,
+    frequency: record.frequency,
+    duration: record.duration,
+    duration_unit: record.duration_unit,
+    start_date: record.start_date,
+    end_date: record.end_date,
+    prescription_number: record.prescription_number,
+    examination_type: record.examination_type,
+    findings: record.findings,
+    recommendations: record.recommendations,
+    vet_name: record.vet_name,
+    vet_clinic: record.vet_clinic,
+    procedure_name: record.procedure_name,
+    surgeon: record.surgeon,
+    anesthesia_used: record.anesthesia_used,
+    recovery_notes: record.recovery_notes,
+    follow_up_date: record.follow_up_date,
+    document_url: record.document_url,
+  };
+    
   const { data, error } = await supabase
     .from('health_records')
-    .insert(record)
+    .insert(dbRecord)
     .select();
     
   if (error) {
@@ -52,7 +96,11 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
     throw error;
   }
   
-  return data![0];
+  // Map back to our interface
+  return {
+    ...data![0],
+    record_type: data![0].record_type as HealthRecordType,
+  };
 };
 
 // Update a health record
@@ -68,7 +116,10 @@ export const updateHealthRecord = async (id: string, updates: Partial<Omit<Healt
     throw error;
   }
   
-  return data![0];
+  return {
+    ...data![0],
+    record_type: data![0].record_type as HealthRecordType,
+  };
 };
 
 // Delete a health record
@@ -105,7 +156,10 @@ export const getUpcomingVaccinations = async (dogId: string, daysAhead = 30): Pr
     throw error;
   }
   
-  return data || [];
+  return (data || []).map(record => ({
+    ...record,
+    record_type: record.record_type as HealthRecordType,
+  }));
 };
 
 // Weight record functions
@@ -121,21 +175,28 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
     throw error;
   }
   
-  return data || [];
+  // Ensure weight_unit is a valid enum value
+  return (data || []).map(record => ({
+    ...record,
+    weight_unit: (record.weight_unit as 'lbs' | 'kg' | 'g' | 'oz') || 'lbs'
+  }));
 };
 
 export const addWeightRecord = async (
   record: Omit<WeightRecord, 'id' | 'created_at'>
 ): Promise<WeightRecord> => {
+  // Ensure date is in the correct format
+  const formattedRecord = {
+    dog_id: record.dog_id,
+    date: formatDateForDatabase(record.date) || new Date().toISOString().split('T')[0],
+    weight: record.weight,
+    weight_unit: record.weight_unit,
+    notes: record.notes
+  };
+    
   const { data, error } = await supabase
     .from('weight_records')
-    .insert({
-      dog_id: record.dog_id,
-      date: record.date,
-      weight: record.weight,
-      weight_unit: record.weight_unit,
-      notes: record.notes
-    })
+    .insert(formattedRecord)
     .select();
     
   if (error) {
@@ -143,7 +204,10 @@ export const addWeightRecord = async (
     throw error;
   }
   
-  return data![0];
+  return {
+    ...data![0],
+    weight_unit: (data![0].weight_unit as 'lbs' | 'kg' | 'g' | 'oz')
+  };
 };
 
 export const deleteWeightRecord = async (id: string): Promise<void> => {
@@ -156,17 +220,4 @@ export const deleteWeightRecord = async (id: string): Promise<void> => {
     console.error('Error deleting weight record:', error);
     throw error;
   }
-};
-
-// Helper for converting date fields between UI and database
-export const formatDateForDatabase = (date: Date | string | null | undefined): string | undefined => {
-  if (!date) return undefined;
-  if (typeof date === 'string') return date;
-  return date.toISOString().split('T')[0];
-};
-
-// Helper for converting database dates to Date objects for UI
-export const parseDatabaseDate = (dateString: string | null | undefined): Date | undefined => {
-  if (!dateString) return undefined;
-  return new Date(dateString);
 };
