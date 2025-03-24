@@ -73,14 +73,7 @@ const DogsPage = () => {
     <ProtectedRoute>
       <MainLayout>
         <div className="container mx-auto py-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">My Dogs</h1>
-            <Button onClick={handleAddDog}>
-              <Plus className="mr-2 h-4 w-4" /> Add Dog
-            </Button>
-          </div>
-
-          {/* The DogsList component now handles its own data fetching and doesn't require props */}
+          {/* DogsList component now handles its own header and Add Dog button */}
           <DogsList />
 
           {/* Add Dog Dialog */}
