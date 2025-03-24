@@ -29,14 +29,22 @@ export const useCellActions = (
       return;
     }
     
+    // Set loading state to prevent rapid clicks
+    setIsLoading(true);
+    
+    // Log the click for debugging
+    console.log(`Cell clicked: ${dogName} at ${timeSlot} in ${category}`);
+    
     // Use click protection to track and potentially block excessive clicks, but allow most
     if (!trackClick(dogName, timeSlot)) {
-      // Even if we block API operations, still perform optimistic UI updates
       console.log("Click throttled but UI will still update");
+      setIsLoading(false);
+      return;
     }
     
     if (category !== activeCategory) {
       console.log('Cell click ignored - category mismatch:', category, activeCategory);
+      setIsLoading(false);
       return;
     }
     
@@ -45,6 +53,8 @@ export const useCellActions = (
         // Check if this dog already has a potty break at this time
         const hasPottyBreak = pottyBreaks[dogId]?.includes(timeSlot);
         
+        console.log(`${dogName} at ${timeSlot}: current potty break status = ${hasPottyBreak}`);
+        
         // Perform immediate optimistic UI update, even if we're throttling API calls
         if (hasPottyBreak) {
           // Immediately remove from local state
@@ -52,6 +62,7 @@ export const useCellActions = (
           if (updatedBreaks[dogId]) {
             updatedBreaks[dogId] = updatedBreaks[dogId].filter(t => t !== timeSlot);
             setPottyBreaks(updatedBreaks);
+            console.log('Optimistic UI update: Removed potty break');
           }
           
           // Then queue the actual API operation
@@ -65,6 +76,7 @@ export const useCellActions = (
           if (!updatedBreaks[dogId].includes(timeSlot)) {
             updatedBreaks[dogId] = [...updatedBreaks[dogId], timeSlot];
             setPottyBreaks(updatedBreaks);
+            console.log('Optimistic UI update: Added potty break');
           }
           
           // Then queue the actual API operation
@@ -81,7 +93,10 @@ export const useCellActions = (
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      // Clear loading state after a short delay to prevent rapid clicks
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 300);
     }
   }, [
     isLoading, 

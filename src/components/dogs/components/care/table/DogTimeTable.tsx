@@ -16,23 +16,31 @@ interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
   isRefreshing: boolean;
   currentDate: Date;
+  onRefresh?: () => void; // Make this optional to handle backward compatibility
 }
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
   dogsStatus, 
   isRefreshing: externalRefreshing,
-  currentDate 
+  currentDate,
+  onRefresh: externalRefresh
 }) => {
   const isMobile = useIsMobile();
   // Add useTransition to prevent UI blocking
   const [isPending, startTransition] = useTransition();
   
   // Use the centralized refresh system
-  const { handleRefresh } = useRefresh('dailyCare');
+  const { handleRefresh: contextRefresh } = useRefresh('dailyCare');
   
+  // Combined refresh function that calls both the external and context refreshes
   const onRefresh = () => {
+    console.log('🔄 Combined refresh triggered in DogTimeTable');
     startTransition(() => {
-      handleRefresh(true);
+      if (externalRefresh) {
+        externalRefresh();
+      } else {
+        contextRefresh(true);
+      }
     });
   };
   

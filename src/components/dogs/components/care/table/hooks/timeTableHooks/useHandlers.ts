@@ -50,14 +50,14 @@ export const useHandlers = (
     setDebugInfo(`Observation dialog opened for ${dogName}`);
   }, [activeCategory, setSelectedDogId, setObservationDialogOpen, setDebugInfo]);
 
-  // Create a stable cell click handler with enhanced error prevention
+  // Create a stable cell click handler with enhanced error prevention and better logging
   const memoizedCellClickHandler = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
     // Increment click count
     clickCountRef.current += 1;
     const clickNumber = clickCountRef.current;
     
-    // Log debug info
-    console.log(`Cell clicked: ${clickNumber} times (${dogName}, ${timeSlot}, ${category})`);
+    // Log debug info with more detail for better troubleshooting
+    console.log(`Cell clicked: #${clickNumber} - ${dogName} at ${timeSlot} (${category})`);
     setDebugInfo(`Last click: ${dogName} at ${timeSlot} (Click #${clickNumber})`);
     
     // Extra protection for the 6th click
@@ -68,6 +68,11 @@ export const useHandlers = (
     // Wrap in try-catch to prevent errors from bubbling up
     try {
       handleCellClick(dogId, dogName, timeSlot, category);
+      
+      // Trigger a refresh after a short delay to ensure the UI updates
+      setTimeout(() => {
+        onRefresh();
+      }, 2000);
     } catch (error) {
       // Increment error count
       errorCountRef.current += 1;
@@ -79,7 +84,7 @@ export const useHandlers = (
     
     // Return false to prevent default behavior
     return false;
-  }, [handleCellClick, clickCountRef, errorCountRef, setDebugInfo]);
+  }, [handleCellClick, clickCountRef, errorCountRef, setDebugInfo, onRefresh]);
 
   // Handle cell right-click for observations/notes with improved error handling
   const handleCellContextMenu = useCallback((e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => {

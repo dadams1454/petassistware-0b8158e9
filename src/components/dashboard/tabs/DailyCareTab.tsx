@@ -24,7 +24,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   const [isPending, startTransition] = useTransition();
   
   // Use the centralized refresh system
-  const { isRefreshing: globalRefreshing } = useRefresh('dailyCare');
+  const { isRefreshing: globalRefreshing, handleRefresh } = useRefresh('dailyCare');
   
   // Use React Query with our custom hook
   const { 
@@ -46,6 +46,31 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     enableToasts: true,
     refreshLabel: 'dog care data',
   });
+  
+  // Create a proper refresh function that ensures both local and global state updates
+  const handleTableRefresh = useCallback(() => {
+    console.log('🔄 Table refresh triggered from DailyCareTab');
+    setLocalRefreshing(true);
+    
+    // Call the centralized refresh handler
+    handleRefresh(true);
+    
+    // Also trigger a manual refetch via React Query
+    startTransition(() => {
+      manualRefresh(true);
+      
+      // Clear refreshing state after a short delay
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+      
+      refreshTimeoutRef.current = setTimeout(() => {
+        if (!unmountedRef.current) {
+          setLocalRefreshing(false);
+        }
+      }, 1000);
+    });
+  }, [handleRefresh, manualRefresh]);
   
   // Use useMemo to compute combined loading state
   const isRefreshing = useMemo(() => 
@@ -116,10 +141,11 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
           dogsStatus={dogStatuses || []} 
           isRefreshing={isRefreshing}
           currentDate={currentDate}
+          onRefresh={handleTableRefresh}
         />
       </div>
     </div>
-  ), [dogStatuses, isRefreshing, currentDate, isPending]);
+  ), [dogStatuses, isRefreshing, currentDate, isPending, handleTableRefresh]);
   
   return (
     <ErrorBoundary onReset={handleErrorReset}>

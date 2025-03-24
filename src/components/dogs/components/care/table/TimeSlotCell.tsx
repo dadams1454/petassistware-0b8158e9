@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import { TableCell } from '@/components/ui/table';
 
 interface TimeSlotCellProps {
@@ -33,6 +32,13 @@ const TimeSlotCell = memo(({
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
 
+  // Reset clicked state when hasPottyBreak or hasCareLogged changes
+  useEffect(() => {
+    if (hasPottyBreak || hasCareLogged) {
+      setIsClicked(false);
+    }
+  }, [hasPottyBreak, hasCareLogged]);
+
   // Get the base color for the cell
   const getCellColor = useCallback(() => {
     if (isIncident) return 'bg-amber-100 dark:bg-amber-950/20';
@@ -49,14 +55,24 @@ const TimeSlotCell = memo(({
     
     // Show immediate visual feedback
     setIsClicked(true);
-    setTimeout(() => setIsClicked(false), 300);
+    
+    // Keep visual feedback for a moment even if state doesn't change immediately
+    setTimeout(() => {
+      // Only reset if no success feedback has been received
+      if (!hasPottyBreak && !hasCareLogged) {
+        setIsClicked(false);
+      }
+    }, 1000);
+    
+    // Log the click for debugging
+    console.log(`Cell clicked: ${dogName} at ${timeSlot} in ${category}`);
     
     // Call the click handler
     onClick();
     
     // Return false to also prevent any native handlers
     return false;
-  }, [onClick]);
+  }, [onClick, dogName, timeSlot, category, hasPottyBreak, hasCareLogged]);
 
   // Handle context menu with improved event prevention
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
@@ -82,12 +98,12 @@ const TimeSlotCell = memo(({
     <TableCell
       key={`${dogId}-${timeSlot}`}
       className={`
-        p-0 text-center h-10 transition-all duration-100 border-r border-slate-200 dark:border-slate-700 relative
+        p-0 text-center h-10 transition-colors duration-300 border-r border-slate-200 dark:border-slate-700 relative
         cell-status-transition
         ${getCellColor()}
         ${isHovered ? 'bg-opacity-80 dark:bg-opacity-40' : 'bg-opacity-60 dark:bg-opacity-20'}
         ${isCurrentHour ? 'border-l-4 border-l-blue-400 dark:border-l-blue-600' : ''}
-        ${isClicked ? 'scale-95' : ''} 
+        ${isClicked ? 'scale-95 bg-blue-100 dark:bg-blue-900/20' : ''} 
         cursor-pointer select-none
       `}
       onMouseEnter={() => setIsHovered(true)}
@@ -111,28 +127,25 @@ const TimeSlotCell = memo(({
         </span>
       )}
       
-      {/* Subtle loading indicator */}
+      {/* Enhanced loading indicator */}
       {isClicked && !hasPottyBreak && !hasCareLogged && (
         <span className="absolute inset-0 flex items-center justify-center">
-          <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-ping"></span>
+          <span className="w-2 h-2 bg-primary/70 rounded-full animate-ping"></span>
         </span>
       )}
     </TableCell>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison function for memo
-  // Only re-render if these specific props change
+  // Custom comparison function for memo - allow more re-renders for visual feedback
   return (
     prevProps.dogId === nextProps.dogId &&
     prevProps.timeSlot === nextProps.timeSlot &&
     prevProps.hasPottyBreak === nextProps.hasPottyBreak &&
     prevProps.hasCareLogged === nextProps.hasCareLogged &&
     prevProps.isCurrentHour === nextProps.isCurrentHour &&
-    prevProps.isIncident === nextProps.isIncident &&
-    // Deep comparison isn't necessary for these function props
-    // since they're already wrapped in useCallback
-    prevProps.onClick === nextProps.onClick &&
-    prevProps.onContextMenu === nextProps.onContextMenu
+    prevProps.isIncident === nextProps.isIncident
+    // We removed the onClick and onContextMenu comparison to ensure the component rerenders
+    // when these handlers change
   );
 });
 
