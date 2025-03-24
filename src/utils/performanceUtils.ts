@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 /**
  * Custom hook to measure and log component render performance
@@ -35,27 +35,57 @@ export const useRenderPerformance = (componentName: string) => {
     }
   });
   
-  return { renderCount: renderCount.current };
+  // Add reset function for manual tracking
+  const resetTracking = useCallback(() => {
+    renderCount.current = 0;
+    lastRenderTime.current = performance.now();
+  }, []);
+  
+  return { 
+    renderCount: renderCount.current,
+    resetTracking
+  };
 };
 
 /**
- * Hook to measure and report function execution time
- * Only active in development mode
+ * Enhanced hook to measure and report function execution time
+ * with better performance metrics tracking
  */
 export const usePerformanceTracking = () => {
+  const metricsRef = useRef<Record<string, { 
+    count: number, 
+    totalTime: number, 
+    maxTime: number 
+  }>>({});
+  
   // Only return active tracking in development mode
   if (process.env.NODE_ENV !== 'development') {
     return {
-      trackExecution: (_name: string, fn: Function, ...args: any[]) => fn(...args)
+      trackExecution: (_name: string, fn: Function, ...args: any[]) => fn(...args),
+      getMetrics: () => ({})
     };
   }
   
   // Actual tracking logic for development
-  const trackExecution = (name: string, fn: Function, ...args: any[]) => {
+  const trackExecution = useCallback(<T extends any[]>(
+    name: string, 
+    fn: (...args: T) => any, 
+    ...args: T
+  ) => {
     const start = performance.now();
     const result = fn(...args);
     const end = performance.now();
     const executionTime = end - start;
+    
+    // Update metrics
+    if (!metricsRef.current[name]) {
+      metricsRef.current[name] = { count: 0, totalTime: 0, maxTime: 0 };
+    }
+    
+    const metric = metricsRef.current[name];
+    metric.count++;
+    metric.totalTime += executionTime;
+    metric.maxTime = Math.max(metric.maxTime, executionTime);
     
     console.log(
       `%c[Performance] ${name} executed in ${executionTime.toFixed(2)}ms`,
@@ -71,21 +101,38 @@ export const usePerformanceTracking = () => {
     }
     
     return result;
-  };
+  }, []);
   
-  return { trackExecution };
+  // Get aggregated metrics
+  const getMetrics = useCallback(() => {
+    return Object.entries(metricsRef.current).reduce((acc, [name, data]) => {
+      acc[name] = {
+        ...data,
+        avgTime: data.count > 0 ? data.totalTime / data.count : 0
+      };
+      return acc;
+    }, {} as Record<string, any>);
+  }, []);
+  
+  return { 
+    trackExecution,
+    getMetrics
+  };
 };
 
 /**
- * Debounce function that returns a debounced version of the provided function
+ * Debounce function with proper typings and cleanup
  */
 export const debounce = <T extends (...args: any[]) => any>(
   fn: T,
   delay: number
-): ((...args: Parameters<T>) => void) => {
+): { 
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+} => {
   let timeoutId: NodeJS.Timeout | null = null;
   
-  return (...args: Parameters<T>) => {
+  const debouncedFn = (...args: Parameters<T>) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
@@ -95,19 +142,32 @@ export const debounce = <T extends (...args: any[]) => any>(
       timeoutId = null;
     }, delay);
   };
+  
+  debouncedFn.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+  
+  return debouncedFn;
 };
 
 /**
- * Throttle function that returns a throttled version of the provided function
+ * Throttle function with proper typings and execution guarantees
  */
 export const throttle = <T extends (...args: any[]) => any>(
   fn: T,
   limit: number
-): ((...args: Parameters<T>) => void) => {
+): { 
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+} => {
   let waiting = false;
   let lastArgs: Parameters<T> | null = null;
+  let timeoutId: NodeJS.Timeout | null = null;
   
-  return (...args: Parameters<T>) => {
+  const throttledFn = (...args: Parameters<T>) => {
     if (waiting) {
       lastArgs = args;
       return;
@@ -116,12 +176,59 @@ export const throttle = <T extends (...args: any[]) => any>(
     fn(...args);
     waiting = true;
     
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       waiting = false;
       if (lastArgs) {
         fn(...lastArgs);
         lastArgs = null;
       }
     }, limit);
+  };
+  
+  throttledFn.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+    waiting = false;
+    lastArgs = null;
+  };
+  
+  return throttledFn;
+};
+
+// Memory optimization utilities
+export const memoizeWithExpiry = <T extends (...args: any[]) => any>(
+  fn: T, 
+  keyFn?: (...args: Parameters<T>) => string,
+  expiryMs: number = 60000
+) => {
+  const cache = new Map<string, { 
+    value: ReturnType<T>; 
+    timestamp: number;
+  }>();
+  
+  return (...args: Parameters<T>): ReturnType<T> => {
+    const key = keyFn ? keyFn(...args) : JSON.stringify(args);
+    const now = Date.now();
+    const cachedItem = cache.get(key);
+    
+    if (cachedItem && now - cachedItem.timestamp < expiryMs) {
+      return cachedItem.value;
+    }
+    
+    const result = fn(...args);
+    cache.set(key, { value: result, timestamp: now });
+    
+    // Clean up expired items occasionally
+    if (cache.size > 50) {
+      for (const [cacheKey, item] of cache.entries()) {
+        if (now - item.timestamp > expiryMs) {
+          cache.delete(cacheKey);
+        }
+      }
+    }
+    
+    return result;
   };
 };

@@ -1,321 +1,201 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { startOfDay, addDays } from 'date-fns';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface RefreshContextType {
-  // Core refresh state and functions
-  isRefreshing: boolean;
-  lastRefreshTime: Date;
-  currentDate: Date;
-  timeUntilRefresh: number;
-  
-  // Main actions
   refreshAll: (showToast?: boolean) => Promise<void>;
-  refreshSpecific: (key: string, callback: () => Promise<any>, showToast?: boolean) => Promise<any>;
-  
-  // Helper functions
-  formatTimeRemaining: () => string;
-  setCurrentDate: (date: Date) => void;
-  cancelScheduledRefreshes: () => void;
-  
-  // Status tracking for specific refresh operations
+  refreshSpecific: <T>(key: string, fetchFn: () => Promise<T>, showToast?: boolean) => Promise<T | null>;
   refreshStatus: Record<string, boolean>;
-}
-
-interface RefreshProviderProps {
-  children: React.ReactNode;
-  refreshInterval?: number; // in milliseconds
-  enableMidnightReset?: boolean;
+  lastRefreshTime: number;
+  formatTimeRemaining: () => string;
+  currentDate: Date;
 }
 
 const RefreshContext = createContext<RefreshContextType | undefined>(undefined);
 
-export const RefreshProvider: React.FC<RefreshProviderProps> = ({
-  children,
-  refreshInterval = 15 * 60 * 1000, // Default: 15 minutes
-  enableMidnightReset = true
-}) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [timeUntilRefresh, setTimeUntilRefresh] = useState(refreshInterval / 1000);
+export const RefreshProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [refreshStatus, setRefreshStatus] = useState<Record<string, boolean>>({});
-  
+  const [lastRefreshTime, setLastRefreshTime] = useState(Date.now());
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   
-  const intervalRef = useRef<number | null>(null);
-  const midnightCheckRef = useRef<NodeJS.Timeout | null>(null);
-  const activeRefreshesRef = useRef<Set<string>>(new Set());
-  const refreshCallbacksRef = useRef<Map<string, () => Promise<any>>>(new Map());
-  const isInitialMount = useRef(true);
-  const debounceTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
-
-  // Setup timer for countdown display - but with less frequent updates to avoid UI flicker
+  // Auto-refresh every 3 minutes
+  const REFRESH_INTERVAL = 180000; // 3 minutes
+  
+  // Set up automatic refresh timer
   useEffect(() => {
-    const timer = setInterval(() => {
-      const elapsed = (new Date().getTime() - lastRefreshTime.getTime()) / 1000;
-      const remaining = Math.max(0, Math.floor((refreshInterval / 1000) - elapsed));
-      setTimeUntilRefresh(remaining);
-    }, 15000); // Update only every 15 seconds to reduce UI updates
+    // Start the refresh timer
+    refreshTimerRef.current = setInterval(() => {
+      console.log('Auto-refresh triggered');
+      refreshAll(false);
+    }, REFRESH_INTERVAL);
     
-    return () => clearInterval(timer);
-  }, [refreshInterval, lastRefreshTime]);
-  
-  // Format time until next refresh
-  const formatTimeRemaining = useCallback(() => {
-    const minutes = Math.floor(timeUntilRefresh / 60);
-    const seconds = Math.floor(timeUntilRefresh % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }, [timeUntilRefresh]);
-  
-  // Cancel all scheduled refreshes
-  const cancelScheduledRefreshes = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    
-    if (midnightCheckRef.current) {
-      clearTimeout(midnightCheckRef.current);
-      midnightCheckRef.current = null;
-    }
-    
-    // Clear any debounce timers
-    Object.values(debounceTimersRef.current).forEach(timer => {
-      clearTimeout(timer);
-    });
-    debounceTimersRef.current = {};
+    // Clean up timer on unmount
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
   }, []);
   
-  // Handle midnight reset if enabled
-  const setupMidnightCheck = useCallback(() => {
-    if (midnightCheckRef.current) {
-      clearTimeout(midnightCheckRef.current);
-    }
+  // Update current date at midnight
+  useEffect(() => {
+    const checkDateChange = () => {
+      const now = new Date();
+      if (now.getDate() !== currentDate.getDate() || 
+          now.getMonth() !== currentDate.getMonth() || 
+          now.getFullYear() !== currentDate.getFullYear()) {
+        console.log('Date changed, updating context date');
+        setCurrentDate(now);
+      }
+    };
     
-    if (!enableMidnightReset) return;
+    // Check date change every hour
+    const dateCheckInterval = setInterval(checkDateChange, 3600000);
     
-    // Get current time and calculate time until next midnight
-    const now = new Date();
-    const tomorrow = startOfDay(addDays(now, 1));
-    
-    // Time until midnight in milliseconds
-    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
-    
-    console.log(`⏰ Setting up midnight check: ${timeUntilMidnight / 1000 / 60} minutes until midnight refresh`);
-    
-    // Set timeout for midnight reset
-    midnightCheckRef.current = setTimeout(() => {
-      console.log('🕛 Midnight reached - refreshing all data!');
-      const newDate = new Date();
-      setCurrentDate(newDate);
-      refreshAll(true);
-    }, timeUntilMidnight);
-  }, [enableMidnightReset]);
-
-  // Register a callback for specific refresh operations
-  const registerRefreshCallback = useCallback((key: string, callback: () => Promise<any>) => {
-    refreshCallbacksRef.current.set(key, callback);
-  }, []);
+    return () => {
+      clearInterval(dateCheckInterval);
+    };
+  }, [currentDate]);
   
-  // Main refresh function for everything
-  const refreshAll = useCallback(async (showToast = false) => {
-    if (isRefreshing) {
-      console.log('Global refresh already in progress, skipping');
-      return;
-    }
-    
+  // Refresh all data - central function
+  const refreshAll = useCallback(async (showToast = true) => {
     try {
-      setIsRefreshing(true);
+      if (showToast) {
+        toast({
+          title: "Refreshing data...",
+          description: "Updating with the latest information",
+          duration: 2000,
+        });
+      }
+      
+      // Set all refresh statuses to true
+      setRefreshStatus(prev => {
+        const newStatus: Record<string, boolean> = {};
+        Object.keys(prev).forEach(key => {
+          newStatus[key] = true;
+        });
+        return newStatus;
+      });
+      
+      // Update refresh timestamp
+      setLastRefreshTime(Date.now());
+      
+      // We don't actually fetch anything here - each component will handle 
+      // its own data fetching in response to the refreshStatus change
+      
+      // Small delay to ensure the UI responds
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Reset all refresh statuses
+      setRefreshStatus(prev => {
+        const newStatus: Record<string, boolean> = {};
+        Object.keys(prev).forEach(key => {
+          newStatus[key] = false;
+        });
+        return newStatus;
+      });
+      
+    } catch (error) {
+      console.error('Error during refresh all:', error);
+      
+      if (showToast) {
+        toast({
+          title: "Refresh failed",
+          description: "There was a problem updating the data",
+          variant: "destructive",
+        });
+      }
+      
+      // Reset statuses on error
+      setRefreshStatus({});
+    }
+  }, [toast]);
+  
+  // Refresh specific data with provided fetch function
+  const refreshSpecific = useCallback(async <T,>(
+    key: string, 
+    fetchFn: () => Promise<T>,
+    showToast = false
+  ): Promise<T | null> => {
+    try {
+      // Set this specific item's refresh status
+      setRefreshStatus(prev => ({
+        ...prev,
+        [key]: true
+      }));
       
       if (showToast) {
         toast({
           title: "Refreshing data...",
-          description: "Updating all application data",
-          duration: 3000,
+          description: `Updating ${key} information`,
+          duration: 2000,
         });
       }
-
-      // Create a new status map with all operations set to true (refreshing)
-      const newStatusMap: Record<string, boolean> = {};
-      const promises: Promise<any>[] = [];
       
-      // Execute all registered callbacks
-      for (const [key, callback] of refreshCallbacksRef.current.entries()) {
-        // Skip if this specific refresh is already in progress
-        if (activeRefreshesRef.current.has(key)) {
-          console.log(`Refresh for ${key} already in progress, skipping in refreshAll`);
-          continue;
-        }
-        
-        newStatusMap[key] = true;
-        activeRefreshesRef.current.add(key);
-        
-        const promise = callback().finally(() => {
-          activeRefreshesRef.current.delete(key);
-          setRefreshStatus(prev => ({ ...prev, [key]: false }));
-        });
-        
-        promises.push(promise);
-      }
+      // Perform the actual data fetching
+      const result = await fetchFn();
       
-      // Update status map to show all refreshes in progress
-      setRefreshStatus(newStatusMap);
+      // Reset this item's refresh status
+      setRefreshStatus(prev => ({
+        ...prev,
+        [key]: false
+      }));
       
-      // Wait for all refreshes to complete
-      await Promise.all(promises);
+      // Update the last refresh time
+      setLastRefreshTime(Date.now());
       
-      const now = new Date();
-      setLastRefreshTime(now);
-      
-      if (showToast) {
-        toast({
-          title: "Refresh complete",
-          description: "All data has been updated successfully",
-          duration: 3000,
-        });
-      }
+      return result;
     } catch (error) {
-      console.error("Error during refresh:", error);
+      console.error(`Error refreshing ${key}:`, error);
+      
+      // Reset this item's refresh status on error
+      setRefreshStatus(prev => ({
+        ...prev,
+        [key]: false
+      }));
+      
       if (showToast) {
         toast({
           title: "Refresh failed",
-          description: "Unable to update some data. Please try again.",
+          description: `There was a problem updating ${key}`,
           variant: "destructive",
-          duration: 5000,
         });
       }
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [isRefreshing, toast]);
-  
-  // Function to refresh specific items with debouncing to prevent rapid consecutive calls
-  const refreshSpecific = useCallback(async (
-    key: string, 
-    callback: () => Promise<any>,
-    showToast = false
-  ) => {
-    // Clear any existing debounce timer for this key
-    if (debounceTimersRef.current[key]) {
-      clearTimeout(debounceTimersRef.current[key]);
-    }
-    
-    // Register this callback if it's not already registered
-    registerRefreshCallback(key, callback);
-    
-    // Skip if this specific refresh is already in progress
-    if (activeRefreshesRef.current.has(key)) {
-      console.log(`Refresh for ${key} already in progress, skipping`);
+      
       return null;
     }
-    
-    // Use debounce to prevent rapid consecutive calls
-    return new Promise<any>((resolve) => {
-      debounceTimersRef.current[key] = setTimeout(async () => {
-        try {
-          // Set status for this specific refresh
-          setRefreshStatus(prev => ({ ...prev, [key]: true }));
-          activeRefreshesRef.current.add(key);
-          
-          if (showToast) {
-            toast({
-              title: `Refreshing ${key}...`,
-              description: "Please wait while we update the data",
-              duration: 2000,
-            });
-          }
-          
-          // Run the callback
-          const result = await callback();
-          
-          if (showToast) {
-            toast({
-              title: "Refresh complete",
-              description: `${key} data has been updated`,
-              duration: 2000,
-            });
-          }
-          
-          resolve(result);
-          return result;
-        } catch (error) {
-          console.error(`Error refreshing ${key}:`, error);
-          if (showToast) {
-            toast({
-              title: "Refresh failed",
-              description: `Unable to update ${key} data`,
-              variant: "destructive",
-              duration: 3000,
-            });
-          }
-          resolve(null);
-          return null;
-        } finally {
-          activeRefreshesRef.current.delete(key);
-          setRefreshStatus(prev => ({ ...prev, [key]: false }));
-        }
-      }, 300); // 300ms debounce
-    });
-  }, [registerRefreshCallback, toast]);
+  }, [toast]);
   
-  // Set up interval for regular refreshes - but only after initial render is complete
-  useEffect(() => {
-    // Skip the first automatic refresh on mount to prevent too many initial refreshes
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
+  // Format time remaining until next refresh
+  const formatTimeRemaining = useCallback(() => {
+    const nextRefresh = lastRefreshTime + REFRESH_INTERVAL;
+    const now = Date.now();
+    const timeLeft = Math.max(0, nextRefresh - now);
     
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+    const minutes = Math.floor(timeLeft / 60000);
+    const seconds = Math.floor((timeLeft % 60000) / 1000);
     
-    const id = setInterval(() => {
-      refreshAll(false);
-    }, refreshInterval) as unknown as number;
-    
-    intervalRef.current = id;
-    
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [refreshInterval, refreshAll]);
+    return `${minutes}m ${seconds}s`;
+  }, [lastRefreshTime]);
   
-  // Setup midnight check on mount and when enabled status changes
-  useEffect(() => {
-    setupMidnightCheck();
-    return () => {
-      if (midnightCheckRef.current) {
-        clearTimeout(midnightCheckRef.current);
-      }
-    };
-  }, [setupMidnightCheck]);
-  
-  const contextValue: RefreshContextType = {
-    isRefreshing,
-    lastRefreshTime,
-    currentDate,
-    timeUntilRefresh,
+  const value = {
     refreshAll,
     refreshSpecific,
+    refreshStatus,
+    lastRefreshTime,
     formatTimeRemaining,
-    setCurrentDate,
-    cancelScheduledRefreshes,
-    refreshStatus
+    currentDate
   };
   
   return (
-    <RefreshContext.Provider value={contextValue}>
+    <RefreshContext.Provider value={value}>
       {children}
     </RefreshContext.Provider>
   );
 };
 
-// Custom hook to use the refresh context
 export const useRefresh = () => {
   const context = useContext(RefreshContext);
   if (context === undefined) {

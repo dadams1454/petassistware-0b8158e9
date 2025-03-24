@@ -1,19 +1,20 @@
+
 import { useRef, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import debounce from 'lodash/debounce';
-import throttle from 'lodash/throttle';
+import { debounce, throttle } from 'lodash';
 
 /**
- * Hook for managing click tracking and protection against rapid clicks
- * with improved debouncing and throttling
+ * Enhanced hook for managing click tracking and protection against rapid clicks
+ * with improved performance characteristics and memory usage
  */
 export const useClickProtection = (activeCategory?: string) => {
   const { toast } = useToast();
   const clickCountRef = useRef<number>(0);
   const lastClickTimeRef = useRef<number>(0);
   const toastShownRef = useRef<boolean>(false);
+  const clickMapRef = useRef<Map<string, number>>(new Map());
 
-  // Debounced toast to prevent excessive notifications
+  // Debounced toast to prevent excessive notifications with proper cleanup
   const debouncedToast = useRef(
     debounce((title: string, description: string) => {
       if (!toastShownRef.current) {
@@ -36,6 +37,7 @@ export const useClickProtection = (activeCategory?: string) => {
   useEffect(() => {
     if (activeCategory) {
       clickCountRef.current = 0;
+      clickMapRef.current.clear();
       console.log('Click counter reset due to category change:', activeCategory);
     }
     
@@ -43,14 +45,21 @@ export const useClickProtection = (activeCategory?: string) => {
       // Clean up debounced functions
       debouncedToast.cancel();
     };
-  }, [activeCategory, debouncedToast]);
+  }, [activeCategory]);
   
-  // Throttled click tracking to prevent excessive operations
+  // More efficient throttled click tracking
   const throttledTrackClick = useRef(
     throttle((dogName: string, timeSlot: string) => {
       const now = Date.now();
       const timeSinceLastClick = now - lastClickTimeRef.current;
       lastClickTimeRef.current = now;
+      
+      // Create a composite key for the dog + timeslot
+      const compositeKey = `${dogName}:${timeSlot}`;
+      
+      // Track clicks for this specific dog+timeslot to detect repetitive patterns
+      const specificClickCount = (clickMapRef.current.get(compositeKey) || 0) + 1;
+      clickMapRef.current.set(compositeKey, specificClickCount);
       
       // If the click is very rapid (less than 100ms since the last click), 
       // we'll increment the counter. Otherwise, we reset it.
@@ -68,8 +77,8 @@ export const useClickProtection = (activeCategory?: string) => {
         console.log(`Cell clicked: ${clickNumber} times (${dogName}, ${timeSlot}), ${timeSinceLastClick}ms since last click`);
       }
       
-      // Only block if there are truly excessive clicks (increased threshold for better UX)
-      if (clickNumber >= 15) {
+      // Only block if there are truly excessive clicks or repetitive clicks on the same cell
+      if (clickNumber >= 15 || specificClickCount >= 5) {
         console.log('⚠️ EXCESSIVE CLICKING DETECTED: Applying temporary throttle');
         
         // Show a toast to let the user know, but make it less intrusive and debounced
@@ -81,6 +90,9 @@ export const useClickProtection = (activeCategory?: string) => {
         // Set a timeout to auto-reset the click counter after 1.5 seconds
         setTimeout(() => {
           clickCountRef.current = 0;
+          // Only clear this specific dog/timeslot counter
+          clickMapRef.current.delete(compositeKey);
+          
           if (process.env.NODE_ENV === 'development') {
             console.log('Click counter auto-reset after timeout');
           }
@@ -101,6 +113,7 @@ export const useClickProtection = (activeCategory?: string) => {
   // Enhanced reset function with proper cleanup
   const resetClicks = useCallback(() => {
     clickCountRef.current = 0;
+    clickMapRef.current.clear();
     toastShownRef.current = false;
     if (process.env.NODE_ENV === 'development') {
       console.log('Click counter manually reset');
@@ -110,6 +123,7 @@ export const useClickProtection = (activeCategory?: string) => {
   return {
     trackClick,
     clickCount: clickCountRef,
-    resetClicks
+    resetClicks,
+    clickMapSize: clickMapRef.current.size
   };
 };

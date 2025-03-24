@@ -5,7 +5,7 @@ import { debounce } from 'lodash';
 export const useRefreshHandler = (onRefresh?: () => void) => {
   const isRefreshingRef = useRef(false);
   const lastRefreshRef = useRef<number>(Date.now());
-  const MIN_REFRESH_INTERVAL = 5000; // Increased from 3s to 5s between refreshes to reduce server load
+  const MIN_REFRESH_INTERVAL = 5000; // 5s between refreshes to reduce server load
   
   // Create debounced refresh function with proper cleanup
   const debouncedRefresh = useRef(
@@ -61,9 +61,16 @@ export const useRefreshHandler = (onRefresh?: () => void) => {
     }
     debouncedRefresh();
   }, [debouncedRefresh]);
+  
+  // Reset handler for testing or force refresh
+  const resetRefreshTimer = useCallback(() => {
+    lastRefreshRef.current = 0; // Reset the timer to allow immediate refresh
+  }, []);
 
   return {
     handleRefresh,
-    isRefreshing: isRefreshingRef.current
+    isRefreshing: isRefreshingRef.current,
+    resetRefreshTimer,
+    lastRefreshTime: lastRefreshRef.current
   };
 };

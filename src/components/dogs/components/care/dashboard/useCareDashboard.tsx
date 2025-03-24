@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
+import { useRefresh } from '@/contexts/RefreshContext';
+import { useRefreshData } from '@/hooks/useRefreshData';
 
 export const useCareDashboard = () => {
   // State variables
@@ -9,40 +11,32 @@ export const useCareDashboard = () => {
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const initialFetchRef = useRef(false);
   
-  // Get daily care context
+  // Get daily care context and refresh context
+  const { fetchCareTaskPresets } = useDailyCare();
+  const { currentDate } = useRefresh();
+  
+  // Use centralized refresh for dog statuses
   const { 
-    fetchAllDogsWithCareStatus, 
-    fetchCareTaskPresets,
-    dogStatuses 
-  } = useDailyCare();
-
-  // Function to fetch all dogs care status
-  const loadDogsStatus = useCallback(async () => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      console.log('🔄 Loading dogs status...');
-      const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
-      console.log('✅ Dogs loaded successfully:', dogs.length);
-      if (dogs.length > 0) {
-        console.log('🐕 All dog names:', dogs.map(d => d.dog_name).join(', '));
-      } else {
-        console.warn('⚠️ No dogs were returned from the API');
+    data: dogStatuses,
+    isLoading: loading,
+    refresh: refreshDogStatuses
+  } = useRefreshData({
+    key: 'careDashboardDogs',
+    fetchData: useCallback(async () => {
+      try {
+        // Use the dailyCare context's fetch function
+        const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
+        return dogs;
+      } catch (error) {
+        console.error('❌ Error loading dogs status:', error);
+        setLoadError('Failed to load dogs. Please try refreshing the page.');
+        return [];
       }
-      return dogs;
-    } catch (error) {
-      console.error('❌ Error loading dogs status:', error);
-      setLoadError('Failed to load dogs. Please try refreshing the page.');
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchAllDogsWithCareStatus]);
+    }, []),
+    loadOnMount: true
+  });
 
   // Function to fetch categories
   const loadCategories = useCallback(async () => {
@@ -64,38 +58,16 @@ export const useCareDashboard = () => {
     }
   }, [fetchCareTaskPresets, selectedCategory]);
 
-  // Initial data loading - only once
+  // Load categories on mount
   useEffect(() => {
-    if (!initialLoadAttempted && !initialFetchRef.current) {
-      console.log('🚀 Initial data loading for CareDashboard');
-      initialFetchRef.current = true;
-      
-      Promise.all([loadDogsStatus(), loadCategories()])
-        .then(() => {
-          console.log('✅ Initial data loaded successfully');
-        })
-        .catch(error => {
-          console.error('❌ Error during initial data loading:', error);
-        })
-        .finally(() => {
-          setInitialLoadAttempted(true);
-        });
-    }
-  }, [initialLoadAttempted, loadDogsStatus, loadCategories]);
-
-  // Check for missing dogs only when needed, not on every render
-  useEffect(() => {
-    if (initialLoadAttempted && (!dogStatuses || dogStatuses.length === 0)) {
-      console.log('⚠️ No dogs found after initial load, forcing a refresh');
-      loadDogsStatus();
-    }
-  }, [initialLoadAttempted, dogStatuses, loadDogsStatus]);
+    loadCategories();
+  }, [loadCategories]);
 
   // Handler for refreshing data
   const handleRefresh = useCallback(() => {
     console.log('🔄 Manual refresh triggered');
-    loadDogsStatus();
-  }, [loadDogsStatus]);
+    refreshDogStatuses(true);
+  }, [refreshDogStatuses]);
 
   // Handler for selecting a dog to log care
   const handleLogCare = (dogId: string) => {

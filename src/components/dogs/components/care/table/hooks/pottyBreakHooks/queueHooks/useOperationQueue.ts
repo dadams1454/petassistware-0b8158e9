@@ -3,7 +3,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import { debounce } from 'lodash';
 
 /**
- * Hook for managing a queue of asynchronous operations with controlled execution
+ * Enhanced hook for managing a queue of asynchronous operations with controlled execution
  * and improved batching for better performance
  */
 export const useOperationQueue = (onQueueEmpty?: () => void) => {
