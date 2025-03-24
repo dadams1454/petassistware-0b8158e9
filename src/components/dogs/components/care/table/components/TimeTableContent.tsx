@@ -20,6 +20,7 @@ interface TimeTableContentProps {
   onObservationClick: (dogId: string, dogName: string) => void;
   currentHour?: number;
   isMobile?: boolean;
+  isPendingFeeding?: (dogId: string, timeSlot: string) => boolean;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({
@@ -36,7 +37,8 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onDogClick,
   onObservationClick,
   currentHour,
-  isMobile = false
+  isMobile = false,
+  isPendingFeeding = () => false
 }) => {
   return (
     <Table>
@@ -81,6 +83,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
             onObservationClick={onObservationClick}
             currentHour={currentHour}
             isMobile={isMobile}
+            isPendingFeeding={isPendingFeeding}
           />
         ))}
       </TableBody>

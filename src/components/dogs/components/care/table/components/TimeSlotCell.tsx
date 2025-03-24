@@ -15,6 +15,7 @@ interface TimeSlotCellProps {
   flags?: string[];
   isCurrentHour?: boolean;
   isIncident?: boolean;
+  isPendingFeeding?: boolean;
 }
 
 // Use memo to prevent unnecessary re-renders
@@ -29,7 +30,8 @@ const TimeSlotCell = memo(({
   onContextMenu,
   flags = [],
   isCurrentHour = false,
-  isIncident = false
+  isIncident = false,
+  isPendingFeeding = false
 }: TimeSlotCellProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -38,15 +40,21 @@ const TimeSlotCell = memo(({
   const getCellColor = useCallback(() => {
     if (isIncident) return 'bg-amber-100 dark:bg-amber-950/20';
     if (hasPottyBreak || hasCareLogged) return 'bg-green-100 dark:bg-green-900/30';
+    if (isPendingFeeding) return 'bg-blue-100 dark:bg-blue-900/20';
     if (isCurrentHour) return 'bg-blue-50 dark:bg-blue-900/10';
     return '';
-  }, [hasPottyBreak, hasCareLogged, isCurrentHour, isIncident]);
+  }, [hasPottyBreak, hasCareLogged, isCurrentHour, isIncident, isPendingFeeding]);
 
   // Handle cell click with improved event prevention and a visual feedback
   const handleCellClick = useCallback((e: React.MouseEvent) => {
     // Completely stop event propagation and default behavior
     e.preventDefault();
     e.stopPropagation();
+    
+    // Skip if already logged or pending
+    if (hasCareLogged || isPendingFeeding) {
+      return false;
+    }
     
     // Show immediate visual feedback
     setIsClicked(true);
@@ -59,7 +67,7 @@ const TimeSlotCell = memo(({
     
     // Return false to also prevent any native handlers
     return false;
-  }, [onClick]);
+  }, [onClick, hasCareLogged, isPendingFeeding]);
 
   // Handle context menu with improved event prevention
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
@@ -94,6 +102,7 @@ const TimeSlotCell = memo(({
       data-time-slot={timeSlot}
       data-has-care={hasCareLogged ? 'true' : 'false'}
       data-category={category}
+      data-pending={isPendingFeeding ? 'true' : 'false'}
     >
       <CellContent 
         dogName={dogName}
@@ -103,7 +112,8 @@ const TimeSlotCell = memo(({
         hasCareLogged={hasCareLogged}
         isCurrentHour={isCurrentHour}
         isIncident={isIncident}
-        isClicked={isClicked && !hasCareLogged && !hasPottyBreak}
+        isClicked={isClicked && !hasCareLogged && !isPendingFeeding}
+        isPendingFeeding={isPendingFeeding}
       />
     </TableCell>
   );

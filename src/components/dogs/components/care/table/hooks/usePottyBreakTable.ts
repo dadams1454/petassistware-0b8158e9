@@ -1,14 +1,13 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useDogSorting } from './pottyBreakHooks/useDogSorting';
-import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { DogCareStatus } from '@/types/dailyCare';
 import { usePottyBreakData } from './pottyBreakHooks/usePottyBreakData';
 import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
 import { useCellActions } from './pottyBreakHooks/useCellActions';
+import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
 import { useObservations } from './pottyBreakHooks/useObservations';
-import { fetchGroupMembers } from '@/services/dailyCare/dogGroupsService';
-import { DogCareStatus } from '@/types/dailyCare';
-import { generateTimeSlots } from '../dogGroupColors';
+import { useDogSorting } from './pottyBreakHooks/useDogSorting';
+import { useFeedingOperations } from './pottyBreakHooks/queueHooks/useFeedingOperations';
 
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
@@ -16,128 +15,92 @@ const usePottyBreakTable = (
   activeCategory: string = 'pottybreaks',
   currentDate: Date = new Date()
 ) => {
-  // Cache previous data to prevent UI flicker
-  const prevDogsRef = useRef<DogCareStatus[]>([]);
-  const [stableDogsStatus, setStableDogsStatus] = useState<DogCareStatus[]>(dogsStatus);
+  // Set up time slots for the table
+  const [timeSlots] = useState(() => {
+    if (activeCategory === 'feeding') {
+      return ['Morning', 'Noon', 'Evening'];
+    }
+    
+    const slots: string[] = [];
+    for (let hour = 6; hour < 21; hour++) {
+      const formattedHour = hour > 12 ? hour - 12 : hour;
+      const amPm = hour >= 12 ? 'PM' : 'AM';
+      slots.push(`${formattedHour}:00 ${amPm}`);
+    }
+    return slots;
+  });
   
-  // Cache for group members
-  const [groupMembersCache, setGroupMembersCache] = useState<{ [groupId: string]: string[] }>({});
+  // Get current hour for highlighting
+  const [currentHour, setCurrentHour] = useState<number>(() => {
+    const now = new Date();
+    return now.getHours();
+  });
   
-  // Track click counts for debugging
-  const clickCountRef = useRef(0);
-  
-  // Generate time slots for the active category
-  const timeSlots = generateTimeSlots(new Date(), activeCategory);
-  
-  // Update stable dogs status only when meaningful changes occur
+  // Update current hour periodically
   useEffect(() => {
-    // Skip empty updates
-    if (dogsStatus.length === 0 && prevDogsRef.current.length > 0) {
-      return;
-    }
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      setCurrentHour(now.getHours());
+    }, 60000); // check every minute
     
-    // Compare arrays for meaningful differences
-    const hasChanged = dogsStatus.length !== prevDogsRef.current.length;
-    
-    if (hasChanged) {
-      setStableDogsStatus(dogsStatus);
-      prevDogsRef.current = dogsStatus;
-    }
-  }, [dogsStatus]);
+    return () => clearInterval(intervalId);
+  }, []);
   
-  // Use the refactored hooks
-  const { sortedDogs } = useDogSorting(stableDogsStatus);
-  const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh);
-  const { pottyBreaks, setPottyBreaks, isLoading: pottyBreaksLoading, fetchPottyBreaks, hasPottyBreak } = usePottyBreakData(currentDate);
-  const { careLogs, fetchCareLogs, isLoading: careLogsLoading, hasCareLogged } = useCareLogsData(sortedDogs, activeCategory);
-  const { observations, addObservation, hasObservation, getObservationDetails, isLoading: observationsLoading } = useObservations(sortedDogs);
+  // Use the potty breaks data hook
+  const { 
+    pottyBreaks, 
+    setPottyBreaks, 
+    hasPottyBreak, 
+    isLoading: pottyLoading 
+  } = usePottyBreakData();
   
-  // Create optimized cell actions handler with debounced refresh
-  const { handleCellClick, isLoading: cellActionsLoading } = useCellActions(
+  // Use the care logs data hook for other care types
+  const { hasCareLogged, isLoading: careLoading } = useCareLogsData();
+  
+  // Use the observations hook
+  const { 
+    observations,
+    hasObservation,
+    getObservationDetails,
+    isLoading: obsLoading 
+  } = useObservations(dogsStatus);
+  
+  // Use the cell actions hook
+  const { isLoading: actionLoading, handleCellClick } = useCellActions(
     currentDate, 
     pottyBreaks, 
     setPottyBreaks, 
-    handleRefresh,
+    onRefresh,
     activeCategory
   );
   
-  // Combined loading state
-  const isLoading = pottyBreaksLoading || careLogsLoading || cellActionsLoading || observationsLoading || isRefreshing;
+  // Use the refresh handler hook
+  const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh);
   
-  // Wrapper for hasCareLogged to incorporate hasPottyBreak
-  const handleHasCareLogged = useCallback((dogId: string, timeSlot: string, category: string) => {
-    if (category === 'pottybreaks') {
-      return hasPottyBreak(dogId, timeSlot);
-    }
-    return hasCareLogged(dogId, timeSlot, category);
-  }, [hasCareLogged, hasPottyBreak]);
+  // Use the dog sorting hook
+  const { sortedDogs } = useDogSorting(dogsStatus);
 
-  // Enhanced hasObservation function that handles both dog ID and time slot with category
-  const handleHasObservation = useCallback((dogId: string, timeSlot: string) => {
-    // Pass the current active category to filter observations appropriately
-    return hasObservation(dogId, timeSlot, activeCategory);
-  }, [hasObservation, activeCategory]);
-
-  // Enhanced getObservationDetails that passes the active category
-  const handleGetObservationDetails = useCallback((dogId: string) => {
-    // Pass the active category to filter observations
-    return getObservationDetails(dogId, activeCategory);
-  }, [getObservationDetails, activeCategory]);
-
-  // Handle dog click WITHOUT navigation - prevent refresh issues
-  const handleDogClick = useCallback((dogId: string) => {
-    // Increment click counter
-    clickCountRef.current += 1;
-    console.log(`Dog click #${clickCountRef.current} for ${dogId} - PREVENTED NAVIGATION`);
-    
-    // Don't navigate for now to prevent the 6-click issue
-    // We'll just log the click
-  }, []);
+  // Use the feeding operations hook directly for isPendingFeeding
+  const { isPendingFeeding } = useFeedingOperations();
   
-  // Filter dogs by group
-  const filterDogsByGroup = useCallback(async (dogs: DogCareStatus[], groupId: string) => {
-    // Check if we already have the group members in cache
-    if (!groupMembersCache[groupId]) {
-      try {
-        // Fetch group members from the API with error handling
-        const members = await fetchGroupMembers(groupId);
-        const memberIds = members.map(m => m.dog_id);
-        
-        // Update cache
-        setGroupMembersCache(prev => ({
-          ...prev,
-          [groupId]: memberIds
-        }));
-        
-        // Filter dogs by group members
-        return dogs.filter(dog => memberIds.includes(dog.dog_id));
-      } catch (error) {
-        console.error('Error fetching group members:', error);
-        return dogs;
-      }
-    } else {
-      // Use cached group members
-      const memberIds = groupMembersCache[groupId];
-      return dogs.filter(dog => memberIds.includes(dog.dog_id));
-    }
-  }, [groupMembersCache]);
-
+  // Overall loading state
+  const isLoading = useMemo(() => {
+    return pottyLoading || careLoading || obsLoading || actionLoading || isRefreshing;
+  }, [pottyLoading, careLoading, obsLoading, actionLoading, isRefreshing]);
+  
   return {
-    currentDate,
-    isLoading,
+    timeSlots,
+    currentHour,
     pottyBreaks,
     sortedDogs,
     hasPottyBreak,
-    hasCareLogged: handleHasCareLogged,
-    hasObservation: handleHasObservation,
-    getObservationDetails: handleGetObservationDetails,
-    addObservation,
-    observations,
+    hasCareLogged,
+    hasObservation,
+    getObservationDetails,
     handleCellClick,
     handleRefresh,
-    handleDogClick,
-    filterDogsByGroup,
-    timeSlots // Explicitly include timeSlots in the return object
+    isLoading,
+    isPendingFeeding
   };
 };
 

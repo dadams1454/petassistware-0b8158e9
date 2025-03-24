@@ -1,17 +1,24 @@
 
-import { useCallback } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useCallback, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { addCareLog } from '@/services/dailyCare/careLogsService';
 import { useAuth } from '@/contexts/AuthProvider';
 
 /**
- * Hook for handling feeding-specific operations
+ * Hook for handling feeding-specific operations with optimistic UI updates
  */
 export const useFeedingOperations = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  // Track pending feeding operations for optimistic UI updates
+  const [pendingFeedings, setPendingFeedings] = useState<Record<string, Set<string>>>({});
 
-  // Handle logging feeding with meal times
+  // Check if a feeding operation is pending for a specific dog and time slot
+  const isPendingFeeding = useCallback((dogId: string, timeSlot: string) => {
+    return pendingFeedings[dogId]?.has(timeSlot) || false;
+  }, [pendingFeedings]);
+
+  // Handle logging feeding with meal times and optimistic updates
   const logFeeding = useCallback((
     dogId: string, 
     dogName: string, 
@@ -22,6 +29,16 @@ export const useFeedingOperations = () => {
     toast({
       title: 'Logging feeding...',
       description: `Recording that ${dogName} was fed at ${timeSlot.toLowerCase()}`,
+    });
+    
+    // Optimistic UI update - mark this feeding as pending
+    setPendingFeedings(prev => {
+      const updatedPending = { ...prev };
+      if (!updatedPending[dogId]) {
+        updatedPending[dogId] = new Set();
+      }
+      updatedPending[dogId].add(timeSlot);
+      return updatedPending;
     });
     
     // Handle feeding log action with named times (Morning, Noon, Evening)
@@ -68,11 +85,24 @@ export const useFeedingOperations = () => {
           description: `Failed to log feeding for ${dogName}`,
           variant: 'destructive',
         });
+      } finally {
+        // Remove from pending operations regardless of success/failure
+        setPendingFeedings(prev => {
+          const updatedPending = { ...prev };
+          if (updatedPending[dogId]) {
+            updatedPending[dogId].delete(timeSlot);
+            if (updatedPending[dogId].size === 0) {
+              delete updatedPending[dogId];
+            }
+          }
+          return updatedPending;
+        });
       }
     });
   }, [user, toast]);
 
   return {
-    logFeeding
+    logFeeding,
+    isPendingFeeding
   };
 };

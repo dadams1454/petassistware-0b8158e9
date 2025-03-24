@@ -1,12 +1,10 @@
 
-import React, { memo } from 'react';
+import React, { useCallback } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
-import TimeSlotCell from './TimeSlotCell';
-import DogNameCell from './components/DogNameCell';
+import TimeSlotCell from './components/TimeSlotCell';
+import DogNameCell from './components/dog-name/DogNameCell';
 import ObservationCell from './components/ObservationCell';
-import { useRowEventHandlers } from './hooks/useRowEventHandlers';
-import { useObservationHelpers } from './hooks/useObservationHelpers';
 
 interface DogTimeRowProps {
   dog: DogCareStatus;
@@ -24,10 +22,10 @@ interface DogTimeRowProps {
   onObservationClick: (dogId: string, dogName: string) => void;
   currentHour?: number;
   isMobile?: boolean;
+  isPendingFeeding?: (dogId: string, timeSlot: string) => boolean;
 }
 
-// Use memo to prevent unnecessary row re-renders
-const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
+const DogTimeRow: React.FC<DogTimeRowProps> = ({
   dog,
   timeSlots,
   rowColor,
@@ -42,116 +40,78 @@ const DogTimeRow: React.FC<DogTimeRowProps> = memo(({
   onDogClick,
   onObservationClick,
   currentHour,
-  isMobile = false
+  isMobile = false,
+  isPendingFeeding = () => false
 }) => {
-  // Create stable copies of important data to prevent reference issues
-  const dogId = dog.dog_id;
-  const dogName = dog.dog_name;
-  const dogFlags = dog.flags || [];
-  
-  // Use custom hooks to separate logic
-  const { handleCellClickSafe, handleCellContextMenuSafe, handleDogCellClick, handleCareLogCellClick } = 
-    useRowEventHandlers({
-      dogId,
-      dogName,
-      onCellClick,
-      onCellContextMenu,
-      onCareLogClick,
-      onDogClick,
-      activeCategory
-    });
-  
-  const { getObservationTimeSlot } = useObservationHelpers();
+  // Handle cell click for this specific dog
+  const handleCellClick = useCallback((timeSlot: string) => {
+    onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory);
+  }, [dog.dog_id, dog.dog_name, onCellClick, activeCategory]);
 
-  // Helper function to determine if a time slot is the current hour
-  const isCurrentHourSlot = (timeSlot: string) => {
-    if (currentHour === undefined || activeCategory === 'feeding') return false;
-    
-    // For feeding, we don't need current hour highlighting
-    if (activeCategory === 'feeding') return false;
-    
-    // For potty breaks, check if the time slot matches current hour
-    const hour = parseInt(timeSlot.split(':')[0]);
-    const isPM = timeSlot.includes('PM');
-    const is12Hour = hour === 12;
-    
-    // Convert slot to 24-hour format
-    let slot24Hour = hour;
-    if (isPM && !is12Hour) slot24Hour += 12;
-    if (!isPM && is12Hour) slot24Hour = 0;
-    
-    return slot24Hour === currentHour;
+  // Handle context menu for this specific dog
+  const handleCellContextMenu = useCallback((e: React.MouseEvent, timeSlot: string) => {
+    onCellContextMenu(e, dog.dog_id, dog.dog_name, timeSlot, activeCategory);
+  }, [dog.dog_id, dog.dog_name, onCellContextMenu, activeCategory]);
+
+  // Get hours from time slot
+  const getHourFromTimeSlot = (timeSlot: string): number => {
+    if (timeSlot.includes('AM')) {
+      const hour = parseInt(timeSlot.split(':')[0]);
+      return hour === 12 ? 0 : hour;  // 12 AM is hour 0
+    } else {
+      const hour = parseInt(timeSlot.split(':')[0]);
+      return hour === 12 ? 12 : hour + 12;  // 12 PM is hour 12, 1 PM is hour 13, etc.
+    }
   };
 
-  // Check if the dog has any observations in the current category
-  const dogHasObservation = hasObservation(dogId, '');
-  
-  // Get observation details for the current category if available
-  const observationDetails = dogHasObservation ? getObservationDetails(dogId) : null;
-  
-  const observationTimeSlot = getObservationTimeSlot(observationDetails);
-  
   return (
-    <TableRow 
-      key={`${dogId}-row`} 
-      className={`${rowColor} dog-table-row`} 
-      data-dog-id={dogId}
+    <TableRow
+      className={`${rowColor} hover:bg-opacity-80 dark:hover:bg-opacity-40 transition-colors duration-200`}
+      key={dog.dog_id}
     >
-      {/* Dog name cell with photo, gender color based on dog sex */}
+      {/* Dog Name Cell */}
       <DogNameCell 
         dog={dog} 
-        onCareLogClick={handleCareLogCellClick}
-        onDogClick={handleDogCellClick}
+        onCareLogClick={onCareLogClick} 
+        onDogClick={onDogClick} 
         activeCategory={activeCategory}
-        hasObservation={dogHasObservation}
-        observationText={observationDetails?.text || ''}
-        observationType={observationDetails?.type || ''}
       />
       
-      {/* Observation column - shows only observations for the current category */}
+      {/* Observations Cell */}
       <ObservationCell 
-        dogHasObservation={dogHasObservation}
-        observationDetails={observationDetails}
+        dogId={dog.dog_id}
+        dogName={dog.dog_name}
+        hasObservation={hasObservation(dog.dog_id, '')}
+        observationDetails={getObservationDetails(dog.dog_id)}
+        onClick={() => onObservationClick(dog.dog_id, dog.dog_name)}
         activeCategory={activeCategory}
-        dogId={dogId}
-        dogName={dogName}
-        onObservationClick={onObservationClick}
       />
       
-      {/* Time slot cells */}
+      {/* Time Slots */}
       {timeSlots.map((timeSlot) => {
-        const cellKey = `${dogId}-${timeSlot}`;
-        const hasPottyBreakForSlot = hasPottyBreak(dogId, timeSlot);
-        const hasCareLoggedForSlot = hasCareLogged(dogId, timeSlot, activeCategory);
-        const isCurrentTimeSlot = isCurrentHourSlot(timeSlot);
-        
-        // Check if this time slot matches the observation time for the current category
-        const isIncidentTimeSlot = dogHasObservation && 
-                                  observationDetails && 
-                                  observationDetails.timeSlot === timeSlot;
+        // Check if this time slot corresponds to the current hour
+        const hour = getHourFromTimeSlot(timeSlot);
+        const isTimeSlotCurrentHour = currentHour !== undefined && hour === currentHour;
         
         return (
-          <TimeSlotCell 
-            key={cellKey}
-            dogId={dogId}
-            dogName={dogName}
+          <TimeSlotCell
+            key={`${dog.dog_id}-${timeSlot}`}
+            dogId={dog.dog_id}
+            dogName={dog.dog_name}
             timeSlot={timeSlot}
             category={activeCategory}
-            hasPottyBreak={hasPottyBreakForSlot}
-            hasCareLogged={hasCareLoggedForSlot}
-            onClick={() => handleCellClickSafe(dogId, dogName, timeSlot, activeCategory)}
-            onContextMenu={handleCellContextMenuSafe}
-            flags={dogFlags.map(flag => flag.type)} // Convert DogFlag[] to string[]
-            isCurrentHour={isCurrentTimeSlot}
-            isIncident={isIncidentTimeSlot}
+            hasPottyBreak={hasPottyBreak(dog.dog_id, timeSlot)}
+            hasCareLogged={hasCareLogged(dog.dog_id, timeSlot, activeCategory)}
+            onClick={() => handleCellClick(timeSlot)}
+            onContextMenu={(e) => handleCellContextMenu(e, timeSlot)}
+            isCurrentHour={isTimeSlotCurrentHour}
+            isIncident={activeCategory === 'feeding' && hasObservation(dog.dog_id, timeSlot)}
+            isPendingFeeding={activeCategory === 'feeding' ? isPendingFeeding(dog.dog_id, timeSlot) : false}
           />
         );
       })}
     </TableRow>
   );
-});
-
-// Add display name for better debugging
-DogTimeRow.displayName = 'DogTimeRow';
+};
 
 export default DogTimeRow;

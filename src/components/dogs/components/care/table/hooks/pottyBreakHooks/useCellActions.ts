@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useOperationQueue } from './queueHooks/useOperationQueue';
 import { useClickProtection } from './queueHooks/useClickProtection';
 import { usePottyBreakOperations } from './queueHooks/usePottyBreakOperations';
@@ -20,7 +20,7 @@ export const useCellActions = (
   const { queueOperation, totalOperations } = useOperationQueue(onRefresh);
   const { trackClick, clickCount, resetClicks } = useClickProtection(activeCategory);
   const { addPottyBreak, removePottyBreak } = usePottyBreakOperations(pottyBreaks, setPottyBreaks);
-  const { logFeeding } = useFeedingOperations();
+  const { logFeeding, isPendingFeeding } = useFeedingOperations();
   
   // Handler for cell clicks with optimistic updates and enhanced error prevention
   const handleCellClick = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
@@ -115,6 +115,7 @@ export const useCellActions = (
   
   return {
     isLoading,
-    handleCellClick
+    handleCellClick,
+    isPendingFeeding
   };
 };

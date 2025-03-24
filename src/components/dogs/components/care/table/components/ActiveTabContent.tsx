@@ -2,9 +2,10 @@
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import TimeTableContent from './TimeTableContent';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import TimeTableHeader from './TimeTableHeader';
 import TimeTableFooter from './TimeTableFooter';
+import TableContainer from './TableContainer';
+import { Card } from '@/components/ui/card';
 
 interface ActiveTabContentProps {
   activeCategory: string;
@@ -13,7 +14,7 @@ interface ActiveTabContentProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
+  getObservationDetails: (dogId: string) => { text: string; type: string } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
@@ -23,6 +24,7 @@ interface ActiveTabContentProps {
   onCategoryChange?: (category: string) => void;
   currentHour?: number;
   isMobile?: boolean;
+  isPendingFeeding?: (dogId: string, timeSlot: string) => boolean;
 }
 
 const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
@@ -39,22 +41,23 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   onDogClick,
   onObservationClick,
   onRefresh,
-  onCategoryChange = () => {}, // Provide a default no-op function
+  onCategoryChange,
   currentHour,
-  isMobile = false
+  isMobile = false,
+  isPendingFeeding = () => false
 }) => {
   return (
-    <div className="rounded-md border">
+    <Card className="border p-0 overflow-hidden">
       <TimeTableHeader 
         activeCategory={activeCategory} 
         onCategoryChange={onCategoryChange}
       />
       
-      <ScrollArea className="h-[60vh]">
-        <TimeTableContent
-          activeCategory={activeCategory}
+      <TableContainer>
+        <TimeTableContent 
           sortedDogs={sortedDogs}
           timeSlots={timeSlots}
+          activeCategory={activeCategory}
           hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
           hasObservation={hasObservation}
@@ -66,11 +69,15 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
           onObservationClick={onObservationClick}
           currentHour={currentHour}
           isMobile={isMobile}
+          isPendingFeeding={isPendingFeeding}
         />
-      </ScrollArea>
+      </TableContainer>
       
-      <TimeTableFooter onRefresh={onRefresh} />
-    </div>
+      <TimeTableFooter 
+        onRefresh={onRefresh} 
+        activeCategory={activeCategory} 
+      />
+    </Card>
   );
 };
 
