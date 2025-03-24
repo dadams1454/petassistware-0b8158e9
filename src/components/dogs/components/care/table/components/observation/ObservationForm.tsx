@@ -3,7 +3,6 @@ import React from 'react';
 import { ObservationType } from './ObservationDialog';
 import ObservationTypeSelector from './ObservationTypeSelector';
 import DateTimeSelector from './form/DateTimeSelector';
-import TimeSlotSelector from './form/TimeSlotSelector';
 import ObservationNote from './form/ObservationNote';
 import FormButtons from './form/FormButtons';
 
@@ -55,16 +54,7 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
           />
         )}
         
-        {/* Time slot selector when available */}
-        {timeSlots.length > 0 && setSelectedTimeSlot && (
-          <TimeSlotSelector
-            timeSlots={timeSlots}
-            selectedTimeSlot={selectedTimeSlot}
-            setSelectedTimeSlot={setSelectedTimeSlot}
-          />
-        )}
-
-        {/* Simplified Date and Time selector */}
+        {/* Date selector - simple and minimal */}
         <DateTimeSelector 
           observationDate={observationDate}
           setObservationDate={setObservationDate}

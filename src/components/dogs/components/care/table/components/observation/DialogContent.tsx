@@ -2,18 +2,19 @@
 import React from 'react';
 import ObservationForm from './ObservationForm';
 import ObservationList from './ObservationList';
+import { ObservationType } from './ObservationDialog';
 
 interface DialogContentProps {
   existingObservations: Array<{
     observation: string;
-    observation_type: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
+    observation_type: ObservationType;
     created_at: string;
     category?: string;
   }>;
   observation: string;
   setObservation: (value: string) => void;
-  observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other';
-  setObservationType: (type: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other') => void;
+  observationType: ObservationType;
+  setObservationType: (type: ObservationType) => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;

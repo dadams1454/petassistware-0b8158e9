@@ -46,10 +46,10 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   const [observationDate, setObservationDate] = useState<Date>(new Date());
   const [dialogSelectedTimeSlot, setDialogSelectedTimeSlot] = useState<string>(selectedTimeSlot);
 
-  // Memoize observation date to prevent unnecessary renders
-  const currentDate = useMemo(() => new Date(), []);
+  // Always use the current date and time
+  const currentDateTime = useMemo(() => new Date(), [open]);
 
-  // Update observation type and date when the dialog opens
+  // Update observation type and reset form when the dialog opens
   useEffect(() => {
     if (open) {
       // Reset the observation type based on the active category
@@ -63,13 +63,13 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         setDialogSelectedTimeSlot(timeSlots[0]);
       }
       
-      // Always reset to current date/time when dialog opens
-      setObservationDate(currentDate);
+      // Always use current date/time when dialog opens
+      setObservationDate(currentDateTime);
       
       // Reset observation text
       setObservation('');
     }
-  }, [open, activeCategory, defaultObservationType, selectedTimeSlot, timeSlots, currentDate]);
+  }, [open, activeCategory, defaultObservationType, selectedTimeSlot, timeSlots, currentDateTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
