@@ -8,7 +8,6 @@ import { HealthRecord } from '../types/healthRecord';
 export const useHealthRecords = (dogId: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isAddingRecord, setIsAddingRecord] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<HealthRecord | null>(null);
 
   // Fetch health records for a specific dog
@@ -59,7 +58,6 @@ export const useHealthRecords = (dogId: string) => {
         title: 'Record added',
         description: 'Health record has been added successfully',
       });
-      setIsAddingRecord(false);
     },
     onError: (error: any) => {
       toast({
@@ -136,8 +134,6 @@ export const useHealthRecords = (dogId: string) => {
     isLoading,
     error,
     refetch,
-    isAddingRecord,
-    setIsAddingRecord,
     selectedRecord,
     setSelectedRecord,
     getRecordsByType,
