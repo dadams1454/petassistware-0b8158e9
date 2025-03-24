@@ -17,7 +17,6 @@ interface DialogContentProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
-  timestamp: string;
   timeSlot?: string;
   timeSlots?: string[];
   selectedTimeSlot?: string;
@@ -37,7 +36,6 @@ const DialogContent: React.FC<DialogContentProps> = ({
   onSubmit,
   isSubmitting,
   onCancel,
-  timestamp,
   timeSlot,
   timeSlots,
   selectedTimeSlot,
@@ -64,7 +62,6 @@ const DialogContent: React.FC<DialogContentProps> = ({
         onSubmit={onSubmit}
         isSubmitting={isSubmitting}
         onCancel={onCancel}
-        timestamp={timestamp}
         timeSlot={timeSlot}
         timeSlots={timeSlots}
         selectedTimeSlot={selectedTimeSlot}

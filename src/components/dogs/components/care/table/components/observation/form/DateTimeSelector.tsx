@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -55,6 +55,7 @@ const DateTimeSelector: React.FC<DateTimeSelectorProps> = ({
             selected={observationDate}
             onSelect={handleDateSelect}
             initialFocus
+            defaultMonth={observationDate}
             className="pointer-events-auto"
           />
         </PopoverContent>
@@ -63,4 +64,5 @@ const DateTimeSelector: React.FC<DateTimeSelectorProps> = ({
   );
 };
 
-export default DateTimeSelector;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(DateTimeSelector);

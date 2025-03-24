@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import { ObservationsMap } from './observationTypes';
@@ -10,6 +10,7 @@ export const useObservationActions = (
   setObservations: React.Dispatch<React.SetStateAction<ObservationsMap>>
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionLock = useRef(false); // Use ref to prevent race conditions
   const { addCareLog } = useDailyCare();
   const { toast } = useToast();
 
@@ -22,9 +23,15 @@ export const useObservationActions = (
     category: string = 'observation',
     timestamp = new Date()
   ): Promise<void> => {
-    if (isSubmitting) return; // Prevent duplicate submissions
+    // Prevent duplicate submissions with both state and ref
+    if (isSubmitting || submissionLock.current) {
+      console.log('Submission already in progress, skipping');
+      return;
+    }
     
     setIsSubmitting(true);
+    submissionLock.current = true;
+    
     try {
       // If observation text is empty, use the observation type as the text
       const defaultText = observationText.trim() || 
@@ -91,6 +98,10 @@ export const useObservationActions = (
       });
     } finally {
       setIsSubmitting(false);
+      // Small delay before releasing lock to prevent rapid clicks
+      setTimeout(() => {
+        submissionLock.current = false;
+      }, 300);
     }
   }, [addCareLog, toast, setObservations, isSubmitting]);
 

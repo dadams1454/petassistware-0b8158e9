@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface FormButtonsProps {
@@ -36,4 +36,5 @@ const FormButtons: React.FC<FormButtonsProps> = ({
   );
 };
 
-export default FormButtons;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(FormButtons);

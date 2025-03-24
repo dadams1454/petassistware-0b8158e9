@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import DialogContentComponent from './DialogContent';
@@ -43,9 +43,11 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   const [observation, setObservation] = useState('');
   const [observationType, setObservationType] = useState<ObservationType>(defaultObservationType);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Use a single Date object for the timestamp instead of separate fields
   const [observationDate, setObservationDate] = useState<Date>(new Date());
   const [dialogSelectedTimeSlot, setDialogSelectedTimeSlot] = useState<string>(selectedTimeSlot);
+
+  // Memoize observation date to prevent unnecessary renders
+  const currentDate = useMemo(() => new Date(), []);
 
   // Update observation type and date when the dialog opens
   useEffect(() => {
@@ -62,9 +64,12 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       }
       
       // Always reset to current date/time when dialog opens
-      setObservationDate(new Date());
+      setObservationDate(currentDate);
+      
+      // Reset observation text
+      setObservation('');
     }
-  }, [open, activeCategory, defaultObservationType, selectedTimeSlot, timeSlots]);
+  }, [open, activeCategory, defaultObservationType, selectedTimeSlot, timeSlots, currentDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
