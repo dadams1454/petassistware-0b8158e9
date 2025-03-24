@@ -15,42 +15,8 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
     throw error;
   }
   
-  // Map to the HealthRecord type with explicit casting for type safety
-  return (data || []).map(record => ({
-    id: record.id,
-    dog_id: record.dog_id,
-    date: record.visit_date,
-    record_type: (record.record_type as HealthRecordType) || HealthRecordType.Examination,
-    title: record.title || `${record.vet_name} Visit`,
-    description: record.record_notes || '',
-    performed_by: record.performed_by || record.vet_name,
-    next_due_date: record.next_due_date,
-    created_at: record.created_at,
-    ...(record.vaccine_name && { vaccine_name: record.vaccine_name }),
-    ...(record.manufacturer && { manufacturer: record.manufacturer }),
-    ...(record.lot_number && { lot_number: record.lot_number }),
-    ...(record.administration_route && { administration_route: record.administration_route }),
-    ...(record.expiration_date && { expiration_date: record.expiration_date }),
-    ...(record.reminder_sent !== undefined && { reminder_sent: record.reminder_sent }),
-    ...(record.medication_name && { medication_name: record.medication_name }),
-    ...(record.dosage !== undefined && { dosage: record.dosage }),
-    ...(record.dosage_unit && { dosage_unit: record.dosage_unit }),
-    ...(record.frequency && { frequency: record.frequency }),
-    ...(record.duration !== undefined && { duration: record.duration }),
-    ...(record.duration_unit && { duration_unit: record.duration_unit }),
-    ...(record.start_date && { start_date: record.start_date }),
-    ...(record.end_date && { end_date: record.end_date }),
-    ...(record.prescription_number && { prescription_number: record.prescription_number }),
-    ...(record.examination_type && { examination_type: record.examination_type }),
-    ...(record.findings && { findings: record.findings }),
-    ...(record.recommendations && { recommendations: record.recommendations }),
-    ...(record.vet_clinic && { vet_clinic: record.vet_clinic }),
-    ...(record.procedure_name && { procedure_name: record.procedure_name }),
-    ...(record.surgeon && { surgeon: record.surgeon }),
-    ...(record.anesthesia_used && { anesthesia_used: record.anesthesia_used }),
-    ...(record.recovery_notes && { recovery_notes: record.recovery_notes }),
-    ...(record.follow_up_date && { follow_up_date: record.follow_up_date })
-  })) as HealthRecord[];
+  // Return data as HealthRecord type
+  return data || [];
 };
 
 // Get health records by type
@@ -70,61 +36,15 @@ export const getHealthRecordsByType = async (
     throw error;
   }
   
-  // Reuse a similar mapping function but with explicit casting for safety
-  return (data || []).map(record => ({
-    id: record.id,
-    dog_id: record.dog_id,
-    date: record.visit_date,
-    record_type: (record.record_type as HealthRecordType) || HealthRecordType.Examination,
-    title: record.title || `${record.vet_name} Visit`,
-    description: record.record_notes || '',
-    performed_by: record.performed_by || record.vet_name,
-    next_due_date: record.next_due_date,
-    created_at: record.created_at,
-    ...(record.vaccine_name && { vaccine_name: record.vaccine_name }),
-    ...(record.manufacturer && { manufacturer: record.manufacturer }),
-    ...(record.lot_number && { lot_number: record.lot_number }),
-    ...(record.administration_route && { administration_route: record.administration_route }),
-    ...(record.expiration_date && { expiration_date: record.expiration_date }),
-    ...(record.reminder_sent !== undefined && { reminder_sent: record.reminder_sent }),
-    ...(record.medication_name && { medication_name: record.medication_name }),
-    ...(record.dosage !== undefined && { dosage: record.dosage }),
-    ...(record.dosage_unit && { dosage_unit: record.dosage_unit }),
-    ...(record.frequency && { frequency: record.frequency }),
-    ...(record.duration !== undefined && { duration: record.duration }),
-    ...(record.duration_unit && { duration_unit: record.duration_unit }),
-    ...(record.start_date && { start_date: record.start_date }),
-    ...(record.end_date && { end_date: record.end_date }),
-    ...(record.prescription_number && { prescription_number: record.prescription_number }),
-    ...(record.examination_type && { examination_type: record.examination_type }),
-    ...(record.findings && { findings: record.findings }),
-    ...(record.recommendations && { recommendations: record.recommendations }),
-    ...(record.vet_clinic && { vet_clinic: record.vet_clinic }),
-    ...(record.procedure_name && { procedure_name: record.procedure_name }),
-    ...(record.surgeon && { surgeon: record.surgeon }),
-    ...(record.anesthesia_used && { anesthesia_used: record.anesthesia_used }),
-    ...(record.recovery_notes && { recovery_notes: record.recovery_notes }),
-    ...(record.follow_up_date && { follow_up_date: record.follow_up_date })
-  })) as HealthRecord[];
+  return data || [];
 };
 
 // Add a new health record
-export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>) => {
-  // Prepare the data for the database
-  const recordData = {
-    dog_id: record.dog_id,
-    visit_date: record.date,
-    record_type: record.record_type,
-    title: record.title,
-    record_notes: record.description,
-    performed_by: record.performed_by,
-    vet_name: record.performed_by,
-    next_due_date: record.next_due_date,
-  };
-  
+export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>): Promise<HealthRecord> => {
+  // We don't need to transform data as our interface now matches the database
   const { data, error } = await supabase
     .from('health_records')
-    .insert(recordData)
+    .insert(record)
     .select();
     
   if (error) {
@@ -136,20 +56,10 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
 };
 
 // Update a health record
-export const updateHealthRecord = async (id: string, updates: Partial<Omit<HealthRecord, 'id' | 'created_at'>>) => {
-  // Prepare the data for the database
-  const updateData = {
-    ...(updates.date && { visit_date: updates.date }),
-    ...(updates.record_type && { record_type: updates.record_type }),
-    ...(updates.title && { title: updates.title }),
-    ...(updates.description && { record_notes: updates.description }),
-    ...(updates.performed_by && { performed_by: updates.performed_by, vet_name: updates.performed_by }),
-    ...(updates.next_due_date && { next_due_date: updates.next_due_date }),
-  };
-  
+export const updateHealthRecord = async (id: string, updates: Partial<Omit<HealthRecord, 'id' | 'created_at'>>): Promise<HealthRecord> => {
   const { data, error } = await supabase
     .from('health_records')
-    .update(updateData)
+    .update(updates)
     .eq('id', id)
     .select();
     
@@ -162,7 +72,7 @@ export const updateHealthRecord = async (id: string, updates: Partial<Omit<Healt
 };
 
 // Delete a health record
-export const deleteHealthRecord = async (id: string) => {
+export const deleteHealthRecord = async (id: string): Promise<string> => {
   const { error } = await supabase
     .from('health_records')
     .delete()
@@ -185,7 +95,7 @@ export const getUpcomingVaccinations = async (dogId: string, daysAhead = 30): Pr
     .from('health_records')
     .select('*')
     .eq('dog_id', dogId)
-    .eq('record_type', 'vaccination')
+    .eq('record_type', HealthRecordType.Vaccination)
     .lte('next_due_date', futureDate.toISOString().split('T')[0])
     .gte('next_due_date', new Date().toISOString().split('T')[0])
     .order('next_due_date', { ascending: true });
@@ -195,18 +105,7 @@ export const getUpcomingVaccinations = async (dogId: string, daysAhead = 30): Pr
     throw error;
   }
   
-  return (data || []).map(record => ({
-    id: record.id,
-    dog_id: record.dog_id,
-    date: record.visit_date,
-    record_type: HealthRecordType.Vaccination,
-    title: record.title || `${record.vaccine_name || 'Vaccination'}`,
-    description: record.record_notes || '',
-    performed_by: record.performed_by || record.vet_name,
-    next_due_date: record.next_due_date,
-    created_at: record.created_at,
-    vaccine_name: record.vaccine_name
-  })) as HealthRecord[];
+  return data || [];
 };
 
 // Weight record functions
@@ -222,16 +121,7 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
     throw error;
   }
   
-  // Make sure the weight_unit is one of the valid enum values
-  return (data || []).map(record => ({
-    id: record.id,
-    dog_id: record.dog_id,
-    date: record.date,
-    weight: record.weight,
-    weight_unit: (record.weight_unit as 'lbs' | 'kg' | 'g' | 'oz'),
-    notes: record.notes,
-    created_at: record.created_at
-  }));
+  return data || [];
 };
 
 export const addWeightRecord = async (
@@ -253,15 +143,7 @@ export const addWeightRecord = async (
     throw error;
   }
   
-  return {
-    id: data![0].id,
-    dog_id: data![0].dog_id,
-    date: data![0].date,
-    weight: data![0].weight,
-    weight_unit: data![0].weight_unit as 'lbs' | 'kg' | 'g' | 'oz',
-    notes: data![0].notes,
-    created_at: data![0].created_at
-  };
+  return data![0];
 };
 
 export const deleteWeightRecord = async (id: string): Promise<void> => {
@@ -274,4 +156,17 @@ export const deleteWeightRecord = async (id: string): Promise<void> => {
     console.error('Error deleting weight record:', error);
     throw error;
   }
+};
+
+// Helper for converting date fields between UI and database
+export const formatDateForDatabase = (date: Date | string | null | undefined): string | undefined => {
+  if (!date) return undefined;
+  if (typeof date === 'string') return date;
+  return date.toISOString().split('T')[0];
+};
+
+// Helper for converting database dates to Date objects for UI
+export const parseDatabaseDate = (dateString: string | null | undefined): Date | undefined => {
+  if (!dateString) return undefined;
+  return new Date(dateString);
 };

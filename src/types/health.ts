@@ -1,4 +1,3 @@
-
 // Health record types for the dog health management system
 export enum HealthRecordType {
   Vaccination = 'vaccination',
