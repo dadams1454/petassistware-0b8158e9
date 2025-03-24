@@ -11,8 +11,6 @@ import Litters from './pages/Litters';
 import NotFound from './pages/NotFound';
 import Communications from './pages/Communications';
 import Customers from './pages/Customers';
-
-// Import the Providers
 import { RefreshProvider } from './contexts/refresh';
 import { RefreshTimestampProvider } from './contexts/refreshTimestamp';
 import { AuthProvider } from './contexts/AuthProvider';

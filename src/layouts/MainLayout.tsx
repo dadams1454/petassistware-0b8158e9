@@ -17,20 +17,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <ErrorBoundary name="MainLayout">
       <UserPreferencesProvider>
-        <RefreshProvider enableToasts={true}>
-          <SidebarProvider defaultOpen={true}>
-            <div className="flex h-screen overflow-hidden bg-background">
-              <AppSidebar />
-              <SidebarInset>
-                <Navbar />
-                <main className="flex-1 p-4 md:p-6 overflow-auto">
-                  {children || <Outlet />}
-                  <Toaster />
-                </main>
-              </SidebarInset>
-            </div>
-          </SidebarProvider>
-        </RefreshProvider>
+        <SidebarProvider defaultOpen={true}>
+          <div className="flex h-screen overflow-hidden bg-background">
+            <AppSidebar />
+            <SidebarInset>
+              <Navbar />
+              <main className="flex-1 p-4 md:p-6 overflow-auto">
+                {children || <Outlet />}
+              </main>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
       </UserPreferencesProvider>
     </ErrorBoundary>
   );
