@@ -38,12 +38,21 @@ import { cn } from '@/lib/utils';
 import { HealthRecord, HealthRecordType } from '@/types/health';
 import { useHealthRecords } from '../../../hooks/useHealthRecords';
 
-// Define form validation schema
+// Define form validation schema - use string literals matching HealthRecordType
 const healthRecordSchema = z.object({
   date: z.date({
     required_error: 'Date is required',
   }),
-  record_type: z.enum(['vaccination', 'examination', 'medication', 'surgery', 'observation', 'other'], {
+  record_type: z.enum([
+    'vaccination', 
+    'examination', 
+    'medication', 
+    'surgery', 
+    'observation',
+    'deworming',
+    'grooming',
+    'other'
+  ], {
     required_error: 'Record type is required',
   }),
   title: z.string().min(1, 'Title is required'),
@@ -80,8 +89,8 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
       date: new Date(record.date),
       record_type: record.record_type,
       title: record.title,
-      description: record.description,
-      performed_by: record.performed_by,
+      description: record.description || '',
+      performed_by: record.performed_by || '',
       has_next_due_date: !!record.next_due_date,
       next_due_date: record.next_due_date ? new Date(record.next_due_date) : undefined,
     } : {
@@ -100,7 +109,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
   const onSubmit = async (values: HealthRecordFormValues) => {
     setIsSubmitting(true);
     try {
-      const healthRecordData: Omit<HealthRecord, 'id' | 'created_at'> | HealthRecord = {
+      const healthRecordData = {
         dog_id: dogId,
         date: values.date.toISOString(),
         record_type: values.record_type as HealthRecordType,
@@ -161,6 +170,8 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
                         <SelectItem value="medication">Medication</SelectItem>
                         <SelectItem value="surgery">Surgery</SelectItem>
                         <SelectItem value="observation">Observation</SelectItem>
+                        <SelectItem value="deworming">Deworming</SelectItem>
+                        <SelectItem value="grooming">Grooming</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>

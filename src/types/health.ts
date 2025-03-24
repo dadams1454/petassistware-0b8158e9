@@ -11,6 +11,7 @@ export enum HealthRecordType {
   Other = 'other'
 }
 
+// Base health record interface
 export interface HealthRecord {
   id: string;
   dog_id: string;
@@ -23,6 +24,36 @@ export interface HealthRecord {
   attachments?: string[];
   created_at: string;
   updated_at?: string;
+  
+  // Extended fields for specific record types
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  administration_route?: string;
+  expiration_date?: string;
+  reminder_sent?: boolean;
+  
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  duration?: number;
+  duration_unit?: string;
+  start_date?: string;
+  end_date?: string;
+  prescription_number?: string;
+  
+  examination_type?: string;
+  findings?: string;
+  recommendations?: string;
+  vet_name?: string;
+  vet_clinic?: string;
+  
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
+  follow_up_date?: string;
 }
 
 export interface VaccinationRecord extends HealthRecord {

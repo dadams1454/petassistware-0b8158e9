@@ -4,7 +4,6 @@ import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { HealthRecord } from '@/types/dog';
 import { useRefreshData } from '@/hooks/useRefreshData';
 import { useToast } from '@/hooks/use-toast';
 import { useDogHealthVaccinations } from '../../hooks/useDogHealthVaccinations';
@@ -13,6 +12,7 @@ import VaccinationsTabContent from './records/VaccinationsTabContent';
 import ExaminationsTabContent from './records/ExaminationsTabContent';
 import MedicationsTabContent from './records/MedicationsTabContent';
 import AllRecordsTabContent from './records/AllRecordsTabContent';
+import { HealthRecord, HealthRecordType } from '@/types/health';
 
 interface DogHealthRecordsProps {
   dogId: string;
@@ -62,16 +62,16 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
   });
   
   // Helper function to determine record type
-  const determineRecordType = (record: any): HealthRecord['record_type'] => {
+  const determineRecordType = (record: any): HealthRecordType => {
     // This is a placeholder logic - in a real app you'd have a field to determine this
     if (record.record_notes?.toLowerCase().includes('vaccination')) {
-      return 'vaccination';
+      return HealthRecordType.Vaccination;
     } else if (record.record_notes?.toLowerCase().includes('medication')) {
-      return 'medication';
+      return HealthRecordType.Medication;
     } else if (record.record_notes?.toLowerCase().includes('surgery')) {
-      return 'surgery';
+      return HealthRecordType.Surgery;
     } else {
-      return 'examination';
+      return HealthRecordType.Examination;
     }
   };
   
@@ -94,7 +94,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
     });
   };
   
-  const getRecordsByType = (type: HealthRecord['record_type']) => {
+  const getRecordsByType = (type: HealthRecordType) => {
     return healthRecords?.filter(record => record.record_type === type) || [];
   };
 
@@ -136,7 +136,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         
         <TabsContent value="examinations" className="space-y-4 pt-4">
           <ExaminationsTabContent 
-            records={getRecordsByType('examination')}
+            records={getRecordsByType(HealthRecordType.Examination)}
             onAddRecord={handleAddRecord}
             onEditRecord={handleEditRecord}
           />
@@ -144,7 +144,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         
         <TabsContent value="medications" className="space-y-4 pt-4">
           <MedicationsTabContent 
-            records={getRecordsByType('medication')}
+            records={getRecordsByType(HealthRecordType.Medication)}
             onAddRecord={handleAddRecord}
             onEditRecord={handleEditRecord}
           />
