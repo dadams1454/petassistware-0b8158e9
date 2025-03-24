@@ -57,7 +57,7 @@ export type RegistrationOrganization =
   | 'other';
 
 // Import from health.ts to ensure consistent types
-import { HealthRecordType } from '@/types/health';
+import { HealthRecordType, HealthRecord } from '@/types/health';
 
 export interface DogProfile {
   id: string;
@@ -93,8 +93,6 @@ export interface DogProfile {
   last_vaccination_date?: string;
 }
 
-// Import the HealthRecord from health.ts instead of defining it here
-import { HealthRecord } from '@/types/health';
-
 // Re-export for backward compatibility
-export { HealthRecord };
+// Using 'export type' instead of 'export' because of 'isolatedModules'
+export type { HealthRecord, HealthRecordType };
