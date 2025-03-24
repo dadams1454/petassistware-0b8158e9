@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Check, Database, Loader2 } from 'lucide-react';
 import { generateTestData } from '@/utils/testDataGenerator';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useRefreshData } from '@/hooks/useRefreshData';
 
 const GenerateTestDataButton: React.FC = () => {
@@ -20,26 +20,25 @@ const GenerateTestDataButton: React.FC = () => {
         toast({
           title: 'Test Data Generated',
           description: `Created ${result.dogIds?.length || 0} dogs, ${result.customerIds?.length || 0} customers, and sample records.`,
-          variant: 'default',
-          icon: <Check className="h-4 w-4 text-green-500" />
+          variant: 'default'
         });
         
         // Refresh all data to show the new records
-        refreshData();
+        if (typeof refreshData === 'function') {
+          refreshData();
+        }
       } else {
         toast({
           title: 'Error',
           description: result.message,
-          variant: 'destructive',
-          icon: <AlertCircle className="h-4 w-4" />
+          variant: 'destructive'
         });
       }
     } catch (error) {
       toast({
         title: 'Error',
         description: `Failed to generate test data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: 'destructive',
-        icon: <AlertCircle className="h-4 w-4" />
+        variant: 'destructive'
       });
     } finally {
       setIsLoading(false);

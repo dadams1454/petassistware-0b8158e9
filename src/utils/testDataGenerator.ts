@@ -201,7 +201,7 @@ export const generateTestData = async (): Promise<{
     const femaleDog = sampleDogs.find(d => d.gender === 'female');
     
     if (maleDog && femaleDog && dogIds.length >= 2) {
-      const litterData = {
+      const litterPayload = {
         litter_name: 'Test Litter A',
         sire_id: dogIds[0], // First male
         dam_id: dogIds[1], // First female
@@ -213,17 +213,19 @@ export const generateTestData = async (): Promise<{
         status: 'active',
         notes: 'Test litter for demonstration purposes',
         expected_go_home_date: new Date(Date.now() + 2 * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 weeks from now
+        // Add required breeder_id as null - will be populated by RLS policy if needed
+        breeder_id: null
       };
       
-      const { data: litterData, error: litterError } = await supabase
+      const { data: litterResponse, error: litterError } = await supabase
         .from('litters')
-        .insert(litterData)
+        .insert(litterPayload)
         .select('id');
         
       if (litterError) {
         console.error('Error creating test litter:', litterError);
-      } else if (litterData && litterData[0]) {
-        const litterId = litterData[0].id;
+      } else if (litterResponse && litterResponse[0]) {
+        const litterId = litterResponse[0].id;
         
         // Create puppies for this litter
         const puppyData = [
