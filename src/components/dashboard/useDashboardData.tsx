@@ -79,8 +79,7 @@ export const useDashboardData = () => {
     error,
     stats,
     events,
-    activities,
-    fetchDashboardData
+    activities
   };
 };
 

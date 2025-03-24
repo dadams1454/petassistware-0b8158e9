@@ -12,8 +12,6 @@ export interface DashboardData {
   totalCustomers: number;
 }
 
-export interface DashboardStats extends DashboardData {}
-
 export interface UpcomingEvent {
   id: string;
   title: string;
