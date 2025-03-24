@@ -22,6 +22,7 @@ const BasicInfoTab = ({ form, colorOptions }: BasicInfoTabProps) => {
           name="name"
           label="Dog Name"
           placeholder="Enter dog's name"
+          required={true}
         />
         
         <SelectInput
@@ -44,6 +45,7 @@ const BasicInfoTab = ({ form, colorOptions }: BasicInfoTabProps) => {
           label="Breed"
           options={breedOptions}
           placeholder="Select breed"
+          required={true}
         />
         
         <SelectInput
@@ -57,7 +59,7 @@ const BasicInfoTab = ({ form, colorOptions }: BasicInfoTabProps) => {
         <WeightInput
           form={form}
           name="weight"
-          label="Weight (kg)"
+          label="Weight"
         />
       </div>
       

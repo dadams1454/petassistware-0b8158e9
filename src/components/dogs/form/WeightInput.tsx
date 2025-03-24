@@ -7,7 +7,7 @@ import { MinusCircle, PlusCircle, AlertCircle, Scale } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type WeightUnit = 'oz' | 'g';
+type WeightUnit = 'lbs' | 'kg';
 
 interface WeightInputProps {
   form: UseFormReturn<any>;
@@ -16,7 +16,7 @@ interface WeightInputProps {
   defaultUnit?: WeightUnit;
 }
 
-const WeightInput = ({ form, name, label, defaultUnit = 'oz' }: WeightInputProps) => {
+const WeightInput = ({ form, name, label, defaultUnit = 'lbs' }: WeightInputProps) => {
   const [inputError, setInputError] = useState<string | null>(null);
   const [unit, setUnit] = useState<WeightUnit>(defaultUnit);
   
@@ -42,15 +42,15 @@ const WeightInput = ({ form, name, label, defaultUnit = 'oz' }: WeightInputProps
     const currentWeight = form.getValues(name);
     const currentWeightNum = currentWeight ? parseFloat(currentWeight) : 0;
     if (isNaN(currentWeightNum)) {
-      form.setValue(name, unit === 'oz' ? '0.1' : '1');
+      form.setValue(name, unit === 'lbs' ? '0.1' : '1');
       setInputError(null);
       return;
     }
     
-    // Increment by 0.1 for oz, 1 for grams
-    const incrementAmount = unit === 'oz' ? 0.1 : 1;
+    // Increment by 0.1 for lbs, 1 for kg
+    const incrementAmount = unit === 'lbs' ? 0.1 : 1;
     const newWeight = currentWeightNum + incrementAmount;
-    form.setValue(name, unit === 'oz' ? newWeight.toFixed(1) : Math.round(newWeight));
+    form.setValue(name, unit === 'lbs' ? newWeight.toFixed(1) : Math.round(newWeight));
     setInputError(null);
   };
 
@@ -65,10 +65,10 @@ const WeightInput = ({ form, name, label, defaultUnit = 'oz' }: WeightInputProps
       return;
     }
     
-    // Decrement by 0.1 for oz, 1 for grams
-    const decrementAmount = unit === 'oz' ? 0.1 : 1;
+    // Decrement by 0.1 for lbs, 1 for kg
+    const decrementAmount = unit === 'lbs' ? 0.1 : 1;
     const newWeight = Math.max(0, currentWeightNum - decrementAmount);
-    form.setValue(name, unit === 'oz' ? newWeight.toFixed(1) : Math.round(newWeight));
+    form.setValue(name, unit === 'lbs' ? newWeight.toFixed(1) : Math.round(newWeight));
     setInputError(null);
   };
 
@@ -84,14 +84,14 @@ const WeightInput = ({ form, name, label, defaultUnit = 'oz' }: WeightInputProps
       const numValue = parseFloat(currentWeight);
       if (!isNaN(numValue)) {
         // Convert between units
-        if (newUnit === 'g' && unit === 'oz') {
-          // Convert oz to grams (1 oz ≈ 28.35 g)
-          const grams = Math.round(numValue * 28.35);
-          form.setValue(name, grams.toString());
-        } else if (newUnit === 'oz' && unit === 'g') {
-          // Convert grams to oz (1 g ≈ 0.035 oz)
-          const oz = (numValue * 0.035).toFixed(1);
-          form.setValue(name, oz);
+        if (newUnit === 'kg' && unit === 'lbs') {
+          // Convert lbs to kg (1 lb ≈ 0.45 kg)
+          const kg = (numValue * 0.45).toFixed(1);
+          form.setValue(name, kg);
+        } else if (newUnit === 'lbs' && unit === 'kg') {
+          // Convert kg to lbs (1 kg ≈ 2.2 lbs)
+          const lbs = (numValue * 2.2).toFixed(1);
+          form.setValue(name, lbs);
         }
       }
     }
@@ -155,16 +155,16 @@ const WeightInput = ({ form, name, label, defaultUnit = 'oz' }: WeightInputProps
                   <SelectValue placeholder="Unit" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="oz">
+                  <SelectItem value="lbs">
                     <div className="flex items-center gap-2">
                       <Scale className="h-4 w-4" />
-                      <span>oz</span>
+                      <span>lbs</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="g">
+                  <SelectItem value="kg">
                     <div className="flex items-center gap-2">
                       <Scale className="h-4 w-4" />
-                      <span>grams</span>
+                      <span>kg</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
