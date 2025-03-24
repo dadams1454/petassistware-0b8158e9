@@ -5,6 +5,7 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { useRefresh } from '@/contexts/RefreshContext';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;

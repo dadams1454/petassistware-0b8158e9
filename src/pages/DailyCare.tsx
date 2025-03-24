@@ -1,5 +1,5 @@
 
-import React, { useCallback, useRef } from 'react';
+import React, { useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
@@ -8,28 +8,35 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, Clock, Calendar } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { format } from 'date-fns';
-import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { useRefresh } from '@/contexts/RefreshContext';
 
 const DailyCare: React.FC = () => {
   const { dogStatuses, fetchAllDogsWithCareStatus } = useDailyCare();
-  
-  // Use the enhanced auto-refresh system with midnightReset
   const { 
     isRefreshing,
-    handleRefresh,
+    refreshSpecific,
     formatTimeRemaining,
     currentDate
-  } = useAutoRefresh({
-    interval: 15 * 60 * 1000, // 15 minutes
-    refreshLabel: 'dog care data',
-    midnightReset: true,
-    onRefresh: async () => {
+  } = useRefresh();
+
+  // Register the dog care data refresh with the RefreshContext
+  useEffect(() => {
+    const refreshDogCare = async () => {
       console.log('🔄 Auto-refresh triggered in DailyCare page');
       const dogs = await fetchAllDogsWithCareStatus(currentDate, true);
       console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
       return dogs;
-    }
-  });
+    };
+    
+    // Register the callback with the RefreshContext
+    refreshSpecific('dogCare', refreshDogCare, false);
+  }, [fetchAllDogsWithCareStatus, refreshSpecific, currentDate]);
+
+  const handleRefresh = (showToast = true) => {
+    refreshSpecific('dogCare', async () => {
+      return await fetchAllDogsWithCareStatus(currentDate, true);
+    }, showToast);
+  };
 
   const content = (
     <>

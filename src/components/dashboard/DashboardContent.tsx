@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
 import { DashboardStats, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
@@ -9,7 +9,7 @@ import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
 import GroomingTab from './tabs/GroomingTab';
 import CareLogDialog from './dialogs/CareLogDialog';
-import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { useRefresh } from '@/contexts/RefreshContext';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -31,23 +31,26 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const { toast } = useToast();
   const pendingRefreshRef = useRef(false);
 
-  // Set up auto-refresh with our enhanced hook
+  // Use the centralized refresh context
   const { 
     isRefreshing, 
-    handleRefresh: refreshDogs,
+    refreshSpecific,
     formatTimeRemaining,
     currentDate
-  } = useAutoRefresh({
-    interval: 15 * 60 * 1000, // 15 minutes
-    refreshLabel: 'dog data',
-    midnightReset: true,
-    onRefresh: async () => {
+  } = useRefresh();
+
+  // Register dog refresh callback with the RefreshContext
+  React.useEffect(() => {
+    const refreshAllDogs = async () => {
       console.log('🔄 Auto-refresh triggered in DashboardContent');
       const dogs = await fetchAllDogsWithCareStatus(new Date(), true);
       console.log(`✅ Auto-refreshed: Loaded ${dogs.length} dogs`);
       return dogs;
-    }
-  });
+    };
+    
+    // Register the callback with the RefreshContext
+    refreshSpecific('allDogs', refreshAllDogs, false);
+  }, [fetchAllDogsWithCareStatus, refreshSpecific]);
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -56,7 +59,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     // If we have a pending refresh and tab changes, refresh the data
     if (pendingRefreshRef.current) {
       setTimeout(() => {
-        refreshDogs(false); // Silent refresh
+        refreshSpecific('allDogs', async () => {
+          return await fetchAllDogsWithCareStatus(new Date(), true);
+        }, false);
         pendingRefreshRef.current = false;
       }, 100);
     }
@@ -75,7 +80,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     
     // Schedule a delayed silent refresh to catch changes
     setTimeout(() => {
-      refreshDogs(false);
+      refreshSpecific('allDogs', async () => {
+        return await fetchAllDogsWithCareStatus(new Date(), true);
+      }, false);
       pendingRefreshRef.current = false;
     }, 1000);
   };
@@ -93,8 +100,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       duration: 2000,
     });
     
-    // Use the actual refresh function
-    refreshDogs(true);
+    // Use the centralized refresh
+    refreshSpecific('allDogs', async () => {
+      return await fetchAllDogsWithCareStatus(new Date(), true);
+    }, false);
   };
 
   return (

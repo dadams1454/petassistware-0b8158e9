@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   fetchDashboardStats, 
@@ -22,35 +22,40 @@ export const useDashboardData = () => {
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
 
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Fetch all data in parallel
-        const [dashboardStats, upcomingEvents, recentActivities] = await Promise.all([
-          fetchDashboardStats(),
-          fetchUpcomingEvents(),
-          fetchRecentActivities()
-        ]);
+  // Function to fetch dashboard data that can be called by the RefreshContext
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch all data in parallel
+      const [dashboardStats, upcomingEvents, recentActivities] = await Promise.all([
+        fetchDashboardStats(),
+        fetchUpcomingEvents(),
+        fetchRecentActivities()
+      ]);
 
-        setStats(dashboardStats);
-        setEvents(upcomingEvents);
-        setActivities(recentActivities);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load dashboard data. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDashboardData();
+      setStats(dashboardStats);
+      setEvents(upcomingEvents);
+      setActivities(recentActivities);
+      
+      return { dashboardStats, upcomingEvents, recentActivities };
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data. Please try again.",
+        variant: "destructive"
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast]);
+
+  // Load data on initial mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   // Mock activities if none are found in the database
   useEffect(() => {
@@ -144,6 +149,7 @@ export const useDashboardData = () => {
     isLoading,
     stats,
     events,
-    activities
+    activities,
+    fetchDashboardData
   };
 };

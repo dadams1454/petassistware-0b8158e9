@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { DailyCareProvider } from "@/contexts/dailyCare";
+import { RefreshProvider } from "@/contexts/RefreshContext";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
@@ -29,36 +30,38 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <DailyCareProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Router>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                
-                {/* Protected routes */}
-                <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/dogs" element={<Dogs />} />
-                  <Route path="/dogs/:id" element={<DogDetail />} />
-                  <Route path="/customers" element={<Customers />} />
-                  <Route path="/calendar" element={<Calendar />} />
-                  <Route path="/communications" element={<Communications />} />
-                  <Route path="/litters" element={<Litters />} />
-                  <Route path="/litters/new" element={<AddLitter />} />
-                  <Route path="/litters/:id" element={<LitterDetail />} />
-                  <Route path="/welping/:id" element={<WelpingPage />} />
-                  <Route path="/daily-care" element={<DailyCare />} />
-                  <Route path="/profile" element={<Profile />} />
-                </Route>
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Router>
-          </TooltipProvider>
-        </DailyCareProvider>
+        <RefreshProvider>
+          <DailyCareProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Router>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  
+                  {/* Protected routes */}
+                  <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/dogs" element={<Dogs />} />
+                    <Route path="/dogs/:id" element={<DogDetail />} />
+                    <Route path="/customers" element={<Customers />} />
+                    <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/communications" element={<Communications />} />
+                    <Route path="/litters" element={<Litters />} />
+                    <Route path="/litters/new" element={<AddLitter />} />
+                    <Route path="/litters/:id" element={<LitterDetail />} />
+                    <Route path="/welping/:id" element={<WelpingPage />} />
+                    <Route path="/daily-care" element={<DailyCare />} />
+                    <Route path="/profile" element={<Profile />} />
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Router>
+            </TooltipProvider>
+          </DailyCareProvider>
+        </RefreshProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
