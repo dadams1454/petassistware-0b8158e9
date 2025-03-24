@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Database, Loader2 } from 'lucide-react';
 import { generateTestData } from '@/utils/testDataGenerator';
 import { useToast } from '@/components/ui/use-toast';
-import { useRefreshData } from '@/hooks/useRefreshData';
+import { useRefreshTrigger } from '@/hooks/useRefreshData';
 
 const GenerateTestDataButton: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const refreshData = useRefreshData();
+  const refreshData = useRefreshTrigger();
 
   const handleGenerateTestData = async () => {
     setIsLoading(true);
@@ -24,9 +24,7 @@ const GenerateTestDataButton: React.FC = () => {
         });
         
         // Refresh all data to show the new records
-        if (typeof refreshData === 'function') {
-          refreshData();
-        }
+        refreshData(true);
       } else {
         toast({
           title: 'Error',

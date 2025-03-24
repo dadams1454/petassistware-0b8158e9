@@ -85,7 +85,7 @@ export function useRefreshData<T>({
  * Simplified hook that returns a refresh function for the entire application
  * This is used for buttons and other UI elements that need to trigger a refresh
  */
-export function useRefreshData() {
+export function useRefreshTrigger() {
   const { refreshAll } = useRefresh();
   return refreshAll;
 }

@@ -5,7 +5,7 @@ import {
   fetchDashboardStats, 
   fetchUpcomingEvents, 
   fetchRecentActivities,
-  DashboardStats,
+  DashboardData,
   UpcomingEvent,
   RecentActivity
 } from '@/services/dashboardService';
