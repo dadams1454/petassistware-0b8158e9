@@ -7,8 +7,7 @@ import { DogProfile } from '@/types/dog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import DogStatusCard from '../DogStatusCard';
-import PhotoUpload from '@/components/dogs/form/PhotoUpload';
-import { useForm } from 'react-hook-form';
+import DogPhotoUpload from './DogPhotoUpload';
 import BackButton from '@/components/common/BackButton';
 
 interface DogProfileHeaderProps {
@@ -19,13 +18,6 @@ interface DogProfileHeaderProps {
 const DogProfileHeader: React.FC<DogProfileHeaderProps> = ({ dog, onEdit }) => {
   const navigate = useNavigate();
   const [isEditingPhoto, setIsEditingPhoto] = useState(false);
-  
-  // Setup a minimal form for photo upload
-  const photoForm = useForm({
-    defaultValues: {
-      photo_url: dog.photo_url || ''
-    }
-  });
   
   const formattedBirthdate = dog.birthdate ? format(new Date(dog.birthdate), 'MMM d, yyyy') : 'Unknown';
   
@@ -57,33 +49,11 @@ const DogProfileHeader: React.FC<DogProfileHeaderProps> = ({ dog, onEdit }) => {
     <div className="flex flex-col md:flex-row items-start gap-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
       <div className="relative">
         {isEditingPhoto ? (
-          <div className="w-32 md:w-48">
-            <PhotoUpload 
-              form={photoForm} 
-              name="photo_url" 
-              label="Dog Photo" 
-            />
-            <div className="flex gap-2 mt-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="w-full"
-                onClick={() => setIsEditingPhoto(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                size="sm" 
-                className="w-full"
-                onClick={() => {
-                  // Handle photo save logic here if needed
-                  setIsEditingPhoto(false);
-                }}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
+          <DogPhotoUpload
+            dogId={dog.id}
+            currentPhoto={dog.photo_url}
+            onClose={() => setIsEditingPhoto(false)}
+          />
         ) : (
           <>
             {dog.photo_url ? (
