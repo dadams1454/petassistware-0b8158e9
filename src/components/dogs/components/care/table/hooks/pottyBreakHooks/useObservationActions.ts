@@ -18,7 +18,7 @@ export const useObservationActions = (
   const addObservation = useCallback(async (
     dogId: string, 
     observationText: string, 
-    observationType: 'accident' | 'heat' | 'behavior' | 'feeding' | 'other',
+    observationType: 'accident' | 'heat' | 'behavior' | 'other',
     timeSlot: string = '',
     category: string = 'observation',
     timestamp = new Date()
@@ -35,9 +35,7 @@ export const useObservationActions = (
     try {
       // If observation text is empty, use the observation type as the text
       const defaultText = observationText.trim() || 
-        (observationType === 'feeding' 
-          ? `Didn't eat ${timeSlot} meal`
-          : `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`);
+        `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
       
       console.log('Submitting observation:', {
         dog_id: dogId,
@@ -56,10 +54,8 @@ export const useObservationActions = (
       });
       
       if (result) {
-        // Calculate the time slot based on category
-        const calculatedTimeSlot = category === 'feeding_observation'
-          ? timeSlot // Use the provided time slot for feeding
-          : getTimeSlotFromTimestamp(timestamp.toString());
+        // Calculate the time slot
+        const calculatedTimeSlot = getTimeSlotFromTimestamp(timestamp.toString());
         
         // Update local state
         setObservations(prev => {
@@ -85,7 +81,7 @@ export const useObservationActions = (
         });
         
         toast({
-          title: category === 'feeding_observation' ? 'Feeding Issue Recorded' : 'Observation Added',
+          title: 'Observation Added',
           description: 'Your observation has been recorded and will be visible for 24 hours'
         });
       }

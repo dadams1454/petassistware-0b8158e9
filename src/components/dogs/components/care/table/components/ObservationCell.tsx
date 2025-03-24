@@ -36,8 +36,6 @@ const ObservationCell: React.FC<ObservationCellProps> = ({
         return <Heart className="h-4 w-4 text-red-500 flex-shrink-0" />;
       case 'behavior':
         return <Activity className="h-4 w-4 text-blue-500 flex-shrink-0" />;
-      case 'feeding':
-        return <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />;
       default:
         return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
     }
@@ -63,7 +61,7 @@ const ObservationCell: React.FC<ObservationCellProps> = ({
       ) : (
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400 dark:text-gray-600">
-            {activeCategory === 'feeding' ? 'No feeding issues' : 'No observations'}
+            No observations
           </span>
           <PencilLine className="h-3 w-3 text-gray-400 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>

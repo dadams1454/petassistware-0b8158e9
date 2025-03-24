@@ -2,15 +2,15 @@
 import React, { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, parseISO } from 'date-fns';
-import { AlertTriangle, Heart, Activity, MessageCircle, UtensilsCrossed, X } from 'lucide-react';
-import { ObservationType } from './ObservationDialog';
+import { AlertTriangle, Heart, Activity, MessageCircle, X } from 'lucide-react';
+import { ObservationType } from '../../hooks/pottyBreakHooks/observationTypes';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface ObservationListProps {
   existingObservations: Array<{
     observation: string;
-    observation_type: ObservationType;
+    observation_type: 'accident' | 'heat' | 'behavior' | 'other';
     created_at: string;
     category?: string;
   }>;
@@ -32,7 +32,7 @@ const ObservationList: React.FC<ObservationListProps> = ({
   
   if (visibleObservations.length === 0) return null;
   
-  const getObservationIcon = (type: ObservationType) => {
+  const getObservationIcon = (type: 'accident' | 'heat' | 'behavior' | 'other') => {
     switch (type) {
       case 'accident':
         return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
@@ -40,8 +40,6 @@ const ObservationList: React.FC<ObservationListProps> = ({
         return <Heart className="h-4 w-4 text-red-500 flex-shrink-0" />;
       case 'behavior':
         return <Activity className="h-4 w-4 text-blue-500 flex-shrink-0" />;
-      case 'feeding':
-        return <UtensilsCrossed className="h-4 w-4 text-red-500 flex-shrink-0" />;
       default:
         return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
     }
@@ -88,8 +86,7 @@ const ObservationList: React.FC<ObservationListProps> = ({
                 "flex items-start gap-2 p-3 rounded-lg bg-muted/50 relative group",
                 obs.observation_type === 'accident' && "bg-amber-50 dark:bg-amber-950/20",
                 obs.observation_type === 'heat' && "bg-red-50 dark:bg-red-950/20",
-                obs.observation_type === 'behavior' && "bg-blue-50 dark:bg-blue-950/20",
-                obs.observation_type === 'feeding' && "bg-red-50 dark:bg-red-950/20"
+                obs.observation_type === 'behavior' && "bg-blue-50 dark:bg-blue-950/20"
               )}
             >
               {getObservationIcon(obs.observation_type)}
