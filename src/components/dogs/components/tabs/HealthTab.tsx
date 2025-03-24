@@ -78,9 +78,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
   }
 
   // Get typed records
-  const vaccinationRecords: HealthRecord[] = getRecordsByType('vaccination');
-  const examinationRecords: HealthRecord[] = getRecordsByType('examination');
-  const medicationRecords: HealthRecord[] = getRecordsByType('medication');
+  const vaccinationRecords = getRecordsByType('vaccination');
+  const examinationRecords = getRecordsByType('examination');
+  const medicationRecords = getRecordsByType('medication');
 
   return (
     <div className="space-y-6">
