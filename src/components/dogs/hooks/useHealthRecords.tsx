@@ -132,7 +132,7 @@ export const useHealthRecords = (dogId: string) => {
   };
 
   return {
-    healthRecords,
+    healthRecords: healthRecords || [],
     isLoading,
     error,
     refetch,

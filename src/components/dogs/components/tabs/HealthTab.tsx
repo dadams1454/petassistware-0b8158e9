@@ -25,10 +25,10 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     error,
     selectedRecord,
     setSelectedRecord,
+    getRecordsByType,
     addHealthRecord,
     updateHealthRecord,
-    deleteHealthRecord,
-    getRecordsByType
+    deleteHealthRecord
   } = useHealthRecords(dogId);
 
   const handleAddRecord = () => {
@@ -78,9 +78,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
   }
 
   // Get typed records from our local type definition
-  const vaccinationRecordsFromLocalType: HealthRecord[] = getRecordsByType('vaccination');
-  const examinationRecordsFromLocalType: HealthRecord[] = getRecordsByType('examination');
-  const medicationRecordsFromLocalType: HealthRecord[] = getRecordsByType('medication');
+  const vaccinationRecords: HealthRecord[] = getRecordsByType('vaccination');
+  const examinationRecords: HealthRecord[] = getRecordsByType('examination');
+  const medicationRecords: HealthRecord[] = getRecordsByType('medication');
 
   return (
     <div className="space-y-6">
@@ -98,22 +98,22 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
           <TabsTrigger value="vaccinations">
             <Syringe className="h-4 w-4 mr-2" />
             Vaccinations
-            {vaccinationRecordsFromLocalType.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{vaccinationRecordsFromLocalType.length}</Badge>
+            {vaccinationRecords.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{vaccinationRecords.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="examinations">
             <Stethoscope className="h-4 w-4 mr-2" />
             Examinations
-            {examinationRecordsFromLocalType.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{examinationRecordsFromLocalType.length}</Badge>
+            {examinationRecords.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{examinationRecords.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="medications">
             <Pill className="h-4 w-4 mr-2" />
             Medications
-            {medicationRecordsFromLocalType.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{medicationRecordsFromLocalType.length}</Badge>
+            {medicationRecords.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{medicationRecords.length}</Badge>
             )}
           </TabsTrigger>
         </TabsList>
@@ -136,9 +136,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="vaccinations" className="space-y-4 mt-4">
-          {vaccinationRecordsFromLocalType.length > 0 ? (
+          {vaccinationRecords.length > 0 ? (
             <HealthRecordList 
-              records={vaccinationRecordsFromLocalType}
+              records={vaccinationRecords}
               onEdit={handleEditRecord}
               onDelete={handleDeleteRecord}
             />
@@ -153,9 +153,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="examinations" className="space-y-4 mt-4">
-          {examinationRecordsFromLocalType.length > 0 ? (
+          {examinationRecords.length > 0 ? (
             <HealthRecordList 
-              records={examinationRecordsFromLocalType}
+              records={examinationRecords}
               onEdit={handleEditRecord}
               onDelete={handleDeleteRecord}
             />
@@ -170,9 +170,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="medications" className="space-y-4 mt-4">
-          {medicationRecordsFromLocalType.length > 0 ? (
+          {medicationRecords.length > 0 ? (
             <HealthRecordList 
-              records={medicationRecordsFromLocalType}
+              records={medicationRecords}
               onEdit={handleEditRecord}
               onDelete={handleDeleteRecord}
             />
