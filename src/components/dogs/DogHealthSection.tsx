@@ -4,7 +4,7 @@ import { addDays } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { useDogHealthVaccinations } from './hooks/useDogHealthVaccinations';
 import VaccinationHistorySection from './components/VaccinationHistorySection';
-import BreedingInfoSection from './components/BreedingInfoSection';
+import HealthSectionHeader from './components/health/HealthSectionHeader';
 import VaccinationManager from './components/VaccinationManager';
 
 interface DogHealthSectionProps {
@@ -41,31 +41,17 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
   return (
     <div className="text-sm space-y-4">
       {/* Only show breeding section for females first and more prominently */}
-      {dog.gender === 'Female' && (
-        <>
-          <div className="p-4 rounded-lg border-2 border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="font-semibold text-base text-purple-800 dark:text-purple-300">Breeding Information</h4>
-              {isPregnant && (
-                <span className="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-pink-900 dark:text-pink-300">
-                  Pregnant
-                </span>
-              )}
-            </div>
-            
-            <BreedingInfoSection 
-              lastHeatDate={lastHeatDate}
-              isPregnant={isPregnant}
-              tieDate={tieDate}
-              litterNumber={litterNumber}
-              nextHeatDate={nextHeatDate}
-              hasVaccinationConflict={hasVaccinationConflict}
-            />
-          </div>
-          
-          <Separator className="my-2" />
-        </>
-      )}
+      <HealthSectionHeader
+        gender={dog.gender}
+        isPregnant={isPregnant}
+        lastHeatDate={lastHeatDate}
+        tieDate={tieDate}
+        litterNumber={litterNumber}
+        nextHeatDate={nextHeatDate}
+        hasVaccinationConflict={hasVaccinationConflict}
+      />
+      
+      {dog.gender === 'Female' && <Separator className="my-2" />}
 
       {/* Vaccination management */}
       <div className="space-y-2">

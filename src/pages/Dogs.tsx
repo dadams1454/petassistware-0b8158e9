@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,14 +6,8 @@ import MainLayout from '@/layouts/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthProvider';
-import DogForm from '@/components/dogs/DogForm';
 import DogsList from '@/components/dogs/DogsList';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import DogFormDialog from '@/components/dogs/components/dialogs/DogFormDialog';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 const DogsPage = () => {
@@ -68,7 +61,7 @@ const DogsPage = () => {
         description: 'Dog has been successfully removed',
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: 'Error deleting dog',
         description: error.message,
@@ -90,6 +83,13 @@ const DogsPage = () => {
     if (window.confirm('Are you sure you want to delete this dog?')) {
       deleteDogMutation.mutate(dogId);
     }
+  };
+
+  const handleFormSuccess = () => {
+    setIsAddDialogOpen(false);
+    setIsEditDialogOpen(false);
+    queryClient.invalidateQueries({ queryKey: ['dogs'] });
+    queryClient.invalidateQueries({ queryKey: ['allDogs'] });
   };
 
   return (
@@ -117,41 +117,23 @@ const DogsPage = () => {
           )}
 
           {/* Add Dog Dialog */}
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Add New Dog</DialogTitle>
-              </DialogHeader>
-              <DogForm 
-                onSuccess={() => {
-                  setIsAddDialogOpen(false);
-                  queryClient.invalidateQueries({ queryKey: ['dogs'] });
-                  queryClient.invalidateQueries({ queryKey: ['allDogs'] });
-                }}
-                onCancel={() => setIsAddDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
+          <DogFormDialog
+            isOpen={isAddDialogOpen}
+            onOpenChange={setIsAddDialogOpen}
+            onSuccess={handleFormSuccess}
+            onCancel={() => setIsAddDialogOpen(false)}
+            title="Add New Dog"
+          />
 
           {/* Edit Dog Dialog */}
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Edit Dog</DialogTitle>
-              </DialogHeader>
-              {selectedDog && (
-                <DogForm 
-                  dog={selectedDog}
-                  onSuccess={() => {
-                    setIsEditDialogOpen(false);
-                    queryClient.invalidateQueries({ queryKey: ['dogs'] });
-                    queryClient.invalidateQueries({ queryKey: ['allDogs'] });
-                  }}
-                  onCancel={() => setIsEditDialogOpen(false)}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
+          <DogFormDialog
+            isOpen={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            onSuccess={handleFormSuccess}
+            onCancel={() => setIsEditDialogOpen(false)}
+            dog={selectedDog}
+            title="Edit Dog"
+          />
         </div>
       </MainLayout>
     </ProtectedRoute>

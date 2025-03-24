@@ -1,15 +1,10 @@
 
 import React, { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import VaccinationsTab from './components/VaccinationsTab';
-import PedigreeTab from './components/tabs/PedigreeTab';
-import GalleryTab from './components/tabs/GalleryTab';
 import DogHeader from './components/details/DogHeader';
-import OverviewTab from './components/tabs/OverviewTab';
-import DocumentationTab from './components/tabs/DocumentationTab';
 import EditDogDialog from './components/details/EditDogDialog';
 import { useDogEvents } from './hooks/useDogEvents';
+import DogDetailsTabs from './components/details/DogDetailsTabs';
 
 interface DogDetailsProps {
   dog: any;
@@ -41,40 +36,15 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
       
       <Separator />
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className={isFullPage ? "mt-8" : ""}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
-          <TabsTrigger value="gallery">Gallery</TabsTrigger>
-          <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
-          <TabsTrigger value="documentation">Documentation</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview">
-          <OverviewTab 
-            dog={dog} 
-            events={events}
-            onViewEvent={handleViewEvent}
-            onAddAppointment={handleAddAppointment}
-          />
-        </TabsContent>
-        
-        <TabsContent value="vaccinations">
-          <VaccinationsTab dogId={dog.id} />
-        </TabsContent>
-
-        <TabsContent value="gallery">
-          <GalleryTab dogId={dog.id} mainPhotoUrl={dog.photo_url} />
-        </TabsContent>
-        
-        <TabsContent value="pedigree">
-          <PedigreeTab dogId={dog.id} currentDog={dog} />
-        </TabsContent>
-        
-        <TabsContent value="documentation">
-          <DocumentationTab dog={dog} />
-        </TabsContent>
-      </Tabs>
+      <DogDetailsTabs
+        dog={dog}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        events={events}
+        onViewEvent={handleViewEvent}
+        onAddAppointment={handleAddAppointment}
+        isFullPage={isFullPage}
+      />
 
       {/* Edit Dialog */}
       <EditDogDialog 
