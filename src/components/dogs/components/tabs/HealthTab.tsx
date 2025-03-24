@@ -1,264 +1,246 @@
 
 import React, { useState } from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Plus, AlertTriangle, Calendar, Activity } from 'lucide-react';
 import { useHealthRecords } from '../../hooks/useHealthRecords';
-import HealthRecordDialog from '../profile/records/HealthRecordDialog';
-import { HealthRecord } from '@/types/dog';
+import { useWeightTracking } from '../../hooks/useWeightTracking';
+import { HealthRecordType } from '@/types/health';
+import HealthRecordsList from '../health/HealthRecordsList';
+import VaccinationSection from '../health/VaccinationSection';
+import WeightTrackingSection from '../health/WeightTrackingSection';
+import HealthSummaryCard from '../health/HealthSummaryCard';
+import WeightEntryDialog from '../health/WeightEntryDialog';
+import HealthRecordDialog from '../../components/profile/records/HealthRecordDialog';
 
 interface HealthTabProps {
   dogId: string;
 }
 
 const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<HealthRecord | null>(null);
+  const [activeTab, setActiveTab] = useState('summary');
+  const [recordDialogOpen, setRecordDialogOpen] = useState(false);
+  const [weightDialogOpen, setWeightDialogOpen] = useState(false);
+  const [selectedRecordType, setSelectedRecordType] = useState<HealthRecordType>(HealthRecordType.Examination);
+  const [selectedRecord, setSelectedRecord] = useState<string | null>(null);
   
   const { 
     healthRecords, 
-    isLoading, 
-    refetch,
+    isLoading: recordsLoading,
     addHealthRecord,
     updateHealthRecord,
-    deleteHealthRecord
+    deleteHealthRecord,
+    getRecordsByType,
+    getUpcomingVaccinations,
+    getOverdueVaccinations,
+    refetch
   } = useHealthRecords(dogId);
   
-  const handleAddRecord = () => {
+  const { 
+    weightHistory, 
+    isLoading: weightLoading,
+    addWeightRecord,
+    growthStats 
+  } = useWeightTracking(dogId);
+  
+  const handleAddRecord = (type: HealthRecordType) => {
+    setSelectedRecordType(type);
     setSelectedRecord(null);
-    setDialogOpen(true);
+    setRecordDialogOpen(true);
   };
   
-  const handleEditRecord = (record: HealthRecord) => {
-    setSelectedRecord(record);
-    setDialogOpen(true);
+  const handleEditRecord = (recordId: string) => {
+    setSelectedRecord(recordId);
+    setRecordDialogOpen(true);
   };
 
   const handleSaveRecord = async () => {
-    setDialogOpen(false);
+    setRecordDialogOpen(false);
     await refetch();
   };
   
-  // Helper function to filter records by type
-  const getRecordsByType = (type: HealthRecord['record_type']) => {
-    return healthRecords?.filter(record => record.record_type === type) || [];
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
   return (
     <div className="space-y-6">
-      <Alert variant="default" className="bg-muted">
-        <AlertDescription>
-          Track health records, vaccinations, and medical history.
-        </AlertDescription>
-      </Alert>
-      
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Health Records</h2>
-        <Button onClick={handleAddRecord}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Add Record
-        </Button>
+        <h2 className="text-2xl font-bold">Health Records</h2>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setWeightDialogOpen(true)}
+          >
+            <Activity className="h-4 w-4 mr-2" />
+            Add Weight
+          </Button>
+          <Button onClick={() => handleAddRecord(HealthRecordType.Examination)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Record
+          </Button>
+        </div>
       </div>
       
-      <Tabs defaultValue="all-records">
-        <TabsList>
-          <TabsTrigger value="all-records">All Records</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-5 w-full">
+          <TabsTrigger value="summary">Summary</TabsTrigger>
           <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
           <TabsTrigger value="examinations">Examinations</TabsTrigger>
           <TabsTrigger value="medications">Medications</TabsTrigger>
+          <TabsTrigger value="weight">Weight</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="all-records" className="pt-4">
-          {healthRecords && healthRecords.length > 0 ? (
-            <div className="space-y-4">
-              {healthRecords.map(record => (
-                <Card 
-                  key={record.id} 
-                  className="hover:bg-muted/50 cursor-pointer transition-colors duration-200"
-                  onClick={() => handleEditRecord(record)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{record.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Type: {record.record_type}
-                        </p>
-                        {record.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {record.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(record.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No health records found</p>
-                <Button variant="outline" className="mt-2" onClick={handleAddRecord}>
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Health Record
-                </Button>
+        <TabsContent value="summary" className="space-y-4 pt-4">
+          <HealthSummaryCard 
+            dogId={dogId}
+            upcomingVaccinations={getUpcomingVaccinations()}
+            overdueVaccinations={getOverdueVaccinations()}
+            recentExaminations={getRecordsByType(HealthRecordType.Examination).slice(0, 3)}
+            currentMedications={getRecordsByType(HealthRecordType.Medication)}
+            latestWeight={weightHistory ? weightHistory[0] : undefined}
+            growthStats={growthStats}
+            isLoading={recordsLoading || weightLoading}
+          />
+          
+          {getOverdueVaccinations().length > 0 && (
+            <Card className="border-red-200 bg-red-50 dark:bg-red-950/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-red-600 flex items-center">
+                  <AlertTriangle className="h-5 w-5 mr-2" />
+                  Overdue Vaccinations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HealthRecordsList 
+                  records={getOverdueVaccinations()}
+                  onEdit={handleEditRecord}
+                  onDelete={deleteHealthRecord}
+                  emptyMessage="No overdue vaccinations"
+                />
               </CardContent>
             </Card>
           )}
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                Upcoming Health Events
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <HealthRecordsList 
+                records={getUpcomingVaccinations()}
+                onEdit={handleEditRecord}
+                onDelete={deleteHealthRecord}
+                emptyMessage="No upcoming health events"
+              />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center">
+                <Activity className="h-5 w-5 mr-2" />
+                Recent Health Activities
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <HealthRecordsList 
+                records={healthRecords?.slice(0, 5) || []}
+                onEdit={handleEditRecord}
+                onDelete={deleteHealthRecord}
+                emptyMessage="No recent health activities"
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="vaccinations" className="pt-4">
-          {getRecordsByType('vaccination').length > 0 ? (
-            <div className="space-y-4">
-              {getRecordsByType('vaccination').map(record => (
-                <Card 
-                  key={record.id} 
-                  className="hover:bg-muted/50 cursor-pointer transition-colors duration-200"
-                  onClick={() => handleEditRecord(record)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{record.title}</h3>
-                        {record.next_due_date && (
-                          <p className="text-sm text-amber-600 mt-1">
-                            Next due: {new Date(record.next_due_date).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(record.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No vaccination records found</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-2" 
-                  onClick={handleAddRecord}
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Vaccination
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <VaccinationSection 
+            vaccinations={getRecordsByType(HealthRecordType.Vaccination)}
+            upcomingVaccinations={getUpcomingVaccinations()}
+            overdueVaccinations={getOverdueVaccinations()}
+            onAdd={() => handleAddRecord(HealthRecordType.Vaccination)}
+            onEdit={handleEditRecord}
+            onDelete={deleteHealthRecord}
+            isLoading={recordsLoading}
+          />
         </TabsContent>
         
         <TabsContent value="examinations" className="pt-4">
-          {getRecordsByType('examination').length > 0 ? (
-            <div className="space-y-4">
-              {getRecordsByType('examination').map(record => (
-                <Card 
-                  key={record.id} 
-                  className="hover:bg-muted/50 cursor-pointer transition-colors duration-200"
-                  onClick={() => handleEditRecord(record)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{record.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Performed by: {record.performed_by}
-                        </p>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(record.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No examination records found</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-2" 
-                  onClick={handleAddRecord}
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Examination
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle>Examination Records</CardTitle>
+              <Button
+                size="sm"
+                onClick={() => handleAddRecord(HealthRecordType.Examination)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Examination
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <HealthRecordsList 
+                records={getRecordsByType(HealthRecordType.Examination)}
+                onEdit={handleEditRecord}
+                onDelete={deleteHealthRecord}
+                emptyMessage="No examination records found"
+                isLoading={recordsLoading}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="medications" className="pt-4">
-          {getRecordsByType('medication').length > 0 ? (
-            <div className="space-y-4">
-              {getRecordsByType('medication').map(record => (
-                <Card 
-                  key={record.id} 
-                  className="hover:bg-muted/50 cursor-pointer transition-colors duration-200"
-                  onClick={() => handleEditRecord(record)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{record.title}</h3>
-                        {record.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {record.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(record.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No medication records found</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-2" 
-                  onClick={handleAddRecord}
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Medication
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle>Medication Records</CardTitle>
+              <Button
+                size="sm"
+                onClick={() => handleAddRecord(HealthRecordType.Medication)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Medication
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <HealthRecordsList 
+                records={getRecordsByType(HealthRecordType.Medication)}
+                onEdit={handleEditRecord}
+                onDelete={deleteHealthRecord}
+                emptyMessage="No medication records found"
+                isLoading={recordsLoading}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="weight" className="pt-4">
+          <WeightTrackingSection 
+            weightHistory={weightHistory || []}
+            growthStats={growthStats}
+            onAddWeight={() => setWeightDialogOpen(true)}
+            isLoading={weightLoading}
+          />
         </TabsContent>
       </Tabs>
       
-      <HealthRecordDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        dogId={dogId}
-        record={selectedRecord}
-        onSave={handleSaveRecord}
-      />
+      {recordDialogOpen && (
+        <HealthRecordDialog
+          open={recordDialogOpen}
+          onOpenChange={setRecordDialogOpen}
+          dogId={dogId}
+          record={selectedRecord ? healthRecords?.find(r => r.id === selectedRecord) || null : null}
+          onSave={handleSaveRecord}
+        />
+      )}
+      
+      {weightDialogOpen && (
+        <WeightEntryDialog
+          dogId={dogId}
+          onClose={() => setWeightDialogOpen(false)}
+          onSave={(weightRecord) => addWeightRecord({ ...weightRecord, dog_id: dogId })}
+        />
+      )}
     </div>
   );
 };

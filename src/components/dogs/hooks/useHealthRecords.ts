@@ -1,18 +1,21 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { HealthRecord } from '@/types/dog';
+import { HealthRecord, HealthRecordType } from '@/types/health';
 import { 
   getHealthRecords, 
+  getHealthRecordsByType,
   addHealthRecord as addRecord, 
   updateHealthRecord as updateRecord, 
-  deleteHealthRecord as deleteRecord
+  deleteHealthRecord as deleteRecord,
+  getUpcomingVaccinations
 } from '@/services/healthService';
 
 export const useHealthRecords = (dogId: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Fetch all health records
   const { 
     data: healthRecords, 
     isLoading, 
@@ -24,6 +27,12 @@ export const useHealthRecords = (dogId: string) => {
     enabled: !!dogId,
   });
 
+  // Fetch records by type
+  const getRecordsByType = (type: HealthRecordType) => {
+    return healthRecords?.filter(record => record.record_type === type) || [];
+  };
+
+  // Add a new health record
   const addHealthRecord = useMutation({
     mutationFn: (record: Omit<HealthRecord, 'id' | 'created_at'>) => 
       addRecord(record),
@@ -43,6 +52,7 @@ export const useHealthRecords = (dogId: string) => {
     },
   });
 
+  // Update an existing health record
   const updateHealthRecord = useMutation({
     mutationFn: ({ id, ...updates }: { id: string; [key: string]: any }) => 
       updateRecord(id, updates),
@@ -62,6 +72,7 @@ export const useHealthRecords = (dogId: string) => {
     },
   });
 
+  // Delete a health record
   const deleteHealthRecord = useMutation({
     mutationFn: (id: string) => deleteRecord(id),
     onSuccess: () => {
@@ -80,6 +91,42 @@ export const useHealthRecords = (dogId: string) => {
     },
   });
 
+  // Get upcoming vaccinations
+  const getUpcomingVaccinationsData = (daysAhead = 30) => {
+    if (!healthRecords) return [];
+    
+    const today = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(today.getDate() + daysAhead);
+    
+    return healthRecords
+      .filter(record => 
+        record.record_type === 'vaccination' && 
+        record.next_due_date && 
+        new Date(record.next_due_date) >= today &&
+        new Date(record.next_due_date) <= futureDate
+      )
+      .sort((a, b) => 
+        new Date(a.next_due_date!).getTime() - new Date(b.next_due_date!).getTime()
+      );
+  };
+  
+  // Get overdue vaccinations
+  const getOverdueVaccinations = () => {
+    if (!healthRecords) return [];
+    
+    const today = new Date();
+    return healthRecords
+      .filter(record => 
+        record.record_type === 'vaccination' && 
+        record.next_due_date && 
+        new Date(record.next_due_date) < today
+      )
+      .sort((a, b) => 
+        new Date(a.next_due_date!).getTime() - new Date(b.next_due_date!).getTime()
+      );
+  };
+
   return {
     healthRecords,
     isLoading,
@@ -91,5 +138,8 @@ export const useHealthRecords = (dogId: string) => {
     isAdding: addHealthRecord.isPending,
     isUpdating: updateHealthRecord.isPending,
     isDeleting: deleteHealthRecord.isPending,
+    getRecordsByType,
+    getUpcomingVaccinations: getUpcomingVaccinationsData,
+    getOverdueVaccinations
   };
 };

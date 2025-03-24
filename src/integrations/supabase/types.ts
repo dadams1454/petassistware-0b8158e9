@@ -684,44 +684,116 @@ export type Database = {
       }
       health_records: {
         Row: {
+          administration_route: string | null
+          anesthesia_used: string | null
           created_at: string | null
           description: string | null
           document_url: string | null
           dog_id: string | null
+          dosage: number | null
+          dosage_unit: string | null
+          duration: number | null
+          duration_unit: string | null
+          end_date: string | null
+          examination_type: string | null
+          expiration_date: string | null
+          findings: string | null
+          follow_up_date: string | null
+          frequency: string | null
           id: string
+          lot_number: string | null
+          manufacturer: string | null
+          medication_name: string | null
           next_due_date: string | null
           performed_by: string | null
+          prescription_number: string | null
+          procedure_name: string | null
+          recommendations: string | null
           record_notes: string | null
           record_type: string | null
+          recovery_notes: string | null
+          reminder_sent: boolean | null
+          start_date: string | null
+          surgeon: string | null
           title: string | null
+          vaccine_name: string | null
+          vet_clinic: string | null
           vet_name: string
           visit_date: string
         }
         Insert: {
+          administration_route?: string | null
+          anesthesia_used?: string | null
           created_at?: string | null
           description?: string | null
           document_url?: string | null
           dog_id?: string | null
+          dosage?: number | null
+          dosage_unit?: string | null
+          duration?: number | null
+          duration_unit?: string | null
+          end_date?: string | null
+          examination_type?: string | null
+          expiration_date?: string | null
+          findings?: string | null
+          follow_up_date?: string | null
+          frequency?: string | null
           id?: string
+          lot_number?: string | null
+          manufacturer?: string | null
+          medication_name?: string | null
           next_due_date?: string | null
           performed_by?: string | null
+          prescription_number?: string | null
+          procedure_name?: string | null
+          recommendations?: string | null
           record_notes?: string | null
           record_type?: string | null
+          recovery_notes?: string | null
+          reminder_sent?: boolean | null
+          start_date?: string | null
+          surgeon?: string | null
           title?: string | null
+          vaccine_name?: string | null
+          vet_clinic?: string | null
           vet_name: string
           visit_date: string
         }
         Update: {
+          administration_route?: string | null
+          anesthesia_used?: string | null
           created_at?: string | null
           description?: string | null
           document_url?: string | null
           dog_id?: string | null
+          dosage?: number | null
+          dosage_unit?: string | null
+          duration?: number | null
+          duration_unit?: string | null
+          end_date?: string | null
+          examination_type?: string | null
+          expiration_date?: string | null
+          findings?: string | null
+          follow_up_date?: string | null
+          frequency?: string | null
           id?: string
+          lot_number?: string | null
+          manufacturer?: string | null
+          medication_name?: string | null
           next_due_date?: string | null
           performed_by?: string | null
+          prescription_number?: string | null
+          procedure_name?: string | null
+          recommendations?: string | null
           record_notes?: string | null
           record_type?: string | null
+          recovery_notes?: string | null
+          reminder_sent?: boolean | null
+          start_date?: string | null
+          surgeon?: string | null
           title?: string | null
+          vaccine_name?: string | null
+          vet_clinic?: string | null
           vet_name?: string
           visit_date?: string
         }
@@ -1150,6 +1222,44 @@ export type Database = {
             columns: ["litter_id"]
             isOneToOne: false
             referencedRelation: "litters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weight_records: {
+        Row: {
+          created_at: string
+          date: string
+          dog_id: string
+          id: string
+          notes: string | null
+          weight: number
+          weight_unit: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          dog_id: string
+          id?: string
+          notes?: string | null
+          weight: number
+          weight_unit: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          dog_id?: string
+          id?: string
+          notes?: string | null
+          weight?: number
+          weight_unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weight_records_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
             referencedColumns: ["id"]
           },
         ]
