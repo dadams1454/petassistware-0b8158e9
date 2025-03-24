@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Define the types needed for dashboard data
+// Define types for dashboard data
 export interface DashboardData {
   totalDogs: number;
   activeDogs: number;
@@ -10,18 +10,16 @@ export interface DashboardData {
   totalPuppies: number;
   availablePuppies: number;
   totalCustomers: number;
-  // Add any other dashboard metrics here
 }
 
-// Alias DashboardStats to match the naming used in components
-export type DashboardStats = DashboardData;
+export interface DashboardStats extends DashboardData {}
 
 export interface UpcomingEvent {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   date: string;
-  status: 'upcoming' | 'planned' | 'completed' | 'cancelled';
+  status: string;
 }
 
 export interface RecentActivity {
@@ -32,68 +30,27 @@ export interface RecentActivity {
   createdAt: string;
 }
 
-// Main dashboard data fetching function
-export const fetchDashboardData = async (): Promise<DashboardData> => {
+/**
+ * Fetches dashboard statistics
+ */
+export const fetchDashboardStats = async (): Promise<DashboardData> => {
   try {
-    // Fetch count of all dogs
-    const { count: totalDogs, error: dogsError } = await supabase
-      .from('dogs')
-      .select('*', { count: 'exact', head: true });
-
-    // Fetch count of active dogs
-    const { count: activeDogs, error: activeDogsError } = await supabase
-      .from('dogs')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'active');
-
-    // Fetch count of all litters
-    const { count: totalLitters, error: littersError } = await supabase
-      .from('litters')
-      .select('*', { count: 'exact', head: true });
-
-    // Fetch count of active litters
-    const { count: activeLitters, error: activeLittersError } = await supabase
-      .from('litters')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'active');
-
-    // Fetch count of all puppies
-    const { count: totalPuppies, error: puppiesError } = await supabase
-      .from('puppies')
-      .select('*', { count: 'exact', head: true });
-
-    // Fetch count of available puppies
-    const { count: availablePuppies, error: availablePuppiesError } = await supabase
-      .from('puppies')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'Available');
-
-    // Fetch count of all customers
-    const { count: totalCustomers, error: customersError } = await supabase
-      .from('customers')
-      .select('*', { count: 'exact', head: true });
-
-    // Handle any errors
-    if (dogsError || activeDogsError || littersError || activeLittersError || 
-        puppiesError || availablePuppiesError || customersError) {
-      console.error("Error fetching dashboard data:", { 
-        dogsError, activeDogsError, littersError, activeLittersError,
-        puppiesError, availablePuppiesError, customersError 
-      });
-    }
+    // Fetch all statistics in parallel
+    const [dogStats, litterStats, puppyStats, customerStats] = await Promise.all([
+      fetchDogStats(),
+      fetchLitterStats(),
+      fetchPuppyStats(),
+      fetchCustomerStats()
+    ]);
 
     return {
-      totalDogs: totalDogs || 0,
-      activeDogs: activeDogs || 0,
-      totalLitters: totalLitters || 0,
-      activeLitters: activeLitters || 0,
-      totalPuppies: totalPuppies || 0,
-      availablePuppies: availablePuppies || 0,
-      totalCustomers: totalCustomers || 0,
+      ...dogStats,
+      ...litterStats,
+      ...puppyStats,
+      ...customerStats
     };
   } catch (error) {
-    console.error("Error in fetchDashboardData:", error);
-    // Return default values in case of error
+    console.error('Error fetching dashboard stats:', error);
     return {
       totalDogs: 0,
       activeDogs: 0,
@@ -101,43 +58,140 @@ export const fetchDashboardData = async (): Promise<DashboardData> => {
       activeLitters: 0,
       totalPuppies: 0,
       availablePuppies: 0,
-      totalCustomers: 0,
+      totalCustomers: 0
     };
   }
 };
 
-// Alias for fetchDashboardData to match the import in useDashboardData.tsx
-export const fetchDashboardStats = fetchDashboardData;
+/**
+ * Fetches dog statistics
+ */
+const fetchDogStats = async (): Promise<{ totalDogs: number; activeDogs: number }> => {
+  // Get total dogs count
+  const { count: totalDogs, error: dogsError } = await supabase
+    .from('dogs')
+    .select('*', { count: 'exact', head: true });
 
-// Fetch upcoming events for the dashboard
+  // Get active dogs count (no death_date)
+  const { count: activeDogs, error: activeDogsError } = await supabase
+    .from('dogs')
+    .select('*', { count: 'exact', head: true })
+    .is('death_date', null);
+
+  if (dogsError || activeDogsError) {
+    console.error('Error fetching dog stats:', dogsError || activeDogsError);
+    return { totalDogs: 0, activeDogs: 0 };
+  }
+
+  return {
+    totalDogs: totalDogs || 0,
+    activeDogs: activeDogs || 0
+  };
+};
+
+/**
+ * Fetches litter statistics
+ */
+const fetchLitterStats = async (): Promise<{ totalLitters: number; activeLitters: number }> => {
+  // Get total litters count
+  const { count: totalLitters, error: littersError } = await supabase
+    .from('litters')
+    .select('*', { count: 'exact', head: true });
+
+  // Get active litters count
+  const { count: activeLitters, error: activeLittersError } = await supabase
+    .from('litters')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'active');
+
+  if (littersError || activeLittersError) {
+    console.error('Error fetching litter stats:', littersError || activeLittersError);
+    return { totalLitters: 0, activeLitters: 0 };
+  }
+
+  return {
+    totalLitters: totalLitters || 0,
+    activeLitters: activeLitters || 0
+  };
+};
+
+/**
+ * Fetches puppy statistics
+ */
+const fetchPuppyStats = async (): Promise<{ totalPuppies: number; availablePuppies: number }> => {
+  // Get total puppies count
+  const { count: totalPuppies, error: puppiesError } = await supabase
+    .from('puppies')
+    .select('*', { count: 'exact', head: true });
+
+  // Get available puppies count
+  const { count: availablePuppies, error: availablePuppiesError } = await supabase
+    .from('puppies')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'Available');
+
+  if (puppiesError || availablePuppiesError) {
+    console.error('Error fetching puppy stats:', puppiesError || availablePuppiesError);
+    return { totalPuppies: 0, availablePuppies: 0 };
+  }
+
+  return {
+    totalPuppies: totalPuppies || 0,
+    availablePuppies: availablePuppies || 0
+  };
+};
+
+/**
+ * Fetches customer statistics
+ */
+const fetchCustomerStats = async (): Promise<{ totalCustomers: number }> => {
+  // Get total customers count
+  const { count: totalCustomers, error: customersError } = await supabase
+    .from('customers')
+    .select('*', { count: 'exact', head: true });
+
+  if (customersError) {
+    console.error('Error fetching customer stats:', customersError);
+    return { totalCustomers: 0 };
+  }
+
+  return {
+    totalCustomers: totalCustomers || 0
+  };
+};
+
+/**
+ * Fetches upcoming events for the dashboard
+ */
 export const fetchUpcomingEvents = async (): Promise<UpcomingEvent[]> => {
   try {
+    const today = new Date().toISOString().split('T')[0];
+    
     const { data, error } = await supabase
       .from('events')
       .select('id, title, description, event_date, status')
-      .gte('event_date', new Date().toISOString().split('T')[0])
+      .gte('event_date', today)
       .order('event_date', { ascending: true })
       .limit(5);
+      
+    if (error) throw error;
     
-    if (error) {
-      console.error("Error fetching upcoming events:", error);
-      return [];
-    }
-    
-    return (data || []).map(event => ({
+    return data.map(event => ({
       id: event.id,
       title: event.title,
-      description: event.description,
+      description: event.description || '',
       date: event.event_date,
-      status: event.status === 'planned' ? 'planned' : 'upcoming'
+      status: event.status
     }));
   } catch (error) {
-    console.error("Error in fetchUpcomingEvents:", error);
+    console.error('Error fetching upcoming events:', error);
     return [];
   }
 };
 
-// Fetch recent activities for the dashboard
+/**
+ * Fetches recent activities for the dashboard
+ */
 export const fetchRecentActivities = async (): Promise<RecentActivity[]> => {
   try {
     const { data, error } = await supabase
@@ -145,21 +199,18 @@ export const fetchRecentActivities = async (): Promise<RecentActivity[]> => {
       .select('id, activity_type, title, description, created_at')
       .order('created_at', { ascending: false })
       .limit(5);
+      
+    if (error) throw error;
     
-    if (error) {
-      console.error("Error fetching recent activities:", error);
-      return [];
-    }
-    
-    return (data || []).map(activity => ({
+    return data.map(activity => ({
       id: activity.id,
       type: activity.activity_type,
       title: activity.title,
-      description: activity.description,
+      description: activity.description || '',
       createdAt: activity.created_at
     }));
   } catch (error) {
-    console.error("Error in fetchRecentActivities:", error);
+    console.error('Error fetching recent activities:', error);
     return [];
   }
 };
