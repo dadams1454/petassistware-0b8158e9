@@ -685,28 +685,43 @@ export type Database = {
       health_records: {
         Row: {
           created_at: string | null
+          description: string | null
           document_url: string | null
           dog_id: string | null
           id: string
+          next_due_date: string | null
+          performed_by: string | null
           record_notes: string | null
+          record_type: string | null
+          title: string | null
           vet_name: string
           visit_date: string
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
           document_url?: string | null
           dog_id?: string | null
           id?: string
+          next_due_date?: string | null
+          performed_by?: string | null
           record_notes?: string | null
+          record_type?: string | null
+          title?: string | null
           vet_name: string
           visit_date: string
         }
         Update: {
           created_at?: string | null
+          description?: string | null
           document_url?: string | null
           dog_id?: string | null
           id?: string
+          next_due_date?: string | null
+          performed_by?: string | null
           record_notes?: string | null
+          record_type?: string | null
+          title?: string | null
           vet_name?: string
           visit_date?: string
         }
