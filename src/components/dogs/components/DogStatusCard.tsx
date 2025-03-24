@@ -1,36 +1,27 @@
-
 import React from 'react';
-import { format, addDays, isAfter, isBefore, isToday } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { Heart, AlertTriangle, Flame } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useDogStatus, isWithinDays } from '../hooks/useDogStatus';
 
 interface DogStatusCardProps {
   dog: any;
 }
 
 const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
-  // Extract relevant health data
-  const isPregnant = dog.is_pregnant || false;
-  const lastHeatDate = dog.last_heat_date ? new Date(dog.last_heat_date) : null;
-  const lastVaccinationDate = dog.last_vaccination_date ? new Date(dog.last_vaccination_date) : null;
-  
-  // Calculate next heat date (approximately 6 months after last heat)
-  const nextHeatDate = lastHeatDate ? addDays(lastHeatDate, 180) : null;
-  
-  // Calculate next vaccination date (approximately 1 year after last vaccination)
-  const nextVaccinationDate = lastVaccinationDate ? addDays(lastVaccinationDate, 365) : null;
+  // Use our custom hook to get dog status
+  const { 
+    isPregnant, 
+    inHeatWindow, 
+    vaccinationDueSoon,
+    lastHeatDate, 
+    nextHeatDate, 
+    lastVaccinationDate, 
+    nextVaccinationDate,
+    tieDate
+  } = useDogStatus(dog);
   
   const today = new Date();
-  
-  // Check if the dog is potentially in heat (2 weeks before to 2 weeks after calculated next heat date)
-  const inHeatWindow = nextHeatDate && !isPregnant 
-    ? isWithinDays(today, nextHeatDate, 14)
-    : false;
-  
-  // Check if vaccinations are due soon or overdue (within 30 days or past due)
-  const vaccinationDueSoon = nextVaccinationDate 
-    ? isWithinDays(today, nextVaccinationDate, 30) || isAfter(today, nextVaccinationDate)
-    : false;
 
   // If no status to show, return null
   if (!isPregnant && !inHeatWindow && !vaccinationDueSoon) {
@@ -51,9 +42,9 @@ const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-sm">This dog is currently pregnant</p>
-              {dog.tie_date && (
+              {tieDate && (
                 <p className="text-xs mt-1">
-                  Due date: {format(addDays(new Date(dog.tie_date), 65), 'MMM d, yyyy')}
+                  Due date: {format(addDays(new Date(tieDate), 65), 'MMM d, yyyy')}
                 </p>
               )}
             </TooltipContent>
@@ -62,7 +53,7 @@ const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
       )}
       
       {/* Heat Cycle Status */}
-      {inHeatWindow && !isPregnant && (
+      {inHeatWindow && !isPregnant && nextHeatDate && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -85,26 +76,26 @@ const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
       )}
       
       {/* Vaccination Status */}
-      {vaccinationDueSoon && (
+      {vaccinationDueSoon && lastVaccinationDate && nextVaccinationDate && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help">
                 <AlertTriangle className="h-4 w-4 text-amber-500 dark:text-amber-300" />
-                {isAfter(today, nextVaccinationDate!) ? 'Vaccination Overdue' : 'Vaccination Due Soon'}
+                {isAfter(today, nextVaccinationDate) ? 'Vaccination Overdue' : 'Vaccination Due Soon'}
               </div>
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-sm">
-                {isAfter(today, nextVaccinationDate!) 
+                {isAfter(today, nextVaccinationDate) 
                   ? 'Vaccinations are overdue' 
                   : 'Vaccinations due within 30 days'}
               </p>
               <p className="text-xs mt-1">
-                Last vaccination: {format(lastVaccinationDate!, 'MMM d, yyyy')}
+                Last vaccination: {format(lastVaccinationDate, 'MMM d, yyyy')}
               </p>
               <p className="text-xs mt-1">
-                Due date: {format(nextVaccinationDate!, 'MMM d, yyyy')}
+                Due date: {format(nextVaccinationDate, 'MMM d, yyyy')}
               </p>
             </TooltipContent>
           </Tooltip>
@@ -113,16 +104,5 @@ const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
     </div>
   );
 };
-
-// Helper function to check if a date is within X days of a target date
-function isWithinDays(date: Date, targetDate: Date, days: number): boolean {
-  const earliestDate = addDays(targetDate, -days);
-  const latestDate = addDays(targetDate, days);
-  
-  return (
-    (isAfter(date, earliestDate) || isToday(earliestDate)) && 
-    (isBefore(date, latestDate) || isToday(latestDate))
-  );
-}
 
 export default DogStatusCard;
