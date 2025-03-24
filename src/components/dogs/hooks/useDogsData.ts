@@ -50,7 +50,7 @@ export const useDogsData = () => {
         registration_organization: undefined, // Not in database, set default
         microchip_number: dog.microchip_number || undefined,
         microchip_location: undefined, // Not in database, set default
-        status: (dog.status || 'active') as DogStatus, // Cast to DogStatus with a default
+        status: 'active' as DogStatus, // Cast to DogStatus with a default
         notes: dog.notes || undefined,
         group_ids: undefined, // Not in database, set default
         owner_id: dog.owner_id || undefined,
