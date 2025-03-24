@@ -17,6 +17,7 @@ interface PhotoGridProps {
   isLoading: boolean;
   onPhotoClick: (url: string) => void;
   onDeletePhoto: (id: string) => void;
+  onSetAsProfile: (url: string) => void;
   onUploadClick: () => void;
 }
 
@@ -26,14 +27,9 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
   isLoading,
   onPhotoClick,
   onDeletePhoto,
+  onSetAsProfile,
   onUploadClick
 }) => {
-  // Combine main photo with gallery photos for display
-  const allPhotos = [
-    ...(mainPhotoUrl ? [{ id: 'main', url: mainPhotoUrl, created_at: new Date().toISOString() }] : []),
-    ...(photos || [])
-  ];
-
   if (isLoading) {
     return (
       <div className="flex justify-center p-8">
@@ -42,7 +38,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
     );
   }
 
-  if (allPhotos.length === 0) {
+  if (photos.length === 0) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
@@ -66,14 +62,15 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {allPhotos.map((photo) => (
+      {photos.map((photo) => (
         <PhotoItem
           key={photo.id}
           id={photo.id}
           url={photo.url}
-          isMainPhoto={photo.id === 'main'}
+          isProfilePhoto={mainPhotoUrl === photo.url}
           onDelete={onDeletePhoto}
           onView={onPhotoClick}
+          onSetAsProfile={onSetAsProfile}
         />
       ))}
     </div>

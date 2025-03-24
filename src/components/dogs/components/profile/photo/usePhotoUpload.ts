@@ -51,7 +51,7 @@ export const usePhotoUpload = (dogId: string, currentPhoto?: string, onClose?: (
       const filePath = `dog_photos/${fileName}`;
       
       const { error: uploadError } = await supabase.storage
-        .from('dogs')
+        .from('dog-photos')
         .upload(filePath, selectedFile);
       
       if (uploadError) {
@@ -60,7 +60,7 @@ export const usePhotoUpload = (dogId: string, currentPhoto?: string, onClose?: (
       
       // Get the public URL
       const { data: publicURL } = supabase.storage
-        .from('dogs')
+        .from('dog-photos')
         .getPublicUrl(filePath);
       
       if (!publicURL) {
@@ -115,7 +115,7 @@ export const usePhotoUpload = (dogId: string, currentPhoto?: string, onClose?: (
       if (photoPath) {
         // Delete the file from storage
         const { error: deleteStorageError } = await supabase.storage
-          .from('dogs')
+          .from('dog-photos')
           .remove([`dog_photos/${photoPath}`]);
         
         if (deleteStorageError) {

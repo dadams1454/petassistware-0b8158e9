@@ -19,7 +19,8 @@ const GalleryTab: React.FC<GalleryTabProps> = ({ dogId, mainPhotoUrl }) => {
     viewLargeImage,
     setViewLargeImage,
     handleFileChange,
-    handleDeletePhoto
+    handleDeletePhoto,
+    handleSetAsProfilePhoto
   } = usePhotoGallery(dogId);
 
   const handleUploadClick = () => {
@@ -51,6 +52,7 @@ const GalleryTab: React.FC<GalleryTabProps> = ({ dogId, mainPhotoUrl }) => {
         isLoading={isLoading}
         onPhotoClick={setViewLargeImage}
         onDeletePhoto={handleDeletePhoto}
+        onSetAsProfile={handleSetAsProfilePhoto}
         onUploadClick={handleUploadClick}
       />
 

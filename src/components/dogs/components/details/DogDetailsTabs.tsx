@@ -1,11 +1,13 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import VaccinationsTab from '../VaccinationsTab';
-import PedigreeTab from '../tabs/PedigreeTab';
-import GalleryTab from '../tabs/GalleryTab';
 import OverviewTab from '../tabs/OverviewTab';
-import DocumentationTab from '../tabs/DocumentationTab';
+import HealthTab from '../tabs/HealthTab';
+import NotesTab from '../tabs/NotesTab';
+import GalleryTab from '../tabs/GalleryTab';
+import CareTsbs from '../tabs/CareTab';
+import DocumentsTab from '../tabs/DocumentsTab';
+import PedigreeTab from '../tabs/PedigreeTab';
 
 interface DogDetailsTabsProps {
   dog: any;
@@ -27,16 +29,18 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
   isFullPage = false
 }) => {
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className={isFullPage ? "mt-8" : ""}>
-      <TabsList className="mb-4">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="mb-4 flex overflow-x-auto">
         <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
+        <TabsTrigger value="health">Health</TabsTrigger>
+        <TabsTrigger value="notes">Notes</TabsTrigger>
         <TabsTrigger value="gallery">Gallery</TabsTrigger>
-        <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
-        <TabsTrigger value="documentation">Documentation</TabsTrigger>
+        <TabsTrigger value="care">Care</TabsTrigger>
+        <TabsTrigger value="documents">Documents</TabsTrigger>
+        {dog.pedigree && <TabsTrigger value="pedigree">Pedigree</TabsTrigger>}
       </TabsList>
       
-      <TabsContent value="overview">
+      <TabsContent value="overview" className="space-y-4">
         <OverviewTab 
           dog={dog} 
           events={events}
@@ -45,21 +49,31 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
         />
       </TabsContent>
       
-      <TabsContent value="vaccinations">
-        <VaccinationsTab dogId={dog.id} />
+      <TabsContent value="health" className="space-y-4">
+        <HealthTab dogId={dog.id} />
       </TabsContent>
-
-      <TabsContent value="gallery">
+      
+      <TabsContent value="notes" className="space-y-4">
+        <NotesTab dogId={dog.id} initialNotes={dog.notes} />
+      </TabsContent>
+      
+      <TabsContent value="gallery" className="space-y-4">
         <GalleryTab dogId={dog.id} mainPhotoUrl={dog.photo_url} />
       </TabsContent>
       
-      <TabsContent value="pedigree">
-        <PedigreeTab dogId={dog.id} currentDog={dog} />
+      <TabsContent value="care" className="space-y-4">
+        <CareTsbs dogId={dog.id} dogName={dog.name} isFullPage={isFullPage} />
       </TabsContent>
       
-      <TabsContent value="documentation">
-        <DocumentationTab dog={dog} />
+      <TabsContent value="documents" className="space-y-4">
+        <DocumentsTab dogId={dog.id} />
       </TabsContent>
+      
+      {dog.pedigree && (
+        <TabsContent value="pedigree" className="space-y-4">
+          <PedigreeTab dogId={dog.id} />
+        </TabsContent>
+      )}
     </Tabs>
   );
 };
