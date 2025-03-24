@@ -42,32 +42,28 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
   activeCategory = 'pottybreaks'
 }) => {
   return (
-    <form onSubmit={onSubmit}>
-      <div className="space-y-4">
-        {/* Show type selector only for potty breaks, not for feeding */}
-        {activeCategory !== 'feeding' && (
-          <ObservationTypeSelector 
-            value={observationType} 
-            onChange={setObservationType} 
-            isMobile={isMobile}
-            activeCategory={activeCategory}
-          />
-        )}
-        
-        {/* Date selector - simple and minimal */}
-        <DateTimeSelector 
-          observationDate={observationDate}
-          setObservationDate={setObservationDate}
-        />
-        
-        {/* Observation notes */}
-        <ObservationNote
-          observation={observation}
-          setObservation={setObservation}
-          activeCategory={activeCategory}
-          isMobile={isMobile}
-        />
-      </div>
+    <form onSubmit={onSubmit} className="space-y-6">
+      {/* The date selector is now hidden but still functional */}
+      <DateTimeSelector 
+        observationDate={observationDate}
+        setObservationDate={setObservationDate}
+      />
+      
+      {/* Improved type selector with better visual design */}
+      <ObservationTypeSelector 
+        value={observationType} 
+        onChange={setObservationType} 
+        isMobile={isMobile}
+        activeCategory={activeCategory}
+      />
+      
+      {/* Observation notes */}
+      <ObservationNote
+        observation={observation}
+        setObservation={setObservation}
+        activeCategory={activeCategory}
+        isMobile={isMobile}
+      />
       
       {/* Form buttons */}
       <FormButtons

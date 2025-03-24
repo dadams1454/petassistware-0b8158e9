@@ -47,8 +47,8 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
   
   // Get the dialog title based on category
   const dialogTitle = activeCategory === 'feeding' 
-    ? `Feeding Observation for ${selectedDog.dog_name}` 
-    : `Daily Observation for ${selectedDog.dog_name}`;
+    ? `Feeding Observation` 
+    : `Daily Observation`;
   
   return (
     <ObservationDialog

@@ -1,42 +1,40 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 
 interface ObservationNoteProps {
   observation: string;
   setObservation: (value: string) => void;
-  isMobile?: boolean;
   activeCategory?: string;
+  isMobile?: boolean;
 }
 
 const ObservationNote: React.FC<ObservationNoteProps> = ({
   observation,
   setObservation,
-  isMobile = false,
-  activeCategory = 'pottybreaks'
+  activeCategory = 'pottybreaks',
+  isMobile = false
 }) => {
-  const labelText = activeCategory === 'feeding' 
-    ? 'Feeding Issue Notes (Optional)' 
-    : 'Observation Notes (Optional)';
-    
-  const placeholder = activeCategory === 'feeding'
-    ? 'Optional details about the feeding issue'
-    : 'Optional details about the observation';
+  const placeholder = activeCategory === 'feeding' 
+    ? 'Describe the feeding issue (optional)'
+    : 'Add details about your observation (optional)';
     
   return (
-    <div>
-      <Label htmlFor="observation-note">{labelText}</Label>
+    <div className="space-y-3">
+      <div className="text-sm font-medium">Notes</div>
       <Textarea
-        id="observation-note"
         value={observation}
         onChange={(e) => setObservation(e.target.value)}
         placeholder={placeholder}
-        className="mt-1"
-        rows={4}
+        className="min-h-[100px] resize-none"
+        rows={isMobile ? 3 : 4}
       />
+      <div className="text-xs text-muted-foreground">
+        Leave empty to use the default observation text.
+      </div>
     </div>
   );
 };
 
-export default ObservationNote;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(ObservationNote);

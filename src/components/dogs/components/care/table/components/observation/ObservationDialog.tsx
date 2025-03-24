@@ -119,13 +119,16 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
     />
   );
   
+  // Create a more specific title with the dog's name
+  const fullTitle = `${dialogTitle} for ${dogName}`;
+  
   // Use regular Dialog on desktop, Sheet on mobile
   return isMobile ? (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[85vh] overflow-auto pb-10">
         <SheetHeader className="mb-4">
           <SheetTitle className="flex items-center gap-2">
-            <span>{dialogTitle}</span>
+            <span>{fullTitle}</span>
           </SheetTitle>
         </SheetHeader>
         {dialogContent}
@@ -136,7 +139,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span>{dialogTitle}</span>
+            <span>{fullTitle}</span>
           </DialogTitle>
         </DialogHeader>
         {dialogContent}

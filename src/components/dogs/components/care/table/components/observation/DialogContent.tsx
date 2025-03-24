@@ -47,7 +47,8 @@ const DialogContent: React.FC<DialogContentProps> = ({
   activeCategory
 }) => {
   return (
-    <>
+    <div className="space-y-1">
+      {/* Display existing observations if any */}
       {existingObservations.length > 0 && (
         <ObservationList 
           existingObservations={existingObservations} 
@@ -55,6 +56,7 @@ const DialogContent: React.FC<DialogContentProps> = ({
         />
       )}
       
+      {/* Observation Form */}
       <ObservationForm
         observation={observation}
         setObservation={setObservation}
@@ -72,7 +74,7 @@ const DialogContent: React.FC<DialogContentProps> = ({
         isMobile={isMobile}
         activeCategory={activeCategory}
       />
-    </>
+    </div>
   );
 };
 

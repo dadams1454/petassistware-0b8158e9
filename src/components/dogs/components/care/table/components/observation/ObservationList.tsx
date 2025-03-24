@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { AlertTriangle, Heart, Activity, MessageCircle, UtensilsCrossed, X } from 'lucide-react';
 import { ObservationType } from './ObservationDialog';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ObservationListProps {
   existingObservations: Array<{
@@ -69,16 +70,27 @@ const ObservationList: React.FC<ObservationListProps> = ({
   };
   
   return (
-    <div className="mb-4">
-      <div className="text-sm font-medium mb-2">
-        Recent Observations
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-sm font-medium">
+          Recent Observations
+        </div>
+        <div className="text-xs text-muted-foreground">
+          {visibleObservations.length} {visibleObservations.length === 1 ? 'entry' : 'entries'}
+        </div>
       </div>
-      <ScrollArea className="max-h-[150px] overflow-auto">
+      <ScrollArea className="max-h-[180px] overflow-auto pr-2">
         <div className="space-y-2">
           {visibleObservations.map((obs, index) => (
             <div 
               key={index} 
-              className="flex items-start gap-2 p-2 border border-gray-200 dark:border-gray-800 rounded bg-gray-50 dark:bg-gray-900/50 relative group"
+              className={cn(
+                "flex items-start gap-2 p-3 rounded-lg bg-muted/50 relative group",
+                obs.observation_type === 'accident' && "bg-amber-50 dark:bg-amber-950/20",
+                obs.observation_type === 'heat' && "bg-red-50 dark:bg-red-950/20",
+                obs.observation_type === 'behavior' && "bg-blue-50 dark:bg-blue-950/20",
+                obs.observation_type === 'feeding' && "bg-red-50 dark:bg-red-950/20"
+              )}
             >
               {getObservationIcon(obs.observation_type)}
               <div className="flex-1 min-w-0">
@@ -86,7 +98,7 @@ const ObservationList: React.FC<ObservationListProps> = ({
                   <span className="capitalize truncate">{obs.observation_type}</span>
                   <span className="text-gray-500">{getTimeAgo(obs.created_at)}</span>
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 break-words">
+                <div className="text-xs text-gray-600 dark:text-gray-400 break-words mt-1">
                   {obs.observation}
                 </div>
               </div>

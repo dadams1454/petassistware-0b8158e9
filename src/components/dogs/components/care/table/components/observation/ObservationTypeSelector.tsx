@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { ObservationType } from './ObservationDialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { AlertTriangle, ThermometerSnowflake, Activity, MessageSquare } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { AlertTriangle, ThermometerSnowflake, Activity, MessageSquare, UtensilsCrossed } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ObservationTypeSelectorProps {
   value: ObservationType;
@@ -18,50 +17,42 @@ const ObservationTypeSelector: React.FC<ObservationTypeSelectorProps> = ({
   isMobile = false,
   activeCategory = 'pottybreaks'
 }) => {
+  // Define the types that should be available based on the active category
+  const types = activeCategory === 'feeding' 
+    ? [{ value: 'feeding', label: 'Feeding Issue', icon: UtensilsCrossed, color: 'text-red-500' }]
+    : [
+        { value: 'accident', label: 'Accident', icon: AlertTriangle, color: 'text-amber-500' },
+        { value: 'heat', label: 'Heat Signs', icon: ThermometerSnowflake, color: 'text-red-500' },
+        { value: 'behavior', label: 'Behavior', icon: Activity, color: 'text-blue-500' },
+        { value: 'other', label: 'Other', icon: MessageSquare, color: 'text-gray-500' }
+      ];
+
   return (
-    <div>
-      <Label className="block mb-2">Observation Type</Label>
-      <RadioGroup
-        value={value}
-        onValueChange={(newValue) => onChange(newValue as ObservationType)}
-        className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-4 gap-1'}`}
-      >
-        <div className="flex items-center space-x-2 border rounded p-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
-             onClick={() => onChange('accident')}>
-          <RadioGroupItem value="accident" id="accident" />
-          <Label htmlFor="accident" className="flex items-center cursor-pointer w-full">
-            <AlertTriangle className="h-4 w-4 mr-1 text-amber-500" />
-            <span>Accident</span>
-          </Label>
-        </div>
-        
-        <div className="flex items-center space-x-2 border rounded p-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
-             onClick={() => onChange('heat')}>
-          <RadioGroupItem value="heat" id="heat" />
-          <Label htmlFor="heat" className="flex items-center cursor-pointer w-full">
-            <ThermometerSnowflake className="h-4 w-4 mr-1 text-red-500" />
-            <span>Heat Signs</span>
-          </Label>
-        </div>
-        
-        <div className="flex items-center space-x-2 border rounded p-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
-             onClick={() => onChange('behavior')}>
-          <RadioGroupItem value="behavior" id="behavior" />
-          <Label htmlFor="behavior" className="flex items-center cursor-pointer w-full">
-            <Activity className="h-4 w-4 mr-1 text-blue-500" />
-            <span>Behavior</span>
-          </Label>
-        </div>
-        
-        <div className="flex items-center space-x-2 border rounded p-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
-             onClick={() => onChange('other')}>
-          <RadioGroupItem value="other" id="other" />
-          <Label htmlFor="other" className="flex items-center cursor-pointer w-full">
-            <MessageSquare className="h-4 w-4 mr-1 text-gray-500" />
-            <span>Other</span>
-          </Label>
-        </div>
-      </RadioGroup>
+    <div className="space-y-3">
+      <div className="text-sm font-medium">Observation Type</div>
+      <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-4 gap-2'}`}>
+        {types.map((type) => {
+          const Icon = type.icon;
+          const isSelected = value === type.value;
+          
+          return (
+            <button
+              key={type.value}
+              type="button"
+              onClick={() => onChange(type.value as ObservationType)}
+              className={cn(
+                "flex items-center justify-center flex-col h-20 p-2 rounded-lg border transition-all duration-200 text-sm gap-1",
+                isSelected 
+                  ? "border-primary bg-primary/10 font-medium" 
+                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-gray-900/50"
+              )}
+            >
+              <Icon className={cn("h-5 w-5", type.color)} />
+              <span>{type.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
