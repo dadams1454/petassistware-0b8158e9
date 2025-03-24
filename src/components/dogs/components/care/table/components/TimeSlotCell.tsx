@@ -1,6 +1,7 @@
 
 import React, { useState, useCallback, memo } from 'react';
 import { TableCell } from '@/components/ui/table';
+import CellContent from './CellContent';
 
 interface TimeSlotCellProps {
   dogId: string;
@@ -49,10 +50,12 @@ const TimeSlotCell = memo(({
     
     // Show immediate visual feedback
     setIsClicked(true);
-    setTimeout(() => setIsClicked(false), 300);
     
     // Call the click handler
     onClick();
+    
+    // Reset the clicked state after a delay to show the animation
+    setTimeout(() => setIsClicked(false), 1500);
     
     // Return false to also prevent any native handlers
     return false;
@@ -70,13 +73,6 @@ const TimeSlotCell = memo(({
     // Return false to also prevent any native handlers
     return false;
   }, [onContextMenu]);
-
-  // Render the content of the cell
-  const cellContent = hasPottyBreak || hasCareLogged 
-    ? '✓' 
-    : isHovered 
-      ? '+'
-      : '';
 
   return (
     <TableCell
@@ -99,24 +95,16 @@ const TimeSlotCell = memo(({
       data-has-care={hasCareLogged ? 'true' : 'false'}
       data-category={category}
     >
-      {isIncident ? (
-        <span className="text-amber-600 dark:text-amber-400 font-bold">!</span>
-      ) : (
-        <span className={`
-          transition-opacity duration-200
-          ${hasPottyBreak || hasCareLogged ? 'text-green-600 dark:text-green-400 font-semibold' : 'text-gray-400 opacity-40'}
-          ${isHovered ? 'opacity-100' : ''}
-        `}>
-          {cellContent}
-        </span>
-      )}
-      
-      {/* Subtle loading indicator */}
-      {isClicked && !hasPottyBreak && !hasCareLogged && (
-        <span className="absolute inset-0 flex items-center justify-center">
-          <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-ping"></span>
-        </span>
-      )}
+      <CellContent 
+        dogName={dogName}
+        timeSlot={timeSlot}
+        category={category}
+        hasPottyBreak={hasPottyBreak}
+        hasCareLogged={hasCareLogged}
+        isCurrentHour={isCurrentHour}
+        isIncident={isIncident}
+        isClicked={isClicked && !hasCareLogged && !hasPottyBreak}
+      />
     </TableCell>
   );
 });

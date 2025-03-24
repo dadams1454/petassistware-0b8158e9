@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, AlertTriangle, UtensilsCrossed, Clock } from 'lucide-react';
 
 export interface CellContentProps {
@@ -10,6 +10,7 @@ export interface CellContentProps {
   hasCareLogged: boolean;
   isCurrentHour?: boolean;
   isIncident?: boolean;
+  isClicked?: boolean;
 }
 
 const CellContent: React.FC<CellContentProps> = ({
@@ -19,7 +20,8 @@ const CellContent: React.FC<CellContentProps> = ({
   hasPottyBreak,
   hasCareLogged,
   isCurrentHour = false,
-  isIncident = false
+  isIncident = false,
+  isClicked = false
 }) => {
   // Show feeding icon for feeding category
   if (category === 'feeding') {
@@ -49,13 +51,27 @@ const CellContent: React.FC<CellContentProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center">
-            <UtensilsCrossed 
-              className="h-4 w-4 text-gray-400 dark:text-gray-600" 
-              aria-label={`${timeSlot} feeding not recorded yet`}
-            />
-            <div className="text-[9px] text-gray-400 dark:text-gray-600 mt-0.5">
-              {timeSlot}
-            </div>
+            {isClicked ? (
+              <div className="flex flex-col items-center animate-pulse">
+                <Clock 
+                  className="h-4 w-4 text-blue-500 dark:text-blue-400" 
+                  aria-label={`Recording ${timeSlot} feeding...`}
+                />
+                <div className="text-[9px] text-blue-500 dark:text-blue-400 mt-0.5">
+                  Logging...
+                </div>
+              </div>
+            ) : (
+              <>
+                <UtensilsCrossed 
+                  className="h-4 w-4 text-gray-400 dark:text-gray-600" 
+                  aria-label={`${timeSlot} feeding not recorded yet`}
+                />
+                <div className="text-[9px] text-gray-400 dark:text-gray-600 mt-0.5">
+                  {timeSlot}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -89,6 +105,11 @@ const CellContent: React.FC<CellContentProps> = ({
       {/* Show current hour indicator when no other indicators are present */}
       {isCurrentHour && !hasPottyBreak && !hasCareLogged && (
         <div className="h-1.5 w-1.5 rounded-full bg-blue-400 dark:bg-blue-600"></div>
+      )}
+      
+      {/* Show loading indicator when clicked */}
+      {isClicked && !hasPottyBreak && !hasCareLogged && !isCurrentHour && (
+        <div className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-ping"></div>
       )}
     </div>
   );

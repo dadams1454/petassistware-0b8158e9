@@ -18,6 +18,12 @@ export const useFeedingOperations = () => {
     timeSlot: string, 
     queueOperation: (operation: () => Promise<void>) => void
   ) => {
+    // Show immediate toast feedback
+    toast({
+      title: 'Logging feeding...',
+      description: `Recording that ${dogName} was fed at ${timeSlot.toLowerCase()}`,
+    });
+    
     // Handle feeding log action with named times (Morning, Noon, Evening)
     const timestamp = new Date();
     
@@ -47,6 +53,12 @@ export const useFeedingOperations = () => {
           notes: `${dogName} fed at ${timeSlot.toLowerCase()}`
         }, user.id);
         console.log('Feeding logged successfully:', { dogId, timeSlot });
+        
+        // Show success toast
+        toast({
+          title: 'Feeding logged',
+          description: `${dogName} was fed at ${timeSlot.toLowerCase()}`,
+        });
       } catch (error) {
         console.error('Error in queued feeding operation:', error);
         
@@ -57,11 +69,6 @@ export const useFeedingOperations = () => {
           variant: 'destructive',
         });
       }
-    });
-    
-    toast({
-      title: 'Feeding logged',
-      description: `${dogName} was fed at ${timeSlot.toLowerCase()}`,
     });
   }, [user, toast]);
 
