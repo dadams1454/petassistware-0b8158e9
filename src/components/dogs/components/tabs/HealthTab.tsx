@@ -45,15 +45,15 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
 
   const handleDeleteRecord = (recordId: string) => {
     if (window.confirm('Are you sure you want to delete this record?')) {
-      deleteHealthRecord(recordId);
+      deleteHealthRecord.mutate(recordId);
     }
   };
 
   const handleSaveRecord = (record: any) => {
     if (selectedRecord) {
-      updateHealthRecord({ ...selectedRecord, ...record });
+      updateHealthRecord.mutate({ ...selectedRecord, ...record });
     } else {
-      addHealthRecord({ 
+      addHealthRecord.mutate({ 
         ...record, 
         dog_id: dogId 
       });

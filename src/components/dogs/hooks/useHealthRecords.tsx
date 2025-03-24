@@ -42,7 +42,7 @@ export const useHealthRecords = (dogId: string) => {
   });
 
   // Add a new health record
-  const addHealthRecordMutation = useMutation({
+  const addHealthRecord = useMutation({
     mutationFn: async (record: Omit<HealthRecord, 'id' | 'created_at'>) => {
       const { data, error } = await supabase
         .from('health_records')
@@ -69,7 +69,7 @@ export const useHealthRecords = (dogId: string) => {
   });
 
   // Update an existing health record
-  const updateHealthRecordMutation = useMutation({
+  const updateHealthRecord = useMutation({
     mutationFn: async (record: HealthRecord) => {
       const { data, error } = await supabase
         .from('health_records')
@@ -98,7 +98,7 @@ export const useHealthRecords = (dogId: string) => {
   });
 
   // Delete a health record
-  const deleteHealthRecordMutation = useMutation({
+  const deleteHealthRecord = useMutation({
     mutationFn: async (recordId: string) => {
       const { error } = await supabase
         .from('health_records')
@@ -137,8 +137,8 @@ export const useHealthRecords = (dogId: string) => {
     selectedRecord,
     setSelectedRecord,
     getRecordsByType,
-    addHealthRecord: (record: Omit<HealthRecord, 'id' | 'created_at'>) => addHealthRecordMutation.mutate(record),
-    updateHealthRecord: (record: HealthRecord) => updateHealthRecordMutation.mutate(record),
-    deleteHealthRecord: (recordId: string) => deleteHealthRecordMutation.mutate(recordId),
+    addHealthRecord,
+    updateHealthRecord,
+    deleteHealthRecord,
   };
 };
