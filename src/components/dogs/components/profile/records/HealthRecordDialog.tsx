@@ -114,6 +114,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
         // Update existing record
         await updateHealthRecord.mutateAsync({
           id: record.id,
+          created_at: record.created_at, // Include the created_at property from the existing record
           ...healthRecordData
         });
       } else {
