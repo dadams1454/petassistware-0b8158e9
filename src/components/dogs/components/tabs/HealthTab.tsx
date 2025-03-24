@@ -77,9 +77,10 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     );
   }
 
-  const vaccinationRecords = getRecordsByType('vaccination');
-  const examinationRecords = getRecordsByType('examination');
-  const medicationRecords = getRecordsByType('medication');
+  // We need to define these here to make sure they're actually HealthRecord[] from our types, not from the global type
+  const vaccinationRecordsFromLocalType: HealthRecord[] = getRecordsByType('vaccination');
+  const examinationRecordsFromLocalType: HealthRecord[] = getRecordsByType('examination');
+  const medicationRecordsFromLocalType: HealthRecord[] = getRecordsByType('medication');
 
   return (
     <div className="space-y-6">
@@ -97,22 +98,22 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
           <TabsTrigger value="vaccinations">
             <Syringe className="h-4 w-4 mr-2" />
             Vaccinations
-            {vaccinationRecords.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{vaccinationRecords.length}</Badge>
+            {vaccinationRecordsFromLocalType.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{vaccinationRecordsFromLocalType.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="examinations">
             <Stethoscope className="h-4 w-4 mr-2" />
             Examinations
-            {examinationRecords.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{examinationRecords.length}</Badge>
+            {examinationRecordsFromLocalType.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{examinationRecordsFromLocalType.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="medications">
             <Pill className="h-4 w-4 mr-2" />
             Medications
-            {medicationRecords.length > 0 && (
-              <Badge variant="secondary" className="ml-2">{medicationRecords.length}</Badge>
+            {medicationRecordsFromLocalType.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{medicationRecordsFromLocalType.length}</Badge>
             )}
           </TabsTrigger>
         </TabsList>
@@ -135,9 +136,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="vaccinations" className="space-y-4 mt-4">
-          {vaccinationRecords.length > 0 ? (
+          {vaccinationRecordsFromLocalType.length > 0 ? (
             <HealthRecordList 
-              records={vaccinationRecords}
+              records={vaccinationRecordsFromLocalType}
               onEdit={handleEditRecord}
               onDelete={handleDeleteRecord}
             />
@@ -152,9 +153,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="examinations" className="space-y-4 mt-4">
-          {examinationRecords.length > 0 ? (
+          {examinationRecordsFromLocalType.length > 0 ? (
             <HealthRecordList 
-              records={examinationRecords}
+              records={examinationRecordsFromLocalType}
               onEdit={handleEditRecord}
               onDelete={handleDeleteRecord}
             />
@@ -169,9 +170,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="medications" className="space-y-4 mt-4">
-          {medicationRecords.length > 0 ? (
+          {medicationRecordsFromLocalType.length > 0 ? (
             <HealthRecordList 
-              records={medicationRecords}
+              records={medicationRecordsFromLocalType}
               onEdit={handleEditRecord}
               onDelete={handleDeleteRecord}
             />
