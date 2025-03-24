@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,30 +18,6 @@ const DogsPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // Fetch dogs
-  const { data: dogs, isLoading } = useQuery({
-    queryKey: ['dogs'],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*')
-        .order('name');
-      
-      if (error) {
-        toast({
-          title: 'Error fetching dogs',
-          description: error.message,
-          variant: 'destructive',
-        });
-        return [];
-      }
-      
-      return data || [];
-    },
-    enabled: !!user,
-  });
 
   // Delete dog mutation
   const deleteDogMutation = useMutation({
@@ -103,18 +80,8 @@ const DogsPage = () => {
             </Button>
           </div>
 
-          {isLoading ? (
-            <div className="flex justify-center p-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <DogsList 
-              dogs={dogs || []}
-              onView={() => {}} // We don't need this anymore as we navigate directly
-              onEdit={handleEditDog}
-              onDelete={handleDeleteDog}
-            />
-          )}
+          {/* The DogsList component now handles its own data fetching and doesn't require props */}
+          <DogsList />
 
           {/* Add Dog Dialog */}
           <DogFormDialog

@@ -13,20 +13,28 @@ import {
 interface SearchFiltersProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
-  statusFilter: string;
-  setStatusFilter: (value: string) => void;
-  genderFilter: string;
-  setGenderFilter: (value: string) => void;
+  activeFilter?: string;
+  setActiveFilter?: (value: string) => void;
+  statusFilter?: string;
+  setStatusFilter?: (value: string) => void;
+  genderFilter?: string;
+  setGenderFilter?: (value: string) => void;
 }
 
 const SearchFilters = ({
   searchTerm,
   setSearchTerm,
-  statusFilter,
-  setStatusFilter,
-  genderFilter,
-  setGenderFilter
+  activeFilter,
+  setActiveFilter,
+  statusFilter = 'all',
+  setStatusFilter = () => {},
+  genderFilter = 'all',
+  setGenderFilter = () => {}
 }: SearchFiltersProps) => {
+  // Use either activeFilter/setActiveFilter or statusFilter/setStatusFilter based on which is provided
+  const currentStatusFilter = activeFilter || statusFilter;
+  const handleStatusChange = setActiveFilter || setStatusFilter;
+
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 mb-6">
       <div className="flex flex-col md:flex-row gap-4">
@@ -42,7 +50,7 @@ const SearchFilters = ({
         
         <div className="flex gap-2">
           <div className="w-40">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={currentStatusFilter} onValueChange={handleStatusChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
               </SelectTrigger>

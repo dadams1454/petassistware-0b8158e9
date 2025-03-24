@@ -7,26 +7,23 @@ import DogCard from './components/cards/DogCard';
 import NoDogsFound from './components/NoDogsFound';
 import SearchFilters from './components/SearchFilters';
 import DogFormDialog from './components/dialogs/DogFormDialog';
+import { useDogsFiltering } from './hooks/useDogsFiltering';
 
 const DogsList = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [genderFilter, setGenderFilter] = useState('all');
   
   const { dogs, isLoading, error, refetch } = useDogsData();
   
-  // Filter dogs based on search term and active filter
-  const filteredDogs = dogs?.filter((dog) => {
-    const matchesSearch = dog.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         (dog.breed && dog.breed.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    if (activeFilter === 'all') return matchesSearch;
-    if (activeFilter === 'male') return matchesSearch && dog.gender === 'male';
-    if (activeFilter === 'female') return matchesSearch && dog.gender === 'female';
-    if (activeFilter === 'active') return matchesSearch && dog.status === 'active';
-    
-    return matchesSearch;
-  });
+  // Use the filtering hook to filter dogs based on search term and filters
+  const { filteredDogs } = useDogsFiltering(
+    dogs || [],
+    searchTerm,
+    statusFilter,
+    genderFilter
+  );
 
   const handleAddDogSuccess = () => {
     setIsAddDialogOpen(false);
@@ -64,8 +61,10 @@ const DogsList = () => {
       <SearchFilters 
         searchTerm={searchTerm} 
         setSearchTerm={setSearchTerm}
-        activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        genderFilter={genderFilter}
+        setGenderFilter={setGenderFilter}
       />
       
       {(!dogs || dogs.length === 0) ? (
@@ -75,7 +74,8 @@ const DogsList = () => {
           <p className="text-muted-foreground">No dogs match your search criteria.</p>
           <Button variant="outline" className="mt-4" onClick={() => {
             setSearchTerm('');
-            setActiveFilter('all');
+            setStatusFilter('all');
+            setGenderFilter('all');
           }}>
             Clear Filters
           </Button>
@@ -83,7 +83,11 @@ const DogsList = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
           {filteredDogs?.map((dog) => (
-            <DogCard key={dog.id} dog={dog} />
+            <DogCard 
+              key={dog.id} 
+              dog={dog} 
+              appointmentCount={0} 
+            />
           ))}
         </div>
       )}

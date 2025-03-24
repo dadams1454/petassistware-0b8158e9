@@ -27,6 +27,16 @@ export const useDogMutation = (dog: any, userId: string, onSuccess: () => void) 
       }
 
       const dogData = formatDogDataForSubmission(values, userId);
+      
+      // Ensure required fields for the DogProfile type are set
+      if (!dogData.status) {
+        dogData.status = 'active';
+      }
+      
+      if (!dogData.weight_unit && dogData.weight) {
+        dogData.weight_unit = 'lbs';
+      }
+      
       console.log('Formatted dog data for submission:', dogData);
 
       try {
