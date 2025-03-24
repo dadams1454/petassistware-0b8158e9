@@ -35,7 +35,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const { 
     isRefreshing, 
     handleRefresh: refreshDogs,
-    formatTimeRemaining,
     currentDate
   } = useAutoRefresh({
     area: 'dashboard',
@@ -84,19 +83,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const handleDogSelected = (dogId: string) => {
     setSelectedDogId(dogId);
   };
-  
-  // Handler for manual refresh with UI feedback
-  const handleManualRefresh = () => {
-    // Show toast for feedback
-    toast({
-      title: 'Refreshing data...',
-      description: 'Updating the latest dog care information',
-      duration: 2000,
-    });
-    
-    // Use the actual refresh function
-    refreshDogs(true);
-  };
 
   return (
     <>
@@ -104,9 +90,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsList 
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          onRefreshDogs={handleManualRefresh}
-          isRefreshing={isRefreshing}
-          nextRefreshTime={formatTimeRemaining()}
         />
         
         <TabsContent value="overview">
@@ -121,8 +104,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         
         <TabsContent value="dailycare">
           <DailyCareTab 
-            onRefreshDogs={handleManualRefresh} 
-            isRefreshing={isRefreshing}
             currentDate={currentDate}
           />
         </TabsContent>
@@ -130,7 +111,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsContent value="grooming">
           <GroomingTab 
             dogStatuses={dogStatuses} 
-            onRefreshDogs={handleManualRefresh}
           />
         </TabsContent>
       </Tabs>

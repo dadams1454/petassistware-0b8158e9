@@ -1,13 +1,12 @@
 
 import React from 'react';
-import { RefreshCw, Filter, Download, Paintbrush } from 'lucide-react';
+import { Filter, Download, Paintbrush } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PersonalizationPanel from '@/components/personalization/PersonalizationPanel';
 
 interface CareDashboardHeaderProps {
   title: string;
-  onRefresh?: () => void;
   isLoading?: boolean;
   view?: string;
   onViewChange?: React.Dispatch<React.SetStateAction<string>>;
@@ -15,7 +14,6 @@ interface CareDashboardHeaderProps {
 
 const CareDashboardHeader: React.FC<CareDashboardHeaderProps> = ({
   title,
-  onRefresh,
   isLoading = false,
   view,
   onViewChange,
@@ -62,20 +60,6 @@ const CareDashboardHeader: React.FC<CareDashboardHeaderProps> = ({
           <Download className="h-4 w-4" />
           {!isMobile && <span>Export</span>}
         </Button>
-        
-        {onRefresh && (
-          <Button
-            variant="default"
-            size={isMobile ? "icon" : "default"}
-            className={`${isMobile ? "h-9 w-9" : "gap-1"} ${isLoading ? "animate-spin" : ""}`}
-            onClick={onRefresh}
-            disabled={isLoading}
-            title="Refresh Data"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            {!isMobile && <span>Refresh</span>}
-          </Button>
-        )}
       </div>
     </div>
   );

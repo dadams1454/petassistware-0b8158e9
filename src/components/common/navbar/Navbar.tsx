@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -8,11 +8,16 @@ import UserMenu from './UserMenu';
 import MobileMenuButton from './MobileMenuButton';
 import MobileMenu from './MobileMenu';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useRefresh } from '@/contexts/refreshContext';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const { isRefreshing, handleRefresh, formatTimeRemaining } = useRefresh();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -22,6 +27,10 @@ const Navbar: React.FC = () => {
     await signOut();
     navigate('/auth');
   };
+
+  const handleRefreshClick = useCallback(() => {
+    handleRefresh(true);
+  }, [handleRefresh]);
 
   return (
     <ErrorBoundary name="Navbar">
@@ -35,7 +44,28 @@ const Navbar: React.FC = () => {
               </div>
             </div>
             
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleRefreshClick}
+                      disabled={isRefreshing}
+                      className="mr-2"
+                    >
+                      <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                      {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Refresh all data</p>
+                    <p className="text-xs">Auto-refresh in: {formatTimeRemaining()}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
               <UserMenu 
                 user={user} 
                 onLogout={handleLogout} 

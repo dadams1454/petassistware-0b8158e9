@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
-import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { useRefresh } from '@/contexts/refreshContext';
 
 export const useCareDashboard = () => {
   // State variables
@@ -21,27 +21,7 @@ export const useCareDashboard = () => {
   } = useDailyCare();
 
   // Use the centralized refresh system
-  const { isRefreshing: loading, handleRefresh } = useAutoRefresh({
-    area: 'dogs',
-    onRefresh: async (date = new Date(), force = false) => {
-      setLoadError(null);
-      try {
-        console.log('🔄 Loading dogs status...');
-        const dogs = await fetchAllDogsWithCareStatus(date, force);
-        console.log('✅ Dogs loaded successfully:', dogs.length);
-        if (dogs.length > 0) {
-          console.log('🐕 All dog names:', dogs.map(d => d.dog_name).join(', '));
-        } else {
-          console.warn('⚠️ No dogs were returned from the API');
-        }
-        return dogs;
-      } catch (error) {
-        console.error('❌ Error loading dogs status:', error);
-        setLoadError('Failed to load dogs. Please try refreshing the page.');
-        return [];
-      }
-    }
-  });
+  const { isRefreshing: loading, handleRefresh } = useRefresh('dogs');
 
   // Function to fetch categories
   const loadCategories = useCallback(async () => {
@@ -122,7 +102,6 @@ export const useCareDashboard = () => {
     setActiveView,
     setDialogOpen,
     handleLogCare,
-    handleRefresh,
     handleCareLogSuccess,
     handleCategoryChange
   };

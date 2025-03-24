@@ -10,23 +10,31 @@ import CategoryTabs from './components/CategoryTabs';
 import TableContentManager from './components/TableContentManager';
 import ObservationDialogManager from './components/ObservationDialogManager';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useRefresh } from '@/contexts/refreshContext';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
-  onRefresh: () => void;
   isRefreshing: boolean;
   currentDate: Date;
 }
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
   dogsStatus, 
-  onRefresh,
-  isRefreshing,
+  isRefreshing: externalRefreshing,
   currentDate 
 }) => {
   const isMobile = useIsMobile();
-  // Add useTransition to prevent UI blocking during expensive updates
+  // Add useTransition to prevent UI blocking
   const [isPending, startTransition] = useTransition();
+  
+  // Use the centralized refresh system
+  const { handleRefresh } = useRefresh('dailyCare');
+  
+  const onRefresh = () => {
+    startTransition(() => {
+      handleRefresh(true);
+    });
+  };
   
   const {
     isDialogOpen,
@@ -46,7 +54,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleCellContextMenu,
     handleCareLogClick,
     handleErrorReset,
-    handleRefresh,
     showLoading,
     selectedDogId,
     setSelectedDogId,
@@ -56,15 +63,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleObservationClick,
     handleObservationSubmit,
     timeSlots
-  } = useTimeTableState(dogsStatus, onRefresh, isRefreshing, currentDate);
+  } = useTimeTableState(dogsStatus, onRefresh, externalRefreshing, currentDate);
 
-  // Enhanced refresh handler with useTransition
-  const handleRefreshWithTransition = () => {
-    startTransition(() => {
-      handleRefresh();
-    });
-  };
-  
   // Enhanced category change handler with useTransition
   const handleCategoryChangeWithTransition = (category: string) => {
     startTransition(() => {
@@ -76,7 +76,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const selectedDog = dogsStatus.find(dog => dog.dog_id === selectedDogId);
 
   // Combined loading state including transition state
-  const isLoadingOrTransitioning = showLoading || isPending;
+  const isLoadingOrTransitioning = showLoading || isPending || externalRefreshing;
 
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DogTimeTable">
@@ -116,7 +116,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onCareLogClick={handleCareLogClick}
           onDogClick={handleDogClick}
           onObservationClick={handleObservationClick}
-          onRefresh={handleRefreshWithTransition}
           onCategoryChange={handleCategoryChangeWithTransition}
           showLoading={isLoadingOrTransitioning}
           isPending={isPending}

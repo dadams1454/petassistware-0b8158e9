@@ -6,8 +6,6 @@ import LoadingState from './dashboard/LoadingState';
 import NoDogsState from './dashboard/NoDogsState';
 import LoadedDogsContent from './dashboard/LoadedDogsContent';
 import { useCareDashboard } from './dashboard/useCareDashboard';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
 
 interface CareDashboardProps {}
 
@@ -24,7 +22,6 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     setActiveView,
     setDialogOpen,
     handleLogCare,
-    handleRefresh,
     handleCareLogSuccess,
     handleCategoryChange
   } = useCareDashboard();
@@ -35,29 +32,13 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     console.log(`🐕 dogStatuses available: ${dogStatuses?.length || 0} dogs`);
   }, [dogStatuses]);
 
-  // Create a wrapper function to handle the onClick event
-  const onRefreshClick = (event: React.MouseEvent) => {
-    event.preventDefault();
-    handleRefresh(true);
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <CareDashboardHeader 
           title="Care Dashboard"
-          onRefresh={handleRefresh}
           isLoading={loading}
         />
-        
-        <Button 
-          onClick={onRefreshClick} 
-          variant="outline" 
-          className="gap-2 bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh Dogs
-        </Button>
       </div>
       
       {categories.length > 0 && (
@@ -71,7 +52,6 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       <LoadingState 
         isLoading={loading} 
         error={loadError} 
-        onRetry={handleRefresh} 
       />
       
       {!loading && !loadError && dogStatuses && dogStatuses.length > 0 ? (
@@ -86,7 +66,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
           onCareLogSuccess={handleCareLogSuccess}
         />
       ) : (!loading && !loadError && (!dogStatuses || dogStatuses.length === 0)) ? (
-        <NoDogsState onRefresh={handleRefresh} />
+        <NoDogsState />
       ) : null}
     </div>
   );

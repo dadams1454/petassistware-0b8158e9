@@ -1,13 +1,12 @@
 
-import React, { useCallback, useTransition } from 'react';
+import React, { useTransition } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { RefreshCw, Clock, Calendar, Loader2 } from 'lucide-react';
-import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { format } from 'date-fns';
+import { Clock, Calendar } from 'lucide-react';
+import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 
 const DailyCare: React.FC = () => {
@@ -18,9 +17,8 @@ const DailyCare: React.FC = () => {
   // Use the enhanced auto-refresh system with midnightReset
   const { 
     isRefreshing,
-    handleRefresh,
-    formatTimeRemaining,
-    currentDate
+    currentDate,
+    formatTimeRemaining
   } = useAutoRefresh({
     area: 'dailyCare',
     interval: 15 * 60 * 1000, // 15 minutes
@@ -33,13 +31,6 @@ const DailyCare: React.FC = () => {
       return dogs;
     }
   });
-
-  // Enhanced refresh handler with useTransition
-  const handleRefreshWithTransition = useCallback(() => {
-    startTransition(() => {
-      handleRefresh(true);
-    });
-  }, [handleRefresh]);
 
   // Combined loading state
   const isLoading = isRefreshing || isPending;
@@ -64,30 +55,10 @@ const DailyCare: React.FC = () => {
             </span>
           </p>
         </div>
-        <Button 
-          onClick={handleRefreshWithTransition} 
-          className="gap-2" 
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-          {isLoading ? "Refreshing..." : "Refresh Dogs"}
-        </Button>
       </div>
 
       {dogStatuses && dogStatuses.length > 0 ? (
         <div className={`space-y-6 transition-opacity duration-200 ${isPending ? 'opacity-90' : 'opacity-100'}`}>
-          {/* Pending state indicator */}
-          {isPending && (
-            <div className="fixed bottom-4 right-4 z-50 bg-primary text-primary-foreground py-2 px-4 rounded-full shadow-lg flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">Updating...</span>
-            </div>
-          )}
-          
           {/* Reminder Card */}
           <PottyBreakReminderCard 
             dogs={dogStatuses}
@@ -104,7 +75,6 @@ const DailyCare: React.FC = () => {
           <div id="dog-time-table">
             <DogTimeTable 
               dogsStatus={dogStatuses} 
-              onRefresh={handleRefreshWithTransition} 
               isRefreshing={isLoading}
               currentDate={currentDate}
             />
@@ -113,14 +83,6 @@ const DailyCare: React.FC = () => {
       ) : (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-          <Button 
-            onClick={handleRefreshWithTransition} 
-            className="mt-4 gap-2"
-            disabled={isLoading}
-          >
-            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isLoading ? "Refreshing..." : "Refresh Dogs"}
-          </Button>
         </Card>
       )}
     </>

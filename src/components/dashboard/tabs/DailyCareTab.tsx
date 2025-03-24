@@ -6,18 +6,14 @@ import PottyBreakReminderCard from '@/components/dogs/components/care/potty/Pott
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useQueryWithRefresh } from '@/hooks/useQueryWithRefresh';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Loader2 } from 'lucide-react';
+import { useRefresh } from '@/contexts/refreshContext';
 
 interface DailyCareTabProps {
-  onRefreshDogs?: () => void;
-  isRefreshing?: boolean;
   currentDate?: Date;
 }
 
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ 
-  onRefreshDogs, 
-  isRefreshing: externalRefreshing,
   currentDate = new Date()
 }) => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
@@ -26,6 +22,9 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   const unmountedRef = useRef<boolean>(false);
   // Add useTransition to prevent UI blocking
   const [isPending, startTransition] = useTransition();
+  
+  // Use the centralized refresh system
+  const { isRefreshing: globalRefreshing } = useRefresh('dailyCare');
   
   // Use React Query with our custom hook
   const { 
@@ -50,8 +49,8 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   
   // Use useMemo to compute combined loading state
   const isRefreshing = useMemo(() => 
-    isLoading || isRefetching || externalRefreshing || localRefreshing || isPending,
-    [isLoading, isRefetching, externalRefreshing, localRefreshing, isPending]
+    isLoading || isRefetching || globalRefreshing || localRefreshing || isPending,
+    [isLoading, isRefetching, globalRefreshing, localRefreshing, isPending]
   );
   
   // Use useMemo to derive whether we have dog data to display
@@ -60,65 +59,11 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     [dogStatuses]
   );
   
-  // Debounced refresh handler to prevent rapid consecutive refreshes
-  const debouncedHandleRefresh = useDebouncedCallback(() => {
-    if (unmountedRef.current) return;
-    
-    setLocalRefreshing(true);
-    console.log('DailyCareTab refresh triggered via debounced handler');
-    
-    // Start transition for UI updates
-    startTransition(() => {
-      // Use our manual refresh function
-      manualRefresh(true);
-      
-      // Call external refresh if provided
-      if (onRefreshDogs) {
-        onRefreshDogs();
-      }
-    });
-    
-    // Ensure we show the loading state for at least 500ms to avoid flicker
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-    
-    refreshTimeoutRef.current = setTimeout(() => {
-      if (unmountedRef.current) return;
-      setLocalRefreshing(false);
-      refreshTimeoutRef.current = null;
-    }, 500);
-  }, 300); // Debounce for 300ms
-  
-  // Original non-debounced handler for places where we need immediate refresh
-  const handleLocalRefresh = useCallback(() => {
-    if (unmountedRef.current) return;
-    
-    setLocalRefreshing(true);
-    console.log('DailyCareTab refresh triggered via React Query');
-    
-    // Start transition for UI updates
-    startTransition(() => {
-      // Use our manual refresh function
-      manualRefresh(true);
-      
-      // Call external refresh if provided
-      if (onRefreshDogs) {
-        onRefreshDogs();
-      }
-    });
-    
-    // Ensure we show the loading state for at least 500ms to avoid flicker
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-    
-    refreshTimeoutRef.current = setTimeout(() => {
-      if (unmountedRef.current) return;
-      setLocalRefreshing(false);
-      refreshTimeoutRef.current = null;
-    }, 500);
-  }, [manualRefresh, onRefreshDogs]);
+  // Error reset handler
+  const handleErrorReset = useCallback(() => {
+    console.log("Resetting after error in DailyCareTab");
+    manualRefresh(false);
+  }, [manualRefresh]);
   
   // Clean up timeout on unmount
   useEffect(() => {
@@ -133,29 +78,14 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     };
   }, []);
   
-  // Error reset handler
-  const handleErrorReset = useCallback(() => {
-    console.log("Resetting after error in DailyCareTab");
-    handleLocalRefresh();
-  }, [handleLocalRefresh]);
-  
   // Use useMemo for the empty state content
   const emptyStateContent = useMemo(() => (
     <Card className="p-8 text-center">
       <CardContent>
         <p className="text-muted-foreground mb-4">No dogs found. Please refresh or add dogs to the system.</p>
-        <button 
-          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 gap-2"
-          onClick={handleLocalRefresh} 
-          disabled={isRefreshing}
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          {isRefreshing && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isRefreshing ? 'Refreshing...' : 'Refresh Dogs'}
-        </button>
       </CardContent>
     </Card>
-  ), [isRefreshing, handleLocalRefresh]);
+  ), []);
   
   // Use useMemo for the main content when we have dog data
   const mainContent = useMemo(() => (
@@ -184,13 +114,12 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
       <div id="dog-time-table">
         <DogTimeTable 
           dogsStatus={dogStatuses || []} 
-          onRefresh={debouncedHandleRefresh} // Use debounced handler here
           isRefreshing={isRefreshing}
           currentDate={currentDate}
         />
       </div>
     </div>
-  ), [dogStatuses, debouncedHandleRefresh, isRefreshing, currentDate, isPending]);
+  ), [dogStatuses, isRefreshing, currentDate, isPending]);
   
   return (
     <ErrorBoundary onReset={handleErrorReset}>
