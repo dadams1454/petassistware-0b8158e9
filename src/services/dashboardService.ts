@@ -1,138 +1,86 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Define types for dashboard data
-export interface DashboardStats {
-  dogCount: number;
-  litterCount: number;
-  reservationCount: number;
-  recentRevenue: number;
+export interface DashboardData {
+  totalDogs: number;
+  activeDogs: number;
+  totalLitters: number;
+  activeLitters: number;
+  totalPuppies: number;
+  availablePuppies: number;
+  totalCustomers: number;
+  // Add any other dashboard metrics here
 }
 
-export interface UpcomingEvent {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string;
-  status: 'upcoming' | 'planned';
-}
-
-export interface RecentActivity {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  createdAt: string;
-}
-
-// Function to fetch dashboard statistics
-export const fetchDashboardStats = async (): Promise<DashboardStats> => {
+export const fetchDashboardData = async (): Promise<DashboardData> => {
   try {
-    // Fetch dog count - revised to make sure we're correctly counting
-    const { data: dogsData, error: dogError } = await supabase
+    // Fetch count of all dogs
+    const { count: totalDogs, error: dogsError } = await supabase
       .from('dogs')
-      .select('id');
-    
-    if (dogError) throw dogError;
-    
-    const dogCount = dogsData?.length || 0;
+      .select('*', { count: 'exact', head: true });
 
-    // Fetch litter count
-    const { count: litterCount, error: litterError } = await supabase
+    // Fetch count of active dogs
+    const { count: activeDogs, error: activeDogsError } = await supabase
+      .from('dogs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active');
+
+    // Fetch count of all litters
+    const { count: totalLitters, error: littersError } = await supabase
       .from('litters')
       .select('*', { count: 'exact', head: true });
-    
-    if (litterError) throw litterError;
 
-    // Fetch reservation count
-    const { count: reservationCount, error: reservationError } = await supabase
-      .from('reservations')
+    // Fetch count of active litters
+    const { count: activeLitters, error: activeLittersError } = await supabase
+      .from('litters')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active');
+
+    // Fetch count of all puppies
+    const { count: totalPuppies, error: puppiesError } = await supabase
+      .from('puppies')
       .select('*', { count: 'exact', head: true });
-    
-    if (reservationError) throw reservationError;
 
-    // Calculate revenue (last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    const { data: recentTransactions, error: transactionError } = await supabase
-      .from('transactions')
-      .select('amount')
-      .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
-    
-    if (transactionError) throw transactionError;
-    
-    const recentRevenue = recentTransactions?.reduce((sum, transaction) => sum + (Number(transaction.amount) || 0), 0) || 0;
+    // Fetch count of available puppies
+    const { count: availablePuppies, error: availablePuppiesError } = await supabase
+      .from('puppies')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'Available');
 
-    console.log('Dashboard stats - Dog count:', dogCount);
+    // Fetch count of all customers
+    const { count: totalCustomers, error: customersError } = await supabase
+      .from('customers')
+      .select('*', { count: 'exact', head: true });
+
+    // Handle any errors
+    if (dogsError || activeDogsError || littersError || activeLittersError || 
+        puppiesError || availablePuppiesError || customersError) {
+      console.error("Error fetching dashboard data:", { 
+        dogsError, activeDogsError, littersError, activeLittersError,
+        puppiesError, availablePuppiesError, customersError 
+      });
+    }
 
     return {
-      dogCount,
-      litterCount: litterCount || 0,
-      reservationCount: reservationCount || 0,
-      recentRevenue
+      totalDogs: totalDogs || 0,
+      activeDogs: activeDogs || 0,
+      totalLitters: totalLitters || 0,
+      activeLitters: activeLitters || 0,
+      totalPuppies: totalPuppies || 0,
+      availablePuppies: availablePuppies || 0,
+      totalCustomers: totalCustomers || 0,
     };
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    // Return default values if there's an error
+    console.error("Error in fetchDashboardData:", error);
+    // Return default values in case of error
     return {
-      dogCount: 0,
-      litterCount: 0,
-      reservationCount: 0,
-      recentRevenue: 0
+      totalDogs: 0,
+      activeDogs: 0,
+      totalLitters: 0,
+      activeLitters: 0,
+      totalPuppies: 0,
+      availablePuppies: 0,
+      totalCustomers: 0,
     };
-  }
-};
-
-// Function to fetch upcoming events
-export const fetchUpcomingEvents = async (): Promise<UpcomingEvent[]> => {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const { data, error } = await supabase
-      .from('events')
-      .select('id, title, description, event_date, status')
-      .gte('event_date', today)
-      .order('event_date', { ascending: true })
-      .limit(5);
-    
-    if (error) throw error;
-    
-    // Map the data to match the UpcomingEvent interface
-    return (data || []).map(event => ({
-      id: event.id,
-      title: event.title,
-      description: event.description,
-      date: event.event_date,
-      status: event.status === 'upcoming' ? 'upcoming' : 'planned'
-    }));
-  } catch (error) {
-    console.error('Error fetching upcoming events:', error);
-    return [];
-  }
-};
-
-// Function to fetch recent activities
-export const fetchRecentActivities = async (): Promise<RecentActivity[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('activities')
-      .select('id, activity_type, title, description, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5);
-    
-    if (error) throw error;
-    
-    // Map the data to match the RecentActivity interface
-    return (data || []).map(activity => ({
-      id: activity.id,
-      type: activity.activity_type,
-      title: activity.title,
-      description: activity.description || '',
-      createdAt: activity.created_at
-    }));
-  } catch (error) {
-    console.error('Error fetching recent activities:', error);
-    return [];
   }
 };
