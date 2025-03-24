@@ -21,6 +21,9 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
   const lastHeatDate = form.watch('last_heat_date');
   const lastVaccinationDate = form.watch('last_vaccination_date');
 
+  // Get the dogId from the form if it exists (for editing) or use a temporary ID for new dogs
+  const dogId = form.watch('id') || 'temp-dog-id';
+
   // Calculate next heat date (approximately 6 months after last heat)
   const nextHeatDate = lastHeatDate ? addDays(lastHeatDate, 180) : null;
   
@@ -58,7 +61,7 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
       </TabsContent>
       
       <TabsContent value="health">
-        <HealthTab />
+        <HealthTab dogId={dogId} />
       </TabsContent>
       
       <TabsContent value="breeding">
