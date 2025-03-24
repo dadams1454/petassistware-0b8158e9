@@ -17,14 +17,14 @@ interface DialogContentProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
+  observationDate: Date;
+  setObservationDate: (date: Date) => void;
   timeSlot?: string;
   timeSlots?: string[];
   selectedTimeSlot?: string;
   setSelectedTimeSlot?: (timeSlot: string) => void;
   isMobile?: boolean;
   activeCategory?: string;
-  observationDate: Date;
-  setObservationDate: (date: Date) => void;
 }
 
 const DialogContent: React.FC<DialogContentProps> = ({
@@ -36,14 +36,14 @@ const DialogContent: React.FC<DialogContentProps> = ({
   onSubmit,
   isSubmitting,
   onCancel,
+  observationDate,
+  setObservationDate,
   timeSlot,
   timeSlots,
   selectedTimeSlot,
   setSelectedTimeSlot,
   isMobile,
-  activeCategory,
-  observationDate,
-  setObservationDate
+  activeCategory
 }) => {
   return (
     <>
@@ -62,14 +62,14 @@ const DialogContent: React.FC<DialogContentProps> = ({
         onSubmit={onSubmit}
         isSubmitting={isSubmitting}
         onCancel={onCancel}
+        observationDate={observationDate}
+        setObservationDate={setObservationDate}
         timeSlot={timeSlot}
         timeSlots={timeSlots}
         selectedTimeSlot={selectedTimeSlot}
         setSelectedTimeSlot={setSelectedTimeSlot}
         isMobile={isMobile}
         activeCategory={activeCategory}
-        observationDate={observationDate}
-        setObservationDate={setObservationDate}
       />
     </>
   );

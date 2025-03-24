@@ -15,6 +15,10 @@ const FormButtons: React.FC<FormButtonsProps> = ({
   isMobile = false,
   activeCategory = 'pottybreaks'
 }) => {
+  const buttonText = activeCategory === 'feeding' 
+    ? isSubmitting ? 'Saving...' : 'Save Feeding Issue' 
+    : isSubmitting ? 'Saving...' : 'Save Observation';
+    
   return (
     <div className={`mt-4 flex ${isMobile ? 'w-full' : 'justify-end'} gap-2`}>
       <Button
@@ -30,7 +34,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         disabled={isSubmitting}
         className={`${isMobile ? 'flex-1' : ''} gap-2`}
       >
-        {isSubmitting ? 'Saving...' : 'Save Observation'}
+        {buttonText}
       </Button>
     </div>
   );
