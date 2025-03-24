@@ -1,5 +1,5 @@
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { getPottyBreaksByDogAndTimeSlot2 } from '@/services/dailyCare/pottyBreak/queries/timeSlotQueries';
 import { toast } from '@/components/ui/use-toast';
 import { useQueryWithRefresh } from '@/hooks/useQueryWithRefresh';
@@ -26,6 +26,13 @@ export const usePottyBreakData = (currentDate: Date) => {
     retry: 2,
     refreshLabel: 'potty break data'
   });
+  
+  // Log potty breaks data when it changes
+  useEffect(() => {
+    if (Object.keys(pottyBreaks).length > 0) {
+      console.log('Potty breaks data updated:', pottyBreaks);
+    }
+  }, [pottyBreaks]);
   
   // Fetch potty breaks - now just calls the react-query refetch
   const fetchPottyBreaks = useCallback(async (forceRefresh = false) => {
