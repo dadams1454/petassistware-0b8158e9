@@ -1,18 +1,31 @@
 
 import React from 'react';
-import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const HealthTab = () => {
+interface HealthTabProps {
+  dogId: string;
+}
+
+const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
   return (
-    <div className="space-y-4 py-4">
-      <div className="mt-2">
-        <h3 className="text-lg font-medium mb-4">Vaccination Information</h3>
-        <Separator className="mb-4" />
-        
-        <p className="text-sm text-muted-foreground mb-4">
-          Add vaccination information after saving the dog profile. Multiple vaccinations can be added in the dog details view.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <Alert variant="default" className="bg-muted">
+        <AlertDescription>
+          Track health records, vaccinations, and medical history.
+        </AlertDescription>
+      </Alert>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Health Records</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Health records will be displayed here. You can add vaccinations, vet visits, and other health information.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 };
