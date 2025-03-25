@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/standardized';
 
 interface EmptyLitterStateProps {
   onCreateLitter: () => void;
@@ -9,13 +9,15 @@ interface EmptyLitterStateProps {
 
 const EmptyLitterState: React.FC<EmptyLitterStateProps> = ({ onCreateLitter }) => {
   return (
-    <div className="text-center py-8">
-      <p className="text-muted-foreground mb-4">No litters found</p>
-      <Button variant="outline" onClick={onCreateLitter}>
-        <PlusCircle className="mr-2 h-4 w-4" />
-        Create your first litter
-      </Button>
-    </div>
+    <EmptyState
+      icon={<PlusCircle className="h-12 w-12 text-muted-foreground" />}
+      title="No litters found"
+      description="You haven't added any litters yet. Click the button below to create your first litter."
+      action={{
+        label: "Create your first litter",
+        onClick: onCreateLitter
+      }}
+    />
   );
 };
 
