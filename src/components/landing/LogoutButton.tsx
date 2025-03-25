@@ -17,6 +17,7 @@ const LogoutButton: React.FC = () => {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
+      console.log("Starting sign out process...");
       await signOut();
       
       toast({
@@ -26,6 +27,7 @@ const LogoutButton: React.FC = () => {
       });
       
       // Redirect to auth page
+      console.log("Redirecting to auth page...");
       navigate('/auth');
     } catch (error: any) {
       console.error('Error signing out:', error);

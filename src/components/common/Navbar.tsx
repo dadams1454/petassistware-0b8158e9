@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -26,6 +25,7 @@ import {
   Shield,
   Settings2
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import Logo from './Logo';
 
 interface NavItem {
@@ -37,8 +37,28 @@ interface NavItem {
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, userRole, signOut } = useAuth();
+  const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Success",
+        description: "You've been signed out successfully.",
+      });
+      navigate('/auth');
+    } catch (error: any) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "Error",
+        description: `Failed to sign out: ${error.message}`,
+        variant: "destructive"
+      });
+    }
+  };
 
   const navItems: NavItem[] = [
     {
@@ -150,7 +170,7 @@ const Navbar: React.FC = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
@@ -242,7 +262,7 @@ const Navbar: React.FC = () => {
             </Link>
             <button
               onClick={() => {
-                signOut();
+                handleSignOut();
                 setMobileMenuOpen(false);
               }}
               className="block w-full text-left px-4 py-2 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted"

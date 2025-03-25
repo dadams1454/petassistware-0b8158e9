@@ -67,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             // Reset role when user logs out
             if (event === 'SIGNED_OUT') {
+              console.log('User signed out, resetting role and tenant');
               setUserRole(null);
               setTenantId(null);
             }
@@ -110,13 +111,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = async () => {
+    console.log('Signing out user...');
     try {
       setLoading(true);
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error during sign out:', error);
+        throw error;
+      }
+      
+      console.log('Sign out successful, clearing state');
+      // Explicitly clear state
       setUserRole(null);
       setTenantId(null);
+      setUser(null);
+      setSession(null);
+      
+      console.log('State cleared after sign out');
+      return Promise.resolve();
     } catch (error) {
       console.error('Error signing out:', error);
+      return Promise.reject(error);
     } finally {
       setLoading(false);
     }
