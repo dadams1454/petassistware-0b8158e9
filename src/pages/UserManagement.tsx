@@ -77,8 +77,8 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (profiles) {
-          // Transform the data into the format we need
-          const formattedUsers = (profiles as BreederProfile[]).map(profile => ({
+          // Transform the data into the format we need with explicit type casting
+          const formattedUsers: UserWithProfile[] = (profiles as BreederProfile[]).map(profile => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -133,7 +133,8 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (profiles) {
-          const formattedUsers = (profiles as BreederProfile[]).map(profile => ({
+          // Use the same explicit type casting approach as above
+          const formattedUsers: UserWithProfile[] = (profiles as BreederProfile[]).map(profile => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
