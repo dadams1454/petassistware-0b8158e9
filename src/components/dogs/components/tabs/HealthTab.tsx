@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Plus, AlertTriangle, Calendar, Activity } from 'lucide-react';
 import { useHealthRecords } from '../../hooks/useHealthRecords';
 import { useWeightTracking } from '../../hooks/useWeightTracking';
@@ -13,6 +12,15 @@ import WeightTrackingSection from '../health/WeightTrackingSection';
 import HealthSummaryCard from '../health/HealthSummaryCard';
 import WeightEntryDialog from '../health/WeightEntryDialog';
 import HealthRecordDialog from '../profile/records/HealthRecordDialog';
+
+// Import standardized components
+import {
+  SectionHeader,
+  LoadingState,
+  ErrorState,
+  EmptyState,
+  ActionButton
+} from '@/components/ui/standardized';
 
 interface HealthTabProps {
   dogId: string;
@@ -28,6 +36,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
   const { 
     healthRecords, 
     isLoading: recordsLoading,
+    error: recordsError,
     addHealthRecord,
     updateHealthRecord,
     deleteHealthRecord,
@@ -40,6 +49,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
   const { 
     weightHistory, 
     isLoading: weightLoading,
+    error: weightError,
     addWeightRecord,
     growthStats 
   } = useWeightTracking(dogId);
@@ -71,24 +81,46 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     
     addWeightRecord(formattedData);
   };
+
+  if (recordsLoading || weightLoading) {
+    return <LoadingState message="Loading health data..." />;
+  }
+
+  if (recordsError || weightError) {
+    return (
+      <ErrorState 
+        title="Could not load health records"
+        message="There was a problem loading the health records. Please try again."
+        onRetry={() => refetch()}
+      />
+    );
+  }
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Health Records</h2>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setWeightDialogOpen(true)}
-          >
-            <Activity className="h-4 w-4 mr-2" />
-            Add Weight
-          </Button>
-          <Button onClick={() => handleAddRecord(HealthRecordType.Examination)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Record
-          </Button>
-        </div>
+      <SectionHeader
+        title="Health Records"
+        description="Track vaccinations, examinations, medications, and weight over time"
+        action={{
+          label: "Add Record",
+          onClick: () => handleAddRecord(HealthRecordType.Examination),
+          icon: <Plus className="h-4 w-4" />
+        }}
+      />
+      
+      <div className="flex gap-2">
+        <ActionButton 
+          variant="outline" 
+          onClick={() => setWeightDialogOpen(true)}
+        >
+          <Activity className="h-4 w-4 mr-2" />
+          Add Weight
+        </ActionButton>
+        
+        <ActionButton onClick={() => handleAddRecord(HealthRecordType.Examination)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Record
+        </ActionButton>
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -101,138 +133,195 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsList>
         
         <TabsContent value="summary" className="space-y-4 pt-4">
-          <HealthSummaryCard 
-            dogId={dogId}
-            upcomingVaccinations={getUpcomingVaccinations()}
-            overdueVaccinations={getOverdueVaccinations()}
-            recentExaminations={getRecordsByType(HealthRecordType.Examination).slice(0, 3)}
-            currentMedications={getRecordsByType(HealthRecordType.Medication)}
-            latestWeight={weightHistory?.[0]}
-            growthStats={growthStats}
-            isLoading={recordsLoading || weightLoading}
-          />
-          
-          {getOverdueVaccinations().length > 0 && (
-            <Card className="border-red-200 bg-red-50 dark:bg-red-950/10">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-red-600 flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2" />
-                  Overdue Vaccinations
-                </CardTitle>
+          {!healthRecords || healthRecords.length === 0 ? (
+            <EmptyState
+              title="No health records yet"
+              description="Start tracking this dog's health by adding records for vaccinations, examinations, or medications."
+              action={{
+                label: "Add First Record",
+                onClick: () => handleAddRecord(HealthRecordType.Examination)
+              }}
+            />
+          ) : (
+            <>
+              <HealthSummaryCard 
+                dogId={dogId}
+                upcomingVaccinations={getUpcomingVaccinations()}
+                overdueVaccinations={getOverdueVaccinations()}
+                recentExaminations={getRecordsByType(HealthRecordType.Examination).slice(0, 3)}
+                currentMedications={getRecordsByType(HealthRecordType.Medication)}
+                latestWeight={weightHistory?.[0]}
+                growthStats={growthStats}
+                isLoading={recordsLoading || weightLoading}
+              />
+              
+              {getOverdueVaccinations().length > 0 && (
+                <Card className="border-red-200 bg-red-50 dark:bg-red-950/10">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-red-600 flex items-center text-lg">
+                      <AlertTriangle className="h-5 w-5 mr-2" />
+                      Overdue Vaccinations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <HealthRecordsList 
+                      records={getOverdueVaccinations()}
+                      onEdit={handleEditRecord}
+                      onDelete={deleteHealthRecord}
+                      emptyMessage="No overdue vaccinations"
+                    />
+                  </CardContent>
+                </Card>
+              )}
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center text-lg">
+                    <Calendar className="h-5 w-5 mr-2" />
+                    Upcoming Health Events
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <HealthRecordsList 
+                    records={getUpcomingVaccinations()}
+                    onEdit={handleEditRecord}
+                    onDelete={deleteHealthRecord}
+                    emptyMessage="No upcoming health events"
+                  />
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center text-lg">
+                    <Activity className="h-5 w-5 mr-2" />
+                    Recent Health Activities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <HealthRecordsList 
+                    records={healthRecords?.slice(0, 5) || []}
+                    onEdit={handleEditRecord}
+                    onDelete={deleteHealthRecord}
+                    emptyMessage="No recent health activities"
+                  />
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="vaccinations" className="pt-4">
+          {getRecordsByType(HealthRecordType.Vaccination).length === 0 ? (
+            <EmptyState
+              title="No vaccination records"
+              description="Start tracking this dog's vaccinations to ensure they stay up-to-date on important shots."
+              action={{
+                label: "Add Vaccination",
+                onClick: () => handleAddRecord(HealthRecordType.Vaccination)
+              }}
+            />
+          ) : (
+            <VaccinationSection 
+              vaccinations={getRecordsByType(HealthRecordType.Vaccination)}
+              upcomingVaccinations={getUpcomingVaccinations()}
+              overdueVaccinations={getOverdueVaccinations()}
+              onAdd={() => handleAddRecord(HealthRecordType.Vaccination)}
+              onEdit={handleEditRecord}
+              onDelete={deleteHealthRecord}
+              isLoading={recordsLoading}
+            />
+          )}
+        </TabsContent>
+        
+        <TabsContent value="examinations" className="pt-4">
+          {getRecordsByType(HealthRecordType.Examination).length === 0 ? (
+            <EmptyState
+              title="No examination records"
+              description="Keep track of vet visits and health check-ups by adding examination records."
+              action={{
+                label: "Add Examination",
+                onClick: () => handleAddRecord(HealthRecordType.Examination)
+              }}
+            />
+          ) : (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle>Examination Records</CardTitle>
+                <ActionButton
+                  size="sm"
+                  onClick={() => handleAddRecord(HealthRecordType.Examination)}
+                  icon={<Plus className="h-4 w-4" />}
+                >
+                  Add Examination
+                </ActionButton>
               </CardHeader>
               <CardContent>
                 <HealthRecordsList 
-                  records={getOverdueVaccinations()}
+                  records={getRecordsByType(HealthRecordType.Examination)}
                   onEdit={handleEditRecord}
                   onDelete={deleteHealthRecord}
-                  emptyMessage="No overdue vaccinations"
+                  emptyMessage="No examination records found"
+                  isLoading={recordsLoading}
                 />
               </CardContent>
             </Card>
           )}
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center">
-                <Calendar className="h-5 w-5 mr-2" />
-                Upcoming Health Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <HealthRecordsList 
-                records={getUpcomingVaccinations()}
-                onEdit={handleEditRecord}
-                onDelete={deleteHealthRecord}
-                emptyMessage="No upcoming health events"
-              />
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center">
-                <Activity className="h-5 w-5 mr-2" />
-                Recent Health Activities
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <HealthRecordsList 
-                records={healthRecords?.slice(0, 5) || []}
-                onEdit={handleEditRecord}
-                onDelete={deleteHealthRecord}
-                emptyMessage="No recent health activities"
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="vaccinations" className="pt-4">
-          <VaccinationSection 
-            vaccinations={getRecordsByType(HealthRecordType.Vaccination)}
-            upcomingVaccinations={getUpcomingVaccinations()}
-            overdueVaccinations={getOverdueVaccinations()}
-            onAdd={() => handleAddRecord(HealthRecordType.Vaccination)}
-            onEdit={handleEditRecord}
-            onDelete={deleteHealthRecord}
-            isLoading={recordsLoading}
-          />
-        </TabsContent>
-        
-        <TabsContent value="examinations" className="pt-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle>Examination Records</CardTitle>
-              <Button
-                size="sm"
-                onClick={() => handleAddRecord(HealthRecordType.Examination)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Examination
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <HealthRecordsList 
-                records={getRecordsByType(HealthRecordType.Examination)}
-                onEdit={handleEditRecord}
-                onDelete={deleteHealthRecord}
-                emptyMessage="No examination records found"
-                isLoading={recordsLoading}
-              />
-            </CardContent>
-          </Card>
         </TabsContent>
         
         <TabsContent value="medications" className="pt-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle>Medication Records</CardTitle>
-              <Button
-                size="sm"
-                onClick={() => handleAddRecord(HealthRecordType.Medication)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Medication
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <HealthRecordsList 
-                records={getRecordsByType(HealthRecordType.Medication)}
-                onEdit={handleEditRecord}
-                onDelete={deleteHealthRecord}
-                emptyMessage="No medication records found"
-                isLoading={recordsLoading}
-              />
-            </CardContent>
-          </Card>
+          {getRecordsByType(HealthRecordType.Medication).length === 0 ? (
+            <EmptyState
+              title="No medication records"
+              description="Track medications, supplements, and treatments by adding medication records."
+              action={{
+                label: "Add Medication",
+                onClick: () => handleAddRecord(HealthRecordType.Medication)
+              }}
+            />
+          ) : (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle>Medication Records</CardTitle>
+                <ActionButton
+                  size="sm"
+                  onClick={() => handleAddRecord(HealthRecordType.Medication)}
+                  icon={<Plus className="h-4 w-4" />}
+                >
+                  Add Medication
+                </ActionButton>
+              </CardHeader>
+              <CardContent>
+                <HealthRecordsList 
+                  records={getRecordsByType(HealthRecordType.Medication)}
+                  onEdit={handleEditRecord}
+                  onDelete={deleteHealthRecord}
+                  emptyMessage="No medication records found"
+                  isLoading={recordsLoading}
+                />
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
         
         <TabsContent value="weight" className="pt-4">
-          <WeightTrackingSection 
-            weightHistory={weightHistory || []}
-            growthStats={growthStats}
-            onAddWeight={() => setWeightDialogOpen(true)}
-            isLoading={weightLoading}
-          />
+          {!weightHistory || weightHistory.length === 0 ? (
+            <EmptyState
+              title="No weight history"
+              description="Start tracking this dog's weight to monitor growth and health over time."
+              action={{
+                label: "Add Weight Record",
+                onClick: () => setWeightDialogOpen(true)
+              }}
+            />
+          ) : (
+            <WeightTrackingSection 
+              weightHistory={weightHistory || []}
+              growthStats={growthStats}
+              onAddWeight={() => setWeightDialogOpen(true)}
+              isLoading={weightLoading}
+            />
+          )}
         </TabsContent>
       </Tabs>
       

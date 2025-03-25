@@ -5,24 +5,34 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Edit, Trash2 } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
-import BackButton from '@/components/common/BackButton';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import DogProfileHeader from '@/components/dogs/components/profile/DogProfileHeader';
 import DogProfileDetails from '@/components/dogs/components/profile/DogProfileDetails';
 import DogHealthRecords from '@/components/dogs/components/profile/DogHealthRecords';
 import DogCareHistory from '@/components/dogs/components/profile/DogCareHistory';
 import EditDogDialog from '@/components/dogs/components/details/EditDogDialog';
 import { DogProfile } from '@/types/dog';
 
+// Import standardized components
+import {
+  PageHeader,
+  LoadingState,
+  ErrorState,
+  ActionButton,
+  ConfirmDialog
+} from '@/components/ui/standardized';
+
 const DogProfilePage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Fetch the specific dog data
-  const { data: dog, isLoading, error } = useQuery({
+  const { data: dog, isLoading, error, refetch } = useQuery({
     queryKey: ['dog', id],
     queryFn: async () => {
       if (!id) return null;
@@ -46,14 +56,42 @@ const DogProfilePage = () => {
     },
   });
 
+  const handleDeleteDog = async () => {
+    if (!id) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('dogs')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: 'Dog deleted',
+        description: 'The dog has been permanently deleted',
+      });
+      
+      navigate('/dogs');
+    } catch (error) {
+      toast({
+        title: 'Error deleting dog',
+        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <ProtectedRoute>
         <MainLayout>
           <div className="container mx-auto py-8">
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
+            <LoadingState message="Loading dog profile..." />
           </div>
         </MainLayout>
       </ProtectedRoute>
@@ -65,11 +103,11 @@ const DogProfilePage = () => {
       <ProtectedRoute>
         <MainLayout>
           <div className="container mx-auto py-8">
-            <BackButton fallbackPath="/dogs" />
-            <div className="p-8 bg-muted rounded-lg text-center mt-6">
-              <h2 className="text-xl font-semibold mb-2">Dog not found</h2>
-              <p className="text-muted-foreground">The requested dog could not be found or you don't have permission to view it.</p>
-            </div>
+            <ErrorState
+              title="Dog not found"
+              message="The requested dog could not be found or you don't have permission to view it."
+              onRetry={() => refetch()}
+            />
           </div>
         </MainLayout>
       </ProtectedRoute>
@@ -80,12 +118,27 @@ const DogProfilePage = () => {
     <ProtectedRoute>
       <MainLayout>
         <div className="container mx-auto py-8">
-          <BackButton fallbackPath="/dogs" className="mb-6" />
-          
-          <DogProfileHeader 
-            dog={dog} 
-            onEdit={() => setIsEditDialogOpen(true)} 
+          <PageHeader
+            title={dog.name}
+            subtitle={`${dog.breed || 'Unknown Breed'} · ${dog.gender || 'Unknown Gender'}`}
+            backLink="/dogs"
+            action={{
+              label: "Edit Dog",
+              onClick: () => setIsEditDialogOpen(true),
+              icon: <Edit className="h-4 w-4" />
+            }}
           />
+          
+          <div className="flex justify-end mb-4">
+            <ActionButton
+              variant="destructive"
+              size="sm"
+              icon={<Trash2 className="h-4 w-4" />}
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              Delete Dog
+            </ActionButton>
+          </div>
           
           <Tabs defaultValue="details" className="mt-6">
             <TabsList>
@@ -112,6 +165,18 @@ const DogProfilePage = () => {
             open={isEditDialogOpen}
             onOpenChange={setIsEditDialogOpen}
             dog={dog}
+          />
+          
+          {/* Delete Confirmation Dialog */}
+          <ConfirmDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            title="Delete Dog Profile"
+            description="Are you sure you want to delete this dog? This action cannot be undone."
+            confirmLabel="Delete"
+            variant="destructive"
+            isLoading={isDeleting}
+            onConfirm={handleDeleteDog}
           />
         </div>
       </MainLayout>
