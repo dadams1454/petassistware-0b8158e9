@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Shield, Loader2 } from 'lucide-react';
+import { PawPrint, Loader2 } from 'lucide-react';
 import { LoadingState } from '@/components/ui/standardized';
 
 interface AuthLoadingStateProps {
@@ -36,11 +36,8 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
 
   return (
     <div className={container}>
-      <div className="relative">
-        <Loader2 className={`${sizeMap[size]} animate-spin text-primary/70`} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Shield className={`${sizeMap.small} text-primary`} />
-        </div>
+      <div className="relative animate-pulse">
+        <PawPrint className={`${sizeMap[size]} text-primary`} />
       </div>
       {message && (
         <p className="text-center text-muted-foreground mt-4 font-medium">{message}</p>

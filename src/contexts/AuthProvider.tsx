@@ -96,6 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await fetchUserRole(currentSession.user.id);
         }
         
+        // Set loading to false even if no session to prevent infinite loading
         setLoading(false);
         
         return () => {
@@ -107,7 +108,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
+    // Set a timeout to force loading to false after 5 seconds
+    // This prevents infinite loading if there's an issue with session fetching
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.log('Loading timeout reached, forcing loading state to false');
+        setLoading(false);
+      }
+    }, 5000);
+
     loadSession();
+
+    return () => clearTimeout(timeout);
   }, []);
 
   const signOut = async () => {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { PawPrint } from 'lucide-react';
 
 interface LoadingStateProps {
   message?: string;
@@ -25,7 +25,9 @@ const LoadingState: React.FC<LoadingStateProps> = ({
 
   return (
     <div className={container}>
-      <Loader2 className={`${sizeMap[size]} animate-spin text-primary`} />
+      <div className="animate-pulse">
+        <PawPrint className={`${sizeMap[size]} text-primary`} />
+      </div>
       {message && (
         <p className="text-center text-muted-foreground mt-2">{message}</p>
       )}
