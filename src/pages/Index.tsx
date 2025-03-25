@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import Logo from '@/components/common/Logo';
 import { CustomButton } from '@/components/ui/custom-button';
@@ -11,14 +12,16 @@ import {
 } from 'lucide-react';
 import { LogoutDialog } from '@/components/user-management/LogoutDialog';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import ConfirmDialog from '@/components/ui/standardized/ConfirmDialog';
 
 const Index: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -31,19 +34,17 @@ const Index: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) throw error;
+      setIsSigningOut(true);
+      await signOut();
       
       toast({
         title: "Success",
-        description: "You have been signed out. Redirecting to login page...",
+        description: "You have been signed out successfully.",
         variant: "default"
       });
       
-      setTimeout(() => {
-        window.location.href = '/auth';
-      }, 1500);
+      // Redirect to auth page
+      navigate('/auth');
     } catch (error: any) {
       console.error('Error signing out:', error);
       toast({
@@ -52,6 +53,7 @@ const Index: React.FC = () => {
         variant: "destructive"
       });
     } finally {
+      setIsSigningOut(false);
       setShowLogoutDialog(false);
     }
   };
@@ -389,6 +391,7 @@ const Index: React.FC = () => {
         isOpen={showLogoutDialog}
         onClose={() => setShowLogoutDialog(false)}
         onConfirm={handleSignOut}
+        isLoading={isSigningOut}
       />
     </div>
   );

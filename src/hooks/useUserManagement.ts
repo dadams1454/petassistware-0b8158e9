@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthProvider';
 import { UserWithProfile } from '@/types/user';
 
-// Define the database profile type to match what comes from Supabase
+// Define a simpler type for breeder profiles to prevent TS2589 error
 type BreederProfile = {
   id: string;
   email: string;
@@ -37,7 +37,6 @@ export const useUserManagement = () => {
         throw new Error("Missing tenant ID");
       }
       
-      // Define the return type using a non-generic approach
       const { data, error: profilesError } = await supabase
         .from('breeder_profiles')
         .select('*')
@@ -46,11 +45,10 @@ export const useUserManagement = () => {
       if (profilesError) throw profilesError;
       
       if (data) {
-        // Use a simpler type assertion instead of complex inference
-        const typedData = data as any[];
+        // Use explicit type casting to avoid deep type instantiation
+        const profiles = data as BreederProfile[];
         
-        // Map the profile data to our UserWithProfile type
-        const formattedUsers: UserWithProfile[] = typedData.map((profile) => ({
+        const formattedUsers: UserWithProfile[] = profiles.map((profile) => ({
           id: profile.id,
           email: profile.email,
           created_at: profile.created_at,
