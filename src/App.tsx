@@ -45,7 +45,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               
-              {/* Protected Routes */}
+              {/* Protected Routes - accessible by all authenticated users */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dogs" element={<Dogs />} />
@@ -53,14 +53,22 @@ function App() {
                 <Route path="/dog/:id" element={<DogDetail />} />
                 <Route path="/profile/dog/:id" element={<DogProfile />} />
                 <Route path="/daily-care" element={<DailyCare />} />
+                <Route path="/profile" element={<Profile />} />
+              </Route>
+              
+              {/* Staff+ Only Routes */}
+              <Route element={<ProtectedRoute requiredRoles={['staff', 'manager', 'admin']} />}>
                 <Route path="/customers" element={<Customers />} />
                 <Route path="/litters" element={<Litters />} />
-                <Route path="/litters/add" element={<AddLitter />} />
                 <Route path="/litters/:id" element={<LitterDetail />} />
                 <Route path="/calendar" element={<Calendar />} />
+              </Route>
+              
+              {/* Manager+ Only Routes */}
+              <Route element={<ProtectedRoute requiredRoles={['manager', 'admin']} />}>
+                <Route path="/litters/add" element={<AddLitter />} />
                 <Route path="/communications" element={<Communications />} />
                 <Route path="/welping" element={<WelpingPage />} />
-                <Route path="/profile" element={<Profile />} />
               </Route>
               
               <Route path="*" element={<NotFound />} />

@@ -1,12 +1,12 @@
 
 import React, { useEffect } from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthProvider';
+import { useAuth, UserRole } from '@/contexts/AuthProvider';
 import { AuthLoadingState, UnauthorizedState } from '@/components/ui/standardized';
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
-  requiredRoles?: string[];
+  requiredRoles?: UserRole[];
   fallbackPath?: string;
 }
 
@@ -19,7 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRoles = [], 
   fallbackPath = "/auth" 
 }) => {
-  const { user, loading, session } = useAuth();
+  const { user, loading, userRole } = useAuth();
   const location = useLocation();
 
   // If authentication is still loading, show the loading state
@@ -33,10 +33,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // If roles are required, check if the user has at least one of the required roles
-  if (requiredRoles.length > 0) {
-    // Get user role from session
-    const userRole = user.user_metadata?.role || 'viewer';
-    
+  if (requiredRoles.length > 0 && userRole) {
     // Check if the user has one of the required roles
     const hasRequiredRole = requiredRoles.includes(userRole);
     
