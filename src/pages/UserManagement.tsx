@@ -25,25 +25,19 @@ export type UserWithProfile = {
 
 // Interface for profile data from the database
 interface BreederProfile {
-  breeding_experience: string;
-  business_details: string;
-  business_name: string;
-  business_overview: string;
+  breeding_experience: string | null;
+  business_details: string | null;
+  business_name: string | null;
+  business_overview: string | null;
   created_at: string;
   email: string;
-  first_name: string;
+  first_name: string | null;
   id: string;
-  last_name: string;
-  profile_image_url: string;
-  role: string;
+  last_name: string | null;
+  profile_image_url: string | null;
+  role: string | null;
   updated_at: string;
   tenant_id: string | null;
-}
-
-// Define a type for Supabase query response to avoid deep type inference
-type BreederProfileResponse = {
-  data: BreederProfile[] | null;
-  error: any;
 }
 
 const UserManagement = () => {
@@ -75,8 +69,7 @@ const UserManagement = () => {
         setLoading(true);
         
         // Get users from the breeder_profiles table (which contains role info)
-        // Use the explicit response type to avoid deep type inference
-        const { data, error: profilesError }: BreederProfileResponse = await supabase
+        const { data, error: profilesError } = await supabase
           .from('breeder_profiles')
           .select('*')
           .eq('tenant_id', tenantId);
@@ -85,7 +78,7 @@ const UserManagement = () => {
         
         if (data) {
           // Transform the data with explicit type annotations
-          const formattedUsers: UserWithProfile[] = data.map(profile => ({
+          const formattedUsers: UserWithProfile[] = data.map((profile: any) => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -132,8 +125,7 @@ const UserManagement = () => {
     // Refresh the user list
     const fetchUsers = async () => {
       try {
-        // Use the explicit response type to avoid deep type inference
-        const { data, error: profilesError }: BreederProfileResponse = await supabase
+        const { data, error: profilesError } = await supabase
           .from('breeder_profiles')
           .select('*')
           .eq('tenant_id', tenantId);
@@ -142,7 +134,7 @@ const UserManagement = () => {
         
         if (data) {
           // Transform with explicit type annotations
-          const formattedUsers: UserWithProfile[] = data.map(profile => ({
+          const formattedUsers: UserWithProfile[] = data.map((profile: any) => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
