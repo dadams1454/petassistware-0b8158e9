@@ -23,6 +23,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import NotFound from '@/pages/NotFound';
 import Profile from '@/pages/Profile';
 import Index from '@/pages/Index';
+import UserManagement from '@/pages/UserManagement';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -69,6 +70,11 @@ function App() {
                 <Route path="/litters/add" element={<AddLitter />} />
                 <Route path="/communications" element={<Communications />} />
                 <Route path="/welping" element={<WelpingPage />} />
+              </Route>
+              
+              {/* Admin Only Routes */}
+              <Route element={<ProtectedRoute requiredRoles={['admin']} />}>
+                <Route path="/users" element={<UserManagement />} />
               </Route>
               
               <Route path="*" element={<NotFound />} />
