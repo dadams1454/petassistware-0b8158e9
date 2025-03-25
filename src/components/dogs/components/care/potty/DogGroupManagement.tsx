@@ -8,10 +8,11 @@ import {
   updateDogGroup, 
   deleteDogGroup 
 } from '@/services/dailyCare/dogGroupsService';
-import { Users, Plus } from 'lucide-react';
+import { Users, Plus, RefreshCw } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
 import DogGroupFormDialog from './components/DogGroupFormDialog';
 import DogGroupCard from './components/DogGroupCard';
+import { useToast } from '@/hooks/use-toast';
 
 interface DogGroupManagementProps {
   dogs: DogCareStatus[];
@@ -19,6 +20,7 @@ interface DogGroupManagementProps {
 }
 
 const DogGroupManagement: React.FC<DogGroupManagementProps> = ({ dogs, onGroupsUpdated }) => {
+  const { toast } = useToast();
   const [groups, setGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -40,6 +42,11 @@ const DogGroupManagement: React.FC<DogGroupManagementProps> = ({ dogs, onGroupsU
       setGroups(dogGroups);
     } catch (error) {
       console.error('Error loading dog groups:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load dog groups.',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -75,8 +82,20 @@ const DogGroupManagement: React.FC<DogGroupManagementProps> = ({ dogs, onGroupsU
       // Reset form
       resetForm();
       setDialogOpen(false);
+      
+      toast({
+        title: editingGroup ? 'Group Updated' : 'Group Created',
+        description: editingGroup 
+          ? `${groupName} has been updated successfully.`
+          : `${groupName} has been created successfully.`
+      });
     } catch (error) {
       console.error('Error saving dog group:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save dog group.',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -93,8 +112,18 @@ const DogGroupManagement: React.FC<DogGroupManagementProps> = ({ dogs, onGroupsU
       // Refresh groups
       await loadGroups();
       onGroupsUpdated();
+      
+      toast({
+        title: 'Group Deleted',
+        description: 'The group has been deleted successfully.'
+      });
     } catch (error) {
       console.error('Error deleting dog group:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete dog group.',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -130,10 +159,21 @@ const DogGroupManagement: React.FC<DogGroupManagementProps> = ({ dogs, onGroupsU
           <Users className="inline mr-2 h-5 w-5" />
           Dog Groups
         </CardTitle>
-        <Button onClick={openCreateDialog} size="sm">
-          <Plus className="mr-1 h-4 w-4" />
-          New Group
-        </Button>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={loadGroups}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button onClick={openCreateDialog} size="sm">
+            <Plus className="mr-1 h-4 w-4" />
+            New Group
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading && groups.length === 0 ? (
