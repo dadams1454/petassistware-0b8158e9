@@ -7,13 +7,18 @@ import BlurBackground from '@/components/ui/blur-background';
 import { useAuth } from '@/contexts/AuthProvider';
 import { 
   ChevronRight, ArrowRight, Dog, PawPrint, 
-  Users, FileText, BarChart3, Globe, Database, ShieldCheck 
+  Users, FileText, BarChart3, Globe, Database, ShieldCheck, LogOut 
 } from 'lucide-react';
+import { LogoutDialog } from '@/components/user-management/LogoutDialog';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const { toast } = useToast();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +28,33 @@ const Index: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "You have been signed out. Redirecting to login page...",
+        variant: "default"
+      });
+      
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "Error",
+        description: `Failed to sign out: ${error.message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setShowLogoutDialog(false);
+    }
+  };
 
   const features = [
     {
@@ -110,14 +142,24 @@ const Index: React.FC = () => {
 
             <div className="flex items-center gap-2">
               {user ? (
-                <Link to="/dashboard">
+                <>
+                  <Link to="/dashboard">
+                    <CustomButton
+                      variant="primary"
+                      size="sm"
+                    >
+                      Dashboard
+                    </CustomButton>
+                  </Link>
                   <CustomButton
-                    variant="primary"
+                    variant="outline"
                     size="sm"
+                    onClick={() => setShowLogoutDialog(true)}
+                    icon={<LogOut size={16} />}
                   >
-                    Dashboard
+                    Sign Out
                   </CustomButton>
-                </Link>
+                </>
               ) : (
                 <>
                   <Link to="/auth">
@@ -341,6 +383,13 @@ const Index: React.FC = () => {
           </div>
         </div>
       </footer>
+      
+      {/* Logout Dialog */}
+      <LogoutDialog 
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={handleSignOut}
+      />
     </div>
   );
 };

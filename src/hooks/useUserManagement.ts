@@ -45,8 +45,8 @@ export const useUserManagement = () => {
       if (profilesError) throw profilesError;
       
       if (data) {
-        // Explicitly cast the data to an array of BreederProfile objects
-        const profiles: BreederProfile[] = data;
+        // Fix for the excessive type instantiation error - use type assertion
+        const profiles = data as unknown as BreederProfile[];
         
         // Map the profile data to our UserWithProfile type
         const formattedUsers: UserWithProfile[] = profiles.map((profile) => ({
