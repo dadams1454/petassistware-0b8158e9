@@ -23,7 +23,8 @@ import {
   LogOut,
   Menu,
   X,
-  Shield
+  Shield,
+  Settings2
 } from 'lucide-react';
 import Logo from './Logo';
 
@@ -142,6 +143,13 @@ const Navbar: React.FC = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/admin-setup" className="cursor-pointer">
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    <span>Admin Setup</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
@@ -220,6 +228,16 @@ const Navbar: React.FC = () => {
               <div className="flex items-center">
                 <Settings className="h-5 w-5" />
                 <span className="ml-2">Settings</span>
+              </div>
+            </Link>
+            <Link
+              to="/admin-setup"
+              className="block px-4 py-2 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <div className="flex items-center">
+                <Settings2 className="h-5 w-5" />
+                <span className="ml-2">Admin Setup</span>
               </div>
             </Link>
             <button

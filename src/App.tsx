@@ -24,6 +24,7 @@ import NotFound from '@/pages/NotFound';
 import Profile from '@/pages/Profile';
 import Index from '@/pages/Index';
 import UserManagement from '@/pages/UserManagement';
+import AdminSetup from '@/pages/AdminSetup';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -45,6 +46,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/admin-setup" element={<AdminSetup />} />
               
               {/* Protected Routes - accessible by all authenticated users */}
               <Route element={<ProtectedRoute />}>

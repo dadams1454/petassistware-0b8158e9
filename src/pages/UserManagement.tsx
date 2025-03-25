@@ -23,23 +23,6 @@ export type UserWithProfile = {
   tenant_id: string | null;
 };
 
-// Interface for profile data from the database
-interface BreederProfile {
-  breeding_experience: string | null;
-  business_details: string | null;
-  business_name: string | null;
-  business_overview: string | null;
-  created_at: string;
-  email: string;
-  first_name: string | null;
-  id: string;
-  last_name: string | null;
-  profile_image_url: string | null;
-  role: string | null;
-  updated_at: string;
-  tenant_id: string | null;
-}
-
 const UserManagement = () => {
   const { user, userRole, tenantId } = useAuth();
   const navigate = useNavigate();
@@ -68,6 +51,10 @@ const UserManagement = () => {
       try {
         setLoading(true);
         
+        if (!tenantId) {
+          throw new Error("Missing tenant ID");
+        }
+        
         // Get users from the breeder_profiles table (which contains role info)
         const { data, error: profilesError } = await supabase
           .from('breeder_profiles')
@@ -77,8 +64,8 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (data) {
-          // Transform the data with explicit type annotations
-          const formattedUsers: UserWithProfile[] = data.map((profile: any) => ({
+          // Use type assertion to avoid deep inference issues
+          const formattedUsers = data.map((profile) => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -88,7 +75,7 @@ const UserManagement = () => {
             profile_image_url: profile.profile_image_url,
             role: profile.role,
             tenant_id: profile.tenant_id
-          }));
+          })) as UserWithProfile[];
           
           setUsers(formattedUsers);
         }
@@ -125,6 +112,10 @@ const UserManagement = () => {
     // Refresh the user list
     const fetchUsers = async () => {
       try {
+        if (!tenantId) {
+          throw new Error("Missing tenant ID");
+        }
+
         const { data, error: profilesError } = await supabase
           .from('breeder_profiles')
           .select('*')
@@ -133,8 +124,8 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (data) {
-          // Transform with explicit type annotations
-          const formattedUsers: UserWithProfile[] = data.map((profile: any) => ({
+          // Use type assertion to avoid deep inference issues
+          const formattedUsers = data.map((profile) => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -144,7 +135,7 @@ const UserManagement = () => {
             profile_image_url: profile.profile_image_url,
             role: profile.role,
             tenant_id: profile.tenant_id
-          }));
+          })) as UserWithProfile[];
           
           setUsers(formattedUsers);
         }
@@ -156,10 +147,7 @@ const UserManagement = () => {
     fetchUsers();
   };
 
-  if (userRole !== 'admin') {
-    return null; // Will navigate away in useEffect
-  }
-
+  // Show a different message if there's no admin yet
   if (loading) {
     return <LoadingState message="Loading users..." />;
   }
