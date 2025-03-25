@@ -57,53 +57,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     async function loadSession() {
       setLoading(true);
       try {
-        // Get session from Supabase
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // First, set up the auth state change listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, newSession) => {
+            console.log('Auth state changed:', event);
+            
+            setSession(newSession);
+            setUser(newSession?.user ?? null);
+            
+            // Reset role when user logs out
+            if (event === 'SIGNED_OUT') {
+              setUserRole(null);
+              setTenantId(null);
+            }
+            
+            // Fetch role when user signs in
+            if (newSession?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+              await fetchUserRole(newSession.user.id);
+            }
+            
+            setLoading(false);
+          }
+        );
+        
+        // Then, get the current session
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           throw error;
         }
         
-        setSession(session);
-        setUser(session?.user ?? null);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
 
         // If we have a user, fetch their role
-        if (session?.user) {
-          await fetchUserRole(session.user.id);
+        if (currentSession?.user) {
+          await fetchUserRole(currentSession.user.id);
         }
+        
+        setLoading(false);
+        
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error('Error loading session:', error);
-      } finally {
         setLoading(false);
       }
     }
 
     loadSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Reset role when user logs out
-        if (event === 'SIGNED_OUT') {
-          setUserRole(null);
-          setTenantId(null);
-        }
-        
-        // Fetch role when user signs in
-        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-          await fetchUserRole(session.user.id);
-        }
-        
-        setLoading(false);
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   const signOut = async () => {
