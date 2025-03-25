@@ -19,6 +19,7 @@ type BreederProfile = {
   business_details?: string | null;
   breeding_experience?: string | null;
   updated_at: string;
+  tenant_id?: string | null;
 };
 
 export const useUserManagement = () => {
@@ -44,8 +45,8 @@ export const useUserManagement = () => {
       if (profilesError) throw profilesError;
       
       if (data) {
-        // Explicitly type the data as BreederProfile array
-        const profiles = data as BreederProfile[];
+        // Explicitly cast the data to an array of BreederProfile objects
+        const profiles: BreederProfile[] = data;
         
         // Map the profile data to our UserWithProfile type
         const formattedUsers: UserWithProfile[] = profiles.map((profile) => ({
@@ -57,7 +58,6 @@ export const useUserManagement = () => {
           last_name: profile.last_name,
           profile_image_url: profile.profile_image_url,
           role: profile.role,
-          // Use the tenantId from context instead of from the profile
           tenant_id: tenantId
         }));
         
