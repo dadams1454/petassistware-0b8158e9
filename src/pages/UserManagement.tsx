@@ -9,7 +9,7 @@ import { UserTable } from '@/components/user-management/UserTable';
 import { InviteUserDialog } from '@/components/user-management/InviteUserDialog';
 import { EditUserDialog } from '@/components/user-management/EditUserDialog';
 import { Button } from '@/components/ui/button';
-import { Plus, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 
 export type UserWithProfile = {
   id: string;
@@ -22,6 +22,23 @@ export type UserWithProfile = {
   role: string | null;
   tenant_id: string | null;
 };
+
+// Interface for profile data from the database
+interface BreederProfile {
+  breeding_experience: string;
+  business_details: string;
+  business_name: string;
+  business_overview: string;
+  created_at: string;
+  email: string;
+  first_name: string;
+  id: string;
+  last_name: string;
+  profile_image_url: string;
+  role: string;
+  updated_at: string;
+  tenant_id?: string;
+}
 
 const UserManagement = () => {
   const { user, userRole, tenantId } = useAuth();
@@ -61,7 +78,7 @@ const UserManagement = () => {
         
         if (profiles) {
           // Transform the data into the format we need
-          const formattedUsers = profiles.map(profile => ({
+          const formattedUsers = (profiles as BreederProfile[]).map(profile => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -70,7 +87,7 @@ const UserManagement = () => {
             last_name: profile.last_name,
             profile_image_url: profile.profile_image_url,
             role: profile.role,
-            tenant_id: profile.tenant_id
+            tenant_id: profile.tenant_id || null
           }));
           
           setUsers(formattedUsers);
@@ -116,7 +133,7 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (profiles) {
-          const formattedUsers = profiles.map(profile => ({
+          const formattedUsers = (profiles as BreederProfile[]).map(profile => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -125,7 +142,7 @@ const UserManagement = () => {
             last_name: profile.last_name,
             profile_image_url: profile.profile_image_url,
             role: profile.role,
-            tenant_id: profile.tenant_id
+            tenant_id: profile.tenant_id || null
           }));
           
           setUsers(formattedUsers);
@@ -147,14 +164,14 @@ const UserManagement = () => {
   }
 
   if (error) {
-    return <ErrorState title="Could not load users" description={error} />;
+    return <ErrorState title="Could not load users" message={error} />;
   }
 
   return (
     <div className="container mx-auto py-8">
       <PageHeader
         title="User Management"
-        description="Manage users and their roles in your organization"
+        subtitle="Manage users and their roles in your organization"
         actions={
           <Button onClick={handleOpenInvite} className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />

@@ -61,9 +61,7 @@ export const UserTable: React.FC<UserTableProps> = ({
       case 'viewer':
         return 'outline';
       case 'veterinarian':
-        return 'success';
       case 'buyer':
-        return 'warning';
       default:
         return 'outline';
     }
