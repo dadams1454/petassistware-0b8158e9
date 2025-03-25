@@ -5,6 +5,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthProvider';
 import { UserWithProfile } from '@/types/user';
 
+// Define the database profile type to match what comes from Supabase
+type BreederProfile = {
+  id: string;
+  email: string;
+  created_at: string;
+  first_name: string | null;
+  last_name: string | null;
+  profile_image_url: string | null;
+  role: string | null;
+  business_name?: string | null;
+  business_overview?: string | null;
+  business_details?: string | null;
+  breeding_experience?: string | null;
+  updated_at: string;
+};
+
 export const useUserManagement = () => {
   const { userRole, tenantId } = useAuth();
   const { toast } = useToast();
@@ -28,8 +44,11 @@ export const useUserManagement = () => {
       if (profilesError) throw profilesError;
       
       if (data) {
+        // Explicitly type the data as BreederProfile array
+        const profiles = data as BreederProfile[];
+        
         // Map the profile data to our UserWithProfile type
-        const formattedUsers = data.map((profile) => ({
+        const formattedUsers: UserWithProfile[] = profiles.map((profile) => ({
           id: profile.id,
           email: profile.email,
           created_at: profile.created_at,
@@ -38,7 +57,8 @@ export const useUserManagement = () => {
           last_name: profile.last_name,
           profile_image_url: profile.profile_image_url,
           role: profile.role,
-          tenant_id: profile.tenant_id || tenantId
+          // Use the tenantId from context instead of from the profile
+          tenant_id: tenantId
         }));
         
         setUsers(formattedUsers);
