@@ -40,6 +40,12 @@ interface BreederProfile {
   tenant_id: string | null;
 }
 
+// Define a type for Supabase query response to avoid deep type inference
+type BreederProfileResponse = {
+  data: BreederProfile[] | null;
+  error: any;
+}
+
 const UserManagement = () => {
   const { user, userRole, tenantId } = useAuth();
   const navigate = useNavigate();
@@ -69,7 +75,8 @@ const UserManagement = () => {
         setLoading(true);
         
         // Get users from the breeder_profiles table (which contains role info)
-        const { data, error: profilesError } = await supabase
+        // Use the explicit response type to avoid deep type inference
+        const { data, error: profilesError }: BreederProfileResponse = await supabase
           .from('breeder_profiles')
           .select('*')
           .eq('tenant_id', tenantId);
@@ -77,11 +84,8 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (data) {
-          // Use type assertion for the returned data
-          const profiles = data as BreederProfile[];
-          
           // Transform the data with explicit type annotations
-          const formattedUsers: UserWithProfile[] = profiles.map(profile => ({
+          const formattedUsers: UserWithProfile[] = data.map(profile => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -128,7 +132,8 @@ const UserManagement = () => {
     // Refresh the user list
     const fetchUsers = async () => {
       try {
-        const { data, error: profilesError } = await supabase
+        // Use the explicit response type to avoid deep type inference
+        const { data, error: profilesError }: BreederProfileResponse = await supabase
           .from('breeder_profiles')
           .select('*')
           .eq('tenant_id', tenantId);
@@ -136,11 +141,8 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (data) {
-          // Use type assertion for the returned data
-          const profiles = data as BreederProfile[];
-          
           // Transform with explicit type annotations
-          const formattedUsers: UserWithProfile[] = profiles.map(profile => ({
+          const formattedUsers: UserWithProfile[] = data.map(profile => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
