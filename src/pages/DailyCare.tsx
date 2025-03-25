@@ -1,3 +1,4 @@
+
 import React from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
@@ -8,6 +9,7 @@ import { RefreshCw } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
+import { EmptyState } from '@/components/ui/standardized';
 
 const DailyCare: React.FC = () => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
@@ -70,15 +72,15 @@ const DailyCare: React.FC = () => {
           </div>
         </div>
       ) : (
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-          <Button 
-            onClick={() => handleRefresh(true)} 
-            className="mt-4"
-            disabled={isLoading}
-          >
-            {isLoading ? "Refreshing..." : "Refresh Dogs"}
-          </Button>
+        <Card className="p-8">
+          <EmptyState
+            title="No Dogs Found"
+            description="No dogs found. Please refresh or add dogs to the system."
+            action={{
+              label: isLoading ? "Refreshing..." : "Refresh Dogs",
+              onClick: () => handleRefresh(true)
+            }}
+          />
         </Card>
       )}
     </>

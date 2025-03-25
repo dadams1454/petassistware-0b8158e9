@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dog } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/standardized';
 
 interface DogData {
   id: string;
@@ -83,19 +83,16 @@ const DogSelector: React.FC<DogSelectorProps> = ({ onDogSelected }) => {
         <CardHeader className="px-0 pt-0">
           <CardTitle>Select a Dog</CardTitle>
         </CardHeader>
-        <CardContent className="px-0 text-center py-8">
-          <Dog className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-medium">No Dogs Found</h3>
-          <p className="text-sm text-muted-foreground mt-2">
-            You need to add a dog before you can log daily care.
-          </p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => window.location.href = '/dogs?action=add'}
-          >
-            Add Your First Dog
-          </Button>
+        <CardContent className="px-0">
+          <EmptyState
+            icon={<Dog className="h-12 w-12 text-muted-foreground" />}
+            title="No Dogs Found"
+            description="You need to add a dog before you can log daily care."
+            action={{
+              label: "Add Your First Dog",
+              onClick: () => window.location.href = '/dogs?action=add'
+            }}
+          />
         </CardContent>
       </div>
     );
