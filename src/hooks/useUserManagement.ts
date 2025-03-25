@@ -37,6 +37,7 @@ export const useUserManagement = () => {
         throw new Error("Missing tenant ID");
       }
       
+      // Define the return type using a non-generic approach
       const { data, error: profilesError } = await supabase
         .from('breeder_profiles')
         .select('*')
@@ -45,11 +46,11 @@ export const useUserManagement = () => {
       if (profilesError) throw profilesError;
       
       if (data) {
-        // Fix for the excessive type instantiation error - use type assertion
-        const profiles = data as unknown as BreederProfile[];
+        // Use a simpler type assertion instead of complex inference
+        const typedData = data as any[];
         
         // Map the profile data to our UserWithProfile type
-        const formattedUsers: UserWithProfile[] = profiles.map((profile) => ({
+        const formattedUsers: UserWithProfile[] = typedData.map((profile) => ({
           id: profile.id,
           email: profile.email,
           created_at: profile.created_at,

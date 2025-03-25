@@ -49,6 +49,7 @@ export type Database = {
           last_name: string | null
           profile_image_url: string | null
           role: string | null
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -63,6 +64,7 @@ export type Database = {
           last_name?: string | null
           profile_image_url?: string | null
           role?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -77,6 +79,7 @@ export type Database = {
           last_name?: string | null
           profile_image_url?: string | null
           role?: string | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Relationships: []
