@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCareActivities } from '@/hooks/useCareActivities';
 import { formatDistanceToNow, format } from 'date-fns';
 import { CareActivity } from '@/services/careService';
+import { SectionHeader, ActionButton, LoadingState } from '@/components/ui/standardized';
 
 interface CareTabProps {
   dogId: string;
@@ -62,10 +63,16 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
             </CardHeader>
             <CardContent>
               <div className="flex flex-col space-y-2">
-                <Button variant="outline" className="justify-start" onClick={() => handleRecordActivity()} disabled={isRecording}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  {isRecording ? 'Recording...' : `Record ${activeTab}`}
-                </Button>
+                <ActionButton 
+                  variant="outline" 
+                  className="justify-start" 
+                  onClick={() => handleRecordActivity()} 
+                  isLoading={isRecording}
+                  loadingText="Recording..."
+                  icon={<PlusCircle className="h-4 w-4" />}
+                >
+                  {`Record ${activeTab}`}
+                </ActionButton>
                 
                 <Button variant="outline" className="justify-start" asChild>
                   <Link to={`/daily-care?dogId=${dogId}`}>
@@ -84,7 +91,7 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-sm text-muted-foreground">Loading...</div>
+                <LoadingState size="small" message="Loading activities..." />
               ) : activities.length > 0 ? (
                 <div className="space-y-2">
                   {activities.slice(0, 3).map((activity) => (
@@ -116,12 +123,13 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
       
       {isFullPage && (
         <div className="mt-6 space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Care Activities</h2>
-            <Button onClick={handleRecordActivity} disabled={isRecording}>
-              {isRecording ? 'Recording...' : `Record ${activeTab}`}
-            </Button>
-          </div>
+          <SectionHeader 
+            title="Care Activities"
+            action={{
+              label: isRecording ? "Recording..." : `Record ${activeTab}`,
+              onClick: handleRecordActivity
+            }}
+          />
           
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as CareActivity['activity_type'])}>
             <TabsList>
@@ -145,7 +153,7 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
             
             <TabsContent value={activeTab} className="mt-4">
               {isLoading ? (
-                <div className="text-center py-4">Loading...</div>
+                <LoadingState message="Loading care activities..." />
               ) : activities.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
                   No {activeTab} records found.

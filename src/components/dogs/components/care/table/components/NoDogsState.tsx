@@ -1,24 +1,24 @@
 
 import React from 'react';
-import { CustomButton } from '@/components/ui/custom-button';
+import { Dog, RefreshCw } from 'lucide-react';
+import { EmptyState } from '@/components/ui/standardized';
 
 interface NoDogsStateProps {
   onRefresh: () => void;
-  isRefreshing: boolean;
+  isRefreshing?: boolean;
 }
 
-const NoDogsState: React.FC<NoDogsStateProps> = ({ onRefresh, isRefreshing }) => {
+const NoDogsState: React.FC<NoDogsStateProps> = ({ onRefresh, isRefreshing = false }) => {
   return (
-    <div className="p-8 text-center border rounded-md bg-slate-50 dark:bg-slate-800/50">
-      <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-      <CustomButton 
-        onClick={onRefresh} 
-        className="mt-4"
-        disabled={isRefreshing}
-      >
-        {isRefreshing ? "Refreshing..." : "Refresh Dogs"}
-      </CustomButton>
-    </div>
+    <EmptyState
+      icon={<Dog className="h-12 w-12 text-muted-foreground" />}
+      title="No dogs found"
+      description="No dogs found in the care system. Please refresh or add dogs to start tracking their care."
+      action={{
+        label: isRefreshing ? "Refreshing..." : "Refresh Dogs",
+        onClick: onRefresh
+      }}
+    />
   );
 };
 

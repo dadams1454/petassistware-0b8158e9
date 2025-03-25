@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { EmptyState } from '@/components/ui/standardized';
+import { PlusCircle, SearchX } from 'lucide-react';
 
 interface NoDogsFoundProps {
   hasSearch?: boolean;
@@ -9,27 +9,30 @@ interface NoDogsFoundProps {
 }
 
 const NoDogsFound = ({ hasSearch = false, onAddClick }: NoDogsFoundProps) => {
+  if (hasSearch) {
+    return (
+      <EmptyState
+        title="No matching dogs"
+        description="No dogs found matching your search criteria. Try adjusting your filters."
+        icon={<SearchX className="h-12 w-12 text-muted-foreground" />}
+        action={{
+          label: "Clear Filters",
+          onClick: onAddClick || (() => {})
+        }}
+      />
+    );
+  }
+  
   return (
-    <div className="text-center p-8 bg-muted rounded-lg">
-      <h3 className="font-medium text-lg mb-2">No dogs found</h3>
-      {hasSearch ? (
-        <p className="text-muted-foreground">
-          No dogs found matching your search criteria. Try adjusting your filters.
-        </p>
-      ) : (
-        <div>
-          <p className="text-muted-foreground mb-4">
-            You haven't added any dogs yet. Click the "Add Dog" button to get started.
-          </p>
-          {onAddClick && (
-            <Button onClick={onAddClick} className="mt-2">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Dog
-            </Button>
-          )}
-        </div>
-      )}
-    </div>
+    <EmptyState
+      title="No dogs found"
+      description="You haven't added any dogs yet. Click the 'Add Dog' button to get started."
+      icon={<PlusCircle className="h-12 w-12 text-muted-foreground" />}
+      action={onAddClick ? {
+        label: "Add Dog",
+        onClick: onAddClick
+      } : undefined}
+    />
   );
 };
 

@@ -6,4 +6,4 @@ export { default as ActionButton } from './ActionButton';
 export { default as LoadingState } from './LoadingState';
 export { default as ErrorState } from './ErrorState';
 export { default as ConfirmDialog } from './ConfirmDialog';
-export { default as EmptyState } from '../empty-state';
+export { default as EmptyState } from '@/components/ui/empty-state';
