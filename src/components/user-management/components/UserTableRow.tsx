@@ -2,7 +2,7 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Edit, Trash2, MoreHorizontal } from 'lucide-react';
-import { UserWithProfile } from '@/pages/UserManagement';
+import { UserWithProfile } from '@/types/user';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   TableCell,

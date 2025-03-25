@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { UserWithProfile } from '@/pages/UserManagement';
+import { UserWithProfile } from '@/types/user';
 import {
   Table,
   TableBody,

@@ -39,9 +39,9 @@ export const useUserManagement = () => {
           profile_image_url: profile.profile_image_url,
           role: profile.role,
           tenant_id: profile.tenant_id || tenantId
-        })) as UserWithProfile[];
+        }));
         
-        setUsers(formattedUsers);
+        setUsers(formattedUsers as UserWithProfile[]);
       }
     } catch (err: any) {
       console.error('Error fetching users:', err);

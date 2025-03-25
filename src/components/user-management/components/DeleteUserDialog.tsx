@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UserWithProfile } from '@/pages/UserManagement';
+import { UserWithProfile } from '@/types/user';
 import {
   AlertDialog,
   AlertDialogAction,
