@@ -15,7 +15,7 @@ const UserManagement = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { users, loading, error, fetchUsers, userRole } = useUserManagement();
+  const { users, loading, error, fetchUsers, userRole, signOutAllUsers } = useUserManagement();
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithProfile | null>(null);
   
@@ -58,7 +58,10 @@ const UserManagement = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <UserManagementHeader onOpenInvite={handleOpenInvite} />
+      <UserManagementHeader 
+        onOpenInvite={handleOpenInvite} 
+        onSignOutAllUsers={signOutAllUsers}
+      />
       
       <div className="mt-6">
         <UserTable 
