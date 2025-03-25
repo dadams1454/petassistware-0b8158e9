@@ -3,45 +3,22 @@ import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Check, Copy, UserPlus } from 'lucide-react';
-import { UserRole } from '@/contexts/AuthProvider';
+import { UserPlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { useForm } from 'react-hook-form';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { InviteForm, InviteFormValues } from './components/InviteForm';
+import { InviteLinkDisplay } from './components/InviteLinkDisplay';
 
 interface InviteUserDialogProps {
   open: boolean;
   onClose: () => void;
   onUserInvited: () => void;
 }
-
-const inviteFormSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  role: z.string({ required_error: 'Please select a role' }),
-  message: z.string().optional(),
-});
-
-type InviteFormValues = z.infer<typeof inviteFormSchema>;
 
 export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
   open,
@@ -52,16 +29,6 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const form = useForm<InviteFormValues>({
-    resolver: zodResolver(inviteFormSchema),
-    defaultValues: {
-      email: '',
-      role: 'viewer',
-      message: '',
-    },
-  });
 
   const handleInvite = async (values: InviteFormValues) => {
     if (!tenantId) {
@@ -107,8 +74,6 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
       
       setInviteLink(inviteUrl);
       onUserInvited();
-      
-      form.reset();
     } catch (error: any) {
       console.error('Error inviting user:', error);
       toast({
@@ -121,18 +86,8 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
     }
   };
 
-  const handleCopyLink = () => {
-    if (inviteLink) {
-      navigator.clipboard.writeText(inviteLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
   const handleCloseDialog = () => {
-    form.reset();
     setInviteLink(null);
-    setCopied(false);
     onClose();
   };
 
@@ -147,99 +102,16 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
         </DialogHeader>
 
         {!inviteLink ? (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleInvite)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="user@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="admin">Administrator</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="staff">Staff</SelectItem>
-                        <SelectItem value="viewer">Viewer</SelectItem>
-                        <SelectItem value="veterinarian">Veterinarian</SelectItem>
-                        <SelectItem value="buyer">Buyer/Client</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Optional Message</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter a personal message (optional)"
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <DialogFooter className="pt-4">
-                <Button variant="outline" type="button" onClick={handleCloseDialog}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Sending...' : 'Send Invitation'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <InviteForm 
+            onSubmit={handleInvite} 
+            isSubmitting={isSubmitting}
+            onCancel={handleCloseDialog}
+          />
         ) : (
-          <div className="space-y-4">
-            <div className="rounded-md bg-muted p-4">
-              <div className="text-sm font-medium mb-2">Invitation Link:</div>
-              <div className="text-xs break-all bg-background p-2 rounded border">
-                {inviteLink}
-              </div>
-            </div>
-            
-            <p className="text-sm text-muted-foreground">
-              Share this link with the user. In a real application, an email would be sent automatically.
-            </p>
-
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={handleCloseDialog}>
-                Close
-              </Button>
-              <Button variant="default" onClick={handleCopyLink} className="gap-2">
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {copied ? 'Copied' : 'Copy Link'}
-              </Button>
-            </div>
-          </div>
+          <InviteLinkDisplay 
+            inviteLink={inviteLink}
+            onClose={handleCloseDialog}
+          />
         )}
       </DialogContent>
     </Dialog>

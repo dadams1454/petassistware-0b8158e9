@@ -64,8 +64,8 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (data) {
-          // Use type assertion to avoid deep inference issues
-          const formattedUsers = data.map((profile) => ({
+          // Map the profile data to our UserWithProfile type
+          const formattedUsers = data.map((profile: any) => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -74,7 +74,7 @@ const UserManagement = () => {
             last_name: profile.last_name,
             profile_image_url: profile.profile_image_url,
             role: profile.role,
-            tenant_id: profile.tenant_id
+            tenant_id: profile.tenant_id || tenantId // Use the tenant_id if available, otherwise use current tenant
           })) as UserWithProfile[];
           
           setUsers(formattedUsers);
@@ -124,8 +124,8 @@ const UserManagement = () => {
         if (profilesError) throw profilesError;
         
         if (data) {
-          // Use type assertion to avoid deep inference issues
-          const formattedUsers = data.map((profile) => ({
+          // Map the profile data to our UserWithProfile type
+          const formattedUsers = data.map((profile: any) => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -134,7 +134,7 @@ const UserManagement = () => {
             last_name: profile.last_name,
             profile_image_url: profile.profile_image_url,
             role: profile.role,
-            tenant_id: profile.tenant_id
+            tenant_id: profile.tenant_id || tenantId // Use the tenant_id if available, otherwise use current tenant
           })) as UserWithProfile[];
           
           setUsers(formattedUsers);
