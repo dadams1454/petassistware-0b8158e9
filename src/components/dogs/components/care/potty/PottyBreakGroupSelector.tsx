@@ -65,6 +65,14 @@ const PottyBreakGroupSelector: React.FC<PottyBreakGroupSelectorProps> = ({
     return groupMembers[groupId].filter(id => existingDogIds.includes(id));
   };
 
+  // Handle group selection
+  const handleGroupSelection = (groupId: string) => {
+    const validDogIds = getValidDogIds(groupId);
+    if (validDogIds.length > 0) {
+      onGroupSelected(validDogIds);
+    }
+  };
+
   // Get background color based on group color
   const getGroupColor = (color: string | null): string => {
     switch (color) {
@@ -120,8 +128,7 @@ const PottyBreakGroupSelector: React.FC<PottyBreakGroupSelectorProps> = ({
             return (
               <Card 
                 key={group.id}
-                className={`overflow-hidden cursor-pointer transition-all ${getGroupColor(group.color)}`}
-                onClick={() => onGroupSelected(validDogIds)}
+                className={`overflow-hidden transition-all ${getGroupColor(group.color)} ${dogCount > 0 ? 'cursor-pointer' : ''}`}
               >
                 <CardContent className="p-6">
                   <div className="flex flex-col h-full">
@@ -149,6 +156,7 @@ const PottyBreakGroupSelector: React.FC<PottyBreakGroupSelectorProps> = ({
                         className="w-full"
                         variant="secondary"
                         disabled={dogCount === 0}
+                        onClick={() => handleGroupSelection(group.id)}
                       >
                         Select Group
                       </Button>
