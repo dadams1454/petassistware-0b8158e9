@@ -29,7 +29,7 @@ export const useUserManagement = () => {
       
       if (data) {
         // Map the profile data to our UserWithProfile type
-        const formattedUsers: UserWithProfile[] = data.map((profile: any) => ({
+        const formattedUsers = data.map((profile) => ({
           id: profile.id,
           email: profile.email,
           created_at: profile.created_at,
