@@ -37,7 +37,7 @@ interface BreederProfile {
   profile_image_url: string;
   role: string;
   updated_at: string;
-  tenant_id?: string;
+  tenant_id: string | null;
 }
 
 const UserManagement = () => {
@@ -69,16 +69,19 @@ const UserManagement = () => {
         setLoading(true);
         
         // Get users from the breeder_profiles table (which contains role info)
-        const { data: profiles, error: profilesError } = await supabase
+        const { data, error: profilesError } = await supabase
           .from('breeder_profiles')
           .select('*')
           .eq('tenant_id', tenantId);
         
         if (profilesError) throw profilesError;
         
-        if (profiles) {
-          // Transform the data into the format we need with explicit type casting
-          const formattedUsers: UserWithProfile[] = (profiles as BreederProfile[]).map(profile => ({
+        if (data) {
+          // Use type assertion for the returned data
+          const profiles = data as BreederProfile[];
+          
+          // Transform the data with explicit type annotations
+          const formattedUsers: UserWithProfile[] = profiles.map(profile => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -87,7 +90,7 @@ const UserManagement = () => {
             last_name: profile.last_name,
             profile_image_url: profile.profile_image_url,
             role: profile.role,
-            tenant_id: profile.tenant_id || null
+            tenant_id: profile.tenant_id
           }));
           
           setUsers(formattedUsers);
@@ -125,16 +128,19 @@ const UserManagement = () => {
     // Refresh the user list
     const fetchUsers = async () => {
       try {
-        const { data: profiles, error: profilesError } = await supabase
+        const { data, error: profilesError } = await supabase
           .from('breeder_profiles')
           .select('*')
           .eq('tenant_id', tenantId);
         
         if (profilesError) throw profilesError;
         
-        if (profiles) {
-          // Use the same explicit type casting approach as above
-          const formattedUsers: UserWithProfile[] = (profiles as BreederProfile[]).map(profile => ({
+        if (data) {
+          // Use type assertion for the returned data
+          const profiles = data as BreederProfile[];
+          
+          // Transform with explicit type annotations
+          const formattedUsers: UserWithProfile[] = profiles.map(profile => ({
             id: profile.id,
             email: profile.email,
             created_at: profile.created_at,
@@ -143,7 +149,7 @@ const UserManagement = () => {
             last_name: profile.last_name,
             profile_image_url: profile.profile_image_url,
             role: profile.role,
-            tenant_id: profile.tenant_id || null
+            tenant_id: profile.tenant_id
           }));
           
           setUsers(formattedUsers);
