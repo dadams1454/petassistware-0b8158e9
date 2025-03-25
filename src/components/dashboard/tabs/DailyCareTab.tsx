@@ -3,13 +3,16 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Users } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DogCareCard } from '@/components/dashboard/DogCareCard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
+import PottyBreakGroupSelector from '@/components/dogs/components/care/potty/PottyBreakGroupSelector';
+import { useToast as useToastHook } from '@/hooks/use-toast';
+import { recordCareActivity } from '@/services/careService';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
@@ -22,7 +25,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   isRefreshing = false,
   currentDate = new Date()
 }) => {
-  const { toast } = useToast();
+  const { toast } = useToastHook();
   const queryClient = useQueryClient();
   const [view, setView] = useState<string>('table'); // Default to table view
   const { fetchAllDogsWithCareStatus } = useDailyCare();
@@ -55,8 +58,45 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     queryFn: async () => {
       return await fetchAllDogsWithCareStatus(currentDate, true);
     },
-    enabled: view === 'table', // Only fetch when table view is active
+    enabled: view === 'table' || view === 'groups', // Fetch for both table and groups views
   });
+
+  // Handle group potty break logging
+  const handleGroupPottyBreak = async (dogIds: string[]) => {
+    if (!dogIds.length) return;
+    
+    try {
+      // Log potty break for each dog in the group
+      const timestamp = new Date().toISOString();
+      const promises = dogIds.map(dogId => 
+        recordCareActivity({
+          dog_id: dogId,
+          activity_type: 'potty',
+          timestamp,
+          notes: 'Group potty break'
+        })
+      );
+      
+      await Promise.all(promises);
+      
+      // Invalidate queries to update UI
+      queryClient.invalidateQueries({ queryKey: ['careActivities'] });
+      queryClient.invalidateQueries({ queryKey: ['lastCareActivity'] });
+      queryClient.invalidateQueries({ queryKey: ['dogCareStatuses'] });
+      
+      toast({
+        title: 'Potty Break Recorded',
+        description: `Potty break recorded for ${dogIds.length} dogs.`,
+      });
+    } catch (error) {
+      console.error('Error recording group potty break:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to record potty break.',
+        variant: 'destructive',
+      });
+    }
+  };
   
   const handleRefresh = async () => {
     try {
@@ -86,6 +126,10 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
           <Tabs value={view} onValueChange={setView} className="mr-2">
             <TabsList>
               <TabsTrigger value="table">Time Table</TabsTrigger>
+              <TabsTrigger value="groups">
+                <Users className="h-4 w-4 mr-2" />
+                Groups
+              </TabsTrigger>
               <TabsTrigger value="cards">Cards</TabsTrigger>
             </TabsList>
           </Tabs>
@@ -96,7 +140,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         </div>
       </div>
       
-      {isLoading || isRefreshing || (view === 'table' && isStatusesLoading) ? (
+      {isLoading || isRefreshing || (view !== 'cards' && isStatusesLoading) ? (
         <div className="flex justify-center p-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
@@ -117,6 +161,30 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">Add dogs to start tracking their care activities.</p>
+                  <Button onClick={onRefreshDogs} className="mt-4">Try Again</Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="groups">
+            {dogStatuses && dogStatuses.length > 0 ? (
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  Select a dog group to quickly record potty breaks for multiple dogs at once.
+                </p>
+                <PottyBreakGroupSelector 
+                  dogs={dogStatuses} 
+                  onGroupSelected={handleGroupPottyBreak} 
+                />
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>No Dogs Found</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">Add dogs to start creating groups.</p>
                   <Button onClick={onRefreshDogs} className="mt-4">Try Again</Button>
                 </CardContent>
               </Card>
