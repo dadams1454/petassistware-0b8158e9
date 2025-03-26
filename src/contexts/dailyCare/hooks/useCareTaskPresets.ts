@@ -1,10 +1,10 @@
 
 import { useState, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { 
-  fetchCareTaskPresets as fetchCareTaskPresetsService,
-  addCareTaskPreset as addCareTaskPresetService,
-  deleteCareTaskPreset as deleteCareTaskPresetService
+  fetchCareTaskPresets,
+  addCareTaskPreset,
+  deleteCareTaskPreset
 } from '@/services/dailyCare/careTaskPresetsService';
 import { CareTaskPreset } from '@/types/dailyCare';
 
@@ -12,13 +12,11 @@ export const useCareTaskPresets = (userId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchCareTaskPresets = useCallback(async (): Promise<CareTaskPreset[]> => {
+  const fetchPresets = useCallback(async (): Promise<CareTaskPreset[]> => {
     setLoading(true);
     try {
-      console.log('Fetching care task presets');
-      const data = await fetchCareTaskPresetsService();
-      console.log(`Received ${data?.length || 0} care task presets`);
-      return data || [];
+      const data = await fetchCareTaskPresets(userId);
+      return data;
     } catch (error) {
       console.error('Error fetching care task presets:', error);
       toast({
@@ -30,9 +28,9 @@ export const useCareTaskPresets = (userId: string | undefined) => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [userId, toast]);
 
-  const addCareTaskPreset = useCallback(async (categoryOrData: string | Partial<CareTaskPreset>, taskName?: string): Promise<CareTaskPreset | null> => {
+  const addPreset = useCallback(async (category: string, taskName: string): Promise<CareTaskPreset | null> => {
     if (!userId) {
       toast({
         title: 'Authentication Required',
@@ -44,18 +42,7 @@ export const useCareTaskPresets = (userId: string | undefined) => {
 
     setLoading(true);
     try {
-      let newPreset;
-      
-      // Handle both calling patterns
-      if (typeof categoryOrData === 'string' && taskName) {
-        // Old style: category, taskName
-        newPreset = await addCareTaskPresetService(categoryOrData, taskName, userId);
-      } else if (typeof categoryOrData === 'object') {
-        // New style: data object
-        newPreset = await addCareTaskPresetService({ ...categoryOrData, breeder_id: userId });
-      } else {
-        throw new Error('Invalid arguments to addCareTaskPreset');
-      }
+      const newPreset = await addCareTaskPreset(category, taskName, userId);
       
       if (newPreset) {
         toast({
@@ -78,10 +65,10 @@ export const useCareTaskPresets = (userId: string | undefined) => {
     }
   }, [userId, toast]);
 
-  const deleteCareTaskPreset = useCallback(async (id: string): Promise<boolean> => {
+  const deletePreset = useCallback(async (id: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const success = await deleteCareTaskPresetService(id);
+      const success = await deleteCareTaskPreset(id);
       
       if (success) {
         toast({
@@ -106,8 +93,8 @@ export const useCareTaskPresets = (userId: string | undefined) => {
 
   return {
     loading,
-    fetchCareTaskPresets,
-    addCareTaskPreset,
-    deleteCareTaskPreset
+    fetchCareTaskPresets: fetchPresets,
+    addCareTaskPreset: addPreset,
+    deleteCareTaskPreset: deletePreset
   };
 };

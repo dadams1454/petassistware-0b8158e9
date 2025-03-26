@@ -1,6 +1,6 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useCallback, useRef } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 import { DogCareStatus } from '@/types/dailyCare';
 import { fetchAllDogsWithCareStatus } from '@/services/dailyCare/dogCareStatusService';
 
@@ -69,20 +69,11 @@ export const useDogCareStatus = () => {
       return fetchedDogStatuses;
     } catch (error) {
       console.error('Error fetching dog statuses:', error);
-      
-      // Try to recover by using any cached data
-      if (cacheRef.current[cacheKey]) {
-        console.log('⚠️ Using cached data after fetch error');
-        return cacheRef.current[cacheKey].data;
-      }
-      
-      // Show toast only if we couldn't recover
       toast({
         title: 'Error',
-        description: 'Failed to fetch dog care statuses. Please try refreshing.',
+        description: 'Failed to fetch dog care statuses',
         variant: 'destructive',
       });
-      
       return [];
     } finally {
       setLoading(false);
@@ -92,11 +83,6 @@ export const useDogCareStatus = () => {
       }, 300);
     }
   }, [dogStatuses, toast]);
-
-  // Initial fetch of dog statuses when the hook is first used
-  useEffect(() => {
-    fetchDogStatuses();
-  }, []);
 
   return {
     loading,

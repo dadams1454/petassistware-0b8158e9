@@ -1,165 +1,97 @@
 
-// Care utilities for dog management
+import { formatDistanceToNow } from 'date-fns';
 
-/**
- * Get the display name for a care category
- */
-export const getCareCategory = (category: string): string => {
-  switch (category) {
-    case 'pottybreaks':
-      return 'Potty Breaks';
-    case 'feeding':
-      return 'Feeding';
-    case 'medication':
-      return 'Medication';
-    case 'grooming':
-      return 'Grooming';
-    case 'training':
-      return 'Training';
-    case 'exercise':
-      return 'Exercise';
-    case 'health':
-      return 'Health Check';
-    case 'observation':
-      return 'Observation';
-    default:
-      return category.charAt(0).toUpperCase() + category.slice(1);
-  }
-};
-
-/**
- * Get the icon name for a care category
- */
-export const getCategoryIcon = (category: string): string => {
-  switch (category) {
-    case 'pottybreaks':
-      return 'paw-print';
-    case 'feeding':
-      return 'utensils';
-    case 'medication':
-      return 'pill';
-    case 'grooming':
-      return 'scissors';
-    case 'training':
-      return 'dumbbell';
-    case 'exercise':
-      return 'activity';
-    case 'health':
-      return 'stethoscope';
-    case 'observation':
-      return 'eye';
-    default:
-      return 'check-circle';
-  }
-};
-
-/**
- * Format a date for display in care logs
- */
-export const formatCareDate = (dateString: string | Date): string => {
-  const date = new Date(dateString);
-  
-  // If invalid date, return the original string
-  if (isNaN(date.getTime())) {
-    return String(dateString);
-  }
-  
-  const now = new Date();
-  const isToday = date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
-  
-  if (isToday) {
-    return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  }
-  
-  return date.toLocaleString([], {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
-/**
- * Calculate time since last activity
- */
-export const getTimeSince = (dateString: string | null | undefined): string => {
-  if (!dateString) return 'Never';
-  
-  const date = new Date(dateString);
-  
-  // If invalid date, return "Unknown"
-  if (isNaN(date.getTime())) {
-    return 'Unknown';
-  }
-  
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
-};
-
-/**
- * Get care type icon name (string only, not React component)
- * This returns the icon name, not the actual JSX element
- */
-export const getCareTypeIconName = (category: string): string => {
-  return getCategoryIcon(category);
-};
-
-/**
- * Get care type color based on category
- */
-export const getCareTypeColor = (category: string): string => {
-  switch (category) {
-    case 'pottybreaks':
+export const getCareTypeIcon = (careType: string) => {
+  // Maps care type to its icon component name (for dynamic import)
+  switch (careType.toLowerCase()) {
     case 'potty':
-      return 'green';
+    case 'pottybreak':
+      return 'Droplet';
     case 'feeding':
-      return 'orange';
+    case 'food':
+      return 'Utensils';
     case 'medication':
-      return 'blue';
+    case 'medicine':
+      return 'Pill';
     case 'grooming':
-      return 'purple';
-    case 'training':
-      return 'yellow';
+      return 'Scissors';
     case 'exercise':
-      return 'red';
+    case 'play':
+      return 'Heart';
+    case 'training':
+      return 'BookOpen';
+    case 'vet':
     case 'health':
-      return 'blue';
-    case 'observation':
-      return 'gray';
+      return 'Activity';
     default:
-      return 'slate';
+      return 'Clipboard';
   }
 };
 
-/**
- * Format relative time string
- */
-export const getRelativeTimeString = (date: Date): string => {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} minutes ago`;
-  
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} hours ago`;
-  
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+export const getCareTypeColor = (careType: string) => {
+  // Maps care type to its color scheme
+  switch (careType.toLowerCase()) {
+    case 'potty':
+    case 'pottybreak':
+      return 'blue';
+    case 'feeding':
+    case 'food':
+      return 'green';
+    case 'medication':
+    case 'medicine':
+      return 'purple';
+    case 'grooming':
+      return 'indigo';
+    case 'exercise':
+    case 'play':
+      return 'pink';
+    case 'training':
+      return 'amber';
+    case 'vet':
+    case 'health':
+      return 'red';
+    default:
+      return 'gray';
+  }
+};
+
+export const getRelativeTimeString = (date: Date) => {
+  try {
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch (e) {
+    return 'recently';
+  }
+};
+
+export const getCareStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'success':
+    case 'complete':
+    case 'completed':
+      return 'bg-green-100 text-green-700 border-green-300';
+    case 'partial':
+      return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+    case 'missed':
+    case 'failed':
+      return 'bg-red-100 text-red-700 border-red-300';
+    case 'pending':
+      return 'bg-blue-100 text-blue-700 border-blue-300';
+    default:
+      return 'bg-gray-100 text-gray-700 border-gray-300';
+  }
+};
+
+export const getCareOutcomeLabel = (outcome: string) => {
+  switch (outcome.toLowerCase()) {
+    case 'success':
+      return 'Complete';
+    case 'partial':
+      return 'Partial';
+    case 'missed':
+      return 'Missed';
+    case 'pending':
+      return 'Pending';
+    default:
+      return outcome;
+  }
 };
