@@ -2,12 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { MedicationStatus } from '@/utils/medicationUtils';
-
-interface MedicationStatusDisplayProps {
-  status: MedicationStatus | 'incomplete';
-  statusColor: string;
-  label?: string;
-}
+import { MedicationStatusDisplayProps } from '../types/medicationTypes';
 
 const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({ 
   status, 

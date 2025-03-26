@@ -1,6 +1,6 @@
 
 import { DogCareStatus, DailyCarelog, MedicationLogFormData } from '@/types/dailyCare';
-import { MedicationFrequency } from '@/utils/medicationUtils';
+import { MedicationFrequency, MedicationStatus } from '@/utils/medicationUtils';
 
 export interface MedicationInfo {
   name: string;
@@ -18,4 +18,25 @@ export interface ProcessedMedicationLogs {
     preventative: MedicationInfo[];
     other: MedicationInfo[];
   };
+}
+
+export interface MedicationStatusDisplayProps {
+  status: MedicationStatus | 'incomplete';
+  statusColor: string;
+  label?: string;
+}
+
+export interface MedicationsTabProps {
+  dogStatuses: DogCareStatus[] | null;
+  onRefreshDogs: () => void;
+}
+
+export interface MedicationFilterProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export interface MedicationHeaderProps {
+  title: string;
+  description: string;
 }
