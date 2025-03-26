@@ -2,24 +2,35 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Database, Loader2 } from 'lucide-react';
-import { generateTestData } from '@/utils/testDataGenerator';
-import { useToast } from '@/components/ui/use-toast';
+import { generateTestCareData } from '@/utils/generateTestCareData';
+import { useToast } from '@/hooks/use-toast';
 import { useRefreshTrigger } from '@/hooks/useRefreshData';
+import { useAuth } from '@/contexts/AuthProvider';
 
 const GenerateTestDataButton: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const refreshData = useRefreshTrigger();
+  const { user } = useAuth();
 
   const handleGenerateTestData = async () => {
+    if (!user?.id) {
+      toast({
+        title: 'Authentication Required',
+        description: 'You must be logged in to generate test data.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      const result = await generateTestData();
+      const result = await generateTestCareData(user.id);
       
       if (result.success) {
         toast({
           title: 'Test Data Generated',
-          description: `Created ${result.dogIds?.length || 0} dogs, ${result.customerIds?.length || 0} customers, and sample records.`,
+          description: result.message,
           variant: 'default'
         });
         
@@ -56,7 +67,7 @@ const GenerateTestDataButton: React.FC = () => {
       ) : (
         <Database className="h-4 w-4" />
       )}
-      Generate Test Data
+      Generate Test Care Data
     </Button>
   );
 };

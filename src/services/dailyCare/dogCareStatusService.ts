@@ -17,24 +17,10 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
     
-    // Base query to fetch all dogs with more details
+    // Simplified query to get dogs without trying to join too many tables at once
     const { data: dogs, error: dogsError } = await supabase
       .from('dogs')
-      .select(`
-        id,
-        name,
-        breed,
-        gender,
-        color,
-        birthdate,
-        photo_url,
-        weight,
-        potty_alert_threshold,
-        requires_special_handling,
-        microchip_number,
-        registration_number,
-        max_time_between_breaks
-      `)
+      .select('id, name, breed, gender, color, birthdate, photo_url, weight, microchip_number')
       .order('name');
       
     if (dogsError) {
@@ -49,55 +35,8 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     
     console.log(`Found ${dogs.length} dogs in database`);
     
-    // Fetch potty breaks for the day to determine last care times
-    const { data: pottyBreaks, error: pottyError } = await supabase
-      .from('care_activities')
-      .select('*')
-      .eq('activity_type', 'potty')
-      .gte('timestamp', startOfDay.toISOString())
-      .lte('timestamp', endOfDay.toISOString());
-      
-    if (pottyError) {
-      console.error('Error fetching potty breaks:', pottyError);
-      // Continue without potty data rather than failing
-    }
-    
-    // Fetch feeding activities for the day
-    const { data: feedingActivities, error: feedingError } = await supabase
-      .from('care_activities')
-      .select('*')
-      .eq('activity_type', 'feeding')
-      .gte('timestamp', startOfDay.toISOString())
-      .lte('timestamp', endOfDay.toISOString());
-      
-    if (feedingError) {
-      console.error('Error fetching feeding activities:', feedingError);
-      // Continue without feeding data rather than failing
-    }
-    
-    // Map the dogs to DogCareStatus objects
+    // Map the dogs to DogCareStatus objects with simplified approach
     const dogCareStatuses: DogCareStatus[] = dogs.map(dog => {
-      // Find potty breaks for this dog
-      const dogPottyBreaks = pottyBreaks?.filter(pb => pb.dog_id === dog.id) || [];
-      // Sort breaks by timestamp descending to get the latest one
-      const sortedPottyBreaks = dogPottyBreaks.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      
-      // Find feeding activities for this dog
-      const dogFeedingActivities = feedingActivities?.filter(fa => fa.dog_id === dog.id) || [];
-      // Sort activities by timestamp descending to get the latest one
-      const sortedFeedingActivities = dogFeedingActivities.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      
-      // Create a proper last_care object that matches the expected type
-      const lastCare = sortedPottyBreaks.length > 0 ? {
-        category: 'potty',
-        task_name: 'Potty Break',
-        timestamp: sortedPottyBreaks[0].timestamp
-      } : null;
-      
       return {
         dog_id: dog.id,
         dog_name: dog.name,
@@ -106,20 +45,66 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         sex: dog.gender || '',
         dog_photo: dog.photo_url,
         dog_weight: dog.weight,
-        potty_alert_threshold: dog.potty_alert_threshold,
-        requires_special_handling: dog.requires_special_handling,
-        last_potty_time: sortedPottyBreaks.length > 0 ? sortedPottyBreaks[0].timestamp : null,
-        last_feeding_time: sortedFeedingActivities.length > 0 ? sortedFeedingActivities[0].timestamp : null,
-        feeding_times_today: dogFeedingActivities.map(fa => fa.timestamp) || [],
-        potty_times_today: dogPottyBreaks.map(pb => pb.timestamp) || [],
+        potty_alert_threshold: 300, // Default value
+        requires_special_handling: false,
+        // Set default values for care fields
+        last_potty_time: null,
+        last_feeding_time: null,
+        feeding_times_today: [],
+        potty_times_today: [],
         medication_times_today: [],
-        last_care: lastCare,
+        last_care: null,
         flags: [] as DogFlag[],
-        registration_number: dog.registration_number,
+        registration_number: dog.microchip_number,
         microchip_number: dog.microchip_number,
-        max_time_between_breaks: dog.max_time_between_breaks
       };
     });
+    
+    // Now that we have the dogs, fetch care logs separately for better performance
+    try {
+      const { data: careLogs, error: careLogsError } = await supabase
+        .from('daily_care_logs')
+        .select('*')
+        .gte('timestamp', startOfDay.toISOString())
+        .lte('timestamp', endOfDay.toISOString());
+        
+      if (careLogsError) {
+        console.error('Error fetching care logs:', careLogsError);
+      } else if (careLogs && careLogs.length > 0) {
+        console.log(`Found ${careLogs.length} care logs for today`);
+        
+        // Process the care logs to update the dog care status objects
+        careLogs.forEach(log => {
+          const dogStatus = dogCareStatuses.find(status => status.dog_id === log.dog_id);
+          if (dogStatus) {
+            // Update last care information
+            if (!dogStatus.last_care || new Date(log.timestamp) > new Date(dogStatus.last_care.timestamp)) {
+              dogStatus.last_care = {
+                category: log.category,
+                task_name: log.task_name,
+                timestamp: log.timestamp
+              };
+            }
+            
+            // Update specific care type information
+            if (log.category.toLowerCase().includes('potty')) {
+              dogStatus.last_potty_time = log.timestamp;
+              dogStatus.potty_times_today = [...(dogStatus.potty_times_today || []), log.timestamp];
+            } else if (log.category.toLowerCase().includes('feeding')) {
+              dogStatus.last_feeding_time = log.timestamp;
+              dogStatus.feeding_times_today = [...(dogStatus.feeding_times_today || []), log.timestamp];
+            } else if (log.category.toLowerCase().includes('medication')) {
+              dogStatus.medication_times_today = [...(dogStatus.medication_times_today || []), log.timestamp];
+            }
+          }
+        });
+      } else {
+        console.log('No care logs found for today');
+      }
+    } catch (careError) {
+      console.error('Error processing care logs:', careError);
+      // Continue with basic dog information even if care logs fail
+    }
     
     console.log(`Processed ${dogCareStatuses.length} dogs with care status`);
     return dogCareStatuses;

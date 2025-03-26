@@ -8,6 +8,7 @@ import LoadedDogsContent from './dashboard/LoadedDogsContent';
 import { useCareDashboard } from './dashboard/useCareDashboard';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import GenerateTestDataButton from '@/components/dashboard/GenerateTestDataButton';
 
 interface CareDashboardProps {}
 
@@ -38,14 +39,17 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
           isLoading={loading}
         />
         
-        <Button 
-          onClick={handleRefresh} 
-          variant="outline" 
-          className="gap-2 bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh Dogs
-        </Button>
+        <div className="flex gap-2">
+          <GenerateTestDataButton />
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            className="gap-2 bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh Dogs
+          </Button>
+        </div>
       </div>
       
       {categories.length > 0 && (
