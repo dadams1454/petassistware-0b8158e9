@@ -83,15 +83,31 @@ export const PERMISSIONS = {
 export const hasPermission = (
   userRole: UserRole | null, 
   resource: keyof typeof PERMISSIONS, 
-  action: keyof PermissionRules = 'view'
+  action: keyof PermissionRules = 'view',
+  enableLogging: boolean = false
 ): boolean => {
-  if (!userRole) return false;
+  if (!userRole) {
+    if (enableLogging) console.warn(`Permission check failed: No user role provided for ${resource}:${action}`);
+    return false;
+  }
   
   const resourcePermissions = PERMISSIONS[resource];
-  if (!resourcePermissions) return false;
+  if (!resourcePermissions) {
+    if (enableLogging) console.warn(`Permission check failed: Resource "${resource}" not found in permissions configuration`);
+    return false;
+  }
   
   const actionPermissions = resourcePermissions[action];
-  if (!actionPermissions) return false;
+  if (!actionPermissions) {
+    if (enableLogging) console.warn(`Permission check failed: Action "${action}" not defined for resource "${resource}"`);
+    return false;
+  }
   
-  return actionPermissions.includes(userRole);
+  const hasAccess = actionPermissions.includes(userRole);
+  
+  if (enableLogging && !hasAccess) {
+    console.warn(`Permission denied: Role "${userRole}" does not have "${action}" permission for "${resource}"`);
+  }
+  
+  return hasAccess;
 };

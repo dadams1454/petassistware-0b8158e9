@@ -42,6 +42,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check permissions using the resource and action (if provided)
   if (resource && !hasPermission(userRole, resource, action)) {
+    // Audit logging for permission failures
+    console.warn(`Permission denied: User with role "${userRole}" attempted to ${action} ${resource} at path: ${location.pathname}`);
+    
     return (
       <UnauthorizedState 
         title="Insufficient Permissions"
@@ -60,7 +63,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
     
     if (!hasRequiredRole) {
-      console.log('User lacks required role. Has:', userRole, 'Needs one of:', requiredRoles);
+      // Audit logging for role-based permission failures
+      console.warn(`Role permission denied: User with role "${userRole}" attempted to access a route requiring one of these roles: ${requiredRoles.join(', ')} at path: ${location.pathname}`);
+      
       // Show unauthorized state with multiple navigation options
       return (
         <UnauthorizedState 
