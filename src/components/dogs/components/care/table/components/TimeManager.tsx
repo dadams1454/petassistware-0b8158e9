@@ -9,7 +9,23 @@ export const useTimeManager = (activeCategory = 'pottybreaks') => {
   
   // Generate timeSlots based on current time and active category
   const timeSlots = useMemo(() => {
-    return generateTimeSlots(currentTime, activeCategory);
+    // Different time slot patterns for different care categories
+    if (activeCategory === 'feeding') {
+      // For feeding, show morning, afternoon, and evening slots
+      return ['7:00 AM (Breakfast)', '12:00 PM (Lunch)', '6:00 PM (Dinner)'];
+    } else if (activeCategory === 'medication') {
+      // For medication, show more frequent time slots
+      return ['6:00 AM', '8:00 AM', '10:00 AM', '12:00 PM', '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM', '10:00 PM'];
+    } else if (activeCategory === 'exercise' || activeCategory === 'training') {
+      // For exercise/training, show morning and afternoon slots
+      return ['8:00 AM', '12:00 PM', '4:00 PM'];
+    } else if (activeCategory === 'grooming') {
+      // For grooming, show weekly slots
+      return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    } else {
+      // For potty breaks and other categories, use the standard hourly slots
+      return generateTimeSlots(currentTime, activeCategory);
+    }
   }, [currentTime, activeCategory]);
   
   // Update current time and hour every minute
@@ -25,15 +41,17 @@ export const useTimeManager = (activeCategory = 'pottybreaks') => {
   
   // Memo-ize the timeslot headers to prevent re-renders
   const timeSlotHeaders = useMemo(() => {
-    if (activeCategory === 'feeding') {
-      // For feeding, we don't need current hour highlighting
+    if (activeCategory === 'feeding' || activeCategory === 'medication' || 
+        activeCategory === 'exercise' || activeCategory === 'training' || 
+        activeCategory === 'grooming') {
+      // For these categories, we don't need current hour highlighting
       return timeSlots.map(slot => ({
         slot,
         isCurrent: false
       }));
     }
     
-    // For potty breaks, use the original logic
+    // For potty breaks and other hourly categories, use the original logic
     return timeSlots.map(slot => {
       const [hours, minutesPart] = slot.split(':');
       const [minutes, period] = minutesPart.split(' ');

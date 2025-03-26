@@ -1,37 +1,28 @@
 
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CareCategories from '../CareCategories';
+import { careCategories } from '../../CareCategories';
 
 interface CategoryTabsProps {
   activeCategory: string;
-  onValueChange: (value: string) => void;
+  onCategoryChange: (category: string) => void;
 }
 
 const CategoryTabs: React.FC<CategoryTabsProps> = ({ 
   activeCategory, 
-  onValueChange 
+  onCategoryChange 
 }) => {
   return (
-    <Tabs 
-      value={activeCategory} 
-      onValueChange={onValueChange}
-      className="w-full"
-    >
-      <TabsList onClick={(e) => e.stopPropagation()}>
-        {CareCategories.map(category => (
+    <Tabs value={activeCategory} onValueChange={onCategoryChange} className="w-full">
+      <TabsList className="w-full justify-start overflow-auto p-1 bg-background border-b">
+        {careCategories.map(category => (
           <TabsTrigger 
             key={category.id} 
             value={category.id} 
-            className="flex items-center"
-            onClick={(e) => {
-              // Prevent default to avoid any navigation
-              e.preventDefault();
-              e.stopPropagation();
-            }}
+            className="flex items-center data-[state=active]:bg-muted gap-2"
           >
             {category.icon}
-            <span className="ml-2">{category.name}</span>
+            <span>{category.name}</span>
           </TabsTrigger>
         ))}
       </TabsList>

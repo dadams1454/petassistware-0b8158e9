@@ -67,6 +67,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onAddGroup={() => setIsDialogOpen(true)}
           isRefreshing={showLoading}
           currentDate={currentDate}
+          activeCategory={activeCategory}
         />
 
         {/* Enhanced Debug info (only in development) */}

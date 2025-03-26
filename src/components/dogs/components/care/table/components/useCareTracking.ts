@@ -1,6 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { careCategories } from '../../CareCategories';
 
 export const useCareTracking = (onRefresh?: () => void) => {
   const [careLogged, setCareLogged] = useState<Record<string, boolean>>({});
@@ -27,6 +28,9 @@ export const useCareTracking = (onRefresh?: () => void) => {
       return;
     }
     
+    // Get the category name for display
+    const categoryName = careCategories.find(c => c.id === category)?.name || category;
+    
     // For other care types, toggle the care logged state
     const key = `${dogId}-${timeSlot}-${category}`;
     
@@ -37,8 +41,8 @@ export const useCareTracking = (onRefresh?: () => void) => {
       setCareLogged(updatedCareLogged);
       
       toast({
-        title: "Care removed",
-        description: `Removed ${category} for ${dogName} at ${timeSlot}`,
+        title: `${categoryName} removed`,
+        description: `Removed ${categoryName.toLowerCase()} for ${dogName} at ${timeSlot}`,
       });
       
       console.log('🚫 Care removed:', { key });
@@ -50,8 +54,8 @@ export const useCareTracking = (onRefresh?: () => void) => {
       }));
       
       toast({
-        title: "Care logged",
-        description: `Logged ${category} for ${dogName} at ${timeSlot}`,
+        title: `${categoryName} logged`,
+        description: `Logged ${categoryName.toLowerCase()} for ${dogName} at ${timeSlot}`,
       });
       
       console.log('✅ Care logged:', { key });
