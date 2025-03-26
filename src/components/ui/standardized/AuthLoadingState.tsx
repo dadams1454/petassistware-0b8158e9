@@ -36,12 +36,18 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
 
   return (
     <div className={container}>
-      <div className="relative animate-pulse">
-        <PawPrint className={`${sizeMap[size]} text-primary`} />
+      <div className="flex flex-col items-center">
+        <div className="relative mb-2">
+          <PawPrint className={`${sizeMap[size]} text-primary`} />
+          <Loader2 className={`absolute inset-0 ${sizeMap[size]} text-primary animate-spin opacity-50`} />
+        </div>
+        {message && (
+          <p className="text-center text-muted-foreground mt-4 font-medium">{message}</p>
+        )}
+        <p className="text-center text-muted-foreground/70 text-sm mt-2">
+          If this takes too long, try refreshing the page
+        </p>
       </div>
-      {message && (
-        <p className="text-center text-muted-foreground mt-4 font-medium">{message}</p>
-      )}
     </div>
   );
 };

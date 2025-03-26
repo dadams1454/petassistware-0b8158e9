@@ -17,7 +17,7 @@ const AuthLayout: React.FC = () => {
   // Show loading state while checking authentication
   if (loading) {
     console.log('AuthLayout loading...');
-    return <AuthLoadingState fullPage={true} />;
+    return <AuthLoadingState fullPage={true} message="Verifying authentication..." />;
   }
   
   // Redirect to login if not authenticated

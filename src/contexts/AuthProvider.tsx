@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .from('breeder_profiles')
         .select('role, tenant_id')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching user role:', error);
@@ -90,7 +90,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data, error } = await supabase.auth.getSession();
       
       if (error) {
-        throw error;
+        console.error('Error getting session:', error);
+        setSession(null);
+        setUser(null);
+        setUserRole(null);
+        setTenantId(null);
+        setLoading(false);
+        return;
       }
       
       if (data.session) {
@@ -103,6 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } else {
         // Clear user data if no session
+        console.log('No session found, clearing user data');
         setSession(null);
         setUser(null);
         setUserRole(null);
@@ -110,26 +117,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Error refreshing session:', error);
+      setSession(null);
+      setUser(null);
+      setUserRole(null);
+      setTenantId(null);
     } finally {
-      // Set a timeout to force-set loading to false after 5 seconds
-      // This prevents UI from being stuck in loading state if something goes wrong
-      const timeout = setTimeout(() => {
-        console.log('Loading timeout reached, forcing loading state to false');
-        setLoading(false);
-      }, 5000);
-      
-      // But ideally we set it to false right away
       setLoading(false);
-      
-      // Clean up the timeout to prevent memory leaks
-      clearTimeout(timeout);
     }
   };
 
   const signOut = async () => {
-    setLoading(true);
     try {
-      await supabase.auth.signOut();
+      setLoading(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      }
       setUser(null);
       setSession(null);
       setUserRole(null);
@@ -142,34 +145,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    // Initial session check
-    refreshSession();
-
-    // Subscribe to auth changes
+    // Set initial loading state
+    setLoading(true);
+    
+    // Set up auth listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user.id);
-        setSession(session);
-        setUser(session?.user || null);
+      async (event, newSession) => {
+        console.log('Auth state changed:', event, newSession?.user?.id);
+        
+        // Update session state immediately
+        setSession(newSession);
+        setUser(newSession?.user || null);
 
-        // Fetch user role when auth state changes with a valid user
-        if (session?.user) {
-          await fetchUserRole(session.user.id);
+        // Only fetch role if we have a user
+        if (newSession?.user) {
+          await fetchUserRole(newSession.user.id);
         } else {
           setUserRole(null);
           setTenantId(null);
         }
-
-        // Update loading state based on the event
-        if (event === 'SIGNED_OUT') {
-          setLoading(false);
-        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          setLoading(false);
-        }
+        
+        // Always ensure loading state is updated
+        setLoading(false);
       }
     );
 
-    // Cleanup subscription
+    // Then check current session
+    refreshSession();
+
+    // Cleanup
     return () => {
       subscription.unsubscribe();
     };
