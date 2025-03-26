@@ -5,6 +5,10 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { RefreshProvider } from '@/contexts/RefreshContext';
 
+// Layouts
+import MainLayout from '@/layouts/MainLayout';
+import AuthLayout from '@/layouts/AuthLayout';
+
 // Pages
 import Dashboard from '@/pages/Dashboard';
 import Auth from '@/pages/Auth';
@@ -46,10 +50,10 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/admin-setup" element={<AdminSetup />} />
               
-              {/* Protected Routes - accessible by all authenticated users */}
-              <Route element={<ProtectedRoute />}>
+              {/* Protected Routes with shared layout */}
+              <Route element={<AuthLayout />}>
+                {/* All-access routes */}
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dogs" element={<Dogs />} />
                 <Route path="/dogs/:id" element={<DogDetail />} />
@@ -57,26 +61,27 @@ function App() {
                 <Route path="/profile/dog/:id" element={<DogProfile />} />
                 <Route path="/daily-care" element={<DailyCare />} />
                 <Route path="/profile" element={<Profile />} />
-              </Route>
-              
-              {/* Staff+ Only Routes */}
-              <Route element={<ProtectedRoute requiredRoles={['staff', 'manager', 'admin']} />}>
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/litters" element={<Litters />} />
-                <Route path="/litters/:id" element={<LitterDetail />} />
-                <Route path="/calendar" element={<Calendar />} />
-              </Route>
-              
-              {/* Manager+ Only Routes */}
-              <Route element={<ProtectedRoute requiredRoles={['manager', 'admin']} />}>
-                <Route path="/litters/add" element={<AddLitter />} />
-                <Route path="/communications" element={<Communications />} />
-                <Route path="/welping" element={<WelpingPage />} />
-              </Route>
-              
-              {/* Admin Only Routes */}
-              <Route element={<ProtectedRoute requiredRoles={['admin']} />}>
-                <Route path="/users" element={<UserManagement />} />
+                <Route path="/admin-setup" element={<AdminSetup />} />
+                
+                {/* Staff+ Only Routes */}
+                <Route element={<ProtectedRoute requiredRoles={['staff', 'manager', 'admin']} />}>
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/litters" element={<Litters />} />
+                  <Route path="/litters/:id" element={<LitterDetail />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                </Route>
+                
+                {/* Manager+ Only Routes */}
+                <Route element={<ProtectedRoute requiredRoles={['manager', 'admin']} />}>
+                  <Route path="/litters/add" element={<AddLitter />} />
+                  <Route path="/communications" element={<Communications />} />
+                  <Route path="/welping" element={<WelpingPage />} />
+                </Route>
+                
+                {/* Admin Only Routes */}
+                <Route element={<ProtectedRoute requiredRoles={['admin']} />}>
+                  <Route path="/users" element={<UserManagement />} />
+                </Route>
               </Route>
               
               <Route path="*" element={<NotFound />} />

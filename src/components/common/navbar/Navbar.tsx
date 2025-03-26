@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import Logo from '../Logo';
@@ -11,7 +11,7 @@ import UserMenu from './UserMenu';
 const Navbar: React.FC = () => {
   const location = useLocation();
   const { userRole } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <nav className="bg-background border-b">
