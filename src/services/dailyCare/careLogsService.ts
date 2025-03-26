@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { DailyCarelog, CareLogFormData } from '@/types/dailyCare';
 
 /**
- * Fetches care logs for a specific dog
- * @param dogId The ID of the dog to fetch care logs for
- * @returns Array of DailyCarelog objects
+ * Fetch care logs for a specific dog
+ * @param dogId ID of the dog to fetch care logs for
+ * @returns Array of care logs
  */
 export const fetchDogCareLogs = async (dogId: string): Promise<DailyCarelog[]> => {
   try {
@@ -14,60 +14,93 @@ export const fetchDogCareLogs = async (dogId: string): Promise<DailyCarelog[]> =
       .select('*')
       .eq('dog_id', dogId)
       .order('timestamp', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
+      
+    if (error) {
+      console.error('Error fetching care logs:', error);
+      throw error;
+    }
+    
+    return data as DailyCarelog[] || [];
   } catch (error) {
-    console.error('Error fetching care logs:', error);
-    throw error;
+    console.error('Error in fetchDogCareLogs:', error);
+    return [];
   }
 };
 
 /**
- * Adds a new care log for a dog
- * @param data The care log data to add
- * @param userId The ID of the user creating the log
- * @returns The created DailyCarelog or null if unsuccessful
+ * Fetch care logs for a specific dog and category
+ * @param dogId ID of the dog to fetch care logs for
+ * @param category Category of care logs to fetch
+ * @returns Array of care logs
+ */
+export const fetchDogCareLogsByCategory = async (dogId: string, category: string): Promise<DailyCarelog[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('daily_care_logs')
+      .select('*')
+      .eq('dog_id', dogId)
+      .eq('category', category)
+      .order('timestamp', { ascending: false });
+      
+    if (error) {
+      console.error(`Error fetching ${category} care logs:`, error);
+      throw error;
+    }
+    
+    return data as DailyCarelog[] || [];
+  } catch (error) {
+    console.error(`Error in fetchDogCareLogsByCategory for ${category}:`, error);
+    return [];
+  }
+};
+
+/**
+ * Add a new care log
+ * @param data Care log data to add
+ * @param userId ID of the user creating the care log
+ * @returns The newly created care log, or null if error
  */
 export const addCareLog = async (data: CareLogFormData, userId: string): Promise<DailyCarelog | null> => {
   try {
-    // Ensure the timestamp is in a format Supabase can handle
-    let timestamp = data.timestamp;
-    if (!(timestamp instanceof Date)) {
-      timestamp = new Date(timestamp);
-    }
+    // Format the timestamp to ISO string if it's a Date object
+    const timestamp = data.timestamp instanceof Date
+      ? data.timestamp.toISOString()
+      : data.timestamp;
+      
+    const careLog = {
+      dog_id: data.dog_id,
+      category: data.category,
+      task_name: data.task_name,
+      timestamp,
+      notes: data.notes || null,
+      created_by: userId
+    };
     
-    // We'll need to store flags in a separate table in a real implementation
-    // For now, store them in the notes field as JSON for simplicity
-    const notesWithFlags = data.flags && data.flags.length > 0
-      ? `${data.notes || ''}\n\nFLAGS: ${JSON.stringify(data.flags)}`
-      : data.notes;
-
+    console.log('Adding care log:', careLog);
+    
     const { data: newLog, error } = await supabase
       .from('daily_care_logs')
-      .insert({
-        dog_id: data.dog_id,
-        created_by: userId,
-        category: data.category,
-        task_name: data.task_name,
-        timestamp: timestamp.toISOString(),
-        notes: notesWithFlags || null,
-      })
+      .insert([careLog])
       .select()
       .single();
-
-    if (error) throw error;
-    return newLog;
+      
+    if (error) {
+      console.error('Error adding care log:', error);
+      throw error;
+    }
+    
+    console.log('Care log added successfully:', newLog);
+    return newLog as DailyCarelog;
   } catch (error) {
-    console.error('Error adding care log:', error);
+    console.error('Error in addCareLog:', error);
     return null;
   }
 };
 
 /**
- * Deletes a care log
- * @param id The ID of the care log to delete
- * @returns True if successful, false otherwise
+ * Delete a care log
+ * @param id ID of the care log to delete
+ * @returns Success status
  */
 export const deleteCareLog = async (id: string): Promise<boolean> => {
   try {
@@ -75,42 +108,61 @@ export const deleteCareLog = async (id: string): Promise<boolean> => {
       .from('daily_care_logs')
       .delete()
       .eq('id', id);
-
-    if (error) throw error;
+      
+    if (error) {
+      console.error('Error deleting care log:', error);
+      throw error;
+    }
+    
     return true;
   } catch (error) {
-    console.error('Error deleting care log:', error);
+    console.error('Error in deleteCareLog:', error);
     return false;
   }
 };
 
 /**
- * Fetches feeding logs for a specific date
- * @param date The date to fetch feeding logs for
- * @returns Array of feeding logs with dog information
+ * Get the latest care logs for each category for a dog
+ * @param dogId ID of the dog to fetch care logs for
+ * @param categories List of categories to fetch
+ * @returns Object with latest care log for each category
  */
-export const fetchFeedingLogsByDate = async (date: Date): Promise<any[]> => {
+export const getLatestCareLogsByCategory = async (
+  dogId: string, 
+  categories: string[] = [
+    'pottybreaks', 
+    'feeding', 
+    'medication', 
+    'grooming', 
+    'exercise', 
+    'wellness', 
+    'training', 
+    'notes'
+  ]
+): Promise<Record<string, DailyCarelog | null>> => {
   try {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
+    // Create a query to fetch the latest log for each category
+    const promises = categories.map(async (category) => {
+      const { data, error } = await supabase
+        .from('daily_care_logs')
+        .select('*')
+        .eq('dog_id', dogId)
+        .eq('category', category)
+        .order('timestamp', { ascending: false })
+        .limit(1);
+        
+      if (error) {
+        console.error(`Error fetching latest ${category} log:`, error);
+        return [category, null];
+      }
+      
+      return [category, data && data.length > 0 ? data[0] : null];
+    });
     
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
-    
-    const { data, error } = await supabase
-      .from('daily_care_logs')
-      .select(`
-        *,
-        dog:dog_id(id, name)
-      `)
-      .eq('category', 'feeding')
-      .gte('timestamp', startOfDay.toISOString())
-      .lte('timestamp', endOfDay.toISOString());
-
-    if (error) throw error;
-    return data || [];
+    const results = await Promise.all(promises);
+    return Object.fromEntries(results);
   } catch (error) {
-    console.error('Error fetching feeding logs for day:', error);
-    throw error;
+    console.error('Error in getLatestCareLogsByCategory:', error);
+    return {};
   }
 };

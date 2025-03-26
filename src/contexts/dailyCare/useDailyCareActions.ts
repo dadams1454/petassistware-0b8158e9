@@ -62,6 +62,22 @@ export const useDailyCareActions = (userId: string | undefined) => {
     }
   }, [dogCareStatus]);
 
+  // Function to fetch recent care logs by category
+  const fetchRecentCareLogsByCategory = useCallback(async (
+    dogId: string, 
+    category: string, 
+    limit: number = 5
+  ): Promise<DailyCarelog[]> => {
+    return withLoading(async () => {
+      try {
+        return await careLogs.fetchDogCareLogsByCategory(dogId, category, limit);
+      } catch (error) {
+        console.error(`Error fetching recent ${category} logs:`, error);
+        return [];
+      }
+    });
+  }, [careLogs, withLoading]);
+
   return {
     loading: isLoading,
     // Re-export all methods from specialized hooks
@@ -74,5 +90,7 @@ export const useDailyCareActions = (userId: string | undefined) => {
     deleteCareLog: careLogs.deleteCareLog,
     addCareTaskPreset: careTaskPresets.addCareTaskPreset,
     deleteCareTaskPreset: careTaskPresets.deleteCareTaskPreset,
+    // Add new function to fetch logs by category
+    fetchRecentCareLogsByCategory,
   };
 };

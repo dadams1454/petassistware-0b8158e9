@@ -11,4 +11,5 @@ export interface DailyCareContextType {
   deleteCareLog: (id: string) => Promise<boolean>;
   addCareTaskPreset: (category: string, taskName: string) => Promise<CareTaskPreset | null>;
   deleteCareTaskPreset: (id: string) => Promise<boolean>;
+  fetchRecentCareLogsByCategory: (dogId: string, category: string, limit?: number) => Promise<DailyCarelog[]>;
 }

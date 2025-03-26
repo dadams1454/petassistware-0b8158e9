@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   fetchDogCareLogs as fetchDogCareLogsService, 
+  fetchDogCareLogsByCategory as fetchDogCareLogsByCategoryService,
   addCareLog as addCareLogService, 
   deleteCareLog as deleteCareLogService 
 } from '@/services/dailyCare/careLogsService';
@@ -22,6 +23,28 @@ export const useCareLogs = (userId: string | undefined) => {
       toast({
         title: 'Error',
         description: 'Failed to fetch care logs',
+        variant: 'destructive',
+      });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const fetchDogCareLogsByCategory = useCallback(async (
+    dogId: string, 
+    category: string,
+    limit?: number
+  ): Promise<DailyCarelog[]> => {
+    setLoading(true);
+    try {
+      const data = await fetchDogCareLogsByCategoryService(dogId, category);
+      return limit ? data.slice(0, limit) : data;
+    } catch (error) {
+      console.error(`Error fetching ${category} logs:`, error);
+      toast({
+        title: 'Error',
+        description: `Failed to fetch ${category} logs`,
         variant: 'destructive',
       });
       return [];
@@ -94,6 +117,7 @@ export const useCareLogs = (userId: string | undefined) => {
   return {
     loading,
     fetchDogCareLogs,
+    fetchDogCareLogsByCategory,
     addCareLog,
     deleteCareLog
   };
