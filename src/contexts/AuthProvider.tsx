@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -36,6 +36,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  
+  // Use a ref to track ongoing refresh operations to prevent multiple concurrent refreshes
+  const refreshInProgress = useRef<boolean>(false);
 
   const fetchUserRole = async (userId: string) => {
     try {
@@ -81,8 +84,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const refreshSession = useCallback(async () => {
+    // Prevent multiple concurrent refresh operations
+    if (refreshInProgress.current) {
+      console.log('Session refresh already in progress, skipping');
+      return;
+    }
+    
     try {
       console.log('Refreshing session...');
+      refreshInProgress.current = true;
       setLoading(true);
       
       // Check for current session
@@ -95,7 +105,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(null);
         setUserRole(null);
         setTenantId(null);
-        setLoading(false);
         return;
       }
       
@@ -107,6 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (data.session.user) {
           await fetchUserRole(data.session.user.id);
         }
+        console.log('Session refresh complete, user authenticated');
       } else {
         // Clear user data if no session
         console.log('No session found, clearing user data');
@@ -123,6 +133,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setTenantId(null);
     } finally {
       setLoading(false);
+      refreshInProgress.current = false;
     }
   }, []);
 
@@ -145,58 +156,105 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    // Start with loading state true
-    setLoading(true);
+    console.log('AuthProvider initializing...');
+    let mounted = true;
+    
+    // This function will handle auth state changes from the Supabase client
+    const handleAuthChange = (newSession: Session | null) => {
+      if (!mounted) return;
+      
+      console.log('Auth state update: session=', newSession?.user?.id || 'null');
+      
+      if (newSession) {
+        setSession(newSession);
+        setUser(newSession.user);
+        // Don't fetch the user role here - that might cause a race condition
+        // Just update the session and user states
+      } else {
+        setSession(null);
+        setUser(null);
+        setUserRole(null);
+        setTenantId(null);
+      }
+    };
     
     // Set up auth state change listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        console.log('Auth state changed:', event, newSession?.user?.id);
+        console.log('Auth state changed:', event, newSession?.user?.id || 'null');
         
         if (event === 'SIGNED_OUT') {
           console.log('User signed out, clearing state');
-          setSession(null);
-          setUser(null);
-          setUserRole(null);
-          setTenantId(null);
+          handleAuthChange(null);
           setLoading(false);
           return;
         }
         
         // Update session and user state immediately
-        setSession(newSession);
-        setUser(newSession?.user || null);
-
-        // Only fetch role if we have a user
-        if (newSession?.user) {
+        handleAuthChange(newSession);
+        
+        // Safely fetch additional user data if we have a session
+        if (newSession?.user && mounted) {
           try {
-            await fetchUserRole(newSession.user.id);
+            // Use setTimeout to prevent race conditions with other Supabase operations
+            setTimeout(async () => {
+              if (mounted) {
+                await fetchUserRole(newSession.user.id);
+                setLoading(false);
+              }
+            }, 0);
           } catch (err) {
             console.error('Error fetching user role after auth state change:', err);
+            if (mounted) setLoading(false);
           }
         } else {
-          setUserRole(null);
-          setTenantId(null);
+          if (mounted) setLoading(false);
         }
-        
-        // Always ensure loading state is updated
-        setLoading(false);
       }
     );
 
-    // Then immediately check current session, with timeout to prevent race conditions
-    setTimeout(() => {
-      refreshSession().catch(err => {
-        console.error('Failed to refresh session during initialization:', err);
-        setLoading(false);
-      });
-    }, 0);
+    // Then check for the current session
+    const getInitialSession = async () => {
+      try {
+        console.log('Getting initial session...');
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting initial session:', error);
+          if (mounted) setLoading(false);
+          return;
+        }
+        
+        if (data?.session && mounted) {
+          console.log('Initial session found for user:', data.session.user.id);
+          setSession(data.session);
+          setUser(data.session.user);
+          
+          // Fetch user role for the current user
+          try {
+            await fetchUserRole(data.session.user.id);
+          } catch (error) {
+            console.error('Error fetching initial user role:', error);
+          }
+        }
+        
+        if (mounted) setLoading(false);
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+        if (mounted) setLoading(false);
+      }
+    };
 
-    // Cleanup
+    // Get the initial session
+    getInitialSession();
+    
+    // Cleanup function
     return () => {
+      console.log('AuthProvider cleanup');
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, [refreshSession]);
+  }, []); // Empty dependency array means this effect runs once on mount
 
   return (
     <AuthContext.Provider value={{ 
