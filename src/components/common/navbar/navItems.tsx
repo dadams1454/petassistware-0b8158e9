@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Home,
@@ -65,8 +64,11 @@ export const filterNavItemsByRole = (items: NavItem[], userRole: string | null):
     return items.filter(item => !item.requiredRoles || item.requiredRoles.length === 0);
   }
   
+  // Convert role to lowercase to handle case variations like 'Owner' vs 'owner'
+  const normalizedRole = userRole.toLowerCase();
+  
   // Return all items if user is admin or owner
-  if (userRole === 'admin' || userRole === 'owner') {
+  if (normalizedRole === 'admin' || normalizedRole === 'owner') {
     return items;
   }
   
@@ -75,7 +77,7 @@ export const filterNavItemsByRole = (items: NavItem[], userRole: string | null):
     // If no required roles, show the item to everyone
     if (!item.requiredRoles) return true;
     
-    // Otherwise, check if user's role is in the required roles
-    return item.requiredRoles.includes(userRole);
+    // Otherwise, check if user's normalized role is in the required roles
+    return item.requiredRoles.includes(normalizedRole);
   });
 };

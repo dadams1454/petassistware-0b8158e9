@@ -10,11 +10,9 @@ interface NavLinksProps {
 
 const NavLinks: React.FC<NavLinksProps> = ({ currentPath, userRole }) => {
   const navItems = getNavItems();
-  console.log('NavLinks component - userRole:', userRole);
   
-  // Apply role-based filtering, ensure we handle 'owner' role properly
+  // Apply role-based filtering with normalized roles
   const filteredNavItems = filterNavItemsByRole(navItems, userRole || 'guest');
-  console.log('Filtered nav items:', filteredNavItems.map(item => item.name).join(', '));
 
   return (
     <>
