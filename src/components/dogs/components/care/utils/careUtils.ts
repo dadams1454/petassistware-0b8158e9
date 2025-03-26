@@ -109,13 +109,11 @@ export const getTimeSince = (dateString: string | null | undefined): string => {
 };
 
 /**
- * Get care type icon component name for Lucide icons
+ * Get care type icon name (string only, not React component)
+ * This returns the icon name, not the actual JSX element
  */
-export const getCareTypeIcon = (category: string): JSX.Element => {
-  const iconName = getCategoryIcon(category);
-  // This returns a string that can be used to display the right icon
-  // in the component that uses this function
-  return <span className={`lucide-${iconName}`} />;
+export const getCareTypeIconName = (category: string): string => {
+  return getCategoryIcon(category);
 };
 
 /**
