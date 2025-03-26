@@ -11,6 +11,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   userRole: UserRole | null;
+  tenantId: string | null;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   userRole: null,
+  tenantId: null,
   signOut: async () => {},
   refreshSession: async () => {},
 });
@@ -33,32 +35,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [tenantId, setTenantId] = useState<string | null>(null);
 
   const fetchUserRole = async (userId: string) => {
     try {
       console.log('Fetching user role for userId:', userId);
       const { data, error } = await supabase
         .from('breeder_profiles')
-        .select('role')
+        .select('role, tenant_id')
         .eq('id', userId)
         .single();
 
       if (error) {
         console.error('Error fetching user role:', error);
         setUserRole('user'); // Default role if profile not found
+        setTenantId(null);
         return;
       }
 
-      if (data && data.role) {
-        console.log('User role found:', data.role);
-        setUserRole(data.role.toLowerCase() as UserRole);
+      if (data) {
+        if (data.role) {
+          console.log('User role found:', data.role);
+          setUserRole(data.role.toLowerCase() as UserRole);
+        } else {
+          console.log('No role found, defaulting to user');
+          setUserRole('user');
+        }
+
+        if (data.tenant_id) {
+          console.log('Tenant ID found:', data.tenant_id);
+          setTenantId(data.tenant_id);
+        } else {
+          setTenantId(null);
+        }
       } else {
-        console.log('No role found, defaulting to user');
+        console.log('No role or tenant data found, defaulting to user role and null tenantId');
         setUserRole('user');
+        setTenantId(null);
       }
     } catch (error) {
       console.error('Error in fetchUserRole:', error);
       setUserRole('user');
+      setTenantId(null);
     }
   };
 
@@ -88,6 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(null);
         setUser(null);
         setUserRole(null);
+        setTenantId(null);
       }
     } catch (error) {
       console.error('Error refreshing session:', error);
@@ -114,6 +133,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setSession(null);
       setUserRole(null);
+      setTenantId(null);
     } catch (error) {
       console.error('Error signing out:', error);
     } finally {
@@ -137,6 +157,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await fetchUserRole(session.user.id);
         } else {
           setUserRole(null);
+          setTenantId(null);
         }
 
         // Update loading state based on the event
@@ -155,7 +176,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, userRole, signOut, refreshSession }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      loading, 
+      userRole, 
+      tenantId,
+      signOut, 
+      refreshSession 
+    }}>
       {children}
     </AuthContext.Provider>
   );

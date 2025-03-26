@@ -11,6 +11,9 @@ interface RefreshContextValue {
   setDateOffset: (offset: number) => void;
   formatTimeRemaining: (targetDate: Date) => string;
   nextRefreshTime: Date | null;
+  refreshSpecific: <T>(key: string, fetchFn: () => Promise<T>, showToast?: boolean) => Promise<T | null>;
+  refreshStatus: Record<string, boolean>;
+  refreshAll: (showToast?: boolean) => Promise<void>;
 }
 
 const RefreshContext = createContext<RefreshContextValue | undefined>(undefined);
@@ -24,6 +27,7 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({ children }) =>
   const [dateOffset, setDateOffset] = useState<number>(0);
   const [nextRefreshTime, setNextRefreshTime] = useState<Date | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [refreshStatus, setRefreshStatus] = useState<Record<string, boolean>>({});
 
   // Update current date whenever date offset changes
   useEffect(() => {
@@ -80,6 +84,72 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({ children }) =>
     return () => clearInterval(interval);
   }, [nextRefreshTime]);
 
+  // Refresh a specific data set
+  const refreshSpecific = useCallback(async <T,>(
+    key: string, 
+    fetchFn: () => Promise<T>, 
+    showToast = false
+  ): Promise<T | null> => {
+    try {
+      console.log(`Refreshing data for key: ${key}`);
+      
+      // Set loading state for this key
+      setRefreshStatus(prev => ({ ...prev, [key]: true }));
+      
+      // If toast requested, show one
+      if (showToast) {
+        toast({
+          title: "Refreshing data...",
+          description: `Updating ${key} data`,
+          duration: 2000,
+        });
+      }
+      
+      // Call the fetch function provided
+      const result = await fetchFn();
+      
+      // Handle successful data fetch
+      console.log(`Data refreshed for key: ${key}`);
+      return result;
+    } catch (error) {
+      console.error(`Error refreshing data for ${key}:`, error);
+      
+      // Show error toast if requested
+      if (showToast) {
+        toast({
+          title: "Refresh failed",
+          description: `Could not update ${key} data`,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+      
+      return null;
+    } finally {
+      // Clear loading state
+      setRefreshStatus(prev => ({ ...prev, [key]: false }));
+    }
+  }, []);
+
+  // Refresh all data (global refresh)
+  const refreshAll = useCallback(async (showToast = false) => {
+    console.log('Refreshing all data');
+    
+    if (showToast) {
+      toast({
+        title: "Refreshing all data",
+        description: "Updating all dashboard data",
+        duration: 2000,
+      });
+    }
+    
+    // Trigger the global refresh counter
+    setRefreshCounter(prev => prev + 1);
+    
+    // Set next auto-refresh time
+    setNextRefreshTime(new Date(Date.now() + 3 * 60 * 1000));
+  }, []);
+
   return (
     <RefreshContext.Provider value={{
       refreshCounter,
@@ -88,7 +158,10 @@ export const RefreshProvider: React.FC<RefreshProviderProps> = ({ children }) =>
       currentDate,
       setDateOffset,
       formatTimeRemaining,
-      nextRefreshTime
+      nextRefreshTime,
+      refreshSpecific,
+      refreshStatus,
+      refreshAll
     }}>
       {children}
     </RefreshContext.Provider>
