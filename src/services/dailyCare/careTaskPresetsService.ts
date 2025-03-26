@@ -3,53 +3,58 @@ import { supabase } from '@/integrations/supabase/client';
 import { CareTaskPreset } from '@/types/dailyCare';
 
 /**
- * Fetches all task presets for daily care
+ * Fetches care task presets for a breeder
+ * @param breederId The ID of the breeder to fetch presets for
  * @returns Array of CareTaskPreset objects
  */
-export const fetchCareTaskPresets = async (): Promise<CareTaskPreset[]> => {
+export const fetchCareTaskPresets = async (breederId?: string): Promise<CareTaskPreset[]> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('care_task_presets')
       .select('*')
       .order('category', { ascending: true })
       .order('task_name', { ascending: true });
-
+    
+    if (breederId) {
+      query = query.or(`breeder_id.eq.${breederId},is_default.eq.true`);
+    } else {
+      query = query.eq('is_default', true);
+    }
+    
+    const { data, error } = await query;
+    
     if (error) throw error;
-    return data || [];
+    return data as CareTaskPreset[];
   } catch (error) {
     console.error('Error fetching care task presets:', error);
-    throw error;
+    return [];
   }
 };
 
 /**
  * Adds a new care task preset
- * @param category The category of the task
- * @param taskName The name of the task
+ * @param data The preset data to add
  * @param breederId The ID of the breeder creating the preset
  * @returns The created CareTaskPreset or null if unsuccessful
  */
 export const addCareTaskPreset = async (
-  category: string, 
-  taskName: string, 
+  data: Omit<CareTaskPreset, 'id' | 'created_at'>, 
   breederId: string
 ): Promise<CareTaskPreset | null> => {
   try {
     const { data: newPreset, error } = await supabase
       .from('care_task_presets')
       .insert({
-        category,
-        task_name: taskName,
-        is_default: false,
-        breeder_id: breederId,
+        ...data,
+        breeder_id: breederId
       })
       .select()
       .single();
-
+    
     if (error) throw error;
-    return newPreset;
+    return newPreset as CareTaskPreset;
   } catch (error) {
-    console.error('Error adding task preset:', error);
+    console.error('Error adding care task preset:', error);
     return null;
   }
 };
@@ -65,11 +70,11 @@ export const deleteCareTaskPreset = async (id: string): Promise<boolean> => {
       .from('care_task_presets')
       .delete()
       .eq('id', id);
-
+    
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error deleting task preset:', error);
+    console.error('Error deleting care task preset:', error);
     return false;
   }
 };

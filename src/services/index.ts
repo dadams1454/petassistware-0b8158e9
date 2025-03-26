@@ -1,7 +1,3 @@
-
-export * from './dashboardService';
-export * from './contractService';
+// Export all service modules
 export * from './dailyCare';
 export * from './careService';
-export * from './dailyCare/dogIncompatibilitiesService';
-export * from './dailyCare/feedingService';

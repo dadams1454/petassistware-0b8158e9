@@ -1,7 +1,6 @@
-
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import * as dailyCareService from '@/services/dailyCare';
+import { fetchAllDogsWithCareStatus } from '@/services/dailyCare/dogCareStatusService';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useCacheState } from './useCacheState';
 
@@ -40,7 +39,7 @@ export const useDogCareStatus = () => {
       setError(null);
       fetchInProgressRef.current = true;
       
-      const fetchPromise = dailyCareService.fetchAllDogsWithCareStatus(date)
+      const fetchPromise = fetchAllDogsWithCareStatus(date)
         .then(statuses => {
           console.log(`✅ Fetched ${statuses.length} dogs successfully`);
           
@@ -90,7 +89,7 @@ export const useDogCareStatus = () => {
     setError(null);
     fetchInProgressRef.current = true;
     
-    const fetchPromise = dailyCareService.fetchAllDogsWithCareStatus(date)
+    const fetchPromise = fetchAllDogsWithCareStatus(date)
       .then(statuses => {
         console.log(`✅ Fetched ${statuses.length} dogs with names:`, statuses.map(d => d.dog_name).join(', '));
         

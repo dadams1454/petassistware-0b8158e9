@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { fetchDogCareLogs } from '@/services/dailyCare';
 import { compareDesc, isSameDay, startOfDay } from 'date-fns';
+import { fetchDogCareLogs } from '@/services/dailyCare/careLogsService';
 
 interface CareLog {
   dog_id: string;

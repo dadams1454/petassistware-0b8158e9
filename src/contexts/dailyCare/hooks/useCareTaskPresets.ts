@@ -1,17 +1,21 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import * as dailyCareService from '@/services/dailyCare';
+import { 
+  fetchCareTaskPresets,
+  addCareTaskPreset,
+  deleteCareTaskPreset
+} from '@/services/dailyCare/careTaskPresetsService';
 import { CareTaskPreset } from '@/types/dailyCare';
 
 export const useCareTaskPresets = (userId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchCareTaskPresets = useCallback(async (): Promise<CareTaskPreset[]> => {
+  const fetchPresets = useCallback(async (): Promise<CareTaskPreset[]> => {
     setLoading(true);
     try {
-      const data = await dailyCareService.fetchCareTaskPresets();
+      const data = await fetchCareTaskPresets(userId);
       return data;
     } catch (error) {
       console.error('Error fetching care task presets:', error);
@@ -24,13 +28,13 @@ export const useCareTaskPresets = (userId: string | undefined) => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [userId, toast]);
 
-  const addCareTaskPreset = useCallback(async (category: string, taskName: string): Promise<CareTaskPreset | null> => {
+  const addPreset = useCallback(async (data: Omit<CareTaskPreset, 'id' | 'created_at'>): Promise<CareTaskPreset | null> => {
     if (!userId) {
       toast({
         title: 'Authentication Required',
-        description: 'You must be logged in to add task presets',
+        description: 'You must be logged in to add care task presets',
         variant: 'destructive',
       });
       return null;
@@ -38,21 +42,21 @@ export const useCareTaskPresets = (userId: string | undefined) => {
 
     setLoading(true);
     try {
-      const newPreset = await dailyCareService.addCareTaskPreset(category, taskName, userId);
+      const newPreset = await addCareTaskPreset(data, userId);
       
       if (newPreset) {
         toast({
           title: 'Success',
-          description: 'Task preset added successfully',
+          description: 'Care task preset added successfully',
         });
       }
       
       return newPreset;
     } catch (error) {
-      console.error('Error adding task preset:', error);
+      console.error('Error adding care task preset:', error);
       toast({
         title: 'Error',
-        description: 'Failed to add task preset',
+        description: 'Failed to add care task preset',
         variant: 'destructive',
       });
       return null;
@@ -61,24 +65,24 @@ export const useCareTaskPresets = (userId: string | undefined) => {
     }
   }, [userId, toast]);
 
-  const deleteCareTaskPreset = useCallback(async (id: string): Promise<boolean> => {
+  const deletePreset = useCallback(async (id: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const success = await dailyCareService.deleteCareTaskPreset(id);
+      const success = await deleteCareTaskPreset(id);
       
       if (success) {
         toast({
           title: 'Success',
-          description: 'Task preset deleted successfully',
+          description: 'Care task preset deleted successfully',
         });
       }
       
       return success;
     } catch (error) {
-      console.error('Error deleting task preset:', error);
+      console.error('Error deleting care task preset:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete task preset',
+        description: 'Failed to delete care task preset',
         variant: 'destructive',
       });
       return false;
@@ -89,8 +93,8 @@ export const useCareTaskPresets = (userId: string | undefined) => {
 
   return {
     loading,
-    fetchCareTaskPresets,
-    addCareTaskPreset,
-    deleteCareTaskPreset
+    fetchCareTaskPresets: fetchPresets,
+    addCareTaskPreset: addPreset,
+    deleteCareTaskPreset: deletePreset
   };
 };
