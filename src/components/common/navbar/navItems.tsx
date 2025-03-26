@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Home,
@@ -30,31 +31,31 @@ export const getNavItems = (): NavItem[] => [
     name: 'Customers',
     to: '/customers',
     icon: <Users className="h-5 w-5" />,
-    requiredRoles: ['staff', 'manager', 'admin'],
+    requiredRoles: ['staff', 'manager', 'admin', 'owner'],
   },
   {
     name: 'Litters',
     to: '/litters',
     icon: <Dog className="h-5 w-5" />,
-    requiredRoles: ['staff', 'manager', 'admin'],
+    requiredRoles: ['staff', 'manager', 'admin', 'owner'],
   },
   {
     name: 'Calendar',
     to: '/calendar',
     icon: <Calendar className="h-5 w-5" />,
-    requiredRoles: ['staff', 'manager', 'admin'],
+    requiredRoles: ['staff', 'manager', 'admin', 'owner'],
   },
   {
     name: 'Communications',
     to: '/communications',
     icon: <MessageSquare className="h-5 w-5" />,
-    requiredRoles: ['manager', 'admin'],
+    requiredRoles: ['manager', 'admin', 'owner'],
   },
   {
     name: 'Users',
     to: '/users',
     icon: <Shield className="h-5 w-5" />,
-    requiredRoles: ['admin'],
+    requiredRoles: ['admin', 'owner'],
   },
 ];
 
@@ -64,8 +65,8 @@ export const filterNavItemsByRole = (items: NavItem[], userRole: string | null):
     return items.filter(item => !item.requiredRoles || item.requiredRoles.length === 0);
   }
   
-  // Return all items if user is admin
-  if (userRole === 'admin') {
+  // Return all items if user is admin or owner
+  if (userRole === 'admin' || userRole === 'owner') {
     return items;
   }
   
