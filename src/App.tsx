@@ -56,31 +56,44 @@ function App() {
               <Route element={<AuthLayout />}>
                 {/* All-access routes */}
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dogs" element={<Dogs />} />
-                <Route path="/dogs/:id" element={<DogDetail />} />
-                <Route path="/dog/:id" element={<DogDetail />} />
-                <Route path="/profile/dog/:id" element={<DogProfile />} />
-                <Route path="/daily-care" element={<DailyCare />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin-setup" element={<AdminSetup />} />
                 
-                {/* Staff+ Only Routes */}
-                <Route element={<ProtectedRoute requiredRoles={['staff', 'manager', 'admin']} />}>
+                {/* Permission-based routes */}
+                <Route element={<ProtectedRoute resource="dogs" />}>
+                  <Route path="/dogs" element={<Dogs />} />
+                  <Route path="/dogs/:id" element={<DogDetail />} />
+                  <Route path="/dog/:id" element={<DogDetail />} />
+                  <Route path="/profile/dog/:id" element={<DogProfile />} />
+                  <Route path="/daily-care" element={<DailyCare />} />
+                </Route>
+                
+                <Route element={<ProtectedRoute resource="customers" />}>
                   <Route path="/customers" element={<Customers />} />
+                </Route>
+                
+                <Route element={<ProtectedRoute resource="litters" />}>
                   <Route path="/litters" element={<Litters />} />
                   <Route path="/litters/:id" element={<LitterDetail />} />
+                </Route>
+                
+                <Route element={<ProtectedRoute resource="litters" action="add" />}>
+                  <Route path="/litters/add" element={<AddLitter />} />
+                </Route>
+                
+                <Route element={<ProtectedRoute resource="calendar" />}>
                   <Route path="/calendar" element={<Calendar />} />
                 </Route>
                 
-                {/* Manager+ Only Routes */}
-                <Route element={<ProtectedRoute requiredRoles={['manager', 'admin']} />}>
-                  <Route path="/litters/add" element={<AddLitter />} />
+                <Route element={<ProtectedRoute resource="communications" />}>
                   <Route path="/communications" element={<Communications />} />
+                </Route>
+                
+                <Route element={<ProtectedRoute resource="welping" />}>
                   <Route path="/welping" element={<WelpingPage />} />
                 </Route>
                 
-                {/* Admin Only Routes */}
-                <Route element={<ProtectedRoute requiredRoles={['admin']} />}>
+                <Route element={<ProtectedRoute resource="users" />}>
                   <Route path="/users" element={<UserManagement />} />
                 </Route>
               </Route>

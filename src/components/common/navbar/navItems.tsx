@@ -9,12 +9,15 @@ import {
   Shield,
   Settings,
 } from 'lucide-react';
+import { PERMISSIONS, hasPermission } from '@/utils/permissions';
+import { UserRole } from '@/contexts/AuthProvider';
 
 export interface NavItem {
   name: string;
   to: string;
   icon: React.ReactNode;
-  requiredRoles?: string[];
+  resource: keyof typeof PERMISSIONS;
+  action?: 'view' | 'add' | 'edit' | 'delete';
 }
 
 export const getNavItems = (): NavItem[] => [
@@ -22,69 +25,66 @@ export const getNavItems = (): NavItem[] => [
     name: 'Dashboard',
     to: '/dashboard',
     icon: <Home className="h-5 w-5" />,
+    resource: 'dogs', // Using dogs as a proxy for dashboard
   },
   {
     name: 'Dogs',
     to: '/dogs',
     icon: <Dog className="h-5 w-5" />,
+    resource: 'dogs',
   },
   {
     name: 'Customers',
     to: '/customers',
     icon: <Users className="h-5 w-5" />,
-    requiredRoles: ['staff', 'manager', 'admin', 'owner'],
+    resource: 'customers',
   },
   {
     name: 'Litters',
     to: '/litters',
     icon: <Dog className="h-5 w-5" />,
-    requiredRoles: ['staff', 'manager', 'admin', 'owner'],
+    resource: 'litters',
   },
   {
     name: 'Calendar',
     to: '/calendar',
     icon: <Calendar className="h-5 w-5" />,
-    requiredRoles: ['staff', 'manager', 'admin', 'owner'],
+    resource: 'calendar',
   },
   {
     name: 'Communications',
     to: '/communications',
     icon: <MessageSquare className="h-5 w-5" />,
-    requiredRoles: ['manager', 'admin', 'owner'],
+    resource: 'communications',
   },
   {
     name: 'Users',
     to: '/users',
     icon: <Shield className="h-5 w-5" />,
-    requiredRoles: ['admin', 'owner'],
+    resource: 'users',
   },
   {
     name: 'Admin Setup',
     to: '/admin-setup',
     icon: <Settings className="h-5 w-5" />,
+    resource: 'adminSetup',
   },
 ];
 
 export const filterNavItemsByRole = (items: NavItem[], userRole: string | null): NavItem[] => {
-  // If no role is provided, show items with no role requirements
   if (!userRole) {
-    return items.filter(item => !item.requiredRoles || item.requiredRoles.length === 0);
+    // If no role is provided, only show items that are accessible to everyone
+    return items.filter(item => 
+      PERMISSIONS[item.resource]?.view.includes('user') || 
+      false
+    );
   }
   
-  // Convert role to lowercase to handle case variations like 'Owner' vs 'owner'
-  const normalizedRole = userRole.toLowerCase();
+  // Convert role to lowercase to handle case variations
+  const normalizedRole = userRole.toLowerCase() as UserRole;
   
-  // Return all items if user is admin or owner
-  if (normalizedRole === 'admin' || normalizedRole === 'owner') {
-    return items;
-  }
-  
-  // Filter based on role
-  return items.filter(item => {
-    // If no required roles, show the item to everyone
-    if (!item.requiredRoles) return true;
-    
-    // Otherwise, check if user's normalized role is in the required roles
-    return item.requiredRoles.includes(normalizedRole);
-  });
+  // Filter based on permissions
+  return items.filter(item => 
+    hasPermission(normalizedRole, item.resource, item.action || 'view')
+  );
 };
