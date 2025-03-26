@@ -1,64 +1,74 @@
 
-import { formatDistanceToNow } from 'date-fns';
-import { 
-  Clock, 
-  Bath, 
-  Utensils, 
-  Heart, 
-  Activity, 
-  PawPrint, 
-  Pill 
-} from 'lucide-react';
 import React from 'react';
+import { 
+  DropletIcon, 
+  UtensilsCrossed, 
+  Pill, 
+  Scissors, 
+  Dumbbell,
+  HeartPulse,
+  Graduation,
+  FileText 
+} from 'lucide-react';
 
-// Get icon component based on care category
-export const getCareTypeIcon = (category: string): React.ReactNode => {
-  switch (category?.toLowerCase()) {
-    case 'feeding':
-      return <Utensils />;
-    case 'grooming':
-      return <Bath />;
-    case 'exercise':
-      return <Activity />;
-    case 'medications':
-      return <Pill />;
-    case 'healthcare':
-      return <Heart />;
+export const getCareTypeIcon = (careType: string) => {
+  switch (careType) {
     case 'potty':
-    case 'pottybreaks':
-      return <PawPrint />;
+      return <DropletIcon />;
+    case 'feeding':
+      return <UtensilsCrossed />;
+    case 'medication':
+      return <Pill />;
+    case 'grooming':
+      return <Scissors />;
+    case 'exercise':
+      return <Dumbbell />;
+    case 'wellness':
+      return <HeartPulse />;
+    case 'training':
+      return <Graduation />;
     default:
-      return <Clock />;
+      return <FileText />;
   }
 };
 
-// Get color based on care category
-export const getCareTypeColor = (category: string): string => {
-  switch (category?.toLowerCase()) {
-    case 'feeding':
-      return 'blue';
-    case 'grooming':
-      return 'pink';
-    case 'exercise':
-      return 'green';
-    case 'medications':
-      return 'red';
-    case 'healthcare':
-      return 'purple';
+export const getCareTypeColor = (careType: string): string => {
+  switch (careType) {
     case 'potty':
-    case 'pottybreaks':
-      return 'yellow';
+      return 'green';
+    case 'feeding':
+      return 'orange';
+    case 'medication':
+      return 'red';
+    case 'grooming':
+      return 'purple';
+    case 'exercise':
+      return 'blue';
+    case 'wellness':
+      return 'pink';
+    case 'training':
+      return 'indigo';
     default:
       return 'gray';
   }
 };
 
-// Get human-readable relative time
 export const getRelativeTimeString = (date: Date): string => {
-  try {
-    return formatDistanceToNow(date, { addSuffix: true });
-  } catch (err) {
-    console.error('Error formatting date:', err);
-    return 'Unknown time';
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInMin = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  
+  if (diffInMin < 1) {
+    return 'Just now';
+  } else if (diffInMin < 60) {
+    return `${diffInMin} ${diffInMin === 1 ? 'minute' : 'minutes'} ago`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+  } else if (diffInDays < 7) {
+    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+  } else {
+    return date.toLocaleDateString();
   }
 };
