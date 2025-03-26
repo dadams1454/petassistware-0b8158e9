@@ -19,6 +19,8 @@ const DailyCareLogs: React.FC<DailyCareLogsProps> = ({ dogId }) => {
   const handleLogAdded = () => {
     // Switch to logs tab after adding a new log
     setActiveTab('logs');
+    // Trigger refresh
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleLogDeleted = () => {

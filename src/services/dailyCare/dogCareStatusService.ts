@@ -9,6 +9,8 @@ import { DogCareStatus, DogFlag } from '@/types/dailyCare';
  */
 export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<DogCareStatus[]> => {
   try {
+    console.log(`Fetching dogs with care status for date: ${date.toISOString().slice(0, 10)}`);
+    
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
     
@@ -31,19 +33,25 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         requires_special_handling
       `);
       
-    if (dogsError) throw dogsError;
+    if (dogsError) {
+      console.error('Error fetching dogs:', dogsError);
+      throw dogsError;
+    }
     
     if (!dogs || dogs.length === 0) {
+      console.log('No dogs found in database');
       return [];
     }
+    
+    console.log(`Found ${dogs.length} dogs`);
     
     // Map the dogs to DogCareStatus objects
     const dogCareStatuses: DogCareStatus[] = dogs.map(dog => ({
       dog_id: dog.id,
       dog_name: dog.name,
-      breed: dog.breed, // Match the expected type by using 'breed' directly
-      color: dog.color || '', // Match the expected type by using 'color' directly
-      sex: dog.gender || '', // Map 'gender' to the expected 'sex' property
+      breed: dog.breed, 
+      color: dog.color || '', 
+      sex: dog.gender || '', 
       dog_photo: dog.photo_url,
       dog_weight: dog.weight,
       potty_alert_threshold: dog.potty_alert_threshold,
@@ -53,7 +61,6 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       feeding_times_today: [],
       potty_times_today: [],
       medication_times_today: [],
-      // Add the missing required properties
       last_care: null,
       flags: [] as DogFlag[]
     }));

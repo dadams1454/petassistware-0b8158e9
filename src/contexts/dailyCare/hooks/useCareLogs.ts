@@ -2,9 +2,9 @@
 import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { 
-  fetchDogCareLogs, 
-  addCareLog, 
-  deleteCareLog 
+  fetchDogCareLogs as fetchDogCareLogsService, 
+  addCareLog as addCareLogService, 
+  deleteCareLog as deleteCareLogService 
 } from '@/services/dailyCare/careLogsService';
 import { DailyCarelog, CareLogFormData } from '@/types/dailyCare';
 
@@ -15,7 +15,7 @@ export const useCareLogs = (userId: string | undefined) => {
   const fetchDogCareLogs = useCallback(async (dogId: string): Promise<DailyCarelog[]> => {
     setLoading(true);
     try {
-      const data = await fetchDogCareLogs(dogId);
+      const data = await fetchDogCareLogsService(dogId);
       return data;
     } catch (error) {
       console.error('Error fetching care logs:', error);
@@ -30,7 +30,7 @@ export const useCareLogs = (userId: string | undefined) => {
     }
   }, [toast]);
 
-  const addCareLogHandler = useCallback(async (data: CareLogFormData): Promise<DailyCarelog | null> => {
+  const addCareLog = useCallback(async (data: CareLogFormData): Promise<DailyCarelog | null> => {
     if (!userId) {
       toast({
         title: 'Authentication Required',
@@ -42,7 +42,7 @@ export const useCareLogs = (userId: string | undefined) => {
 
     setLoading(true);
     try {
-      const newLog = await addCareLog(data, userId);
+      const newLog = await addCareLogService(data, userId);
       
       if (newLog) {
         toast({
@@ -65,10 +65,10 @@ export const useCareLogs = (userId: string | undefined) => {
     }
   }, [userId, toast]);
 
-  const deleteCareLogHandler = useCallback(async (id: string): Promise<boolean> => {
+  const deleteCareLog = useCallback(async (id: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const success = await deleteCareLog(id);
+      const success = await deleteCareLogService(id);
       
       if (success) {
         toast({
@@ -94,7 +94,7 @@ export const useCareLogs = (userId: string | undefined) => {
   return {
     loading,
     fetchDogCareLogs,
-    addCareLog: addCareLogHandler,
-    deleteCareLog: deleteCareLogHandler
+    addCareLog,
+    deleteCareLog
   };
 };
