@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
-import Navbar from '@/components/common/navbar';
 import { AuthLoadingState } from '@/components/ui/standardized';
 
 const AuthLayout: React.FC = () => {
@@ -30,8 +29,7 @@ const AuthLayout: React.FC = () => {
   console.log('User authenticated, rendering outlet');
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-      <main className="flex-1 p-4 md:p-6 overflow-auto">
+      <main className="flex-1 overflow-auto">
         <Outlet />
       </main>
     </div>

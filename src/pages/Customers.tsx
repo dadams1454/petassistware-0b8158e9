@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import MainLayout from '@/layouts/MainLayout';
 import CustomersList from '@/components/customers/CustomersList';
 import CustomerDialog from '@/components/customers/CustomerDialog';
 import { toast } from '@/components/ui/use-toast';
@@ -104,37 +103,35 @@ const Customers = () => {
   }, [customers, filters, sort]);
 
   return (
-    <MainLayout>
-      <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Customers</h1>
-          <CustomerDialog 
-            trigger={
-              <Button>
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Customer
-              </Button>
-            }
-            onSuccess={() => refetch()}
-          />
-        </div>
-
-        <CustomerFilters 
-          filters={filters}
-          onFiltersChange={setFilters}
-          sort={sort}
-          onSortChange={setSort}
+    <div className="container mx-auto py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Customers</h1>
+        <CustomerDialog 
+          trigger={
+            <Button>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Customer
+            </Button>
+          }
+          onSuccess={() => refetch()}
         />
-
-        <div className="mt-4">
-          <CustomersList 
-            customers={filteredAndSortedCustomers} 
-            isLoading={isLoading} 
-            onCustomerUpdated={() => refetch()}
-          />
-        </div>
       </div>
-    </MainLayout>
+
+      <CustomerFilters 
+        filters={filters}
+        onFiltersChange={setFilters}
+        sort={sort}
+        onSortChange={setSort}
+      />
+
+      <div className="mt-4">
+        <CustomersList 
+          customers={filteredAndSortedCustomers} 
+          isLoading={isLoading} 
+          onCustomerUpdated={() => refetch()}
+        />
+      </div>
+    </div>
   );
 };
 
