@@ -1,4 +1,3 @@
-
 import { UserRole } from '@/contexts/AuthProvider';
 
 // Define the hierarchy of roles (from lowest to highest privileges)
@@ -79,34 +78,44 @@ export const PERMISSIONS = {
   } as PermissionRules
 };
 
-// Helper function to check if user has permission for a specific action
+/**
+ * Check if a user has permission for a specific action on a resource
+ * @param userRole The user's role
+ * @param resource The resource being accessed
+ * @param action The action being performed
+ * @param enableLogging Whether to enable permission logging
+ * @returns boolean indicating if the user has permission
+ */
 export const hasPermission = (
   userRole: UserRole | null, 
   resource: keyof typeof PERMISSIONS, 
   action: keyof PermissionRules = 'view',
   enableLogging: boolean = false
 ): boolean => {
+  // Environment-aware logging flag
+  const shouldLog = enableLogging || process.env.NODE_ENV === 'development';
+  
   if (!userRole) {
-    if (enableLogging) console.warn(`Permission check failed: No user role provided for ${resource}:${action}`);
+    if (shouldLog) console.warn(`[Permission] Check failed: No user role provided for ${resource}:${action}`);
     return false;
   }
   
   const resourcePermissions = PERMISSIONS[resource];
   if (!resourcePermissions) {
-    if (enableLogging) console.warn(`Permission check failed: Resource "${resource}" not found in permissions configuration`);
+    if (shouldLog) console.warn(`[Permission] Check failed: Resource "${resource}" not found in permissions configuration`);
     return false;
   }
   
   const actionPermissions = resourcePermissions[action];
   if (!actionPermissions) {
-    if (enableLogging) console.warn(`Permission check failed: Action "${action}" not defined for resource "${resource}"`);
+    if (shouldLog) console.warn(`[Permission] Check failed: Action "${action}" not defined for resource "${resource}"`);
     return false;
   }
   
   const hasAccess = actionPermissions.includes(userRole);
   
-  if (enableLogging && !hasAccess) {
-    console.warn(`Permission denied: Role "${userRole}" does not have "${action}" permission for "${resource}"`);
+  if (shouldLog && !hasAccess) {
+    console.warn(`[Permission] Denied: Role "${userRole}" does not have "${action}" permission for "${resource}"`);
   }
   
   return hasAccess;

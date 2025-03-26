@@ -26,8 +26,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, loading, userRole } = useAuth();
   const location = useLocation();
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
-  console.log('ProtectedRoute:', { loading, user: !!user, userRole, requiredRoles, resource, action });
+  // Debug logging in development environment
+  if (isDevelopment) {
+    console.log('[ProtectedRoute]', { 
+      loading, 
+      user: !!user, 
+      userRole, 
+      requiredRoles, 
+      resource, 
+      action,
+      path: location.pathname
+    });
+  }
 
   // If authentication is still loading, show the loading state
   if (loading) {
@@ -36,14 +48,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If user is not authenticated, redirect to login page
   if (!user) {
-    console.log('User not authenticated, redirecting to:', fallbackPath);
+    if (isDevelopment) {
+      console.log('[Auth] User not authenticated, redirecting to:', fallbackPath);
+    }
     return <Navigate to={fallbackPath} state={{ from: location.pathname }} replace />;
   }
 
   // Check permissions using the resource and action (if provided)
   if (resource && !hasPermission(userRole, resource, action)) {
     // Audit logging for permission failures
-    console.warn(`Permission denied: User with role "${userRole}" attempted to ${action} ${resource} at path: ${location.pathname}`);
+    console.warn(`[Permission] Denied: User with role "${userRole}" attempted to ${action} ${resource} at path: ${location.pathname}`);
     
     return (
       <UnauthorizedState 
@@ -64,7 +78,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     
     if (!hasRequiredRole) {
       // Audit logging for role-based permission failures
-      console.warn(`Role permission denied: User with role "${userRole}" attempted to access a route requiring one of these roles: ${requiredRoles.join(', ')} at path: ${location.pathname}`);
+      console.warn(`[Role] Permission denied: User with role "${userRole}" attempted to access a route requiring one of these roles: ${requiredRoles.join(', ')} at path: ${location.pathname}`);
       
       // Show unauthorized state with multiple navigation options
       return (
@@ -78,7 +92,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }
 
-  console.log('User authorized, rendering protected content');
+  if (isDevelopment) {
+    console.log('[ProtectedRoute] User authorized, rendering protected content');
+  }
   // If user is authenticated and has required role (if any), render the protected content or the Outlet
   return <>{children || <Outlet />}</>;
 };
