@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     try {
       console.log('Refreshing session...');
       setLoading(true);
@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const signOut = async () => {
     try {
@@ -145,21 +145,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    // Set initial loading state
+    // Start with loading state true
     setLoading(true);
     
-    // Set up auth listener first
+    // Set up auth state change listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('Auth state changed:', event, newSession?.user?.id);
         
-        // Update session state immediately
+        if (event === 'SIGNED_OUT') {
+          console.log('User signed out, clearing state');
+          setSession(null);
+          setUser(null);
+          setUserRole(null);
+          setTenantId(null);
+          setLoading(false);
+          return;
+        }
+        
+        // Update session and user state immediately
         setSession(newSession);
         setUser(newSession?.user || null);
 
         // Only fetch role if we have a user
         if (newSession?.user) {
-          await fetchUserRole(newSession.user.id);
+          try {
+            await fetchUserRole(newSession.user.id);
+          } catch (err) {
+            console.error('Error fetching user role after auth state change:', err);
+          }
         } else {
           setUserRole(null);
           setTenantId(null);
@@ -170,14 +184,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     );
 
-    // Then check current session
-    refreshSession();
+    // Then immediately check current session, with timeout to prevent race conditions
+    setTimeout(() => {
+      refreshSession().catch(err => {
+        console.error('Failed to refresh session during initialization:', err);
+        setLoading(false);
+      });
+    }, 0);
 
     // Cleanup
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [refreshSession]);
 
   return (
     <AuthContext.Provider value={{ 

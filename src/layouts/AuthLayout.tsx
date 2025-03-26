@@ -11,7 +11,15 @@ const AuthLayout: React.FC = () => {
   // Refresh session on mount to ensure we have the latest auth state
   useEffect(() => {
     console.log('AuthLayout mounted, refreshing session');
-    refreshSession();
+    
+    // Add a timeout to prevent immediate refresh which might conflict with AuthProvider's initialization
+    const timer = setTimeout(() => {
+      refreshSession().catch(err => {
+        console.error('Error refreshing session in AuthLayout:', err);
+      });
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [refreshSession]);
   
   // Show loading state while checking authentication
