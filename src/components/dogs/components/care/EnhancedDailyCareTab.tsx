@@ -22,7 +22,7 @@ import {
   Eye,
   CheckCircle
 } from 'lucide-react';
-import { getCareCategory, getCareTypeColor, getRelativeTimeString } from './utils/careUtils';
+import { getCareCategory, getCareTypeColor, getRelativeTimeString, getCategoryIcon } from './utils/careUtils';
 
 interface EnhancedDailyCareTabProps {
   dogId: string;
