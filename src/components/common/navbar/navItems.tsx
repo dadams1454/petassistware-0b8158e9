@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Home,
@@ -6,6 +7,7 @@ import {
   Users,
   MessageSquare,
   Shield,
+  Settings,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -55,6 +57,11 @@ export const getNavItems = (): NavItem[] => [
     to: '/users',
     icon: <Shield className="h-5 w-5" />,
     requiredRoles: ['admin', 'owner'],
+  },
+  {
+    name: 'Admin Setup',
+    to: '/admin-setup',
+    icon: <Settings className="h-5 w-5" />,
   },
 ];
 

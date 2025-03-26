@@ -42,12 +42,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     
     if (!hasRequiredRole) {
       console.log('User lacks required role. Has:', userRole, 'Needs one of:', requiredRoles);
-      // Show unauthorized state or redirect
+      // Show unauthorized state with multiple navigation options
       return (
         <UnauthorizedState 
           title="Insufficient Permissions"
-          description="You don't have the necessary permissions to access this page."
+          description={`You don't have the necessary permissions to access this page. Your current role is "${userRole}" but you need one of these roles: ${requiredRoles.join(', ')}.`}
           backPath="/dashboard"
+          showAdminSetupLink={true}
         />
       );
     }
