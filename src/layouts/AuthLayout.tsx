@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
-import { AuthLoadingState } from '@/components/ui/standardized';
+import { LoadingState } from '@/components/ui/standardized';
 
 const AuthLayout: React.FC = () => {
   const { user, loading, refreshSession } = useAuth();
@@ -43,7 +43,7 @@ const AuthLayout: React.FC = () => {
   // Handle different states
   if (loading && !initialRefreshDone) {
     console.log('AuthLayout: in loading state');
-    return <AuthLoadingState fullPage={true} message="Verifying authentication..." />;
+    return <LoadingState fullPage={true} message="Verifying authentication..." />;
   }
   
   // Redirect to login if not authenticated

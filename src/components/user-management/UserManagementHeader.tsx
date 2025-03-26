@@ -25,7 +25,7 @@ export const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
       title="User Management"
       subtitle="Manage users and their roles in your organization"
       backLink="/dashboard"
-      actions={
+      action={
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleBackToDashboard} className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />

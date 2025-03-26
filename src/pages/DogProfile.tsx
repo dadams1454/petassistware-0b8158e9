@@ -13,13 +13,13 @@ import DogHealthRecords from '@/components/dogs/components/profile/DogHealthReco
 import DogCareHistory from '@/components/dogs/components/profile/DogCareHistory';
 import EditDogDialog from '@/components/dogs/components/details/EditDogDialog';
 import { DogProfile } from '@/types/dog';
+import { Button } from '@/components/ui/button';
 
 // Import standardized components
 import {
   PageHeader,
   LoadingState,
   ErrorState,
-  ActionButton,
   ConfirmDialog
 } from '@/components/ui/standardized';
 
@@ -122,22 +122,23 @@ const DogProfilePage = () => {
             title={dog.name}
             subtitle={`${dog.breed || 'Unknown Breed'} · ${dog.gender || 'Unknown Gender'}`}
             backLink="/dogs"
-            action={{
-              label: "Edit Dog",
-              onClick: () => setIsEditDialogOpen(true),
-              icon: <Edit className="h-4 w-4" />
-            }}
+            action={
+              <Button onClick={() => setIsEditDialogOpen(true)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Dog
+              </Button>
+            }
           />
           
           <div className="flex justify-end mb-4">
-            <ActionButton
+            <Button
               variant="destructive"
               size="sm"
-              icon={<Trash2 className="h-4 w-4" />}
               onClick={() => setIsDeleteDialogOpen(true)}
             >
+              <Trash2 className="h-4 w-4 mr-2" />
               Delete Dog
-            </ActionButton>
+            </Button>
           </div>
           
           <Tabs defaultValue="details" className="mt-6">

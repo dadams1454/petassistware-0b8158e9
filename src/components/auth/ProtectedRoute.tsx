@@ -2,7 +2,7 @@
 import React from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth, UserRole } from '@/contexts/AuthProvider';
-import { AuthLoadingState, UnauthorizedState } from '@/components/ui/standardized';
+import { LoadingState, UnauthorizedState } from '@/components/ui/standardized';
 import { hasMinimumRole, PERMISSIONS, hasPermission } from '@/utils/permissions';
 
 interface ProtectedRouteProps {
@@ -43,7 +43,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If authentication is still loading, show the loading state
   if (loading) {
-    return <AuthLoadingState fullPage={true} />;
+    return <LoadingState message="Verifying authentication..." fullPage={true} />;
   }
 
   // If user is not authenticated, redirect to login page

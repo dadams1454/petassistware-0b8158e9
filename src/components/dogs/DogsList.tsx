@@ -12,6 +12,7 @@ import {
   ErrorState, 
   EmptyState 
 } from '@/components/ui/standardized';
+import { Button } from '@/components/ui/button';
 
 const DogsList = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -53,11 +54,12 @@ const DogsList = () => {
       <PageHeader 
         title="Dogs"
         subtitle="Manage your kennel's dogs"
-        action={{
-          label: "Add Dog",
-          onClick: () => setIsAddDialogOpen(true),
-          icon: <Plus className="h-4 w-4" />
-        }}
+        action={
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Dog
+          </Button>
+        }
       />
       
       <SearchFilters 
@@ -73,23 +75,26 @@ const DogsList = () => {
         <EmptyState
           title="No Dogs Found"
           description="You haven't added any dogs yet. Click the 'Add Dog' button to get started."
-          action={{
-            label: "Add Dog",
-            onClick: () => setIsAddDialogOpen(true)
-          }}
+          action={
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Dog
+            </Button>
+          }
         />
       ) : filteredDogs?.length === 0 ? (
         <EmptyState
           title="No Matching Dogs"
           description="No dogs match your search criteria."
-          action={{
-            label: "Clear Filters",
-            onClick: () => {
+          action={
+            <Button onClick={() => {
               setSearchTerm('');
               setStatusFilter('all');
               setGenderFilter('all');
-            }
-          }}
+            }}>
+              Clear Filters
+            </Button>
+          }
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ActionButton } from '@/components/ui/standardized';
+import { Button } from '@/components/ui/button';
 import { Save, X } from 'lucide-react';
 
 interface DogFormActionsProps {
@@ -16,24 +16,32 @@ const DogFormActions: React.FC<DogFormActionsProps> = ({
 }) => {
   return (
     <div className="flex justify-end space-x-2 pt-4">
-      <ActionButton
+      <Button
         type="button"
         variant="outline"
         onClick={onCancel}
         disabled={isPending}
-        icon={<X className="h-4 w-4" />}
       >
+        <X className="h-4 w-4 mr-2" />
         Cancel
-      </ActionButton>
+      </Button>
       
-      <ActionButton 
+      <Button 
         type="submit" 
-        isLoading={isPending}
-        loadingText={isEditing ? "Updating..." : "Saving..."}
-        icon={<Save className="h-4 w-4" />}
+        disabled={isPending}
       >
-        {isEditing ? 'Update Dog' : 'Add Dog'}
-      </ActionButton>
+        {isPending ? (
+          <>
+            <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            {isEditing ? 'Updating...' : 'Saving...'}
+          </>
+        ) : (
+          <>
+            <Save className="h-4 w-4 mr-2" />
+            {isEditing ? 'Update Dog' : 'Add Dog'}
+          </>
+        )}
+      </Button>
     </div>
   );
 };
