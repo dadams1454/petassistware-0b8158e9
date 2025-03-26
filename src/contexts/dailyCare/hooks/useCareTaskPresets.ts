@@ -32,7 +32,7 @@ export const useCareTaskPresets = (userId: string | undefined) => {
     }
   }, [toast]);
 
-  const addCareTaskPreset = useCallback(async (data: Partial<CareTaskPreset>): Promise<CareTaskPreset | null> => {
+  const addCareTaskPreset = useCallback(async (categoryOrData: string | Partial<CareTaskPreset>, taskName?: string): Promise<CareTaskPreset | null> => {
     if (!userId) {
       toast({
         title: 'Authentication Required',
@@ -44,7 +44,18 @@ export const useCareTaskPresets = (userId: string | undefined) => {
 
     setLoading(true);
     try {
-      const newPreset = await addCareTaskPresetService({ ...data, breeder_id: userId });
+      let newPreset;
+      
+      // Handle both calling patterns
+      if (typeof categoryOrData === 'string' && taskName) {
+        // Old style: category, taskName
+        newPreset = await addCareTaskPresetService(categoryOrData, taskName, userId);
+      } else if (typeof categoryOrData === 'object') {
+        // New style: data object
+        newPreset = await addCareTaskPresetService({ ...categoryOrData, breeder_id: userId });
+      } else {
+        throw new Error('Invalid arguments to addCareTaskPreset');
+      }
       
       if (newPreset) {
         toast({

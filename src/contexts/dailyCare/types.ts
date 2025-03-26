@@ -9,6 +9,6 @@ export interface DailyCareContextType {
   fetchAllDogsWithCareStatus: (date?: Date, forceRefresh?: boolean) => Promise<DogCareStatus[]>;
   addCareLog: (data: CareLogFormData) => Promise<DailyCarelog | null>;
   deleteCareLog: (id: string) => Promise<boolean>;
-  addCareTaskPreset: (data: Partial<CareTaskPreset>) => Promise<CareTaskPreset | null>;
+  addCareTaskPreset: (categoryOrData: string | Partial<CareTaskPreset>, taskName?: string) => Promise<CareTaskPreset | null>;
   deleteCareTaskPreset: (id: string) => Promise<boolean>;
 }

@@ -33,25 +33,40 @@ export const fetchCareTaskPresets = async (breederId?: string): Promise<CareTask
 
 /**
  * Adds a new care task preset
- * @param category The category of the preset
- * @param taskName The name of the task
- * @param breederId The ID of the breeder creating the preset
+ * @param categoryOrData The category of the preset or a preset data object
+ * @param taskName The name of the task (optional if categoryOrData is an object)
+ * @param breederId The ID of the breeder creating the preset (optional if categoryOrData is an object)
  * @returns The created CareTaskPreset or null if unsuccessful
  */
 export const addCareTaskPreset = async (
-  category: string, 
-  taskName: string,
-  breederId: string
+  categoryOrData: string | Partial<CareTaskPreset>,
+  taskName?: string,
+  breederId?: string
 ): Promise<CareTaskPreset | null> => {
   try {
-    const { data: newPreset, error } = await supabase
-      .from('care_task_presets')
-      .insert({
-        category,
+    let presetData: Partial<CareTaskPreset>;
+    
+    if (typeof categoryOrData === 'string' && taskName && breederId) {
+      // Old-style call with separate parameters
+      presetData = {
+        category: categoryOrData,
         task_name: taskName,
         breeder_id: breederId,
         is_default: false
-      })
+      };
+    } else if (typeof categoryOrData === 'object') {
+      // New-style call with a data object
+      presetData = {
+        ...categoryOrData,
+        is_default: false
+      };
+    } else {
+      throw new Error('Invalid arguments to addCareTaskPreset');
+    }
+    
+    const { data: newPreset, error } = await supabase
+      .from('care_task_presets')
+      .insert(presetData)
       .select()
       .single();
     
