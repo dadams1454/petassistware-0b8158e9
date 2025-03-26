@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -13,9 +13,7 @@ import {
   RefreshCw, 
   AlertCircle
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { getCareTypeIcon, getCareTypeColor, getRelativeTimeString } from './utils/careUtils';
-import { useCareActivities } from '@/hooks/useCareActivities';
 
 interface EnhancedDailyCareTabProps {
   dogId: string;
@@ -25,12 +23,13 @@ interface EnhancedDailyCareTabProps {
 const EnhancedDailyCareTab: React.FC<EnhancedDailyCareTabProps> = ({ dogId, dogName = 'Dog' }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const { fetchDogCareLogs } = useDailyCare();
   const { toast } = useToast();
   const [careLogs, setCareLogs] = useState<any[]>([]);
   
-  // Fetch care logs safely
-  const loadCareLogs = async () => {
+  // Fetch care logs safely with retry mechanism
+  const loadCareLogs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -40,6 +39,7 @@ const EnhancedDailyCareTab: React.FC<EnhancedDailyCareTabProps> = ({ dogId, dogN
         return;
       }
       
+      console.log(`Loading care logs for dog ${dogId} (attempt ${retryCount + 1})`);
       const logs = await fetchDogCareLogs(dogId);
       console.log('Loaded care logs:', logs);
       setCareLogs(logs || []);
@@ -55,14 +55,17 @@ const EnhancedDailyCareTab: React.FC<EnhancedDailyCareTabProps> = ({ dogId, dogN
     } finally {
       setLoading(false);
     }
-  };
+  }, [dogId, fetchDogCareLogs, toast, retryCount]);
   
   // Load care logs on mount and when dogId changes
   useEffect(() => {
-    loadCareLogs();
-  }, [dogId]);
+    if (dogId) {
+      loadCareLogs();
+    }
+  }, [dogId, loadCareLogs]);
   
   const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
     loadCareLogs();
   };
   
@@ -80,7 +83,7 @@ const EnhancedDailyCareTab: React.FC<EnhancedDailyCareTabProps> = ({ dogId, dogN
     );
   }
   
-  if (careLogs.length === 0) {
+  if (!careLogs || careLogs.length === 0) {
     return (
       <EmptyState
         title="No Care Logs Found"

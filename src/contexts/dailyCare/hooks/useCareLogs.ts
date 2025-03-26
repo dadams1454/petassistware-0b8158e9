@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { 
-  fetchDogCareLogs, 
+  fetchDogCareLogs as fetchDogCareLogsService, 
   addCareLog, 
   deleteCareLog 
 } from '@/services/dailyCare/careLogsService';
@@ -15,8 +15,20 @@ export const useCareLogs = (userId: string | undefined) => {
   const fetchDogCareLogs = useCallback(async (dogId: string): Promise<DailyCarelog[]> => {
     setLoading(true);
     try {
-      const data = await fetchDogCareLogs(dogId);
-      return data;
+      if (!dogId) {
+        console.error('Error: Dog ID is required');
+        toast({
+          title: 'Error',
+          description: 'Missing dog ID',
+          variant: 'destructive',
+        });
+        return [];
+      }
+      
+      console.log(`Fetching care logs for dog: ${dogId}`);
+      const data = await fetchDogCareLogsService(dogId);
+      console.log(`Received ${data?.length || 0} care logs for dog ${dogId}`);
+      return data || [];
     } catch (error) {
       console.error('Error fetching care logs:', error);
       toast({
