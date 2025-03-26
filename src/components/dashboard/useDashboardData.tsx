@@ -1,5 +1,5 @@
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   fetchDashboardStats, 
@@ -13,16 +13,24 @@ import { useRefreshData } from '@/hooks/useRefreshData';
 
 export const useDashboardData = () => {
   const { toast } = useToast();
+  const [retryCount, setRetryCount] = useState(0);
 
   // Function to fetch dashboard data that can be called by the RefreshContext
   const fetchDashboardData = useCallback(async () => {
     try {
+      console.log('Fetching dashboard data...', { retryCount });
+      
       // Fetch all data in parallel
       const [dashboardStats, upcomingEvents, recentActivities] = await Promise.all([
         fetchDashboardStats(),
         fetchUpcomingEvents(),
         fetchRecentActivities()
       ]);
+
+      // Reset retry counter on success
+      if (retryCount > 0) {
+        setRetryCount(0);
+      }
 
       // Check for mock data needs
       const finalActivities = recentActivities.length === 0 
@@ -39,6 +47,9 @@ export const useDashboardData = () => {
         activities: finalActivities 
       };
     } catch (error) {
+      // Increment retry counter on error
+      setRetryCount(prev => prev + 1);
+      
       console.error('Error loading dashboard data:', error);
       toast({
         title: "Error",
@@ -47,7 +58,7 @@ export const useDashboardData = () => {
       });
       throw error;
     }
-  }, [toast]);
+  }, [toast, retryCount]);
 
   // Use the useRefreshData hook to manage dashboard data
   const { 
@@ -81,7 +92,8 @@ export const useDashboardData = () => {
     stats,
     events,
     activities,
-    refresh
+    refresh,
+    retryCount
   };
 };
 

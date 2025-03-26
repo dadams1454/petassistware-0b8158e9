@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { DogCareStatus, DailyCarelog } from '@/types/dailyCare';
 import { MedicationInfo, ProcessedMedicationLogs } from '../types/medicationTypes';
@@ -8,47 +8,67 @@ import { useToast } from '@/components/ui/use-toast';
 
 export const useMedicationLogs = (dogs: DogCareStatus[]) => {
   const [recentLogs, setRecentLogs] = useState<{[dogId: string]: DailyCarelog[]}>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const { fetchRecentCareLogsByCategory } = useDailyCare();
   const { toast } = useToast();
   
+  // Function to fetch medication logs for all dogs
+  const fetchMedicationLogs = useCallback(async () => {
+    if (dogs.length === 0) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    const medicationsByDog: {[dogId: string]: DailyCarelog[]} = {};
+    
+    try {
+      const fetchPromises = dogs.map(async (dog) => {
+        try {
+          const medications = await fetchRecentCareLogsByCategory(dog.dog_id, 'medications', 10);
+          return { dogId: dog.dog_id, medications };
+        } catch (error) {
+          console.error(`Error fetching medications for dog ${dog.dog_id}:`, error);
+          return { dogId: dog.dog_id, medications: [] };
+        }
+      });
+      
+      const results = await Promise.all(fetchPromises);
+      
+      results.forEach(result => {
+        medicationsByDog[result.dogId] = result.medications;
+      });
+      
+      setRecentLogs(medicationsByDog);
+      
+      // Reset retry counter on success
+      if (retryCount > 0) {
+        setRetryCount(0);
+      }
+    } catch (error) {
+      console.error('Error fetching medication logs:', error);
+      
+      // Increment retry counter on error
+      setRetryCount(prev => prev + 1);
+      
+      setError('Failed to fetch medication data. Please try again later.');
+      toast({
+        title: "Error loading medications",
+        description: "There was a problem loading the medication data. Some information may be unavailable.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dogs, fetchRecentCareLogsByCategory, toast, retryCount]);
+  
   // Get medication logs for each dog
   useEffect(() => {
-    const fetchDogMedications = async () => {
-      if (dogs.length === 0) return;
-      
-      setIsLoading(true);
-      setError(null);
-      const medicationsByDog: {[dogId: string]: DailyCarelog[]} = {};
-      
-      try {
-        for (const dog of dogs) {
-          try {
-            const medications = await fetchRecentCareLogsByCategory(dog.dog_id, 'medications', 10);
-            medicationsByDog[dog.dog_id] = medications;
-          } catch (error) {
-            console.error(`Error fetching medications for dog ${dog.dog_id}:`, error);
-            // Continue with other dogs even if one fails
-          }
-        }
-        
-        setRecentLogs(medicationsByDog);
-      } catch (error) {
-        console.error('Error fetching medication logs:', error);
-        setError('Failed to fetch medication data. Please try again later.');
-        toast({
-          title: "Error loading medications",
-          description: "There was a problem loading the medication data. Some information may be unavailable.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchDogMedications();
-  }, [dogs, fetchRecentCareLogsByCategory, toast]);
+    fetchMedicationLogs();
+  }, [fetchMedicationLogs]);
 
   // Process medication logs into structured data
   const processedMedicationLogs: ProcessedMedicationLogs = {};
@@ -117,6 +137,8 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
     recentLogs,
     isLoading,
     error,
-    processedMedicationLogs
+    processedMedicationLogs,
+    retryCount,
+    retry: fetchMedicationLogs
   };
 };

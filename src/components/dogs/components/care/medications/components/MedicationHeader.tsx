@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { MedicationHeaderProps } from '../types/medicationTypes';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SkeletonLoader } from '@/components/ui/standardized';
 
 const MedicationHeader: React.FC<MedicationHeaderProps> = ({ 
   title, 
@@ -11,8 +11,8 @@ const MedicationHeader: React.FC<MedicationHeaderProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-2">
-        <Skeleton className="h-5 w-3/4" />
-        <Skeleton className="h-4 w-5/6" />
+        <SkeletonLoader variant="text" width="w-3/4" className="h-5" />
+        <SkeletonLoader variant="text" width="w-5/6" className="h-4" /> 
       </div>
     );
   }

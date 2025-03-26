@@ -8,6 +8,8 @@ interface UseRefreshDataOptions<T> {
   dependencies?: any[];
   loadOnMount?: boolean;
   refreshOnDependencyChange?: boolean;
+  errorRetryCount?: number;
+  errorRetryDelay?: number;
 }
 
 /**
@@ -19,12 +21,16 @@ export function useRefreshData<T>({
   fetchData,
   dependencies = [],
   loadOnMount = true,
-  refreshOnDependencyChange = true
+  refreshOnDependencyChange = true,
+  errorRetryCount = 2,
+  errorRetryDelay = 3000
 }: UseRefreshDataOptions<T>) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(loadOnMount);
   const [error, setError] = useState<Error | null>(null);
+  const [retryAttempts, setRetryAttempts] = useState(0);
   const initialLoadDone = useRef(false);
+  const isRetrying = useRef(false);
   
   const { refreshSpecific, refreshStatus } = useRefresh();
   
@@ -41,14 +47,33 @@ export function useRefreshData<T>({
         setData(result);
       }
       
+      // Reset retry attempts on success
+      if (retryAttempts > 0) {
+        setRetryAttempts(0);
+      }
+      
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('An unknown error occurred'));
+      const error = err instanceof Error ? err : new Error('An unknown error occurred');
+      setError(error);
+      
+      // Implement auto-retry logic if retry count is not exceeded
+      if (retryAttempts < errorRetryCount && !isRetrying.current) {
+        console.log(`Auto-retrying for ${key} - attempt ${retryAttempts + 1}/${errorRetryCount}`);
+        isRetrying.current = true;
+        setRetryAttempts(prev => prev + 1);
+        
+        setTimeout(() => {
+          isRetrying.current = false;
+          refresh(false);
+        }, errorRetryDelay);
+      }
+      
       return null;
     } finally {
       setIsLoading(false);
     }
-  }, [key, fetchData, refreshSpecific]);
+  }, [key, fetchData, refreshSpecific, retryAttempts, errorRetryCount, errorRetryDelay]);
   
   // Load data on mount if specified - but only ONCE
   useEffect(() => {
@@ -77,7 +102,8 @@ export function useRefreshData<T>({
     isLoading: isLoading || isRefreshing,
     error,
     refresh,
-    isRefreshing
+    isRefreshing,
+    retryAttempts
   };
 }
 

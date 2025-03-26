@@ -20,11 +20,16 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 gap-6">
         <DailyCareProvider>
           {isLoading ? (
-            <LoadingState message="Loading dashboard data..." />
+            <LoadingState 
+              message="Loading dashboard data..." 
+              showSkeleton={true}
+              skeletonCount={4}
+              skeletonVariant="card"
+            />
           ) : error ? (
             <ErrorState 
               title="Error Loading Dashboard" 
-              message="There was a problem loading the dashboard data. Please try again."
+              message={typeof error === 'string' ? error : "There was a problem loading the dashboard data. Please try again."}
               onRetry={refresh}
             />
           ) : (

@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { useMedicationLogs } from './hooks/useMedicationLogs';
 import MedicationCard from './components/MedicationCard';
 import { MedicationsLogProps } from './types/medicationTypes';
-import { ErrorState, LoadingState } from '@/components/ui/standardized';
+import { ErrorState, LoadingState, SkeletonLoader } from '@/components/ui/standardized';
 import NoDogsMessage from './components/NoDogsMessage';
 
 const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
@@ -29,7 +29,7 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
   const dateDisplay = format(today, 'EEEE, MMMM d');
   
   return (
-    <Card className="shadow-md">
+    <Card className="shadow-md relative overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-xl flex items-center">
           <Pill className="h-5 w-5 mr-2" />
@@ -42,7 +42,9 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
       
       <CardContent>
         {isLoading ? (
-          <LoadingState message="Loading medication data..." />
+          <div className="space-y-4">
+            <SkeletonLoader variant="card" count={3} />
+          </div>
         ) : error ? (
           <ErrorState 
             title="Could not load medications" 
@@ -52,7 +54,7 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
         ) : dogs.length === 0 ? (
           <NoDogsMessage onRefresh={onRefresh} />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-all duration-300">
             {dogs.map(dog => {
               const dogMedications = processedMedicationLogs[dog.dog_id] || { preventative: [], other: [] };
               

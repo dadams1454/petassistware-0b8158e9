@@ -1,16 +1,24 @@
 
 import React from 'react';
+import { Loader2 } from 'lucide-react';
+import SkeletonLoader from './SkeletonLoader';
 
 interface LoadingStateProps {
   message?: string;
   size?: 'small' | 'medium' | 'large';
   fullPage?: boolean;
+  showSkeleton?: boolean;
+  skeletonCount?: number;
+  skeletonVariant?: 'default' | 'card' | 'table' | 'text' | 'banner';
 }
 
 const LoadingState: React.FC<LoadingStateProps> = ({ 
   message = 'Loading data...', 
   size = 'medium',
-  fullPage = false
+  fullPage = false,
+  showSkeleton = false,
+  skeletonCount = 3,
+  skeletonVariant = 'default'
 }) => {
   const sizeClasses = {
     small: 'h-4 w-4',
@@ -24,8 +32,20 @@ const LoadingState: React.FC<LoadingStateProps> = ({
 
   return (
     <div className={container}>
-      <div className={`animate-spin rounded-full border-b-2 border-primary ${sizeClasses[size]}`}></div>
-      <p className="text-sm text-muted-foreground mt-4">{message}</p>
+      {showSkeleton ? (
+        <div className="w-full max-w-3xl">
+          <SkeletonLoader 
+            count={skeletonCount} 
+            variant={skeletonVariant} 
+          />
+          {message && <p className="text-sm text-muted-foreground mt-4 text-center">{message}</p>}
+        </div>
+      ) : (
+        <>
+          <Loader2 className={`animate-spin text-primary ${sizeClasses[size]}`} />
+          <p className="text-sm text-muted-foreground mt-4">{message}</p>
+        </>
+      )}
     </div>
   );
 };

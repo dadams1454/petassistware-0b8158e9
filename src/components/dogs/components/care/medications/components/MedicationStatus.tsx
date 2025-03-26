@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { MedicationStatus } from '@/utils/medicationUtils';
 import { MedicationStatusDisplayProps } from '../types/medicationTypes';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SkeletonLoader } from '@/components/ui/standardized';
 
 const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({ 
   status, 
@@ -12,7 +12,7 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
   isLoading = false
 }) => {
   if (isLoading) {
-    return <Skeleton className="h-5 w-20" />;
+    return <SkeletonLoader className="h-5 w-20" />;
   }
   
   const getStatusLabel = () => {

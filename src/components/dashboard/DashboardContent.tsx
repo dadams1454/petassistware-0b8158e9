@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
 import { DashboardData, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
@@ -10,6 +10,7 @@ import DailyCareTab from './tabs/DailyCareTab';
 import GroomingTab from './tabs/GroomingTab';
 import MedicationsTab from './tabs/MedicationsTab';
 import CareLogDialog from './dialogs/CareLogDialog';
+import PottyBreaksTab from './tabs/PottyBreaksTab';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
 
@@ -32,6 +33,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { toast } = useToast();
   const pendingRefreshRef = useRef(false);
+  const initialMount = useRef(true);
 
   // Use the centralized refresh context
   const { 
@@ -43,7 +45,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   const { 
     data: dogStatuses, 
     isLoading: isRefreshing, 
-    refresh: handleRefreshDogs 
+    refresh: handleRefreshDogs,
+    error: dogsError
   } = useRefreshData({
     key: 'allDogs',
     fetchData: async () => {
@@ -52,6 +55,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     dependencies: [currentDate],
     loadOnMount: true
   });
+
+  // Handle initial mount with controlled animation delay
+  useEffect(() => {
+    if (initialMount.current) {
+      initialMount.current = false;
+    }
+  }, []);
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -98,11 +108,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     });
     
     // Use the refresh function from the hook
-    handleRefreshDogs(false);
+    handleRefreshDogs(true);
   };
 
   return (
-    <>
+    <div className={`transition-opacity duration-300 ${initialMount.current ? 'opacity-0' : 'opacity-100'}`}>
       <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
         <TabsList 
           activeTab={activeTab}
@@ -140,6 +150,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             onRefreshDogs={handleManualRefresh}
           />
         </TabsContent>
+        
+        <TabsContent value="pottybreaks">
+          <PottyBreaksTab onRefreshDogs={handleManualRefresh} />
+        </TabsContent>
       </Tabs>
 
       {/* Daily Care Log Dialog */}
@@ -150,7 +164,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         onDogSelected={handleDogSelected}
         onSuccess={handleCareLogSuccess}
       />
-    </>
+    </div>
   );
 };
 
