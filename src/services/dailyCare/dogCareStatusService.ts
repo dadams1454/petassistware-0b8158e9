@@ -91,6 +91,13 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
       
+      // Create a proper last_care object that matches the expected type
+      const lastCare = sortedPottyBreaks.length > 0 ? {
+        category: 'potty',
+        task_name: 'Potty Break',
+        timestamp: sortedPottyBreaks[0].timestamp
+      } : null;
+      
       return {
         dog_id: dog.id,
         dog_name: dog.name,
@@ -106,7 +113,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         feeding_times_today: dogFeedingActivities.map(fa => fa.timestamp) || [],
         potty_times_today: dogPottyBreaks.map(pb => pb.timestamp) || [],
         medication_times_today: [],
-        last_care: sortedPottyBreaks.length > 0 ? sortedPottyBreaks[0].timestamp : null,
+        last_care: lastCare,
         flags: [] as DogFlag[],
         registration_number: dog.registration_number,
         microchip_number: dog.microchip_number,

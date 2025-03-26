@@ -107,3 +107,61 @@ export const getTimeSince = (dateString: string | null | undefined): string => {
   const diffDays = Math.floor(diffHours / 24);
   return `${diffDays}d ago`;
 };
+
+/**
+ * Get care type icon component name for Lucide icons
+ */
+export const getCareTypeIcon = (category: string): JSX.Element => {
+  const iconName = getCategoryIcon(category);
+  // This returns a string that can be used to display the right icon
+  // in the component that uses this function
+  return <span className={`lucide-${iconName}`} />;
+};
+
+/**
+ * Get care type color based on category
+ */
+export const getCareTypeColor = (category: string): string => {
+  switch (category) {
+    case 'pottybreaks':
+    case 'potty':
+      return 'green';
+    case 'feeding':
+      return 'orange';
+    case 'medication':
+      return 'blue';
+    case 'grooming':
+      return 'purple';
+    case 'training':
+      return 'yellow';
+    case 'exercise':
+      return 'red';
+    case 'health':
+      return 'blue';
+    case 'observation':
+      return 'gray';
+    default:
+      return 'slate';
+  }
+};
+
+/**
+ * Format relative time string
+ */
+export const getRelativeTimeString = (date: Date): string => {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} minutes ago`;
+  
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};

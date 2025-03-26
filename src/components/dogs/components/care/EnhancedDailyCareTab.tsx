@@ -11,9 +11,18 @@ import { Button } from '@/components/ui/button';
 import {
   Clock, 
   RefreshCw, 
-  AlertCircle
+  AlertCircle,
+  PawPrint,
+  Utensils,
+  Pill,
+  Scissors,
+  Dumbbell,
+  Activity,
+  Stethoscope,
+  Eye,
+  CheckCircle
 } from 'lucide-react';
-import { getCareTypeIcon, getCareTypeColor, getRelativeTimeString } from './utils/careUtils';
+import { getCareCategory, getCareTypeColor, getRelativeTimeString } from './utils/careUtils';
 
 interface EnhancedDailyCareTabProps {
   dogId: string;
@@ -97,6 +106,31 @@ const EnhancedDailyCareTab: React.FC<EnhancedDailyCareTabProps> = ({ dogId, dogN
     );
   }
   
+  // Function to get the appropriate icon component based on care category
+  const getCareTypeIcon = (category: string) => {
+    switch (category) {
+      case 'pottybreaks':
+      case 'potty':
+        return <PawPrint />;
+      case 'feeding':
+        return <Utensils />;
+      case 'medication':
+        return <Pill />;
+      case 'grooming':
+        return <Scissors />;
+      case 'training':
+        return <Dumbbell />;
+      case 'exercise':
+        return <Activity />;
+      case 'health':
+        return <Stethoscope />;
+      case 'observation':
+        return <Eye />;
+      default:
+        return <CheckCircle />;
+    }
+  };
+  
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -125,7 +159,7 @@ const EnhancedDailyCareTab: React.FC<EnhancedDailyCareTabProps> = ({ dogId, dogN
             return (
               <div key={log.id} className="p-4 flex items-start">
                 <div className={`w-10 h-10 rounded-full mr-3 flex items-center justify-center bg-${careColor}-100 text-${careColor}-500`}>
-                  <span className="lucide">{careIcon}</span>
+                  {careIcon}
                 </div>
                 <div className="flex-grow">
                   <div className="flex justify-between">
