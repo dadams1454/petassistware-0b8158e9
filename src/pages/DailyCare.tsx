@@ -1,18 +1,21 @@
+
 import React from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Dog } from 'lucide-react';
 import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
 import { EmptyState } from '@/components/ui/standardized';
+import { useNavigate } from 'react-router-dom';
 
 const DailyCare: React.FC = () => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { currentDate } = useRefresh();
+  const navigate = useNavigate();
 
   // Use the centralized refresh hook
   const { 
@@ -27,6 +30,10 @@ const DailyCare: React.FC = () => {
     dependencies: [currentDate],
     loadOnMount: true
   });
+
+  const handleNavigateToDogs = () => {
+    navigate('/dogs');
+  };
 
   const content = (
     <>
@@ -46,7 +53,13 @@ const DailyCare: React.FC = () => {
         </Button>
       </div>
 
-      {dogStatuses && dogStatuses.length > 0 ? (
+      {isLoading ? (
+        <Card className="p-8">
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        </Card>
+      ) : dogStatuses && dogStatuses.length > 0 ? (
         <div className="space-y-6">
           {/* Reminder Card */}
           <PottyBreakReminderCard 
@@ -73,11 +86,12 @@ const DailyCare: React.FC = () => {
       ) : (
         <Card className="p-8">
           <EmptyState
+            icon={<Dog className="h-12 w-12 text-muted-foreground" />}
             title="No Dogs Found"
-            description="No dogs found. Please refresh or add dogs to the system."
+            description="Add dogs to your kennel to start tracking their daily care activities."
             action={{
-              label: isLoading ? "Refreshing..." : "Refresh Dogs",
-              onClick: () => handleRefresh(true)
+              label: "Add Dogs",
+              onClick: handleNavigateToDogs
             }}
           />
         </Card>

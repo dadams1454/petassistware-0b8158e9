@@ -1,143 +1,93 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+
+import { useState, useCallback, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { fetchAllDogsWithCareStatus } from '@/services/dailyCare/dogCareStatusService';
 import { DogCareStatus } from '@/types/dailyCare';
-import { useCacheState } from './useCacheState';
+import { fetchAllDogsWithCareStatus } from '@/services/dailyCare/dogCareStatusService';
 
 export const useDogCareStatus = () => {
   const [loading, setLoading] = useState(false);
   const [dogStatuses, setDogStatuses] = useState<DogCareStatus[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { getCachedStatus, setCachedStatus, clearCache } = useCacheState();
   
-  // Use a ref to track if an initial fetch has occurred
-  const initialFetchDone = useRef(false);
-  const fetchPromiseRef = useRef<Promise<DogCareStatus[]> | null>(null);
-  const fetchInProgressRef = useRef(false);
+  // Use refs to improve caching and prevent duplicate requests
+  const cacheRef = useRef<{[key: string]: {data: DogCareStatus[], timestamp: number}}>({});
+  const requestInProgressRef = useRef<{[key: string]: boolean}>({});
+  
+  // Cache expiration time in milliseconds (5 minutes)
+  const CACHE_EXPIRATION = 5 * 60 * 1000;
+  
+  // Function to clear the cache
+  const clearCache = useCallback(() => {
+    cacheRef.current = {};
+    console.log('Cache cleared');
+  }, []);
 
-  const fetchAllDogsWithCareStatus = useCallback(async (date = new Date(), forceRefresh = false): Promise<DogCareStatus[]> => {
-    // Convert date to string for caching
-    const dateString = date.toISOString().split('T')[0];
+  // Enhanced fetchDogStatuses with caching
+  const fetchDogStatuses = useCallback(async (date = new Date(), forceRefresh = false): Promise<DogCareStatus[]> => {
+    // Create a cache key based on the date
+    const cacheKey = date.toISOString().split('T')[0];
     
-    // Prevent multiple simultaneous fetches unless forceRefresh is true
-    if (fetchInProgressRef.current && !forceRefresh) {
+    // Check if request is already in progress for this date
+    if (requestInProgressRef.current[cacheKey]) {
       console.log('🔄 Fetch already in progress, skipping duplicate request');
-      return fetchPromiseRef.current || Promise.resolve([]);
-    }
-    
-    // If we're already fetching, return the existing promise to prevent duplicate requests
-    if (fetchPromiseRef.current && !forceRefresh) {
-      console.log('🔄 Already fetching dogs, returning existing promise');
-      return fetchPromiseRef.current;
-    }
-    
-    // Always fetch on force refresh
-    if (forceRefresh) {
-      console.log('🔄 Force refreshing dog statuses');
-      setLoading(true);
-      setError(null);
-      fetchInProgressRef.current = true;
-      
-      const fetchPromise = fetchAllDogsWithCareStatus(date)
-        .then(statuses => {
-          console.log(`✅ Fetched ${statuses.length} dogs successfully`);
-          
-          // Cache and update state
-          setCachedStatus(dateString, statuses);
-          setDogStatuses(statuses);
-          initialFetchDone.current = true;
-          return statuses;
-        })
-        .catch(error => {
-          console.error('❌ Error during forced refresh:', error);
-          setError('Failed to load dogs. Please try again.');
-          toast({
-            title: 'Error',
-            description: 'Failed to load dogs. Please try again.',
-            variant: 'destructive',
-          });
-          return [] as DogCareStatus[];
-        })
-        .finally(() => {
-          setLoading(false);
-          fetchPromiseRef.current = null;
-          fetchInProgressRef.current = false;
-        });
-      
-      fetchPromiseRef.current = fetchPromise;
-      return fetchPromise;
-    }
-    
-    // Use existing data if available and not forcing a refresh
-    if (initialFetchDone.current && dogStatuses.length > 0) {
-      console.log('📋 Using existing dog statuses in memory:', dogStatuses.length);
       return dogStatuses;
     }
     
-    // Check cache
-    const cachedData = getCachedStatus(dateString);
-    if (cachedData && cachedData.length > 0) {
-      console.log('📋 Using cached dog data', cachedData.length);
-      setDogStatuses(cachedData);
-      initialFetchDone.current = true;
-      return cachedData;
+    // Check cache if we're not forcing a refresh
+    if (!forceRefresh && cacheRef.current[cacheKey]) {
+      const cachedData = cacheRef.current[cacheKey];
+      const now = Date.now();
+      
+      // Use cached data if it's not expired
+      if (now - cachedData.timestamp < CACHE_EXPIRATION) {
+        console.log('🔄 Using cached dog statuses for', cacheKey);
+        return cachedData.data;
+      }
     }
     
-    // If we get here, we need to fetch from server
+    if (forceRefresh) {
+      console.log('🔄 Force refreshing dog statuses');
+    }
+    
+    // Set loading state and mark request as in progress
     setLoading(true);
-    setError(null);
-    fetchInProgressRef.current = true;
+    requestInProgressRef.current[cacheKey] = true;
     
-    const fetchPromise = fetchAllDogsWithCareStatus(date)
-      .then(statuses => {
-        console.log(`✅ Fetched ${statuses.length} dogs with names:`, statuses.map(d => d.dog_name).join(', '));
-        
-        // Cache and update state
-        setCachedStatus(dateString, statuses);
-        setDogStatuses(statuses);
-        initialFetchDone.current = true;
-        return statuses;
-      })
-      .catch(error => {
-        console.error('❌ Error fetching dogs:', error);
-        setError('Failed to load dogs. Please try again.');
-        toast({
-          title: 'Error',
-          description: 'Failed to load dogs. Please try again.',
-          variant: 'destructive',
-        });
-        return [] as DogCareStatus[];
-      })
-      .finally(() => {
-        setLoading(false);
-        fetchPromiseRef.current = null;
-        fetchInProgressRef.current = false;
+    try {
+      const fetchedDogStatuses = await fetchAllDogsWithCareStatus(date);
+      
+      // Update the cache
+      cacheRef.current[cacheKey] = {
+        data: fetchedDogStatuses,
+        timestamp: Date.now()
+      };
+      
+      // Update the state
+      setDogStatuses(fetchedDogStatuses);
+      console.log(`✅ Fetched ${fetchedDogStatuses.length} dogs successfully`);
+      
+      return fetchedDogStatuses;
+    } catch (error) {
+      console.error('Error fetching dog statuses:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch dog care statuses',
+        variant: 'destructive',
       });
-    
-    fetchPromiseRef.current = fetchPromise;
-    return fetchPromise;
-  }, [toast, getCachedStatus, setCachedStatus, dogStatuses]);
-
-  // Initial fetch only once on mount
-  useEffect(() => {
-    if (!initialFetchDone.current && !fetchInProgressRef.current) {
-      console.log('🚀 Initial fetch on hook mount (once only)');
-      fetchAllDogsWithCareStatus(new Date(), true)
-        .then(dogs => {
-          console.log(`✅ Initial fetch complete: ${dogs.length} dogs loaded`);
-        })
-        .catch(error => {
-          console.error('❌ Error during initial fetch:', error);
-        });
+      return [];
+    } finally {
+      setLoading(false);
+      // Remove the in-progress flag with a small delay to prevent immediate duplicate requests
+      setTimeout(() => {
+        requestInProgressRef.current[cacheKey] = false;
+      }, 300);
     }
-  }, [fetchAllDogsWithCareStatus]);
+  }, [dogStatuses, toast]);
 
   return {
     loading,
     dogStatuses,
-    error,
-    fetchAllDogsWithCareStatus,
+    fetchAllDogsWithCareStatus: fetchDogStatuses,
     clearCache
   };
 };

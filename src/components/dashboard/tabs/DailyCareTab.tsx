@@ -2,17 +2,19 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { RefreshCw, Users } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DogCareCard } from '@/components/dashboard/DogCareCard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
 import PottyBreakGroupSelector from '@/components/dogs/components/care/potty/PottyBreakGroupSelector';
-import { useToast as useToastHook } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
+import { DogCareCard } from '@/components/dashboard/DogCareCard';
 import { recordCareActivity } from '@/services/careService';
+import { EmptyState } from '@/components/ui/standardized';
+import { Plus, Dog } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
@@ -25,10 +27,10 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   isRefreshing = false,
   currentDate = new Date()
 }) => {
-  const { toast } = useToastHook();
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [view, setView] = useState<string>('table'); // Default to table view
   const { fetchAllDogsWithCareStatus } = useDailyCare();
+  const navigate = useNavigate();
   
   // Fetch all dogs for care dashboard
   const { data: dogs, isLoading, refetch } = useQuery({
@@ -79,15 +81,13 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
       
       await Promise.all(promises);
       
-      // Invalidate queries to update UI
-      queryClient.invalidateQueries({ queryKey: ['careActivities'] });
-      queryClient.invalidateQueries({ queryKey: ['lastCareActivity'] });
-      queryClient.invalidateQueries({ queryKey: ['dogCareStatuses'] });
-      
       toast({
         title: 'Potty Break Recorded',
         description: `Potty break recorded for ${dogIds.length} dogs.`,
       });
+      
+      // Refresh data
+      refetch();
     } catch (error) {
       console.error('Error recording group potty break:', error);
       toast({
@@ -98,13 +98,13 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     }
   };
   
+  const handleNavigateToDogs = () => {
+    navigate('/dogs');
+  };
+  
   const handleRefresh = async () => {
     try {
       await refetch();
-      // Also invalidate care activities
-      queryClient.invalidateQueries({ queryKey: ['careActivities'] });
-      queryClient.invalidateQueries({ queryKey: ['lastCareActivity'] });
-      queryClient.invalidateQueries({ queryKey: ['dogCareStatuses'] });
       toast({
         title: 'Refreshed',
         description: 'Dog data has been refreshed.',
@@ -117,6 +117,9 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
       });
     }
   };
+  
+  const showLoading = isLoading || isRefreshing || isStatusesLoading;
+  const noDogs = (!dogs || dogs.length === 0) && !showLoading;
   
   return (
     <div className="space-y-6">
@@ -134,16 +137,30 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
             </TabsList>
           </Tabs>
           <Button onClick={handleRefresh} variant="outline" size="sm" className="gap-2">
-            <RefreshCw className={`h-4 w-4 ${isLoading || isRefreshing || isStatusesLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${showLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         </div>
       </div>
       
-      {isLoading || isRefreshing || (view !== 'cards' && isStatusesLoading) ? (
+      {showLoading ? (
         <div className="flex justify-center p-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
+      ) : noDogs ? (
+        <Card>
+          <CardContent className="pt-6">
+            <EmptyState
+              icon={<Dog className="h-12 w-12 text-muted-foreground" />}
+              title="No Dogs Found"
+              description="Add dogs to your kennel to start tracking their daily care activities."
+              action={{
+                label: "Add Dogs",
+                onClick: handleNavigateToDogs
+              }}
+            />
+          </CardContent>
+        </Card>
       ) : (
         <Tabs value={view} className="w-full">
           <TabsContent value="table" className="w-full">
@@ -157,10 +174,10 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>No Dogs Found</CardTitle>
+                  <CardTitle>No Care Data Found</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Add dogs to start tracking their care activities.</p>
+                  <p className="text-muted-foreground">No care data available for your dogs.</p>
                   <Button onClick={onRefreshDogs} className="mt-4">Try Again</Button>
                 </CardContent>
               </Card>
@@ -193,7 +210,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
           
           <TabsContent value="cards">
             {dogs && dogs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {dogs.map((dog) => (
                   <DogCareCard key={dog.id} dog={dog} />
                 ))}
@@ -205,7 +222,10 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">Add dogs to start tracking their care activities.</p>
-                  <Button onClick={onRefreshDogs} className="mt-4">Try Again</Button>
+                  <Button onClick={handleNavigateToDogs} className="mt-4 gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Dogs
+                  </Button>
                 </CardContent>
               </Card>
             )}
