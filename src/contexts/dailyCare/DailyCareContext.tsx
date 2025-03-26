@@ -22,6 +22,7 @@ export const DailyCareProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         fetchAllDogsWithCareStatus: careActions.fetchAllDogsWithCareStatus,
         dogStatuses: careActions.dogStatuses,
         loading: careActions.loading,
+        fetchRecentCareLogsByCategory: careActions.fetchRecentCareLogsByCategory,
       }}
     >
       {children}
