@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -84,7 +83,14 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({ dogId, onSucc
   const onSubmit = async (values: FormValues) => {
     try {
       setLoading(true);
-      await createFeedingSchedule(values);
+      
+      // Make sure dog_id is set explicitly
+      const scheduleData = {
+        ...values,
+        dog_id: dogId // Ensure dog_id is not optional
+      };
+      
+      await createFeedingSchedule(scheduleData);
       toast({
         title: 'Schedule created',
         description: 'Feeding schedule has been created successfully.'

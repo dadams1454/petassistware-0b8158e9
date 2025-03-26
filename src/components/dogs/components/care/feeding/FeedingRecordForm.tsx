@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -91,10 +90,14 @@ const FeedingRecordForm: React.FC<FeedingRecordFormProps> = ({
     try {
       setLoading(true);
       
-      await recordFeeding({
+      // Make sure dog_id is included and not optional
+      const recordData = {
         ...values,
+        dog_id: dogId, // Explicitly set the dog_id from props
         staff_id: user.id
-      });
+      };
+      
+      await recordFeeding(recordData);
       
       toast({
         title: 'Feeding recorded',

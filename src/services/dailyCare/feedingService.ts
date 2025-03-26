@@ -78,8 +78,7 @@ export async function getFeedingHistory(filters: FeedingHistoryFilters): Promise
   try {
     let query = supabase
       .from('feeding_records')
-      .select('*, feeding_schedules(food_type, amount, unit, special_instructions)')
-      .order('timestamp', { ascending: false });
+      .select('*');
     
     if (filters.dogId) {
       query = query.eq('dog_id', filters.dogId);
@@ -97,7 +96,7 @@ export async function getFeedingHistory(filters: FeedingHistoryFilters): Promise
       query = query.eq('food_type', filters.foodType);
     }
     
-    const { data, error } = await query;
+    const { data, error } = await query.order('timestamp', { ascending: false });
     
     if (error) throw error;
     return data as FeedingRecord[] || [];

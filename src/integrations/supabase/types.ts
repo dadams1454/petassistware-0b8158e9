@@ -723,6 +723,107 @@ export type Database = {
         }
         Relationships: []
       }
+      feeding_records: {
+        Row: {
+          amount_consumed: string | null
+          amount_offered: string
+          created_at: string
+          dog_id: string
+          food_type: string
+          id: string
+          notes: string | null
+          schedule_id: string | null
+          staff_id: string
+          timestamp: string
+        }
+        Insert: {
+          amount_consumed?: string | null
+          amount_offered: string
+          created_at?: string
+          dog_id: string
+          food_type: string
+          id?: string
+          notes?: string | null
+          schedule_id?: string | null
+          staff_id: string
+          timestamp?: string
+        }
+        Update: {
+          amount_consumed?: string | null
+          amount_offered?: string
+          created_at?: string
+          dog_id?: string
+          food_type?: string
+          id?: string
+          notes?: string | null
+          schedule_id?: string | null
+          staff_id?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feeding_records_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feeding_records_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "feeding_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feeding_schedules: {
+        Row: {
+          active: boolean
+          amount: string
+          created_at: string
+          dog_id: string
+          food_type: string
+          id: string
+          schedule_time: string[]
+          special_instructions: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          amount: string
+          created_at?: string
+          dog_id: string
+          food_type: string
+          id?: string
+          schedule_time: string[]
+          special_instructions?: string | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          amount?: string
+          created_at?: string
+          dog_id?: string
+          food_type?: string
+          id?: string
+          schedule_time?: string[]
+          special_instructions?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feeding_schedules_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_records: {
         Row: {
           administration_route: string | null
