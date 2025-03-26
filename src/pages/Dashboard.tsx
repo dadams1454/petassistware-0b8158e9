@@ -4,11 +4,11 @@ import PageContainer from '@/components/common/PageContainer';
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import { useDashboardData } from '@/components/dashboard/useDashboardData';
 import { DailyCareProvider } from '@/contexts/dailyCare';
-import { PageHeader, LoadingState } from '@/components/ui/standardized';
+import { PageHeader, LoadingState, ErrorState } from '@/components/ui/standardized';
 
 const Dashboard: React.FC = () => {
   // Use the hook to fetch all dashboard data - using the centralized refresh system
-  const { isLoading, stats, events, activities } = useDashboardData();
+  const { isLoading, error, stats, events, activities, refresh } = useDashboardData();
   
   return (
     <PageContainer>
@@ -21,6 +21,12 @@ const Dashboard: React.FC = () => {
         <DailyCareProvider>
           {isLoading ? (
             <LoadingState message="Loading dashboard data..." />
+          ) : error ? (
+            <ErrorState 
+              title="Error Loading Dashboard" 
+              message="There was a problem loading the dashboard data. Please try again."
+              onRetry={refresh}
+            />
           ) : (
             <DashboardContent 
               isLoading={isLoading}

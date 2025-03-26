@@ -4,11 +4,14 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import { DogCareStatus, DailyCarelog } from '@/types/dailyCare';
 import { MedicationInfo, ProcessedMedicationLogs } from '../types/medicationTypes';
 import { MedicationFrequency } from '@/utils/medicationUtils';
+import { useToast } from '@/components/ui/use-toast';
 
 export const useMedicationLogs = (dogs: DogCareStatus[]) => {
   const [recentLogs, setRecentLogs] = useState<{[dogId: string]: DailyCarelog[]}>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { fetchRecentCareLogsByCategory } = useDailyCare();
+  const { toast } = useToast();
   
   // Get medication logs for each dog
   useEffect(() => {
@@ -16,23 +19,36 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
       if (dogs.length === 0) return;
       
       setIsLoading(true);
+      setError(null);
       const medicationsByDog: {[dogId: string]: DailyCarelog[]} = {};
       
-      for (const dog of dogs) {
-        try {
-          const medications = await fetchRecentCareLogsByCategory(dog.dog_id, 'medications', 10);
-          medicationsByDog[dog.dog_id] = medications;
-        } catch (error) {
-          console.error(`Error fetching medications for dog ${dog.dog_id}:`, error);
+      try {
+        for (const dog of dogs) {
+          try {
+            const medications = await fetchRecentCareLogsByCategory(dog.dog_id, 'medications', 10);
+            medicationsByDog[dog.dog_id] = medications;
+          } catch (error) {
+            console.error(`Error fetching medications for dog ${dog.dog_id}:`, error);
+            // Continue with other dogs even if one fails
+          }
         }
+        
+        setRecentLogs(medicationsByDog);
+      } catch (error) {
+        console.error('Error fetching medication logs:', error);
+        setError('Failed to fetch medication data. Please try again later.');
+        toast({
+          title: "Error loading medications",
+          description: "There was a problem loading the medication data. Some information may be unavailable.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-      
-      setRecentLogs(medicationsByDog);
-      setIsLoading(false);
     };
     
     fetchDogMedications();
-  }, [dogs, fetchRecentCareLogsByCategory]);
+  }, [dogs, fetchRecentCareLogsByCategory, toast]);
 
   // Process medication logs into structured data
   const processedMedicationLogs: ProcessedMedicationLogs = {};
@@ -100,6 +116,7 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
   return {
     recentLogs,
     isLoading,
+    error,
     processedMedicationLogs
   };
 };

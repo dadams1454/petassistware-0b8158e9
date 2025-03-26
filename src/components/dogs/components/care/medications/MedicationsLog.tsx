@@ -3,15 +3,16 @@ import React from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pill } from 'lucide-react';
+import { Pill, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useMedicationLogs } from './hooks/useMedicationLogs';
 import MedicationCard from './components/MedicationCard';
 import { MedicationsLogProps } from './types/medicationTypes';
+import { ErrorState, LoadingState } from '@/components/ui/standardized';
 
 const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
   const { toast } = useToast();
-  const { processedMedicationLogs, isLoading } = useMedicationLogs(dogs);
+  const { processedMedicationLogs, isLoading, error } = useMedicationLogs(dogs);
   
   // Handle success callback
   const handleMedicationLogged = () => {
@@ -40,17 +41,15 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
       
       <CardContent>
         {isLoading ? (
-          <div className="text-center p-6">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-2 text-muted-foreground">Loading medication data...</p>
-          </div>
+          <LoadingState message="Loading medication data..." />
+        ) : error ? (
+          <ErrorState 
+            title="Could not load medications" 
+            message={error}
+            onRetry={onRefresh} 
+          />
         ) : dogs.length === 0 ? (
-          <div className="text-center p-4">
-            <p className="text-muted-foreground">No dogs available for medication tracking.</p>
-            <Button onClick={onRefresh} variant="outline" className="mt-2">
-              Refresh Dogs
-            </Button>
-          </div>
+          <NoDogsMessage onRefresh={onRefresh} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {dogs.map(dog => {
@@ -72,5 +71,15 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
     </Card>
   );
 };
+
+// Internal component for no dogs message to avoid import cycle
+const NoDogsMessage = ({ onRefresh }: { onRefresh: () => void }) => (
+  <div className="text-center p-4">
+    <p className="text-muted-foreground">No dogs available for medication tracking.</p>
+    <Button onClick={onRefresh} variant="outline" className="mt-2">
+      Refresh Dogs
+    </Button>
+  </div>
+);
 
 export default MedicationsLog;
