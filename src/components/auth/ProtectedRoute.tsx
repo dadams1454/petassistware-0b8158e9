@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth, UserRole } from '@/contexts/AuthProvider';
 import { AuthLoadingState, UnauthorizedState } from '@/components/ui/standardized';
@@ -22,6 +22,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, loading, userRole } = useAuth();
   const location = useLocation();
 
+  console.log('ProtectedRoute:', { loading, user: !!user, userRole, requiredRoles });
+
   // If authentication is still loading, show the loading state
   if (loading) {
     return <AuthLoadingState fullPage={true} />;
@@ -29,6 +31,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If user is not authenticated, redirect to login page
   if (!user) {
+    console.log('User not authenticated, redirecting to:', fallbackPath);
     return <Navigate to={fallbackPath} state={{ from: location.pathname }} replace />;
   }
 
@@ -38,6 +41,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const hasRequiredRole = requiredRoles.includes(userRole);
     
     if (!hasRequiredRole) {
+      console.log('User lacks required role. Has:', userRole, 'Needs one of:', requiredRoles);
       // Show unauthorized state or redirect
       return (
         <UnauthorizedState 
@@ -49,6 +53,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }
 
+  console.log('User authorized, rendering protected content');
   // If user is authenticated and has required role (if any), render the protected content or the Outlet
   return <>{children || <Outlet />}</>;
 };

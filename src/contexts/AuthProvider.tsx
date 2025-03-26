@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 
@@ -29,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Function to fetch user role and tenant from breeder_profiles
   const fetchUserRole = async (userId: string) => {
     try {
+      console.log('Fetching user role for userId:', userId);
       const { data, error } = await supabase
         .from('breeder_profiles')
         .select('role, id')
@@ -42,9 +43,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Set the role - default to 'viewer' if not found
       if (data) {
+        console.log('User role data:', data);
         setUserRole((data.role as UserRole) || 'viewer');
         setTenantId(data.id);
       } else {
+        console.log('No user role found, defaulting to viewer');
         setUserRole('viewer');
       }
     } catch (error) {
@@ -53,14 +56,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const refreshSession = useCallback(async () => {
+    console.log('Refreshing session...');
+    setLoading(true);
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log('Session refresh result:', session, error);
+      
+      if (error) throw error;
+      
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      // Also refresh the user role if we have a session
+      if (session?.user) {
+        await fetchUserRole(session.user.id);
+      } else {
+        // Clear role and tenant if no session
+        setUserRole(null);
+        setTenantId(null);
+      }
+    } catch (error) {
+      console.error('Error refreshing session:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     async function loadSession() {
+      console.log('AuthProvider: Loading session...');
       setLoading(true);
       try {
         // First, set up the auth state change listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           async (event, newSession) => {
-            console.log('Auth state changed:', event);
+            console.log('Auth state changed:', event, newSession?.user?.id);
             
             setSession(newSession);
             setUser(newSession?.user ?? null);
@@ -88,6 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw error;
         }
         
+        console.log('Current session:', currentSession?.user?.id);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
@@ -145,25 +177,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error signing out:', error);
       return Promise.reject(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshSession = async () => {
-    setLoading(true);
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      // Also refresh the user role if we have a session
-      if (session?.user) {
-        await fetchUserRole(session.user.id);
-      }
-    } catch (error) {
-      console.error('Error refreshing session:', error);
     } finally {
       setLoading(false);
     }

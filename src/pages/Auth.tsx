@@ -14,9 +14,13 @@ const Auth: React.FC = () => {
   useEffect(() => {
     // Check if user is already signed in
     const checkUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        navigate('/dashboard');
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
       }
     };
     
@@ -25,6 +29,7 @@ const Auth: React.FC = () => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session);
         if (session) {
           navigate('/dashboard');
         }
