@@ -1,97 +1,104 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
 
-// Define the type for refresh status
-type RefreshStatus = {
-  [key: string]: boolean;
-};
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { format, addDays, subDays, isSameDay } from 'date-fns';
+import { toast } from '@/components/ui/use-toast';
 
-// Define the context props
-interface RefreshContextProps {
-  refreshAll: (showToast?: boolean) => Promise<void>;
-  refreshSpecific: <T>(key: string, fetchFunction: () => Promise<T>, showToast?: boolean) => Promise<T | null>;
-  refreshStatus: RefreshStatus;
-  formatTimeRemaining: (lastRefreshTime: number) => string;
+interface RefreshContextValue {
+  refreshCounter: number;
+  triggerRefresh: () => void;
+  dateOffset: number;
   currentDate: Date;
+  setDateOffset: (offset: number) => void;
+  formatTimeRemaining: (targetDate: Date) => string;
+  nextRefreshTime: Date | null;
 }
 
-// Create the context with default values
-const RefreshContext = createContext<RefreshContextProps>({
-  refreshAll: async () => {},
-  refreshSpecific: async () => null,
-  refreshStatus: {},
-  formatTimeRemaining: () => '',
-  currentDate: new Date(),
-});
+const RefreshContext = createContext<RefreshContextValue | undefined>(undefined);
 
-// Hook to use the context
-export const useRefresh = () => useContext(RefreshContext);
+interface RefreshProviderProps {
+  children: ReactNode;
+}
 
-// Provider component
-export const RefreshProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Track refresh status for each operation
-  const [refreshStatus, setRefreshStatus] = useState<RefreshStatus>({});
-  
-  // Keep track of current date (for time-based components)
-  const [currentDate] = useState<Date>(new Date());
-  
-  // Function to refresh a specific operation
-  const refreshSpecific = useCallback(async <T,>(
-    key: string,
-    fetchFunction: () => Promise<T>,
-    showToast = false
-  ): Promise<T | null> => {
-    // Set the refresh status to true for this operation
-    setRefreshStatus(prev => ({ ...prev, [key]: true }));
+export const RefreshProvider: React.FC<RefreshProviderProps> = ({ children }) => {
+  const [refreshCounter, setRefreshCounter] = useState<number>(0);
+  const [dateOffset, setDateOffset] = useState<number>(0);
+  const [nextRefreshTime, setNextRefreshTime] = useState<Date | null>(null);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+
+  // Update current date whenever date offset changes
+  useEffect(() => {
+    const now = new Date();
+    const newDate = dateOffset === 0 ? now : dateOffset > 0 
+      ? addDays(now, dateOffset) 
+      : subDays(now, Math.abs(dateOffset));
     
-    try {
-      console.log(`[REFRESH] Starting refresh for ${key}`);
-      const result = await fetchFunction();
-      console.log(`[REFRESH] Completed refresh for ${key}`);
-      return result;
-    } catch (error) {
-      console.error(`[REFRESH] Error refreshing ${key}:`, error);
-      return null;
-    } finally {
-      // Reset the refresh status
-      setRefreshStatus(prev => ({ ...prev, [key]: false }));
+    setCurrentDate(newDate);
+    console.log(`Date set to: ${format(newDate, 'yyyy-MM-dd')} (offset: ${dateOffset})`);
+  }, [dateOffset]);
+
+  // Trigger a refresh of data
+  const triggerRefresh = useCallback(() => {
+    console.log('Manual refresh triggered');
+    setRefreshCounter(prev => prev + 1);
+    setNextRefreshTime(new Date(Date.now() + 3 * 60 * 1000)); // Next auto refresh in 3 minutes
+    
+    toast({
+      title: "Data refreshed",
+      description: "Dashboard data has been updated"
+    });
+  }, []);
+
+  // Format time remaining until next refresh
+  const formatTimeRemaining = useCallback((targetDate: Date): string => {
+    const now = new Date();
+    const diffInSeconds = Math.round((targetDate.getTime() - now.getTime()) / 1000);
+    
+    if (diffInSeconds <= 0) return "refreshing...";
+    
+    const minutes = Math.floor(diffInSeconds / 60);
+    const seconds = diffInSeconds % 60;
+    
+    if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
     }
+    return `${seconds}s`;
   }, []);
-  
-  // Function to refresh all operations
-  const refreshAll = useCallback(async (showToast = false) => {
-    console.log('[REFRESH] Starting refresh for all operations');
+
+  // Auto-refresh timer
+  useEffect(() => {
+    if (!nextRefreshTime) return;
     
-    // Here you would trigger any global refresh actions
-    // This is a placeholder for now, as we don't have global actions defined yet
+    const checkRefresh = () => {
+      const now = new Date();
+      if (nextRefreshTime && now >= nextRefreshTime) {
+        setRefreshCounter(prev => prev + 1);
+        setNextRefreshTime(new Date(Date.now() + 3 * 60 * 1000)); // Next refresh in 3 minutes
+      }
+    };
     
-    console.log('[REFRESH] Completed refresh for all operations');
-  }, []);
-  
-  // Helper function to format time remaining until next refresh
-  const formatTimeRemaining = useCallback((lastRefreshTime: number): string => {
-    const secondsElapsed = Math.floor((Date.now() - lastRefreshTime) / 1000);
-    const minutesElapsed = Math.floor(secondsElapsed / 60);
-    
-    if (minutesElapsed < 1) {
-      return 'just now';
-    } else if (minutesElapsed === 1) {
-      return '1 minute ago';
-    } else {
-      return `${minutesElapsed} minutes ago`;
-    }
-  }, []);
-  
+    const interval = setInterval(checkRefresh, 10000); // Check every 10 seconds
+    return () => clearInterval(interval);
+  }, [nextRefreshTime]);
+
   return (
-    <RefreshContext.Provider
-      value={{
-        refreshAll,
-        refreshSpecific,
-        refreshStatus,
-        formatTimeRemaining,
-        currentDate,
-      }}
-    >
+    <RefreshContext.Provider value={{
+      refreshCounter,
+      triggerRefresh,
+      dateOffset,
+      currentDate,
+      setDateOffset,
+      formatTimeRemaining,
+      nextRefreshTime
+    }}>
       {children}
     </RefreshContext.Provider>
   );
+};
+
+export const useRefresh = (): RefreshContextValue => {
+  const context = useContext(RefreshContext);
+  if (context === undefined) {
+    throw new Error('useRefresh must be used within a RefreshProvider');
+  }
+  return context;
 };

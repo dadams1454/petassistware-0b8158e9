@@ -16,11 +16,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, hideNavbar = false })
     <UserPreferencesProvider>
       <SidebarProvider defaultOpen={true}>
         <div className="flex h-screen overflow-hidden bg-background">
-          {!hideNavbar && <Navbar />}
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
-            {children || <Outlet />}
-            <Toaster />
-          </main>
+          <Sidebar />
+          <SidebarInset>
+            {!hideNavbar && <Navbar />}
+            <main className="flex-1 p-4 md:p-6 overflow-auto">
+              {children || <Outlet />}
+              <Toaster />
+            </main>
+          </SidebarInset>
         </div>
       </SidebarProvider>
     </UserPreferencesProvider>
