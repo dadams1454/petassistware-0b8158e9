@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { DailyCarelog, CareTaskPreset, CareLogFormData, DogCareStatus } from '@/types/dailyCare';
 import { useCareLogs } from './hooks/useCareLogs';
 import { useCareTaskPresets } from './hooks/useCareTaskPresets';

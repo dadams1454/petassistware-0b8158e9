@@ -1,10 +1,10 @@
 
 import { useState, useCallback } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { 
-  fetchCareTaskPresets,
-  addCareTaskPreset,
-  deleteCareTaskPreset
+  fetchCareTaskPresets as fetchCareTaskPresetsService,
+  addCareTaskPreset as addCareTaskPresetService,
+  deleteCareTaskPreset as deleteCareTaskPresetService
 } from '@/services/dailyCare/careTaskPresetsService';
 import { CareTaskPreset } from '@/types/dailyCare';
 
@@ -12,11 +12,13 @@ export const useCareTaskPresets = (userId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchPresets = useCallback(async (): Promise<CareTaskPreset[]> => {
+  const fetchCareTaskPresets = useCallback(async (): Promise<CareTaskPreset[]> => {
     setLoading(true);
     try {
-      const data = await fetchCareTaskPresets(userId);
-      return data;
+      console.log('Fetching care task presets');
+      const data = await fetchCareTaskPresetsService();
+      console.log(`Received ${data?.length || 0} care task presets`);
+      return data || [];
     } catch (error) {
       console.error('Error fetching care task presets:', error);
       toast({
@@ -28,9 +30,9 @@ export const useCareTaskPresets = (userId: string | undefined) => {
     } finally {
       setLoading(false);
     }
-  }, [userId, toast]);
+  }, [toast]);
 
-  const addPreset = useCallback(async (category: string, taskName: string): Promise<CareTaskPreset | null> => {
+  const addCareTaskPreset = useCallback(async (data: Partial<CareTaskPreset>): Promise<CareTaskPreset | null> => {
     if (!userId) {
       toast({
         title: 'Authentication Required',
@@ -42,7 +44,7 @@ export const useCareTaskPresets = (userId: string | undefined) => {
 
     setLoading(true);
     try {
-      const newPreset = await addCareTaskPreset(category, taskName, userId);
+      const newPreset = await addCareTaskPresetService({ ...data, breeder_id: userId });
       
       if (newPreset) {
         toast({
@@ -65,10 +67,10 @@ export const useCareTaskPresets = (userId: string | undefined) => {
     }
   }, [userId, toast]);
 
-  const deletePreset = useCallback(async (id: string): Promise<boolean> => {
+  const deleteCareTaskPreset = useCallback(async (id: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const success = await deleteCareTaskPreset(id);
+      const success = await deleteCareTaskPresetService(id);
       
       if (success) {
         toast({
@@ -93,8 +95,8 @@ export const useCareTaskPresets = (userId: string | undefined) => {
 
   return {
     loading,
-    fetchCareTaskPresets: fetchPresets,
-    addCareTaskPreset: addPreset,
-    deleteCareTaskPreset: deletePreset
+    fetchCareTaskPresets,
+    addCareTaskPreset,
+    deleteCareTaskPreset
   };
 };
