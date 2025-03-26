@@ -2,7 +2,7 @@
 import React from 'react';
 import { TabsList as ShadcnTabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Pill } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TabsListProps {
@@ -28,6 +28,10 @@ const TabsList: React.FC<TabsListProps> = ({
         </TabsTrigger>
         <TabsTrigger value="dailycare" onClick={() => onTabChange('dailycare')}>
           Daily Care
+        </TabsTrigger>
+        <TabsTrigger value="medications" onClick={() => onTabChange('medications')}>
+          <Pill className="h-4 w-4 mr-1" />
+          Medications
         </TabsTrigger>
         <TabsTrigger value="grooming" onClick={() => onTabChange('grooming')}>
           Grooming
