@@ -1,6 +1,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { generateTimeSlots } from '../dogGroupColors';
+import { 
+  MedicationFrequency, 
+  getTimeSlotsForFrequency 
+} from '@/utils/medicationUtils';
 
 export const useTimeManager = (activeCategory = 'pottybreaks') => {
   // Get current time and hour
@@ -13,9 +17,9 @@ export const useTimeManager = (activeCategory = 'pottybreaks') => {
     if (activeCategory === 'feeding') {
       // For feeding, show morning, afternoon, and evening slots
       return ['7:00 AM (Breakfast)', '12:00 PM (Lunch)', '6:00 PM (Dinner)'];
-    } else if (activeCategory === 'medication') {
-      // For medication, show more frequent time slots
-      return ['6:00 AM', '8:00 AM', '10:00 AM', '12:00 PM', '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM', '10:00 PM'];
+    } else if (activeCategory === 'medications') {
+      // For medications, use frequency-based slots (default to monthly)
+      return getTimeSlotsForFrequency(MedicationFrequency.MONTHLY);
     } else if (activeCategory === 'exercise' || activeCategory === 'training') {
       // For exercise/training, show morning and afternoon slots
       return ['8:00 AM', '12:00 PM', '4:00 PM'];
@@ -41,7 +45,7 @@ export const useTimeManager = (activeCategory = 'pottybreaks') => {
   
   // Memo-ize the timeslot headers to prevent re-renders
   const timeSlotHeaders = useMemo(() => {
-    if (activeCategory === 'feeding' || activeCategory === 'medication' || 
+    if (activeCategory === 'feeding' || activeCategory === 'medications' || 
         activeCategory === 'exercise' || activeCategory === 'training' || 
         activeCategory === 'grooming') {
       // For these categories, we don't need current hour highlighting

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { Button } from '@/components/ui/button';
@@ -12,20 +11,51 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { Pill, Calendar, Clock, BadgeAlert } from 'lucide-react';
-import { format, parseISO, isAfter, subDays } from 'date-fns';
-import CareLogForm from '../CareLogForm';
-import { DogCareStatus } from '@/types/dailyCare';
+import { format, parseISO } from 'date-fns';
+import MedicationForm from './MedicationForm';
+import { DogCareStatus, DailyCarelog } from '@/types/dailyCare';
 import { Badge } from '@/components/ui/badge';
+import { MedicationFrequency, getMedicationStatus } from '@/utils/medicationUtils';
 
 interface MedicationsLogProps {
   dogs: DogCareStatus[];
   onRefresh: () => void;
 }
 
+interface MedicationInfo {
+  name: string;
+  lastAdministered: string | null;
+  frequency: MedicationFrequency;
+}
+
 const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [recentLogs, setRecentLogs] = useState<{[dogId: string]: DailyCarelog[]}>({});
   const { toast } = useToast();
+  const { fetchRecentCareLogsByCategory } = useDailyCare();
+  
+  // Get medication logs for each dog
+  useEffect(() => {
+    const fetchDogMedications = async () => {
+      const medicationsByDog: {[dogId: string]: DailyCarelog[]} = {};
+      
+      for (const dog of dogs) {
+        try {
+          const medications = await fetchRecentCareLogsByCategory(dog.dog_id, 'medications', 10);
+          medicationsByDog[dog.dog_id] = medications;
+        } catch (error) {
+          console.error(`Error fetching medications for dog ${dog.dog_id}:`, error);
+        }
+      }
+      
+      setRecentLogs(medicationsByDog);
+    };
+    
+    if (dogs.length > 0) {
+      fetchDogMedications();
+    }
+  }, [dogs, fetchRecentCareLogsByCategory]);
   
   // Handle medication logging
   const handleLogMedication = (dogId: string) => {
@@ -47,48 +77,46 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
   const today = new Date();
   const dateDisplay = format(today, 'EEEE, MMMM d');
   
-  // Helper to determine if medication was given in the last 30 days
-  const hasRecentPreventativeMed = (dog: DogCareStatus, medicationType: string): boolean => {
-    if (!dog.last_care) return false;
+  // Extract medications information from logs
+  const getMedicationsForDog = (dogId: string): MedicationInfo[] => {
+    const logs = recentLogs[dogId] || [];
+    const medications: {[name: string]: MedicationInfo} = {};
     
-    // Check if we have the specific medication logged
-    if (dog.last_care.category === 'medications' && 
-        dog.last_care.task_name.toLowerCase().includes(medicationType.toLowerCase())) {
+    logs.forEach(log => {
+      // Parse medication name and frequency from task_name
+      // Format is expected to be: "Medication Name (Frequency)"
+      const matchResult = log.task_name.match(/(.+) \(([A-Za-z]+)\)$/);
       
-      // Check if it was given within the last 30 days
-      const medDate = parseISO(dog.last_care.timestamp);
-      return isAfter(medDate, subDays(today, 30));
-    }
+      if (matchResult && matchResult.length === 3) {
+        const [_, name, frequencyLabel] = matchResult;
+        const frequency = frequencyLabel.toLowerCase() as MedicationFrequency;
+        
+        // Only update if this is a newer record than what we already have
+        if (!medications[name] || 
+            (medications[name] && medications[name].lastAdministered && 
+             log.timestamp > medications[name].lastAdministered!)) {
+          medications[name] = {
+            name,
+            lastAdministered: log.timestamp,
+            frequency: frequency as MedicationFrequency
+          };
+        }
+      } else {
+        // Handle legacy format (no frequency in name)
+        const name = log.task_name;
+        if (!medications[name] || 
+            (medications[name] && medications[name].lastAdministered && 
+             log.timestamp > medications[name].lastAdministered!)) {
+          medications[name] = {
+            name,
+            lastAdministered: log.timestamp,
+            frequency: MedicationFrequency.MONTHLY // Default to monthly for legacy records
+          };
+        }
+      }
+    });
     
-    return false;
-  };
-  
-  // Get medication status text and color
-  const getMedicationStatus = (dog: DogCareStatus, medicationType: string) => {
-    const hasRecent = hasRecentPreventativeMed(dog, medicationType);
-    
-    return {
-      status: hasRecent ? 'Current' : 'Due',
-      color: hasRecent ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 
-                         'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-    };
-  };
-  
-  // Check if the dog has daily medications
-  const hasDailyMeds = (dog: DogCareStatus): boolean => {
-    if (!dog.last_care) return false;
-    
-    // Check if we have any daily medication logged for today
-    if (dog.last_care.category === 'medications' && 
-        (dog.last_care.task_name.toLowerCase().includes('dewormer') || 
-         dog.last_care.task_name.toLowerCase().includes('antibiotic'))) {
-      
-      // Check if it was given today
-      const medDate = parseISO(dog.last_care.timestamp);
-      return medDate.toDateString() === today.toDateString();
-    }
-    
-    return false;
+    return Object.values(medications);
   };
   
   return (
@@ -114,9 +142,41 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {dogs.map(dog => {
-              const heartworkStatus = getMedicationStatus(dog, 'heartwork');
-              const fleaTickStatus = getMedicationStatus(dog, 'flea');
-              const hasDaily = hasDailyMeds(dog);
+              const dogMedications = getMedicationsForDog(dog.dog_id);
+              const preventativeMeds = dogMedications.filter(med => 
+                // Common preventative medications
+                med.name.toLowerCase().includes('heartworm') || 
+                med.name.toLowerCase().includes('flea') || 
+                med.name.toLowerCase().includes('tick')
+              );
+              
+              const otherMeds = dogMedications.filter(med => 
+                // Other medications (not common preventatives)
+                !med.name.toLowerCase().includes('heartworm') && 
+                !med.name.toLowerCase().includes('flea') && 
+                !med.name.toLowerCase().includes('tick')
+              );
+              
+              // Look for preventative medications to display status
+              const heartwormMed = preventativeMeds.find(med => 
+                med.name.toLowerCase().includes('heartworm')
+              );
+              const fleaTickMed = preventativeMeds.find(med => 
+                med.name.toLowerCase().includes('flea') || 
+                med.name.toLowerCase().includes('tick')
+              );
+              
+              // Get status for display
+              const heartwormStatus = heartwormMed 
+                ? getMedicationStatus(heartwormMed.lastAdministered, heartwormMed.frequency)
+                : { status: 'incomplete', statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+                
+              const fleaTickStatus = fleaTickMed
+                ? getMedicationStatus(fleaTickMed.lastAdministered, fleaTickMed.frequency)
+                : { status: 'incomplete', statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+              
+              // Check if any other medications are ongoing
+              const hasOtherMeds = otherMeds.length > 0;
               
               return (
                 <Card key={dog.dog_id} className="overflow-hidden">
@@ -154,17 +214,17 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
                             Log Medication
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-w-md">
                           {selectedDogId === dog.dog_id && (
                             <DialogHeader>
                               <DialogTitle>Log Medication for {dog.dog_name}</DialogTitle>
                             </DialogHeader>
                           )}
                           {selectedDogId === dog.dog_id && (
-                            <CareLogForm 
+                            <MedicationForm 
                               dogId={dog.dog_id} 
                               onSuccess={handleMedicationLogged} 
-                              initialCategory="medications" 
+                              onCancel={() => setDialogOpen(false)} 
                             />
                           )}
                         </DialogContent>
@@ -174,42 +234,58 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
                     <div className="mt-2 space-y-2 pt-2 border-t text-sm">
                       <div className="flex items-center justify-between">
                         <span>Heartworm Prevention:</span>
-                        <Badge className={`${heartworkStatus.color}`}>
-                          {heartworkStatus.status}
+                        <Badge className={`${heartwormStatus.statusColor}`}>
+                          {heartwormStatus.status === 'incomplete' ? 'Not Recorded' : 
+                           heartwormStatus.status === 'current' ? 'Current' : 
+                           heartwormStatus.status === 'due_soon' ? 'Due Soon' : 'Overdue'}
                         </Badge>
                       </div>
                       
                       <div className="flex items-center justify-between">
                         <span>Flea/Tick Prevention:</span>
-                        <Badge className={`${fleaTickStatus.color}`}>
-                          {fleaTickStatus.status}
+                        <Badge className={`${fleaTickStatus.statusColor}`}>
+                          {fleaTickStatus.status === 'incomplete' ? 'Not Recorded' : 
+                           fleaTickStatus.status === 'current' ? 'Current' : 
+                           fleaTickStatus.status === 'due_soon' ? 'Due Soon' : 'Overdue'}
                         </Badge>
                       </div>
                       
                       <div className="flex items-center justify-between">
-                        <span>Daily Medications:</span>
-                        <Badge className={hasDaily ? 
-                          'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 
+                        <span>Other Medications:</span>
+                        <Badge className={hasOtherMeds ? 
+                          'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' : 
                           'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'}>
-                          {hasDaily ? 'Given Today' : 'None Recorded'}
+                          {hasOtherMeds ? `${otherMeds.length} Active` : 'None'}
                         </Badge>
                       </div>
                     </div>
                     
-                    {dog.last_care && dog.last_care.category === 'medications' && (
+                    {/* Show most recent medication */}
+                    {dogMedications.length > 0 && (
                       <div className="mt-3 pt-2 border-t text-xs text-muted-foreground">
                         <div className="flex items-center">
                           <Pill className="h-3 w-3 mr-1 text-purple-500" />
                           <span className="font-medium text-purple-600">
-                            Last: {dog.last_care.task_name}
+                            Last: {dogMedications[0].name}
                           </span>
                         </div>
                         <div className="flex items-center mt-1">
                           <Clock className="h-3 w-3 mr-1" />
                           <span>
-                            {format(new Date(dog.last_care.timestamp), 'MMM d, h:mm a')}
+                            {dogMedications[0].lastAdministered ? 
+                              format(new Date(dogMedications[0].lastAdministered), 'MMM d, h:mm a') : 
+                              'No date recorded'}
                           </span>
                         </div>
+                        {dogMedications[0].frequency && (
+                          <div className="flex items-center mt-1">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            <span>
+                              {dogMedications[0].frequency.charAt(0).toUpperCase() + 
+                               dogMedications[0].frequency.slice(1)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>

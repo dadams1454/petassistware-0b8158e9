@@ -1,4 +1,3 @@
-
 export interface DailyCarelog {
   id: string;
   dog_id: string;
@@ -26,6 +25,8 @@ export interface CareLogFormData {
   timestamp: Date;
   notes?: string;
   flags?: DogFlag[];
+  frequency?: string;
+  nextDueDate?: Date;
 }
 
 export interface DogFlag {
@@ -65,4 +66,13 @@ export interface DogCareStatus {
   grooming_times_today?: any[];
   wellness_times_today?: any[];
   training_times_today?: any[];
+  // Medication specific fields
+  medication_frequency?: string;
+  medication_next_due_date?: string;
+}
+
+export interface MedicationLogFormData extends CareLogFormData {
+  frequency: string;
+  nextDueDate?: Date;
+  medicationType: 'preventative' | 'treatment';
 }
