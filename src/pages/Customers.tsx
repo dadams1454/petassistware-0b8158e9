@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CustomersList from '@/components/customers/CustomersList';
 import CustomerDialog from '@/components/customers/CustomerDialog';
 import { toast } from '@/components/ui/use-toast';
 import CustomerFilters from '@/components/customers/CustomerFilters';
+import { useNavigate } from 'react-router-dom';
 
 export type SortField = 'name' | 'date' | 'litter';
 export type SortOrder = 'asc' | 'desc';
@@ -26,6 +27,7 @@ type Customer = Tables<'customers'> & {
 };
 
 const Customers = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<CustomerFilter>({
     type: 'all',
     interestedInPuppies: null,
@@ -105,7 +107,18 @@ const Customers = () => {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Customers</h1>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold">Customers</h1>
+        </div>
         <CustomerDialog 
           trigger={
             <Button>
