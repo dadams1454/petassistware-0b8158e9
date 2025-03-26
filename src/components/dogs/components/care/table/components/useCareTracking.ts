@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { careCategories } from '../../CareCategories';
+import { careCategories } from '../../../CareCategories';
 
 export const useCareTracking = (onRefresh?: () => void) => {
   const [careLogged, setCareLogged] = useState<Record<string, boolean>>({});

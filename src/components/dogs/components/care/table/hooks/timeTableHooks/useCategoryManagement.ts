@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { careCategories } from '../../CareCategories';
+import { careCategories } from '../../../../CareCategories';
 
 /**
  * Hook to manage category changes in the time table

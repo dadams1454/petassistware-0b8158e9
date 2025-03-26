@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { careCategories } from '../../CareCategories';
+import { careCategories } from '../../../CareCategories';
 
 interface CategoryTabsProps {
   activeCategory: string;

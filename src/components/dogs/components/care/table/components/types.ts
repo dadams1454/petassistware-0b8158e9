@@ -1,6 +1,5 @@
 
 import { ReactNode } from 'react';
-import { DogFlag } from '@/types/dailyCare';
 
 export interface CareCategory {
   id: string;
@@ -8,11 +7,18 @@ export interface CareCategory {
   icon: ReactNode;
 }
 
-export interface DogCellStyles {
-  cellClassNames: string;
-  isPottyCategory: boolean;
-  isInHeat: boolean;
-  isPregnant: boolean;
-  hasIncompatibility: boolean;
-  hasSpecialAttention: boolean;
+export interface TimeSlot {
+  id: string;
+  label: string;
+  time: string;
+}
+
+export interface CareObservation {
+  id: string;
+  dogId: string;
+  timeSlot: string;
+  category: string;
+  observationType: string;
+  notes?: string;
+  timestamp: Date;
 }
