@@ -4,13 +4,15 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import DashboardOverview from './DashboardOverview';
 import { DashboardData, UpcomingEvent, RecentActivity } from '@/services/dashboardService';
 import { useDailyCare } from '@/contexts/dailyCare';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
 import GroomingTab from './tabs/GroomingTab';
 import CareLogDialog from './dialogs/CareLogDialog';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { AlertTriangle } from 'lucide-react';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -100,6 +102,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     handleRefreshDogs(false);
   };
 
+  const handleErrorReset = () => {
+    console.log('Resetting tab after error');
+    handleRefreshDogs(true);
+  };
+
   return (
     <>
       <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
@@ -111,26 +118,86 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         />
         
         <TabsContent value="overview">
-          <DashboardOverview 
-            data={stats}
-            isLoading={isLoading}
-            onCareLogClick={handleCareLogClick}
-          />
+          <ErrorBoundary 
+            name="DashboardOverview" 
+            onReset={handleErrorReset}
+            fallback={
+              <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-800 my-4">
+                <div className="flex items-center mb-2">
+                  <AlertTriangle className="h-5 w-5 mr-2" />
+                  <h3 className="font-semibold">Error in Dashboard Overview</h3>
+                </div>
+                <p className="text-sm mb-2">There was a problem loading the dashboard overview.</p>
+                <button 
+                  onClick={handleErrorReset}
+                  className="px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm hover:bg-red-200"
+                >
+                  Try Again
+                </button>
+              </div>
+            }
+          >
+            <DashboardOverview 
+              data={stats}
+              isLoading={isLoading}
+              onCareLogClick={handleCareLogClick}
+            />
+          </ErrorBoundary>
         </TabsContent>
         
         <TabsContent value="dailycare">
-          <DailyCareTab 
-            onRefreshDogs={handleManualRefresh} 
-            isRefreshing={isRefreshing}
-            currentDate={currentDate}
-          />
+          <ErrorBoundary 
+            name="DailyCareTab" 
+            onReset={handleErrorReset}
+            fallback={
+              <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-800 my-4">
+                <div className="flex items-center mb-2">
+                  <AlertTriangle className="h-5 w-5 mr-2" />
+                  <h3 className="font-semibold">Error in Daily Care Tab</h3>
+                </div>
+                <p className="text-sm mb-2">There was a problem loading the daily care information.</p>
+                <button 
+                  onClick={handleErrorReset}
+                  className="px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm hover:bg-red-200"
+                >
+                  Try Again
+                </button>
+              </div>
+            }
+          >
+            <DailyCareTab 
+              onRefreshDogs={handleManualRefresh} 
+              isRefreshing={isRefreshing}
+              currentDate={currentDate}
+            />
+          </ErrorBoundary>
         </TabsContent>
         
         <TabsContent value="grooming">
-          <GroomingTab 
-            dogStatuses={dogStatuses || []} 
-            onRefreshDogs={handleManualRefresh}
-          />
+          <ErrorBoundary 
+            name="GroomingTab" 
+            onReset={handleErrorReset}
+            fallback={
+              <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-800 my-4">
+                <div className="flex items-center mb-2">
+                  <AlertTriangle className="h-5 w-5 mr-2" />
+                  <h3 className="font-semibold">Error in Grooming Tab</h3>
+                </div>
+                <p className="text-sm mb-2">There was a problem loading the grooming information.</p>
+                <button 
+                  onClick={handleErrorReset}
+                  className="px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm hover:bg-red-200"
+                >
+                  Try Again
+                </button>
+              </div>
+            }
+          >
+            <GroomingTab 
+              dogStatuses={dogStatuses || []} 
+              onRefreshDogs={handleManualRefresh}
+            />
+          </ErrorBoundary>
         </TabsContent>
       </Tabs>
 
