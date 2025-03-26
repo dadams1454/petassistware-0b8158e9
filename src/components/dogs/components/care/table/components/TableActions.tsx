@@ -6,7 +6,7 @@ import {
   Download, Filter, Settings 
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { careCategories } from '../../../CareCategories';
+import { careCategories } from '@/components/dogs/components/care/CareCategories';
 
 interface TableActionsProps {
   onAddGroup: () => void;

@@ -22,3 +22,12 @@ export interface CareObservation {
   notes?: string;
   timestamp: Date;
 }
+
+export interface DogCellStyles {
+  cellClassNames: string;
+  isPottyCategory: boolean;
+  isInHeat: boolean;
+  isPregnant: boolean;
+  hasIncompatibility: boolean;
+  hasSpecialAttention: boolean;
+}

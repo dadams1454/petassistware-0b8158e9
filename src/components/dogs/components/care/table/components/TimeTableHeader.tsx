@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { careCategories } from '../../../CareCategories';
+import { careCategories } from '@/components/dogs/components/care/CareCategories';
 import CategoryTabs from './CategoryTabs';
 
 interface TimeTableHeaderProps {
