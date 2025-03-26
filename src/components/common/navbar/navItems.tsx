@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Home,
@@ -60,10 +59,22 @@ export const getNavItems = (): NavItem[] => [
 ];
 
 export const filterNavItemsByRole = (items: NavItem[], userRole: string | null): NavItem[] => {
-  return userRole
-    ? items.filter((item) => {
-        if (!item.requiredRoles) return true;
-        return item.requiredRoles.includes(userRole);
-      })
-    : items;
+  // If no role is provided, show items with no role requirements
+  if (!userRole) {
+    return items.filter(item => !item.requiredRoles || item.requiredRoles.length === 0);
+  }
+  
+  // Return all items if user is admin
+  if (userRole === 'admin') {
+    return items;
+  }
+  
+  // Filter based on role
+  return items.filter(item => {
+    // If no required roles, show the item to everyone
+    if (!item.requiredRoles) return true;
+    
+    // Otherwise, check if user's role is in the required roles
+    return item.requiredRoles.includes(userRole);
+  });
 };

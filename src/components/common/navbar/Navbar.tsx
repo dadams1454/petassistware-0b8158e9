@@ -10,8 +10,10 @@ import UserMenu from './UserMenu';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
-  const { userRole } = useAuth();
+  const { user, userRole } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  console.log('Current user role:', userRole); // Debugging
 
   return (
     <nav className="bg-background border-b w-full">

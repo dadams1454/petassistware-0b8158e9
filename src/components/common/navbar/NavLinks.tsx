@@ -10,7 +10,10 @@ interface NavLinksProps {
 
 const NavLinks: React.FC<NavLinksProps> = ({ currentPath, userRole }) => {
   const navItems = getNavItems();
-  const filteredNavItems = filterNavItemsByRole(navItems, userRole);
+  
+  // This was likely the source of the issue - ensure we're properly filtering
+  // based on userRole or showing all items if no role restrictions exist
+  const filteredNavItems = filterNavItemsByRole(navItems, userRole || 'guest');
 
   return (
     <>
