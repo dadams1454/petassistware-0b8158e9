@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { DogCareStatus } from '@/types/dailyCare';
+import { DogCareStatus, DogFlag } from '@/types/dailyCare';
 
 /**
  * Fetches all dogs with their care status information for a specific date
@@ -41,10 +41,9 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
     const dogCareStatuses: DogCareStatus[] = dogs.map(dog => ({
       dog_id: dog.id,
       dog_name: dog.name,
-      dog_breed: dog.breed,
-      dog_gender: dog.gender || '',
-      dog_color: dog.color || '',
-      dog_birthdate: dog.birthdate,
+      breed: dog.breed, // Match the expected type by using 'breed' directly
+      color: dog.color || '', // Match the expected type by using 'color' directly
+      sex: dog.gender || '', // Map 'gender' to the expected 'sex' property
       dog_photo: dog.photo_url,
       dog_weight: dog.weight,
       potty_alert_threshold: dog.potty_alert_threshold,
@@ -53,7 +52,10 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
       last_feeding_time: null,
       feeding_times_today: [],
       potty_times_today: [],
-      medication_times_today: []
+      medication_times_today: [],
+      // Add the missing required properties
+      last_care: null,
+      flags: [] as DogFlag[]
     }));
     
     return dogCareStatuses;
