@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -90,11 +91,16 @@ const FeedingRecordForm: React.FC<FeedingRecordFormProps> = ({
     try {
       setLoading(true);
       
-      // Make sure dog_id is included and not optional
+      // Create the record data with all required fields
       const recordData = {
-        ...values,
-        dog_id: dogId, // Explicitly set the dog_id from props
-        staff_id: user.id
+        dog_id: dogId,
+        staff_id: user.id,
+        food_type: values.food_type, // Ensure this is included and required
+        amount_offered: values.amount_offered, // Ensure this is included and required
+        timestamp: values.timestamp,
+        schedule_id: values.schedule_id,
+        amount_consumed: values.amount_consumed || undefined,
+        notes: values.notes || undefined
       };
       
       await recordFeeding(recordData);
