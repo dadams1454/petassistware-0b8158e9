@@ -9,6 +9,7 @@ import { useMedicationLogs } from './hooks/useMedicationLogs';
 import MedicationCard from './components/MedicationCard';
 import { MedicationsLogProps } from './types/medicationTypes';
 import { ErrorState, LoadingState } from '@/components/ui/standardized';
+import NoDogsMessage from './components/NoDogsMessage';
 
 const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
   const { toast } = useToast();
@@ -71,15 +72,5 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
     </Card>
   );
 };
-
-// Internal component for no dogs message to avoid import cycle
-const NoDogsMessage = ({ onRefresh }: { onRefresh: () => void }) => (
-  <div className="text-center p-4">
-    <p className="text-muted-foreground">No dogs available for medication tracking.</p>
-    <Button onClick={onRefresh} variant="outline" className="mt-2">
-      Refresh Dogs
-    </Button>
-  </div>
-);
 
 export default MedicationsLog;

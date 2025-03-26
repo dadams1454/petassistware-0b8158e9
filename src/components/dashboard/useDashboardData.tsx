@@ -53,7 +53,8 @@ export const useDashboardData = () => {
   const { 
     data, 
     isLoading, 
-    error 
+    error, 
+    refresh 
   } = useRefreshData({
     key: 'dashboardData',
     fetchData: fetchDashboardData,
@@ -79,7 +80,8 @@ export const useDashboardData = () => {
     error,
     stats,
     events,
-    activities
+    activities,
+    refresh
   };
 };
 

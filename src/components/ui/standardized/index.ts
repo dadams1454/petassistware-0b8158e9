@@ -1,11 +1,24 @@
 
-// Export all standardized UI components
-export { default as EmptyState } from './EmptyState';
-export { default as ErrorState } from './ErrorState';
-export { default as LoadingState } from './LoadingState';
-export { default as PageHeader } from './PageHeader';
-export { default as SectionHeader } from './SectionHeader';
-export { default as ActionButton } from './ActionButton';
-export { default as ConfirmDialog } from './ConfirmDialog';
-export { default as AuthLoadingState } from './AuthLoadingState';
-export { default as UnauthorizedState } from './UnauthorizedState';
+import ActionButton from './ActionButton';
+import AuthLoadingState from './AuthLoadingState';
+import ConfirmDialog from './ConfirmDialog';
+import EmptyState from './EmptyState';
+import ErrorState from './ErrorState';
+import LoadingState from './LoadingState';
+import PageHeader from './PageHeader';
+import SectionHeader from './SectionHeader';
+import StatusBadge from './StatusBadge';
+import UnauthorizedState from './UnauthorizedState';
+
+export {
+  ActionButton,
+  AuthLoadingState,
+  ConfirmDialog,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  SectionHeader,
+  StatusBadge,
+  UnauthorizedState
+};
