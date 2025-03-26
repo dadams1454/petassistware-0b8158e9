@@ -1,5 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { recordPottyBreakAsCareLog } from '../pottyBreakIntegrationService';
 
 // Get the last potty break for a specific dog
 export const getLastDogPottyBreak = async (dogId: string): Promise<{ session_time: string } | null> => {
@@ -46,13 +46,14 @@ export const getDogsNeedingPottyBreak = async (thresholdMinutes = 300): Promise<
 };
 
 // Log a potty break for a specific dog at a specific time slot
-export const logDogPottyBreak = async (dogId: string, timeSlot: string): Promise<any> => {
+export const logDogPottyBreak = async (dogId: string, timeSlot: string, userId?: string): Promise<any> => {
   // Create a new potty break session
   const { data: sessionData, error: sessionError } = await supabase
     .from('potty_break_sessions')
     .insert({
       session_time: new Date().toISOString(),
-      notes: `Potty break at ${timeSlot}`
+      notes: `Potty break at ${timeSlot}`,
+      created_by: userId
     })
     .select()
     .single();
@@ -75,6 +76,16 @@ export const logDogPottyBreak = async (dogId: string, timeSlot: string): Promise
   if (dogError) {
     console.error('Error associating dog with potty break:', dogError);
     throw dogError;
+  }
+
+  // Also record this potty break as a care log for the dog's history
+  if (userId) {
+    try {
+      await recordPottyBreakAsCareLog(dogId, sessionData.session_time, userId, `Potty break at ${timeSlot}`);
+    } catch (careLogError) {
+      console.error('Error recording potty break as care log:', careLogError);
+      // Don't throw the error here to avoid breaking the main potty break functionality
+    }
   }
 
   return { session: sessionData, dogSession: dogData };

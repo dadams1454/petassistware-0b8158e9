@@ -1,7 +1,7 @@
-
 import { useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { logDogPottyBreak } from '@/services/dailyCare/pottyBreak/dogPottyBreakService';
+import { useAuth } from '@/contexts/AuthProvider';
 
 /**
  * Hook for handling potty break specific operations
@@ -11,6 +11,7 @@ export const usePottyBreakOperations = (
   setPottyBreaks: React.Dispatch<React.SetStateAction<Record<string, string[]>>>
 ) => {
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Handle adding a potty break with optimistic UI updates
   const addPottyBreak = useCallback((
@@ -34,7 +35,8 @@ export const usePottyBreakOperations = (
     // Queue the actual API operation
     queueOperation(async () => {
       try {
-        await logDogPottyBreak(dogId, timeSlot);
+        // Pass the user ID when logging potty breaks
+        await logDogPottyBreak(dogId, timeSlot, user?.id);
         console.log('Potty break logged successfully:', { dogId, timeSlot });
       } catch (error) {
         console.error('Error in queued potty break operation:', error);
@@ -61,7 +63,7 @@ export const usePottyBreakOperations = (
       title: 'Potty break logged',
       description: `${dogName} was taken out at ${timeSlot}`,
     });
-  }, [pottyBreaks, setPottyBreaks, toast]);
+  }, [pottyBreaks, setPottyBreaks, toast, user]);
 
   // Handle removing a potty break with optimistic UI updates
   const removePottyBreak = useCallback((
