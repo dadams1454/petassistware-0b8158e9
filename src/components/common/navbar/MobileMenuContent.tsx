@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { getNavItems, filterNavItemsByRole } from './navItems';
-import { UserMenu } from '.';
+import UserMenu from './UserMenu';
 
 interface MobileMenuContentProps {
   currentPath: string;
@@ -40,7 +40,7 @@ const MobileMenuContent: React.FC<MobileMenuContentProps> = ({
       
       <div className="pt-4 pb-3 border-t border-muted">
         <div className="px-3">
-          <UserMenu isMobile={true} />
+          <UserMenu />
         </div>
       </div>
     </div>
