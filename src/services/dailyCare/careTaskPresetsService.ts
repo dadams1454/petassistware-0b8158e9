@@ -44,7 +44,12 @@ export const addCareTaskPreset = async (
   breederId?: string
 ): Promise<CareTaskPreset | null> => {
   try {
-    let presetData: Partial<CareTaskPreset>;
+    let presetData: {
+      category: string;
+      task_name: string;
+      breeder_id?: string;
+      is_default: boolean;
+    };
     
     if (typeof categoryOrData === 'string' && taskName && breederId) {
       // Old-style call with separate parameters
@@ -56,8 +61,14 @@ export const addCareTaskPreset = async (
       };
     } else if (typeof categoryOrData === 'object') {
       // New-style call with a data object
+      if (!categoryOrData.category || !categoryOrData.task_name) {
+        throw new Error('Category and task_name are required fields');
+      }
+      
       presetData = {
-        ...categoryOrData,
+        category: categoryOrData.category,
+        task_name: categoryOrData.task_name,
+        breeder_id: categoryOrData.breeder_id,
         is_default: false
       };
     } else {
