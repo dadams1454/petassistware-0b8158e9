@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Users, Dog, Plus, Building2, Baby } from 'lucide-react';
+import { RefreshCw, Users, Dog, Plus, Building2, Baby, StickyNote } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -17,12 +16,11 @@ import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
 import { careCategories } from '@/components/dogs/components/care/CareCategories';
 import PottyBreakManager from '@/components/dogs/components/care/potty/PottyBreakManager';
-import MedicationsLog from '@/components/dogs/components/care/medications/MedicationsLog';
-import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
 import FeedingTab from '@/components/dashboard/tabs/FeedingTab';
 import PottyBreaksTab from '@/components/dashboard/tabs/PottyBreaksTab';
 import MedicationsTab from '@/components/dashboard/tabs/MedicationsTab';
 import GroomingTab from '@/components/dashboard/tabs/GroomingTab';
+import NotesTab from '@/components/dashboard/tabs/NotesTab';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
@@ -171,6 +169,13 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         return (
           <GroomingTab 
             dogStatuses={effectiveDogStatuses} 
+            onRefreshDogs={handleRefresh}
+          />
+        );
+      case 'notes':
+        return (
+          <NotesTab
+            dogStatuses={effectiveDogStatuses}
             onRefreshDogs={handleRefresh}
           />
         );

@@ -9,7 +9,8 @@ import {
   Pill, 
   LifeBuoy,
   Building2,
-  Baby
+  Baby,
+  StickyNote
 } from 'lucide-react';
 
 export const careCategories = [
@@ -47,6 +48,11 @@ export const careCategories = [
     id: 'health',
     name: 'Health',
     icon: <Heart className="h-4 w-4" />,
+  },
+  {
+    id: 'notes',
+    name: 'Notes',
+    icon: <StickyNote className="h-4 w-4" />,
   },
   {
     id: 'facility',
