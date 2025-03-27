@@ -75,12 +75,13 @@ export interface MedicationRecord extends CareRecord {
   start_date?: string;
   end_date?: string;
   next_due_date?: string;
-  medication_type: MedicationType;
+  medication_type: string;
   prescription_id?: string;
   refills_remaining?: number;
   administered_by?: string;
   administrations?: MedicationAdministration[] | string;
   timestamp: string;
+  status: MedicationStatus;
 }
 
 /**
@@ -96,7 +97,7 @@ export interface MedicationFormData {
   start_date: Date;
   end_date?: Date;
   notes?: string;
-  medication_type: MedicationType;
+  medication_type: string;
   prescription_id?: string;
   refills_remaining?: number;
   next_due_date?: Date;

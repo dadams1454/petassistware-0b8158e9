@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { 
   MedicationRecord, 
@@ -41,12 +40,12 @@ const castMedicationData = (data: any): MedicationRecord => {
     dosage_unit: medicationData.dosage_unit || '',
     frequency: medicationData.frequency || MedicationFrequency.DAILY,
     route: medicationData.route || undefined,
-    start_date: medicationData.start_date || null,
-    end_date: medicationData.end_date || null,
-    next_due_date: medicationData.next_due_date || null,
+    start_date: data.start_date || null,
+    end_date: data.end_date || null,
+    next_due_date: data.next_due_date || null,
     medication_type: medicationData.medication_type || 'treatment',
     prescription_id: medicationData.prescription_id || null,
-    refills_remaining: medicationData.refills_remaining || 0,
+    refills_remaining: data.refills_remaining || 0,
     administered_by: data.administered_by || null,
     notes: data.notes || null,
     administrations: medicationData.administrations || []
@@ -436,8 +435,8 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      // Convert to same type for comparison and use string literal to match what's in the database
-      return nextDue < today && med.status === 'active';
+      // Match the status type from MedicationStatus enum
+      return nextDue < today && med.status === MedicationStatus.ACTIVE;
     });
   } catch (error) {
     console.error('Error fetching overdue medications:', error);
@@ -466,8 +465,8 @@ export const fetchUpcomingMedications = async (daysAhead = 7): Promise<Medicatio
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      // Use string literal for status to match database value
-      return nextDue >= today && nextDue <= futureDate && med.status === 'active';
+      // Use MedicationStatus enum for type safety
+      return nextDue >= today && nextDue <= futureDate && med.status === MedicationStatus.ACTIVE;
     });
   } catch (error) {
     console.error('Error fetching upcoming medications:', error);
@@ -500,21 +499,21 @@ export const fetchMedicationStats = async (dogId: string): Promise<MedicationSta
     
     const today = new Date();
     
-    // Use string literals for status values to match what's stored in the database
-    const activeCount = medications.filter(m => m.status === 'active').length;
-    const completedCount = medications.filter(m => m.status === 'completed').length;
+    // Use MedicationStatus enum for consistency
+    const activeCount = medications.filter(m => m.status === MedicationStatus.ACTIVE).length;
+    const completedCount = medications.filter(m => m.status === MedicationStatus.COMPLETED).length;
     
-    // Count overdue medications - fixed comparison to use same type
+    // Count overdue medications - use MedicationStatus enum
     const overdueCount = medications.filter(med => {
-      if (!med.next_due_date || med.status !== 'active') return false;
+      if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
       const nextDue = new Date(med.next_due_date);
       return nextDue < today;
     }).length;
     
-    // Count upcoming medications (next 7 days) - fixed comparison to use same type
+    // Count upcoming medications (next 7 days) - use MedicationStatus enum
     const futureDate = addDays(today, 7);
     const upcomingCount = medications.filter(med => {
-      if (!med.next_due_date || med.status !== 'active') return false;
+      if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
       const nextDue = new Date(med.next_due_date);
       return nextDue >= today && nextDue <= futureDate;
     }).length;
