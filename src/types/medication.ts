@@ -9,7 +9,8 @@ export enum MedicationFrequency {
   QUARTERLY = 'QUARTERLY',
   ANNUALLY = 'ANNUALLY',
   AS_NEEDED = 'AS_NEEDED',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
+  CUSTOM = 'CUSTOM'
 }
 
 export enum MedicationType {
@@ -17,7 +18,8 @@ export enum MedicationType {
   TREATMENT = 'TREATMENT',
   SUPPLEMENT = 'SUPPLEMENT',
   PRESCRIPTION = 'PRESCRIPTION',
-  OVER_THE_COUNTER = 'OVER_THE_COUNTER'
+  OVER_THE_COUNTER = 'OVER_THE_COUNTER',
+  VACCINE = 'VACCINE'
 }
 
 export enum MedicationRoute {
@@ -32,9 +34,12 @@ export enum MedicationRoute {
 }
 
 export enum MedicationStatus {
-  CURRENT = 'CURRENT',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  DISCONTINUED = 'DISCONTINUED',
   UPCOMING = 'UPCOMING',
   OVERDUE = 'OVERDUE',
+  CURRENT = 'CURRENT',
   INACTIVE = 'INACTIVE'
 }
 
@@ -49,6 +54,7 @@ export interface MedicationRecord {
   route?: MedicationRoute;
   start_date: string;
   end_date?: string | null;
+  next_due_date?: string | null;
   medication_type: MedicationType;
   prescription_id?: string;
   refills_remaining?: number;
@@ -57,19 +63,27 @@ export interface MedicationRecord {
   updated_at?: string;
   created_by?: string;
   last_administered?: string | null;
+  status?: MedicationStatus | string;
+  task_name?: string;
+  category?: string;
+  timestamp?: string;
+  administered_by?: string;
+  medication_metadata?: any;
+  administrations?: any[];
 }
 
 // Data for creating/updating medication records
 export interface MedicationFormData {
   dog_id: string;
-  created_by: string;
-  medication_name: string;  // Required field
+  created_by?: string;
+  medication_name: string;
   dosage?: string;
   dosage_unit?: string;
   frequency: MedicationFrequency;
   route?: MedicationRoute;
   start_date: Date;
   end_date?: Date | null;
+  next_due_date?: Date | null;
   medication_type: MedicationType;
   prescription_id?: string;
   refills_remaining?: number;
@@ -89,12 +103,21 @@ export interface MedicationAdministration {
 
 // Interface for medication statistics
 export interface MedicationStats {
-  totalMedications: number;
-  activeMedications: number;
-  overdueCount: number;
-  upcomingCount: number;
-  byType: Record<MedicationType, number>;
-  byFrequency: Record<MedicationFrequency, number>;
+  total?: number;
+  activeCount?: number;
+  completedCount?: number;
+  overdueCount?: number;
+  upcomingCount?: number;
+  preventative?: number;
+  prescription?: number;
+  supplement?: number;
+  treatment?: number;
+  vaccine?: number;
+  complianceRate?: number;
+  byType?: Record<MedicationType, number>;
+  byFrequency?: Record<MedicationFrequency, number>;
+  totalMedications?: number;
+  activeMedications?: number;
 }
 
 // Light-weight medication info for display in lists
@@ -104,8 +127,11 @@ export interface MedicationInfo {
   frequency: MedicationFrequency;
   lastAdministered?: string;
   nextDue?: string;
-  type: MedicationType;
-  status?: MedicationStatus;
+  type?: MedicationType;
+  medication_type?: MedicationType;
+  status?: MedicationStatus | string;
+  notes?: string;
+  isPreventative?: boolean;
 }
 
 // Used for medication filter components

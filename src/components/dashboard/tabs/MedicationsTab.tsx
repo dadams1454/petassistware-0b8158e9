@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pill, Plus, RefreshCw } from 'lucide-react';
+import { Pill, Plus } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { EmptyState, SkeletonLoader } from '@/components/ui/standardized';
 import { useQuery } from '@tanstack/react-query';
@@ -59,12 +59,12 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
   const hasDogs = Array.isArray(dogStatuses) && dogStatuses.length > 0;
   const hasMedications = Array.isArray(medicationRecords) && medicationRecords.length > 0;
   
-  // Handler functions must return Promise<void> to match expected type
-  const handleRefresh = async (): Promise<void> => {
+  // Handler functions
+  const handleRefresh = async () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  const handleMedicationAdded = async (): Promise<void> => {
+  const handleMedicationAdded = async () => {
     setShowAddMedication(false);
     handleRefresh();
     toast({
@@ -73,7 +73,7 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
     });
   };
 
-  const handleMedicationDeleted = async (): Promise<void> => {
+  const handleMedicationDeleted = async () => {
     handleRefresh();
     toast({
       title: "Medication Deleted",
