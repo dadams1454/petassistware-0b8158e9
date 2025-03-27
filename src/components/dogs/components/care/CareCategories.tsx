@@ -15,6 +15,11 @@ import {
 
 export const careCategories = [
   {
+    id: 'facility',
+    name: 'Facility',
+    icon: <Building2 className="h-4 w-4" />,
+  },
+  {
     id: 'pottybreaks',
     name: 'Potty Breaks',
     icon: <Droplet className="h-4 w-4" />,
@@ -50,19 +55,14 @@ export const careCategories = [
     icon: <Heart className="h-4 w-4" />,
   },
   {
-    id: 'notes',
-    name: 'Notes',
-    icon: <StickyNote className="h-4 w-4" />,
-  },
-  {
-    id: 'facility',
-    name: 'Facility',
-    icon: <Building2 className="h-4 w-4" />,
-  },
-  {
     id: 'puppies',
     name: 'Puppies',
     icon: <Baby className="h-4 w-4" />,
+  },
+  {
+    id: 'notes',
+    name: 'Notes',
+    icon: <StickyNote className="h-4 w-4" />,
   }
 ];
 
