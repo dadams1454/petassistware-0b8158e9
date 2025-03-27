@@ -1,259 +1,295 @@
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Plus, Minus, CalendarClock } from 'lucide-react';
+
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
-import { createFeedingSchedule } from '@/services/dailyCare/feedingService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { useFeeding } from '@/contexts/feeding';
+import { FeedingScheduleFormData, FeedingSchedule } from '@/types/feeding';
+import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 
-const formSchema = z.object({
-  dog_id: z.string().min(1, { message: 'Please select a dog' }),
-  food_type: z.string().min(1, { message: 'Please enter food type' }),
-  amount: z.string().min(1, { message: 'Please enter amount' }),
-  unit: z.enum(['cups', 'grams', 'oz', 'lbs', 'kg']),
-  schedule_time: z.array(z.string()).min(1, { message: 'Please add at least one feeding time' }),
+// Form validation schema
+const feedingScheduleSchema = z.object({
+  food_type: z.string().min(1, { message: 'Food type is required' }),
+  amount: z.string().min(1, { message: 'Amount is required' }),
+  unit: z.enum(['cups', 'grams', 'ounces', 'tablespoons', 'teaspoons']),
+  schedule_time: z.array(z.string()).min(1, { message: 'At least one feeding time is required' }),
   special_instructions: z.string().optional(),
-  active: z.boolean().default(true)
+  active: z.boolean().default(true),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FeedingScheduleValues = z.infer<typeof feedingScheduleSchema>;
 
 interface FeedingScheduleFormProps {
   dogId: string;
   onSuccess?: () => void;
-  onCancel?: () => void;
+  scheduleId?: string;
+  initialValues?: Partial<FeedingScheduleValues>;
 }
 
-const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({ dogId, onSuccess, onCancel }) => {
+const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({ 
+  dogId, 
+  onSuccess,
+  scheduleId,
+  initialValues = {}
+}) => {
+  const { createSchedule, updateSchedule, loading } = useFeeding();
   const { toast } = useToast();
-  const [loading, setLoading] = React.useState(false);
-  const [newTime, setNewTime] = React.useState('');
   
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  // Set up form with default values
+  const form = useForm<FeedingScheduleValues>({
+    resolver: zodResolver(feedingScheduleSchema),
     defaultValues: {
-      dog_id: dogId,
       food_type: '',
       amount: '',
       unit: 'cups',
-      schedule_time: [],
+      schedule_time: ['08:00', '18:00'],
       special_instructions: '',
-      active: true
+      active: true,
+      ...initialValues
     }
   });
   
-  const scheduleTime = form.watch('schedule_time');
+  // Watch schedule times for dynamic fields
+  const scheduleTimes = form.watch('schedule_time');
   
-  const handleAddTime = () => {
-    if (!newTime) return;
-    
-    // Check if time is already in the list
-    if (scheduleTime.includes(newTime)) {
-      toast({
-        title: 'Time already added',
-        description: 'This feeding time is already in the schedule.',
-        variant: 'destructive'
-      });
-      return;
+  // Add a new time slot
+  const addTimeSlot = () => {
+    const currentTimes = form.getValues('schedule_time');
+    form.setValue('schedule_time', [...currentTimes, '']);
+  };
+  
+  // Remove a time slot
+  const removeTimeSlot = (index: number) => {
+    const currentTimes = form.getValues('schedule_time');
+    if (currentTimes.length > 1) { // Ensure at least one time slot remains
+      const updatedTimes = [...currentTimes];
+      updatedTimes.splice(index, 1);
+      form.setValue('schedule_time', updatedTimes);
     }
-    
-    form.setValue('schedule_time', [...scheduleTime, newTime]);
-    setNewTime('');
   };
   
-  const handleRemoveTime = (time: string) => {
-    form.setValue('schedule_time', scheduleTime.filter(t => t !== time));
-  };
-  
-  const onSubmit = async (values: FormValues) => {
+  // Handle form submission
+  const onSubmit = async (values: FeedingScheduleValues) => {
     try {
-      setLoading(true);
-      
-      // Ensure all required fields are included
-      const scheduleData = {
+      const formData: FeedingScheduleFormData = {
         dog_id: dogId,
-        food_type: values.food_type,
-        amount: values.amount,
-        unit: values.unit,
-        schedule_time: values.schedule_time,
-        special_instructions: values.special_instructions || undefined,
-        active: values.active
+        ...values
       };
       
-      await createFeedingSchedule(scheduleData);
-      toast({
-        title: 'Schedule created',
-        description: 'Feeding schedule has been created successfully.'
-      });
-      if (onSuccess) onSuccess();
+      let result;
+      
+      if (scheduleId) {
+        // Update existing schedule
+        result = await updateSchedule(scheduleId, formData);
+      } else {
+        // Create new schedule
+        result = await createSchedule(formData);
+      }
+      
+      if (result && onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      console.error('Failed to create feeding schedule:', error);
+      console.error('Error submitting feeding schedule:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create feeding schedule.',
-        variant: 'destructive'
+        description: 'Failed to save feeding schedule',
+        variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
     }
   };
-  
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Create Feeding Schedule</CardTitle>
-        <CardDescription>Set up a regular feeding schedule for this dog</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          {scheduleId ? 'Edit Feeding Schedule' : 'Create Feeding Schedule'}
+        </DialogTitle>
+      </DialogHeader>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
+          {/* Food Type */}
+          <FormField
+            control={form.control}
+            name="food_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Food Type</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter food type (e.g., Dry Kibble, Wet Food)" 
+                    {...field} 
+                    disabled={loading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Amount and Unit */}
+          <div className="flex gap-4">
             <FormField
               control={form.control}
-              name="food_type"
+              name="amount"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Food Type</FormLabel>
+                <FormItem className="flex-1">
+                  <FormLabel>Amount</FormLabel>
                   <FormControl>
-                    <Input placeholder="E.g., Dry kibble, Wet food, Raw diet" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Specify the type of food for this schedule
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 2" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="unit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Unit</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select unit" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="cups">Cups</SelectItem>
-                        <SelectItem value="grams">Grams</SelectItem>
-                        <SelectItem value="oz">Ounces</SelectItem>
-                        <SelectItem value="lbs">Pounds</SelectItem>
-                        <SelectItem value="kg">Kilograms</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <FormLabel>Feeding Times</FormLabel>
-              <div className="flex space-x-2">
-                <Input 
-                  placeholder="e.g., 8:00 AM" 
-                  value={newTime} 
-                  onChange={(e) => setNewTime(e.target.value)}
-                  className="flex-1"
-                />
-                <Button type="button" onClick={handleAddTime} size="sm">
-                  <Plus className="h-4 w-4 mr-1" /> Add
-                </Button>
-              </div>
-              <FormField
-                control={form.control}
-                name="schedule_time"
-                render={() => (
-                  <FormItem>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {scheduleTime.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No feeding times added</p>
-                      ) : (
-                        scheduleTime.map((time) => (
-                          <Badge key={time} variant="secondary" className="flex items-center gap-1">
-                            {time}
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveTime(time)}
-                              className="h-4 w-4 rounded-full flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground ml-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))
-                      )}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="special_instructions"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Special Instructions</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="E.g., Mix with warm water, Add medication, etc." 
+                    <Input 
+                      placeholder="Enter amount" 
                       {...field} 
-                      rows={3}
+                      disabled={loading}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Any special instructions for this feeding schedule
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Save Schedule
-        </Button>
-      </CardFooter>
-    </Card>
+            
+            <FormField
+              control={form.control}
+              name="unit"
+              render={({ field }) => (
+                <FormItem className="w-[150px]">
+                  <FormLabel>Unit</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    disabled={loading}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="cups">Cups</SelectItem>
+                      <SelectItem value="grams">Grams</SelectItem>
+                      <SelectItem value="ounces">Ounces</SelectItem>
+                      <SelectItem value="tablespoons">Tablespoons</SelectItem>
+                      <SelectItem value="teaspoons">Teaspoons</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          {/* Feeding Times */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <FormLabel>Feeding Times</FormLabel>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addTimeSlot}
+                disabled={loading}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Time
+              </Button>
+            </div>
+            
+            {scheduleTimes.map((time, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                <FormField
+                  control={form.control}
+                  name={`schedule_time.${index}`}
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input
+                          type="time"
+                          {...field}
+                          disabled={loading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeTimeSlot(index)}
+                  disabled={scheduleTimes.length <= 1 || loading}
+                >
+                  <Minus className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          
+          {/* Special Instructions */}
+          <FormField
+            control={form.control}
+            name="special_instructions"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Special Instructions</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Enter any special feeding instructions" 
+                    className="min-h-[80px]" 
+                    {...field} 
+                    value={field.value || ''}
+                    disabled={loading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Active Status */}
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">
+                    Active Schedule
+                  </FormLabel>
+                  <div className="text-sm text-muted-foreground">
+                    Toggle to activate or deactivate this feeding schedule
+                  </div>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={loading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Saving...' : scheduleId ? 'Update Schedule' : 'Create Schedule'}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </>
   );
 };
 

@@ -192,8 +192,8 @@ const CareRecordsList: React.FC<CareRecordsListProps> = ({
                       <CareRecordCard
                         key={record.id}
                         record={record}
-                        onEdit={handleEditRecord}
-                        onDelete={confirmDeleteRecord}
+                        onEdit={() => handleEditRecord(record)}
+                        onDelete={() => confirmDeleteRecord(record)}
                       />
                     ))
                   }
@@ -235,8 +235,8 @@ const CareRecordsList: React.FC<CareRecordsListProps> = ({
                       <CareRecordCard
                         key={record.id}
                         record={record}
-                        onEdit={handleEditRecord}
-                        onDelete={confirmDeleteRecord}
+                        onEdit={() => handleEditRecord(record)}
+                        onDelete={() => confirmDeleteRecord(record)}
                       />
                     ))
                   }

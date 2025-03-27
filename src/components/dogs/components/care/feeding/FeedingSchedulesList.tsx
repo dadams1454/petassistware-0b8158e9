@@ -1,150 +1,229 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { format } from 'date-fns';
 import { 
   Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from '@/components/ui/card';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { 
+  Dialog, 
+  DialogContent,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { 
-  AlarmClock, 
-  Clock, 
-  Coffee, 
-  FilePen, 
-  Info, 
-  MoreVertical, 
-  Utensils 
-} from 'lucide-react';
-import { FeedingSchedule } from '@/types/feedingSchedule';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Plus, Edit, Trash, AlarmClock } from 'lucide-react';
+
+import { FeedingSchedule } from '@/types/feeding';
+import { useFeeding } from '@/contexts/feeding';
+import FeedingScheduleForm from './FeedingScheduleForm';
 
 interface FeedingSchedulesListProps {
+  dogId: string;
   schedules: FeedingSchedule[];
   onRefresh: () => void;
-  onLogFeeding: (schedule: FeedingSchedule) => void;
-  onEditSchedule?: (schedule: FeedingSchedule) => void;
+  height?: string;
 }
 
 const FeedingSchedulesList: React.FC<FeedingSchedulesListProps> = ({
+  dogId,
   schedules,
   onRefresh,
-  onLogFeeding,
-  onEditSchedule
+  height = 'h-[300px]'
 }) => {
-  if (schedules.length === 0) {
-    return (
-      <Card>
-        <CardContent className="pt-6 pb-6 flex flex-col items-center justify-center text-center">
-          <Coffee className="h-10 w-10 text-muted-foreground mb-4" />
-          <h3 className="font-medium text-lg">No feeding schedules found</h3>
-          <p className="text-muted-foreground mt-1 mb-4">
-            Create a feeding schedule to start tracking meals for this dog.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
+  const { deleteSchedule } = useFeeding();
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<FeedingSchedule | null>(null);
+
+  const handleAddClick = () => {
+    setAddDialogOpen(true);
+  };
+
+  const handleEditClick = (schedule: FeedingSchedule) => {
+    setSelectedSchedule(schedule);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (schedule: FeedingSchedule) => {
+    setSelectedSchedule(schedule);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (selectedSchedule) {
+      await deleteSchedule(selectedSchedule.id);
+      setDeleteDialogOpen(false);
+      setSelectedSchedule(null);
+      onRefresh();
+    }
+  };
+
+  const formatScheduleTimes = (times: string[]) => {
+    return times.map(time => {
+      const [hours, minutes] = time.split(':');
+      return format(new Date().setHours(Number(hours), Number(minutes)), 'h:mm a');
+    }).join(', ');
+  };
+
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle>Feeding Schedules</CardTitle>
-        <CardDescription>Regular feeding schedules for this dog</CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-lg">Feeding Schedules</CardTitle>
+            <CardDescription>
+              {schedules.length} schedule{schedules.length !== 1 ? 's' : ''}
+            </CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleAddClick}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Schedule
+          </Button>
+        </div>
       </CardHeader>
+
       <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className={height}>
           <div className="space-y-4">
-            {schedules.map((schedule) => (
-              <div key={schedule.id} className="border rounded-lg p-4 relative">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center">
-                    <Utensils className="h-5 w-5 text-primary mr-2" />
-                    <h3 className="font-medium text-lg">{schedule.food_type}</h3>
-                  </div>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onLogFeeding(schedule)}>
-                        <Coffee className="h-4 w-4 mr-2" />
-                        Log Feeding
-                      </DropdownMenuItem>
-                      {onEditSchedule && (
-                        <DropdownMenuItem onClick={() => onEditSchedule(schedule)}>
-                          <FilePen className="h-4 w-4 mr-2" />
-                          Edit Schedule
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                
-                <div className="mt-2 space-y-2">
-                  <div className="flex items-center text-sm">
-                    <Badge variant="outline">
-                      {schedule.amount} {schedule.unit}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center mt-2">
-                    <div className="flex items-center mr-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span>Scheduled Times:</span>
+            {schedules.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No feeding schedules found
+              </div>
+            ) : (
+              schedules.map(schedule => (
+                <div 
+                  key={schedule.id}
+                  className={`border rounded-lg p-4 ${!schedule.active ? 'bg-muted' : ''}`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{schedule.food_type}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {schedule.amount} {schedule.unit} {schedule.schedule_time.length > 1 ? 'per meal' : ''}
+                      </p>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {schedule.schedule_time.map((time) => (
-                        <Badge key={time} variant="secondary">
-                          <AlarmClock className="h-3 w-3 mr-1" />
-                          {time}
+                    <div className="flex space-x-1">
+                      {!schedule.active && (
+                        <Badge variant="outline" className="ml-2">
+                          Inactive
                         </Badge>
-                      ))}
+                      )}
                     </div>
+                  </div>
+                  
+                  <div className="mt-2 flex items-center text-sm">
+                    <AlarmClock className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      {formatScheduleTimes(schedule.schedule_time)}
+                    </span>
                   </div>
                   
                   {schedule.special_instructions && (
-                    <>
-                      <Separator className="my-2" />
-                      <div className="flex items-start mt-2">
-                        <Info className="h-4 w-4 mr-1 mt-0.5 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">
-                          {schedule.special_instructions}
-                        </p>
-                      </div>
-                    </>
+                    <p className="mt-2 text-sm">
+                      <span className="font-medium">Instructions:</span> {schedule.special_instructions}
+                    </p>
                   )}
+                  
+                  <div className="mt-3 flex justify-end space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditClick(schedule)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleDeleteClick(schedule)}
+                    >
+                      <Trash className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
                 </div>
-                
-                <div className="absolute right-3 bottom-3">
-                  <Button
-                    size="sm"
-                    onClick={() => onLogFeeding(schedule)}
-                  >
-                    <Coffee className="h-4 w-4 mr-1" />
-                    Log Feeding
-                  </Button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </ScrollArea>
+        
+        {/* Add Schedule Dialog */}
+        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+          <DialogContent className="max-w-md">
+            <FeedingScheduleForm 
+              dogId={dogId}
+              onSuccess={() => {
+                setAddDialogOpen(false);
+                onRefresh();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+        
+        {/* Edit Schedule Dialog */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            {selectedSchedule && (
+              <FeedingScheduleForm 
+                dogId={dogId}
+                scheduleId={selectedSchedule.id}
+                initialValues={{
+                  food_type: selectedSchedule.food_type,
+                  amount: selectedSchedule.amount,
+                  unit: selectedSchedule.unit as 'cups' | 'grams' | 'ounces' | 'tablespoons' | 'teaspoons',
+                  schedule_time: selectedSchedule.schedule_time,
+                  special_instructions: selectedSchedule.special_instructions || '',
+                  active: selectedSchedule.active
+                }}
+                onSuccess={() => {
+                  setEditDialogOpen(false);
+                  setSelectedSchedule(null);
+                  onRefresh();
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+        
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Feeding Schedule</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this feeding schedule? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setSelectedSchedule(null)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDeleteConfirm}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

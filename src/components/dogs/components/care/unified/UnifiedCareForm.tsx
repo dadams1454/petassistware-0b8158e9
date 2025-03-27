@@ -91,7 +91,14 @@ const UnifiedCareForm: React.FC<UnifiedCareFormProps> = ({
     try {
       const formData = {
         dog_id: dogId,
-        ...values,
+        category: values.category as CareCategory,
+        task_name: values.task_name,
+        timestamp: values.timestamp,
+        notes: values.notes,
+        status: values.status,
+        assigned_to: values.assigned_to,
+        follow_up_needed: values.follow_up_needed,
+        follow_up_notes: values.follow_up_notes,
         // Only include follow_up_date if follow_up_needed is true
         follow_up_date: values.follow_up_needed ? values.follow_up_date : undefined,
       };
