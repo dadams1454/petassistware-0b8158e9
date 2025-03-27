@@ -13,7 +13,12 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
   onCategoryChange 
 }) => {
   // Get the current category name for display in the header
-  const categoryName = careCategories.find(c => c.id === activeCategory)?.name || 'Care';
+  const categoryName = (careCategories || []).find(c => c.id === activeCategory)?.name || 'Care';
+  
+  // Ensure we have a valid categories array to pass to CategoryTabs
+  const categories = Array.isArray(careCategories) 
+    ? careCategories.map(c => ({ id: c.id, label: c.name }))
+    : [];
   
   return (
     <div className="bg-card border-b">
@@ -24,7 +29,7 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
         </p>
       </div>
       <CategoryTabs 
-        categories={careCategories.map(c => ({ id: c.id, label: c.name }))}
+        categories={categories}
         activeCategory={activeCategory} 
         onCategoryChange={onCategoryChange} 
       />

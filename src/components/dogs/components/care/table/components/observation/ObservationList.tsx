@@ -18,12 +18,13 @@ interface ObservationListProps {
 }
 
 const ObservationList: React.FC<ObservationListProps> = ({ 
-  existingObservations,
+  existingObservations = [], // Provide default empty array
   activeCategory = 'pottybreaks'
 }) => {
   const [hiddenObservations, setHiddenObservations] = useState<string[]>([]);
   
-  if (existingObservations.length === 0) return null;
+  // If existingObservations is undefined or empty, return null
+  if (!existingObservations || existingObservations.length === 0) return null;
   
   // Filter out hidden observations
   const visibleObservations = existingObservations.filter(

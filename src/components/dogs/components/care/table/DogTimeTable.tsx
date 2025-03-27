@@ -54,10 +54,12 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleObservationClick,
     handleObservationSubmit,
     timeSlots
-  } = useTimeTableState(dogsStatus, onRefresh, isRefreshing, currentDate);
+  } = useTimeTableState(dogsStatus || [], onRefresh, isRefreshing, currentDate);
 
-  // Find the selected dog based on selectedDogId
-  const selectedDog = dogsStatus.find(dog => dog.dog_id === selectedDogId);
+  // Find the selected dog based on selectedDogId, with safeguards for undefined arrays
+  const selectedDog = dogsStatus && Array.isArray(dogsStatus) 
+    ? dogsStatus.find(dog => dog.dog_id === selectedDogId) 
+    : undefined;
 
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DogTimeTable">
@@ -83,8 +85,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         {/* Table Content */}
         <TableContentManager 
           activeCategory={activeCategory}
-          dogsStatus={dogsStatus}
-          sortedDogs={sortedDogs}
+          dogsStatus={dogsStatus || []} // Ensure dogsStatus is always an array
+          sortedDogs={sortedDogs || []} // Ensure sortedDogs is always an array
           hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
           hasObservation={hasObservation}
@@ -108,8 +110,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           observationDialogOpen={observationDialogOpen}
           onOpenChange={setObservationDialogOpen}
           onSubmit={handleObservationSubmit}
-          observations={observations}
-          timeSlots={timeSlots}
+          observations={observations || []} // Ensure observations is always an array
+          timeSlots={timeSlots || []} // Ensure timeSlots is always an array
           isMobile={isMobile}
           activeCategory={activeCategory}
         />

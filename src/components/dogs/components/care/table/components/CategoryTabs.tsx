@@ -13,7 +13,7 @@ export interface CategoryTabsProps {
 }
 
 const CategoryTabs: React.FC<CategoryTabsProps> = ({
-  categories,
+  categories = [], // Provide default empty array
   activeCategory,
   onCategoryChange,
 }) => {
@@ -42,6 +42,9 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
     }
   };
 
+  // Ensure categories is an array
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  
   return (
     <Tabs
       value={activeCategory}
@@ -49,7 +52,7 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
       className="w-full mb-4"
     >
       <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full h-auto">
-        {categories.map((category) => (
+        {safeCategories.map((category) => (
           <TabsTrigger
             key={category.id}
             value={category.id}

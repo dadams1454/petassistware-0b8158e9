@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -57,8 +58,8 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       // Set the selected time slot if provided
       if (selectedTimeSlot) {
         setDialogSelectedTimeSlot(selectedTimeSlot);
-      } else if (timeSlots.length > 0) {
-        // Default to first time slot if none selected
+      } else if (timeSlots && timeSlots.length > 0) {
+        // Default to first time slot if none selected and timeSlots exists
         setDialogSelectedTimeSlot(timeSlots[0]);
       }
       
@@ -106,7 +107,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
       observationDate={observationDate}
       setObservationDate={setObservationDate}
       timeSlot={dialogSelectedTimeSlot}
-      timeSlots={timeSlots}
+      timeSlots={timeSlots || []} // Ensure timeSlots is always an array
       selectedTimeSlot={dialogSelectedTimeSlot}
       setSelectedTimeSlot={setDialogSelectedTimeSlot}
       isMobile={isMobile}
