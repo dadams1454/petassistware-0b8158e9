@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -77,8 +76,8 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
       medication_name: existingMedication.medication_name,
       dosage: existingMedication.dosage,
       dosage_unit: existingMedication.dosage_unit,
-      frequency: existingMedication.frequency,
-      route: existingMedication.route,
+      frequency: existingMedication.frequency as MedicationFrequency,
+      route: existingMedication.route as MedicationRoute,
       start_date: existingMedication.start_date ? new Date(existingMedication.start_date) : new Date(),
       end_date: existingMedication.end_date ? new Date(existingMedication.end_date) : undefined,
       notes: existingMedication.notes,

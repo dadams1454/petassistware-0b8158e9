@@ -436,8 +436,11 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      // Compare with the MedicationStatus enum values
-      return nextDue < today && (med.status === MedicationStatus.ACTIVE || med.status === 'active');
+      // Check if nextDue is before today and status is active (as string or enum)
+      return nextDue < today && (
+        med.status === MedicationStatus.ACTIVE || 
+        med.status === 'active'
+      );
     });
   } catch (error) {
     console.error('Error fetching overdue medications:', error);
@@ -466,9 +469,11 @@ export const fetchUpcomingMedications = async (daysAhead = 7): Promise<Medicatio
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      // Use MedicationStatus enum or string value for compatibility
-      return nextDue >= today && nextDue <= futureDate && 
-             (med.status === MedicationStatus.ACTIVE || med.status === 'active');
+      // Check if nextDue is between today and futureDate and status is active (as string or enum)
+      return nextDue >= today && nextDue <= futureDate && (
+        med.status === MedicationStatus.ACTIVE || 
+        med.status === 'active'
+      );
     });
   } catch (error) {
     console.error('Error fetching upcoming medications:', error);

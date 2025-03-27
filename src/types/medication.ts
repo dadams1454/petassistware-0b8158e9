@@ -81,8 +81,8 @@ export interface MedicationRecord extends CareRecord {
   administered_by?: string;
   administrations?: MedicationAdministration[] | string;
   timestamp: string;
-  // Override the status from CareRecord to use MedicationStatus
-  status: MedicationStatus | 'completed' | 'scheduled' | 'missed';
+  // Make status compatible with both CareRecord status and MedicationStatus
+  status: 'completed' | 'scheduled' | 'missed' | string;
 }
 
 /**

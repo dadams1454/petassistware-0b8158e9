@@ -1,122 +1,191 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { 
+  MedicationRecord, 
+  MedicationFormData, 
+  MedicationStatus 
+} from '@/types/medication';
 import { 
   fetchDogMedications, 
+  createMedicationRecord, 
+  updateMedicationRecord, 
+  deleteMedicationRecord,
   fetchOverdueMedications,
-  fetchMedicationStats,
-  fetchUpcomingMedications,
-  getMedicationStats,
-  getOverdueMedications,
-  getUpcomingMedications
+  fetchUpcomingMedications
 } from '@/services/medicationService';
-import { MedicationRecord, MedicationStats } from '@/types/medication';
+import { useToast } from '@/components/ui/use-toast';
 
-interface MedicationContextProps {
-  medications: MedicationRecord[] | null;
-  upcomingMedications: MedicationRecord[] | null;
-  overdueMedications: MedicationRecord[] | null;
-  stats: MedicationStats | null;
-  loading: boolean;
-  error: string | null;
+interface MedicationContextType {
+  medications: MedicationRecord[];
+  overdueMedications: MedicationRecord[];
+  upcomingMedications: MedicationRecord[];
+  isLoading: boolean;
+  error: Error | null;
   fetchMedications: (dogId: string) => Promise<void>;
-  fetchStats: (dogId: string) => Promise<void>;
-  fetchOverdueMedications: (dogId: string) => Promise<void>;
-  fetchUpcomingMedications: (dogId: string, daysAhead?: number) => Promise<void>;
+  addMedication: (data: MedicationFormData) => Promise<MedicationRecord>;
+  updateMedication: (id: string, data: MedicationFormData) => Promise<MedicationRecord>;
+  deleteMedication: (id: string) => Promise<void>;
+  fetchAllOverdueMedications: () => Promise<void>;
+  fetchAllUpcomingMedications: (days?: number) => Promise<void>;
 }
 
-const MedicationContext = createContext<MedicationContextProps | undefined>(undefined);
+const MedicationContext = createContext<MedicationContextType | undefined>(undefined);
 
 export const MedicationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [medications, setMedications] = useState<MedicationRecord[] | null>(null);
-  const [upcomingMedications, setUpcomingMedications] = useState<MedicationRecord[] | null>(null);
-  const [overdueMedications, setOverdueMedications] = useState<MedicationRecord[] | null>(null);
-  const [stats, setStats] = useState<MedicationStats | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [medications, setMedications] = useState<MedicationRecord[]>([]);
+  const [overdueMedications, setOverdueMedications] = useState<MedicationRecord[]>([]);
+  const [upcomingMedications, setUpcomingMedications] = useState<MedicationRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const { toast } = useToast();
 
   const fetchMedications = async (dogId: string) => {
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
-    
     try {
-      const medicationsData = await fetchDogMedications(dogId);
-      setMedications(medicationsData);
+      const data = await fetchDogMedications(dogId);
+      setMedications(data);
     } catch (err) {
-      console.error('Error fetching medications:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred fetching medications');
+      const error = err instanceof Error ? err : new Error('Failed to fetch medications');
+      setError(error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const fetchStats = async (dogId: string) => {
-    setLoading(true);
+  const addMedication = async (data: MedicationFormData) => {
+    setIsLoading(true);
     setError(null);
-    
     try {
-      const statsData = await fetchMedicationStats(dogId);
-      setStats(statsData);
+      const newMedication = await createMedicationRecord(data);
+      setMedications(prev => [...prev, newMedication]);
+      toast({
+        title: 'Medication Added',
+        description: `${data.medication_name} has been added successfully.`,
+      });
+      return newMedication;
     } catch (err) {
-      console.error('Error fetching medication stats:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred fetching medication statistics');
+      const error = err instanceof Error ? err : new Error('Failed to add medication');
+      setError(error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const fetchMedicationOverdue = async (dogId: string) => {
-    setLoading(true);
+  const updateMedication = async (id: string, data: MedicationFormData) => {
+    setIsLoading(true);
     setError(null);
-    
     try {
-      const overdueData = await fetchOverdueMedications();
-      // Filter for specific dog if dogId is provided
-      const filteredData = dogId 
-        ? overdueData.filter(med => med.dog_id === dogId)
-        : overdueData;
-      setOverdueMedications(filteredData);
+      const updatedMedication = await updateMedicationRecord(id, data);
+      setMedications(prev => prev.map(med => med.id === id ? updatedMedication : med));
+      toast({
+        title: 'Medication Updated',
+        description: `${data.medication_name} has been updated successfully.`,
+      });
+      return updatedMedication;
     } catch (err) {
-      console.error('Error fetching overdue medications:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred fetching overdue medications');
+      const error = err instanceof Error ? err : new Error('Failed to update medication');
+      setError(error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const fetchMedicationUpcoming = async (dogId: string, daysAhead = 7) => {
-    setLoading(true);
+  const deleteMedication = async (id: string) => {
+    setIsLoading(true);
     setError(null);
-    
     try {
-      const upcomingData = await fetchUpcomingMedications(daysAhead);
-      // Filter for specific dog if dogId is provided
-      const filteredData = dogId 
-        ? upcomingData.filter(med => med.dog_id === dogId)
-        : upcomingData;
-      setUpcomingMedications(filteredData);
+      await deleteMedicationRecord(id);
+      setMedications(prev => prev.filter(med => med.id !== id));
+      toast({
+        title: 'Medication Deleted',
+        description: 'The medication has been deleted successfully.',
+      });
     } catch (err) {
-      console.error('Error fetching upcoming medications:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred fetching upcoming medications');
+      const error = err instanceof Error ? err : new Error('Failed to delete medication');
+      setError(error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+      throw error;
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
+  };
+
+  const fetchAllOverdueMedications = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await fetchOverdueMedications();
+      setOverdueMedications(data);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch overdue medications');
+      setError(error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAllUpcomingMedications = async (days = 7) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await fetchUpcomingMedications(days);
+      setUpcomingMedications(data);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch upcoming medications');
+      setError(error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const value: MedicationContextType = {
+    medications,
+    overdueMedications,
+    upcomingMedications,
+    isLoading,
+    error,
+    fetchMedications,
+    addMedication,
+    updateMedication,
+    deleteMedication,
+    fetchAllOverdueMedications,
+    fetchAllUpcomingMedications,
   };
 
   return (
-    <MedicationContext.Provider
-      value={{
-        medications,
-        upcomingMedications,
-        overdueMedications,
-        stats,
-        loading,
-        error,
-        fetchMedications,
-        fetchStats,
-        fetchOverdueMedications: fetchMedicationOverdue,
-        fetchUpcomingMedications: fetchMedicationUpcoming
-      }}
-    >
+    <MedicationContext.Provider value={value}>
       {children}
     </MedicationContext.Provider>
   );
