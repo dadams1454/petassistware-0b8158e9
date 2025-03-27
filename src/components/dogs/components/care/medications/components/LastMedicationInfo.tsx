@@ -1,9 +1,9 @@
 
 import React from 'react';
+import { format, isValid } from 'date-fns';
 import { Clock } from 'lucide-react';
-import { format, isValid, parseISO } from 'date-fns';
-import { MedicationFrequency } from '@/types/medication';
 import { formatMedicationFrequency } from '@/utils/medicationUtils';
+import { MedicationFrequency } from '@/types/medication';
 
 interface LastMedicationInfoProps {
   name: string;
@@ -11,33 +11,31 @@ interface LastMedicationInfoProps {
   frequency: MedicationFrequency;
 }
 
-const LastMedicationInfo: React.FC<LastMedicationInfoProps> = ({
-  name,
-  lastAdministered,
-  frequency
+const LastMedicationInfo: React.FC<LastMedicationInfoProps> = ({ 
+  name, 
+  lastAdministered, 
+  frequency 
 }) => {
-  const formattedDate = React.useMemo(() => {
-    if (!lastAdministered) return "Never administered";
+  const formatDate = (date: string | null): string => {
+    if (!date) return 'Never';
     
     try {
-      const date = parseISO(lastAdministered);
-      if (!isValid(date)) return "Invalid date";
-      
-      return format(date, "MMM d, yyyy");
+      const dateObj = new Date(date);
+      return isValid(dateObj) ? format(dateObj, 'MMM d, yyyy') : 'No date recorded';
     } catch (e) {
-      return "Invalid date";
+      return 'No date recorded';
     }
-  }, [lastAdministered]);
-  
+  };
+
   return (
-    <div className="pt-3 mt-3 border-t text-xs text-muted-foreground">
-      <div className="flex items-center gap-1">
-        <Clock className="h-3.5 w-3.5" />
-        <span>Last: {name}</span>
+    <div className="mt-3 pt-2 border-t text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex items-center">
+        <Clock className="h-3 w-3 mr-1 text-gray-400" />
+        <span>Last Medication: {name}</span>
       </div>
-      <div className="flex justify-between items-center mt-1">
-        <span>{formattedDate}</span>
-        <span>{formatMedicationFrequency(frequency)}</span>
+      <div className="flex justify-between mt-1">
+        <span>Administered: {formatDate(lastAdministered || null)}</span>
+        <span>Frequency: {formatMedicationFrequency(frequency)}</span>
       </div>
     </div>
   );

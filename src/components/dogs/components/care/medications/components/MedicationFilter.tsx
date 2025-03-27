@@ -29,7 +29,7 @@ const MedicationFilter: React.FC<MedicationFilterProps> = ({ value, onChange }) 
           <SelectItem value={MedicationFrequency.WEEKLY}>Weekly</SelectItem>
           <SelectItem value={MedicationFrequency.MONTHLY}>Monthly</SelectItem>
           <SelectItem value={MedicationFrequency.QUARTERLY}>Quarterly</SelectItem>
-          <SelectItem value={MedicationFrequency.ANNUAL}>Annual</SelectItem>
+          <SelectItem value={MedicationFrequency.ANNUALLY}>Annual</SelectItem>
         </SelectContent>
       </Select>
     </div>

@@ -1,7 +1,8 @@
-import { MedicationFrequency } from '@/types/medication';
+
+import { MedicationFrequency as MedicationFrequencyType } from '@/types/medication';
 import { differenceInDays, differenceInHours, parseISO, addDays, addWeeks, addMonths, compareAsc } from 'date-fns';
 
-// Re-export MedicationFrequency from types for backward compatibility
+// Re-export MedicationFrequency from types for consistent usage across the application
 export { MedicationFrequency } from '@/types/medication';
 
 /**
@@ -164,21 +165,21 @@ export const getMedicationStatusClass = (status: string): string => {
 /**
  * Get time slots based on frequency
  */
-export const getTimeSlotsForFrequency = (frequency: MedicationFrequency): string[] => {
+export const getTimeSlotsForFrequency = (frequency: MedicationFrequencyType): string[] => {
   switch (frequency) {
-    case MedicationFrequency.DAILY:
+    case MedicationFrequencyType.DAILY:
       return ['Morning', 'Evening'];
-    case MedicationFrequency.TWICE_DAILY:
+    case MedicationFrequencyType.TWICE_DAILY:
       return ['Morning', 'Noon', 'Evening'];
-    case MedicationFrequency.WEEKLY:
+    case MedicationFrequencyType.WEEKLY:
       return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    case MedicationFrequency.BIWEEKLY:
+    case MedicationFrequencyType.BIWEEKLY:
       return ['Week 1', 'Week 2'];
-    case MedicationFrequency.MONTHLY:
+    case MedicationFrequencyType.MONTHLY:
       return ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-    case MedicationFrequency.QUARTERLY:
+    case MedicationFrequencyType.QUARTERLY:
       return ['January', 'April', 'July', 'October'];
-    case MedicationFrequency.ANNUALLY:
+    case MedicationFrequencyType.ANNUALLY:
       return ['Annual'];
     default:
       return ['As needed'];
@@ -188,53 +189,53 @@ export const getTimeSlotsForFrequency = (frequency: MedicationFrequency): string
 /**
  * Calculate the next due date based on medication frequency
  */
-export const calculateNextDueDate = (startDate: Date, frequency: MedicationFrequency): Date => {
+export const calculateNextDueDate = (startDate: Date, frequency: MedicationFrequencyType): Date => {
   const today = new Date();
   let nextDue: Date;
 
   switch (frequency) {
-    case MedicationFrequency.DAILY:
+    case MedicationFrequencyType.DAILY:
       // If already given today, next is tomorrow
       nextDue = addDays(today, 1);
       break;
-    case MedicationFrequency.TWICE_DAILY:
+    case MedicationFrequencyType.TWICE_DAILY:
       // If morning dose, next is evening; if evening, next is morning of next day
       // For simplicity, just use 12 hours from now
       nextDue = new Date(today.getTime() + 12 * 60 * 60 * 1000);
       break;
-    case MedicationFrequency.WEEKLY:
+    case MedicationFrequencyType.WEEKLY:
       nextDue = addWeeks(startDate, 1);
       if (compareAsc(nextDue, today) <= 0) {
         // If the calculated date is in the past, calculate from today
         nextDue = addWeeks(today, 1);
       }
       break;
-    case MedicationFrequency.BIWEEKLY:
+    case MedicationFrequencyType.BIWEEKLY:
       nextDue = addWeeks(startDate, 2);
       if (compareAsc(nextDue, today) <= 0) {
         nextDue = addWeeks(today, 2);
       }
       break;
-    case MedicationFrequency.MONTHLY:
+    case MedicationFrequencyType.MONTHLY:
       nextDue = addMonths(startDate, 1);
       if (compareAsc(nextDue, today) <= 0) {
         nextDue = addMonths(today, 1);
       }
       break;
-    case MedicationFrequency.QUARTERLY:
+    case MedicationFrequencyType.QUARTERLY:
       nextDue = addMonths(startDate, 3);
       if (compareAsc(nextDue, today) <= 0) {
         nextDue = addMonths(today, 3);
       }
       break;
-    case MedicationFrequency.ANNUALLY:
+    case MedicationFrequencyType.ANNUALLY:
       nextDue = addMonths(startDate, 12);
       if (compareAsc(nextDue, today) <= 0) {
         nextDue = addMonths(today, 12);
       }
       break;
-    case MedicationFrequency.AS_NEEDED:
-    case MedicationFrequency.CUSTOM:
+    case MedicationFrequencyType.AS_NEEDED:
+    case MedicationFrequencyType.CUSTOM:
     default:
       // For as-needed or custom, don't set a specific next date
       nextDue = today;

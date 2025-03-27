@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MedicationInfo, ProcessedMedicationLogs } from '../types/medicationTypes';
 import { DogCareStatus } from '@/types/dailyCare';
-import { MedicationFrequency } from '@/utils/medicationUtils';
+import { MedicationFrequency } from '@/types/medication';
 
 export const useMedicationLogs = (dogs: DogCareStatus[]) => {
   const [processedMedicationLogs, setProcessedMedicationLogs] = useState<ProcessedMedicationLogs>({});
@@ -72,7 +72,7 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
               if (log.task_name.includes('(Weekly)')) frequency = MedicationFrequency.WEEKLY;
               if (log.task_name.includes('(Monthly)')) frequency = MedicationFrequency.MONTHLY;
               if (log.task_name.includes('(Quarterly)')) frequency = MedicationFrequency.QUARTERLY;
-              if (log.task_name.includes('(Annual)')) frequency = MedicationFrequency.ANNUAL;
+              if (log.task_name.includes('(Annually)')) frequency = MedicationFrequency.ANNUALLY;
               
               // Clean medication name (remove frequency information)
               let cleanName = log.task_name;

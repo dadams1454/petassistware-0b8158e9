@@ -1,10 +1,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { generateTimeSlots } from '../dogGroupColors';
-import { 
-  MedicationFrequency,
-  getTimeSlotsForFrequency 
-} from '@/utils/medicationUtils';
+import { MedicationFrequency } from '@/types/medication';
+import { getTimeSlotsForFrequency } from '@/utils/medicationUtils';
 
 export const useTimeManager = (activeCategory = 'pottybreaks') => {
   // Get current time and hour
