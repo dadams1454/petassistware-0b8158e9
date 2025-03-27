@@ -3,10 +3,10 @@ import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
-  Coffee, Droplet, Scissors, Dumbbell, Heart, Clipboard, LifeBuoy
+  Coffee, Droplet, Scissors, Dumbbell, Heart, Clipboard, LifeBuoy, Pill
 } from 'lucide-react';
 
-interface CategoryTabsProps {
+export interface CategoryTabsProps {
   categories: { id: string; label: string }[];
   activeCategory: string;
   onCategoryChange: (categoryId: string) => void;
@@ -34,6 +34,9 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
         return <Heart className="h-4 w-4" />;
       case 'wellness':
         return <LifeBuoy className="h-4 w-4" />;
+      case 'medication':
+      case 'medications':
+        return <Pill className="h-4 w-4" />;
       default:
         return <Clipboard className="h-4 w-4" />;
     }

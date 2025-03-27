@@ -24,6 +24,7 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
         </p>
       </div>
       <CategoryTabs 
+        categories={careCategories.map(c => ({ id: c.id, label: c.name }))}
         activeCategory={activeCategory} 
         onCategoryChange={onCategoryChange} 
       />
