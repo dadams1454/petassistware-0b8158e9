@@ -9,7 +9,7 @@ import { RefreshCw, Pill, Clock, AlertTriangle } from 'lucide-react';
 import { MedicationProvider, useMedication } from '@/contexts/medication';
 import MedicationsList from './MedicationsList';
 import MedicationForm from './MedicationForm';
-import { MedicationRecord, MedicationSchedule, MedicationStats } from '@/types/medication';
+import { MedicationRecord, MedicationStats } from '@/types/medication';
 
 interface MedicationDashboardProps {
   dogId: string;

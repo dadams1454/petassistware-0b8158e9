@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { MedicationStatus as MedicationStatusEnum } from '@/utils/medicationUtils';
+import { MedicationStatus as MedicationStatusEnum } from '@/types/medication';
 import { MedicationStatusDisplayProps } from '../types/medicationTypes';
 import { SkeletonLoader } from '@/components/ui/standardized';
 

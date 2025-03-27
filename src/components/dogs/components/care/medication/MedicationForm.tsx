@@ -80,10 +80,19 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
     setIsSubmitting(true);
     try {
       const medicationData: MedicationFormData = {
-        ...data,
         dog_id: dogId,
         created_by: user?.id || '',
         medication_name: data.medication_name,
+        dosage: data.dosage,
+        dosage_unit: data.dosage_unit,
+        frequency: data.frequency,
+        route: data.route,
+        start_date: data.start_date,
+        end_date: data.end_date,
+        medication_type: data.medication_type,
+        prescription_id: data.prescription_id,
+        refills_remaining: data.refills_remaining,
+        notes: data.notes
       };
 
       // Update or create medication record

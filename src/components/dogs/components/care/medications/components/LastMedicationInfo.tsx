@@ -2,8 +2,8 @@
 import React from 'react';
 import { format, isValid } from 'date-fns';
 import { Clock } from 'lucide-react';
-import { formatMedicationFrequency } from '@/utils/medicationUtils';
 import { MedicationFrequency } from '@/types/medication';
+import { formatMedicationFrequency } from '@/utils/medicationUtils';
 
 interface LastMedicationInfoProps {
   name: string;

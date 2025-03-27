@@ -139,3 +139,16 @@ export interface MedicationFilterProps {
   value: string;
   onChange: (value: string) => void;
 }
+
+// Schedule information for medications
+export interface MedicationSchedule {
+  id: string;
+  medication_id: string;
+  schedule_type: MedicationFrequency;
+  next_due: string;
+  days?: string[];
+  times?: string[];
+  custom_interval?: number;
+  created_at?: string;
+  updated_at?: string;
+}
