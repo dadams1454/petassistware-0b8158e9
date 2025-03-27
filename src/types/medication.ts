@@ -79,7 +79,8 @@ export interface MedicationRecord extends CareRecord {
   prescription_id?: string;
   refills_remaining?: number;
   administered_by?: string;
-  administrations?: MedicationAdministration[];
+  administrations?: MedicationAdministration[] | string;
+  timestamp: string;
 }
 
 /**

@@ -9,12 +9,12 @@ import {
   FeedingStats
 } from '@/types/feeding';
 import { 
-  fetchDogFeedingSchedules,
-  fetchFeedingSchedule,
+  fetchFeedingSchedules,
+  getFeedingScheduleById,
   createFeedingSchedule,
   updateFeedingSchedule,
   deleteFeedingSchedule,
-  fetchDogFeedingRecords,
+  fetchFeedingRecords,
   createFeedingRecord,
   updateFeedingRecord,
   deleteFeedingRecord,
@@ -54,7 +54,7 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
   const handleFetchSchedules = useCallback(async (dogId: string) => {
     setLoading(true);
     try {
-      const fetchedSchedules = await fetchDogFeedingSchedules(dogId);
+      const fetchedSchedules = await fetchFeedingSchedules(dogId);
       setSchedules(fetchedSchedules);
       return fetchedSchedules;
     } catch (error) {
@@ -73,7 +73,7 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
   const handleFetchSchedule = useCallback(async (scheduleId: string) => {
     setLoading(true);
     try {
-      return await fetchFeedingSchedule(scheduleId);
+      return await getFeedingScheduleById(scheduleId);
     } catch (error) {
       console.error('Error fetching feeding schedule:', error);
       toast({
@@ -99,7 +99,13 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setLoading(true);
     try {
-      const newSchedule = await createFeedingSchedule(data);
+      // Transform schedule_time to array if needed
+      const scheduleData = {
+        ...data,
+        schedule_time: Array.isArray(data.schedule_time) ? data.schedule_time : [data.schedule_time]
+      };
+      
+      const newSchedule = await createFeedingSchedule(scheduleData);
       if (newSchedule) {
         setSchedules(prev => [newSchedule, ...prev]);
         toast({
@@ -127,7 +133,15 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     setLoading(true);
     try {
-      const updatedSchedule = await updateFeedingSchedule(scheduleId, data);
+      // Ensure schedule_time is in the right format
+      const updateData = {
+        ...data,
+        schedule_time: data.schedule_time ? 
+          (Array.isArray(data.schedule_time) ? data.schedule_time : [data.schedule_time]) 
+          : undefined
+      };
+      
+      const updatedSchedule = await updateFeedingSchedule(scheduleId, updateData);
       if (updatedSchedule) {
         setSchedules(prev => 
           prev.map(schedule => 
@@ -183,9 +197,11 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
   const handleFetchRecords = useCallback(async (dogId: string, limit?: number) => {
     setLoading(true);
     try {
-      const fetchedRecords = await fetchDogFeedingRecords(dogId, limit);
-      setRecords(fetchedRecords);
-      return fetchedRecords;
+      // Fetch all records, then limit them in JS if needed
+      const allRecords = await fetchFeedingRecords(dogId);
+      const limitedRecords = limit ? allRecords.slice(0, limit) : allRecords;
+      setRecords(limitedRecords);
+      return limitedRecords;
     } catch (error) {
       console.error('Error fetching feeding records:', error);
       toast({
@@ -239,7 +255,26 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     setLoading(true);
     try {
-      const updatedRecord = await updateFeedingRecord(id, data);
+      // Need to convert the partial data to a complete FeedingRecordUpdateData
+      // First get the current record
+      const currentRecord = records.find(r => r.id === id);
+      if (!currentRecord) {
+        throw new Error('Feeding record not found');
+      }
+      
+      // Create a complete update data object
+      const updateData = {
+        food_type: data.food_type || currentRecord.food_type,
+        amount_offered: data.amount_offered || currentRecord.amount_offered,
+        amount_consumed: data.amount_consumed || currentRecord.amount_consumed,
+        timestamp: data.timestamp ? new Date(data.timestamp) : new Date(currentRecord.timestamp),
+        notes: data.notes !== undefined ? data.notes : currentRecord.notes,
+        meal_type: data.meal_type || currentRecord.meal_type,
+        refused: data.refused !== undefined ? data.refused : currentRecord.refused,
+        schedule_id: data.schedule_id !== undefined ? data.schedule_id : currentRecord.schedule_id
+      };
+      
+      const updatedRecord = await updateFeedingRecord(id, updateData);
       if (updatedRecord) {
         setRecords(prev => 
           prev.map(record => 
@@ -263,7 +298,7 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [records, toast]);
 
   const handleDeleteFeedingLog = useCallback(async (id: string) => {
     setLoading(true);
@@ -298,7 +333,7 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     setLoading(true);
     try {
-      const fetchedStats = await getFeedingStats(dogId, timeframe);
+      const fetchedStats = await getFeedingStats(dogId);
       setStats(fetchedStats);
       return fetchedStats;
     } catch (error) {
@@ -314,7 +349,7 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [toast]);
 
-  const value = {
+  const value: FeedingContextType = {
     loading,
     schedules,
     records,

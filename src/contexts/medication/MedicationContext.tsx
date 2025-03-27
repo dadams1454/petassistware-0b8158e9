@@ -4,7 +4,10 @@ import {
   fetchDogMedications, 
   fetchOverdueMedications,
   fetchMedicationStats,
-  fetchUpcomingMedications
+  fetchUpcomingMedications,
+  getMedicationStats,
+  getOverdueMedications,
+  getUpcomingMedications
 } from '@/services/medicationService';
 import { MedicationRecord, MedicationStats } from '@/types/medication';
 

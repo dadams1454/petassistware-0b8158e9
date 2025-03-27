@@ -1,14 +1,16 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { 
-  fetchDogFeedingSchedules, 
+  fetchFeedingSchedules, 
   createFeedingRecord, 
-  fetchDogFeedingRecords,
+  fetchFeedingRecords,
   createFeedingSchedule,
   updateFeedingSchedule,
   deleteFeedingRecord,
   deleteFeedingSchedule,
-  getFeedingStats
+  getFeedingStats,
+  fetchDogFeedingSchedules, 
+  fetchDogFeedingRecords
 } from '@/services/feedingService';
 import { FeedingRecord, FeedingSchedule, FeedingFormData, FeedingScheduleFormData, FeedingStats } from '@/types/feeding';
 import { useToast } from '@/components/ui/use-toast';
@@ -25,7 +27,7 @@ interface FeedingContextType {
   fetchFeedingSchedules: (dogId: string) => Promise<void>;
   deleteFeedingLog: (id: string) => Promise<boolean>;
   deleteFeedingScheduleItem: (id: string) => Promise<boolean>;
-  deleteSchedule: (id: string) => Promise<boolean>; // Added this method to match usage in components
+  deleteSchedule: (id: string) => Promise<boolean>; 
   fetchFeedingStats: (dogId: string, timeframe?: 'day' | 'week' | 'month') => Promise<FeedingStats | null>;
 }
 
@@ -43,7 +45,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setError(null);
     
     try {
-      const records = await fetchDogFeedingRecords(dogId);
+      const records = await fetchFeedingRecords(dogId);
       setFeedingRecords(records);
     } catch (err) {
       console.error('Error fetching feeding history:', err);
@@ -53,12 +55,12 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const fetchFeedingSchedules = async (dogId: string) => {
+  const fetchSchedules = async (dogId: string) => {
     setLoading(true);
     setError(null);
     
     try {
-      const schedules = await fetchDogFeedingSchedules(dogId);
+      const schedules = await fetchFeedingSchedules(dogId);
       setFeedingSchedules(schedules);
     } catch (err) {
       console.error('Error fetching feeding schedules:', err);
@@ -68,7 +70,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const createRecord = async (data: FeedingFormData) => {
+  const createRecord = async (data: FeedingFormData): Promise<FeedingRecord | null> => {
     setLoading(true);
     setError(null);
     
@@ -86,12 +88,17 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const createSchedule = async (data: FeedingScheduleFormData) => {
+  const createSchedule = async (data: FeedingScheduleFormData): Promise<FeedingSchedule | null> => {
     setLoading(true);
     setError(null);
     
     try {
-      const schedule = await createFeedingSchedule(data);
+      // Adjust to ensure schedule_time is an array
+      const scheduleData = {
+        ...data,
+        schedule_time: Array.isArray(data.schedule_time) ? data.schedule_time : [data.schedule_time]
+      };
+      const schedule = await createFeedingSchedule(scheduleData);
       return schedule;
     } catch (err) {
       console.error('Error creating feeding schedule:', err);
@@ -102,12 +109,19 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const updateSchedule = async (id: string, data: Partial<FeedingScheduleFormData>) => {
+  const updateSchedule = async (id: string, data: Partial<FeedingScheduleFormData>): Promise<FeedingSchedule | null> => {
     setLoading(true);
     setError(null);
     
     try {
-      const schedule = await updateFeedingSchedule(id, data);
+      // Make sure schedule_time is properly formatted
+      const updateData = {
+        ...data,
+        schedule_time: data.schedule_time ? 
+          (Array.isArray(data.schedule_time) ? data.schedule_time : [data.schedule_time]) 
+          : undefined
+      };
+      const schedule = await updateFeedingSchedule(id, updateData);
       return schedule;
     } catch (err) {
       console.error('Error updating feeding schedule:', err);
@@ -118,7 +132,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const deleteFeedingLog = async (id: string) => {
+  const deleteFeedingLog = async (id: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
     
@@ -134,7 +148,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const deleteFeedingScheduleItem = async (id: string) => {
+  const deleteFeedingScheduleItem = async (id: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
     
@@ -151,17 +165,17 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   // Added deleteSchedule method to alias deleteFeedingScheduleItem for consistent naming
-  const deleteSchedule = async (id: string) => {
+  const deleteSchedule = async (id: string): Promise<boolean> => {
     return deleteFeedingScheduleItem(id);
   };
 
   // Add fetchFeedingStats method
-  const fetchFeedingStats = async (dogId: string, timeframe: 'day' | 'week' | 'month' = 'week') => {
+  const fetchFeedingStats = async (dogId: string, timeframe: 'day' | 'week' | 'month' = 'week'): Promise<FeedingStats | null> => {
     setLoading(true);
     setError(null);
     
     try {
-      const stats = await getFeedingStats(dogId, timeframe);
+      const stats = await getFeedingStats(dogId);
       return stats;
     } catch (err) {
       console.error('Error fetching feeding stats:', err);
@@ -183,7 +197,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
         createSchedule,
         updateSchedule,
         fetchFeedingHistory,
-        fetchFeedingSchedules,
+        fetchFeedingSchedules: fetchSchedules,
         deleteFeedingLog,
         deleteFeedingScheduleItem,
         deleteSchedule,

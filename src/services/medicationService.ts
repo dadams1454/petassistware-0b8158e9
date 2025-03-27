@@ -21,6 +21,7 @@ const castMedicationData = (data: any): MedicationRecord => {
     status: data.status || MedicationStatus.ACTIVE,
     created_at: data.created_at,
     created_by: data.created_by || null,
+    timestamp: data.timestamp || data.created_at, // Ensure timestamp exists
     medication_name: data.medication_name || '',
     dosage: data.dosage || '',
     dosage_unit: data.dosage_unit || '',
@@ -98,6 +99,28 @@ export const calculateNextDueDate = (startDate: Date, frequency: MedicationFrequ
 };
 
 /**
+ * Fetch medication records for multiple dogs
+ */
+export const getMedicationRecords = async (dogIds: string[]): Promise<MedicationRecord[]> => {
+  try {
+    // Use the daily_care_logs table instead of medication_records
+    const { data, error } = await supabase
+      .from('daily_care_logs')
+      .select('*')
+      .in('dog_id', dogIds)
+      .eq('category', 'medication');
+      
+    if (error) throw error;
+    
+    // Cast the data to MedicationRecord type
+    return data.map((item: any) => castMedicationData(item));
+  } catch (error) {
+    console.error('Error fetching medication records:', error);
+    throw error;
+  }
+};
+
+/**
  * Create a new medication record
  */
 export const createMedicationRecord = async (data: MedicationFormData): Promise<MedicationRecord> => {
@@ -107,6 +130,7 @@ export const createMedicationRecord = async (data: MedicationFormData): Promise<
       data.next_due_date = calculateNextDueDate(data.start_date, data.frequency);
     }
 
+    // Use daily_care_logs table
     const medicationData = {
       dog_id: data.dog_id,
       task_name: 'Medication',
@@ -123,11 +147,14 @@ export const createMedicationRecord = async (data: MedicationFormData): Promise<
       medication_type: data.medication_type,
       prescription_id: data.prescription_id,
       refills_remaining: data.refills_remaining,
-      created_by: data.created_by
+      created_by: data.created_by,
+      timestamp: new Date().toISOString(),
+      notes: data.notes,
+      administrations: JSON.stringify([])
     };
 
     const { data: result, error } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .insert(medicationData)
       .select()
       .single();
@@ -147,9 +174,10 @@ export const createMedicationRecord = async (data: MedicationFormData): Promise<
 export const fetchDogMedications = async (dogId: string): Promise<MedicationRecord[]> => {
   try {
     const { data, error } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .select('*')
-      .eq('dog_id', dogId);
+      .eq('dog_id', dogId)
+      .eq('category', 'medication');
       
     if (error) throw error;
     
@@ -167,12 +195,18 @@ export const fetchDogMedications = async (dogId: string): Promise<MedicationReco
 export const getMedicationById = async (medicationId: string): Promise<MedicationRecord | null> => {
   try {
     const { data, error } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .select('*')
       .eq('id', medicationId)
+      .eq('category', 'medication')
       .single();
       
-    if (error) throw error;
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw error;
+    }
     
     return data ? castMedicationData(data) : null;
   } catch (error) {
@@ -206,10 +240,11 @@ export const updateMedicationRecord = async (
       medication_type: data.medication_type,
       prescription_id: data.prescription_id,
       refills_remaining: data.refills_remaining,
+      notes: data.notes
     };
     
     const { data: updatedRecord, error } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .update(updateData)
       .eq('id', medicationId)
       .select()
@@ -238,9 +273,10 @@ export const recordMedicationAdministration = async (
   try {
     // Get the current medication record
     const { data: currentRecord, error: fetchError } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .select('*')
       .eq('id', medicationId)
+      .eq('category', 'medication')
       .single();
       
     if (fetchError) throw fetchError;
@@ -252,6 +288,17 @@ export const recordMedicationAdministration = async (
     
     // Get existing administrations, or initialize if none
     const existingAdministrations = currentRecord.administrations || [];
+    let parsedAdministrations;
+    
+    try {
+      if (typeof existingAdministrations === 'string') {
+        parsedAdministrations = JSON.parse(existingAdministrations);
+      } else {
+        parsedAdministrations = existingAdministrations;
+      }
+    } catch (e) {
+      parsedAdministrations = [];
+    }
     
     // Create new administration entry with unique ID
     const newAdministration = {
@@ -261,7 +308,7 @@ export const recordMedicationAdministration = async (
     
     // Add to the administrations array
     const updatedAdministrations = [
-      ...existingAdministrations,
+      ...parsedAdministrations,
       newAdministration
     ];
 
@@ -274,9 +321,9 @@ export const recordMedicationAdministration = async (
     
     // Update the medication record with the new administration and next due date
     const { error: updateError } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .update({
-        administrations: updatedAdministrations,
+        administrations: JSON.stringify(updatedAdministrations),
         next_due_date: format(nextDueDate, 'yyyy-MM-dd'),
         last_administered: administrationData.timestamp
       })
@@ -295,9 +342,10 @@ export const recordMedicationAdministration = async (
 export const deleteMedicationRecord = async (medicationId: string): Promise<void> => {
   try {
     const { error } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .delete()
-      .eq('id', medicationId);
+      .eq('id', medicationId)
+      .eq('category', 'medication');
       
     if (error) throw error;
   } catch (error) {
@@ -315,8 +363,9 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
     const todayStr = format(today, 'yyyy-MM-dd');
     
     const { data, error } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .select('*')
+      .eq('category', 'medication')
       .lt('next_due_date', todayStr)
       .is('end_date', null);
       
@@ -340,8 +389,9 @@ export const fetchUpcomingMedications = async (daysAhead = 7): Promise<Medicatio
     const futureDateStr = format(futureDate, 'yyyy-MM-dd');
     
     const { data, error } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .select('*')
+      .eq('category', 'medication')
       .gte('next_due_date', todayStr)
       .lte('next_due_date', futureDateStr);
       
@@ -360,9 +410,10 @@ export const fetchUpcomingMedications = async (daysAhead = 7): Promise<Medicatio
 export const fetchMedicationStats = async (dogId: string): Promise<MedicationStats> => {
   try {
     const { data, error } = await supabase
-      .from('medication_records')
+      .from('daily_care_logs')
       .select('*')
-      .eq('dog_id', dogId);
+      .eq('dog_id', dogId)
+      .eq('category', 'medication');
       
     if (error) throw error;
     

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { FeedingRecord, FeedingSchedule, FeedingStats } from '@/types/feeding';
 import { format } from 'date-fns';
@@ -14,6 +15,8 @@ export interface FeedingRecordCreateData {
   notes?: string;
   staff_id: string;
   schedule_id?: string;
+  meal_type?: string; // Added missing props
+  refused?: boolean;
 }
 
 /**
@@ -38,7 +41,7 @@ export interface FeedingScheduleCreateData {
   food_type: string;
   amount: string;
   unit: string;
-  schedule_time: string;
+  schedule_time: string[];  // Changed to string[] to match DB
   special_instructions?: string;
   active: boolean;
 }
@@ -47,13 +50,25 @@ export interface FeedingScheduleCreateData {
  * Data required to update an existing feeding schedule.
  */
 export interface FeedingScheduleUpdateData {
-  food_type: string;
-  amount: string;
-  unit: string;
-  schedule_time: string;
+  food_type?: string;
+  amount?: string;
+  unit?: string;
+  schedule_time?: string[];  // Changed to string[] to match DB
   special_instructions?: string;
-  active: boolean;
+  active?: boolean;
 }
+
+// Helper function to enhance feeding record data
+const enhanceFeedingRecord = (record: any): FeedingRecord => {
+  return {
+    ...record,
+    meal_type: record.meal_type || 'breakfast', // Add default if missing
+    refused: record.refused || false, // Add default if missing
+    created_by: record.staff_id, // Use staff_id as created_by
+    category: 'feeding', // Add category
+    task_name: 'Feeding Record' // Add task_name
+  };
+};
 
 /**
  * Fetches all feeding records for a specific dog.
@@ -71,14 +86,7 @@ export const fetchFeedingRecords = async (dogId: string): Promise<FeedingRecord[
     if (error) throw error;
 
     // Transform the data to include the missing properties with default values
-    return data.map(record => ({
-      ...record,
-      meal_type: record.meal_type || 'breakfast', // Add default if missing
-      refused: record.refused || false, // Add default if missing
-      created_by: record.staff_id, // Use staff_id as created_by
-      category: 'feeding', // Add category
-      task_name: 'Feeding Record' // Add task_name
-    })) as FeedingRecord[];
+    return data.map(record => enhanceFeedingRecord(record)) as FeedingRecord[];
   } catch (error) {
     console.error('Error fetching feeding records:', error);
     throw error;
@@ -103,14 +111,7 @@ export const getFeedingRecordById = async (recordId: string): Promise<FeedingRec
     if (!data) return null;
 
     // Add missing properties
-    return {
-      ...data,
-      meal_type: data.meal_type || 'breakfast',
-      refused: data.refused || false,
-      created_by: data.staff_id,
-      category: 'feeding',
-      task_name: 'Feeding Record'
-    } as FeedingRecord;
+    return enhanceFeedingRecord(data) as FeedingRecord;
   } catch (error) {
     console.error('Error fetching feeding record:', error);
     throw error;
@@ -122,9 +123,9 @@ export const getFeedingRecordById = async (recordId: string): Promise<FeedingRec
  * @param feedingData The data for the new feeding record.
  * @returns A promise that resolves when the feeding record is created.
  */
-export const createFeedingRecord = async (feedingData: FeedingRecordCreateData): Promise<void> => {
+export const createFeedingRecord = async (feedingData: FeedingRecordCreateData, staffId: string): Promise<FeedingRecord> => {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('feeding_records')
       .insert({
         dog_id: feedingData.dog_id,
@@ -133,11 +134,17 @@ export const createFeedingRecord = async (feedingData: FeedingRecordCreateData):
         amount_consumed: feedingData.amount_consumed,
         timestamp: feedingData.timestamp.toISOString(),
         notes: feedingData.notes,
-        staff_id: feedingData.staff_id,
-        schedule_id: feedingData.schedule_id
-      });
+        staff_id: staffId || feedingData.staff_id,
+        schedule_id: feedingData.schedule_id,
+        meal_type: feedingData.meal_type || 'breakfast',
+        refused: feedingData.refused || false
+      })
+      .select()
+      .single();
 
     if (error) throw error;
+    
+    return enhanceFeedingRecord(data) as FeedingRecord;
   } catch (error) {
     console.error('Error creating feeding record:', error);
     throw error;
@@ -153,9 +160,9 @@ export const createFeedingRecord = async (feedingData: FeedingRecordCreateData):
 export const updateFeedingRecord = async (
   recordId: string,
   feedingData: FeedingRecordUpdateData
-): Promise<void> => {
+): Promise<FeedingRecord> => {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('feeding_records')
       .update({
         food_type: feedingData.food_type,
@@ -167,9 +174,13 @@ export const updateFeedingRecord = async (
         refused: feedingData.refused || false,
         schedule_id: feedingData.schedule_id
       })
-      .eq('id', recordId);
+      .eq('id', recordId)
+      .select()
+      .single();
 
     if (error) throw error;
+    
+    return enhanceFeedingRecord(data) as FeedingRecord;
   } catch (error) {
     console.error('Error updating feeding record:', error);
     throw error;
@@ -181,7 +192,7 @@ export const updateFeedingRecord = async (
  * @param recordId The ID of the feeding record to delete.
  * @returns A promise that resolves when the feeding record is deleted.
  */
-export const deleteFeedingRecord = async (recordId: string): Promise<void> => {
+export const deleteFeedingRecord = async (recordId: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('feeding_records')
@@ -189,9 +200,10 @@ export const deleteFeedingRecord = async (recordId: string): Promise<void> => {
       .eq('id', recordId);
 
     if (error) throw error;
+    return true;
   } catch (error) {
     console.error('Error deleting feeding record:', error);
-    throw error;
+    return false;
   }
 };
 
@@ -216,6 +228,9 @@ export const fetchFeedingSchedules = async (dogId: string): Promise<FeedingSched
   }
 };
 
+// Alias for backwards compatibility
+export const fetchDogFeedingSchedules = fetchFeedingSchedules;
+
 /**
  * Fetches a specific feeding schedule by its ID.
  * @param scheduleId The ID of the feeding schedule.
@@ -238,26 +253,32 @@ export const getFeedingScheduleById = async (scheduleId: string): Promise<Feedin
   }
 };
 
+// Alias for backwards compatibility
+export const fetchFeedingSchedule = getFeedingScheduleById;
+
 /**
  * Creates a new feeding schedule.
  * @param scheduleData The data for the new feeding schedule.
  * @returns A promise that resolves when the feeding schedule is created.
  */
-export const createFeedingSchedule = async (scheduleData: FeedingScheduleCreateData): Promise<void> => {
+export const createFeedingSchedule = async (scheduleData: FeedingScheduleCreateData): Promise<FeedingSchedule> => {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('feeding_schedules')
       .insert({
         dog_id: scheduleData.dog_id,
         food_type: scheduleData.food_type,
         amount: scheduleData.amount,
         unit: scheduleData.unit,
-        schedule_time: scheduleData.schedule_time,
+        schedule_time: scheduleData.schedule_time,  // Using string[] instead of string
         special_instructions: scheduleData.special_instructions,
         active: scheduleData.active
-      });
+      })
+      .select()
+      .single();
 
     if (error) throw error;
+    return data as FeedingSchedule;
   } catch (error) {
     console.error('Error creating feeding schedule:', error);
     throw error;
@@ -272,22 +293,27 @@ export const createFeedingSchedule = async (scheduleData: FeedingScheduleCreateD
  */
 export const updateFeedingSchedule = async (
   scheduleId: string,
-  scheduleData: FeedingScheduleUpdateData
-): Promise<void> => {
+  scheduleData: Partial<FeedingScheduleUpdateData>
+): Promise<FeedingSchedule> => {
   try {
-    const { error } = await supabase
+    // Create an update object with only the fields provided
+    const updateObj: any = {};
+    if (scheduleData.food_type !== undefined) updateObj.food_type = scheduleData.food_type;
+    if (scheduleData.amount !== undefined) updateObj.amount = scheduleData.amount;
+    if (scheduleData.unit !== undefined) updateObj.unit = scheduleData.unit;
+    if (scheduleData.schedule_time !== undefined) updateObj.schedule_time = scheduleData.schedule_time;
+    if (scheduleData.special_instructions !== undefined) updateObj.special_instructions = scheduleData.special_instructions;
+    if (scheduleData.active !== undefined) updateObj.active = scheduleData.active;
+    
+    const { data, error } = await supabase
       .from('feeding_schedules')
-      .update({
-        food_type: scheduleData.food_type,
-        amount: scheduleData.amount,
-        unit: scheduleData.unit,
-        schedule_time: scheduleData.schedule_time,
-        special_instructions: scheduleData.special_instructions,
-        active: scheduleData.active
-      })
-      .eq('id', scheduleId);
+      .update(updateObj)
+      .eq('id', scheduleId)
+      .select()
+      .single();
 
     if (error) throw error;
+    return data as FeedingSchedule;
   } catch (error) {
     console.error('Error updating feeding schedule:', error);
     throw error;
@@ -299,7 +325,7 @@ export const updateFeedingSchedule = async (
  * @param scheduleId The ID of the feeding schedule to delete.
  * @returns A promise that resolves when the feeding schedule is deleted.
  */
-export const deleteFeedingSchedule = async (scheduleId: string): Promise<void> => {
+export const deleteFeedingSchedule = async (scheduleId: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('feeding_schedules')
@@ -307,11 +333,15 @@ export const deleteFeedingSchedule = async (scheduleId: string): Promise<void> =
       .eq('id', scheduleId);
 
     if (error) throw error;
+    return true;
   } catch (error) {
     console.error('Error deleting feeding schedule:', error);
-    throw error;
+    return false;
   }
 };
+
+// Aliases for fetchFeedingRecords for backwards compatibility
+export const fetchDogFeedingRecords = fetchFeedingRecords;
 
 /**
  * Fetches feeding statistics for a specific dog.
@@ -328,14 +358,7 @@ export const fetchDogFeedingStats = async (dogId: string): Promise<FeedingStats>
     if (error) throw error;
 
     // Transform to include missing properties
-    const records = data.map(record => ({
-      ...record,
-      meal_type: record.meal_type || 'breakfast',
-      refused: record.refused || false,
-      created_by: record.staff_id,
-      category: 'feeding',
-      task_name: 'Feeding Record'
-    })) as FeedingRecord[];
+    const records = data.map(record => enhanceFeedingRecord(record)) as FeedingRecord[];
 
     // Helper function to calculate the average of an array of numbers
     const calculateAverage = (numbers: number[]): number => {
@@ -362,7 +385,7 @@ export const fetchDogFeedingStats = async (dogId: string): Promise<FeedingStats>
     };
     
     // Calculate the average amount consumed
-    const calculateAvgAmountConsumed = (records: FeedingRecord[]): number => {
+    const calculateTotalAmountConsumed = (records: FeedingRecord[]): number => {
       const validRecords = records.filter(record => record.amount_consumed !== null && record.amount_consumed !== undefined);
       if (validRecords.length === 0) {
         return 0;
@@ -373,22 +396,26 @@ export const fetchDogFeedingStats = async (dogId: string): Promise<FeedingStats>
         return sum + amount;
       }, 0);
     
-      return totalAmount / validRecords.length;
+      return totalAmount;
     };
 
     // Return the stats object
     return {
       totalMeals: records.length,
-      avgAmountConsumed: calculateAverage(records.map(r => parseFloat(r.amount_consumed || '0'))),
+      totalAmountConsumed: calculateTotalAmountConsumed(records),
       refusalRate: calculateRefusalRate(records),
       mealBreakdown: calculateMealTypeBreakdown(records),
       avgAmountOffered: calculateAverage(records.map(r => parseFloat(r.amount_offered || '0'))),
+      mealsRefused: records.filter(record => record.refused).length
     };
   } catch (error) {
     console.error('Error fetching feeding stats:', error);
     throw error;
   }
 };
+
+// Add an alias for the stats function
+export const getFeedingStats = fetchDogFeedingStats;
 
 /**
  * Generates a report of feeding records within a specified date range.
@@ -409,14 +436,7 @@ export const generateFeedingReport = async (startDate: Date, endDate: Date): Pro
 
     if (error) throw error;
 
-    return data.map(record => ({
-      ...record,
-      meal_type: record.meal_type || 'breakfast',
-      refused: record.refused || false,
-      created_by: record.staff_id,
-      category: 'feeding',
-      task_name: 'Feeding Record'
-    })) as FeedingRecord[];
+    return data.map(record => enhanceFeedingRecord(record)) as FeedingRecord[];
   } catch (error) {
     console.error('Error generating feeding report:', error);
     throw error;

@@ -7,7 +7,7 @@ import { DogCareStatus } from '@/types/dailyCare';
 import { EmptyState, SkeletonLoader } from '@/components/ui/standardized';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
-import { getMedicationRecords } from '@/services/medicationService';
+import { fetchDogMedications } from '@/services/medicationService';
 import { MedicationRecord } from '@/types/medication';
 import MedicationForm from '@/components/dogs/components/care/medication/MedicationForm';
 import MedicationsList from '@/components/dogs/components/care/medication/MedicationsList';
@@ -23,6 +23,7 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showAddMedication, setShowAddMedication] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
+  const [editingMedicationId, setEditingMedicationId] = useState<string | null>(null);
   const { toast } = useToast();
   
   // Add a small delay to create a nicer loading transition
@@ -42,7 +43,10 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
       
       const dogIds = dogStatuses.map(dog => dog.dog_id);
       try {
-        return await getMedicationRecords(dogIds);
+        // Fetch medications for each dog and combine
+        const medicationsPromises = dogIds.map(dogId => fetchDogMedications(dogId));
+        const medicationsByDog = await Promise.all(medicationsPromises);
+        return medicationsByDog.flat();
       } catch (error) {
         console.error('Error fetching medication records:', error);
         return [];
@@ -79,6 +83,12 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
 
   const handleOpenAddMedication = (dogId: string) => {
     setSelectedDogId(dogId);
+    setEditingMedicationId(null);
+    setShowAddMedication(true);
+  };
+  
+  const handleEditMedication = (medicationId: string) => {
+    setEditingMedicationId(medicationId);
     setShowAddMedication(true);
   };
 
@@ -133,8 +143,8 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
               ) : (
                 <MedicationsList 
                   medications={medicationRecords || []}
-                  dogId={dogStatuses[0].dog_id}
                   onRefresh={handleRefresh}
+                  onEdit={handleEditMedication}
                 />
               )}
             </CardContent>
@@ -146,14 +156,23 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
       <Dialog open={showAddMedication} onOpenChange={setShowAddMedication}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Add New Medication</DialogTitle>
+            <DialogTitle>
+              {editingMedicationId ? 'Edit Medication' : 'Add New Medication'}
+            </DialogTitle>
             <DialogDescription>
-              Add a new medication record for a dog.
+              {editingMedicationId 
+                ? 'Edit the medication details below.'
+                : 'Add a new medication record for a dog.'}
             </DialogDescription>
           </DialogHeader>
           {selectedDogId && (
             <MedicationForm 
               dogId={selectedDogId}
+              existingMedication={
+                editingMedicationId 
+                  ? medicationRecords?.find(med => med.id === editingMedicationId) 
+                  : undefined
+              }
               onSuccess={handleMedicationAdded}
               onCancel={() => setShowAddMedication(false)}
             />

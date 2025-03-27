@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -35,19 +36,20 @@ interface MedicationsListProps {
   medications: MedicationRecord[];
   onRefresh: () => void;
   onEdit: (id: string) => void;
+  dogId?: string; // Added dogId as an optional prop
 }
 
 const MedicationsList: React.FC<MedicationsListProps> = ({ 
   medications, 
   onRefresh, 
-  onEdit 
+  onEdit,
+  dogId 
 }) => {
   const { toast } = useToast();
   const { user } = useUser();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingId, setDeletingId] = useState<string>('');
 
-  // Fix the toast usage in handleDeleteMedication
   const handleDeleteMedication = async (id: string) => {
     if (!user?.id) {
       toast({
@@ -80,7 +82,6 @@ const MedicationsList: React.FC<MedicationsListProps> = ({
     }
   };
 
-  // Fix this toast usage as well
   const handleAddAdministration = async (medicationId: string) => {
     if (!user?.id) {
       toast({
@@ -187,10 +188,10 @@ const MedicationsList: React.FC<MedicationsListProps> = ({
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
             <AlertDialogAction 
-              disabled={deletingId === ''}
               onClick={() => handleDeleteMedication(deletingId)}
+              disabled={!deletingId}
             >
-              {deletingId === '' ? 'Deleting...' : 'Delete'}
+              {!deletingId ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

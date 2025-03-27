@@ -1,51 +1,54 @@
 
-import { CareRecord } from '@/types/careRecord';
-
-/**
- * Types for the feeding management system
- */
+export interface FeedingRecord {
+  id: string;
+  dog_id: string;
+  food_type: string;
+  amount_offered: string;
+  amount_consumed: string;
+  timestamp: string;
+  created_at: string;
+  notes?: string;
+  staff_id: string;
+  schedule_id?: string;
+  meal_type: string;
+  refused: boolean;
+  created_by: string;
+  category: string;
+  task_name: string;
+}
 
 export interface FeedingSchedule {
   id: string;
   dog_id: string;
   food_type: string;
   amount: string;
-  unit: 'cups' | 'grams' | 'ounces' | 'tablespoons' | 'teaspoons';
-  schedule_time: string[]; // Array of times (HH:MM)
+  unit: string;
+  schedule_time: string[];
   special_instructions?: string;
   active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-export interface FeedingRecord extends CareRecord {
-  food_type: string;
-  amount_offered: string;
-  amount_consumed: string;
-  refused?: boolean;
-  meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  schedule_id?: string;
-  care_record_id?: string;
-}
-
 export interface FeedingFormData {
   dog_id: string;
   food_type: string;
   amount_offered: string;
-  amount_consumed?: string;
-  refused?: boolean;
-  meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  amount_consumed: string;
+  timestamp: string | Date;
   notes?: string;
-  timestamp: Date;
   schedule_id?: string;
+  meal_type?: string;
+  refused?: boolean;
+  staff_id?: string;
 }
 
 export interface FeedingScheduleFormData {
   dog_id: string;
   food_type: string;
   amount: string;
-  unit: 'cups' | 'grams' | 'ounces' | 'tablespoons' | 'teaspoons';
-  schedule_time: string[]; // Array of times (HH:MM)
+  unit: string;
+  schedule_time: string[] | string;
   special_instructions?: string;
   active: boolean;
 }
@@ -53,7 +56,17 @@ export interface FeedingScheduleFormData {
 export interface FeedingStats {
   totalMeals: number;
   totalAmountConsumed: number;
-  averageConsumption: number;
+  refusalRate: number;
+  mealBreakdown: {
+    [key: string]: number;
+  };
+  avgAmountOffered: number;
   mealsRefused: number;
-  mealsByType: Record<string, number>;
+}
+
+export interface FeedingHistoryFilters {
+  dogId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  foodType?: string;
 }
