@@ -23,6 +23,11 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
   // Ensure we have a valid categories array to pass to CategoryTabs
   const categories = safeCategories.map(c => ({ id: c.id, label: c.name }));
   
+  // If hideTopLevelTabs is true, don't render the CategoryTabs component
+  if (hideTopLevelTabs) {
+    return null;
+  }
+  
   return (
     <div className="bg-card border-b">
       <div className="p-4 border-b">
@@ -32,14 +37,11 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
         </p>
       </div>
       
-      {/* Only show category tabs if not hidden */}
-      {!hideTopLevelTabs && (
-        <CategoryTabs 
-          categories={categories}
-          activeCategory={activeCategory} 
-          onCategoryChange={onCategoryChange} 
-        />
-      )}
+      <CategoryTabs 
+        categories={categories}
+        activeCategory={activeCategory} 
+        onCategoryChange={onCategoryChange} 
+      />
     </div>
   );
 };

@@ -69,7 +69,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     ? observations[selectedDogId] || [] 
     : [];
 
-  // Create wrapper functions to handle type mismatches
+  // Create wrapper functions to bridge type differences between the hooks and components
   const hasPottyBreakWrapper = (dogId: string, hour: number): boolean => {
     // Convert hour to timeSlot string format if needed
     const timeSlot = timeSlots && timeSlots[hour] ? timeSlots[hour] : '';
@@ -83,7 +83,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
 
   const hasObservationWrapper = (dogId: string, hour: number): boolean => {
     const timeSlot = timeSlots && timeSlots[hour] ? timeSlots[hour] : '';
-    return hasObservation(dogId, timeSlot, activeCategory);
+    return hasObservation(dogId, timeSlot);
   };
 
   const getObservationDetailsWrapper = (dogId: string, hour: number): any => {
@@ -164,6 +164,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onCategoryChange={handleCategoryChange}
           showLoading={showLoading}
           hideTopLevelTabs={hideTopLevelTabs}
+          timeSlots={timeSlots}
         />
 
         {/* Add Group Dialog */}

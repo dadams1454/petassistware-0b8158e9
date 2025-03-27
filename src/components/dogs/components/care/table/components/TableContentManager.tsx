@@ -24,6 +24,7 @@ interface TableContentManagerProps {
   onCategoryChange: (category: string) => void;
   showLoading: boolean;
   hideTopLevelTabs?: boolean;
+  timeSlots?: string[];
 }
 
 const TableContentManager: React.FC<TableContentManagerProps> = ({
@@ -42,7 +43,8 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
   onRefresh,
   onCategoryChange,
   showLoading,
-  hideTopLevelTabs = false
+  hideTopLevelTabs = false,
+  timeSlots = []
 }) => {
   // Show no dogs state if the array is empty
   if (!dogsStatus || dogsStatus.length === 0) {
@@ -51,34 +53,36 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
 
   // Create wrapper functions to adapt to the TimeTableContent interface which uses strings
   const hasPottyBreakWrapper = (dogId: string, timeSlot: string): boolean => {
-    // Find the index of the timeSlot in the sortedDogs list
-    // This is a simplistic approach - in a real app, you'd map timeSlots to indices
-    const hour = 0; // Default to 0 if not found
+    const hourIndex = timeSlots.indexOf(timeSlot);
+    const hour = hourIndex >= 0 ? hourIndex : 0;
     return hasPottyBreak(dogId, hour);
   };
 
   const hasCareLoggedWrapper = (dogId: string, timeSlot: string, category: string): boolean => {
-    const hour = 0; // Default to 0 if not found
+    const hourIndex = timeSlots.indexOf(timeSlot);
+    const hour = hourIndex >= 0 ? hourIndex : 0;
     return hasCareLogged(dogId, hour);
   };
 
   const hasObservationWrapper = (dogId: string, timeSlot: string): boolean => {
-    const hour = 0; // Default to 0 if not found
+    const hourIndex = timeSlots.indexOf(timeSlot);
+    const hour = hourIndex >= 0 ? hourIndex : 0;
     return hasObservation(dogId, hour);
   };
 
   const getObservationDetailsWrapper = (dogId: string): any => {
-    const hour = 0; // Default to 0 if not found
-    return getObservationDetails(dogId, hour);
+    return getObservationDetails(dogId, 0);
   };
 
   const onCellClickWrapper = (dogId: string, dogName: string, timeSlot: string, category: string): void => {
-    const hour = 0; // Default to 0 if not found
+    const hourIndex = timeSlots.indexOf(timeSlot);
+    const hour = hourIndex >= 0 ? hourIndex : 0;
     onCellClick(dogId, hour);
   };
 
   const onCellContextMenuWrapper = (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string): void => {
-    const hour = 0; // Default to 0 if not found
+    const hourIndex = timeSlots.indexOf(timeSlot);
+    const hour = hourIndex >= 0 ? hourIndex : 0;
     onCellContextMenu(e, dogId, hour);
   };
 
@@ -87,8 +91,7 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
   };
 
   const onObservationClickWrapper = (dogId: string, dogName: string): void => {
-    const hour = 0; // Default to 0 if not found
-    onObservationClick(dogId, hour);
+    onObservationClick(dogId, 0);
   };
 
   return (
@@ -110,7 +113,7 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
         <TimeTableContent
           activeCategory={activeCategory}
           sortedDogs={sortedDogs}
-          timeSlots={[]} // Make sure to provide valid timeSlots
+          timeSlots={timeSlots}
           hasPottyBreak={hasPottyBreakWrapper}
           hasCareLogged={hasCareLoggedWrapper}
           hasObservation={hasObservationWrapper}
