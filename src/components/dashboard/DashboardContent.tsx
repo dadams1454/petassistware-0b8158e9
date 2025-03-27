@@ -13,6 +13,7 @@ import CareLogDialog from './dialogs/CareLogDialog';
 import PottyBreaksTab from './tabs/PottyBreaksTab';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
+import FeedingTab from './tabs/FeedingTab';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -141,6 +142,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           <MedicationsTab 
             dogStatuses={dogStatuses} 
             onRefreshDogs={handleManualRefresh} 
+          />
+        </TabsContent>
+        
+        <TabsContent value="feeding">
+          <FeedingTab 
+            dogStatuses={dogStatuses || []} 
+            onRefreshDogs={handleManualRefresh}
           />
         </TabsContent>
         

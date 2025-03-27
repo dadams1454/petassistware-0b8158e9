@@ -43,6 +43,9 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
   const today = new Date();
   const dateDisplay = format(today, 'EEEE, MMMM d');
 
+  // Properly handle the dogs array
+  const validDogs = Array.isArray(dogs) ? dogs : [];
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -62,22 +65,25 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
       );
     }
     
-    if (dogs.length === 0) {
+    if (validDogs.length === 0) {
       return <NoDogsMessage onRefresh={onRefresh} />;
     }
 
     if (viewMode === 'table') {
+      // Make sure processedMedicationLogs is a valid object
+      const validMedicationLogs = processedMedicationLogs || {};
+      
       return (
         <MedicationTableView 
-          dogs={dogs}
+          dogs={validDogs}
           preventativeMeds={Object.fromEntries(
-            Object.entries(processedMedicationLogs).map(
-              ([dogId, meds]) => [dogId, meds.preventative || []]
+            Object.entries(validMedicationLogs).map(
+              ([dogId, meds]) => [dogId, meds?.preventative || []]
             )
           )}
           otherMeds={Object.fromEntries(
-            Object.entries(processedMedicationLogs).map(
-              ([dogId, meds]) => [dogId, meds.other || []]
+            Object.entries(validMedicationLogs).map(
+              ([dogId, meds]) => [dogId, meds?.other || []]
             )
           )}
           onLogMedication={handleLogMedication}
@@ -87,7 +93,7 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
     
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-all duration-300">
-        {dogs.map(dog => {
+        {validDogs.map(dog => {
           const dogMedications = processedMedicationLogs[dog.dog_id] || { preventative: [], other: [] };
           
           return (
