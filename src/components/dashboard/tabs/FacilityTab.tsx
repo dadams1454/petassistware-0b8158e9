@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Plus, Filter, CalendarDays, ClipboardCheck } from 'lucide-react';
+import { Building2, Plus, Filter, CalendarDays, ClipboardCheck, Clipboard, ListChecks } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +12,7 @@ import FacilityTasksList from '@/components/facility/FacilityTasksList';
 import FacilityTaskForm from '@/components/facility/FacilityTaskForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import FacilityTaskDialog from '@/components/facility/FacilityTaskDialog';
+import FacilityDailyChecklist from '@/components/facility/FacilityDailyChecklist';
 import { FacilityTask } from '@/types/facility';
 import { DogCareStatus } from '@/types/dailyCare';
 
@@ -26,6 +27,7 @@ const FacilityTab: React.FC<FacilityTabProps> = ({ onRefreshData, dogStatuses })
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFrequency, setSelectedFrequency] = useState('all');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<'tasks' | 'checklist'>('tasks');
   
   // Fetch facility areas
   const { data: areas, isLoading: isLoadingAreas } = useQuery({
@@ -127,76 +129,106 @@ const FacilityTab: React.FC<FacilityTabProps> = ({ onRefreshData, dogStatuses })
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-3">
-        <div className="relative w-full sm:w-72">
-          <Input
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
-          />
-          <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-        </div>
-        
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            className="h-10 gap-1"
-            onClick={handleLogTask}
+            variant={currentView === 'tasks' ? "default" : "outline"}
+            className="gap-1"
+            onClick={() => setCurrentView('tasks')}
           >
-            <ClipboardCheck className="h-4 w-4" />
-            <span>Log Task</span>
+            <Clipboard className="h-4 w-4" />
+            <span>Manage Tasks</span>
           </Button>
           
-          <Button onClick={handleAddTask}>
-            <Plus className="h-4 w-4 mr-1" />
-            <span>Add Task</span>
+          <Button
+            variant={currentView === 'checklist' ? "default" : "outline"}
+            className="gap-1"
+            onClick={() => setCurrentView('checklist')}
+          >
+            <ListChecks className="h-4 w-4" />
+            <span>Daily Checklist</span>
           </Button>
         </div>
+        
+        {currentView === 'tasks' && (
+          <div className="flex justify-between gap-3 flex-col sm:flex-row">
+            <div className="relative w-full sm:w-72">
+              <Input
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+              <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 gap-1"
+                onClick={handleLogTask}
+              >
+                <ClipboardCheck className="h-4 w-4" />
+                <span>Log Task</span>
+              </Button>
+              
+              <Button onClick={handleAddTask}>
+                <Plus className="h-4 w-4 mr-1" />
+                <span>Add Task</span>
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
       
-      <Tabs 
-        value={selectedFrequency} 
-        onValueChange={setSelectedFrequency}
-        className="w-full"
-      >
-        <TabsList className="w-full justify-start overflow-auto p-1 bg-background border-b">
-          <TabsTrigger value="all">All Tasks</TabsTrigger>
-          <TabsTrigger value="daily">Daily</TabsTrigger>
-          <TabsTrigger value="weekly">Weekly</TabsTrigger>
-          <TabsTrigger value="monthly">Monthly</TabsTrigger>
-          <TabsTrigger value="quarterly">Quarterly</TabsTrigger>
-          <TabsTrigger value="custom">Custom</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      {isLoading ? (
-        <div className="flex justify-center p-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      ) : filteredTasks && filteredTasks.length > 0 ? (
-        <FacilityTasksList 
-          tasks={filteredTasks} 
-          onEdit={handleEditTask}
-          onRefresh={refetchTasks}
-        />
-      ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <EmptyState
-              icon={<Building2 className="h-12 w-12 text-muted-foreground" />}
-              title="No Tasks Found"
-              description={searchQuery 
-                ? "No tasks match your search criteria. Try a different search term." 
-                : "Start by adding facility management tasks."
-              }
-              action={{
-                label: "Add Task",
-                onClick: handleAddTask
-              }}
+      {currentView === 'tasks' ? (
+        <>
+          <Tabs 
+            value={selectedFrequency} 
+            onValueChange={setSelectedFrequency}
+            className="w-full"
+          >
+            <TabsList className="w-full justify-start overflow-auto p-1 bg-background border-b">
+              <TabsTrigger value="all">All Tasks</TabsTrigger>
+              <TabsTrigger value="daily">Daily</TabsTrigger>
+              <TabsTrigger value="weekly">Weekly</TabsTrigger>
+              <TabsTrigger value="monthly">Monthly</TabsTrigger>
+              <TabsTrigger value="quarterly">Quarterly</TabsTrigger>
+              <TabsTrigger value="custom">Custom</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          {isLoading ? (
+            <div className="flex justify-center p-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredTasks && filteredTasks.length > 0 ? (
+            <FacilityTasksList 
+              tasks={filteredTasks} 
+              onEdit={handleEditTask}
+              onRefresh={refetchTasks}
             />
-          </CardContent>
-        </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <EmptyState
+                  icon={<Building2 className="h-12 w-12 text-muted-foreground" />}
+                  title="No Tasks Found"
+                  description={searchQuery 
+                    ? "No tasks match your search criteria. Try a different search term." 
+                    : "Start by adding facility management tasks."
+                  }
+                  action={{
+                    label: "Add Task",
+                    onClick: handleAddTask
+                  }}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </>
+      ) : (
+        <FacilityDailyChecklist />
       )}
       
       {/* Add/Edit Task Dialog */}
@@ -221,15 +253,17 @@ const FacilityTab: React.FC<FacilityTabProps> = ({ onRefreshData, dogStatuses })
       </Dialog>
       
       {/* Quick Add Button (Mobile friendly) */}
-      <div className="fixed bottom-6 right-6 sm:hidden">
-        <Button
-          size="icon"
-          className="h-14 w-14 rounded-full shadow-lg"
-          onClick={handleAddTask}
-        >
-          <Plus className="h-6 w-6" />
-        </Button>
-      </div>
+      {currentView === 'tasks' && (
+        <div className="fixed bottom-6 right-6 sm:hidden">
+          <Button
+            size="icon"
+            className="h-14 w-14 rounded-full shadow-lg"
+            onClick={handleAddTask}
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

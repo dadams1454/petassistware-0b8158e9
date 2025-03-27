@@ -31,4 +31,21 @@ export interface FacilityTaskLog {
   created_at: string;
   photo_url: string | null;
   follow_up_required: boolean;
+  initials?: string;
+  verified_by?: string;
+}
+
+export interface DailyChecklistSubmission {
+  id: string;
+  date: string;
+  completed_by: string;
+  verified_by: string | null;
+  comments: string | null;
+  created_at: string;
+  tasks: {
+    task_id: string;
+    completed: boolean;
+    initials: string;
+    time: string;
+  }[];
 }
