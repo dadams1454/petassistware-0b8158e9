@@ -262,7 +262,14 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
               <TabsContent value="cards">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {effectiveDogStatuses.map((dog) => (
-                    <DogCareCard key={dog.dog_id} dog={dog} />
+                    <DogCareCard 
+                      key={dog.dog_id} 
+                      dog={{
+                        id: dog.dog_id,
+                        name: dog.dog_name,
+                        photo_url: dog.dog_photo
+                      }} 
+                    />
                   ))}
                 </div>
               </TabsContent>
