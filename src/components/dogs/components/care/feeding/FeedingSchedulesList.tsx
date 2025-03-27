@@ -27,7 +27,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Edit, Trash, AlarmClock } from 'lucide-react';
 
 import { FeedingSchedule } from '@/types/feeding';
-import { useFeeding } from '@/contexts/feeding';
+import { useFeeding } from '@/contexts/feeding/FeedingContext';
 import FeedingScheduleForm from './FeedingScheduleForm';
 
 interface FeedingSchedulesListProps {
@@ -196,7 +196,7 @@ const FeedingSchedulesList: React.FC<FeedingSchedulesListProps> = ({
               <FeedingScheduleForm 
                 dogId={dogId}
                 scheduleId={selectedSchedule.id}
-                initialValues={{
+                defaultValues={{
                   food_type: selectedSchedule.food_type,
                   amount: selectedSchedule.amount,
                   unit: selectedSchedule.unit as 'cups' | 'grams' | 'ounces' | 'tablespoons' | 'teaspoons',

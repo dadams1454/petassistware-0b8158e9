@@ -3,6 +3,7 @@ import {
   MedicationRecord, 
   MedicationFormData, 
   MedicationFrequency, 
+  MedicationRoute,
   MedicationStatus,
   MedicationStats
 } from '@/types/medication';
@@ -47,7 +48,7 @@ const castMedicationData = (data: any): MedicationRecord => {
     refills_remaining: medicationData.refills_remaining || 0,
     administered_by: data.administered_by || null,
     notes: data.notes || null,
-    administrations: data.administrations || []
+    administrations: medicationData.administrations || []
   };
 };
 
@@ -335,7 +336,7 @@ export const recordMedicationAdministration = async (
     }
     
     // Parse existing metadata
-    let medicationMetadata = {};
+    let medicationMetadata: any = {};
     if (currentRecord.medication_metadata) {
       if (typeof currentRecord.medication_metadata === 'string') {
         try {
@@ -349,7 +350,9 @@ export const recordMedicationAdministration = async (
     }
     
     // Get existing administrations, or initialize if none
-    const existingAdministrations = medicationMetadata.administrations || [];
+    const existingAdministrations = Array.isArray(medicationMetadata.administrations) 
+      ? medicationMetadata.administrations 
+      : [];
     
     // Create new administration entry with unique ID
     const newAdministration = {

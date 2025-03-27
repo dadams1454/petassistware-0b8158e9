@@ -1,18 +1,18 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useUser } from '@/contexts/UserContext';
+import { FeedingSchedule, FeedingRecord, FeedingFormData, FeedingScheduleFormData } from '@/types/feeding';
 import { 
-  fetchFeedingSchedules, 
-  createFeedingRecord, 
+  fetchFeedingSchedules,
   fetchFeedingRecords,
   createFeedingSchedule,
   updateFeedingSchedule,
-  deleteFeedingRecord,
   deleteFeedingSchedule,
-  getFeedingStats,
-  fetchDogFeedingSchedules, 
-  fetchDogFeedingRecords
+  createFeedingRecord,
+  updateFeedingRecord,
+  deleteFeedingRecord,
+  fetchFeedingStats
 } from '@/services/feedingService';
-import { FeedingRecord, FeedingSchedule, FeedingFormData, FeedingScheduleFormData, FeedingStats } from '@/types/feeding';
 import { useToast } from '@/components/ui/use-toast';
 
 interface FeedingContextType {

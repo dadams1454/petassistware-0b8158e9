@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Plus, RefreshCw, History } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { FeedingSchedule } from '@/types/feeding';
-import { useFeeding } from '@/contexts/FeedingContext';
+import { useFeeding } from '@/contexts/feeding/FeedingContext';
 import FeedingScheduleForm from './FeedingScheduleForm';
 import FeedingSchedulesList from './FeedingSchedulesList';
 import FeedingHistory from './FeedingHistory';
@@ -20,10 +19,10 @@ const FeedingManagementTab: React.FC<FeedingManagementTabProps> = ({ dogId, dogN
   const { toast } = useToast();
   const { 
     loading, 
-    feedingSchedules, 
-    feedingRecords,
-    fetchFeedingSchedules, 
-    fetchFeedingHistory,
+    schedules: feedingSchedules, 
+    records: feedingRecords,
+    fetchSchedules: fetchFeedingSchedules, 
+    fetchRecords: fetchFeedingHistory,
     deleteSchedule
   } = useFeeding();
   
@@ -166,7 +165,7 @@ const FeedingManagementTab: React.FC<FeedingManagementTabProps> = ({ dogId, dogN
             <FeedingScheduleForm 
               dogId={dogId}
               scheduleId={selectedSchedule.id}
-              initialValues={{
+              defaultValues={{
                 food_type: selectedSchedule.food_type,
                 amount: selectedSchedule.amount,
                 unit: selectedSchedule.unit,

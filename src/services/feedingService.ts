@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { 
   FeedingRecord, 
@@ -219,12 +218,12 @@ export const createFeedingRecord = async (
   staffId: string
 ): Promise<FeedingRecord> => {
   try {
-    const recordData: FeedingRecordCreateData = {
+    const recordData = {
       dog_id: data.dog_id,
       food_type: data.food_type,
       amount_offered: data.amount_offered,
       amount_consumed: data.amount_consumed || '0',
-      timestamp: typeof data.timestamp === 'string' ? new Date(data.timestamp) : data.timestamp,
+      timestamp: typeof data.timestamp === 'string' ? data.timestamp : data.timestamp.toISOString(),
       notes: data.notes,
       schedule_id: data.schedule_id,
       meal_type: data.meal_type || 'regular',
@@ -260,7 +259,7 @@ export const updateFeedingRecord = async (
         food_type: data.food_type,
         amount_offered: data.amount_offered,
         amount_consumed: data.amount_consumed,
-        timestamp: data.timestamp,
+        timestamp: typeof data.timestamp === 'string' ? data.timestamp : data.timestamp.toISOString(),
         notes: data.notes,
         schedule_id: data.schedule_id,
         meal_type: data.meal_type || 'regular',

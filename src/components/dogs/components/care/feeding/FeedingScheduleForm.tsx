@@ -25,7 +25,7 @@ const feedingScheduleSchema = z.object({
 
 type FormValues = z.infer<typeof feedingScheduleSchema>;
 
-interface FeedingScheduleFormProps {
+export interface FeedingScheduleFormProps {
   dogId: string;
   scheduleId?: string;
   onSuccess?: () => void;
@@ -64,7 +64,12 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({
     try {
       const scheduleData: FeedingScheduleFormData = {
         dog_id: dogId,
-        ...values
+        food_type: values.food_type,
+        amount: values.amount,
+        unit: values.unit,
+        schedule_time: values.schedule_time,
+        special_instructions: values.special_instructions,
+        active: values.active
       };
       
       if (scheduleId) {
