@@ -7,10 +7,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RefreshCw, Pill, Clock, AlertTriangle } from 'lucide-react';
 
 import { MedicationProvider, useMedication } from '@/contexts/medication';
-import MedicationSchedulesList from './MedicationSchedulesList';
-import MedicationHistory from './MedicationHistory';
+import MedicationsList from './MedicationsList';
 import MedicationForm from './MedicationForm';
-import MedicationScheduleForm from './MedicationScheduleForm';
 import { MedicationRecord, MedicationSchedule, MedicationStats } from '@/types/medication';
 
 interface MedicationDashboardProps {
@@ -57,18 +55,15 @@ const MedicationStatCards = ({ stats }: { stats: MedicationStats | null }) => {
 
 const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId, dogName }) => {
   const { 
-    fetchSchedules, 
-    fetchRecords, 
+    fetchMedications, 
     fetchStats,
-    schedules,
-    records,
+    medications,
     stats,
     loading 
   } = useMedication();
   
-  const [activeTab, setActiveTab] = useState('schedules');
+  const [activeTab, setActiveTab] = useState('medications');
   const [addMedicationDialogOpen, setAddMedicationDialogOpen] = useState(false);
-  const [addScheduleDialogOpen, setAddScheduleDialogOpen] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -77,8 +72,7 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
 
   const refreshData = async () => {
     await Promise.all([
-      fetchSchedules(dogId),
-      fetchRecords(dogId),
+      fetchMedications(dogId),
       fetchStats(dogId)
     ]);
   };
@@ -97,15 +91,6 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
         </Button>
         
         <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setAddScheduleDialogOpen(true)}
-        >
-          <Clock className="h-4 w-4 mr-1" />
-          Create Schedule
-        </Button>
-        
-        <Button 
           variant="ghost" 
           size="sm" 
           onClick={refreshData} 
@@ -120,34 +105,30 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
       <MedicationStatCards stats={stats} />
       
       {/* Main Content Tabs */}
-      <Tabs defaultValue="schedules" onValueChange={setActiveTab}>
+      <Tabs defaultValue="medications" onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="schedules">Schedules</TabsTrigger>
+          <TabsTrigger value="medications">Medications</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="schedules" className="pt-4">
-          <MedicationSchedulesList 
-            medications={schedules}
+        <TabsContent value="medications" className="pt-4">
+          <MedicationsList 
+            medications={medications || []}
             onRefresh={refreshData}
             onEdit={(medicationId) => {
-              // Handle edit medication
+              // Handle edit medication - we'll implement this later
             }}
           />
         </TabsContent>
         
         <TabsContent value="history" className="pt-4">
-          <MedicationHistory 
-            medications={records}
-            onRefresh={refreshData}
-            onEdit={(medicationId) => {
-              // Handle edit medication
-            }}
-          />
+          <div className="text-center p-8 text-muted-foreground">
+            <p>Medication history will be displayed here</p>
+          </div>
         </TabsContent>
       </Tabs>
       
-      {/* Dialogs */}
+      {/* Add Medication Dialog */}
       <Dialog open={addMedicationDialogOpen} onOpenChange={setAddMedicationDialogOpen}>
         <DialogContent className="max-w-md">
           <MedicationForm 
@@ -157,19 +138,6 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
               refreshData();
             }}
             onCancel={() => setAddMedicationDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-      
-      <Dialog open={addScheduleDialogOpen} onOpenChange={setAddScheduleDialogOpen}>
-        <DialogContent className="max-w-md">
-          <MedicationScheduleForm 
-            dogId={dogId}
-            onSuccess={() => {
-              setAddScheduleDialogOpen(false);
-              refreshData();
-            }}
-            onCancel={() => setAddScheduleDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>

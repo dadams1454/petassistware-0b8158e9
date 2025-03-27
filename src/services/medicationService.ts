@@ -282,7 +282,8 @@ export const updateMedicationRecord = async (
       next_due_date: data.next_due_date ? format(data.next_due_date, 'yyyy-MM-dd') : null,
       medication_type: data.medication_type,
       prescription_id: data.prescription_id,
-      refills_remaining: data.refills_remaining
+      refills_remaining: data.refills_remaining,
+      administrations: (existingMetadata as any).administrations || []
     };
     
     // Update record
@@ -420,7 +421,6 @@ export const deleteMedicationRecord = async (medicationId: string): Promise<void
 export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => {
   try {
     const today = new Date();
-    const todayStr = format(today, 'yyyy-MM-dd');
     
     const { data, error } = await supabase
       .from('daily_care_logs')
@@ -449,9 +449,7 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
 export const fetchUpcomingMedications = async (daysAhead = 7): Promise<MedicationRecord[]> => {
   try {
     const today = new Date();
-    const todayStr = format(today, 'yyyy-MM-dd');
     const futureDate = addDays(today, daysAhead);
-    const futureDateStr = format(futureDate, 'yyyy-MM-dd');
     
     const { data, error } = await supabase
       .from('daily_care_logs')
@@ -498,23 +496,22 @@ export const fetchMedicationStats = async (dogId: string): Promise<MedicationSta
     const vaccine = medications.filter(m => m.medication_type === 'vaccine').length;
     
     const today = new Date();
-    const todayStr = format(today, 'yyyy-MM-dd');
     
-    const activeCount = medications.filter(m => m.status === 'active').length;
-    const completedCount = medications.filter(m => m.status === 'completed').length;
+    const activeCount = medications.filter(m => m.status === MedicationStatus.ACTIVE).length;
+    const completedCount = medications.filter(m => m.status === MedicationStatus.COMPLETED).length;
     
     // Count overdue medications
-    const overdueCount = medications.filter(m => {
-      if (!m.next_due_date || m.status !== MedicationStatus.ACTIVE) return false;
-      const nextDue = new Date(m.next_due_date);
+    const overdueCount = medications.filter(med => {
+      if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
+      const nextDue = new Date(med.next_due_date);
       return nextDue < today;
     }).length;
     
     // Count upcoming medications (next 7 days)
     const futureDate = addDays(today, 7);
-    const upcomingCount = medications.filter(m => {
-      if (!m.next_due_date || m.status !== MedicationStatus.ACTIVE) return false;
-      const nextDue = new Date(m.next_due_date);
+    const upcomingCount = medications.filter(med => {
+      if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
+      const nextDue = new Date(med.next_due_date);
       return nextDue >= today && nextDue <= futureDate;
     }).length;
     
