@@ -1,38 +1,49 @@
 
 import React from 'react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Plus, RefreshCw } from 'lucide-react';
 
-interface SectionHeaderProps {
+export interface SectionHeaderProps {
   title: string;
   description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-    icon?: React.ReactNode;
-  };
+  onAdd?: () => void;
+  addLabel?: string;
+  onRefresh?: () => void;
+  className?: string;
+  children?: React.ReactNode;
 }
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   description,
-  action
+  onAdd,
+  addLabel = "Add New",
+  onRefresh,
+  className,
+  children
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+    <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4", className)}>
       <div>
         <h2 className="text-xl font-semibold">{title}</h2>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
       </div>
-      
-      {action && (
-        <Button 
-          size="sm" 
-          onClick={action.onClick}
-        >
-          {action.icon && <span className="mr-2">{action.icon}</span>}
-          {action.label}
-        </Button>
-      )}
+      <div className="flex items-center space-x-3 mt-2 sm:mt-0">
+        {children}
+        {onAdd && (
+          <Button onClick={onAdd} size="sm" className="gap-2">
+            <Plus className="h-4 w-4" />
+            {addLabel}
+          </Button>
+        )}
+        {onRefresh && (
+          <Button onClick={onRefresh} variant="outline" size="sm" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

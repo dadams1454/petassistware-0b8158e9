@@ -1,49 +1,38 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LucideIcon } from 'lucide-react';
 
-interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
+export interface ActionButtonProps {
+  label: string;
   icon?: React.ReactNode;
-  isLoading?: boolean;
-  loadingText?: string;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  onClick: () => void;
+  variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  className?: string;
+  disabled?: boolean;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
-  children,
+  label,
   icon,
-  isLoading = false,
-  loadingText,
+  onClick,
   variant = 'default',
   size = 'default',
   className,
-  onClick,
-  ...props
+  disabled = false,
 }) => {
   return (
     <Button
       variant={variant}
       size={size}
-      className={cn(className)}
       onClick={onClick}
-      disabled={isLoading || props.disabled}
-      {...props}
+      className={cn("gap-2", className)}
+      disabled={disabled}
     >
-      {isLoading ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {loadingText || children}
-        </>
-      ) : (
-        <>
-          {icon && <span className="mr-2">{icon}</span>}
-          {children}
-        </>
-      )}
+      {icon}
+      {label}
     </Button>
   );
 };
