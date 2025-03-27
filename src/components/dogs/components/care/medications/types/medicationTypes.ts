@@ -1,6 +1,7 @@
 
 import { DogCareStatus } from '@/types/dailyCare';
-import { MedicationFrequency, MedicationStatus } from '@/utils/medicationUtils';
+import { MedicationFrequency } from '@/types/medication';
+import { MedicationStatus } from '@/utils/medicationUtils';
 
 // Information about a medication
 export interface MedicationInfo {
@@ -49,7 +50,7 @@ export interface MedicationHeaderProps {
 
 // Props for status display component
 export interface MedicationStatusDisplayProps {
-  status: MedicationStatus | 'incomplete';
+  status: MedicationStatus | 'current' | 'due_soon' | 'overdue' | 'incomplete';
   statusColor: string;
   label?: string;
   isLoading?: boolean;

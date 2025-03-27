@@ -1,6 +1,8 @@
-
 import { MedicationFrequency } from '@/types/medication';
-import { differenceInDays, differenceInHours, parseISO } from 'date-fns';
+import { differenceInDays, differenceInHours, parseISO, addDays, addWeeks, addMonths, compareAsc } from 'date-fns';
+
+// Re-export MedicationFrequency from types for backward compatibility
+export { MedicationFrequency } from '@/types/medication';
 
 /**
  * Medication status enum for consistent use across the application
@@ -157,4 +159,87 @@ export const getMedicationStatusClass = (status: string): string => {
     default:
       return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
   }
+};
+
+/**
+ * Get time slots based on frequency
+ */
+export const getTimeSlotsForFrequency = (frequency: MedicationFrequency): string[] => {
+  switch (frequency) {
+    case MedicationFrequency.DAILY:
+      return ['Morning', 'Evening'];
+    case MedicationFrequency.TWICE_DAILY:
+      return ['Morning', 'Noon', 'Evening'];
+    case MedicationFrequency.WEEKLY:
+      return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    case MedicationFrequency.BIWEEKLY:
+      return ['Week 1', 'Week 2'];
+    case MedicationFrequency.MONTHLY:
+      return ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+    case MedicationFrequency.QUARTERLY:
+      return ['January', 'April', 'July', 'October'];
+    case MedicationFrequency.ANNUALLY:
+      return ['Annual'];
+    default:
+      return ['As needed'];
+  }
+};
+
+/**
+ * Calculate the next due date based on medication frequency
+ */
+export const calculateNextDueDate = (startDate: Date, frequency: MedicationFrequency): Date => {
+  const today = new Date();
+  let nextDue: Date;
+
+  switch (frequency) {
+    case MedicationFrequency.DAILY:
+      // If already given today, next is tomorrow
+      nextDue = addDays(today, 1);
+      break;
+    case MedicationFrequency.TWICE_DAILY:
+      // If morning dose, next is evening; if evening, next is morning of next day
+      // For simplicity, just use 12 hours from now
+      nextDue = new Date(today.getTime() + 12 * 60 * 60 * 1000);
+      break;
+    case MedicationFrequency.WEEKLY:
+      nextDue = addWeeks(startDate, 1);
+      if (compareAsc(nextDue, today) <= 0) {
+        // If the calculated date is in the past, calculate from today
+        nextDue = addWeeks(today, 1);
+      }
+      break;
+    case MedicationFrequency.BIWEEKLY:
+      nextDue = addWeeks(startDate, 2);
+      if (compareAsc(nextDue, today) <= 0) {
+        nextDue = addWeeks(today, 2);
+      }
+      break;
+    case MedicationFrequency.MONTHLY:
+      nextDue = addMonths(startDate, 1);
+      if (compareAsc(nextDue, today) <= 0) {
+        nextDue = addMonths(today, 1);
+      }
+      break;
+    case MedicationFrequency.QUARTERLY:
+      nextDue = addMonths(startDate, 3);
+      if (compareAsc(nextDue, today) <= 0) {
+        nextDue = addMonths(today, 3);
+      }
+      break;
+    case MedicationFrequency.ANNUALLY:
+      nextDue = addMonths(startDate, 12);
+      if (compareAsc(nextDue, today) <= 0) {
+        nextDue = addMonths(today, 12);
+      }
+      break;
+    case MedicationFrequency.AS_NEEDED:
+    case MedicationFrequency.CUSTOM:
+    default:
+      // For as-needed or custom, don't set a specific next date
+      nextDue = today;
+      break;
+  }
+
+  return nextDue;
 };

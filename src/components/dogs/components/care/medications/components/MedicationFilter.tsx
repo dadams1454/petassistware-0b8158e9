@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MedicationFrequency } from '@/utils/medicationUtils';
+import { MedicationFrequency } from '@/types/medication';
 import { MedicationFilterProps } from '../types/medicationTypes';
 
 const MedicationFilter: React.FC<MedicationFilterProps> = ({ value, onChange }) => {

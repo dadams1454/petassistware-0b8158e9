@@ -63,3 +63,11 @@ export const getVaccinationInfo = (type: string) => {
     schedule: 'Consult your veterinarian for the recommended schedule.'
   };
 };
+
+/**
+ * Get vaccination type label
+ */
+export const getVaccinationTypeLabel = (type: string): string => {
+  const info = getVaccinationInfo(type);
+  return info.name;
+};

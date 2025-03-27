@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { generateTimeSlots } from '../dogGroupColors';
 import { 
-  MedicationFrequency, 
+  MedicationFrequency,
   getTimeSlotsForFrequency 
 } from '@/utils/medicationUtils';
 
