@@ -57,14 +57,14 @@ const DogNotesForm: React.FC<DogNotesFormProps> = ({
     setError('');
     
     try {
-      // Create or update the note in the daily_dog_notes table
+      // Create or update the note in the daily_care_logs table
       const noteData = {
         dog_id: dogId,
-        staff_id: user.id,
-        title: noteTitle.trim() || `Note for ${dogName}`,
-        content: noteContent,
-        created_at: new Date().toISOString(),
-        category: 'daily_note'
+        created_by: user.id,
+        task_name: noteTitle.trim() || `Note for ${dogName}`,
+        notes: noteContent,
+        timestamp: new Date().toISOString(),
+        category: 'notes'
       };
       
       let result;
@@ -75,18 +75,14 @@ const DogNotesForm: React.FC<DogNotesFormProps> = ({
           .from('daily_care_logs')
           .update({
             notes: noteContent,
-            title: noteTitle.trim() || `Note for ${dogName}`
+            task_name: noteTitle.trim() || `Note for ${dogName}`
           })
           .eq('id', existingNote.id);
       } else {
         // Create new note
         result = await supabase
           .from('daily_care_logs')
-          .insert({
-            ...noteData,
-            activity_type: 'note',
-            category: 'notes'
-          });
+          .insert(noteData);
       }
       
       if (result.error) {

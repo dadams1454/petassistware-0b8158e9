@@ -41,11 +41,10 @@ const NotesTab: React.FC<NotesTabProps> = ({ dogStatuses, onRefreshDogs }) => {
           id,
           dog_id,
           notes,
-          title,
+          task_name,
           timestamp,
-          staff_id,
-          dogs:dog_id(name),
-          staff:staff_id(full_name)
+          created_by,
+          dogs:dog_id(name)
         `)
         .eq('category', 'notes')
         .order('timestamp', { ascending: false });
@@ -67,7 +66,7 @@ const NotesTab: React.FC<NotesTabProps> = ({ dogStatuses, onRefreshDogs }) => {
   const filteredNotes = notes?.filter(note => {
     const dogName = note.dogs?.name || '';
     const noteContent = note.notes || '';
-    const noteTitle = note.title || '';
+    const noteTitle = note.task_name || '';
     
     if (!searchQuery) return true;
     
@@ -114,7 +113,7 @@ const NotesTab: React.FC<NotesTabProps> = ({ dogStatuses, onRefreshDogs }) => {
     setEditingNote({
       id: note.id,
       content: note.notes,
-      title: note.title
+      title: note.task_name
     });
     setIsDialogOpen(true);
   };
@@ -178,7 +177,7 @@ const NotesTab: React.FC<NotesTabProps> = ({ dogStatuses, onRefreshDogs }) => {
                   <DogNoteView
                     key={note.id}
                     noteId={note.id}
-                    title={note.title || `Note for ${note.dogs?.name || 'Dog'}`}
+                    title={note.task_name || `Note for ${note.dogs?.name || 'Dog'}`}
                     content={note.notes}
                     timestamp={note.timestamp}
                     staffName={note.staff?.full_name}
