@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,7 +34,7 @@ import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/contexts/UserContext';
 import { createMedicationRecord, updateMedicationRecord } from '@/services/medicationService';
-import { MedicationRecord, MedicationFormData, MedicationFrequency, MedicationRoute, MedicationType } from '@/types/medication';
+import { MedicationRecord, MedicationFormData, MedicationFrequency, MedicationRoute, MedicationStatus, MedicationType } from '@/types/medication';
 import { calculateNextDueDate } from '@/services/medicationService';
 
 interface MedicationFormProps {
@@ -81,7 +82,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
       start_date: existingMedication.start_date ? new Date(existingMedication.start_date) : new Date(),
       end_date: existingMedication.end_date ? new Date(existingMedication.end_date) : undefined,
       notes: existingMedication.notes,
-      medication_type: existingMedication.medication_type,
+      medication_type: existingMedication.medication_type as MedicationType,
       prescription_id: existingMedication.prescription_id,
       refills_remaining: existingMedication.refills_remaining,
       next_due_date: existingMedication.next_due_date ? new Date(existingMedication.next_due_date) : undefined

@@ -5,6 +5,7 @@ import {
   MedicationFrequency, 
   MedicationRoute,
   MedicationStatus,
+  MedicationType,
   MedicationStats
 } from '@/types/medication';
 import { format, addDays, addWeeks, addMonths, compareAsc, parseISO } from 'date-fns';
@@ -43,7 +44,7 @@ const castMedicationData = (data: any): MedicationRecord => {
     start_date: data.start_date || null,
     end_date: data.end_date || null,
     next_due_date: data.next_due_date || null,
-    medication_type: medicationData.medication_type || 'treatment',
+    medication_type: medicationData.medication_type || MedicationType.TREATMENT,
     prescription_id: medicationData.prescription_id || null,
     refills_remaining: data.refills_remaining || 0,
     administered_by: data.administered_by || null,
@@ -435,8 +436,8 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      // Match the status type from MedicationStatus enum
-      return nextDue < today && med.status === MedicationStatus.ACTIVE;
+      // Compare with the MedicationStatus enum values
+      return nextDue < today && (med.status === MedicationStatus.ACTIVE || med.status === 'active');
     });
   } catch (error) {
     console.error('Error fetching overdue medications:', error);
@@ -465,8 +466,9 @@ export const fetchUpcomingMedications = async (daysAhead = 7): Promise<Medicatio
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      // Use MedicationStatus enum for type safety
-      return nextDue >= today && nextDue <= futureDate && med.status === MedicationStatus.ACTIVE;
+      // Use MedicationStatus enum or string value for compatibility
+      return nextDue >= today && nextDue <= futureDate && 
+             (med.status === MedicationStatus.ACTIVE || med.status === 'active');
     });
   } catch (error) {
     console.error('Error fetching upcoming medications:', error);
@@ -491,29 +493,36 @@ export const fetchMedicationStats = async (dogId: string): Promise<MedicationSta
     
     // Calculate statistics
     const total = medications.length;
-    const preventative = medications.filter(m => m.medication_type === 'preventative').length;
-    const prescription = medications.filter(m => m.medication_type === 'prescription').length;
-    const supplement = medications.filter(m => m.medication_type === 'supplement').length;
-    const treatment = medications.filter(m => m.medication_type === 'treatment').length;
-    const vaccine = medications.filter(m => m.medication_type === 'vaccine').length;
+    const preventative = medications.filter(m => m.medication_type === MedicationType.PREVENTATIVE).length;
+    const prescription = medications.filter(m => m.medication_type === MedicationType.PRESCRIPTION).length;
+    const supplement = medications.filter(m => m.medication_type === MedicationType.SUPPLEMENT).length;
+    const treatment = medications.filter(m => m.medication_type === MedicationType.TREATMENT).length;
+    const vaccine = medications.filter(m => m.medication_type === MedicationType.VACCINE).length;
     
     const today = new Date();
     
-    // Use MedicationStatus enum for consistency
-    const activeCount = medications.filter(m => m.status === MedicationStatus.ACTIVE).length;
-    const completedCount = medications.filter(m => m.status === MedicationStatus.COMPLETED).length;
+    // Use flexible comparison for status to handle both enum and string values
+    const activeCount = medications.filter(m => 
+      m.status === MedicationStatus.ACTIVE || m.status === 'active'
+    ).length;
     
-    // Count overdue medications - use MedicationStatus enum
+    const completedCount = medications.filter(m => 
+      m.status === MedicationStatus.COMPLETED || m.status === 'completed'
+    ).length;
+    
+    // Count overdue medications - with flexible status comparison
     const overdueCount = medications.filter(med => {
-      if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
+      if (!med.next_due_date) return false;
+      if (!(med.status === MedicationStatus.ACTIVE || med.status === 'active')) return false;
       const nextDue = new Date(med.next_due_date);
       return nextDue < today;
     }).length;
     
-    // Count upcoming medications (next 7 days) - use MedicationStatus enum
+    // Count upcoming medications (next 7 days) - with flexible status comparison
     const futureDate = addDays(today, 7);
     const upcomingCount = medications.filter(med => {
-      if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
+      if (!med.next_due_date) return false;
+      if (!(med.status === MedicationStatus.ACTIVE || med.status === 'active')) return false;
       const nextDue = new Date(med.next_due_date);
       return nextDue >= today && nextDue <= futureDate;
     }).length;
