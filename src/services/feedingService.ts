@@ -18,7 +18,7 @@ export const fetchDogFeedingSchedules = async (dogId: string): Promise<FeedingSc
     throw error;
   }
 
-  return data || [];
+  return data as FeedingSchedule[] || [];
 };
 
 /**
@@ -36,7 +36,7 @@ export const fetchFeedingSchedule = async (scheduleId: string): Promise<FeedingS
     throw error;
   }
 
-  return data;
+  return data as FeedingSchedule;
 };
 
 /**
@@ -56,7 +56,7 @@ export const createFeedingSchedule = async (
     throw error;
   }
 
-  return newSchedule;
+  return newSchedule as FeedingSchedule;
 };
 
 /**
@@ -78,7 +78,7 @@ export const updateFeedingSchedule = async (
     throw error;
   }
 
-  return updatedSchedule;
+  return updatedSchedule as FeedingSchedule;
 };
 
 /**
@@ -138,15 +138,16 @@ export const fetchDogFeedingRecords = async (
     food_type: '',
     amount_offered: '',
     amount_consumed: '',
-  }));
+  })) as FeedingRecord[];
 
   // Combine both record types, sorted by timestamp
-  const combinedRecords = [...careRecordsConverted, ...(feedingRecords || [])].sort((a, b) => 
+  const combinedRecords = [...careRecordsConverted, ...(feedingRecords || [])] as FeedingRecord[];
+  const sortedRecords = combinedRecords.sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   
   // Limit the results if needed
-  return limit ? combinedRecords.slice(0, limit) : combinedRecords;
+  return limit ? sortedRecords.slice(0, limit) : sortedRecords;
 };
 
 /**
@@ -161,7 +162,7 @@ export const createFeedingRecord = async (
     dog_id: data.dog_id,
     category: 'feeding' as CareCategory,
     task_name: `${data.meal_type || 'Meal'}: ${data.food_type}`,
-    timestamp: data.timestamp,
+    timestamp: data.timestamp.toISOString(),
     notes: data.notes || '',
     created_by: userId
   };
@@ -184,9 +185,10 @@ export const createFeedingRecord = async (
     amount_offered: data.amount_offered,
     amount_consumed: data.amount_consumed || data.amount_offered, // Default to offered if not specified
     staff_id: userId,
-    timestamp: data.timestamp,
+    timestamp: data.timestamp.toISOString(),
     schedule_id: data.schedule_id,
-    notes: data.notes
+    notes: data.notes,
+    care_record_id: careRecordData.id
   };
 
   const { data: feedingRecordData, error: feedingError } = await supabase
@@ -207,7 +209,7 @@ export const createFeedingRecord = async (
     food_type: feedingRecordData.food_type,
     amount_offered: feedingRecordData.amount_offered,
     amount_consumed: feedingRecordData.amount_consumed
-  };
+  } as FeedingRecord;
 };
 
 /**
@@ -230,15 +232,20 @@ export const updateFeedingRecord = async (
   }
 
   // Update the feeding record
+  const updateData: any = {
+    food_type: data.food_type,
+    amount_offered: data.amount_offered,
+    amount_consumed: data.amount_consumed,
+    notes: data.notes
+  };
+  
+  if (data.timestamp) {
+    updateData.timestamp = data.timestamp.toISOString();
+  }
+
   const { data: updatedFeedingRecord, error: updateError } = await supabase
     .from('feeding_records')
-    .update({
-      food_type: data.food_type,
-      amount_offered: data.amount_offered,
-      amount_consumed: data.amount_consumed,
-      notes: data.notes,
-      timestamp: data.timestamp
-    })
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();
@@ -250,13 +257,18 @@ export const updateFeedingRecord = async (
 
   // Also update the related care record if there is one
   if (existingRecord && existingRecord.care_record_id) {
+    const careUpdateData: any = {
+      task_name: `${data.meal_type || 'Meal'}: ${data.food_type}`,
+      notes: data.notes
+    };
+    
+    if (data.timestamp) {
+      careUpdateData.timestamp = data.timestamp.toISOString();
+    }
+    
     const { error: careUpdateError } = await supabase
       .from('daily_care_logs')
-      .update({
-        task_name: `${data.meal_type || 'Meal'}: ${data.food_type}`,
-        notes: data.notes,
-        timestamp: data.timestamp
-      })
+      .update(careUpdateData)
       .eq('id', existingRecord.care_record_id);
 
     if (careUpdateError) {
@@ -265,7 +277,7 @@ export const updateFeedingRecord = async (
     }
   }
 
-  return updatedFeedingRecord;
+  return updatedFeedingRecord as FeedingRecord;
 };
 
 /**

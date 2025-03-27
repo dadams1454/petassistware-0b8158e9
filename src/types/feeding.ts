@@ -25,6 +25,7 @@ export interface FeedingRecord extends CareRecord {
   refused?: boolean;
   meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   schedule_id?: string;
+  care_record_id?: string;
 }
 
 export interface FeedingFormData {
