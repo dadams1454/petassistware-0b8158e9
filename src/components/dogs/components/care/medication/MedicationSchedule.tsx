@@ -87,12 +87,13 @@ const MedicationSchedule: React.FC<MedicationScheduleProps> = ({
     }
     
     try {
-      await recordMedicationAdministration(
-        medication.id,
-        date,
-        `Administered on ${format(date, 'PP')}`,
-        user.id
-      );
+      const administrationData = {
+        timestamp: date.toISOString(),
+        administered_by: user.id,
+        notes: `Administered on ${format(date, 'PP')}`
+      };
+      
+      await recordMedicationAdministration(medication.id, administrationData);
       
       toast({
         title: "Medication administered",

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -68,7 +67,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
 }) => {
   const { toast } = useToast();
   const { user } = useUser();
-  const [loading, setLoading] = useState(false);
+  const [loading, setIsSubmitting] = useState(false);
   
   // Initialize form with default values or existing medication data
   const form = useForm<z.infer<typeof formSchema>>({
@@ -118,7 +117,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
       return;
     }
     
-    setLoading(true);
+    setIsSubmitting(true);
     try {
       const medicationData: MedicationFormData = {
         dog_id: dogId,
@@ -133,17 +132,18 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
         medication_type: data.medication_type,
         prescription_id: data.prescription_id,
         refills_remaining: data.refills_remaining,
-        next_due_date: data.next_due_date
+        next_due_date: data.next_due_date,
+        created_by: user.id
       };
       
       if (existingMedication) {
-        await updateMedicationRecord(existingMedication.id, medicationData, user.id);
+        await updateMedicationRecord(existingMedication.id, medicationData);
         toast({
           title: "Medication Updated",
           description: `${data.medication_name} has been updated successfully.`
         });
       } else {
-        await createMedicationRecord(medicationData, user.id);
+        await createMedicationRecord(medicationData);
         toast({
           title: "Medication Added",
           description: `${data.medication_name} has been added to the medication list.`
@@ -161,7 +161,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
   

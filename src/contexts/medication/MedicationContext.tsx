@@ -2,9 +2,9 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { 
   fetchDogMedications, 
-  getMedicationStats, 
-  getOverdueMedications, 
-  getUpcomingMedications 
+  fetchOverdueMedications,
+  fetchMedicationStats,
+  fetchUpcomingMedications
 } from '@/services/medicationService';
 import { MedicationRecord, MedicationStats } from '@/types/medication';
 
@@ -36,7 +36,7 @@ export const MedicationProvider: React.FC<{ children: ReactNode }> = ({ children
     setError(null);
     
     try {
-      const medicationsData = await fetchDogMedications(dogId, true); // Include completed meds
+      const medicationsData = await fetchDogMedications(dogId);
       setMedications(medicationsData);
     } catch (err) {
       console.error('Error fetching medications:', err);
@@ -51,7 +51,7 @@ export const MedicationProvider: React.FC<{ children: ReactNode }> = ({ children
     setError(null);
     
     try {
-      const statsData = await getMedicationStats(dogId);
+      const statsData = await fetchMedicationStats(dogId);
       setStats(statsData);
     } catch (err) {
       console.error('Error fetching medication stats:', err);
@@ -61,13 +61,17 @@ export const MedicationProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  const fetchOverdueMedications = async (dogId: string) => {
+  const fetchMedicationOverdue = async (dogId: string) => {
     setLoading(true);
     setError(null);
     
     try {
-      const overdueData = await getOverdueMedications(dogId);
-      setOverdueMedications(overdueData);
+      const overdueData = await fetchOverdueMedications();
+      // Filter for specific dog if dogId is provided
+      const filteredData = dogId 
+        ? overdueData.filter(med => med.dog_id === dogId)
+        : overdueData;
+      setOverdueMedications(filteredData);
     } catch (err) {
       console.error('Error fetching overdue medications:', err);
       setError(err instanceof Error ? err.message : 'An error occurred fetching overdue medications');
@@ -76,13 +80,17 @@ export const MedicationProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  const fetchUpcomingMedications = async (dogId: string, daysAhead = 7) => {
+  const fetchMedicationUpcoming = async (dogId: string, daysAhead = 7) => {
     setLoading(true);
     setError(null);
     
     try {
-      const upcomingData = await getUpcomingMedications(dogId, daysAhead);
-      setUpcomingMedications(upcomingData);
+      const upcomingData = await fetchUpcomingMedications(daysAhead);
+      // Filter for specific dog if dogId is provided
+      const filteredData = dogId 
+        ? upcomingData.filter(med => med.dog_id === dogId)
+        : upcomingData;
+      setUpcomingMedications(filteredData);
     } catch (err) {
       console.error('Error fetching upcoming medications:', err);
       setError(err instanceof Error ? err.message : 'An error occurred fetching upcoming medications');
@@ -102,8 +110,8 @@ export const MedicationProvider: React.FC<{ children: ReactNode }> = ({ children
         error,
         fetchMedications,
         fetchStats,
-        fetchOverdueMedications,
-        fetchUpcomingMedications
+        fetchOverdueMedications: fetchMedicationOverdue,
+        fetchUpcomingMedications: fetchMedicationUpcoming
       }}
     >
       {children}

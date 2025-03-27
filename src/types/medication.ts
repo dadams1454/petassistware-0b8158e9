@@ -54,6 +54,16 @@ export enum MedicationType {
 }
 
 /**
+ * Medication administration record
+ */
+export interface MedicationAdministration {
+  id: string;
+  timestamp: string;
+  administered_by: string;
+  notes?: string;
+}
+
+/**
  * Extended medication record based on CareRecord
  */
 export interface MedicationRecord extends CareRecord {
@@ -69,6 +79,7 @@ export interface MedicationRecord extends CareRecord {
   prescription_id?: string;
   refills_remaining?: number;
   administered_by?: string;
+  administrations?: MedicationAdministration[];
 }
 
 /**
@@ -88,6 +99,7 @@ export interface MedicationFormData {
   prescription_id?: string;
   refills_remaining?: number;
   next_due_date?: Date;
+  created_by?: string;
 }
 
 /**

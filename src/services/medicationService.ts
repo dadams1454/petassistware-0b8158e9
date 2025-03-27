@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { MedicationRecord, MedicationFormData, MedicationAdministration, MedicationFrequency, MedicationRoute, MedicationType } from '@/types/medication';
+import { MedicationRecord, MedicationFormData, MedicationFrequency, MedicationRoute, MedicationType, MedicationAdministration, MedicationStats } from '@/types/medication';
 import { format, addDays, addWeeks, addMonths, isAfter, isBefore, parseISO } from 'date-fns';
 
 /**
@@ -36,7 +36,7 @@ export const getMedicationRecords = async (dogIds: string[]): Promise<Medication
       task_name: record.task_name,
       notes: record.notes || '',
       created_by: record.created_by,
-      frequency: (metadata.frequency as MedicationFrequency) || MedicationFrequency.ONCE_DAILY,
+      frequency: (metadata.frequency as MedicationFrequency) || MedicationFrequency.DAILY,
       medication_type: (metadata.medication_type as MedicationType) || MedicationType.TREATMENT,
       start_date: record.timestamp,
       end_date: metadata.end_date ? String(metadata.end_date) : undefined,
@@ -46,7 +46,7 @@ export const getMedicationRecords = async (dogIds: string[]): Promise<Medication
       next_due_date: metadata.next_due_date ? String(metadata.next_due_date) : undefined,
       prescription_id: String(metadata.prescription_id || ''),
       refills_remaining: Number(metadata.refills_remaining || 0),
-      administrations: []
+      administered_by: String(metadata.administered_by || '')
     };
     
     return medicationRecord;
@@ -63,22 +63,20 @@ export const calculateNextDueDate = (
   frequency: MedicationFrequency
 ): Date => {
   switch (frequency) {
-    case MedicationFrequency.ONCE_DAILY:
+    case MedicationFrequency.DAILY:
       return addDays(startDate, 1);
     case MedicationFrequency.TWICE_DAILY:
       return addDays(startDate, 0.5);
-    case MedicationFrequency.THREE_TIMES_DAILY:
-      return addDays(startDate, 1/3);
-    case MedicationFrequency.FOUR_TIMES_DAILY:
-      return addDays(startDate, 0.25);
-    case MedicationFrequency.EVERY_OTHER_DAY:
-      return addDays(startDate, 2);
     case MedicationFrequency.WEEKLY:
       return addWeeks(startDate, 1);
     case MedicationFrequency.BIWEEKLY:
       return addWeeks(startDate, 2);
     case MedicationFrequency.MONTHLY:
       return addMonths(startDate, 1);
+    case MedicationFrequency.QUARTERLY:
+      return addMonths(startDate, 3);
+    case MedicationFrequency.ANNUALLY:
+      return addMonths(startDate, 12);
     case MedicationFrequency.AS_NEEDED:
       return addDays(startDate, 100); // Far future date as it's not scheduled
     default:
@@ -134,6 +132,8 @@ export const createMedicationRecord = async (
       throw careLogError;
     }
     
+    const metadata = careLogRecord.medication_metadata || {};
+    
     // Map to MedicationRecord type
     const record: MedicationRecord = {
       id: careLogRecord.id,
@@ -154,8 +154,7 @@ export const createMedicationRecord = async (
       dosage_unit: data.dosage_unit || '',
       route: data.route,
       prescription_id: data.prescription_id || '',
-      refills_remaining: data.refills_remaining || 0,
-      administrations: []
+      refills_remaining: data.refills_remaining || 0
     };
     
     return record;
@@ -187,7 +186,7 @@ export const updateMedicationRecord = async (
     
     // Prepare updated metadata
     const currentMetadata = existingRecord.medication_metadata || {};
-    const updatedMetadata = { ...currentMetadata };
+    const updatedMetadata: Record<string, any> = { ...currentMetadata };
     
     // Update specific metadata fields if provided in the data
     if (data.medication_name) updatedMetadata.medication_name = data.medication_name;
@@ -204,10 +203,10 @@ export const updateMedicationRecord = async (
     // Calculate next due date if frequency or start date changes
     if (data.frequency || data.start_date) {
       const startDate = data.start_date || parseISO(String(currentMetadata.start_date));
-      const frequency = data.frequency || currentMetadata.frequency;
+      const frequency = data.frequency || currentMetadata.frequency as MedicationFrequency;
       updatedMetadata.next_due_date = calculateNextDueDate(
         startDate,
-        frequency as MedicationFrequency
+        frequency
       ).toISOString();
     }
     
@@ -239,6 +238,7 @@ export const updateMedicationRecord = async (
     
     // Map to MedicationRecord type
     const metadata = updatedRecord.medication_metadata || {};
+    
     const record: MedicationRecord = {
       id: updatedRecord.id,
       dog_id: updatedRecord.dog_id,
@@ -258,8 +258,7 @@ export const updateMedicationRecord = async (
       dosage_unit: String(metadata.dosage_unit || ''),
       route: metadata.route as MedicationRoute,
       prescription_id: String(metadata.prescription_id || ''),
-      refills_remaining: Number(metadata.refills_remaining || 0),
-      administrations: []
+      refills_remaining: Number(metadata.refills_remaining || 0)
     };
     
     return record;
@@ -312,14 +311,17 @@ export const recordMedicationAdministration = async (
       throw fetchError;
     }
     
-    // Get existing metadata and administrations array
+    // Get existing metadata
     const currentMetadata = existingRecord.medication_metadata || {};
-    const administrations = Array.isArray(currentMetadata.administrations) 
-      ? [...currentMetadata.administrations] 
-      : [];
+    
+    // Get existing or initialize administrations array
+    let administrations: MedicationAdministration[] = [];
+    if (currentMetadata.administrations && Array.isArray(currentMetadata.administrations)) {
+      administrations = [...currentMetadata.administrations];
+    }
     
     // Create new administration record
-    const newAdministration = {
+    const newAdministration: MedicationAdministration = {
       id: crypto.randomUUID(),
       timestamp: administrationData.timestamp,
       administered_by: administrationData.administered_by,
@@ -339,10 +341,8 @@ export const recordMedicationAdministration = async (
     
     // Calculate new next_due_date
     const now = new Date(administrationData.timestamp);
-    updatedMetadata.next_due_date = calculateNextDueDate(
-      now,
-      currentMetadata.frequency as MedicationFrequency
-    ).toISOString();
+    const frequency = currentMetadata.frequency as MedicationFrequency;
+    updatedMetadata.next_due_date = calculateNextDueDate(now, frequency).toISOString();
     
     // Update the record
     const { error: updateError } = await supabase
@@ -357,7 +357,7 @@ export const recordMedicationAdministration = async (
       throw updateError;
     }
     
-    return newAdministration as MedicationAdministration;
+    return newAdministration;
   } catch (error) {
     console.error('Error in recordMedicationAdministration:', error);
     throw error;
@@ -423,10 +423,147 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
         dosage_unit: String(metadata.dosage_unit || ''),
         route: metadata.route as MedicationRoute,
         prescription_id: String(metadata.prescription_id || ''),
-        refills_remaining: Number(metadata.refills_remaining || 0),
-        administrations: metadata.administrations || []
+        refills_remaining: Number(metadata.refills_remaining || 0)
       } as MedicationRecord;
     });
   
   return overdueMedications;
+};
+
+/**
+ * Fetches upcoming medication records within a specified number of days
+ */
+export const fetchUpcomingMedications = async (daysAhead = 7): Promise<MedicationRecord[]> => {
+  const now = new Date();
+  const futureDate = addDays(now, daysAhead).toISOString();
+  const nowString = now.toISOString();
+  
+  // Fetch all medication records
+  const { data, error } = await supabase
+    .from('daily_care_logs')
+    .select('*')
+    .eq('category', 'medications');
+  
+  if (error) {
+    console.error('Error fetching upcoming medications:', error);
+    throw error;
+  }
+  
+  // Filter to find upcoming medications
+  const upcomingMedications = (data || [])
+    .filter(record => {
+      const metadata = record.medication_metadata || {};
+      const nextDueDate = metadata.next_due_date;
+      const endDate = metadata.end_date;
+      
+      // Skip medications that have ended
+      if (endDate && endDate < nowString) return false;
+      
+      // Check if next_due_date is between now and future date
+      return nextDueDate && nextDueDate >= nowString && nextDueDate <= futureDate;
+    })
+    .map(record => {
+      const metadata = record.medication_metadata || {};
+      
+      return {
+        id: record.id,
+        dog_id: record.dog_id,
+        medication_name: String(metadata.medication_name || ''),
+        frequency: metadata.frequency as MedicationFrequency,
+        medication_type: metadata.medication_type as MedicationType,
+        created_at: record.created_at,
+        timestamp: record.timestamp,
+        category: 'medications',
+        task_name: record.task_name,
+        notes: record.notes || '',
+        created_by: record.created_by,
+        next_due_date: String(metadata.next_due_date || ''),
+        start_date: String(metadata.start_date || ''),
+        end_date: metadata.end_date ? String(metadata.end_date) : undefined,
+        dosage: String(metadata.dosage || ''),
+        dosage_unit: String(metadata.dosage_unit || ''),
+        route: metadata.route as MedicationRoute,
+        prescription_id: String(metadata.prescription_id || ''),
+        refills_remaining: Number(metadata.refills_remaining || 0)
+      } as MedicationRecord;
+    });
+  
+  return upcomingMedications;
+};
+
+/**
+ * Get medication statistics
+ */
+export const fetchMedicationStats = async (dogId: string): Promise<MedicationStats> => {
+  try {
+    const medications = await fetchDogMedications(dogId);
+    const now = new Date();
+    
+    // Initialize stats object
+    const stats: MedicationStats = {
+      total: medications.length,
+      preventative: 0,
+      prescription: 0,
+      supplement: 0,
+      treatment: 0,
+      vaccine: 0,
+      activeCount: 0,
+      completedCount: 0,
+      overdueCount: 0,
+      upcomingCount: 0,
+      complianceRate: 0
+    };
+    
+    // Count by type
+    medications.forEach(med => {
+      // Count by medication type
+      switch (med.medication_type) {
+        case MedicationType.PREVENTATIVE:
+          stats.preventative++;
+          break;
+        case MedicationType.PRESCRIPTION:
+          stats.prescription++;
+          break;
+        case MedicationType.SUPPLEMENT:
+          stats.supplement++;
+          break;
+        case MedicationType.TREATMENT:
+          stats.treatment++;
+          break;
+        case MedicationType.VACCINE:
+          stats.vaccine++;
+          break;
+      }
+      
+      // Check active/completed status
+      if (med.end_date && new Date(med.end_date) < now) {
+        stats.completedCount++;
+      } else {
+        stats.activeCount++;
+        
+        // Check if overdue
+        if (med.next_due_date && new Date(med.next_due_date) < now) {
+          stats.overdueCount++;
+        } 
+        // Check if upcoming (within next 7 days)
+        else if (med.next_due_date) {
+          const nextDueDate = new Date(med.next_due_date);
+          const sevenDaysFromNow = addDays(now, 7);
+          if (nextDueDate <= sevenDaysFromNow) {
+            stats.upcomingCount++;
+          }
+        }
+      }
+    });
+    
+    // Calculate compliance rate
+    if (stats.activeCount > 0) {
+      stats.complianceRate = ((stats.activeCount - stats.overdueCount) / stats.activeCount) * 100;
+    }
+    
+    return stats;
+  } catch (error) {
+    console.error('Error fetching medication stats:', error);
+    throw error;
+  }
 };
