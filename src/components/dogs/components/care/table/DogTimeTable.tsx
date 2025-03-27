@@ -6,7 +6,6 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { useTimeTableState } from './hooks/useTimeTableState';
 import TableActions from './components/TableActions';
 import DebugInfoPanel from './components/DebugInfoPanel';
-import CategoryTabs from './components/CategoryTabs';
 import TableContentManager from './components/TableContentManager';
 import ObservationDialogManager from './components/ObservationDialogManager';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -60,6 +59,11 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   const selectedDog = dogsStatus && Array.isArray(dogsStatus) 
     ? dogsStatus.find(dog => dog.dog_id === selectedDogId) 
     : undefined;
+    
+  // Extract the observations for the selected dog as an array
+  const selectedDogObservations = selectedDog && observations && selectedDogId 
+    ? observations[selectedDogId] || [] 
+    : [];
 
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DogTimeTable">
@@ -85,8 +89,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
         {/* Table Content */}
         <TableContentManager 
           activeCategory={activeCategory}
-          dogsStatus={dogsStatus || []} // Ensure dogsStatus is always an array
-          sortedDogs={sortedDogs || []} // Ensure sortedDogs is always an array
+          dogsStatus={dogsStatus || []} 
+          sortedDogs={sortedDogs || []} 
           hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
           hasObservation={hasObservation}
@@ -110,8 +114,8 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           observationDialogOpen={observationDialogOpen}
           onOpenChange={setObservationDialogOpen}
           onSubmit={handleObservationSubmit}
-          observations={observations || []} // Ensure observations is always an array
-          timeSlots={timeSlots || []} // Ensure timeSlots is always an array
+          observations={selectedDogObservations} 
+          timeSlots={timeSlots || []} 
           isMobile={isMobile}
           activeCategory={activeCategory}
         />

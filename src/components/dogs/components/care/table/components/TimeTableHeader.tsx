@@ -12,13 +12,14 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
   activeCategory, 
   onCategoryChange 
 }) => {
+  // Make sure careCategories is defined and is an array before trying to find elements
+  const safeCategories = Array.isArray(careCategories) ? careCategories : [];
+  
   // Get the current category name for display in the header
-  const categoryName = (careCategories || []).find(c => c.id === activeCategory)?.name || 'Care';
+  const categoryName = safeCategories.find(c => c.id === activeCategory)?.name || 'Care';
   
   // Ensure we have a valid categories array to pass to CategoryTabs
-  const categories = Array.isArray(careCategories) 
-    ? careCategories.map(c => ({ id: c.id, label: c.name }))
-    : [];
+  const categories = safeCategories.map(c => ({ id: c.id, label: c.name }));
   
   return (
     <div className="bg-card border-b">
