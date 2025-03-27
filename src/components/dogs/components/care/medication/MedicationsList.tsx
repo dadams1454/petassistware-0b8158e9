@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
+import { 
+  Table, 
+  TableHeader, 
+  TableRow, 
+  TableHead, 
+  TableBody, 
+  TableCell 
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { MoreVertical, CheckCircle, Trash2 } from 'lucide-react';
 import { 
-  Card, 
-  CardContent, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription
-} from '@/components/ui/dialog';
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -25,246 +26,175 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Pill, Trash2, Calendar, Edit, Plus } from 'lucide-react';
-import { MedicationRecord, MedicationFrequency, MedicationType } from '@/types/medication';
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/contexts/UserContext';
+import { MedicationRecord } from '@/types/medication';
 import { deleteMedicationRecord, recordMedicationAdministration } from '@/services/medicationService';
-import MedicationForm from './MedicationForm';
 
 interface MedicationsListProps {
   medications: MedicationRecord[];
-  dogId: string;
   onRefresh: () => void;
-  hideAction?: boolean;
+  onEdit: (id: string) => void;
 }
 
-const MedicationsList: React.FC<MedicationsListProps> = ({
-  medications,
-  dogId,
-  onRefresh,
-  hideAction = false
+const MedicationsList: React.FC<MedicationsListProps> = ({ 
+  medications, 
+  onRefresh, 
+  onEdit 
 }) => {
-  const [selectedMedication, setSelectedMedication] = useState<MedicationRecord | null>(null);
-  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showLogDialog, setShowLogDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const { user } = useUser();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingId, setDeletingId] = useState<string>('');
 
-  const handleEdit = (medication: MedicationRecord) => {
-    setSelectedMedication(medication);
-    setShowEditDialog(true);
-  };
-
-  const handleAddAdministration = (medication: MedicationRecord) => {
-    setSelectedMedication(medication);
-    setShowLogDialog(true);
-  };
-
-  const handleLogMedication = async (medication: MedicationRecord) => {
+  // Fix the toast usage in handleDeleteMedication
+  const handleDeleteMedication = async (id: string) => {
     if (!user?.id) {
       toast({
-        title: "Authentication Error",
+        title: "Authentication error",
         description: "You must be logged in to perform this action",
         variant: "destructive"
       });
       return;
     }
-
+    
+    setDeletingId(id);
+    
     try {
-      const now = new Date();
-      const administrationData = {
-        timestamp: now.toISOString(),
-        administered_by: user.id,
-        notes: `Administered on ${format(now, 'PPp')}`
-      };
-      
-      await recordMedicationAdministration(medication.id, administrationData);
-      
+      await deleteMedicationRecord(id);
       toast({
-        title: "Medication Logged",
-        description: `Successfully recorded ${medication.medication_name} administration.`,
-        variant: "default"
+        title: "Medication deleted",
+        description: "The medication has been successfully removed."
       });
-      
-      if (onRefresh) {
-        onRefresh();
-      }
-    } catch (error) {
-      console.error("Error logging medication:", error);
-      toast({
-        title: "Error",
-        description: "Failed to record medication administration.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!selectedMedication) return;
-
-    setIsDeleting(true);
-    try {
-      await deleteMedicationRecord(selectedMedication.id);
-      toast({
-        title: "Medication Deleted",
-        description: `${selectedMedication.medication_name} has been deleted successfully.`,
-        variant: "default"
-      });
-      setShowDeleteAlert(false);
-      setSelectedMedication(null);
-      if (onRefresh) {
-        onRefresh();
-      }
+      onRefresh();
     } catch (error) {
       console.error("Error deleting medication:", error);
       toast({
         title: "Error",
-        description: "Failed to delete medication.",
+        description: error instanceof Error ? error.message : "An error occurred while deleting the medication",
         variant: "destructive"
       });
     } finally {
-      setIsDeleting(false);
+      setDeletingId('');
+      setShowDeleteDialog(false);
+    }
+  };
+
+  // Fix this toast usage as well
+  const handleAddAdministration = async (medicationId: string) => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication error",
+        description: "You must be logged in to perform this action",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const administrationData = {
+        timestamp: new Date().toISOString(),
+        administered_by: user.id,
+        notes: "Administered manually via medication list"
+      };
+      
+      await recordMedicationAdministration(medicationId, administrationData);
+      
+      toast({
+        title: "Medication administered",
+        description: "The medication has been marked as administered."
+      });
+      onRefresh();
+    } catch (error) {
+      console.error("Error administering medication:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred while recording administration",
+        variant: "destructive"
+      });
     }
   };
 
   return (
     <div>
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {medications.map((medication) => (
-          <Card key={medication.id} className="bg-card text-card-foreground">
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <Pill className="mr-2 h-4 w-4 text-blue-500" />
-                  <span>{medication.medication_name}</span>
-                </div>
-                <Badge variant="secondary">{medication.medication_type}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              <div>
-                <span className="font-medium">Dosage:</span> {medication.dosage} {medication.dosage_unit}
-              </div>
-              <div>
-                <span className="font-medium">Frequency:</span> {medication.frequency}
-              </div>
-              {medication.next_due_date && (
-                <div>
-                  <span className="font-medium">Next Due:</span> {format(parseISO(medication.next_due_date), 'MMM d, yyyy')}
-                </div>
-              )}
-              {medication.notes && (
-                <div>
-                  <span className="font-medium">Notes:</span> {medication.notes}
-                </div>
-              )}
-            </CardContent>
-            {!hideAction && (
-              <CardFooter className="flex justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleLogMedication(medication)}
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Log Med
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEdit(medication)}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:text-red-700 hover:bg-red-100"
-                  onClick={() => {
-                    setSelectedMedication(medication);
-                    setShowDeleteAlert(true);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
-        ))}
-      </div>
+      {medications.length > 0 ? (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Medication</TableHead>
+              <TableHead>Dosage</TableHead>
+              <TableHead>Frequency</TableHead>
+              <TableHead>Next Due</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {medications.map((medication) => (
+              <TableRow key={medication.id}>
+                <TableCell>{medication.medication_name}</TableCell>
+                <TableCell>
+                  {medication.dosage} {medication.dosage_unit}
+                </TableCell>
+                <TableCell>{medication.frequency}</TableCell>
+                <TableCell>
+                  {medication.next_due_date ? format(new Date(medication.next_due_date), 'MMM d, yyyy') : 'N/A'}
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleAddAdministration(medication.id)}>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Mark as Administered
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEdit(medication.id)}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          setShowDeleteDialog(true);
+                          setDeletingId(medication.id);
+                        }}
+                        className="text-red-500 focus:text-red-500"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        <div className="text-center py-4">No medications found.</div>
+      )}
 
-      {/* Delete Alert Dialog */}
-      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Medication</AlertDialogTitle>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this medication? This action cannot be undone.
+              This action cannot be undone. Are you sure you want to delete this medication?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} onClick={() => setSelectedMedication(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction disabled={isDeleting} onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              {isDeleting ? "Deleting..." : "Delete"}
+            <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              disabled={deletingId === ''}
+              onClick={() => handleDeleteMedication(deletingId)}
+            >
+              {deletingId === '' ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Edit Medication Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={() => setShowEditDialog(false)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Edit Medication</DialogTitle>
-            <DialogDescription>
-              Make changes to the selected medication.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedMedication && (
-            <MedicationForm
-              dogId={dogId}
-              existingMedication={selectedMedication}
-              onSuccess={() => {
-                setShowEditDialog(false);
-                setSelectedMedication(null);
-                if (onRefresh) {
-                  onRefresh();
-                }
-              }}
-              onCancel={() => {
-                setShowEditDialog(false);
-                setSelectedMedication(null);
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Log Medication Dialog */}
-      <Dialog open={showLogDialog} onOpenChange={() => setShowLogDialog(false)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Log Medication</DialogTitle>
-            <DialogDescription>
-              Record the administration of the selected medication.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedMedication && (
-            <div>
-              <p>Are you sure you want to log {selectedMedication.medication_name} as
-                administered today?</p>
-              <Button onClick={() => handleLogMedication(selectedMedication)}>Log
-                Medication</Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
