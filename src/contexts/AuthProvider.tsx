@@ -14,6 +14,7 @@ interface AuthContextType {
   tenantId: string | null;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  isRefreshingSession: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   tenantId: null,
   signOut: async () => {},
   refreshSession: async () => {},
+  isRefreshingSession: false,
 });
 
 interface AuthProviderProps {
@@ -36,6 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [isRefreshingSession, setIsRefreshingSession] = useState<boolean>(false);
   
   // Use a ref to track ongoing refresh operations to prevent multiple concurrent refreshes
   const refreshInProgress = useRef<boolean>(false);
@@ -93,6 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('Refreshing session...');
       refreshInProgress.current = true;
+      setIsRefreshingSession(true);
       setLoading(true);
       
       // Check for current session
@@ -133,6 +137,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setTenantId(null);
     } finally {
       setLoading(false);
+      setIsRefreshingSession(false);
       refreshInProgress.current = false;
     }
   }, []);
@@ -264,7 +269,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       userRole, 
       tenantId,
       signOut, 
-      refreshSession 
+      refreshSession,
+      isRefreshingSession
     }}>
       {children}
     </AuthContext.Provider>
