@@ -1,51 +1,43 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LucideIcon } from 'lucide-react';
 
-export interface EmptyStateAction {
+interface EmptyStateAction {
   label: string;
   onClick: () => void;
-  variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';
+  icon?: React.ReactNode;
 }
 
-export interface EmptyStateProps {
-  icon?: React.ReactNode;
+interface EmptyStateProps {
   title: string;
   description: string;
+  icon?: React.ReactNode;
   action?: EmptyStateAction;
-  className?: string;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({ 
-  icon, 
-  title, 
-  description, 
-  action,
-  className
+const EmptyState: React.FC<EmptyStateProps> = ({
+  title,
+  description,
+  icon,
+  action
 }) => {
   return (
-    <Card className={`border shadow-sm ${className}`}>
-      <CardContent className="flex flex-col items-center justify-center py-8">
-        {icon && (
-          <div className="mb-4 rounded-full bg-muted p-3">
-            {icon}
-          </div>
-        )}
-        <h3 className="mb-2 text-lg font-medium">{title}</h3>
-        <p className="mb-4 text-center text-sm text-muted-foreground max-w-sm">{description}</p>
-        {action && (
-          <Button 
-            onClick={action.onClick} 
-            variant={action.variant || 'default'}
-            className="mt-2"
-          >
-            {action.label}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center justify-center text-center p-8 my-8">
+      {icon && (
+        <div className="mb-4 text-muted-foreground">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      
+      {action && (
+        <Button onClick={action.onClick}>
+          {action.icon}
+          {action.label}
+        </Button>
+      )}
+    </div>
   );
 };
 

@@ -112,18 +112,12 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         <ActionButton 
           variant="outline" 
           onClick={() => setWeightDialogOpen(true)}
-          label="Add Weight"
-          icon={<Activity className="h-4 w-4 mr-2" />}
         >
           <Activity className="h-4 w-4 mr-2" />
           Add Weight
         </ActionButton>
         
-        <ActionButton 
-          onClick={() => handleAddRecord(HealthRecordType.Examination)}
-          label="Add Record"
-          icon={<Plus className="h-4 w-4 mr-2" />}
-        >
+        <ActionButton onClick={() => handleAddRecord(HealthRecordType.Examination)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Record
         </ActionButton>
@@ -258,7 +252,6 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
                   size="sm"
                   onClick={() => handleAddRecord(HealthRecordType.Examination)}
                   icon={<Plus className="h-4 w-4" />}
-                  label="Add Examination"
                 >
                   Add Examination
                 </ActionButton>
@@ -294,7 +287,6 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
                   size="sm"
                   onClick={() => handleAddRecord(HealthRecordType.Medication)}
                   icon={<Plus className="h-4 w-4" />}
-                  label="Add Medication"
                 >
                   Add Medication
                 </ActionButton>

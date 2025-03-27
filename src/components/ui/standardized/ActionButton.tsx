@@ -1,55 +1,47 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export interface ActionButtonProps {
-  label?: string; // Make label optional
+interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
   icon?: React.ReactNode;
-  onClick: () => void;
-  variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  className?: string;
-  disabled?: boolean;
   isLoading?: boolean;
   loadingText?: string;
-  children?: React.ReactNode;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
-  label,
+  children,
   icon,
-  onClick,
+  isLoading = false,
+  loadingText,
   variant = 'default',
   size = 'default',
   className,
-  disabled = false,
-  isLoading = false,
-  loadingText,
-  children,
+  onClick,
+  ...props
 }) => {
-  // Ensure either label or children is provided
-  if (!label && !children) {
-    console.warn('ActionButton should have either a label prop or children');
-  }
-
   return (
     <Button
       variant={variant}
       size={size}
+      className={cn(className)}
       onClick={onClick}
-      className={cn("gap-2", className)}
-      disabled={disabled || isLoading}
+      disabled={isLoading || props.disabled}
+      {...props}
     >
       {isLoading ? (
         <>
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          {loadingText || label}
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          {loadingText || children}
         </>
       ) : (
         <>
-          {icon}
-          {children || label}
+          {icon && <span className="mr-2">{icon}</span>}
+          {children}
         </>
       )}
     </Button>
