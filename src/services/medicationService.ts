@@ -436,8 +436,8 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      // We need to convert the strings to the same type
-      return nextDue < today && med.status === MedicationStatus.ACTIVE;
+      // Convert to same type for comparison and use string literal to match what's in the database
+      return nextDue < today && med.status === 'active';
     });
   } catch (error) {
     console.error('Error fetching overdue medications:', error);
@@ -466,8 +466,8 @@ export const fetchUpcomingMedications = async (daysAhead = 7): Promise<Medicatio
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      // Fixed comparison by using consistent types
-      return nextDue >= today && nextDue <= futureDate && med.status === MedicationStatus.ACTIVE;
+      // Use string literal for status to match database value
+      return nextDue >= today && nextDue <= futureDate && med.status === 'active';
     });
   } catch (error) {
     console.error('Error fetching upcoming medications:', error);
@@ -500,12 +500,13 @@ export const fetchMedicationStats = async (dogId: string): Promise<MedicationSta
     
     const today = new Date();
     
-    const activeCount = medications.filter(m => m.status === MedicationStatus.ACTIVE).length;
-    const completedCount = medications.filter(m => m.status === MedicationStatus.COMPLETED).length;
+    // Use string literals for status values to match what's stored in the database
+    const activeCount = medications.filter(m => m.status === 'active').length;
+    const completedCount = medications.filter(m => m.status === 'completed').length;
     
     // Count overdue medications - fixed comparison to use same type
     const overdueCount = medications.filter(med => {
-      if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
+      if (!med.next_due_date || med.status !== 'active') return false;
       const nextDue = new Date(med.next_due_date);
       return nextDue < today;
     }).length;
@@ -513,7 +514,7 @@ export const fetchMedicationStats = async (dogId: string): Promise<MedicationSta
     // Count upcoming medications (next 7 days) - fixed comparison to use same type
     const futureDate = addDays(today, 7);
     const upcomingCount = medications.filter(med => {
-      if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
+      if (!med.next_due_date || med.status !== 'active') return false;
       const nextDue = new Date(med.next_due_date);
       return nextDue >= today && nextDue <= futureDate;
     }).length;
