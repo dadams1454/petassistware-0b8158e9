@@ -726,6 +726,106 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_areas: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      facility_task_logs: {
+        Row: {
+          completed_at: string
+          completed_by: string
+          created_at: string
+          id: string
+          notes: string | null
+          status: string
+          task_id: string
+        }
+        Insert: {
+          completed_at?: string
+          completed_by: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status: string
+          task_id: string
+        }
+        Update: {
+          completed_at?: string
+          completed_by?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_task_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "facility_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facility_tasks: {
+        Row: {
+          active: boolean | null
+          area_id: string | null
+          created_at: string
+          custom_days: number[] | null
+          description: string | null
+          frequency: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          area_id?: string | null
+          created_at?: string
+          custom_days?: number[] | null
+          description?: string | null
+          frequency: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          area_id?: string | null
+          created_at?: string
+          custom_days?: number[] | null
+          description?: string | null
+          frequency?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_tasks_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "facility_areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feeding_records: {
         Row: {
           amount_consumed: string | null

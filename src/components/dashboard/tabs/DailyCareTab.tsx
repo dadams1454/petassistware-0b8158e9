@@ -21,6 +21,7 @@ import PottyBreaksTab from '@/components/dashboard/tabs/PottyBreaksTab';
 import MedicationsTab from '@/components/dashboard/tabs/MedicationsTab';
 import GroomingTab from '@/components/dashboard/tabs/GroomingTab';
 import NotesTab from '@/components/dashboard/tabs/NotesTab';
+import FacilityTab from '@/components/dashboard/tabs/FacilityTab';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
@@ -181,25 +182,10 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         );
       case 'facility':
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                <span>Facility Management</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="py-8 text-center">
-                <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 mb-4">
-                  <Building2 className="h-10 w-10 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Coming Soon</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Facility management features are currently in development. You'll soon be able to track cleaning schedules, maintenance tasks, and kennel assignments.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <FacilityTab
+            onRefreshData={handleRefresh}
+            dogStatuses={effectiveDogStatuses}
+          />
         );
       case 'puppies':
         return (
