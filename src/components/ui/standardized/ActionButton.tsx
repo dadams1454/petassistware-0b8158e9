@@ -12,6 +12,9 @@ export interface ActionButtonProps {
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
   disabled?: boolean;
+  isLoading?: boolean;
+  loadingText?: string;
+  children?: React.ReactNode;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -22,6 +25,9 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   size = 'default',
   className,
   disabled = false,
+  isLoading = false,
+  loadingText,
+  children,
 }) => {
   return (
     <Button
@@ -29,10 +35,19 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       size={size}
       onClick={onClick}
       className={cn("gap-2", className)}
-      disabled={disabled}
+      disabled={disabled || isLoading}
     >
-      {icon}
-      {label}
+      {isLoading ? (
+        <>
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          {loadingText || label}
+        </>
+      ) : (
+        <>
+          {icon}
+          {children || label}
+        </>
+      )}
     </Button>
   );
 };
