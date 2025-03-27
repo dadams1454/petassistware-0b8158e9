@@ -175,7 +175,7 @@ const DogProfilePage = () => {
             title="Delete Dog Profile"
             description="Are you sure you want to delete this dog? This action cannot be undone."
             confirmLabel="Delete"
-            variant="destructive"
+            confirmVariant="destructive"
             isLoading={isDeleting}
             onConfirm={handleDeleteDog}
           />

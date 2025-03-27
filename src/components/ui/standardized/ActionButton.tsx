@@ -2,10 +2,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
 
 export interface ActionButtonProps {
-  label: string;
+  label?: string; // Make label optional
   icon?: React.ReactNode;
   onClick: () => void;
   variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';
@@ -29,6 +28,11 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   loadingText,
   children,
 }) => {
+  // Ensure either label or children is provided
+  if (!label && !children) {
+    console.warn('ActionButton should have either a label prop or children');
+  }
+
   return (
     <Button
       variant={variant}

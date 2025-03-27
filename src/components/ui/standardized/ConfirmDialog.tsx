@@ -20,6 +20,7 @@ export interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel?: () => void;
   confirmVariant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'; // Added for backward compatibility
   isLoading?: boolean;
 }
 
@@ -33,8 +34,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   onCancel,
   confirmVariant = 'default',
+  variant, // Added for backward compatibility
   isLoading = false,
 }) => {
+  // Use variant prop for backward compatibility if confirmVariant is not provided
+  const buttonVariant = confirmVariant || variant || 'default';
+
   const handleCancel = () => {
     onOpenChange(false);
     if (onCancel) onCancel();
@@ -57,7 +62,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             {cancelLabel}
           </Button>
           <Button 
-            variant={confirmVariant} 
+            variant={buttonVariant} 
             onClick={handleConfirm} 
             disabled={isLoading}
             className={isLoading ? 'opacity-80' : ''}

@@ -40,7 +40,7 @@ const CareCard: React.FC<CareCardProps> = ({
   };
 
   return (
-    <Card className={`border-l-4 ${category.color.split(' ')[0]} h-full`}>
+    <Card className={`border-l-4 ${category.color} h-full`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-base font-medium flex items-center gap-2">

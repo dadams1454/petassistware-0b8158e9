@@ -70,6 +70,7 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
                   isLoading={isRecording}
                   loadingText="Recording..."
                   icon={<PlusCircle className="h-4 w-4" />}
+                  label={`Record ${activeTab}`}
                 >
                   {`Record ${activeTab}`}
                 </ActionButton>
