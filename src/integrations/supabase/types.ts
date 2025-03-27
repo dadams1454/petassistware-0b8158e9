@@ -320,6 +320,7 @@ export type Database = {
           created_by: string
           dog_id: string
           id: string
+          medication_metadata: Json | null
           notes: string | null
           task_name: string
           timestamp: string
@@ -330,6 +331,7 @@ export type Database = {
           created_by: string
           dog_id: string
           id?: string
+          medication_metadata?: Json | null
           notes?: string | null
           task_name: string
           timestamp?: string
@@ -340,6 +342,7 @@ export type Database = {
           created_by?: string
           dog_id?: string
           id?: string
+          medication_metadata?: Json | null
           notes?: string | null
           task_name?: string
           timestamp?: string
@@ -1411,7 +1414,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_medication_log: {
+        Args: {
+          log_record: unknown
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

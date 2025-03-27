@@ -1,3 +1,4 @@
+
 import { DogCareStatus } from '@/types/dailyCare';
 import { MedicationFrequency, MedicationStatus } from '@/utils/medicationUtils';
 
@@ -73,4 +74,3 @@ export interface MedicationFilterProps {
   value: string;
   onChange: (value: string) => void;
 }
-
