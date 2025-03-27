@@ -1,120 +1,95 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { 
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useFeeding } from '@/contexts/FeedingContext';
-import { FeedingScheduleFormData, FeedingSchedule } from '@/types/feeding';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import TimeInput from '@/components/common/TimeInput';
+import { useFeeding } from '@/contexts/feeding/FeedingContext';
+import { FeedingScheduleFormData } from '@/types/feeding';
+
+// Form schema
+const feedingScheduleSchema = z.object({
+  food_type: z.string().min(1, 'Food type is required'),
+  amount: z.string().min(1, 'Amount is required'),
+  unit: z.enum(['cups', 'grams', 'ounces', 'tablespoons', 'teaspoons']),
+  schedule_time: z.array(z.string()).min(1, 'At least one feeding time is required'),
+  special_instructions: z.string().optional(),
+  active: z.boolean().default(true),
+});
+
+type FormValues = z.infer<typeof feedingScheduleSchema>;
 
 interface FeedingScheduleFormProps {
   dogId: string;
-  schedule?: FeedingSchedule;
   scheduleId?: string;
-  initialValues?: Partial<FeedingScheduleFormData>;
   onSuccess?: () => void;
   onCancel?: () => void;
+  defaultValues?: Partial<FeedingScheduleFormData>;
 }
 
-const formSchema = z.object({
-  food_type: z.string().min(1, { message: 'Food type is required' }),
-  amount: z.string().min(1, { message: 'Amount is required' }),
-  unit: z.enum(['cups', 'grams', 'ounces', 'tablespoons', 'teaspoons']),
-  schedule_time: z.string().array().min(1, { message: 'At least one time is required' }),
-  special_instructions: z.string().optional(),
-  active: z.boolean().default(true)
-});
-
 const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({ 
-  dogId,
-  schedule,
-  scheduleId,
-  initialValues,
+  dogId, 
+  scheduleId, 
   onSuccess, 
-  onCancel 
+  onCancel,
+  defaultValues 
 }) => {
-  const [loading, setLoading] = useState(false);
-  const { createSchedule, updateSchedule } = useFeeding();
+  const { createSchedule, updateSchedule, loading } = useFeeding();
   
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: initialValues || schedule ? {
-      food_type: schedule?.food_type || '',
-      amount: schedule?.amount || '',
-      unit: schedule?.unit || 'cups',
-      schedule_time: schedule?.schedule_time || [],
-      special_instructions: schedule?.special_instructions || '',
-      active: schedule?.active !== undefined ? schedule.active : true
-    } : {
-      food_type: '',
-      amount: '',
-      unit: 'cups',
-      schedule_time: [],
-      special_instructions: '',
-      active: true
+  // Initialize form with default values
+  const form = useForm<FormValues>({
+    resolver: zodResolver(feedingScheduleSchema),
+    defaultValues: {
+      food_type: defaultValues?.food_type || '',
+      amount: defaultValues?.amount || '',
+      unit: (defaultValues?.unit as 'cups' | 'grams' | 'ounces' | 'tablespoons' | 'teaspoons') || 'cups',
+      schedule_time: Array.isArray(defaultValues?.schedule_time) 
+        ? defaultValues.schedule_time 
+        : defaultValues?.schedule_time 
+          ? [defaultValues.schedule_time] 
+          : ['08:00'],
+      special_instructions: defaultValues?.special_instructions || '',
+      active: defaultValues?.active !== undefined ? defaultValues.active : true,
     }
   });
-
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    setLoading(true);
-    
+  
+  // Handle form submission
+  const onSubmit = async (values: FormValues) => {
     try {
-      const formData: FeedingScheduleFormData = {
+      const scheduleData: FeedingScheduleFormData = {
         dog_id: dogId,
-        food_type: data.food_type,
-        amount: data.amount,
-        unit: data.unit,
-        schedule_time: data.schedule_time,
-        special_instructions: data.special_instructions,
-        active: data.active || true
+        ...values
       };
-
+      
       if (scheduleId) {
-        await updateSchedule(scheduleId, formData);
+        // Update existing schedule
+        await updateSchedule(scheduleId, scheduleData);
       } else {
-        await createSchedule(formData);
+        // Create new schedule
+        await createSchedule(scheduleData);
       }
       
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
-      console.error('Error managing feeding schedule:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error saving feeding schedule:', error);
     }
   };
-
+  
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <h2 className="text-lg font-medium leading-none">
+          {scheduleId ? 'Edit Feeding Schedule' : 'New Feeding Schedule'}
+        </h2>
+        
         <FormField
           control={form.control}
           name="food_type"
@@ -129,7 +104,7 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({
           )}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="amount"
@@ -150,13 +125,13 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Unit</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
+                <Select 
+                  onValueChange={field.onChange} 
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a unit" />
+                      <SelectValue placeholder="Select unit" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -178,9 +153,13 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({
           name="schedule_time"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Schedule Time</FormLabel>
+              <FormLabel>Feeding Times</FormLabel>
               <FormControl>
-                <Input placeholder="Enter time (HH:MM)" {...field} />
+                <TimeInput 
+                  values={field.value}
+                  onChange={field.onChange}
+                  addButtonLabel="Add Feeding Time"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -195,8 +174,7 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({
               <FormLabel>Special Instructions</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Enter any special instructions"
-                  className="min-h-[80px]"
+                  placeholder="Enter any special feeding instructions" 
                   {...field} 
                 />
               </FormControl>
@@ -209,9 +187,12 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({
           control={form.control}
           name="active"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">Active</FormLabel>
+                <FormLabel>Active Schedule</FormLabel>
+                <div className="text-sm text-muted-foreground">
+                  Toggle to enable or disable this feeding schedule
+                </div>
               </div>
               <FormControl>
                 <Switch
@@ -223,20 +204,18 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({
           )}
         />
         
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-end gap-2 pt-4">
           {onCancel && (
             <Button 
               type="button" 
-              variant="outline" 
+              variant="outline"
               onClick={onCancel}
-              disabled={loading}
             >
               Cancel
             </Button>
           )}
           <Button type="submit" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Schedule
+            {loading ? 'Saving...' : (scheduleId ? 'Update Schedule' : 'Create Schedule')}
           </Button>
         </div>
       </form>

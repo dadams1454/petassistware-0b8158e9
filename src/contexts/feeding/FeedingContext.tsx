@@ -18,7 +18,7 @@ import {
   createFeedingRecord,
   updateFeedingRecord,
   deleteFeedingRecord,
-  getFeedingStats
+  fetchFeedingStats
 } from '@/services/feedingService';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -227,7 +227,13 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setLoading(true);
     try {
-      const newRecord = await createFeedingRecord(data, user.id);
+      // Ensure timestamp is in the right format
+      const formattedData = {
+        ...data,
+        timestamp: typeof data.timestamp === 'string' ? new Date(data.timestamp) : data.timestamp
+      };
+      
+      const newRecord = await createFeedingRecord(formattedData, user.id);
       if (newRecord) {
         setRecords(prev => [newRecord, ...prev]);
         toast({
@@ -262,16 +268,24 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error('Feeding record not found');
       }
       
-      // Create a complete update data object
+      // Format timestamp if needed
+      const formattedData = {
+        ...data,
+        timestamp: data.timestamp ? 
+          (typeof data.timestamp === 'string' ? new Date(data.timestamp) : data.timestamp) 
+          : undefined
+      };
+      
+      // Create a complete update data object with required fields
       const updateData = {
-        food_type: data.food_type || currentRecord.food_type,
-        amount_offered: data.amount_offered || currentRecord.amount_offered,
-        amount_consumed: data.amount_consumed || currentRecord.amount_consumed,
-        timestamp: data.timestamp ? new Date(data.timestamp) : new Date(currentRecord.timestamp),
-        notes: data.notes !== undefined ? data.notes : currentRecord.notes,
-        meal_type: data.meal_type || currentRecord.meal_type,
-        refused: data.refused !== undefined ? data.refused : currentRecord.refused,
-        schedule_id: data.schedule_id !== undefined ? data.schedule_id : currentRecord.schedule_id
+        food_type: formattedData.food_type || currentRecord.food_type,
+        amount_offered: formattedData.amount_offered || currentRecord.amount_offered,
+        amount_consumed: formattedData.amount_consumed || currentRecord.amount_consumed,
+        meal_type: formattedData.meal_type || currentRecord.meal_type || 'regular',
+        refused: formattedData.refused !== undefined ? formattedData.refused : (currentRecord.refused || false),
+        notes: formattedData.notes,
+        schedule_id: formattedData.schedule_id,
+        timestamp: formattedData.timestamp ? new Date(formattedData.timestamp) : new Date(currentRecord.timestamp)
       };
       
       const updatedRecord = await updateFeedingRecord(id, updateData);
@@ -333,7 +347,7 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     setLoading(true);
     try {
-      const fetchedStats = await getFeedingStats(dogId);
+      const fetchedStats = await fetchFeedingStats(dogId, timeframe);
       setStats(fetchedStats);
       return fetchedStats;
     } catch (error) {
@@ -349,7 +363,7 @@ export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [toast]);
 
-  const value: FeedingContextType = {
+  const value = {
     loading,
     schedules,
     records,

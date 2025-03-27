@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -36,7 +35,7 @@ interface MedicationsListProps {
   medications: MedicationRecord[];
   onRefresh: () => void;
   onEdit: (id: string) => void;
-  dogId?: string; // Added dogId as an optional prop
+  dogId?: string;
 }
 
 const MedicationsList: React.FC<MedicationsListProps> = ({ 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Card, 
@@ -86,6 +85,8 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
   
   const [activeTab, setActiveTab] = useState('current');
   const [addMedicationDialog, setAddMedicationDialog] = useState(false);
+  const [editMedicationDialog, setEditMedicationDialog] = useState(false);
+  const [selectedMedicationId, setSelectedMedicationId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Load data on mount
@@ -107,6 +108,11 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
         variant: 'destructive'
       });
     }
+  };
+
+  const handleEditMedication = (id: string) => {
+    setSelectedMedicationId(id);
+    setEditMedicationDialog(true);
   };
 
   // Filter medications for each tab
@@ -193,6 +199,7 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
             medications={currentMedications}
             dogId={dogId}
             onRefresh={refreshData}
+            onEdit={handleEditMedication}
           />
         </TabsContent>
         
@@ -201,6 +208,7 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
             medications={preventativeMedications}
             dogId={dogId}
             onRefresh={refreshData}
+            onEdit={handleEditMedication}
           />
         </TabsContent>
         
@@ -209,6 +217,7 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
             medications={completedMedications}
             dogId={dogId}
             onRefresh={refreshData}
+            onEdit={handleEditMedication}
           />
         </TabsContent>
         
@@ -233,6 +242,27 @@ const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId,
             }}
             onCancel={() => setAddMedicationDialog(false)}
           />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Medication Dialog */}
+      <Dialog open={editMedicationDialog} onOpenChange={setEditMedicationDialog}>
+        <DialogContent className="max-w-md">
+          {selectedMedicationId && (
+            <MedicationForm 
+              dogId={dogId}
+              medicationId={selectedMedicationId}
+              onSuccess={() => {
+                setEditMedicationDialog(false);
+                setSelectedMedicationId(null);
+                refreshData();
+              }}
+              onCancel={() => {
+                setEditMedicationDialog(false);
+                setSelectedMedicationId(null);
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
