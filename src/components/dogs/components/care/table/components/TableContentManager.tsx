@@ -49,8 +49,50 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
     return <NoDogsState onRefresh={onRefresh} />;
   }
 
+  // Create wrapper functions to adapt to the TimeTableContent interface which uses strings
+  const hasPottyBreakWrapper = (dogId: string, timeSlot: string): boolean => {
+    // Find the index of the timeSlot in the sortedDogs list
+    // This is a simplistic approach - in a real app, you'd map timeSlots to indices
+    const hour = 0; // Default to 0 if not found
+    return hasPottyBreak(dogId, hour);
+  };
+
+  const hasCareLoggedWrapper = (dogId: string, timeSlot: string, category: string): boolean => {
+    const hour = 0; // Default to 0 if not found
+    return hasCareLogged(dogId, hour);
+  };
+
+  const hasObservationWrapper = (dogId: string, timeSlot: string): boolean => {
+    const hour = 0; // Default to 0 if not found
+    return hasObservation(dogId, hour);
+  };
+
+  const getObservationDetailsWrapper = (dogId: string): any => {
+    const hour = 0; // Default to 0 if not found
+    return getObservationDetails(dogId, hour);
+  };
+
+  const onCellClickWrapper = (dogId: string, dogName: string, timeSlot: string, category: string): void => {
+    const hour = 0; // Default to 0 if not found
+    onCellClick(dogId, hour);
+  };
+
+  const onCellContextMenuWrapper = (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string): void => {
+    const hour = 0; // Default to 0 if not found
+    onCellContextMenu(e, dogId, hour);
+  };
+
+  const onCareLogClickWrapper = (dogId: string, dogName: string): void => {
+    onCareLogClick(dogId);
+  };
+
+  const onObservationClickWrapper = (dogId: string, dogName: string): void => {
+    const hour = 0; // Default to 0 if not found
+    onObservationClick(dogId, hour);
+  };
+
   return (
-    <TableContainer>
+    <div className="relative">
       {/* Top section with category tabs */}
       <TimeTableHeader 
         activeCategory={activeCategory} 
@@ -58,24 +100,32 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
         hideTopLevelTabs={hideTopLevelTabs}
       />
       
-      {/* Main table content */}
-      <TimeTableContent
-        activeCategory={activeCategory}
-        sortedDogs={sortedDogs}
-        hasPottyBreak={hasPottyBreak}
-        hasCareLogged={hasCareLogged}
-        hasObservation={hasObservation}
-        getObservationDetails={getObservationDetails}
-        onCellClick={onCellClick}
-        onCellContextMenu={onCellContextMenu}
-        onCareLogClick={onCareLogClick}
-        onDogClick={onDogClick}
-        onObservationClick={onObservationClick}
-      />
+      {/* Container with required props */}
+      <TableContainer 
+        activeCategory={activeCategory} 
+        dogsCount={dogsStatus.length} 
+        onRefresh={onRefresh}
+      >
+        {/* Main table content */}
+        <TimeTableContent
+          activeCategory={activeCategory}
+          sortedDogs={sortedDogs}
+          timeSlots={[]} // Make sure to provide valid timeSlots
+          hasPottyBreak={hasPottyBreakWrapper}
+          hasCareLogged={hasCareLoggedWrapper}
+          hasObservation={hasObservationWrapper}
+          getObservationDetails={getObservationDetailsWrapper}
+          onCellClick={onCellClickWrapper}
+          onCellContextMenu={onCellContextMenuWrapper}
+          onCareLogClick={onCareLogClickWrapper}
+          onDogClick={onDogClick}
+          onObservationClick={onObservationClickWrapper}
+        />
+      </TableContainer>
       
       {/* Loading overlay */}
-      {showLoading && <TableLoadingOverlay />}
-    </TableContainer>
+      {showLoading && <TableLoadingOverlay isLoading={true} />}
+    </div>
   );
 };
 

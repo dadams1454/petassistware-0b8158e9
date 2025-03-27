@@ -12,7 +12,7 @@ interface TimeTableContentProps {
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
+  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string; } | null;
   onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
   onCareLogClick: (dogId: string, dogName: string) => void;
@@ -40,13 +40,16 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   isMobile = false,
   isPendingFeeding = () => false
 }) => {
+  // If timeSlots is empty or not provided, use default empty array
+  const effectiveTimeSlots = timeSlots && timeSlots.length > 0 ? timeSlots : [];
+  
   return (
     <Table>
       <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
         <TableRow>
           <TableHead className="w-[160px] md:w-[250px]">Dog</TableHead>
           <TableHead className="w-[220px]">Observations</TableHead>
-          {timeSlots.map((slot) => (
+          {effectiveTimeSlots.map((slot) => (
             <TableHead 
               key={slot} 
               className={`text-center w-[80px] ${
@@ -66,7 +69,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
           <DogTimeRow
             key={dog.dog_id}
             dog={dog}
-            timeSlots={timeSlots}
+            timeSlots={effectiveTimeSlots}
             rowColor={getDogRowColor(index)}
             activeCategory={activeCategory}
             hasPottyBreak={hasPottyBreak}
