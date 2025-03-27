@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -36,13 +35,17 @@ interface FeedingSchedulesListProps {
   schedules: FeedingSchedule[];
   onRefresh: () => void;
   height?: string;
+  onEdit?: (schedule: FeedingSchedule) => void;
+  onDelete?: (scheduleId: string) => Promise<void>;
 }
 
 const FeedingSchedulesList: React.FC<FeedingSchedulesListProps> = ({
   dogId,
   schedules,
   onRefresh,
-  height = 'h-[300px]'
+  height = 'h-[300px]',
+  onEdit,
+  onDelete
 }) => {
   const { deleteSchedule } = useFeeding();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -55,6 +58,11 @@ const FeedingSchedulesList: React.FC<FeedingSchedulesListProps> = ({
   };
 
   const handleEditClick = (schedule: FeedingSchedule) => {
+    if (onEdit) {
+      onEdit(schedule);
+      return;
+    }
+    
     setSelectedSchedule(schedule);
     setEditDialogOpen(true);
   };
@@ -66,7 +74,11 @@ const FeedingSchedulesList: React.FC<FeedingSchedulesListProps> = ({
 
   const handleDeleteConfirm = async () => {
     if (selectedSchedule) {
-      await deleteSchedule(selectedSchedule.id);
+      if (onDelete) {
+        await onDelete(selectedSchedule.id);
+      } else {
+        await deleteSchedule(selectedSchedule.id);
+      }
       setDeleteDialogOpen(false);
       setSelectedSchedule(null);
       onRefresh();

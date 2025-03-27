@@ -1,9 +1,9 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { 
-  getFeedingHistory, 
-  recordFeeding, 
-  getDogFeedingSchedules,
+  fetchDogFeedingSchedules, 
+  createFeedingRecord, 
+  fetchDogFeedingRecords,
   createFeedingSchedule,
   updateFeedingSchedule,
   deleteFeedingRecord,
@@ -38,7 +38,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setError(null);
     
     try {
-      const records = await getFeedingHistory({ dogId });
+      const records = await fetchDogFeedingRecords(dogId);
       setFeedingRecords(records);
     } catch (err) {
       console.error('Error fetching feeding history:', err);
@@ -53,7 +53,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setError(null);
     
     try {
-      const schedules = await getDogFeedingSchedules(dogId);
+      const schedules = await fetchDogFeedingSchedules(dogId);
       setFeedingSchedules(schedules);
     } catch (err) {
       console.error('Error fetching feeding schedules:', err);
@@ -68,7 +68,9 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setError(null);
     
     try {
-      const record = await recordFeeding(data);
+      // We need to make sure staff_id is provided, but for now, we'll use a placeholder
+      const staffId = "placeholder-staff-id"; // This should be replaced with actual user ID
+      const record = await createFeedingRecord(data, staffId);
       return record;
     } catch (err) {
       console.error('Error creating feeding record:', err);

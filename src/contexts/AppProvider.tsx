@@ -6,7 +6,7 @@ import { ConfirmProvider } from '@/hooks/useConfirm';
 import { RefreshProvider } from './RefreshContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MedicationProvider } from './medication/MedicationContext';
-import { FeedingProvider } from './FeedingContext';
+import { FeedingProvider } from './feeding/FeedingContext';
 
 // Create a client
 const queryClient = new QueryClient({

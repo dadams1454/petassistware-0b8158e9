@@ -105,49 +105,35 @@ export const fetchDogFeedingRecords = async (
   dogId: string, 
   limit?: number
 ): Promise<FeedingRecord[]> => {
-  // First fetch feeding records from daily_care_logs with category 'feeding'
-  const { data: careRecords, error: careError } = await supabase
-    .from('daily_care_logs')
-    .select('*')
-    .eq('dog_id', dogId)
-    .eq('category', 'feeding')
-    .order('timestamp', { ascending: false })
-    .limit(limit || 100);
+  try {
+    // Fetch specific feeding records
+    const { data: feedingRecords, error: feedingError } = await supabase
+      .from('feeding_records')
+      .select('*')
+      .eq('dog_id', dogId)
+      .order('timestamp', { ascending: false })
+      .limit(limit || 100);
 
-  if (careError) {
-    console.error('Error fetching feeding records from care logs:', careError);
-    throw careError;
+    if (feedingError) {
+      console.error('Error fetching feeding records:', feedingError);
+      throw feedingError;
+    }
+
+    // If we need to add additional properties to match FeedingRecord
+    const enhancedRecords = (feedingRecords || []).map(record => ({
+      ...record,
+      category: 'feeding' as CareCategory,
+      task_name: `Feeding: ${record.food_type || 'Meal'}`,
+      created_by: record.staff_id || '',
+      meal_type: record.meal_type || undefined,
+      refused: record.refused || false
+    })) as FeedingRecord[];
+    
+    return enhancedRecords;
+  } catch (error) {
+    console.error('Error fetching feeding records:', error);
+    return [];
   }
-
-  // Then fetch specific feeding records
-  const { data: feedingRecords, error: feedingError } = await supabase
-    .from('feeding_records')
-    .select('*')
-    .eq('dog_id', dogId)
-    .order('timestamp', { ascending: false })
-    .limit(limit || 100);
-
-  if (feedingError) {
-    console.error('Error fetching feeding records:', feedingError);
-    throw feedingError;
-  }
-
-  // Convert care records to feeding records format
-  const careRecordsConverted = (careRecords || []).map(record => ({
-    ...record,
-    food_type: '',
-    amount_offered: '',
-    amount_consumed: '',
-  })) as FeedingRecord[];
-
-  // Combine both record types, sorted by timestamp
-  const combinedRecords = [...careRecordsConverted, ...(feedingRecords || [])] as FeedingRecord[];
-  const sortedRecords = combinedRecords.sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
-  
-  // Limit the results if needed
-  return limit ? sortedRecords.slice(0, limit) : sortedRecords;
 };
 
 /**
@@ -157,59 +143,45 @@ export const createFeedingRecord = async (
   data: FeedingFormData,
   userId: string
 ): Promise<FeedingRecord | null> => {
-  // Create care record entry
-  const careRecord = {
-    dog_id: data.dog_id,
-    category: 'feeding' as CareCategory,
-    task_name: `${data.meal_type || 'Meal'}: ${data.food_type}`,
-    timestamp: data.timestamp.toISOString(),
-    notes: data.notes || '',
-    created_by: userId
-  };
+  try {
+    // Create specific feeding record
+    const feedingData = {
+      dog_id: data.dog_id,
+      food_type: data.food_type,
+      amount_offered: data.amount_offered,
+      amount_consumed: data.amount_consumed || data.amount_offered, // Default to offered if not specified
+      staff_id: userId,
+      timestamp: data.timestamp.toISOString(),
+      schedule_id: data.schedule_id,
+      notes: data.notes,
+      meal_type: data.meal_type,
+      refused: data.refused
+    };
 
-  const { data: careRecordData, error: careError } = await supabase
-    .from('daily_care_logs')
-    .insert(careRecord)
-    .select()
-    .single();
+    const { data: feedingRecordData, error: feedingError } = await supabase
+      .from('feeding_records')
+      .insert(feedingData)
+      .select()
+      .single();
 
-  if (careError) {
-    console.error('Error creating care record for feeding:', careError);
-    throw careError;
+    if (feedingError) {
+      console.error('Error creating feeding record:', feedingError);
+      throw feedingError;
+    }
+
+    // Enhance the record to match FeedingRecord type
+    const enhancedRecord: FeedingRecord = {
+      ...feedingRecordData,
+      category: 'feeding',
+      task_name: `Feeding: ${feedingRecordData.food_type}`,
+      created_by: userId
+    };
+
+    return enhancedRecord;
+  } catch (error) {
+    console.error('Error creating feeding record:', error);
+    throw error;
   }
-
-  // Create specific feeding record
-  const feedingData = {
-    dog_id: data.dog_id,
-    food_type: data.food_type,
-    amount_offered: data.amount_offered,
-    amount_consumed: data.amount_consumed || data.amount_offered, // Default to offered if not specified
-    staff_id: userId,
-    timestamp: data.timestamp.toISOString(),
-    schedule_id: data.schedule_id,
-    notes: data.notes,
-    care_record_id: careRecordData.id
-  };
-
-  const { data: feedingRecordData, error: feedingError } = await supabase
-    .from('feeding_records')
-    .insert(feedingData)
-    .select()
-    .single();
-
-  if (feedingError) {
-    console.error('Error creating feeding record:', feedingError);
-    throw feedingError;
-  }
-
-  // Combine the records
-  return {
-    ...careRecordData,
-    ...feedingRecordData,
-    food_type: feedingRecordData.food_type,
-    amount_offered: feedingRecordData.amount_offered,
-    amount_consumed: feedingRecordData.amount_consumed
-  } as FeedingRecord;
 };
 
 /**
@@ -219,24 +191,14 @@ export const updateFeedingRecord = async (
   id: string,
   data: Partial<FeedingFormData>
 ): Promise<FeedingRecord | null> => {
-  // First get the existing feeding record to know which tables to update
-  const { data: existingRecord, error: fetchError } = await supabase
-    .from('feeding_records')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (fetchError) {
-    console.error('Error fetching existing feeding record:', fetchError);
-    throw fetchError;
-  }
-
   // Update the feeding record
   const updateData: any = {
     food_type: data.food_type,
     amount_offered: data.amount_offered,
     amount_consumed: data.amount_consumed,
-    notes: data.notes
+    notes: data.notes,
+    meal_type: data.meal_type,
+    refused: data.refused
   };
   
   if (data.timestamp) {
@@ -255,47 +217,21 @@ export const updateFeedingRecord = async (
     throw updateError;
   }
 
-  // Also update the related care record if there is one
-  if (existingRecord && existingRecord.care_record_id) {
-    const careUpdateData: any = {
-      task_name: `${data.meal_type || 'Meal'}: ${data.food_type}`,
-      notes: data.notes
-    };
-    
-    if (data.timestamp) {
-      careUpdateData.timestamp = data.timestamp.toISOString();
-    }
-    
-    const { error: careUpdateError } = await supabase
-      .from('daily_care_logs')
-      .update(careUpdateData)
-      .eq('id', existingRecord.care_record_id);
+  // Enhance the record to match FeedingRecord type
+  const enhancedRecord: FeedingRecord = {
+    ...updatedFeedingRecord,
+    category: 'feeding',
+    task_name: `Feeding: ${updatedFeedingRecord.food_type}`,
+    created_by: updatedFeedingRecord.staff_id
+  };
 
-    if (careUpdateError) {
-      console.error('Error updating care record for feeding:', careUpdateError);
-      // Don't throw here, we still updated the feeding record
-    }
-  }
-
-  return updatedFeedingRecord as FeedingRecord;
+  return enhancedRecord;
 };
 
 /**
  * Deletes a feeding record
  */
 export const deleteFeedingRecord = async (id: string): Promise<boolean> => {
-  // First get the existing feeding record to know which tables to update
-  const { data: existingRecord, error: fetchError } = await supabase
-    .from('feeding_records')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (fetchError) {
-    console.error('Error fetching existing feeding record:', fetchError);
-    throw fetchError;
-  }
-
   // Delete the feeding record
   const { error: deleteError } = await supabase
     .from('feeding_records')
@@ -305,19 +241,6 @@ export const deleteFeedingRecord = async (id: string): Promise<boolean> => {
   if (deleteError) {
     console.error('Error deleting feeding record:', deleteError);
     throw deleteError;
-  }
-
-  // Also delete the related care record if there is one
-  if (existingRecord && existingRecord.care_record_id) {
-    const { error: careDeleteError } = await supabase
-      .from('daily_care_logs')
-      .delete()
-      .eq('id', existingRecord.care_record_id);
-
-    if (careDeleteError) {
-      console.error('Error deleting care record for feeding:', careDeleteError);
-      // Don't throw here, we still deleted the feeding record
-    }
   }
 
   return true;

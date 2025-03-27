@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,7 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { 
   Popover,
   PopoverContent,
@@ -31,11 +31,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { createFeedingSchedule } from '@/services/feedingService';
-import { FeedingScheduleFormData } from '@/types/feeding';
+import { useFeeding } from '@/contexts/FeedingContext';
+import { FeedingScheduleFormData, FeedingSchedule } from '@/types/feeding';
 
 interface FeedingScheduleFormProps {
   dogId: string;
+  schedule?: FeedingSchedule;
+  scheduleId?: string;
+  initialValues?: Partial<FeedingScheduleFormData>;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -50,15 +53,26 @@ const formSchema = z.object({
 });
 
 const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({ 
-  dogId, 
+  dogId,
+  schedule,
+  scheduleId,
+  initialValues,
   onSuccess, 
   onCancel 
 }) => {
   const [loading, setLoading] = useState(false);
+  const { createSchedule, updateSchedule } = useFeeding();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: initialValues || schedule ? {
+      food_type: schedule?.food_type || '',
+      amount: schedule?.amount || '',
+      unit: schedule?.unit || 'cups',
+      schedule_time: schedule?.schedule_time || [],
+      special_instructions: schedule?.special_instructions || '',
+      active: schedule?.active !== undefined ? schedule.active : true
+    } : {
       food_type: '',
       amount: '',
       unit: 'cups',
@@ -82,13 +96,17 @@ const FeedingScheduleForm: React.FC<FeedingScheduleFormProps> = ({
         active: data.active || true
       };
 
-      await createFeedingSchedule(formData);
+      if (scheduleId) {
+        await updateSchedule(scheduleId, formData);
+      } else {
+        await createSchedule(formData);
+      }
       
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
-      console.error('Error creating feeding schedule:', error);
+      console.error('Error managing feeding schedule:', error);
     } finally {
       setLoading(false);
     }

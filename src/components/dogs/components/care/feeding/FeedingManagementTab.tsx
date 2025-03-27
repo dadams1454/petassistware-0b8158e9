@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Edit, Trash2, Utensils, Clock } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
 
-import { useFeeding } from '@/contexts/feeding';
-import FeedingForm from './FeedingForm';
+import React, { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Plus, RefreshCw, History } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useToast } from '@/components/ui/use-toast';
+import { FeedingSchedule } from '@/types/feeding';
+import { useFeeding } from '@/contexts/FeedingContext';
 import FeedingScheduleForm from './FeedingScheduleForm';
 import FeedingSchedulesList from './FeedingSchedulesList';
-import { FeedingSchedule } from '@/types/feeding';
+import FeedingHistory from './FeedingHistory';
 
 interface FeedingManagementTabProps {
   dogId: string;
@@ -16,144 +17,171 @@ interface FeedingManagementTabProps {
 }
 
 const FeedingManagementTab: React.FC<FeedingManagementTabProps> = ({ dogId, dogName }) => {
+  const { toast } = useToast();
   const { 
-    fetchSchedules, 
-    deleteSchedule,
-    schedules,
-    loading 
+    loading, 
+    feedingSchedules, 
+    feedingRecords,
+    fetchFeedingSchedules, 
+    fetchFeedingHistory,
+    deleteSchedule
   } = useFeeding();
   
-  const [addFeedingDialog, setAddFeedingDialog] = useState(false);
-  const [addScheduleDialog, setAddScheduleDialog] = useState(false);
-  const [editScheduleDialog, setEditScheduleDialog] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<FeedingSchedule | null>(null);
-  const { toast } = useToast();
-
-  // Load data on mount
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
   useEffect(() => {
-    refreshData();
-  }, [dogId]);
-
-  const refreshData = async () => {
-    await fetchSchedules(dogId);
-  };
-
-  const handleEditSchedule = (schedule: FeedingSchedule) => {
-    setSelectedSchedule(schedule);
-    setEditScheduleDialog(true);
-  };
-
-  const handleDeleteSchedule = async (scheduleId: string) => {
+    loadData();
+  }, [dogId, refreshTrigger]);
+  
+  const loadData = async () => {
     try {
-      await deleteSchedule(scheduleId);
-      toast({
-        title: "Feeding schedule deleted",
-        description: "The feeding schedule has been removed successfully",
-      });
-      refreshData();
+      await fetchFeedingSchedules(dogId);
+      await fetchFeedingHistory(dogId);
     } catch (error) {
+      console.error('Error loading feeding data:', error);
       toast({
-        title: "Error deleting schedule",
-        description: "Failed to delete the feeding schedule. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load feeding data',
+        variant: 'destructive'
       });
     }
   };
-
+  
+  const handleRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+  
+  const handleAddSuccess = () => {
+    setAddDialogOpen(false);
+    handleRefresh();
+    toast({
+      title: 'Schedule Created',
+      description: 'Feeding schedule has been created successfully.',
+    });
+  };
+  
+  const handleEditSuccess = () => {
+    setEditDialogOpen(false);
+    setSelectedSchedule(null);
+    handleRefresh();
+    toast({
+      title: 'Schedule Updated',
+      description: 'Feeding schedule has been updated successfully.',
+    });
+  };
+  
+  const handleEditClick = (schedule: FeedingSchedule) => {
+    setSelectedSchedule(schedule);
+    setEditDialogOpen(true);
+  };
+  
+  const handleDeleteClick = async (scheduleId: string) => {
+    try {
+      await deleteSchedule(scheduleId);
+      handleRefresh();
+      toast({
+        title: 'Schedule Deleted',
+        description: 'Feeding schedule has been deleted successfully.',
+      });
+    } catch (error) {
+      console.error('Error deleting schedule:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete feeding schedule',
+        variant: 'destructive'
+      });
+    }
+  };
+  
   return (
     <div className="space-y-6">
-      {/* Quick Action Buttons */}
-      <div className="flex flex-wrap gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setAddFeedingDialog(true)}
-        >
-          <Utensils className="h-4 w-4 mr-1" />
-          Log Feeding
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setAddScheduleDialog(true)}
-        >
-          <Clock className="h-4 w-4 mr-1" />
-          Create Schedule
-        </Button>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Feeding Management</h2>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefresh}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setAddDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Schedule
+          </Button>
+        </div>
       </div>
       
-      {/* Dialogs */}
-      <Dialog open={addFeedingDialog} onOpenChange={setAddFeedingDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Log Feeding</DialogTitle>
-            <DialogDescription>
-              Record a feeding instance for this dog.
-            </DialogDescription>
-          </DialogHeader>
-          <FeedingForm 
-            dogId={dogId} 
-            onSuccess={() => {
-              refreshData();
-              setAddFeedingDialog(false);
-            }} 
+      <Tabs defaultValue="schedules">
+        <TabsList>
+          <TabsTrigger value="schedules">Schedules</TabsTrigger>
+          <TabsTrigger value="history">
+            <History className="h-4 w-4 mr-2" />
+            Feeding History
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="schedules" className="pt-4">
+          <FeedingSchedulesList 
+            dogId={dogId}
+            schedules={feedingSchedules || []}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteClick}
           />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={addScheduleDialog} onOpenChange={setAddScheduleDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Create Feeding Schedule</DialogTitle>
-            <DialogDescription>
-              Set a regular feeding schedule for this dog.
-            </DialogDescription>
-          </DialogHeader>
-          <FeedingScheduleForm 
-            dogId={dogId} 
-            onSuccess={() => {
-              refreshData();
-              setAddScheduleDialog(false);
-            }} 
+        </TabsContent>
+        
+        <TabsContent value="history" className="pt-4">
+          <FeedingHistory 
+            dogId={dogId}
+            records={feedingRecords || []}
+            schedules={feedingSchedules || []}
+            onRefresh={handleRefresh}
           />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editScheduleDialog} onOpenChange={setEditScheduleDialog}>
+        </TabsContent>
+      </Tabs>
+      
+      {/* Add Feeding Schedule Dialog */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Edit Feeding Schedule</DialogTitle>
-            <DialogDescription>
-              Update the feeding schedule for this dog.
-            </DialogDescription>
-          </DialogHeader>
           <FeedingScheduleForm 
             dogId={dogId}
-            schedule={selectedSchedule}
-            onSuccess={() => {
-              refreshData();
-              setEditScheduleDialog(false);
-              setSelectedSchedule(null);
-            }}
+            onSuccess={handleAddSuccess}
+            onCancel={() => setAddDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>
       
-      {/* Feeding Schedules List */}
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Feeding Schedules</h3>
-        {loading ? (
-          <div>Loading schedules...</div>
-        ) : (
-              <FeedingSchedulesList 
-                dogId={dogId}
-                schedules={schedules as FeedingSchedule[]}
-                onEdit={handleEditSchedule}
-                onDelete={handleDeleteSchedule}
-              />
-        )}
-      </div>
+      {/* Edit Feeding Schedule Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          {selectedSchedule && (
+            <FeedingScheduleForm 
+              dogId={dogId}
+              scheduleId={selectedSchedule.id}
+              initialValues={{
+                food_type: selectedSchedule.food_type,
+                amount: selectedSchedule.amount,
+                unit: selectedSchedule.unit,
+                schedule_time: selectedSchedule.schedule_time,
+                special_instructions: selectedSchedule.special_instructions,
+                active: selectedSchedule.active
+              }}
+              onSuccess={handleEditSuccess}
+              onCancel={() => {
+                setEditDialogOpen(false);
+                setSelectedSchedule(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
