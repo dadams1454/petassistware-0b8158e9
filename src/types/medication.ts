@@ -1,148 +1,115 @@
 
-import { CareRecord } from '@/types/careRecord';
-
-/**
- * Medication frequency options
- */
+// Export enums
 export enum MedicationFrequency {
-  DAILY = 'daily',
-  TWICE_DAILY = 'twice_daily',
-  WEEKLY = 'weekly',
-  BIWEEKLY = 'biweekly',
-  MONTHLY = 'monthly',
-  QUARTERLY = 'quarterly',
-  ANNUALLY = 'annually',
-  AS_NEEDED = 'as_needed',
-  CUSTOM = 'custom'
+  DAILY = 'DAILY',
+  TWICE_DAILY = 'TWICE_DAILY',
+  WEEKLY = 'WEEKLY',
+  BIWEEKLY = 'BIWEEKLY',
+  MONTHLY = 'MONTHLY',
+  QUARTERLY = 'QUARTERLY',
+  ANNUALLY = 'ANNUALLY',
+  AS_NEEDED = 'AS_NEEDED',
+  OTHER = 'OTHER'
 }
 
-/**
- * Medication administration routes
- */
-export enum MedicationRoute {
-  ORAL = 'oral',
-  INJECTION = 'injection',
-  TOPICAL = 'topical',
-  OPHTHALMIC = 'ophthalmic',
-  OTIC = 'otic',
-  NASAL = 'nasal',
-  RECTAL = 'rectal',
-  INHALATION = 'inhalation',
-  OTHER = 'other'
-}
-
-/**
- * Medication status options
- */
-export enum MedicationStatus {
-  ACTIVE = 'active',
-  COMPLETED = 'completed',
-  DISCONTINUED = 'discontinued',
-  UPCOMING = 'upcoming',
-  OVERDUE = 'overdue'
-}
-
-/**
- * Medication type categories
- */
 export enum MedicationType {
-  PREVENTATIVE = 'preventative',
-  PRESCRIPTION = 'prescription',
-  SUPPLEMENT = 'supplement',
-  TREATMENT = 'treatment',
-  VACCINE = 'vaccine'
+  PREVENTATIVE = 'PREVENTATIVE',
+  TREATMENT = 'TREATMENT',
+  SUPPLEMENT = 'SUPPLEMENT',
+  PRESCRIPTION = 'PRESCRIPTION',
+  OVER_THE_COUNTER = 'OVER_THE_COUNTER'
 }
 
-/**
- * Medication administration record
- */
-export interface MedicationAdministration {
-  id: string;
-  timestamp: string;
-  administered_by: string;
-  notes?: string;
+export enum MedicationRoute {
+  ORAL = 'ORAL',
+  TOPICAL = 'TOPICAL',
+  INJECTION = 'INJECTION',
+  OPHTHALMIC = 'OPHTHALMIC',
+  OTIC = 'OTIC',
+  RECTAL = 'RECTAL',
+  INHALATION = 'INHALATION',
+  OTHER = 'OTHER'
 }
 
-/**
- * Extended medication record based on CareRecord
- * Using composition instead of inheritance for type compatibility
- */
+export enum MedicationStatus {
+  CURRENT = 'CURRENT',
+  UPCOMING = 'UPCOMING',
+  OVERDUE = 'OVERDUE',
+  INACTIVE = 'INACTIVE'
+}
+
+// Medication record from the database
 export interface MedicationRecord {
   id: string;
   dog_id: string;
-  task_name: string;
-  category: string;
-  created_at: string;
-  created_by?: string | null;
-  notes?: string | null;
-  // Make status compatible with both care record status and medication status
-  status: "completed" | "scheduled" | "missed" | MedicationStatus | string;
-  
   medication_name: string;
   dosage?: string;
   dosage_unit?: string;
   frequency: MedicationFrequency;
   route?: MedicationRoute;
-  start_date?: string;
-  end_date?: string;
-  next_due_date?: string;
+  start_date: string;
+  end_date?: string | null;
   medication_type: MedicationType;
   prescription_id?: string;
   refills_remaining?: number;
-  administered_by?: string;
-  administrations?: MedicationAdministration[] | string;
-  timestamp: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string;
+  last_administered?: string | null;
 }
 
-/**
- * Data needed to create a medication record
- */
+// Data for creating/updating medication records
 export interface MedicationFormData {
   dog_id: string;
-  medication_name: string;
+  created_by: string;
+  medication_name: string;  // Required field
   dosage?: string;
   dosage_unit?: string;
   frequency: MedicationFrequency;
   route?: MedicationRoute;
   start_date: Date;
-  end_date?: Date;
-  notes?: string;
+  end_date?: Date | null;
   medication_type: MedicationType;
   prescription_id?: string;
   refills_remaining?: number;
-  next_due_date?: Date;
-  created_by?: string;
-}
-
-/**
- * Medication schedule record
- */
-export interface MedicationSchedule {
-  id: string;
-  dog_id: string;
-  medication_record_id: string;
-  scheduled_date: string;
-  scheduled_time?: string;
-  status: 'scheduled' | 'completed' | 'missed' | 'skipped';
-  administered_at?: string;
-  administered_by?: string;
   notes?: string;
-  created_at: string;
 }
 
-/**
- * Medication summary statistics
- */
+// Interface for medication administration logs
+export interface MedicationAdministration {
+  id: string;
+  medication_id: string;
+  dog_id: string;
+  administered_at: string;
+  administered_by: string;
+  notes?: string;
+  created_at?: string;
+}
+
+// Interface for medication statistics
 export interface MedicationStats {
-  total: number;
-  preventative: number;
-  prescription: number;
-  supplement: number;
-  treatment: number;
-  vaccine: number;
-  activeCount: number;
-  completedCount: number;
+  totalMedications: number;
+  activeMedications: number;
   overdueCount: number;
   upcomingCount: number;
-  complianceRate: number;
+  byType: Record<MedicationType, number>;
+  byFrequency: Record<MedicationFrequency, number>;
+}
+
+// Light-weight medication info for display in lists
+export interface MedicationInfo {
+  id: string;
+  name: string;
+  frequency: MedicationFrequency;
+  lastAdministered?: string;
+  nextDue?: string;
+  type: MedicationType;
+  status?: MedicationStatus;
+}
+
+// Used for medication filter components
+export interface MedicationFilterProps {
+  value: string;
+  onChange: (value: string) => void;
 }

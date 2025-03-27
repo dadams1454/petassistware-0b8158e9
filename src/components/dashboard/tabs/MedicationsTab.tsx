@@ -92,6 +92,10 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
     setShowAddMedication(true);
   };
 
+  const handleCancelMedication = () => {
+    setShowAddMedication(false);
+  };
+
   return (
     <div className={`transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="mb-4">
@@ -174,7 +178,7 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
                   : undefined
               }
               onSuccess={handleMedicationAdded}
-              onCancel={() => setShowAddMedication(false)}
+              onCancel={handleCancelMedication}
             />
           )}
         </DialogContent>

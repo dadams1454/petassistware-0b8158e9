@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import { RefreshProvider } from '@/contexts/RefreshContext';
+import AppProvider from '@/contexts/AppProvider';  // Import AppProvider
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -42,65 +43,66 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  console.log('App rendering');
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RefreshProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              
-              {/* Protected Routes with shared layout */}
-              <Route element={<AuthLayout />}>
-                {/* All-access routes */}
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/admin-setup" element={<AdminSetup />} />
+          <AppProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
                 
-                {/* Permission-based routes */}
-                <Route element={<ProtectedRoute resource="dogs" />}>
-                  <Route path="/dogs" element={<Dogs />} />
-                  <Route path="/dogs/:id" element={<DogDetail />} />
-                  <Route path="/dog/:id" element={<DogDetail />} />
-                  <Route path="/profile/dog/:id" element={<DogProfile />} />
-                  <Route path="/daily-care" element={<DailyCare />} />
+                {/* Protected Routes with shared layout */}
+                <Route element={<AuthLayout />}>
+                  {/* All-access routes */}
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/admin-setup" element={<AdminSetup />} />
+                  
+                  {/* Permission-based routes */}
+                  <Route element={<ProtectedRoute resource="dogs" />}>
+                    <Route path="/dogs" element={<Dogs />} />
+                    <Route path="/dogs/:id" element={<DogDetail />} />
+                    <Route path="/dog/:id" element={<DogDetail />} />
+                    <Route path="/profile/dog/:id" element={<DogProfile />} />
+                    <Route path="/daily-care" element={<DailyCare />} />
+                  </Route>
+                  
+                  <Route element={<ProtectedRoute resource="customers" />}>
+                    <Route path="/customers" element={<Customers />} />
+                  </Route>
+                  
+                  <Route element={<ProtectedRoute resource="litters" />}>
+                    <Route path="/litters" element={<Litters />} />
+                    <Route path="/litters/:id" element={<LitterDetail />} />
+                  </Route>
+                  
+                  <Route element={<ProtectedRoute resource="litters" action="add" />}>
+                    <Route path="/litters/add" element={<AddLitter />} />
+                  </Route>
+                  
+                  <Route element={<ProtectedRoute resource="calendar" />}>
+                    <Route path="/calendar" element={<Calendar />} />
+                  </Route>
+                  
+                  <Route element={<ProtectedRoute resource="communications" />}>
+                    <Route path="/communications" element={<Communications />} />
+                  </Route>
+                  
+                  <Route element={<ProtectedRoute resource="welping" />}>
+                    <Route path="/welping" element={<WelpingPage />} />
+                  </Route>
+                  
+                  <Route element={<ProtectedRoute resource="users" />}>
+                    <Route path="/users" element={<UserManagement />} />
+                  </Route>
                 </Route>
                 
-                <Route element={<ProtectedRoute resource="customers" />}>
-                  <Route path="/customers" element={<Customers />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute resource="litters" />}>
-                  <Route path="/litters" element={<Litters />} />
-                  <Route path="/litters/:id" element={<LitterDetail />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute resource="litters" action="add" />}>
-                  <Route path="/litters/add" element={<AddLitter />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute resource="calendar" />}>
-                  <Route path="/calendar" element={<Calendar />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute resource="communications" />}>
-                  <Route path="/communications" element={<Communications />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute resource="welping" />}>
-                  <Route path="/welping" element={<WelpingPage />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute resource="users" />}>
-                  <Route path="/users" element={<UserManagement />} />
-                </Route>
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+          </AppProvider>
         </RefreshProvider>
       </AuthProvider>
       <Toaster />

@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { MedicationRecord, MedicationFormData, MedicationFrequency, MedicationType, MedicationRoute } from '@/types/medication';
 import { createMedicationRecord, updateMedicationRecord } from '@/services/medicationService';
-import { useUser } from '@/contexts/UserContext';
+import { useAuth } from '@/contexts/AuthProvider';
 
 // Form validation schema
 const medicationFormSchema = z.object({
@@ -56,7 +56,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { user } = useUser();
+  const { user } = useAuth();
 
   // Initialize form with default values or existing medication data
   const form = useForm<MedicationFormValues>({
@@ -82,7 +82,8 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
       const medicationData: MedicationFormData = {
         ...data,
         dog_id: dogId,
-        created_by: user?.id,
+        created_by: user?.id || '',
+        medication_name: data.medication_name,
       };
 
       // Update or create medication record
