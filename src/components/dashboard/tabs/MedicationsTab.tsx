@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { MedicationsTabProps } from '@/components/dogs/components/care/medications/types/medicationTypes';
+import { DogCareStatus } from '@/types/dailyCare';
 import MedicationsLog from '@/components/dogs/components/care/medications/MedicationsLog';
 import MedicationFilter from '@/components/dogs/components/care/medications/components/MedicationFilter';
 import MedicationHeader from '@/components/dogs/components/care/medications/components/MedicationHeader';
@@ -10,7 +10,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Pill } from 'lucide-react';
 
-const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshDogs }) => {
+interface MedicationsTabProps {
+  dogStatuses?: DogCareStatus[];
+  onRefreshDogs: () => void;
+}
+
+const MedicationsTab: React.FC<MedicationsTabProps> = ({ 
+  dogStatuses = [],
+  onRefreshDogs 
+}) => {
   const [filterFrequency, setFilterFrequency] = useState<string>("all");
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -28,22 +36,7 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
   };
   
   const renderMedicationHeader = () => {
-    if (!dogStatuses) {
-      return (
-        <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800 mb-4">
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
-            <MedicationHeader 
-              title="Medication Tracking" 
-              description="Track preventative medications and treatments for all dogs."
-              isLoading={true}
-            />
-            <SkeletonLoader className="h-10 w-40" />
-          </div>
-        </div>
-      );
-    }
-    
-    if (dogStatuses.length === 0) return null;
+    if (!dogStatuses || dogStatuses.length === 0) return null;
     
     return (
       <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800 mb-4">
@@ -62,12 +55,21 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
   };
   
   const renderContent = () => {
-    if (!dogStatuses) {
-      return <SkeletonLoader variant="card" count={3} />;
-    }
-    
-    if (dogStatuses.length === 0) {
-      return <NoDogsMessage onRefresh={onRefreshDogs} />;
+    if (!dogStatuses || dogStatuses.length === 0) {
+      return (
+        <Card className="p-8 text-center">
+          <CardContent>
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="bg-purple-100 dark:bg-purple-900/20 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                <Pill className="w-8 h-8 text-purple-500" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No Dogs Found</h3>
+              <p className="text-muted-foreground mb-4">Add dogs to start tracking medications</p>
+              <Button onClick={onRefreshDogs} variant="outline">Refresh Dogs</Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
     }
     
     return (
@@ -89,22 +91,6 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
       </div>
       
       {renderMedicationHeader()}
-      
-      {isLoaded && !hasDogs && (
-        <Card className="p-8 text-center">
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-8">
-              <div className="bg-purple-100 dark:bg-purple-900/20 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                <Pill className="w-8 h-8 text-purple-500" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No Dogs Found</h3>
-              <p className="text-muted-foreground mb-4">Add dogs to start tracking medications</p>
-              <Button onClick={onRefreshDogs} variant="outline">Refresh Dogs</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      
       {renderContent()}
     </div>
   );

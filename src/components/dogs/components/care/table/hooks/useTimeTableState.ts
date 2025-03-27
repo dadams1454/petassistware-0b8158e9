@@ -14,13 +14,18 @@ export const useTimeTableState = (
   dogsStatus: DogCareStatus[], 
   onRefresh: () => void,
   isRefreshing: boolean,
-  currentDate: Date
+  currentDate: Date,
+  initialCategory: string = 'pottybreaks'
 ) => {
   // Use the debug state hook
   const { clickCountRef, errorCountRef, debugInfo, setDebugInfo } = useDebugState();
   
-  // Use the category management hook
-  const { activeCategory, handleCategoryChange } = useCategoryManagement(setDebugInfo, clickCountRef);
+  // Use the category management hook with initialCategory
+  const { activeCategory, handleCategoryChange } = useCategoryManagement(
+    setDebugInfo, 
+    clickCountRef,
+    initialCategory
+  );
   
   // Use the dialog state hook
   const { 

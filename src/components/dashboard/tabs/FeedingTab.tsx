@@ -9,11 +9,14 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface FeedingTabProps {
-  dogStatuses: DogCareStatus[];
+  dogStatuses?: DogCareStatus[];
   onRefreshDogs: () => void;
 }
 
-const FeedingTab: React.FC<FeedingTabProps> = ({ dogStatuses, onRefreshDogs }) => {
+const FeedingTab: React.FC<FeedingTabProps> = ({ 
+  dogStatuses = [], 
+  onRefreshDogs 
+}) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   // Add a small delay to create a nicer loading transition

@@ -6,11 +6,13 @@ import CategoryTabs from './CategoryTabs';
 interface TimeTableHeaderProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
+  hideTopLevelTabs?: boolean; // New prop to control visibility of category tabs
 }
 
 const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({ 
   activeCategory, 
-  onCategoryChange 
+  onCategoryChange,
+  hideTopLevelTabs = false
 }) => {
   // Make sure careCategories is defined and is an array before trying to find elements
   const safeCategories = Array.isArray(careCategories) ? careCategories : [];
@@ -29,11 +31,15 @@ const TimeTableHeader: React.FC<TimeTableHeaderProps> = ({
           Track {categoryName.toLowerCase()} activities for all dogs
         </p>
       </div>
-      <CategoryTabs 
-        categories={categories}
-        activeCategory={activeCategory} 
-        onCategoryChange={onCategoryChange} 
-      />
+      
+      {/* Only show category tabs if not hidden */}
+      {!hideTopLevelTabs && (
+        <CategoryTabs 
+          categories={categories}
+          activeCategory={activeCategory} 
+          onCategoryChange={onCategoryChange} 
+        />
+      )}
     </div>
   );
 };

@@ -15,13 +15,17 @@ interface DogTimeTableProps {
   onRefresh: () => void;
   isRefreshing: boolean;
   currentDate: Date;
+  hideTopLevelTabs?: boolean; // New prop to hide category tabs
+  initialCategory?: string; // Initial category to show
 }
 
 const DogTimeTable: React.FC<DogTimeTableProps> = ({ 
   dogsStatus, 
   onRefresh,
   isRefreshing,
-  currentDate 
+  currentDate,
+  hideTopLevelTabs = false,
+  initialCategory = 'pottybreaks'
 }) => {
   const isMobile = useIsMobile();
   
@@ -53,7 +57,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     handleObservationClick,
     handleObservationSubmit,
     timeSlots
-  } = useTimeTableState(dogsStatus || [], onRefresh, isRefreshing, currentDate);
+  } = useTimeTableState(dogsStatus || [], onRefresh, isRefreshing, currentDate, initialCategory);
 
   // Find the selected dog based on selectedDogId, with safeguards for undefined arrays
   const selectedDog = dogsStatus && Array.isArray(dogsStatus) 
@@ -74,6 +78,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           isRefreshing={showLoading}
           currentDate={currentDate}
           activeCategory={activeCategory}
+          hideTopLevelTabs={hideTopLevelTabs}
         />
 
         {/* Enhanced Debug info (only in development) */}
@@ -103,6 +108,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           onRefresh={handleRefresh}
           onCategoryChange={handleCategoryChange}
           showLoading={showLoading}
+          hideTopLevelTabs={hideTopLevelTabs}
         />
 
         {/* Add Group Dialog */}

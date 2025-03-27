@@ -20,6 +20,9 @@ import PottyBreakManager from '@/components/dogs/components/care/potty/PottyBrea
 import MedicationsLog from '@/components/dogs/components/care/medications/MedicationsLog';
 import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
 import FeedingTab from '@/components/dashboard/tabs/FeedingTab';
+import PottyBreaksTab from '@/components/dashboard/tabs/PottyBreaksTab';
+import MedicationsTab from '@/components/dashboard/tabs/MedicationsTab';
+import GroomingTab from '@/components/dashboard/tabs/GroomingTab';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
@@ -140,6 +143,53 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   // Get the current category info
   const currentCategory = careCategories.find(c => c.id === careCategory) || careCategories[0];
   
+  // Determine which tab component to show based on the category
+  const renderCategoryContent = () => {
+    switch (careCategory) {
+      case 'pottybreaks':
+        return (
+          <PottyBreaksTab 
+            onRefreshDogs={handleRefresh}
+            dogStatuses={effectiveDogStatuses}
+          />
+        );
+      case 'feeding':
+        return (
+          <FeedingTab 
+            dogStatuses={effectiveDogStatuses} 
+            onRefreshDogs={handleRefresh}
+          />
+        );
+      case 'medication':
+        return (
+          <MedicationsTab 
+            dogStatuses={effectiveDogStatuses} 
+            onRefreshDogs={handleRefresh}
+          />
+        );
+      case 'grooming':
+        return (
+          <GroomingTab 
+            dogStatuses={effectiveDogStatuses} 
+            onRefreshDogs={handleRefresh}
+          />
+        );
+      default:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Coming Soon</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                {currentCategory.name} tracking is coming soon! Check back for updates.
+              </p>
+            </CardContent>
+          </Card>
+        );
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -168,25 +218,25 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         </TabsList>
       </Tabs>
       
-      {/* View mode selector */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          {currentCategory.icon}
-          <span>{currentCategory.name}</span>
-        </h3>
-        <Tabs value={viewMode} onValueChange={setViewMode} className="mr-2">
-          <TabsList>
-            <TabsTrigger value="table">Time Table</TabsTrigger>
-            <TabsTrigger value="cards">Cards</TabsTrigger>
-            {careCategory === 'pottybreaks' && (
+      {/* View mode selector - only for potty breaks or other suitable categories */}
+      {(careCategory === 'pottybreaks') && (
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            {currentCategory.icon}
+            <span>{currentCategory.name}</span>
+          </h3>
+          <Tabs value={viewMode} onValueChange={setViewMode} className="mr-2">
+            <TabsList>
+              <TabsTrigger value="table">Time Table</TabsTrigger>
+              <TabsTrigger value="cards">Cards</TabsTrigger>
               <TabsTrigger value="groups">
                 <Users className="h-4 w-4 mr-2" />
                 Groups
               </TabsTrigger>
-            )}
-          </TabsList>
-        </Tabs>
-      </div>
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
       
       {showLoading ? (
         <div className="flex justify-center p-12">
@@ -208,54 +258,17 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         </Card>
       ) : (
         <>
-          {/* Category-specific content */}
-          <div className="w-full">
-            {/* View mode content */}
+          {/* For potty breaks, show the view mode options */}
+          {careCategory === 'pottybreaks' ? (
             <Tabs value={viewMode} className="w-full">
               {/* Table View */}
               <TabsContent value="table" className="w-full">
-                {careCategory === 'pottybreaks' && (
-                  <DogTimeTable 
-                    dogsStatus={effectiveDogStatuses} 
-                    onRefresh={handleRefresh} 
-                    isRefreshing={isRefreshing || isStatusesLoading} 
-                    currentDate={currentDate}
-                  />
-                )}
-                
-                {careCategory === 'grooming' && (
-                  <GroomingSchedule 
-                    dogs={effectiveDogStatuses} 
-                    onRefresh={handleRefresh} 
-                  />
-                )}
-                
-                {careCategory === 'medication' && (
-                  <MedicationsLog 
-                    dogs={effectiveDogStatuses}
-                    onRefresh={handleRefresh}
-                  />
-                )}
-                
-                {careCategory === 'feeding' && (
-                  <FeedingTab 
-                    dogStatuses={effectiveDogStatuses} 
-                    onRefreshDogs={handleRefresh} 
-                  />
-                )}
-                
-                {!['pottybreaks', 'grooming', 'medication', 'feeding'].includes(careCategory) && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Coming Soon</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground">
-                        {currentCategory.name} tracking is coming soon! Check back for updates.
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
+                <DogTimeTable 
+                  dogsStatus={effectiveDogStatuses} 
+                  onRefresh={handleRefresh} 
+                  isRefreshing={showLoading} 
+                  currentDate={currentDate}
+                />
               </TabsContent>
               
               {/* Card View */}
@@ -274,26 +287,27 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
                 </div>
               </TabsContent>
               
-              {/* Groups View (only for potty breaks) */}
+              {/* Groups View */}
               <TabsContent value="groups">
-                {careCategory === 'pottybreaks' && (
-                  <div className="space-y-6">
-                    <p className="text-muted-foreground">
-                      Select a dog group to quickly record potty breaks for multiple dogs at once.
-                    </p>
-                    <PottyBreakGroupSelector 
-                      dogs={effectiveDogStatuses} 
-                      onGroupSelected={handleGroupPottyBreak} 
-                    />
-                    <PottyBreakManager 
-                      dogs={effectiveDogStatuses}
-                      onRefresh={handleRefresh}
-                    />
-                  </div>
-                )}
+                <div className="space-y-6">
+                  <p className="text-muted-foreground">
+                    Select a dog group to quickly record potty breaks for multiple dogs at once.
+                  </p>
+                  <PottyBreakGroupSelector 
+                    dogs={effectiveDogStatuses} 
+                    onGroupSelected={handleGroupPottyBreak} 
+                  />
+                  <PottyBreakManager 
+                    dogs={effectiveDogStatuses}
+                    onRefresh={handleRefresh}
+                  />
+                </div>
               </TabsContent>
             </Tabs>
-          </div>
+          ) : (
+            /* For other categories, show the dedicated tab content */
+            renderCategoryContent()
+          )}
         </>
       )}
     </div>

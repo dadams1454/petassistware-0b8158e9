@@ -8,14 +8,24 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, FileText } from 'lucide-react';
 import DogGroupManagement from '@/components/dogs/components/care/potty/DogGroupManagement';
+import { DogCareStatus } from '@/types/dailyCare';
 
 interface PottyBreaksTabProps {
   onRefreshDogs: () => void;
+  dogStatuses?: DogCareStatus[];
 }
 
-const PottyBreaksTab: React.FC<PottyBreaksTabProps> = ({ onRefreshDogs }) => {
-  const { dogStatuses, loading } = useDailyCare();
+const PottyBreaksTab: React.FC<PottyBreaksTabProps> = ({ 
+  onRefreshDogs,
+  dogStatuses = []
+}) => {
+  const { dogStatuses: contextDogStatuses, loading } = useDailyCare();
   const [activeTab, setActiveTab] = useState<string>('pottybreaks');
+  
+  // Use provided dogStatuses if available, otherwise use context
+  const effectiveDogStatuses = dogStatuses.length > 0 
+    ? dogStatuses 
+    : contextDogStatuses || [];
   
   // Handler for potty break reminder button
   const handlePottyBreakButtonClick = () => {
@@ -29,9 +39,9 @@ const PottyBreaksTab: React.FC<PottyBreaksTabProps> = ({ onRefreshDogs }) => {
   return (
     <div className="space-y-6">
       {/* Reminder Card with Enhanced Observation Capabilities */}
-      {dogStatuses && dogStatuses.length > 0 && (
+      {effectiveDogStatuses && effectiveDogStatuses.length > 0 && (
         <PottyBreakReminderCard 
-          dogs={dogStatuses}
+          dogs={effectiveDogStatuses}
           onLogPottyBreak={handlePottyBreakButtonClick}
         />
       )}
@@ -51,10 +61,10 @@ const PottyBreaksTab: React.FC<PottyBreaksTabProps> = ({ onRefreshDogs }) => {
         
         {/* Potty Break Manager Tab */}
         <TabsContent value="pottybreaks">
-          {dogStatuses && dogStatuses.length > 0 ? (
+          {effectiveDogStatuses && effectiveDogStatuses.length > 0 ? (
             <div id="potty-break-manager">
               <PottyBreakManager 
-                dogs={dogStatuses}
+                dogs={effectiveDogStatuses}
                 onRefresh={onRefreshDogs}
               />
             </div>
@@ -70,9 +80,9 @@ const PottyBreaksTab: React.FC<PottyBreaksTabProps> = ({ onRefreshDogs }) => {
         
         {/* Dog Groups Management Tab */}
         <TabsContent value="groups">
-          {dogStatuses && dogStatuses.length > 0 ? (
+          {effectiveDogStatuses && effectiveDogStatuses.length > 0 ? (
             <DogGroupManagement 
-              dogs={dogStatuses}
+              dogs={effectiveDogStatuses}
               onGroupsUpdated={onRefreshDogs}
             />
           ) : (

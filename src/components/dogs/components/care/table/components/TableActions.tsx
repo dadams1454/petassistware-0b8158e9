@@ -1,10 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Plus, RefreshCw, Calendar, 
-  Download, Filter, Settings 
-} from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { careCategories } from '@/components/dogs/components/care/CareCategories';
 
@@ -12,74 +9,53 @@ interface TableActionsProps {
   onAddGroup: () => void;
   isRefreshing: boolean;
   currentDate: Date;
-  activeCategory?: string;
+  activeCategory: string;
+  hideTopLevelTabs?: boolean;
 }
 
-const TableActions: React.FC<TableActionsProps> = ({ 
-  onAddGroup, 
+const TableActions: React.FC<TableActionsProps> = ({
+  onAddGroup,
   isRefreshing,
   currentDate,
-  activeCategory = 'pottybreaks'
+  activeCategory,
+  hideTopLevelTabs = false
 }) => {
-  // Get the current category name for display
-  const categoryInfo = careCategories.find(c => c.id === activeCategory);
-  const categoryName = categoryInfo?.name || 'Care';
-  const categoryIcon = categoryInfo?.icon;
+  // Get the current category info
+  const currentCategoryInfo = careCategories.find(c => c.id === activeCategory);
+  const categoryName = currentCategoryInfo?.name || 'Care';
+  const categoryIcon = currentCategoryInfo?.icon;
+  
+  // Format the date for the header
+  const formattedDate = format(currentDate, 'EEEE, MMMM d, yyyy');
   
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="flex justify-between items-center">
       <div>
-        <h2 className="text-2xl font-semibold flex items-center gap-2">
-          {categoryIcon}
-          {categoryName} Schedule
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {format(currentDate, 'EEEE, MMMM d, yyyy')}
-        </p>
+        {hideTopLevelTabs && (
+          <div className="flex items-center space-x-2">
+            {categoryIcon}
+            <h3 className="text-lg font-semibold">{categoryName} Time Table</h3>
+          </div>
+        )}
+        <p className="text-sm text-muted-foreground">{formattedDate}</p>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-1"
-          onClick={onAddGroup}
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden md:inline">Add Group</span>
-        </Button>
-        
-        {activeCategory === 'feeding' && (
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
-            <Settings className="h-4 w-4" />
-            <span className="hidden md:inline">Meal Plan</span>
+      
+      <div className="flex items-center gap-2">
+        {activeCategory === 'pottybreaks' && (
+          <Button size="sm" onClick={onAddGroup} className="flex gap-1">
+            <Plus className="h-4 w-4" />
+            <span>Add Group</span>
           </Button>
         )}
         
-        {activeCategory === 'medication' && (
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
-            <Filter className="h-4 w-4" />
-            <span className="hidden md:inline">Filter Meds</span>
-          </Button>
-        )}
-        
-        <Button variant="outline" size="sm" className="flex items-center gap-1">
-          <Calendar className="h-4 w-4" />
-          <span className="hidden md:inline">Date</span>
-        </Button>
-        
-        <Button variant="outline" size="sm" className="flex items-center gap-1">
-          <Download className="h-4 w-4" />
-          <span className="hidden md:inline">Export</span>
-        </Button>
-        
         <Button 
-          variant="outline" 
           size="sm" 
-          className="flex items-center gap-1"
+          variant="outline" 
           disabled={isRefreshing}
+          className="flex gap-1"
         >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-          <span className="hidden md:inline">Refresh</span>
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span>Refresh</span>
         </Button>
       </div>
     </div>

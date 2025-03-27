@@ -1,32 +1,41 @@
+import { useState, useCallback, MutableRefObject } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
-import { useState, useCallback, useEffect } from 'react';
-import { careCategories } from '@/components/dogs/components/care/CareCategories';
-
-/**
- * Hook to manage category changes in the time table
- */
 export const useCategoryManagement = (
-  setDebugInfo: (info: string) => void,
-  clickCountRef: React.MutableRefObject<number>
+  setDebugInfo: (info: any) => void,
+  clickCountRef: MutableRefObject<number>,
+  initialCategory: string = 'pottybreaks'
 ) => {
-  // Initialize with first category from the careCategories array
-  const [activeCategory, setActiveCategory] = useState<string>(careCategories[0].id);
-
-  // Safe tab change handler with logging
-  const handleCategoryChange = useCallback((value: string) => {
-    console.log(`Tab changed to ${value}`);
-    // Reset click counter when changing tabs to avoid triggering the 6-click issue
-    clickCountRef.current = 0;
-    setDebugInfo(`Tab changed to ${value}, clicks reset`);
-    setActiveCategory(value);
-  }, [clickCountRef, setDebugInfo]);
-
-  // Get all category IDs as a derived value
-  const allCategoryIds = careCategories.map(category => category.id);
-
-  return {
-    activeCategory,
-    handleCategoryChange,
-    allCategoryIds
-  };
+  // Use search params to keep track of the active category in the URL
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get the category from the URL or use the default
+  const initialCategoryFromUrl = searchParams.get('category') || initialCategory;
+  
+  // State for active category
+  const [activeCategory, setActiveCategory] = useState<string>(initialCategoryFromUrl);
+  
+  // Handler for category change
+  const handleCategoryChange = useCallback((category: string) => {
+    setActiveCategory(category);
+    
+    // Update search params
+    searchParams.set('category', category);
+    setSearchParams(searchParams);
+    
+    // Update debug info
+    setDebugInfo(prev => ({
+      ...prev,
+      lastCategoryChange: new Date().toISOString(),
+      previousCategory: activeCategory,
+      newCategory: category
+    }));
+    
+    // Increment click count
+    clickCountRef.current += 1;
+  }, [activeCategory, setDebugInfo, searchParams, setSearchParams, clickCountRef]);
+  
+  return { activeCategory, handleCategoryChange };
 };
+
+export default useCategoryManagement;

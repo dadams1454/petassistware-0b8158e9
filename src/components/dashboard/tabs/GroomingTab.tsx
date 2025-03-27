@@ -3,13 +3,19 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { DogCareStatus } from '@/types/dailyCare';
 import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface GroomingTabProps {
-  dogStatuses: DogCareStatus[] | null;
+  dogStatuses?: DogCareStatus[];
   onRefreshDogs: () => void;
 }
 
-const GroomingTab: React.FC<GroomingTabProps> = ({ dogStatuses, onRefreshDogs }) => {
+const GroomingTab: React.FC<GroomingTabProps> = ({ 
+  dogStatuses = [], 
+  onRefreshDogs 
+}) => {
+  const hasDogs = Array.isArray(dogStatuses) && dogStatuses.length > 0;
+  
   return (
     <>
       <div className="mb-4 bg-pink-50 dark:bg-pink-900/20 p-3 rounded-lg border border-pink-200 dark:border-pink-800">
@@ -19,13 +25,15 @@ const GroomingTab: React.FC<GroomingTabProps> = ({ dogStatuses, onRefreshDogs })
         </p>
       </div>
       
-      {dogStatuses && dogStatuses.length > 0 ? (
+      {hasDogs ? (
         <GroomingSchedule dogs={dogStatuses} onRefresh={onRefreshDogs} />
       ) : (
-        <div className="p-8 text-center border rounded-lg">
-          <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-          <Button onClick={onRefreshDogs} className="mt-4">Refresh Dogs</Button>
-        </div>
+        <Card className="p-8 text-center">
+          <CardContent>
+            <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
+            <Button onClick={onRefreshDogs} className="mt-4">Refresh Dogs</Button>
+          </CardContent>
+        </Card>
       )}
     </>
   );
