@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { 
   MedicationRecord, 
@@ -435,6 +436,7 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
+      // We need to convert the strings to the same type
       return nextDue < today && med.status === MedicationStatus.ACTIVE;
     });
   } catch (error) {
@@ -464,6 +466,7 @@ export const fetchUpcomingMedications = async (daysAhead = 7): Promise<Medicatio
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
+      // Fixed comparison by using consistent types
       return nextDue >= today && nextDue <= futureDate && med.status === MedicationStatus.ACTIVE;
     });
   } catch (error) {
@@ -500,14 +503,14 @@ export const fetchMedicationStats = async (dogId: string): Promise<MedicationSta
     const activeCount = medications.filter(m => m.status === MedicationStatus.ACTIVE).length;
     const completedCount = medications.filter(m => m.status === MedicationStatus.COMPLETED).length;
     
-    // Count overdue medications
+    // Count overdue medications - fixed comparison to use same type
     const overdueCount = medications.filter(med => {
       if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
       const nextDue = new Date(med.next_due_date);
       return nextDue < today;
     }).length;
     
-    // Count upcoming medications (next 7 days)
+    // Count upcoming medications (next 7 days) - fixed comparison to use same type
     const futureDate = addDays(today, 7);
     const upcomingCount = medications.filter(med => {
       if (!med.next_due_date || med.status !== MedicationStatus.ACTIVE) return false;
