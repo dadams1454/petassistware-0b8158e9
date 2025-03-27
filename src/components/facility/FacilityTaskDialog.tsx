@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,12 +15,7 @@ import { AlertCircle, Building2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
-
-interface FacilityArea {
-  id: string;
-  name: string;
-  description: string | null;
-}
+import { FacilityArea } from '@/types/facility';
 
 interface FacilityTaskDialogProps {
   taskId: string | null;
@@ -105,8 +99,11 @@ const FacilityTaskDialog: React.FC<FacilityTaskDialogProps> = ({
         name,
         description: description || null,
         frequency,
-        area_id: areaId,
-        // Currently not setting custom_days or assigned_to
+        area_id: areaId === 'none' ? null : areaId,
+        // These fields are now in the database but we're not setting them yet
+        // assigned_to: null,
+        // last_generated: null,
+        // next_due: null
       };
       
       let result;

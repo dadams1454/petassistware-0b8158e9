@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import FacilityTasksList from '@/components/facility/FacilityTasksList';
 import FacilityTaskForm from '@/components/facility/FacilityTaskForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import FacilityTaskDialog from '@/components/facility/FacilityTaskDialog';
+import { FacilityTask } from '@/types/facility';
 import { DogCareStatus } from '@/types/dailyCare';
 
 interface FacilityTabProps {
@@ -77,7 +77,7 @@ const FacilityTab: React.FC<FacilityTabProps> = ({ onRefreshData, dogStatuses })
         throw error;
       }
       
-      return data || [];
+      return data as FacilityTask[];
     }
   });
   
