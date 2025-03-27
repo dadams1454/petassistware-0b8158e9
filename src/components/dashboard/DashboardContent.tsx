@@ -7,13 +7,9 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
-import GroomingTab from './tabs/GroomingTab';
-import MedicationsTab from './tabs/MedicationsTab';
 import CareLogDialog from './dialogs/CareLogDialog';
-import PottyBreaksTab from './tabs/PottyBreaksTab';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
-import FeedingTab from './tabs/FeedingTab';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -135,32 +131,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             onRefreshDogs={handleManualRefresh} 
             isRefreshing={isRefreshing}
             currentDate={currentDate}
+            dogStatuses={dogStatuses || []}
           />
-        </TabsContent>
-        
-        <TabsContent value="medications">
-          <MedicationsTab 
-            dogStatuses={dogStatuses} 
-            onRefreshDogs={handleManualRefresh} 
-          />
-        </TabsContent>
-        
-        <TabsContent value="feeding">
-          <FeedingTab 
-            dogStatuses={dogStatuses || []} 
-            onRefreshDogs={handleManualRefresh}
-          />
-        </TabsContent>
-        
-        <TabsContent value="grooming">
-          <GroomingTab 
-            dogStatuses={dogStatuses || []} 
-            onRefreshDogs={handleManualRefresh}
-          />
-        </TabsContent>
-        
-        <TabsContent value="pottybreaks">
-          <PottyBreaksTab onRefreshDogs={handleManualRefresh} />
         </TabsContent>
       </Tabs>
 

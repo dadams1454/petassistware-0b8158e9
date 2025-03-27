@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { TabsList as ShadcnTabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, LayoutDashboard, CalendarClock, Pill, Scissors, Heart, Utensils, PawPrint } from 'lucide-react';
+import { RefreshCw, LayoutDashboard, CalendarClock } from 'lucide-react';
 
 interface TabsListProps {
   activeTab: string;
@@ -28,26 +28,6 @@ const TabsList: React.FC<TabsListProps> = ({
         <TabsTrigger value="dailycare" onClick={() => onTabChange('dailycare')}>
           <CalendarClock className="w-4 h-4 mr-2" />
           Daily Care
-        </TabsTrigger>
-        
-        <TabsTrigger value="feeding" onClick={() => onTabChange('feeding')}>
-          <Utensils className="w-4 h-4 mr-2" />
-          Feeding
-        </TabsTrigger>
-        
-        <TabsTrigger value="pottybreaks" onClick={() => onTabChange('pottybreaks')}>
-          <PawPrint className="w-4 h-4 mr-2" />
-          Potty Breaks
-        </TabsTrigger>
-        
-        <TabsTrigger value="medications" onClick={() => onTabChange('medications')}>
-          <Pill className="w-4 h-4 mr-2" />
-          Medications
-        </TabsTrigger>
-        
-        <TabsTrigger value="grooming" onClick={() => onTabChange('grooming')}>
-          <Scissors className="w-4 h-4 mr-2" />
-          Grooming
         </TabsTrigger>
       </ShadcnTabsList>
       

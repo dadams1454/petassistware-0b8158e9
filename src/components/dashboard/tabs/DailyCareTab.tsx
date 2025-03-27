@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Users } from 'lucide-react';
+import { RefreshCw, Users, Dog, Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -12,30 +12,40 @@ import PottyBreakGroupSelector from '@/components/dogs/components/care/potty/Pot
 import { useToast } from '@/components/ui/use-toast';
 import { DogCareCard } from '@/components/dashboard/DogCareCard';
 import { recordCareActivity } from '@/services/careService';
-import { EmptyState } from '@/components/ui/standardized';
-import { Plus, Dog } from 'lucide-react';
+import { EmptyState, SectionHeader } from '@/components/ui/standardized';
 import { useNavigate } from 'react-router-dom';
+import { DogCareStatus } from '@/types/dailyCare';
+import { careCategories } from '@/components/dogs/components/care/CareCategories';
+import PottyBreakManager from '@/components/dogs/components/care/potty/PottyBreakManager';
+import MedicationsLog from '@/components/dogs/components/care/medications/MedicationsLog';
+import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
+import FeedingTab from '@/components/dashboard/tabs/FeedingTab';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
   isRefreshing?: boolean;
   currentDate?: Date;
+  dogStatuses?: DogCareStatus[];
 }
 
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ 
   onRefreshDogs,
   isRefreshing = false,
-  currentDate = new Date()
+  currentDate = new Date(),
+  dogStatuses = []
 }) => {
   const { toast } = useToast();
-  const [view, setView] = useState<string>('table'); // Default to table view
+  const [viewMode, setViewMode] = useState<string>('table'); // 'table', 'cards', or 'groups'
+  const [careCategory, setCareCategory] = useState<string>('pottybreaks'); // Default to potty breaks
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const navigate = useNavigate();
   
-  // Fetch all dogs for care dashboard
+  // Fetch all dogs for care dashboard if not provided
   const { data: dogs, isLoading, refetch } = useQuery({
     queryKey: ['dashboardDogs'],
     queryFn: async () => {
+      if (dogStatuses && dogStatuses.length > 0) return dogStatuses;
+      
       const { data, error } = await supabase
         .from('dogs')
         .select('id, name, photo_url, breed, color')
@@ -54,13 +64,13 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     },
   });
   
-  // Fetch dogs with care status for the time table
-  const { data: dogStatuses, isLoading: isStatusesLoading } = useQuery({
+  // Fetch dogs with care status for the time table if not provided
+  const { data: loadedDogStatuses, isLoading: isStatusesLoading } = useQuery({
     queryKey: ['dogCareStatuses', currentDate],
     queryFn: async () => {
+      if (dogStatuses && dogStatuses.length > 0) return dogStatuses;
       return await fetchAllDogsWithCareStatus(currentDate, true);
     },
-    enabled: view === 'table' || view === 'groups', // Fetch for both table and groups views
   });
 
   // Handle group potty break logging
@@ -105,6 +115,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   const handleRefresh = async () => {
     try {
       await refetch();
+      onRefreshDogs();
       toast({
         title: 'Refreshed',
         description: 'Dog data has been refreshed.',
@@ -118,29 +129,63 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     }
   };
   
+  // Get the effective dog statuses - either from props or from the query
+  const effectiveDogStatuses = dogStatuses && dogStatuses.length > 0 
+    ? dogStatuses 
+    : loadedDogStatuses || [];
+    
   const showLoading = isLoading || isRefreshing || isStatusesLoading;
-  const noDogs = (!dogs || dogs.length === 0) && !showLoading;
+  const noDogs = (!effectiveDogStatuses || effectiveDogStatuses.length === 0) && !showLoading;
+  
+  // Get the current category info
+  const currentCategory = careCategories.find(c => c.id === careCategory) || careCategories[0];
   
   return (
     <div className="space-y-6">
+      <SectionHeader
+        title="Daily Care"
+        description="Track all care activities for your dogs"
+        action={{
+          label: "Refresh",
+          onClick: handleRefresh,
+          icon: <RefreshCw className={`h-4 w-4 ${showLoading ? "animate-spin" : ""}`} />
+        }}
+      />
+      
+      {/* Main category tabs */}
+      <Tabs value={careCategory} onValueChange={setCareCategory} className="w-full">
+        <TabsList className="w-full justify-start overflow-auto p-1 bg-background border-b">
+          {careCategories.map(category => (
+            <TabsTrigger 
+              key={category.id} 
+              value={category.id} 
+              className="flex items-center gap-2 data-[state=active]:bg-muted"
+            >
+              {category.icon}
+              <span>{category.name}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+      
+      {/* View mode selector */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Daily Care</h2>
-        <div className="flex items-center space-x-4">
-          <Tabs value={view} onValueChange={setView} className="mr-2">
-            <TabsList>
-              <TabsTrigger value="table">Time Table</TabsTrigger>
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          {currentCategory.icon}
+          <span>{currentCategory.name}</span>
+        </h3>
+        <Tabs value={viewMode} onValueChange={setViewMode} className="mr-2">
+          <TabsList>
+            <TabsTrigger value="table">Time Table</TabsTrigger>
+            <TabsTrigger value="cards">Cards</TabsTrigger>
+            {careCategory === 'pottybreaks' && (
               <TabsTrigger value="groups">
                 <Users className="h-4 w-4 mr-2" />
                 Groups
               </TabsTrigger>
-              <TabsTrigger value="cards">Cards</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <Button onClick={handleRefresh} variant="outline" size="sm" className="gap-2">
-            <RefreshCw className={`h-4 w-4 ${showLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
+            )}
+          </TabsList>
+        </Tabs>
       </div>
       
       {showLoading ? (
@@ -162,75 +207,87 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
           </CardContent>
         </Card>
       ) : (
-        <Tabs value={view} className="w-full">
-          <TabsContent value="table" className="w-full">
-            {dogStatuses && dogStatuses.length > 0 ? (
-              <DogTimeTable 
-                dogsStatus={dogStatuses} 
-                onRefresh={handleRefresh} 
-                isRefreshing={isRefreshing || isStatusesLoading} 
-                currentDate={currentDate}
-              />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>No Care Data Found</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">No care data available for your dogs.</p>
-                  <Button onClick={onRefreshDogs} className="mt-4">Try Again</Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="groups">
-            {dogStatuses && dogStatuses.length > 0 ? (
-              <div className="space-y-6">
-                <p className="text-muted-foreground">
-                  Select a dog group to quickly record potty breaks for multiple dogs at once.
-                </p>
-                <PottyBreakGroupSelector 
-                  dogs={dogStatuses} 
-                  onGroupSelected={handleGroupPottyBreak} 
-                />
-              </div>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>No Dogs Found</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">Add dogs to start creating groups.</p>
-                  <Button onClick={onRefreshDogs} className="mt-4">Try Again</Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="cards">
-            {dogs && dogs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {dogs.map((dog) => (
-                  <DogCareCard key={dog.id} dog={dog} />
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>No Dogs Found</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">Add dogs to start tracking their care activities.</p>
-                  <Button onClick={handleNavigateToDogs} className="mt-4 gap-2">
-                    <Plus className="h-4 w-4" />
-                    Add Dogs
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+        <>
+          {/* Category-specific content */}
+          <div className="w-full">
+            {/* View mode content */}
+            <Tabs value={viewMode} className="w-full">
+              {/* Table View */}
+              <TabsContent value="table" className="w-full">
+                {careCategory === 'pottybreaks' && (
+                  <DogTimeTable 
+                    dogsStatus={effectiveDogStatuses} 
+                    onRefresh={handleRefresh} 
+                    isRefreshing={isRefreshing || isStatusesLoading} 
+                    currentDate={currentDate}
+                  />
+                )}
+                
+                {careCategory === 'grooming' && (
+                  <GroomingSchedule 
+                    dogs={effectiveDogStatuses} 
+                    onRefresh={handleRefresh} 
+                  />
+                )}
+                
+                {careCategory === 'medication' && (
+                  <MedicationsLog 
+                    dogs={effectiveDogStatuses}
+                    onRefresh={handleRefresh}
+                  />
+                )}
+                
+                {careCategory === 'feeding' && (
+                  <FeedingTab 
+                    dogStatuses={effectiveDogStatuses} 
+                    onRefreshDogs={handleRefresh} 
+                  />
+                )}
+                
+                {!['pottybreaks', 'grooming', 'medication', 'feeding'].includes(careCategory) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Coming Soon</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground">
+                        {currentCategory.name} tracking is coming soon! Check back for updates.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+              
+              {/* Card View */}
+              <TabsContent value="cards">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {effectiveDogStatuses.map((dog) => (
+                    <DogCareCard key={dog.dog_id} dog={dog} />
+                  ))}
+                </div>
+              </TabsContent>
+              
+              {/* Groups View (only for potty breaks) */}
+              <TabsContent value="groups">
+                {careCategory === 'pottybreaks' && (
+                  <div className="space-y-6">
+                    <p className="text-muted-foreground">
+                      Select a dog group to quickly record potty breaks for multiple dogs at once.
+                    </p>
+                    <PottyBreakGroupSelector 
+                      dogs={effectiveDogStatuses} 
+                      onGroupSelected={handleGroupPottyBreak} 
+                    />
+                    <PottyBreakManager 
+                      dogs={effectiveDogStatuses}
+                      onRefresh={handleRefresh}
+                    />
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </>
       )}
     </div>
   );

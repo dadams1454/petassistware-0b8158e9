@@ -11,6 +11,7 @@ interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   loadingText?: string;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  label?: string; // Make label optional
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -22,6 +23,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   size = 'default',
   className,
   onClick,
+  label, // Add label to destructuring
   ...props
 }) => {
   return (
@@ -36,7 +38,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       {isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {loadingText || children}
+          {loadingText || label || children}
         </>
       ) : (
         <>
