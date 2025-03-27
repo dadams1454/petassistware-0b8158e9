@@ -202,7 +202,7 @@ const FacilityTaskDialog: React.FC<FacilityTaskDialogProps> = ({
             <SelectValue placeholder="Select area" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">No specific area</SelectItem>
+            <SelectItem value="none">No specific area</SelectItem>
             {areas.map((area) => (
               <SelectItem key={area.id} value={area.id}>
                 {area.name}

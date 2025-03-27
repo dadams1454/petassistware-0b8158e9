@@ -12,24 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-
-interface FacilityTask {
-  id: string;
-  name: string;
-  description: string | null;
-  frequency: string;
-  area_id: string | null;
-  custom_days: number[] | null;
-  active: boolean;
-  assigned_to: string | null;
-  last_generated: string | null;
-  next_due: string | null;
-  facility_areas: {
-    id: string;
-    name: string;
-    description: string | null;
-  } | null;
-}
+import { FacilityTask } from '@/types/facility';
 
 interface FacilityTasksListProps {
   tasks: FacilityTask[];
