@@ -65,8 +65,19 @@ export interface MedicationAdministration {
 
 /**
  * Extended medication record based on CareRecord
+ * Using composition instead of inheritance for type compatibility
  */
-export interface MedicationRecord extends CareRecord {
+export interface MedicationRecord {
+  id: string;
+  dog_id: string;
+  task_name: string;
+  category: string;
+  created_at: string;
+  created_by?: string | null;
+  notes?: string | null;
+  // Make status compatible with both care record status and medication status
+  status: "completed" | "scheduled" | "missed" | MedicationStatus | string;
+  
   medication_name: string;
   dosage?: string;
   dosage_unit?: string;
@@ -81,8 +92,6 @@ export interface MedicationRecord extends CareRecord {
   administered_by?: string;
   administrations?: MedicationAdministration[] | string;
   timestamp: string;
-  // Make status compatible with both CareRecord status and MedicationStatus
-  status: 'completed' | 'scheduled' | 'missed' | string;
 }
 
 /**
