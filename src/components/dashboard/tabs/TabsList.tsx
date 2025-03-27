@@ -30,24 +30,24 @@ const TabsList: React.FC<TabsListProps> = ({
           Daily Care
         </TabsTrigger>
         
-        <TabsTrigger value="medications" onClick={() => onTabChange('medications')}>
-          <Pill className="w-4 h-4 mr-2" />
-          Medications
-        </TabsTrigger>
-        
         <TabsTrigger value="feeding" onClick={() => onTabChange('feeding')}>
           <Utensils className="w-4 h-4 mr-2" />
           Feeding
         </TabsTrigger>
         
-        <TabsTrigger value="grooming" onClick={() => onTabChange('grooming')}>
-          <Scissors className="w-4 h-4 mr-2" />
-          Grooming
-        </TabsTrigger>
-        
         <TabsTrigger value="pottybreaks" onClick={() => onTabChange('pottybreaks')}>
           <PawPrint className="w-4 h-4 mr-2" />
           Potty Breaks
+        </TabsTrigger>
+        
+        <TabsTrigger value="medications" onClick={() => onTabChange('medications')}>
+          <Pill className="w-4 h-4 mr-2" />
+          Medications
+        </TabsTrigger>
+        
+        <TabsTrigger value="grooming" onClick={() => onTabChange('grooming')}>
+          <Scissors className="w-4 h-4 mr-2" />
+          Grooming
         </TabsTrigger>
       </ShadcnTabsList>
       

@@ -49,22 +49,20 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
       className="w-full mb-4"
     >
       <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full h-auto">
-        {categories
-          .filter(category => category.id !== 'medications') // Remove medications from time table
-          .map((category) => (
-            <TabsTrigger
-              key={category.id}
-              value={category.id}
-              className={`flex items-center justify-center ${
-                isMobile ? 'px-2 py-2' : 'px-4 py-2'
-              } data-[state=active]:bg-primary/10`}
-            >
-              {getCategoryIcon(category.id)}
-              <span className={isMobile ? 'ml-1 text-xs' : 'ml-2'}>
-                {category.label}
-              </span>
-            </TabsTrigger>
-          ))}
+        {categories.map((category) => (
+          <TabsTrigger
+            key={category.id}
+            value={category.id}
+            className={`flex items-center justify-center ${
+              isMobile ? 'px-2 py-2' : 'px-4 py-2'
+            } data-[state=active]:bg-primary/10`}
+          >
+            {getCategoryIcon(category.id)}
+            <span className={isMobile ? 'ml-1 text-xs' : 'ml-2'}>
+              {category.label}
+            </span>
+          </TabsTrigger>
+        ))}
       </TabsList>
     </Tabs>
   );
