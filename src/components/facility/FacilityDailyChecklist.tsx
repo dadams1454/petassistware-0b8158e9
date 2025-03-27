@@ -45,7 +45,7 @@ const FacilityDailyChecklist: React.FC = () => {
           
         if (areasError) throw areasError;
         
-        // Fetch tasks
+        // Fetch tasks with proper typing
         const { data: tasksData, error: tasksError } = await supabase
           .from('facility_tasks')
           .select(`
@@ -57,19 +57,23 @@ const FacilityDailyChecklist: React.FC = () => {
           
         if (tasksError) throw tasksError;
         
-        // Transform into checklist format
+        // Transform into checklist format with proper typing
         const checklistAreas: ChecklistArea[] = [];
         
         // Group tasks by area
         areasData.forEach((area: FacilityArea) => {
-          const areaTasks = tasksData
-            .filter((task: FacilityTask) => task.area_id === area.id)
-            .map((task: FacilityTask) => ({
+          // Type assertion with partial to ensure compatibility
+          const areaTasks = (tasksData as any[])
+            .filter(task => task.area_id === area.id)
+            .map(task => ({
               ...task,
+              assigned_to: task.assigned_to || null,
+              last_generated: task.last_generated || null,
+              next_due: task.next_due || null,
               completed: false,
               initials: '',
               time: ''
-            }));
+            } as ChecklistTask));
             
           if (areaTasks.length > 0) {
             checklistAreas.push({
@@ -81,14 +85,17 @@ const FacilityDailyChecklist: React.FC = () => {
         });
         
         // Add tasks with no assigned area
-        const unassignedTasks = tasksData
-          .filter((task: FacilityTask) => !task.area_id)
-          .map((task: FacilityTask) => ({
+        const unassignedTasks = (tasksData as any[])
+          .filter(task => !task.area_id)
+          .map(task => ({
             ...task,
+            assigned_to: task.assigned_to || null,
+            last_generated: task.last_generated || null,
+            next_due: task.next_due || null,
             completed: false,
             initials: '',
             time: ''
-          }));
+          } as ChecklistTask));
           
         if (unassignedTasks.length > 0) {
           checklistAreas.push({
