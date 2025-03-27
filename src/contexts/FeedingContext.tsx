@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { FeedingSchedule, FeedingRecord, FeedingFormData, FeedingScheduleFormData } from '@/types/feeding';
+import { FeedingSchedule, FeedingRecord, FeedingFormData, FeedingScheduleFormData, FeedingStats } from '@/types/feeding';
 import { 
   fetchFeedingSchedules,
   fetchFeedingRecords,
@@ -33,7 +33,7 @@ interface FeedingContextType {
 
 const FeedingContext = createContext<FeedingContextType | undefined>(undefined);
 
-export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const FeedingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [feedingRecords, setFeedingRecords] = useState<FeedingRecord[] | null>(null);
   const [feedingSchedules, setFeedingSchedules] = useState<FeedingSchedule[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -175,7 +175,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     setError(null);
     
     try {
-      const stats = await getFeedingStats(dogId);
+      const stats = await fetchFeedingStats(dogId, timeframe);
       return stats;
     } catch (err) {
       console.error('Error fetching feeding stats:', err);

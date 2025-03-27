@@ -435,7 +435,7 @@ export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => 
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      return nextDue < today && med.status === 'active';
+      return nextDue < today && med.status === MedicationStatus.ACTIVE;
     });
   } catch (error) {
     console.error('Error fetching overdue medications:', error);
@@ -466,7 +466,7 @@ export const fetchUpcomingMedications = async (daysAhead = 7): Promise<Medicatio
       if (!med.next_due_date) return false;
       
       const nextDue = new Date(med.next_due_date);
-      return nextDue >= today && nextDue <= futureDate && med.status === 'active';
+      return nextDue >= today && nextDue <= futureDate && med.status === MedicationStatus.ACTIVE;
     });
   } catch (error) {
     console.error('Error fetching upcoming medications:', error);
@@ -505,7 +505,7 @@ export const fetchMedicationStats = async (dogId: string): Promise<MedicationSta
     
     // Count overdue medications
     const overdueCount = medications.filter(m => {
-      if (!m.next_due_date || m.status !== 'active') return false;
+      if (!m.next_due_date || m.status !== MedicationStatus.ACTIVE) return false;
       const nextDue = new Date(m.next_due_date);
       return nextDue < today;
     }).length;
@@ -513,7 +513,7 @@ export const fetchMedicationStats = async (dogId: string): Promise<MedicationSta
     // Count upcoming medications (next 7 days)
     const futureDate = addDays(today, 7);
     const upcomingCount = medications.filter(m => {
-      if (!m.next_due_date || m.status !== 'active') return false;
+      if (!m.next_due_date || m.status !== MedicationStatus.ACTIVE) return false;
       const nextDue = new Date(m.next_due_date);
       return nextDue >= today && nextDue <= futureDate;
     }).length;

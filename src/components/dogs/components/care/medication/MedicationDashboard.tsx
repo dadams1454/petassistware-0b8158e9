@@ -1,60 +1,61 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { RefreshCw, Utensils, Clock, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Pill, Clock, AlertTriangle } from 'lucide-react';
 
-import { FeedingProvider, useFeeding } from '@/contexts/feeding';
-import FeedingSchedulesList from './FeedingSchedulesList';
-import FeedingHistory from './FeedingHistory';
-import FeedingForm from './FeedingForm';
-import FeedingScheduleForm from './FeedingScheduleForm';
-import { FeedingRecord, FeedingSchedule, FeedingStats } from '@/types/feeding';
+import { MedicationProvider, useMedication } from '@/contexts/medication';
+import MedicationSchedulesList from './MedicationSchedulesList';
+import MedicationHistory from './MedicationHistory';
+import MedicationForm from './MedicationForm';
+import MedicationScheduleForm from './MedicationScheduleForm';
+import { MedicationRecord, MedicationSchedule, MedicationStats } from '@/types/medication';
 
-interface FeedingDashboardProps {
+interface MedicationDashboardProps {
   dogId: string;
   dogName: string;
 }
 
-const FeedingStatCards = ({ stats }: { stats: FeedingStats | null }) => {
+const MedicationStatCards = ({ stats }: { stats: MedicationStats | null }) => {
   if (!stats) return null;
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <Card>
         <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">Total Meals</CardTitle>
+          <CardTitle className="text-sm font-medium">Active Medications</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.totalMeals}</div>
+          <div className="text-2xl font-bold">{stats.activeCount}</div>
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">Consumption Rate</CardTitle>
+          <CardTitle className="text-sm font-medium">Compliance Rate</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {Math.round((1 - stats.mealsRefused / stats.totalMeals) * 100)}%
+            {Math.round(stats.complianceRate * 100)}%
           </div>
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">Meals Refused</CardTitle>
+          <CardTitle className="text-sm font-medium">Overdue</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.mealsRefused}</div>
+          <div className="text-2xl font-bold">{stats.overdueCount}</div>
         </CardContent>
       </Card>
     </div>
   );
 };
 
-const FeedingDashboardContent: React.FC<FeedingDashboardProps> = ({ dogId, dogName }) => {
+const MedicationDashboardContent: React.FC<MedicationDashboardProps> = ({ dogId, dogName }) => {
   const { 
     fetchSchedules, 
     fetchRecords, 
@@ -63,10 +64,10 @@ const FeedingDashboardContent: React.FC<FeedingDashboardProps> = ({ dogId, dogNa
     records,
     stats,
     loading 
-  } = useFeeding();
+  } = useMedication();
   
   const [activeTab, setActiveTab] = useState('schedules');
-  const [addFeedingDialogOpen, setAddFeedingDialogOpen] = useState(false);
+  const [addMedicationDialogOpen, setAddMedicationDialogOpen] = useState(false);
   const [addScheduleDialogOpen, setAddScheduleDialogOpen] = useState(false);
 
   // Load data on mount
@@ -78,7 +79,7 @@ const FeedingDashboardContent: React.FC<FeedingDashboardProps> = ({ dogId, dogNa
     await Promise.all([
       fetchSchedules(dogId),
       fetchRecords(dogId),
-      fetchStats(dogId, 'week')
+      fetchStats(dogId)
     ]);
   };
 
@@ -89,10 +90,10 @@ const FeedingDashboardContent: React.FC<FeedingDashboardProps> = ({ dogId, dogNa
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={() => setAddFeedingDialogOpen(true)}
+          onClick={() => setAddMedicationDialogOpen(true)}
         >
-          <Utensils className="h-4 w-4 mr-1" />
-          Log Feeding
+          <Pill className="h-4 w-4 mr-1" />
+          Add Medication
         </Button>
         
         <Button 
@@ -116,7 +117,7 @@ const FeedingDashboardContent: React.FC<FeedingDashboardProps> = ({ dogId, dogNa
       </div>
       
       {/* Stats Overview */}
-      <FeedingStatCards stats={stats} />
+      <MedicationStatCards stats={stats} />
       
       {/* Main Content Tabs */}
       <Tabs defaultValue="schedules" onValueChange={setActiveTab}>
@@ -126,45 +127,49 @@ const FeedingDashboardContent: React.FC<FeedingDashboardProps> = ({ dogId, dogNa
         </TabsList>
         
         <TabsContent value="schedules" className="pt-4">
-          <FeedingSchedulesList 
-            dogId={dogId}
-            schedules={schedules}
+          <MedicationSchedulesList 
+            medications={schedules}
             onRefresh={refreshData}
+            onEdit={(medicationId) => {
+              // Handle edit medication
+            }}
           />
         </TabsContent>
         
         <TabsContent value="history" className="pt-4">
-          <FeedingHistory 
-            dogId={dogId}
-            records={records}
-            schedules={schedules}
+          <MedicationHistory 
+            medications={records}
             onRefresh={refreshData}
+            onEdit={(medicationId) => {
+              // Handle edit medication
+            }}
           />
         </TabsContent>
       </Tabs>
       
       {/* Dialogs */}
-      <Dialog open={addFeedingDialogOpen} onOpenChange={setAddFeedingDialogOpen}>
+      <Dialog open={addMedicationDialogOpen} onOpenChange={setAddMedicationDialogOpen}>
         <DialogContent className="max-w-md">
-          <FeedingForm 
+          <MedicationForm 
             dogId={dogId}
-            schedules={schedules}
             onSuccess={() => {
-              setAddFeedingDialogOpen(false);
+              setAddMedicationDialogOpen(false);
               refreshData();
             }}
+            onCancel={() => setAddMedicationDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>
       
       <Dialog open={addScheduleDialogOpen} onOpenChange={setAddScheduleDialogOpen}>
         <DialogContent className="max-w-md">
-          <FeedingScheduleForm 
+          <MedicationScheduleForm 
             dogId={dogId}
             onSuccess={() => {
               setAddScheduleDialogOpen(false);
               refreshData();
             }}
+            onCancel={() => setAddScheduleDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>
@@ -172,12 +177,12 @@ const FeedingDashboardContent: React.FC<FeedingDashboardProps> = ({ dogId, dogNa
   );
 };
 
-const FeedingDashboard: React.FC<FeedingDashboardProps> = (props) => {
+const MedicationDashboard: React.FC<MedicationDashboardProps> = (props) => {
   return (
-    <FeedingProvider>
-      <FeedingDashboardContent {...props} />
-    </FeedingProvider>
+    <MedicationProvider>
+      <MedicationDashboardContent {...props} />
+    </MedicationProvider>
   );
 };
 
-export default FeedingDashboard;
+export default MedicationDashboard;
