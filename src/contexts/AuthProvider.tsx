@@ -14,7 +14,6 @@ interface AuthContextType {
   tenantId: string | null;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
-  isRefreshingSession: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -25,7 +24,6 @@ const AuthContext = createContext<AuthContextType>({
   tenantId: null,
   signOut: async () => {},
   refreshSession: async () => {},
-  isRefreshingSession: false,
 });
 
 interface AuthProviderProps {
@@ -38,7 +36,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
-  const [isRefreshingSession, setIsRefreshingSession] = useState<boolean>(false);
   
   // Use a ref to track ongoing refresh operations to prevent multiple concurrent refreshes
   const refreshInProgress = useRef<boolean>(false);
@@ -87,16 +84,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const refreshSession = useCallback(async () => {
-    // If a refresh is already in progress, return the existing promise
+    // Prevent multiple concurrent refresh operations
     if (refreshInProgress.current) {
       console.log('Session refresh already in progress, skipping');
-      return Promise.resolve();
+      return;
     }
     
     try {
       console.log('Refreshing session...');
       refreshInProgress.current = true;
-      setIsRefreshingSession(true);
+      setLoading(true);
       
       // Check for current session
       console.log('AuthProvider: Loading session...');
@@ -108,7 +105,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(null);
         setUserRole(null);
         setTenantId(null);
-        return Promise.resolve();
+        return;
       }
       
       if (data.session) {
@@ -128,17 +125,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUserRole(null);
         setTenantId(null);
       }
-      return Promise.resolve();
     } catch (error) {
       console.error('Error refreshing session:', error);
       setSession(null);
       setUser(null);
       setUserRole(null);
       setTenantId(null);
-      return Promise.reject(error);
     } finally {
       setLoading(false);
-      setIsRefreshingSession(false);
       refreshInProgress.current = false;
     }
   }, []);
@@ -270,8 +264,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       userRole, 
       tenantId,
       signOut, 
-      refreshSession,
-      isRefreshingSession
+      refreshSession 
     }}>
       {children}
     </AuthContext.Provider>

@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MedicationFrequency } from '@/types/medication';
+import { MedicationFrequency } from '@/utils/medicationUtils';
 import { MedicationFilterProps } from '../types/medicationTypes';
 
 const MedicationFilter: React.FC<MedicationFilterProps> = ({ value, onChange }) => {
@@ -29,7 +29,7 @@ const MedicationFilter: React.FC<MedicationFilterProps> = ({ value, onChange }) 
           <SelectItem value={MedicationFrequency.WEEKLY}>Weekly</SelectItem>
           <SelectItem value={MedicationFrequency.MONTHLY}>Monthly</SelectItem>
           <SelectItem value={MedicationFrequency.QUARTERLY}>Quarterly</SelectItem>
-          <SelectItem value={MedicationFrequency.ANNUALLY}>Annual</SelectItem>
+          <SelectItem value={MedicationFrequency.ANNUAL}>Annual</SelectItem>
         </SelectContent>
       </Select>
     </div>

@@ -2,54 +2,58 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
-import { AuthLoadingState } from '@/components/ui/standardized';
+import { LoadingState } from '@/components/ui/standardized';
 
 const AuthLayout: React.FC = () => {
-  const { user, loading, refreshSession, isRefreshingSession } = useAuth();
+  const { user, loading, refreshSession } = useAuth();
   const location = useLocation();
-  const [initialAuthCheckComplete, setInitialAuthCheckComplete] = useState(false);
+  const [initialRefreshDone, setInitialRefreshDone] = useState(false);
   
-  // Single-time authentication check on mount
+  // Only refresh session once on mount
   useEffect(() => {
-    // Only perform one check per mount
-    if (initialAuthCheckComplete) return;
+    let mounted = true;
     
-    const checkAuth = async () => {
-      try {
-        // If already have user, no need to refresh
-        if (user) {
-          console.log('AuthLayout: user already authenticated, skipping refresh');
-          setInitialAuthCheckComplete(true);
-          return;
+    if (!initialRefreshDone) {
+      console.log('AuthLayout: performing initial session refresh');
+      
+      // Add a small delay to prevent conflicts with AuthProvider initialization
+      const timer = setTimeout(() => {
+        if (mounted) {
+          refreshSession()
+            .then(() => {
+              if (mounted) {
+                console.log('AuthLayout: initial session refresh complete');
+                setInitialRefreshDone(true);
+              }
+            })
+            .catch(err => {
+              console.error('Error refreshing session in AuthLayout:', err);
+              if (mounted) setInitialRefreshDone(true);
+            });
         }
-        
-        // Only perform refresh if not already in progress
-        if (!isRefreshingSession) {
-          console.log('AuthLayout: performing initial session check');
-          await refreshSession();
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-      } finally {
-        setInitialAuthCheckComplete(true);
-      }
-    };
-    
-    checkAuth();
-  }, [user, refreshSession, isRefreshingSession, initialAuthCheckComplete]);
+      }, 300);
+      
+      return () => {
+        clearTimeout(timer);
+        mounted = false;
+      };
+    }
+  }, [refreshSession, initialRefreshDone]);
   
-  // Show loading state while checking authentication
-  if ((loading || isRefreshingSession) && !initialAuthCheckComplete) {
-    return <AuthLoadingState fullPage={true} message="Verifying authentication..." />;
+  // Handle different states
+  if (loading && !initialRefreshDone) {
+    console.log('AuthLayout: in loading state');
+    return <LoadingState fullPage={true} message="Verifying authentication..." />;
   }
   
-  // Redirect to login if not authenticated after check is complete
-  if (!user && initialAuthCheckComplete) {
+  // Redirect to login if not authenticated
+  if (!user) {
     console.log('AuthLayout: no user found, redirecting to auth page');
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
   
   // User is authenticated, render the protected content
+  console.log('AuthLayout: user authenticated, rendering outlet');
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <main className="flex-1 overflow-auto">
