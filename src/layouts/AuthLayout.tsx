@@ -7,36 +7,31 @@ import { AuthLoadingState } from '@/components/ui/standardized';
 const AuthLayout: React.FC = () => {
   const { user, loading, refreshSession, isRefreshingSession } = useAuth();
   const location = useLocation();
-  const [initialRefreshDone, setInitialRefreshDone] = useState(false);
+  const [initialRefreshAttempted, setInitialRefreshAttempted] = useState(false);
   
   // Handle initial session refresh - only do this once
   useEffect(() => {
-    let mounted = true;
-    
-    if (!initialRefreshDone && !isRefreshingSession) {
+    if (!initialRefreshAttempted && !isRefreshingSession && !user) {
       console.log('AuthLayout: performing initial session refresh');
       
-      // Perform refresh
       refreshSession()
         .then(() => {
-          if (mounted) {
-            console.log('AuthLayout: initial session refresh complete');
-            setInitialRefreshDone(true);
-          }
+          console.log('AuthLayout: initial session refresh complete');
+          setInitialRefreshAttempted(true);
         })
         .catch(err => {
           console.error('Error refreshing session in AuthLayout:', err);
-          if (mounted) setInitialRefreshDone(true);
+          setInitialRefreshAttempted(true);
         });
+    } else if (!initialRefreshAttempted && user) {
+      // If we already have a user, no need to refresh
+      console.log('AuthLayout: user already authenticated, skipping refresh');
+      setInitialRefreshAttempted(true);
     }
-    
-    return () => {
-      mounted = false;
-    };
-  }, [refreshSession, initialRefreshDone, isRefreshingSession]);
+  }, [refreshSession, initialRefreshAttempted, isRefreshingSession, user]);
   
   // Handle loading state
-  if (loading && !initialRefreshDone) {
+  if ((loading || isRefreshingSession) && !initialRefreshAttempted) {
     console.log('AuthLayout: in loading state');
     return <AuthLoadingState fullPage={true} message="Verifying authentication..." />;
   }

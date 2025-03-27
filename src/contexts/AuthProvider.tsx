@@ -87,17 +87,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const refreshSession = useCallback(async () => {
-    // Prevent multiple concurrent refresh operations
+    // If a refresh is already in progress, return the existing promise
     if (refreshInProgress.current) {
       console.log('Session refresh already in progress, skipping');
-      return;
+      return Promise.resolve();
     }
     
     try {
       console.log('Refreshing session...');
       refreshInProgress.current = true;
       setIsRefreshingSession(true);
-      setLoading(true);
       
       // Check for current session
       console.log('AuthProvider: Loading session...');
@@ -109,7 +108,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(null);
         setUserRole(null);
         setTenantId(null);
-        return;
+        return Promise.resolve();
       }
       
       if (data.session) {
@@ -129,12 +128,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUserRole(null);
         setTenantId(null);
       }
+      return Promise.resolve();
     } catch (error) {
       console.error('Error refreshing session:', error);
       setSession(null);
       setUser(null);
       setUserRole(null);
       setTenantId(null);
+      return Promise.reject(error);
     } finally {
       setLoading(false);
       setIsRefreshingSession(false);
