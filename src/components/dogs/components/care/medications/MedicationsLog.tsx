@@ -70,7 +70,11 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
       return (
         <MedicationTableView 
           dogs={dogs}
-          preventativeMeds={processedMedicationLogs}
+          preventativeMeds={Object.fromEntries(
+            Object.entries(processedMedicationLogs).map(
+              ([dogId, meds]) => [dogId, meds.preventative || []]
+            )
+          )}
           otherMeds={Object.fromEntries(
             Object.entries(processedMedicationLogs).map(
               ([dogId, meds]) => [dogId, meds.other || []]
@@ -90,8 +94,8 @@ const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogs, onRefresh }) => {
             <div id={`medication-card-${dog.dog_id}`} key={dog.dog_id}>
               <MedicationCard 
                 dog={dog}
-                preventativeMeds={dogMedications.preventative}
-                otherMeds={dogMedications.other}
+                preventativeMeds={dogMedications.preventative || []}
+                otherMeds={dogMedications.other || []}
                 onSuccess={handleMedicationLogged}
               />
             </div>

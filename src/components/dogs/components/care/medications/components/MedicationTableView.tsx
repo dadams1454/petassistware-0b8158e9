@@ -60,14 +60,16 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
               const dogOtherMeds = otherMeds[dog.dog_id] || [];
               
               // Look for specific preventative medications
-              const heartwormMed = dogPreventativeMeds.find(med => 
-                med.name.toLowerCase().includes('heartworm')
-              );
+              const heartwormMed = Array.isArray(dogPreventativeMeds) ? 
+                dogPreventativeMeds.find(med => 
+                  med.name.toLowerCase().includes('heartworm')
+                ) : null;
               
-              const fleaTickMed = dogPreventativeMeds.find(med => 
-                med.name.toLowerCase().includes('flea') || 
-                med.name.toLowerCase().includes('tick')
-              );
+              const fleaTickMed = Array.isArray(dogPreventativeMeds) ? 
+                dogPreventativeMeds.find(med => 
+                  med.name.toLowerCase().includes('flea') || 
+                  med.name.toLowerCase().includes('tick')
+                ) : null;
               
               // Get status for display
               const heartwormStatus = heartwormMed 
@@ -79,7 +81,7 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
                 : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
               
               // Get most recent medication for last administered column
-              const allMeds = [...dogPreventativeMeds, ...dogOtherMeds];
+              const allMeds = [...(Array.isArray(dogPreventativeMeds) ? dogPreventativeMeds : []), ...(Array.isArray(dogOtherMeds) ? dogOtherMeds : [])];
               const mostRecentMed = allMeds.length > 0 
                 ? allMeds.sort((a, b) => {
                     const dateA = a.lastAdministered ? new Date(a.lastAdministered).getTime() : 0;
@@ -129,10 +131,10 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
                   
                   {/* Other Medications */}
                   <TableCell>
-                    <Badge className={dogOtherMeds.length > 0 ? 
+                    <Badge className={Array.isArray(dogOtherMeds) && dogOtherMeds.length > 0 ? 
                       'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' : 
                       'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'}>
-                      {dogOtherMeds.length > 0 ? `${dogOtherMeds.length} Active` : 'None'}
+                      {Array.isArray(dogOtherMeds) && dogOtherMeds.length > 0 ? `${dogOtherMeds.length} Active` : 'None'}
                     </Badge>
                   </TableCell>
                   

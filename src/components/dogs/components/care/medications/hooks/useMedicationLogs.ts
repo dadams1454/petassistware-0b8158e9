@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MedicationInfo } from '../types/medicationTypes';
+import { MedicationInfo, ProcessedMedicationLogs } from '../types/medicationTypes';
 import { DogCareStatus } from '@/types/dailyCare';
 import { MedicationFrequency } from '@/utils/medicationUtils';
 
 export const useMedicationLogs = (dogs: DogCareStatus[]) => {
-  const [processedMedicationLogs, setProcessedMedicationLogs] = useState<Record<string, any>>({});
+  const [processedMedicationLogs, setProcessedMedicationLogs] = useState<ProcessedMedicationLogs>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +36,7 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
         if (error) throw new Error(error.message);
         
         // Process the medication logs by dog
-        const medicationsByDog: Record<string, any> = {};
+        const medicationsByDog: ProcessedMedicationLogs = {};
         
         dogIds.forEach(dogId => {
           // Initialize each dog's medication record
@@ -46,10 +46,10 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
           };
           
           // Get logs for this specific dog
-          const dogLogs = data.filter(log => log.dog_id === dogId);
+          const dogLogs = data?.filter(log => log.dog_id === dogId) || [];
           
           // Group medications by name (to get the most recent entry for each medication)
-          const medicationsByName: Record<string, any> = {};
+          const medicationsByName: Record<string, MedicationInfo> = {};
           
           // Create a map of medications by name
           dogLogs.forEach(log => {
@@ -88,7 +88,7 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
           });
           
           // Convert to array and sort by medication name
-          const allMedications = Object.values(medicationsByName).sort((a: any, b: any) => 
+          const allMedications = Object.values(medicationsByName).sort((a: MedicationInfo, b: MedicationInfo) => 
             a.name.localeCompare(b.name)
           );
           
