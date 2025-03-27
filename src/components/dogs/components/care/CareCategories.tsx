@@ -1,53 +1,62 @@
 
 import React from 'react';
 import { 
-  Coffee, Bath, Utensils, 
-  Pill, Dumbbell, Heart, 
-  Clipboard, CheckCircle 
+  Coffee, 
+  Droplet, 
+  Scissors, 
+  Dumbbell, 
+  Heart, 
+  Pill, 
+  LifeBuoy,
+  Building2,
+  Baby
 } from 'lucide-react';
-import { CareCategory } from './table/components/types';
 
-// Define the care categories for the table view
-export const careCategories: CareCategory[] = [
+export const careCategories = [
   {
     id: 'pottybreaks',
     name: 'Potty Breaks',
-    icon: <Coffee className="h-4 w-4 text-blue-500" />,
+    icon: <Droplet className="h-4 w-4" />,
   },
   {
     id: 'feeding',
     name: 'Feeding',
-    icon: <Utensils className="h-4 w-4 text-orange-500" />,
+    icon: <Coffee className="h-4 w-4" />,
   },
   {
     id: 'medication',
-    name: 'Medication',
-    icon: <Pill className="h-4 w-4 text-red-500" />,
+    name: 'Medications',
+    icon: <Pill className="h-4 w-4" />,
   },
   {
     id: 'grooming',
     name: 'Grooming',
-    icon: <Bath className="h-4 w-4 text-purple-500" />,
+    icon: <Scissors className="h-4 w-4" />,
   },
   {
     id: 'exercise',
     name: 'Exercise',
-    icon: <Dumbbell className="h-4 w-4 text-green-500" />,
+    icon: <Dumbbell className="h-4 w-4" />,
   },
   {
     id: 'wellness',
     name: 'Wellness',
-    icon: <Heart className="h-4 w-4 text-pink-500" />,
+    icon: <LifeBuoy className="h-4 w-4" />,
   },
   {
-    id: 'training',
-    name: 'Training',
-    icon: <CheckCircle className="h-4 w-4 text-indigo-500" />,
+    id: 'health',
+    name: 'Health',
+    icon: <Heart className="h-4 w-4" />,
   },
   {
-    id: 'notes',
-    name: 'Notes',
-    icon: <Clipboard className="h-4 w-4 text-gray-500" />,
+    id: 'facility',
+    name: 'Facility',
+    icon: <Building2 className="h-4 w-4" />,
+  },
+  {
+    id: 'puppies',
+    name: 'Puppies',
+    icon: <Baby className="h-4 w-4" />,
   }
 ];
 

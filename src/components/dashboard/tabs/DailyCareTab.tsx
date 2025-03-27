@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Users, Dog, Plus } from 'lucide-react';
+import { RefreshCw, Users, Dog, Plus, Building2, Baby } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -172,6 +173,50 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
             dogStatuses={effectiveDogStatuses} 
             onRefreshDogs={handleRefresh}
           />
+        );
+      case 'facility':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                <span>Facility Management</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="py-8 text-center">
+                <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 mb-4">
+                  <Building2 className="h-10 w-10 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Coming Soon</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Facility management features are currently in development. You'll soon be able to track cleaning schedules, maintenance tasks, and kennel assignments.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      case 'puppies':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Baby className="h-5 w-5 text-primary" />
+                <span>Puppy Management</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="py-8 text-center">
+                <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 mb-4">
+                  <Baby className="h-10 w-10 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Coming Soon</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Puppy management features are currently under development. Soon you'll be able to track feeding schedules, weight tracking, and development milestones for your puppies.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         );
       default:
         return (
