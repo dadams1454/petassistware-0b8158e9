@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Pills, Clock } from 'lucide-react';
+import { Pill, Clock } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { MedicationInfo } from '../types/medicationTypes';
 import { DogCareStatus } from '@/types/dailyCare';
@@ -101,7 +101,7 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
                         />
                       ) : (
                         <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                          <Pills className="h-4 w-4 text-muted-foreground" />
+                          <Pill className="h-4 w-4 text-muted-foreground" />
                         </div>
                       )}
                       <div>

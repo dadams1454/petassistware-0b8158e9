@@ -1,12 +1,14 @@
-
 import { DogCareStatus } from '@/types/dailyCare';
 import { MedicationFrequency, MedicationStatus } from '@/utils/medicationUtils';
 
 // Information about a medication
 export interface MedicationInfo {
+  id: string;
   name: string;
   lastAdministered?: string;
   frequency: MedicationFrequency;
+  notes?: string;
+  isPreventative: boolean;
 }
 
 // Processed medication logs grouped by type
@@ -71,3 +73,4 @@ export interface MedicationFilterProps {
   value: string;
   onChange: (value: string) => void;
 }
+

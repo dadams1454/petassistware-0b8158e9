@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MedicationInfo } from '../types/medicationTypes';
 import { DogCareStatus } from '@/types/dailyCare';
+import { MedicationFrequency } from '@/utils/medicationUtils';
 
 export const useMedicationLogs = (dogs: DogCareStatus[]) => {
   const [processedMedicationLogs, setProcessedMedicationLogs] = useState<Record<string, any>>({});
@@ -24,12 +25,13 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
         // Get dog IDs for query
         const dogIds = dogs.map(dog => dog.dog_id);
         
-        // Fetch medication logs for these dogs
+        // Fetch medication logs for these dogs from daily_care_logs where category is 'medications'
         const { data, error } = await supabase
-          .from('medication_logs')
+          .from('daily_care_logs')
           .select('*')
           .in('dog_id', dogIds)
-          .order('administered_at', { ascending: false });
+          .eq('category', 'medications')
+          .order('timestamp', { ascending: false });
         
         if (error) throw new Error(error.message);
         
@@ -51,14 +53,36 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
           
           // Create a map of medications by name
           dogLogs.forEach(log => {
-            if (!medicationsByName[log.medication_name]) {
-              medicationsByName[log.medication_name] = {
+            // Extract medication type (preventative or not) from the task name or notes
+            const isPreventative = 
+              (log.notes && log.notes.toLowerCase().includes('preventative')) || 
+              (log.task_name.toLowerCase().includes('heartworm')) ||
+              (log.task_name.toLowerCase().includes('flea')) ||
+              (log.task_name.toLowerCase().includes('tick')) ||
+              (log.task_name.toLowerCase().includes('prevention'));
+            
+            // Parse frequency from task_name if available
+            let frequency = MedicationFrequency.MONTHLY; // Default
+            if (log.task_name.includes('(Daily)')) frequency = MedicationFrequency.DAILY;
+            if (log.task_name.includes('(Weekly)')) frequency = MedicationFrequency.WEEKLY;
+            if (log.task_name.includes('(Monthly)')) frequency = MedicationFrequency.MONTHLY;
+            if (log.task_name.includes('(Quarterly)')) frequency = MedicationFrequency.QUARTERLY;
+            if (log.task_name.includes('(Annual)')) frequency = MedicationFrequency.ANNUAL;
+            
+            // Clean medication name (remove frequency information)
+            let cleanName = log.task_name;
+            if (cleanName.includes('(')) {
+              cleanName = cleanName.substring(0, cleanName.indexOf('(')).trim();
+            }
+            
+            if (!medicationsByName[cleanName]) {
+              medicationsByName[cleanName] = {
                 id: log.id,
-                name: log.medication_name,
-                lastAdministered: log.administered_at,
-                frequency: log.frequency,
+                name: cleanName,
+                lastAdministered: log.timestamp,
+                frequency: frequency,
                 notes: log.notes,
-                isPreventative: log.is_preventative || false
+                isPreventative: isPreventative
               };
             }
           });
