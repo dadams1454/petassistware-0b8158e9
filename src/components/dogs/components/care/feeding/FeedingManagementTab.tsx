@@ -134,6 +134,7 @@ const FeedingManagementTab: React.FC<FeedingManagementTabProps> = ({ dogId, dogN
             schedules={feedingSchedules || []}
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
+            onRefresh={handleRefresh}
           />
         </TabsContent>
         

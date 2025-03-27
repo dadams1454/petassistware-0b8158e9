@@ -1,466 +1,432 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  MedicationRecord, 
-  MedicationFormData, 
-  MedicationSchedule,
-  MedicationStats,
-  MedicationFrequency,
-  MedicationStatus,
-  MedicationType
-} from '@/types/medication';
-import { CareCategory } from '@/types/careRecord';
-import { formatISO, addDays, addWeeks, addMonths, addYears } from 'date-fns';
+import { MedicationRecord, MedicationFormData, MedicationAdministration, MedicationFrequency, MedicationRoute, MedicationType } from '@/types/medication';
+import { format, addDays, addWeeks, addMonths, isAfter, isBefore, parseISO } from 'date-fns';
 
 /**
- * Calculate the next due date based on the frequency
+ * Helper to get medication records by dog IDs
  */
-export const calculateNextDueDate = (
-  startDate: Date, 
-  frequency: MedicationFrequency
-): Date => {
-  const today = new Date(startDate);
-  
-  switch (frequency) {
-    case MedicationFrequency.DAILY:
-      return addDays(today, 1);
-    case MedicationFrequency.TWICE_DAILY:
-      // For twice daily, we don't advance the day, just set a reminder for later in the day
-      return today;
-    case MedicationFrequency.WEEKLY:
-      return addWeeks(today, 1);
-    case MedicationFrequency.BIWEEKLY:
-      return addWeeks(today, 2);
-    case MedicationFrequency.MONTHLY:
-      return addMonths(today, 1);
-    case MedicationFrequency.QUARTERLY:
-      return addMonths(today, 3);
-    case MedicationFrequency.ANNUALLY:
-      return addYears(today, 1);
-    case MedicationFrequency.AS_NEEDED:
-    case MedicationFrequency.CUSTOM:
-    default:
-      // For as-needed medications, we don't set a next due date
-      return today;
-  }
-};
-
-/**
- * Fetch all medication records for a dog
- */
-export const fetchDogMedications = async (
-  dogId: string,
-  includeCompleted: boolean = false
-): Promise<MedicationRecord[]> => {
-  // First fetch medication logs from daily_care_logs with category 'medications'
-  const { data: careRecords, error: careError } = await supabase
+export const getMedicationRecords = async (dogIds: string[]): Promise<MedicationRecord[]> => {
+  // Use the daily_care_logs table for medication records
+  const { data, error } = await supabase
     .from('daily_care_logs')
     .select('*')
-    .eq('dog_id', dogId)
+    .in('dog_id', dogIds)
     .eq('category', 'medications')
     .order('timestamp', { ascending: false });
 
-  if (careError) {
-    console.error('Error fetching medication records from care logs:', careError);
-    throw careError;
+  if (error) {
+    console.error('Error fetching medication records:', error);
+    throw error;
   }
 
-  // Filter care records to include only ones that have medication metadata
-  const medicationRecords = (careRecords || []).filter(record => 
-    record.medication_metadata && 
-    (includeCompleted || record.medication_metadata.status !== MedicationStatus.COMPLETED)
-  ).map(record => ({
-    ...record,
-    medication_name: record.task_name.split(' (')[0], // Extract medication name from task_name
-    frequency: record.medication_metadata?.frequency || MedicationFrequency.DAILY,
-    medication_type: record.medication_metadata?.medication_type || MedicationType.TREATMENT,
-    next_due_date: record.medication_metadata?.next_due_date,
-    dosage: record.medication_metadata?.dosage,
-    dosage_unit: record.medication_metadata?.dosage_unit,
-    route: record.medication_metadata?.route,
-    start_date: record.medication_metadata?.start_date,
-    end_date: record.medication_metadata?.end_date,
-    prescription_id: record.medication_metadata?.prescription_id,
-    refills_remaining: record.medication_metadata?.refills_remaining,
-    administered_by: record.medication_metadata?.administered_by
-  })) as MedicationRecord[];
-
+  // Map the raw data to MedicationRecord objects
+  const medicationRecords = (data || []).map(record => {
+    // Extract medication metadata from JSON
+    const metadata = record.medication_metadata || {};
+    
+    // Create a medication record
+    const medicationRecord: MedicationRecord = {
+      id: record.id,
+      dog_id: record.dog_id,
+      medication_name: String(metadata.medication_name || ''),
+      created_at: record.created_at,
+      timestamp: record.timestamp,
+      category: 'medications',
+      task_name: record.task_name,
+      notes: record.notes || '',
+      created_by: record.created_by,
+      frequency: (metadata.frequency as MedicationFrequency) || MedicationFrequency.ONCE_DAILY,
+      medication_type: (metadata.medication_type as MedicationType) || MedicationType.TREATMENT,
+      start_date: record.timestamp,
+      end_date: metadata.end_date ? String(metadata.end_date) : undefined,
+      dosage: String(metadata.dosage || ''),
+      dosage_unit: String(metadata.dosage_unit || ''),
+      route: (metadata.route as MedicationRoute) || MedicationRoute.ORAL,
+      next_due_date: metadata.next_due_date ? String(metadata.next_due_date) : undefined,
+      prescription_id: String(metadata.prescription_id || ''),
+      refills_remaining: Number(metadata.refills_remaining || 0),
+      administrations: []
+    };
+    
+    return medicationRecord;
+  });
+  
   return medicationRecords;
 };
 
 /**
- * Create a new medication record
+ * Calculates the next due date based on medication frequency
+ */
+export const calculateNextDueDate = (
+  startDate: Date,
+  frequency: MedicationFrequency
+): Date => {
+  switch (frequency) {
+    case MedicationFrequency.ONCE_DAILY:
+      return addDays(startDate, 1);
+    case MedicationFrequency.TWICE_DAILY:
+      return addDays(startDate, 0.5);
+    case MedicationFrequency.THREE_TIMES_DAILY:
+      return addDays(startDate, 1/3);
+    case MedicationFrequency.FOUR_TIMES_DAILY:
+      return addDays(startDate, 0.25);
+    case MedicationFrequency.EVERY_OTHER_DAY:
+      return addDays(startDate, 2);
+    case MedicationFrequency.WEEKLY:
+      return addWeeks(startDate, 1);
+    case MedicationFrequency.BIWEEKLY:
+      return addWeeks(startDate, 2);
+    case MedicationFrequency.MONTHLY:
+      return addMonths(startDate, 1);
+    case MedicationFrequency.AS_NEEDED:
+      return addDays(startDate, 100); // Far future date as it's not scheduled
+    default:
+      return addDays(startDate, 1);
+  }
+};
+
+/**
+ * Creates a new medication record
  */
 export const createMedicationRecord = async (
-  data: MedicationFormData,
-  userId: string
-): Promise<MedicationRecord | null> => {
-  // Format the frequency label
-  const frequencyLabel = data.frequency.charAt(0).toUpperCase() + data.frequency.slice(1).replace('_', ' ');
-  const medicationWithFrequency = `${data.medication_name} (${frequencyLabel})`;
-  
-  // Calculate next due date
-  const nextDueDate = data.next_due_date || calculateNextDueDate(data.start_date, data.frequency);
-  
-  // Prepare medication metadata
-  const medicationMetadata = {
-    frequency: data.frequency,
-    medication_type: data.medication_type,
-    next_due_date: nextDueDate.toISOString(),
-    dosage: data.dosage,
-    dosage_unit: data.dosage_unit,
-    route: data.route,
-    start_date: data.start_date.toISOString(),
-    end_date: data.end_date ? data.end_date.toISOString() : null,
-    prescription_id: data.prescription_id,
-    refills_remaining: data.refills_remaining,
-    status: MedicationStatus.ACTIVE,
-    administered_by: userId
-  };
-
-  // Create care record entry
-  const careRecord = {
-    dog_id: data.dog_id,
-    category: 'medications' as CareCategory,
-    task_name: medicationWithFrequency,
-    timestamp: data.start_date.toISOString(),
-    notes: data.notes || '',
-    created_by: userId,
-    medication_metadata: medicationMetadata
-  };
-
-  const { data: newMedicationRecord, error } = await supabase
-    .from('daily_care_logs')
-    .insert(careRecord)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating medication record:', error);
-    throw error;
-  }
-
-  // Add the derived fields to the response
-  return {
-    ...newMedicationRecord,
-    medication_name: data.medication_name,
-    frequency: data.frequency,
-    medication_type: data.medication_type,
-    next_due_date: nextDueDate.toISOString(),
-    dosage: data.dosage,
-    dosage_unit: data.dosage_unit,
-    route: data.route,
-    start_date: data.start_date.toISOString(),
-    end_date: data.end_date ? data.end_date.toISOString() : undefined,
-    prescription_id: data.prescription_id,
-    refills_remaining: data.refills_remaining,
-    administered_by: userId
-  } as MedicationRecord;
-};
-
-/**
- * Update an existing medication record
- */
-export const updateMedicationRecord = async (
-  id: string, 
-  data: Partial<MedicationFormData>,
-  userId: string
-): Promise<MedicationRecord | null> => {
-  // First get the existing record
-  const { data: existingRecord, error: fetchError } = await supabase
-    .from('daily_care_logs')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (fetchError) {
-    console.error('Error fetching medication record:', fetchError);
-    throw fetchError;
-  }
-
-  // Build updated metadata
-  const existingMetadata = existingRecord.medication_metadata || {};
-  const nextDueDate = data.next_due_date || 
-    (data.frequency && data.start_date 
-      ? calculateNextDueDate(data.start_date, data.frequency) 
-      : existingMetadata.next_due_date);
-
-  const updatedMetadata = {
-    ...existingMetadata,
-    ...(data.frequency && { frequency: data.frequency }),
-    ...(data.medication_type && { medication_type: data.medication_type }),
-    ...(nextDueDate && { next_due_date: nextDueDate instanceof Date ? nextDueDate.toISOString() : nextDueDate }),
-    ...(data.dosage && { dosage: data.dosage }),
-    ...(data.dosage_unit && { dosage_unit: data.dosage_unit }),
-    ...(data.route && { route: data.route }),
-    ...(data.start_date && { start_date: data.start_date.toISOString() }),
-    ...(data.end_date && { end_date: data.end_date.toISOString() }),
-    ...(data.prescription_id && { prescription_id: data.prescription_id }),
-    ...(data.refills_remaining !== undefined && { refills_remaining: data.refills_remaining })
-  };
-
-  // Update the task name if medication name or frequency has changed
-  let taskName = existingRecord.task_name;
-  if (data.medication_name || data.frequency) {
-    // Extract current medication name
-    const currentName = existingRecord.task_name.split(' (')[0];
-    const newName = data.medication_name || currentName;
+  data: MedicationFormData
+): Promise<MedicationRecord> => {
+  try {
+    const now = new Date();
+    const nextDueDate = calculateNextDueDate(
+      data.start_date,
+      data.frequency
+    );
     
-    // Format the new frequency if provided
-    let frequencyLabel = '';
-    if (data.frequency) {
-      frequencyLabel = data.frequency.charAt(0).toUpperCase() + data.frequency.slice(1).replace('_', ' ');
-    } else {
-      // Extract current frequency from task name
-      const currentFrequencyMatch = existingRecord.task_name.match(/\((.*?)\)/);
-      frequencyLabel = currentFrequencyMatch ? currentFrequencyMatch[1] : '';
+    // Create a medication record in daily_care_logs
+    const careLogData = {
+      dog_id: data.dog_id,
+      category: 'medications',
+      task_name: `Medication: ${data.medication_name}`,
+      notes: data.notes,
+      timestamp: data.start_date.toISOString(),
+      created_by: data.created_by || 'system',
+      medication_metadata: {
+        medication_name: data.medication_name,
+        frequency: data.frequency,
+        medication_type: data.medication_type,
+        next_due_date: nextDueDate.toISOString(),
+        dosage: data.dosage,
+        dosage_unit: data.dosage_unit,
+        route: data.route,
+        start_date: data.start_date.toISOString(),
+        end_date: data.end_date ? data.end_date.toISOString() : null,
+        prescription_id: data.prescription_id,
+        refills_remaining: data.refills_remaining,
+        administered_by: data.created_by
+      }
+    };
+    
+    const { data: careLogRecord, error: careLogError } = await supabase
+      .from('daily_care_logs')
+      .insert(careLogData)
+      .select()
+      .single();
+      
+    if (careLogError) {
+      console.error('Error creating medication record:', careLogError);
+      throw careLogError;
     }
     
-    taskName = `${newName} (${frequencyLabel})`;
+    // Map to MedicationRecord type
+    const record: MedicationRecord = {
+      id: careLogRecord.id,
+      dog_id: careLogRecord.dog_id,
+      medication_name: data.medication_name,
+      frequency: data.frequency,
+      medication_type: data.medication_type,
+      created_at: careLogRecord.created_at,
+      timestamp: careLogRecord.timestamp,
+      category: 'medications',
+      task_name: careLogRecord.task_name,
+      notes: careLogRecord.notes || '',
+      created_by: careLogRecord.created_by,
+      next_due_date: nextDueDate.toISOString(),
+      start_date: data.start_date.toISOString(),
+      end_date: data.end_date ? data.end_date.toISOString() : undefined,
+      dosage: data.dosage || '',
+      dosage_unit: data.dosage_unit || '',
+      route: data.route,
+      prescription_id: data.prescription_id || '',
+      refills_remaining: data.refills_remaining || 0,
+      administrations: []
+    };
+    
+    return record;
+  } catch (error) {
+    console.error('Error in createMedicationRecord:', error);
+    throw error;
   }
-
-  const updateData = {
-    task_name: taskName,
-    notes: data.notes !== undefined ? data.notes : existingRecord.notes,
-    ...(data.start_date && { timestamp: data.start_date.toISOString() }),
-    medication_metadata: updatedMetadata
-  };
-
-  // Update the record
-  const { data: updatedRecord, error: updateError } = await supabase
-    .from('daily_care_logs')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (updateError) {
-    console.error('Error updating medication record:', updateError);
-    throw updateError;
-  }
-
-  // Return with derived fields
-  return {
-    ...updatedRecord,
-    medication_name: taskName.split(' (')[0],
-    frequency: updatedMetadata.frequency,
-    medication_type: updatedMetadata.medication_type,
-    next_due_date: updatedMetadata.next_due_date,
-    dosage: updatedMetadata.dosage,
-    dosage_unit: updatedMetadata.dosage_unit,
-    route: updatedMetadata.route,
-    start_date: updatedMetadata.start_date,
-    end_date: updatedMetadata.end_date,
-    prescription_id: updatedMetadata.prescription_id,
-    refills_remaining: updatedMetadata.refills_remaining,
-    administered_by: updatedMetadata.administered_by
-  } as MedicationRecord;
 };
 
 /**
- * Mark a medication as administered
+ * Updates an existing medication record
+ */
+export const updateMedicationRecord = async (
+  id: string,
+  data: Partial<MedicationFormData>
+): Promise<MedicationRecord> => {
+  try {
+    // Fetch the current record to get existing metadata
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from('daily_care_logs')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (fetchError) {
+      console.error('Error fetching existing medication record:', fetchError);
+      throw fetchError;
+    }
+    
+    // Prepare updated metadata
+    const currentMetadata = existingRecord.medication_metadata || {};
+    const updatedMetadata = { ...currentMetadata };
+    
+    // Update specific metadata fields if provided in the data
+    if (data.medication_name) updatedMetadata.medication_name = data.medication_name;
+    if (data.frequency) updatedMetadata.frequency = data.frequency;
+    if (data.medication_type) updatedMetadata.medication_type = data.medication_type;
+    if (data.dosage) updatedMetadata.dosage = data.dosage;
+    if (data.dosage_unit) updatedMetadata.dosage_unit = data.dosage_unit;
+    if (data.route) updatedMetadata.route = data.route;
+    if (data.start_date) updatedMetadata.start_date = data.start_date.toISOString();
+    if (data.end_date) updatedMetadata.end_date = data.end_date.toISOString();
+    if (data.prescription_id) updatedMetadata.prescription_id = data.prescription_id;
+    if (data.refills_remaining !== undefined) updatedMetadata.refills_remaining = data.refills_remaining;
+    
+    // Calculate next due date if frequency or start date changes
+    if (data.frequency || data.start_date) {
+      const startDate = data.start_date || parseISO(String(currentMetadata.start_date));
+      const frequency = data.frequency || currentMetadata.frequency;
+      updatedMetadata.next_due_date = calculateNextDueDate(
+        startDate,
+        frequency as MedicationFrequency
+      ).toISOString();
+    }
+    
+    // Prepare the update data
+    const updateData: any = {
+      medication_metadata: updatedMetadata
+    };
+    
+    // Update other fields if provided
+    if (data.notes) updateData.notes = data.notes;
+    
+    // If medication name changes, update task_name
+    if (data.medication_name) {
+      updateData.task_name = `Medication: ${data.medication_name}`;
+    }
+    
+    // Update the record
+    const { data: updatedRecord, error: updateError } = await supabase
+      .from('daily_care_logs')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (updateError) {
+      console.error('Error updating medication record:', updateError);
+      throw updateError;
+    }
+    
+    // Map to MedicationRecord type
+    const metadata = updatedRecord.medication_metadata || {};
+    const record: MedicationRecord = {
+      id: updatedRecord.id,
+      dog_id: updatedRecord.dog_id,
+      medication_name: String(metadata.medication_name || ''),
+      frequency: metadata.frequency as MedicationFrequency,
+      medication_type: metadata.medication_type as MedicationType,
+      created_at: updatedRecord.created_at,
+      timestamp: updatedRecord.timestamp,
+      category: 'medications',
+      task_name: updatedRecord.task_name,
+      notes: updatedRecord.notes || '',
+      created_by: updatedRecord.created_by,
+      next_due_date: String(metadata.next_due_date || ''),
+      start_date: String(metadata.start_date || ''),
+      end_date: metadata.end_date ? String(metadata.end_date) : undefined,
+      dosage: String(metadata.dosage || ''),
+      dosage_unit: String(metadata.dosage_unit || ''),
+      route: metadata.route as MedicationRoute,
+      prescription_id: String(metadata.prescription_id || ''),
+      refills_remaining: Number(metadata.refills_remaining || 0),
+      administrations: []
+    };
+    
+    return record;
+  } catch (error) {
+    console.error('Error in updateMedicationRecord:', error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a medication record
+ */
+export const deleteMedicationRecord = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('daily_care_logs')
+      .delete()
+      .eq('id', id)
+      .eq('category', 'medications');
+      
+    if (error) {
+      console.error('Error deleting medication record:', error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in deleteMedicationRecord:', error);
+    throw error;
+  }
+};
+
+/**
+ * Records a medication administration
  */
 export const recordMedicationAdministration = async (
   medicationId: string,
-  administrationDate: Date = new Date(),
-  notes?: string,
-  userId?: string
-): Promise<MedicationRecord | null> => {
-  // First get the existing record
-  const { data: existingRecord, error: fetchError } = await supabase
-    .from('daily_care_logs')
-    .select('*')
-    .eq('id', medicationId)
-    .single();
-
-  if (fetchError) {
-    console.error('Error fetching medication record:', fetchError);
-    throw fetchError;
-  }
-
-  // Calculate next due date based on frequency
-  const existingMetadata = existingRecord.medication_metadata || {};
-  const frequency = existingMetadata.frequency as MedicationFrequency || MedicationFrequency.DAILY;
-  const nextDueDate = calculateNextDueDate(administrationDate, frequency);
-
-  // Update the metadata
-  const updatedMetadata = {
-    ...existingMetadata,
-    last_administered: administrationDate.toISOString(),
-    next_due_date: nextDueDate.toISOString(),
-    administered_by: userId || existingMetadata.administered_by
-  };
-
-  // Add an administration note if provided
-  const updatedNotes = notes 
-    ? `${existingRecord.notes || ''}\n[${administrationDate.toISOString()}] Administered. ${notes}`
-    : existingRecord.notes;
-
-  // Update the record
-  const { data: updatedRecord, error: updateError } = await supabase
-    .from('daily_care_logs')
-    .update({
-      medication_metadata: updatedMetadata,
-      notes: updatedNotes
-    })
-    .eq('id', medicationId)
-    .select()
-    .single();
-
-  if (updateError) {
-    console.error('Error recording medication administration:', updateError);
-    throw updateError;
-  }
-
-  // Also create a medication schedule entry to track this administration
-  const scheduleEntry = {
-    dog_id: existingRecord.dog_id,
-    medication_record_id: medicationId,
-    scheduled_date: administrationDate.toISOString().split('T')[0],
-    scheduled_time: administrationDate.toISOString().split('T')[1].substring(0, 5),
-    status: 'completed',
-    administered_at: administrationDate.toISOString(),
-    administered_by: userId,
-    notes: notes
-  };
-
-  // We don't need to wait for this to complete
-  supabase
-    .from('medication_schedules')
-    .insert(scheduleEntry)
-    .then(({ error }) => {
-      if (error) {
-        console.error('Error recording medication schedule entry:', error);
-      }
-    });
-
-  // Return with derived fields
-  return {
-    ...updatedRecord,
-    medication_name: existingRecord.task_name.split(' (')[0],
-    frequency: existingMetadata.frequency,
-    medication_type: existingMetadata.medication_type,
-    next_due_date: nextDueDate.toISOString(),
-    dosage: existingMetadata.dosage,
-    dosage_unit: existingMetadata.dosage_unit,
-    route: existingMetadata.route,
-    start_date: existingMetadata.start_date,
-    end_date: existingMetadata.end_date,
-    prescription_id: existingMetadata.prescription_id,
-    refills_remaining: existingMetadata.refills_remaining,
-    administered_by: userId || existingMetadata.administered_by
-  } as MedicationRecord;
-};
-
-/**
- * Delete a medication record
- */
-export const deleteMedicationRecord = async (id: string): Promise<boolean> => {
-  const { error } = await supabase
-    .from('daily_care_logs')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error deleting medication record:', error);
+  administrationData: Omit<MedicationAdministration, 'id'>
+): Promise<MedicationAdministration> => {
+  try {
+    // Fetch the current record to get existing metadata
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from('daily_care_logs')
+      .select('*')
+      .eq('id', medicationId)
+      .single();
+      
+    if (fetchError) {
+      console.error('Error fetching existing medication record:', fetchError);
+      throw fetchError;
+    }
+    
+    // Get existing metadata and administrations array
+    const currentMetadata = existingRecord.medication_metadata || {};
+    const administrations = Array.isArray(currentMetadata.administrations) 
+      ? [...currentMetadata.administrations] 
+      : [];
+    
+    // Create new administration record
+    const newAdministration = {
+      id: crypto.randomUUID(),
+      timestamp: administrationData.timestamp,
+      administered_by: administrationData.administered_by,
+      notes: administrationData.notes
+    };
+    
+    // Add to administrations array
+    administrations.push(newAdministration);
+    
+    // Update metadata
+    const updatedMetadata = {
+      ...currentMetadata,
+      administrations,
+      last_administered: administrationData.timestamp,
+      administered_by: administrationData.administered_by
+    };
+    
+    // Calculate new next_due_date
+    const now = new Date(administrationData.timestamp);
+    updatedMetadata.next_due_date = calculateNextDueDate(
+      now,
+      currentMetadata.frequency as MedicationFrequency
+    ).toISOString();
+    
+    // Update the record
+    const { error: updateError } = await supabase
+      .from('daily_care_logs')
+      .update({
+        medication_metadata: updatedMetadata
+      })
+      .eq('id', medicationId);
+      
+    if (updateError) {
+      console.error('Error recording medication administration:', updateError);
+      throw updateError;
+    }
+    
+    return newAdministration as MedicationAdministration;
+  } catch (error) {
+    console.error('Error in recordMedicationAdministration:', error);
     throw error;
   }
-
-  return true;
 };
 
 /**
- * Get medication statistics for a dog
+ * Fetches medication records for a specific dog
  */
-export const getMedicationStats = async (dogId: string): Promise<MedicationStats> => {
-  const medications = await fetchDogMedications(dogId, true);
-  
-  // Initialize stats
-  const stats: MedicationStats = {
-    total: medications.length,
-    preventative: 0,
-    prescription: 0,
-    supplement: 0,
-    treatment: 0,
-    vaccine: 0,
-    activeCount: 0,
-    completedCount: 0,
-    overdueCount: 0,
-    upcomingCount: 0,
-    complianceRate: 0
-  };
-  
-  // Count categories
-  medications.forEach(med => {
-    // Count by type
-    if (med.medication_type === MedicationType.PREVENTATIVE) stats.preventative++;
-    else if (med.medication_type === MedicationType.PRESCRIPTION) stats.prescription++;
-    else if (med.medication_type === MedicationType.SUPPLEMENT) stats.supplement++;
-    else if (med.medication_type === MedicationType.TREATMENT) stats.treatment++;
-    else if (med.medication_type === MedicationType.VACCINE) stats.vaccine++;
-    
-    // Check status
-    const today = new Date();
-    const nextDueDate = med.next_due_date ? new Date(med.next_due_date) : null;
-    
-    if (nextDueDate) {
-      if (nextDueDate < today) {
-        stats.overdueCount++;
-      } else {
-        // Consider upcoming if due in the next 7 days
-        const nextWeek = new Date();
-        nextWeek.setDate(today.getDate() + 7);
-        if (nextDueDate <= nextWeek) {
-          stats.upcomingCount++;
-        }
-      }
-    }
-    
-    // Check if active
-    const endDate = med.end_date ? new Date(med.end_date) : null;
-    if (!endDate || endDate >= today) {
-      stats.activeCount++;
-    } else {
-      stats.completedCount++;
-    }
-  });
-  
-  // Calculate compliance rate (non-overdue / total active)
-  const activeTotal = stats.activeCount;
-  stats.complianceRate = activeTotal > 0 
-    ? (activeTotal - stats.overdueCount) / activeTotal 
-    : 1; // 100% if no active medications
-  
-  return stats;
+export const fetchDogMedications = async (dogId: string): Promise<MedicationRecord[]> => {
+  return getMedicationRecords([dogId]);
 };
 
 /**
- * Get overdue medications for a dog
+ * Fetches all medication records with overdue status
  */
-export const getOverdueMedications = async (dogId: string): Promise<MedicationRecord[]> => {
-  const medications = await fetchDogMedications(dogId);
-  const today = new Date();
+export const fetchOverdueMedications = async (): Promise<MedicationRecord[]> => {
+  const now = new Date().toISOString();
   
-  return medications.filter(med => {
-    const nextDueDate = med.next_due_date ? new Date(med.next_due_date) : null;
-    return nextDueDate && nextDueDate < today;
-  });
-};
-
-/**
- * Get upcoming medications for a dog
- */
-export const getUpcomingMedications = async (
-  dogId: string, 
-  daysAhead: number = 7
-): Promise<MedicationRecord[]> => {
-  const medications = await fetchDogMedications(dogId);
-  const today = new Date();
-  const futureDate = new Date();
-  futureDate.setDate(today.getDate() + daysAhead);
+  // Fetch all medication records
+  const { data, error } = await supabase
+    .from('daily_care_logs')
+    .select('*')
+    .eq('category', 'medications');
   
-  return medications.filter(med => {
-    const nextDueDate = med.next_due_date ? new Date(med.next_due_date) : null;
-    return nextDueDate && nextDueDate >= today && nextDueDate <= futureDate;
-  });
+  if (error) {
+    console.error('Error fetching overdue medications:', error);
+    throw error;
+  }
+  
+  // Filter to find overdue medications
+  const overdueMedications = (data || [])
+    .filter(record => {
+      const metadata = record.medication_metadata || {};
+      const nextDueDate = metadata.next_due_date;
+      const endDate = metadata.end_date;
+      
+      // Skip medications that have ended
+      if (endDate && endDate < now) return false;
+      
+      // Check if next_due_date is in the past
+      return nextDueDate && nextDueDate < now;
+    })
+    .map(record => {
+      const metadata = record.medication_metadata || {};
+      
+      return {
+        id: record.id,
+        dog_id: record.dog_id,
+        medication_name: String(metadata.medication_name || ''),
+        frequency: metadata.frequency as MedicationFrequency,
+        medication_type: metadata.medication_type as MedicationType,
+        created_at: record.created_at,
+        timestamp: record.timestamp,
+        category: 'medications',
+        task_name: record.task_name,
+        notes: record.notes || '',
+        created_by: record.created_by,
+        next_due_date: String(metadata.next_due_date || ''),
+        start_date: String(metadata.start_date || ''),
+        end_date: metadata.end_date ? String(metadata.end_date) : undefined,
+        dosage: String(metadata.dosage || ''),
+        dosage_unit: String(metadata.dosage_unit || ''),
+        route: metadata.route as MedicationRoute,
+        prescription_id: String(metadata.prescription_id || ''),
+        refills_remaining: Number(metadata.refills_remaining || 0),
+        administrations: metadata.administrations || []
+      } as MedicationRecord;
+    });
+  
+  return overdueMedications;
 };

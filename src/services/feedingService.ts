@@ -174,7 +174,9 @@ export const createFeedingRecord = async (
       ...feedingRecordData,
       category: 'feeding',
       task_name: `Feeding: ${feedingRecordData.food_type}`,
-      created_by: userId
+      created_by: userId,
+      meal_type: feedingRecordData.meal_type || undefined,
+      refused: feedingRecordData.refused || false
     };
 
     return enhancedRecord;
@@ -222,7 +224,9 @@ export const updateFeedingRecord = async (
     ...updatedFeedingRecord,
     category: 'feeding',
     task_name: `Feeding: ${updatedFeedingRecord.food_type}`,
-    created_by: updatedFeedingRecord.staff_id
+    created_by: updatedFeedingRecord.staff_id,
+    meal_type: updatedFeedingRecord.meal_type || undefined,
+    refused: updatedFeedingRecord.refused || false
   };
 
   return enhancedRecord;

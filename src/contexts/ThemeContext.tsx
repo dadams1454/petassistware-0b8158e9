@@ -12,20 +12,17 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Get from localStorage or default to system
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
-    return savedTheme || 'system';
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme') as Theme;
+      return savedTheme || 'system';
+    }
+    return 'system';
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
-    // Remove all theme classes
     root.classList.remove('light', 'dark');
-    
-    // Save to localStorage
-    localStorage.setItem('theme', theme);
-    
+
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
@@ -34,22 +31,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } else {
       root.classList.add(theme);
     }
-  }, [theme]);
 
-  // Listen for system theme changes
-  useEffect(() => {
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      
-      const handleChange = () => {
-        const root = window.document.documentElement;
-        root.classList.remove('light', 'dark');
-        root.classList.add(mediaQuery.matches ? 'dark' : 'light');
-      };
-      
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   return (

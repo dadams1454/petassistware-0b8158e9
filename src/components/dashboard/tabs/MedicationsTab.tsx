@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,8 @@ import { Pill, Plus, RefreshCw } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { EmptyState, SkeletonLoader } from '@/components/ui/standardized';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { getMedicationRecords } from '@/services/medicationService';
 import { MedicationRecord } from '@/types/medication';
 import MedicationForm from '@/components/dogs/components/care/medication/MedicationForm';
 import MedicationsList from '@/components/dogs/components/care/medication/MedicationsList';
@@ -21,6 +23,7 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showAddMedication, setShowAddMedication] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | null>(null);
+  const { toast } = useToast();
   
   // Add a small delay to create a nicer loading transition
   useEffect(() => {
@@ -38,14 +41,12 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
       if (!dogStatuses || dogStatuses.length === 0) return [];
       
       const dogIds = dogStatuses.map(dog => dog.dog_id);
-      const { data, error } = await supabase
-        .from('medication_schedules')
-        .select('*')
-        .in('dog_id', dogIds)
-        .order('start_date', { ascending: false });
-        
-      if (error) throw error;
-      return data as MedicationRecord[] || [];
+      try {
+        return await getMedicationRecords(dogIds);
+      } catch (error) {
+        console.error('Error fetching medication records:', error);
+        return [];
+      }
     },
     enabled: Array.isArray(dogStatuses) && dogStatuses.length > 0
   });
@@ -131,9 +132,8 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({ dogStatuses, onRefreshD
                 />
               ) : (
                 <MedicationsList 
-                  dogStatuses={dogStatuses}
-                  medicationRecords={medicationRecords}
-                  onMedicationDeleted={handleMedicationDeleted}
+                  medications={medicationRecords || []}
+                  dogId={dogStatuses[0].dog_id}
                   onRefresh={handleRefresh}
                 />
               )}

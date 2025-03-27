@@ -7,9 +7,11 @@ import {
   createFeedingSchedule,
   updateFeedingSchedule,
   deleteFeedingRecord,
-  deleteFeedingSchedule
+  deleteFeedingSchedule,
+  getFeedingStats
 } from '@/services/feedingService';
-import { FeedingRecord, FeedingSchedule, FeedingFormData, FeedingScheduleFormData } from '@/types/feeding';
+import { FeedingRecord, FeedingSchedule, FeedingFormData, FeedingScheduleFormData, FeedingStats } from '@/types/feeding';
+import { useToast } from '@/components/ui/use-toast';
 
 interface FeedingContextType {
   feedingRecords: FeedingRecord[] | null;
@@ -23,6 +25,8 @@ interface FeedingContextType {
   fetchFeedingSchedules: (dogId: string) => Promise<void>;
   deleteFeedingLog: (id: string) => Promise<boolean>;
   deleteFeedingScheduleItem: (id: string) => Promise<boolean>;
+  deleteSchedule: (id: string) => Promise<boolean>; // Added this method to match usage in components
+  fetchFeedingStats: (dogId: string, timeframe?: 'day' | 'week' | 'month') => Promise<FeedingStats | null>;
 }
 
 const FeedingContext = createContext<FeedingContextType | undefined>(undefined);
@@ -32,6 +36,7 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [feedingSchedules, setFeedingSchedules] = useState<FeedingSchedule[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchFeedingHistory = async (dogId: string) => {
     setLoading(true);
@@ -145,6 +150,28 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  // Added deleteSchedule method to alias deleteFeedingScheduleItem for consistent naming
+  const deleteSchedule = async (id: string) => {
+    return deleteFeedingScheduleItem(id);
+  };
+
+  // Add fetchFeedingStats method
+  const fetchFeedingStats = async (dogId: string, timeframe: 'day' | 'week' | 'month' = 'week') => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const stats = await getFeedingStats(dogId, timeframe);
+      return stats;
+    } catch (err) {
+      console.error('Error fetching feeding stats:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred fetching feeding stats');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <FeedingContext.Provider
       value={{
@@ -158,7 +185,9 @@ export const FeedingProvider: React.FC<{ children: ReactNode }> = ({ children })
         fetchFeedingHistory,
         fetchFeedingSchedules,
         deleteFeedingLog,
-        deleteFeedingScheduleItem
+        deleteFeedingScheduleItem,
+        deleteSchedule,
+        fetchFeedingStats
       }}
     >
       {children}
