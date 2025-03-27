@@ -1,32 +1,32 @@
 
 import React from 'react';
+import { Pill } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DogInfoProps {
   dogName: string;
-  dogPhoto?: string;
-  breed: string;
+  dogPhoto: string | null;
+  breed: string | null;
 }
 
 const DogInfo: React.FC<DogInfoProps> = ({ dogName, dogPhoto, breed }) => {
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-2">
       {dogPhoto ? (
         <img 
           src={dogPhoto} 
           alt={dogName} 
-          className="h-10 w-10 rounded-full object-cover mr-3" 
+          className="h-10 w-10 rounded-full object-cover"
         />
       ) : (
-        <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-          <span className="text-primary font-bold">
-            {dogName.charAt(0)}
-          </span>
+        <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+          <Pill className="h-5 w-5 text-blue-500" />
         </div>
       )}
       <div>
-        <h3 className="font-medium">{dogName}</h3>
-        <p className="text-xs text-muted-foreground">
-          {breed}
+        <p className="font-medium text-sm">{dogName}</p>
+        <p className={cn("text-xs text-muted-foreground", !breed && "italic")}>
+          {breed || "Unknown breed"}
         </p>
       </div>
     </div>

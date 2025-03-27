@@ -1,173 +1,115 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { 
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription 
-} from '@/components/ui/form';
+import { z } from 'zod';
+import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { 
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger 
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { useUser } from '@/contexts/UserContext';
+import { MedicationRecord, MedicationFormData, MedicationFrequency, MedicationType, MedicationRoute } from '@/types/medication';
 import { createMedicationRecord, updateMedicationRecord } from '@/services/medicationService';
-import { MedicationRecord, MedicationFormData, MedicationFrequency, MedicationRoute, MedicationStatus, MedicationType } from '@/types/medication';
-import { calculateNextDueDate } from '@/services/medicationService';
+import { useUser } from '@/contexts/UserContext';
 
-interface MedicationFormProps {
-  dogId: string;
-  existingMedication?: MedicationRecord;
-  onSuccess?: () => void;
-  onCancel?: () => void;
-}
-
-// Create form schema for validation
-const formSchema = z.object({
-  medication_name: z.string().min(1, 'Medication name is required'),
+// Form validation schema
+const medicationFormSchema = z.object({
+  medication_name: z.string().min(2, { message: "Medication name is required" }),
   dosage: z.string().optional(),
   dosage_unit: z.string().optional(),
   frequency: z.nativeEnum(MedicationFrequency),
   route: z.nativeEnum(MedicationRoute).optional(),
   start_date: z.date(),
-  end_date: z.date().optional(),
-  notes: z.string().optional(),
+  end_date: z.date().optional().nullable(),
   medication_type: z.nativeEnum(MedicationType),
   prescription_id: z.string().optional(),
-  refills_remaining: z.number().int().nonnegative().optional(),
-  next_due_date: z.date().optional()
+  refills_remaining: z.coerce.number().min(0).optional(),
+  notes: z.string().optional(),
 });
 
-const MedicationForm: React.FC<MedicationFormProps> = ({ 
-  dogId, 
-  existingMedication, 
-  onSuccess, 
-  onCancel 
+type MedicationFormValues = z.infer<typeof medicationFormSchema>;
+
+interface MedicationFormProps {
+  dogId: string;
+  existingMedication?: MedicationRecord;
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+const MedicationForm: React.FC<MedicationFormProps> = ({
+  dogId,
+  existingMedication,
+  onSuccess,
+  onCancel,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useUser();
-  const [loading, setIsSubmitting] = useState(false);
-  
+
   // Initialize form with default values or existing medication data
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: existingMedication ? {
-      medication_name: existingMedication.medication_name,
-      dosage: existingMedication.dosage,
-      dosage_unit: existingMedication.dosage_unit,
-      frequency: existingMedication.frequency as MedicationFrequency,
-      route: existingMedication.route as MedicationRoute,
-      start_date: existingMedication.start_date ? new Date(existingMedication.start_date) : new Date(),
-      end_date: existingMedication.end_date ? new Date(existingMedication.end_date) : undefined,
-      notes: existingMedication.notes,
-      medication_type: existingMedication.medication_type as MedicationType,
-      prescription_id: existingMedication.prescription_id,
-      refills_remaining: existingMedication.refills_remaining,
-      next_due_date: existingMedication.next_due_date ? new Date(existingMedication.next_due_date) : undefined
-    } : {
-      medication_name: '',
-      dosage: '',
-      dosage_unit: '',
-      frequency: MedicationFrequency.DAILY,
-      medication_type: MedicationType.TREATMENT,
-      start_date: new Date(),
-    }
+  const form = useForm<MedicationFormValues>({
+    resolver: zodResolver(medicationFormSchema),
+    defaultValues: {
+      medication_name: existingMedication?.medication_name || '',
+      dosage: existingMedication?.dosage || '',
+      dosage_unit: existingMedication?.dosage_unit || '',
+      frequency: existingMedication?.frequency || MedicationFrequency.DAILY,
+      route: existingMedication?.route || undefined,
+      start_date: existingMedication?.start_date ? new Date(existingMedication.start_date) : new Date(),
+      end_date: existingMedication?.end_date ? new Date(existingMedication.end_date) : null,
+      medication_type: existingMedication?.medication_type || MedicationType.TREATMENT,
+      prescription_id: existingMedication?.prescription_id || '',
+      refills_remaining: existingMedication?.refills_remaining || 0,
+      notes: existingMedication?.notes || '',
+    },
   });
-  
-  // Calculate next due date when frequency or start date changes
-  useEffect(() => {
-    const startDate = form.getValues('start_date');
-    const frequency = form.getValues('frequency');
-    
-    if (startDate && frequency) {
-      const nextDueDate = calculateNextDueDate(startDate, frequency);
-      form.setValue('next_due_date', nextDueDate);
-    }
-  }, [form.watch('frequency'), form.watch('start_date')]);
-  
-  // Handle form submission
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    if (!user) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in to add medications.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+
+  const handleSubmit = async (data: MedicationFormValues) => {
     setIsSubmitting(true);
     try {
       const medicationData: MedicationFormData = {
+        ...data,
         dog_id: dogId,
-        medication_name: data.medication_name,
-        dosage: data.dosage,
-        dosage_unit: data.dosage_unit,
-        frequency: data.frequency,
-        route: data.route,
-        start_date: data.start_date,
-        end_date: data.end_date,
-        notes: data.notes,
-        medication_type: data.medication_type,
-        prescription_id: data.prescription_id,
-        refills_remaining: data.refills_remaining,
-        next_due_date: data.next_due_date,
-        created_by: user.id
+        created_by: user?.id,
       };
-      
+
+      // Update or create medication record
       if (existingMedication) {
         await updateMedicationRecord(existingMedication.id, medicationData);
-        toast({
-          title: "Medication Updated",
-          description: `${data.medication_name} has been updated successfully.`
-        });
+        toast({ title: "Medication updated", description: "The medication has been updated successfully." });
       } else {
         await createMedicationRecord(medicationData);
-        toast({
-          title: "Medication Added",
-          description: `${data.medication_name} has been added to the medication list.`
-        });
+        toast({ title: "Medication added", description: "The medication has been added successfully." });
       }
       
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess();
     } catch (error) {
-      console.error('Error saving medication:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save medication",
-        variant: "destructive"
+      console.error("Error saving medication:", error);
+      toast({ 
+        title: "Error", 
+        description: error instanceof Error ? error.message : "An error occurred while saving the medication", 
+        variant: "destructive" 
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="medication_name"
@@ -175,58 +117,44 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
             <FormItem>
               <FormLabel>Medication Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter medication name" {...field} />
+                <Input {...field} placeholder="Enter medication name" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="dosage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Dosage</FormLabel>
+                <FormLabel>Dosage Amount</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter dosage amount" {...field} />
+                  <Input {...field} placeholder="e.g., 10" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="dosage_unit"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Dosage Unit</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select unit" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="mg">mg</SelectItem>
-                    <SelectItem value="ml">ml</SelectItem>
-                    <SelectItem value="g">g</SelectItem>
-                    <SelectItem value="tablet">tablet</SelectItem>
-                    <SelectItem value="capsule">capsule</SelectItem>
-                    <SelectItem value="drop">drop</SelectItem>
-                    <SelectItem value="unit">unit</SelectItem>
-                    <SelectItem value="application">application</SelectItem>
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input {...field} placeholder="e.g., mg, ml" />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="frequency"
@@ -240,22 +168,18 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={MedicationFrequency.DAILY}>Daily</SelectItem>
-                    <SelectItem value={MedicationFrequency.TWICE_DAILY}>Twice Daily</SelectItem>
-                    <SelectItem value={MedicationFrequency.WEEKLY}>Weekly</SelectItem>
-                    <SelectItem value={MedicationFrequency.BIWEEKLY}>Biweekly</SelectItem>
-                    <SelectItem value={MedicationFrequency.MONTHLY}>Monthly</SelectItem>
-                    <SelectItem value={MedicationFrequency.QUARTERLY}>Quarterly</SelectItem>
-                    <SelectItem value={MedicationFrequency.ANNUALLY}>Annually</SelectItem>
-                    <SelectItem value={MedicationFrequency.AS_NEEDED}>As Needed</SelectItem>
-                    <SelectItem value={MedicationFrequency.CUSTOM}>Custom</SelectItem>
+                    {Object.values(MedicationFrequency).map(freq => (
+                      <SelectItem key={freq} value={freq}>
+                        {freq.replace('_', ' ').replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="route"
@@ -269,15 +193,11 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={MedicationRoute.ORAL}>Oral</SelectItem>
-                    <SelectItem value={MedicationRoute.INJECTION}>Injection</SelectItem>
-                    <SelectItem value={MedicationRoute.TOPICAL}>Topical</SelectItem>
-                    <SelectItem value={MedicationRoute.OPHTHALMIC}>Ophthalmic (Eye)</SelectItem>
-                    <SelectItem value={MedicationRoute.OTIC}>Otic (Ear)</SelectItem>
-                    <SelectItem value={MedicationRoute.NASAL}>Nasal</SelectItem>
-                    <SelectItem value={MedicationRoute.RECTAL}>Rectal</SelectItem>
-                    <SelectItem value={MedicationRoute.INHALATION}>Inhalation</SelectItem>
-                    <SelectItem value={MedicationRoute.OTHER}>Other</SelectItem>
+                    {Object.values(MedicationRoute).map(route => (
+                      <SelectItem key={route} value={route}>
+                        {route.charAt(0).toUpperCase() + route.slice(1)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -285,51 +205,8 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
             )}
           />
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="medication_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Medication Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value={MedicationType.PREVENTATIVE}>Preventative</SelectItem>
-                    <SelectItem value={MedicationType.PRESCRIPTION}>Prescription</SelectItem>
-                    <SelectItem value={MedicationType.SUPPLEMENT}>Supplement</SelectItem>
-                    <SelectItem value={MedicationType.TREATMENT}>Treatment</SelectItem>
-                    <SelectItem value={MedicationType.VACCINE}>Vaccine</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          {form.watch('medication_type') === MedicationType.PRESCRIPTION && (
-            <FormField
-              control={form.control}
-              name="prescription_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prescription ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter prescription ID" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="start_date"
@@ -342,7 +219,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
@@ -368,7 +245,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="end_date"
@@ -381,14 +258,14 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
                         {field.value ? (
                           format(field.value, "PPP")
                         ) : (
-                          <span>Pick a date</span>
+                          <span>No end date</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
@@ -397,7 +274,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value}
+                      selected={field.value || undefined}
                       onSelect={field.onChange}
                       initialFocus
                     />
@@ -408,8 +285,47 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
             )}
           />
         </div>
-        
-        {form.watch('medication_type') === MedicationType.PRESCRIPTION && (
+
+        <FormField
+          control={form.control}
+          name="medication_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Medication Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {Object.values(MedicationType).map(type => (
+                    <SelectItem key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="prescription_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Prescription ID (if applicable)</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Enter prescription ID" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="refills_remaining"
@@ -420,18 +336,17 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                   <Input 
                     type="number" 
                     min="0" 
-                    placeholder="Enter number of refills" 
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10))}
-                    value={field.value === undefined ? '' : field.value}
+                    {...field} 
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    placeholder="0"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        )}
-        
+        </div>
+
         <FormField
           control={form.control}
           name="notes"
@@ -439,27 +354,24 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Add any notes about this medication" 
-                  className="resize-none"
-                  {...field}
-                  value={field.value || ''}
-                />
+                <Textarea {...field} placeholder="Additional information about this medication" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        <div className="flex justify-end space-x-2">
-          {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-          )}
-          <Button type="submit" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {existingMedication ? 'Update' : 'Add'} Medication
+
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : existingMedication ? 'Update Medication' : 'Add Medication'}
           </Button>
         </div>
       </form>
