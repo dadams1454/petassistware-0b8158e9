@@ -6,6 +6,7 @@ import { ConfirmProvider } from '@/hooks/useConfirm';
 import { RefreshProvider } from './RefreshContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MedicationProvider } from './medication/MedicationContext';
+import { FeedingProvider } from './FeedingContext';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -29,7 +30,9 @@ const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           <RefreshProvider>
             <ConfirmProvider>
               <MedicationProvider>
-                {children}
+                <FeedingProvider>
+                  {children}
+                </FeedingProvider>
               </MedicationProvider>
             </ConfirmProvider>
           </RefreshProvider>

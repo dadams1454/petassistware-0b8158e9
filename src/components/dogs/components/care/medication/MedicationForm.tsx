@@ -70,59 +70,55 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   
-  // Set up form with default values
+  // Initialize form with default values or existing medication data
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      medication_name: existingMedication?.medication_name || '',
-      dosage: existingMedication?.dosage || '',
-      dosage_unit: existingMedication?.dosage_unit || '',
-      frequency: existingMedication?.frequency || MedicationFrequency.DAILY,
-      route: existingMedication?.route || undefined,
-      start_date: existingMedication?.start_date 
-        ? new Date(existingMedication.start_date) 
-        : new Date(),
-      end_date: existingMedication?.end_date 
-        ? new Date(existingMedication.end_date) 
-        : undefined,
-      notes: existingMedication?.notes || '',
-      medication_type: existingMedication?.medication_type || MedicationType.TREATMENT,
-      prescription_id: existingMedication?.prescription_id || '',
-      refills_remaining: existingMedication?.refills_remaining || 0,
-      next_due_date: existingMedication?.next_due_date 
-        ? new Date(existingMedication.next_due_date)
-        : undefined
+    defaultValues: existingMedication ? {
+      medication_name: existingMedication.medication_name,
+      dosage: existingMedication.dosage,
+      dosage_unit: existingMedication.dosage_unit,
+      frequency: existingMedication.frequency,
+      route: existingMedication.route,
+      start_date: existingMedication.start_date ? new Date(existingMedication.start_date) : new Date(),
+      end_date: existingMedication.end_date ? new Date(existingMedication.end_date) : undefined,
+      notes: existingMedication.notes,
+      medication_type: existingMedication.medication_type,
+      prescription_id: existingMedication.prescription_id,
+      refills_remaining: existingMedication.refills_remaining,
+      next_due_date: existingMedication.next_due_date ? new Date(existingMedication.next_due_date) : undefined
+    } : {
+      medication_name: '',
+      dosage: '',
+      dosage_unit: '',
+      frequency: MedicationFrequency.DAILY,
+      medication_type: MedicationType.TREATMENT,
+      start_date: new Date(),
     }
   });
   
-  // Watch for changes to calculate next due date
-  const frequency = form.watch('frequency');
-  const startDate = form.watch('start_date');
-  
-  // Update next due date when frequency or start date changes
+  // Calculate next due date when frequency or start date changes
   useEffect(() => {
-    if (startDate) {
+    const startDate = form.getValues('start_date');
+    const frequency = form.getValues('frequency');
+    
+    if (startDate && frequency) {
       const nextDueDate = calculateNextDueDate(startDate, frequency);
       form.setValue('next_due_date', nextDueDate);
     }
-  }, [frequency, startDate, form]);
+  }, [form.watch('frequency'), form.watch('start_date')]);
   
-  // Show more fields based on medication type
-  const medicationType = form.watch('medication_type');
-  const showPrescriptionFields = medicationType === MedicationType.PRESCRIPTION;
-  
+  // Handle form submission
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    if (!user?.id) {
+    if (!user) {
       toast({
-        title: 'User not authenticated',
-        description: 'You must be logged in to add medications',
-        variant: 'destructive'
+        title: "Authentication Error",
+        description: "You must be logged in to add medications.",
+        variant: "destructive"
       });
       return;
     }
     
     setLoading(true);
-    
     try {
       const medicationData: MedicationFormData = {
         dog_id: dogId,
@@ -141,18 +137,16 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
       };
       
       if (existingMedication) {
-        // Update existing medication
         await updateMedicationRecord(existingMedication.id, medicationData, user.id);
         toast({
-          title: 'Medication updated',
+          title: "Medication Updated",
           description: `${data.medication_name} has been updated successfully.`
         });
       } else {
-        // Create new medication
         await createMedicationRecord(medicationData, user.id);
         toast({
-          title: 'Medication added',
-          description: `${data.medication_name} has been added to the dog's record.`
+          title: "Medication Added",
+          description: `${data.medication_name} has been added to the medication list.`
         });
       }
       
@@ -162,9 +156,9 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
     } catch (error) {
       console.error('Error saving medication:', error);
       toast({
-        title: 'Error saving medication',
-        description: error instanceof Error ? error.message : 'An unknown error occurred',
-        variant: 'destructive'
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save medication",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -173,7 +167,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="medication_name"
@@ -191,27 +185,13 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="medication_type"
+            name="dosage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Type</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value={MedicationType.PREVENTATIVE}>Preventative</SelectItem>
-                    <SelectItem value={MedicationType.PRESCRIPTION}>Prescription</SelectItem>
-                    <SelectItem value={MedicationType.SUPPLEMENT}>Supplement</SelectItem>
-                    <SelectItem value={MedicationType.TREATMENT}>Treatment</SelectItem>
-                    <SelectItem value={MedicationType.VACCINE}>Vaccine</SelectItem>
-                  </SelectContent>
-                </Select>
+                <FormLabel>Dosage</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter dosage amount" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -219,14 +199,41 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
           
           <FormField
             control={form.control}
+            name="dosage_unit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Dosage Unit</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="mg">mg</SelectItem>
+                    <SelectItem value="ml">ml</SelectItem>
+                    <SelectItem value="g">g</SelectItem>
+                    <SelectItem value="tablet">tablet</SelectItem>
+                    <SelectItem value="capsule">capsule</SelectItem>
+                    <SelectItem value="drop">drop</SelectItem>
+                    <SelectItem value="unit">unit</SelectItem>
+                    <SelectItem value="application">application</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
             name="frequency"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Frequency</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select frequency" />
@@ -248,36 +255,6 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               </FormItem>
             )}
           />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="dosage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Dosage</FormLabel>
-                <FormControl>
-                  <Input placeholder="Dosage amount" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="dosage_unit"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Unit</FormLabel>
-                <FormControl>
-                  <Input placeholder="mg, ml, etc." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           
           <FormField
             control={form.control}
@@ -285,10 +262,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Administration Route</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select route" />
@@ -315,6 +289,49 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
+            name="medication_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Medication Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={MedicationType.PREVENTATIVE}>Preventative</SelectItem>
+                    <SelectItem value={MedicationType.PRESCRIPTION}>Prescription</SelectItem>
+                    <SelectItem value={MedicationType.SUPPLEMENT}>Supplement</SelectItem>
+                    <SelectItem value={MedicationType.TREATMENT}>Treatment</SelectItem>
+                    <SelectItem value={MedicationType.VACCINE}>Vaccine</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {form.watch('medication_type') === MedicationType.PRESCRIPTION && (
+            <FormField
+              control={form.control}
+              name="prescription_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prescription ID</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter prescription ID" {...field} value={field.value || ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
             name="start_date"
             render={({ field }) => (
               <FormItem className="flex flex-col">
@@ -323,7 +340,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant="outline"
+                        variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
@@ -357,12 +374,12 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
             name="end_date"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>End Date</FormLabel>
+                <FormLabel>End Date (Optional)</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant="outline"
+                        variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
@@ -371,7 +388,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                         {field.value ? (
                           format(field.value, "PPP")
                         ) : (
-                          <span>No end date</span>
+                          <span>Pick a date</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
@@ -392,84 +409,27 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
           />
         </div>
         
-        <FormField
-          control={form.control}
-          name="next_due_date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Next Due Date (Calculated)</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-3 text-left font-normal bg-muted",
-                        !field.value && "text-muted-foreground"
-                      )}
-                      disabled
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Calculated date will appear here</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <div className="p-3">
-                    <p className="text-sm text-muted-foreground">
-                      This date is calculated automatically based on the frequency and start date.
-                    </p>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                The next due date is calculated based on the frequency and start date.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {showPrescriptionFields && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md bg-muted/30">
-            <FormField
-              control={form.control}
-              name="prescription_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prescription ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter prescription ID" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="refills_remaining"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Refills Remaining</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      placeholder="Number of refills"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value || '0'))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+        {form.watch('medication_type') === MedicationType.PRESCRIPTION && (
+          <FormField
+            control={form.control}
+            name="refills_remaining"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Refills Remaining</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min="0" 
+                    placeholder="Enter number of refills" 
+                    {...field}
+                    onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10))}
+                    value={field.value === undefined ? '' : field.value}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         )}
         
         <FormField
@@ -480,9 +440,10 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <FormLabel>Notes</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Enter any additional notes about this medication"
-                  className="min-h-[100px]"
-                  {...field} 
+                  placeholder="Add any notes about this medication" 
+                  className="resize-none"
+                  {...field}
+                  value={field.value || ''}
                 />
               </FormControl>
               <FormMessage />
@@ -490,20 +451,15 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
           )}
         />
         
-        <div className="flex justify-end space-x-2 pt-4">
+        <div className="flex justify-end space-x-2">
           {onCancel && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onCancel}
-              disabled={loading}
-            >
+            <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
           )}
           <Button type="submit" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {existingMedication ? 'Update' : 'Save'} Medication
+            {existingMedication ? 'Update' : 'Add'} Medication
           </Button>
         </div>
       </form>

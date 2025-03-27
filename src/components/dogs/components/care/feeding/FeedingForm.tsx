@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,16 +25,18 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Utensils, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
-import { useFeeding } from '@/contexts/feeding';
+import { useFeeding } from '@/contexts/FeedingContext';
 import { FeedingSchedule } from '@/types/feeding';
 import { FeedingFormData } from '@/types/feeding';
 
 interface FeedingFormProps {
   dogId: string;
+  recordId?: string;
   schedules?: FeedingSchedule[];
+  initialValues?: any;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -53,13 +56,20 @@ const formSchema = z.object({
   schedule_id: z.string().optional()
 });
 
-const FeedingForm: React.FC<FeedingFormProps> = ({ dogId, schedules, onSuccess, onCancel }) => {
+const FeedingForm: React.FC<FeedingFormProps> = ({ 
+  dogId, 
+  recordId, 
+  schedules, 
+  initialValues, 
+  onSuccess, 
+  onCancel 
+}) => {
   const { createRecord } = useFeeding();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: initialValues || {
       food_type: '',
       amount_offered: '',
       amount_consumed: '',
