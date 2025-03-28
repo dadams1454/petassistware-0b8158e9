@@ -13,7 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/standardiz
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
-import { Litter } from '@/components/litters/puppies/types'; // Using the defined interface from puppies/types
+import { Litter } from '@/types/litter'; // Import from types/litter instead
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,7 +47,6 @@ const LitterDetail = () => {
       // Process the data to ensure it has all required fields
       const processedData = {
         ...data,
-        // Add updated_at explicitly - using created_at as a fallback value
         updated_at: data.updated_at || data.created_at
       };
 

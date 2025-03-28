@@ -53,8 +53,27 @@ interface Litter {
   updated_at?: string; // Make optional to match the puppies/types.ts definition
   documents_url: string;
   puppies?: Puppy[];
-  dam?: Dog;
-  sire?: Dog;
+  dam?: Dog | {
+    id: string;
+    name: string;
+    breed?: string;
+    color?: string;
+    photo_url?: string;
+    gender?: string;
+    litter_number?: number;
+    registration_number?: string;
+    microchip_number?: string;
+  };
+  sire?: Dog | {
+    id: string;
+    name: string;
+    breed?: string;
+    color?: string;
+    photo_url?: string;
+    gender?: string;
+    registration_number?: string;
+    microchip_number?: string;
+  };
   // AKC compliance fields
   akc_registration_number?: string;
   akc_registration_date?: string;

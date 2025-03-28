@@ -4,7 +4,7 @@ import { useLitterForm } from './hooks/useLitterForm';
 import { useDamInfoUpdater } from './hooks/useDamInfoUpdater';
 import { usePuppyCounter } from './hooks/usePuppyCounter';
 import LitterFormLayout from './form/LitterFormLayout';
-import { Litter } from './puppies/types';
+import { Litter } from '@/types/litter'; // Import from types/litter instead
 
 interface LitterFormProps {
   initialData?: Litter;
@@ -26,7 +26,7 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
     currentDamId,
     handleSubmit
   } = useLitterForm({ 
-    initialData: initialData as any, // Use type assertion to bypass the type check
+    initialData, 
     onSuccess 
   });
 
@@ -36,7 +36,7 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
     damDetails,
     isInitialLoad,
     setIsInitialLoad,
-    initialData: initialData as any, // Use type assertion here too
+    initialData,
     currentDamId,
     previousDamId,
     setPreviousDamId
