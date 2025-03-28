@@ -44,12 +44,15 @@ const LitterDetail = () => {
         throw error;
       }
 
-      // Create a new object that includes all properties from data
-      // and explicitly add updated_at if it doesn't exist
+      // We need to use a type assertion here because the data returned from Supabase
+      // doesn't exactly match our Litter type definition
+      const rawData = data as any;
+      
+      // Create a processed data object with the proper Litter type
       const processedData: Litter = {
-        ...data,
+        ...rawData,
         // Explicitly add the updated_at field with a fallback to created_at
-        updated_at: data.updated_at || data.created_at
+        updated_at: rawData.updated_at || rawData.created_at
       };
 
       console.log('Processed litter data:', processedData);
