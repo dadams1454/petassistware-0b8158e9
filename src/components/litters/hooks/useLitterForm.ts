@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
@@ -10,7 +11,7 @@ export interface LitterFormData {
   litter_name: string;
   dam_id: string | null;
   sire_id: string | null;
-  birth_date: Date;
+  birth_date: Date | null;
   expected_go_home_date: Date;
   puppy_count: number | null;
   male_count: number | null;
@@ -47,7 +48,7 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       litter_name: initialData?.litter_name || '',
       dam_id: initialData?.dam_id || null,
       sire_id: initialData?.sire_id || null,
-      birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : new Date(),
+      birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
       expected_go_home_date: initialData?.expected_go_home_date ? new Date(initialData.expected_go_home_date) : new Date(Date.now() + 8 * 7 * 24 * 60 * 60 * 1000), // Default to 8 weeks from now
       puppy_count: initialData?.puppy_count || null,
       male_count: initialData?.male_count || null,
@@ -116,7 +117,7 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       // Process the data to handle null values and date formatting
       const processedData = {
         ...data,
-        birth_date: data.birth_date.toISOString().split('T')[0],
+        birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
         expected_go_home_date: data.expected_go_home_date.toISOString().split('T')[0],
         akc_registration_date: data.akc_registration_date?.toISOString().split('T')[0] || null,
         first_mating_date: data.first_mating_date?.toISOString().split('T')[0] || null,

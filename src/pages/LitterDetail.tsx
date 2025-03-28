@@ -49,7 +49,7 @@ const LitterDetail = () => {
         ...data,
         // Add updated_at explicitly - it might not exist in the database response
         // so we use created_at as a fallback value
-        updated_at: data.updated_at || data.created_at
+        updated_at: data.created_at
       };
 
       console.log('Processed litter data:', processedData);

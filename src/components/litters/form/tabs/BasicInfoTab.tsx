@@ -1,80 +1,148 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import TextInput from '@/components/dogs/form/TextInput';
-import DogSelector from '../DogSelector';
+import { 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormControl, 
+  FormMessage 
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import LitterDatePicker from '../LitterDatePicker';
-import { LitterFormData } from '../../hooks/useLitterForm';
+import DogSelector from '../DogSelector';
 
 interface BasicInfoTabProps {
-  form: UseFormReturn<LitterFormData>;
+  form: UseFormReturn<any>;
 }
 
 const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
+  // Calculate the total puppies whenever male or female count changes
+  useEffect(() => {
+    const maleCount = form.watch('male_count') || 0;
+    const femaleCount = form.watch('female_count') || 0;
+    form.setValue('puppy_count', maleCount + femaleCount);
+  }, [form.watch('male_count'), form.watch('female_count')]);
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <TextInput 
-          form={form} 
-          name="litter_name" 
-          label="Friendly Litter Name" 
-          placeholder="Enter a descriptive name for this litter (e.g., 'Rainbow Litter')" 
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <FormField
+          control={form.control}
+          name="litter_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Litter Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter litter name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextInput 
-            form={form} 
-            name="puppy_count" 
-            label="Total Puppies" 
-            placeholder="Number of puppies"
-            disabled={true}
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <TextInput 
-              form={form} 
-              name="male_count" 
-              label="Males" 
-              placeholder="Male count" 
-            />
-            <TextInput 
-              form={form} 
-              name="female_count" 
-              label="Females" 
-              placeholder="Female count" 
-            />
-          </div>
-        </div>
-      </div>
+        <LitterDatePicker 
+          form={form} 
+          name="birth_date" 
+          label="Birth Date" 
+        />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <LitterDatePicker 
+          form={form} 
+          name="expected_go_home_date" 
+          label="Expected Go Home Date" 
+        />
+
         <DogSelector 
           form={form} 
           name="dam_id" 
-          label="Dam (Mother)" 
+          label="Dam" 
           filterGender="Female" 
         />
-        
+
         <DogSelector 
           form={form} 
           name="sire_id" 
-          label="Sire (Father)" 
+          label="Sire" 
           filterGender="Male" 
+        />
+
+        <FormField
+          control={form.control}
+          name="male_count"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Male Puppies</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  placeholder="0" 
+                  min="0"
+                  {...field}
+                  onChange={e => field.onChange(e.target.value === '' ? null : parseInt(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="female_count"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Female Puppies</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  placeholder="0" 
+                  min="0"
+                  {...field}
+                  onChange={e => field.onChange(e.target.value === '' ? null : parseInt(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="puppy_count"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Total Puppies</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  placeholder="0" 
+                  min="0"
+                  {...field}
+                  disabled
+                  className="bg-muted"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <LitterDatePicker 
-          form={form}
-          name="birth_date"
-          label="Birth Date" 
-        />
-        
-        <LitterDatePicker 
-          form={form}
-          name="expected_go_home_date"
-          label="Expected Go-Home Date" 
-        />
-      </div>
+      <FormField
+        control={form.control}
+        name="notes"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Notes</FormLabel>
+            <FormControl>
+              <Textarea placeholder="Enter any notes about the litter" {...field} value={field.value || ''} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 };
