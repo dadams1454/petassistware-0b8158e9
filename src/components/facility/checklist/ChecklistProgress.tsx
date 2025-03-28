@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Progress } from '@/components/ui/progress';
 
 interface ChecklistProgressProps {
   completedTasks: number;
@@ -11,17 +10,20 @@ interface ChecklistProgressProps {
 const ChecklistProgress: React.FC<ChecklistProgressProps> = ({
   completedTasks,
   totalTasks,
-  percentage,
+  percentage
 }) => {
   return (
     <div className="p-4 border-b">
       <div className="flex justify-between mb-2">
         <span className="font-semibold">Daily Progress:</span>
-        <span>
-          {completedTasks} of {totalTasks} tasks ({percentage}%)
-        </span>
+        <span>{completedTasks} of {totalTasks} tasks ({percentage}%)</span>
       </div>
-      <Progress value={percentage} />
+      <div className="w-full bg-gray-200 rounded-full h-4">
+        <div 
+          className="bg-green-500 h-4 rounded-full" 
+          style={{ width: `${percentage}%` }}
+        ></div>
+      </div>
     </div>
   );
 };

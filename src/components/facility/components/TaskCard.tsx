@@ -1,15 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, MoreHorizontal, ClipboardCheck } from 'lucide-react';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Edit, Trash, CheckCircle2 } from 'lucide-react';
 import { FacilityTask } from '@/types/facility';
 
 interface TaskCardProps {
@@ -21,80 +15,64 @@ interface TaskCardProps {
   getFrequencyLabel: (frequency: string, customDays: number[] | null) => string;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ 
-  task, 
-  onEdit, 
-  onDelete, 
+const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  onEdit,
+  onDelete,
   onComplete,
   getBadgeColor,
   getFrequencyLabel
 }) => {
   return (
-    <Card key={task.id} className="overflow-hidden">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="flex items-center gap-2">
-              {task.name}
-            </CardTitle>
-            <Badge className={`font-normal ${getBadgeColor(task.frequency)}`}>
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">{task.name}</h3>
+            <Badge className={`mt-2 ${getBadgeColor(task.frequency)}`}>
               {getFrequencyLabel(task.frequency, task.custom_days)}
             </Badge>
-          </div>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Task actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onComplete(task.id)}>
-                <ClipboardCheck className="mr-2 h-4 w-4" />
-                Complete Task
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(task.id)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Task
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onDelete(task.id)}
-                className="text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Task
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pb-4">
-        <div className="space-y-2">
-          {task.description && (
-            <p className="text-sm text-muted-foreground">{task.description}</p>
-          )}
-          
-          {task.facility_areas && (
-            <div className="text-sm">
-              <span className="font-medium">Area:</span> {task.facility_areas.name}
-            </div>
-          )}
-          
-          <div className="flex justify-end mt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1"
-              onClick={() => onComplete(task.id)}
-            >
-              <ClipboardCheck className="h-4 w-4" />
-              Complete
-            </Button>
+            {task.facility_areas && (
+              <Badge variant="outline" className="ml-2 mt-2">
+                {task.facility_areas.name}
+              </Badge>
+            )}
           </div>
         </div>
+        
+        {task.description && (
+          <p className="text-sm text-muted-foreground mt-2">
+            {task.description}
+          </p>
+        )}
       </CardContent>
+      
+      <CardFooter className="flex justify-end gap-2 pt-0">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onComplete(task.id)}
+        >
+          <CheckCircle2 className="mr-1 h-4 w-4" />
+          Complete
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onEdit(task.id)}
+        >
+          <Edit className="mr-1 h-4 w-4" />
+          Edit
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onDelete(task.id)}
+        >
+          <Trash className="mr-1 h-4 w-4" />
+          Delete
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

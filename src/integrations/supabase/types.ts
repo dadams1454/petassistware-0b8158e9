@@ -747,6 +747,108 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_checklist_submissions: {
+        Row: {
+          comments: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          verified_by: string | null
+        }
+        Insert: {
+          comments?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          verified_by?: string | null
+        }
+        Update: {
+          comments?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
+      facility_checklist_tasks: {
+        Row: {
+          completed: boolean
+          created_at: string
+          id: string
+          initials: string | null
+          staff_id: string | null
+          submission_id: string | null
+          task_description: string
+          task_id: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          initials?: string | null
+          staff_id?: string | null
+          submission_id?: string | null
+          task_description: string
+          task_id?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          initials?: string | null
+          staff_id?: string | null
+          submission_id?: string | null
+          task_description?: string
+          task_id?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_checklist_tasks_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "facility_checklist_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facility_checklist_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "facility_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facility_staff: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       facility_task_logs: {
         Row: {
           completed_at: string

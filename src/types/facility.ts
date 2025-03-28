@@ -49,3 +49,10 @@ export interface DailyChecklistSubmission {
     time: string;
   }[];
 }
+
+export interface FacilityStaff {
+  id: string;
+  name: string;
+  active: boolean;
+  created_at: string;
+}

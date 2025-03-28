@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ChecklistHeaderProps {
   date: string;
@@ -8,12 +7,10 @@ interface ChecklistHeaderProps {
 
 const ChecklistHeader: React.FC<ChecklistHeaderProps> = ({ date }) => {
   return (
-    <CardHeader className="bg-primary text-primary-foreground rounded-t-lg">
-      <div className="flex justify-between items-center">
-        <CardTitle className="text-2xl">Daily Kennel Facility Checklist</CardTitle>
-        <div className="text-lg">{date}</div>
-      </div>
-    </CardHeader>
+    <div className="bg-primary text-primary-foreground p-4 rounded-t-lg flex justify-between items-center">
+      <h1 className="text-2xl font-bold">Daily Kennel Facility Checklist</h1>
+      <div className="text-lg">{date}</div>
+    </div>
   );
 };
 

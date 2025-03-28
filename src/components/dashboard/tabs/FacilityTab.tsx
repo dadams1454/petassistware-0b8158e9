@@ -5,7 +5,6 @@ import { DogCareStatus } from '@/types/dailyCare';
 import FacilityTaskDialog from '@/components/facility/FacilityTaskDialog';
 import FacilityDailyChecklist from '@/components/facility/FacilityDailyChecklist';
 import FacilityTabHeader from '@/components/facility/FacilityTabHeader';
-import TasksView from '@/components/facility/TasksView';
 import { useFacilityData } from '@/components/facility/hooks/useFacilityData';
 
 interface FacilityTabProps {
@@ -16,49 +15,24 @@ interface FacilityTabProps {
 const FacilityTab: React.FC<FacilityTabProps> = ({ onRefreshData, dogStatuses }) => {
   const { 
     areas,
-    filteredTasks,
     isLoading,
     isTaskDialogOpen,
     setIsTaskDialogOpen,
-    searchQuery,
-    setSearchQuery,
-    selectedFrequency,
-    setSelectedFrequency,
     selectedTaskId,
-    currentView,
-    setCurrentView,
-    handleAddTask,
     handleEditTask,
-    handleTaskSaved,
-    refetchTasks
+    handleTaskSaved
   } = useFacilityData();
   
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-3">
         <FacilityTabHeader 
-          currentView={currentView}
-          setCurrentView={setCurrentView}
+          currentView="checklist"
+          setCurrentView={() => {}}
         />
-        
-        {currentView === 'tasks' && (
-          <TasksView
-            filteredTasks={filteredTasks}
-            isLoading={isLoading}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedFrequency={selectedFrequency}
-            setSelectedFrequency={setSelectedFrequency}
-            handleAddTask={handleAddTask}
-            handleEditTask={handleEditTask}
-            refetchTasks={refetchTasks}
-          />
-        )}
       </div>
       
-      {currentView === 'checklist' && (
-        <FacilityDailyChecklist onEditTask={handleEditTask} />
-      )}
+      <FacilityDailyChecklist onEditTask={handleEditTask} />
       
       {/* Add/Edit Task Dialog */}
       <Dialog 

@@ -44,7 +44,7 @@ export const useTaskUtils = () => {
   const handleCompleteTask = (taskId: string) => {
     toast({
       title: 'Coming Soon',
-      description: 'Task completion functionality will be available in the next update.'
+      description: 'Task completion functionality is now available in the Daily Checklist view.'
     });
   };
   
