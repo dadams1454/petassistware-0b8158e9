@@ -1,75 +1,103 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, X, Plus } from 'lucide-react';
+import { DogCareStatus } from '@/types/dailyCare';
+import { DogGroup } from '../hooks/useDogGroups';
 
 interface DogGroupCardProps {
-  group: {
-    id: string;
-    name: string;
-    description?: string;
-    color?: string;
-  };
-  onEdit: (groupId: string) => void;
-  onDelete: (groupId: string) => void;
+  group: DogGroup;
+  isSelected: boolean;
+  dogsData: DogCareStatus[];
+  onSelect: (group: DogGroup) => void;
+  onClose: () => void;
+  onAddDog: (group: DogGroup) => void;
+  onRemoveDog: (groupId: string, dogId: string) => void;
 }
 
-const DogGroupCard: React.FC<DogGroupCardProps> = ({ group, onEdit, onDelete }) => {
-  // Determine background color based on group color
-  const getBgColor = () => {
-    switch (group.color) {
-      case 'blue': return 'bg-blue-100 dark:bg-blue-900/20';
-      case 'green': return 'bg-green-100 dark:bg-green-900/20';
-      case 'teal': return 'bg-teal-100 dark:bg-teal-900/20';
-      case 'purple': return 'bg-purple-100 dark:bg-purple-900/20';
-      case 'yellow': return 'bg-yellow-100 dark:bg-yellow-900/20';
-      case 'red': return 'bg-red-100 dark:bg-red-900/20';
-      default: return 'bg-gray-100 dark:bg-gray-800/50';
-    }
-  };
-
-  // Determine border color based on group color
-  const getBorderColor = () => {
-    switch (group.color) {
-      case 'blue': return 'border-blue-300 dark:border-blue-800';
-      case 'green': return 'border-green-300 dark:border-green-800';
-      case 'teal': return 'border-teal-300 dark:border-teal-800';
-      case 'purple': return 'border-purple-300 dark:border-purple-800';
-      case 'yellow': return 'border-yellow-300 dark:border-yellow-800';
-      case 'red': return 'border-red-300 dark:border-red-800';
-      default: return 'border-gray-300 dark:border-gray-700';
-    }
-  };
-
+const DogGroupCard: React.FC<DogGroupCardProps> = ({
+  group,
+  isSelected,
+  dogsData,
+  onSelect,
+  onClose,
+  onAddDog,
+  onRemoveDog
+}) => {
+  const groupDogs = dogsData.filter(dog => group.dogIds.includes(dog.dog_id));
+  
   return (
-    <Card className={`${getBgColor()} border ${getBorderColor()} shadow-sm`}>
-      <CardContent className="pt-6">
-        <h3 className="text-lg font-semibold mb-2">{group.name}</h3>
+    <Card 
+      key={group.id} 
+      className={`mb-4 overflow-hidden transition-all ${isSelected ? 'ring-2 ring-primary' : ''}`}
+    >
+      <div 
+        className="h-2" 
+        style={{ backgroundColor: group.color || '#1890ff' }}
+      />
+      <CardContent className="pt-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">{group.name}</h3>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onAddDog(group)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Dog
+            </Button>
+            
+            {!isSelected ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => onSelect(group)}
+              >
+                <Edit2 className="h-4 w-4 mr-1" />
+                Manage
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Close
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          {group.dogIds.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No dogs in this group</p>
+          ) : (
+            groupDogs.map(dog => (
+              <Badge 
+                key={dog.dog_id} 
+                variant="outline"
+                className="flex items-center"
+              >
+                {dog.dog_name}
+                {isSelected && (
+                  <X 
+                    className="h-3 w-3 ml-1 cursor-pointer" 
+                    onClick={() => onRemoveDog(group.id, dog.dog_id)}
+                  />
+                )}
+              </Badge>
+            ))
+          )}
+        </div>
+        
         {group.description && (
           <p className="text-sm text-muted-foreground">{group.description}</p>
         )}
       </CardContent>
-      <CardFooter className="flex justify-end gap-2 pt-2">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => onEdit(group.id)}
-          className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-        >
-          <Edit2 className="h-4 w-4 mr-1" />
-          Edit
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => onDelete(group.id)}
-          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-100"
-        >
-          <Trash2 className="h-4 w-4 mr-1" />
-          Delete
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
