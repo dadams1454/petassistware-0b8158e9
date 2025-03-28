@@ -9,6 +9,7 @@ import DebugInfoPanel from './components/DebugInfoPanel';
 import TableContentManager from './components/TableContentManager';
 import ObservationDialogManager from './components/ObservationDialogManager';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ObservationType } from './components/observation/ObservationDialog';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];

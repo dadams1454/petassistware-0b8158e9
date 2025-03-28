@@ -1,7 +1,7 @@
 
-import { useCallback } from 'react';
-import { useObservations } from '../pottyBreakHooks/useObservations';
+import { useState, useCallback } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
+import { ObservationType } from '../../components/observation/ObservationDialog';
 
 /**
  * Hook to manage observation functionality
@@ -11,31 +11,41 @@ export const useObservationHandling = (
   activeCategory: string,
   onRefresh: () => void
 ) => {
-  // Get observations and add observation function
-  const { observations, addObservation } = useObservations(dogsStatus);
+  // State to hold observations
+  const [observations, setObservations] = useState<Record<string, any[]>>({});
   
   // Handler for observation submission
   const handleObservationSubmit = useCallback(async (
     dogId: string, 
-    observationText: string, 
-    observationType: 'accident' | 'heat' | 'behavior' | 'other',
+    observation: string, 
+    observationType: ObservationType,
     timestamp?: Date
   ): Promise<void> => {
-    // Always use 'observation' category now that we only have potty breaks
-    const category = 'observation';
+    console.log('Observation submitted:', { dogId, observation, observationType, timestamp });
     
-    // Determine the time slot based on timestamp
-    const timeSlot = timestamp ? `${timestamp.getHours() % 12 || 12}:00 ${timestamp.getHours() >= 12 ? 'PM' : 'AM'}` : '';
+    // Store the observation locally (would typically be saved to a database)
+    setObservations(prev => {
+      const dogObservations = prev[dogId] || [];
+      return {
+        ...prev,
+        [dogId]: [
+          ...dogObservations,
+          {
+            id: Date.now().toString(),
+            observation,
+            observation_type: observationType,
+            created_at: (timestamp || new Date()).toISOString()
+          }
+        ]
+      };
+    });
     
-    // Add the observation
-    await addObservation(dogId, observationText, observationType, timeSlot, category, timestamp);
-    
-    // Refresh data
+    // After submission, refresh the data
     onRefresh();
-  }, [activeCategory, addObservation, onRefresh]);
+    
+    // Return a resolved promise to satisfy TypeScript
+    return Promise.resolve();
+  }, [onRefresh, setObservations]);
 
-  return {
-    observations,
-    handleObservationSubmit
-  };
+  return { observations, handleObservationSubmit };
 };

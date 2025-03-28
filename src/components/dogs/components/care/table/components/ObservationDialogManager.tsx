@@ -1,21 +1,21 @@
 
 import React from 'react';
-import ObservationDialog, { ObservationType } from './observation/ObservationDialog';
 import { DogCareStatus } from '@/types/dailyCare';
+import ObservationDialog, { ObservationType } from './observation/ObservationDialog';
 
 interface ObservationDialogManagerProps {
   selectedDog?: DogCareStatus;
   observationDialogOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (dogId: string, observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
-  observations?: Array<{
+  observations: Array<{
     observation: string;
-    observation_type: ObservationType;
+    observation_type: string;
     created_at: string;
     category?: string;
   }>;
-  timeSlots?: string[];
-  isMobile: boolean;
+  timeSlots: string[];
+  isMobile?: boolean;
   activeCategory: string;
 }
 
@@ -24,43 +24,23 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
   observationDialogOpen,
   onOpenChange,
   onSubmit,
-  observations = [], // Provide default empty array
-  timeSlots = [], // Provide default empty array
-  isMobile,
+  observations,
+  timeSlots,
+  isMobile = false,
   activeCategory
 }) => {
-  if (!selectedDog) return null;
+  if (!selectedDog) {
+    return null;
+  }
 
-  // Use safe dog name access
-  const dogName = selectedDog.dog_name || 'Unknown Dog';
-  const dogId = selectedDog.dog_id;
-
-  // Get appropriate dialog title based on category
-  const getDialogTitle = () => {
-    switch (activeCategory) {
-      case 'pottybreaks':
-        return 'Potty Break Observation';
-      case 'feeding':
-        return 'Feeding Observation';
-      case 'medications':
-        return 'Medication Observation';
-      case 'grooming':
-        return 'Grooming Observation';
-      default:
-        return 'Observation';
-    }
-  };
-
-  // Get the default observation type based on category
+  // Determine default observation type based on category
   const getDefaultObservationType = (): ObservationType => {
     switch (activeCategory) {
       case 'pottybreaks':
         return 'accident';
+      case 'medication':
+        return 'other';
       case 'feeding':
-        return 'behavior';
-      case 'medications':
-        return 'behavior';
-      case 'grooming':
         return 'other';
       default:
         return 'other';
@@ -71,15 +51,15 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
     <ObservationDialog
       open={observationDialogOpen}
       onOpenChange={onOpenChange}
-      dogId={dogId}
-      dogName={dogName}
+      dogId={selectedDog.dog_id}
+      dogName={selectedDog.dog_name}
       onSubmit={onSubmit}
       existingObservations={observations}
       timeSlots={timeSlots}
       isMobile={isMobile}
       activeCategory={activeCategory}
       defaultObservationType={getDefaultObservationType()}
-      dialogTitle={getDialogTitle()}
+      dialogTitle={`${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Observation`}
     />
   );
 };

@@ -16,6 +16,7 @@ interface TimeTableContentProps {
   onDogClick: (dogId: string) => void;
   onObservationClick: (dogId: string, hour: number) => void;
   currentHour?: number;
+  isMobile?: boolean;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({
@@ -30,7 +31,8 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onCareLogClick,
   onDogClick,
   onObservationClick,
-  currentHour
+  currentHour,
+  isMobile
 }) => {
   return (
     <div className="relative overflow-x-auto border-t">
@@ -43,7 +45,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
             <th className="px-2 py-3 font-medium min-w-[150px]">
               Observations
             </th>
-            {timeSlots.map(slot => (
+            {timeSlots.map((slot, index) => (
               <th
                 key={slot}
                 className={`px-3 py-3 font-medium text-center ${
@@ -76,8 +78,8 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
                 rowColor={rowBgClass}
                 activeCategory={activeCategory}
                 hasPottyBreak={() => false}
-                hasCareLogged={hasCareLogged}
-                hasObservation={hasObservation}
+                hasCareLogged={(dogId, hour) => hasCareLogged(dogId, hour)}
+                hasObservation={(dogId, hour) => hasObservation(dogId, hour)}
                 getObservationDetails={getObservationDetails}
                 onCellClick={onCellClick}
                 onCellContextMenu={onCellContextMenu}
