@@ -1,98 +1,64 @@
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { useDogLetOut } from './useDogLetOut';
-import { useCareLogsData } from './useCareLogsData';
-import { useCellActions } from './useCellActions';
-import { useRefreshHandler } from './useRefreshHandler';
-import { useObservations } from './useObservations';
-import { useDogSorting } from './useDogSorting';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
-const useDogTimetable = (
-  dogsStatus: DogCareStatus[], 
-  onRefresh?: () => void,
-  activeCategory: string = 'dogletout',
-  currentDate: Date = new Date()
-) => {
-  // Set up time slots for the table
-  const [timeSlots] = useState(() => {
-    const slots: string[] = [];
-    for (let hour = 6; hour < 21; hour++) {
-      const formattedHour = hour > 12 ? hour - 12 : hour;
-      const amPm = hour >= 12 ? 'PM' : 'AM';
-      slots.push(`${formattedHour}:00 ${amPm}`);
-    }
-    return slots;
-  });
+export interface TimeSlot {
+  id: string;
+  time: string;
+  displayTime: string;
+}
+
+export const useDogTimetable = (dogs: DogCareStatus[], date: Date) => {
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedDogs, setSelectedDogs] = useState<string[]>([]);
+  const { toast } = useToast();
   
-  // Get current hour for highlighting
-  const [currentHour, setCurrentHour] = useState<number>(() => {
-    const now = new Date();
-    return now.getHours();
-  });
-  
-  // Update current hour periodically
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const now = new Date();
-      setCurrentHour(now.getHours());
-    }, 60000); // check every minute
+  // Generate time slots from 6am to 10pm
+  const generateTimeSlots = useCallback(() => {
+    const slots: TimeSlot[] = [];
+    const formattedDate = format(date, 'yyyy-MM-dd');
     
-    return () => clearInterval(intervalId);
-  }, []);
+    for (let hour = 6; hour <= 22; hour++) {
+      const h = hour % 12 === 0 ? 12 : hour % 12;
+      const ampm = hour < 12 ? 'am' : 'pm';
+      const time = `${formattedDate}T${hour.toString().padStart(2, '0')}:00:00`;
+      const displayTime = `${h}:00 ${ampm}`;
+      
+      slots.push({
+        id: `${formattedDate}-${hour}`,
+        time,
+        displayTime
+      });
+    }
+    
+    return slots;
+  }, [date]);
   
-  // Use the dog let out data hook - pass the currentDate parameter
-  const { 
-    dogLetOuts, 
-    setDogLetOuts, 
-    hasDogLetOut, 
-    isLoading: dogLetOutLoading 
-  } = useDogLetOut(currentDate);
+  useEffect(() => {
+    setTimeSlots(generateTimeSlots());
+  }, [generateTimeSlots]);
   
-  // Use the care logs data hook for other care types - pass an empty array as fallback
-  const { hasCareLogged, isLoading: careLoading } = useCareLogsData(dogsStatus || []);
+  const toggleDogSelection = (dogId: string) => {
+    setSelectedDogs(prev => 
+      prev.includes(dogId) 
+        ? prev.filter(id => id !== dogId) 
+        : [...prev, dogId]
+    );
+  };
   
-  // Use the observations hook
-  const { 
-    observations,
-    hasObservation,
-    getObservationDetails,
-    isLoading: obsLoading 
-  } = useObservations(dogsStatus);
-  
-  // Use the cell actions hook
-  const { isLoading: actionLoading, handleCellClick } = useCellActions(
-    currentDate, 
-    dogLetOuts, 
-    setDogLetOuts, 
-    onRefresh,
-    activeCategory
-  );
-  
-  // Use the refresh handler hook
-  const { handleRefresh, isRefreshing } = useRefreshHandler(onRefresh || (() => {}));
-  
-  // Use the dog sorting hook
-  const { sortedDogs } = useDogSorting(dogsStatus);
-  
-  // Overall loading state
-  const isLoading = useMemo(() => {
-    return dogLetOutLoading || careLoading || obsLoading || actionLoading || isRefreshing;
-  }, [dogLetOutLoading, careLoading, obsLoading, actionLoading, isRefreshing]);
+  const clearSelectedDogs = () => {
+    setSelectedDogs([]);
+  };
   
   return {
     timeSlots,
-    currentHour,
-    dogLetOuts,
-    sortedDogs,
-    hasDogLetOut,
-    hasCareLogged,
-    hasObservation,
-    getObservationDetails,
-    handleCellClick,
-    handleRefresh,
     isLoading,
-    isPendingFeeding: () => false // Always return false since we removed feeding
+    selectedDogs,
+    toggleDogSelection,
+    clearSelectedDogs
   };
 };
 
