@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DogLetOutTimetable from './DogLetOutTimetable';
-import { Calendar, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, ArrowLeft, ArrowRight, Clock } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
+import { format, addDays, subDays } from 'date-fns';
 
 interface DogLetOutManagerProps {
   dogs: DogCareStatus[];
@@ -16,6 +18,19 @@ const DogLetOutManager: React.FC<DogLetOutManagerProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('timetable');
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Handle date navigation
+  const goToPreviousDay = () => {
+    setCurrentDate(prev => subDays(prev, 1));
+  };
+
+  const goToNextDay = () => {
+    setCurrentDate(prev => addDays(prev, 1));
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
 
   return (
     <div className="space-y-4">
@@ -32,6 +47,23 @@ const DogLetOutManager: React.FC<DogLetOutManagerProps> = ({
         </TabsList>
         
         <TabsContent value="timetable" className="mt-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="icon" onClick={goToPreviousDay}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" onClick={goToToday}>
+                Today
+              </Button>
+              <Button variant="outline" size="icon" onClick={goToNextDay}>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="text-lg font-medium">
+              {format(currentDate, 'MMMM d, yyyy')}
+            </div>
+          </div>
+          
           <DogLetOutTimetable
             dogsData={dogs}
             date={currentDate}

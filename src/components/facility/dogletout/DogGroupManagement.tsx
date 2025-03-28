@@ -3,32 +3,31 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useDogGroups } from './hooks/useDogGroups';
-import { DogCareStatus } from '@/types/dailyCare';
 import DogGroupCard from './components/DogGroupCard';
 import DogGroupFormDialog from './components/DogGroupFormDialog';
 
 interface DogGroupManagementProps {
-  dogs: DogCareStatus[];
+  dogs: any[];
   onGroupsUpdated?: () => void;
 }
 
 const DogGroupManagement: React.FC<DogGroupManagementProps> = ({ 
-  dogs,
-  onGroupsUpdated
+  dogs, 
+  onGroupsUpdated 
 }) => {
-  const { groups, isLoading, fetchGroups, addGroup } = useDogGroups();
-  
+  const { groups, isLoading, fetchGroups, addGroup, updateGroup, deleteGroup } = useDogGroups();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [selectedColor, setSelectedColor] = useState('blue');
-  const [editingGroup, setEditingGroup] = useState<any | null>(null);
+  const [editingGroup, setEditingGroup] = useState<any>(null);
   
   useEffect(() => {
     fetchGroups();
   }, [fetchGroups]);
   
-  const handleOpenDialog = (group: any | null = null) => {
+  // Open dialog for creating or editing a group
+  const handleOpenDialog = (group: any = null) => {
     if (group) {
       setEditingGroup(group);
       setGroupName(group.name);
@@ -43,13 +42,19 @@ const DogGroupManagement: React.FC<DogGroupManagementProps> = ({
     setDialogOpen(true);
   };
   
+  // Handle saving a group (create or update)
   const handleSaveGroup = async () => {
     if (!groupName.trim()) return;
     
     try {
       if (editingGroup) {
-        // Update existing group (not implemented yet)
-        console.log('Update group:', { id: editingGroup.id, name: groupName, description: groupDescription, color: selectedColor });
+        // Update existing group
+        await updateGroup(
+          editingGroup.id,
+          groupName,
+          selectedColor,
+          groupDescription
+        );
       } else {
         // Create new group
         await addGroup(groupName, selectedColor, groupDescription);
@@ -69,10 +74,10 @@ const DogGroupManagement: React.FC<DogGroupManagementProps> = ({
     }
   };
   
+  // Handle deleting a group
   const handleDeleteGroup = async (groupId: string) => {
     try {
-      // Delete group (not implemented yet)
-      console.log('Delete group:', groupId);
+      await deleteGroup(groupId);
       
       if (onGroupsUpdated) {
         onGroupsUpdated();
@@ -98,8 +103,8 @@ const DogGroupManagement: React.FC<DogGroupManagementProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {groups.map(group => (
-            <DogGroupCard 
+          {groups.map((group) => (
+            <DogGroupCard
               key={group.id}
               group={group}
               onEdit={() => handleOpenDialog(group)}
@@ -109,13 +114,15 @@ const DogGroupManagement: React.FC<DogGroupManagementProps> = ({
           
           {groups.length === 0 && (
             <div className="col-span-full p-8 border rounded-md text-center">
-              <p className="text-muted-foreground">No dog groups found. Create your first group to organize your dogs.</p>
+              <p className="text-muted-foreground">
+                No dog groups found. Create your first group to organize your dogs.
+              </p>
             </div>
           )}
         </div>
       )}
       
-      <DogGroupFormDialog 
+      <DogGroupFormDialog
         dialogOpen={dialogOpen}
         setDialogOpen={setDialogOpen}
         groupName={groupName}

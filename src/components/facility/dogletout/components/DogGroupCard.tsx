@@ -1,10 +1,8 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Edit, Trash2, UserPlus } from 'lucide-react';
-import DogAssignmentDialog from './DogAssignmentDialog';
-import { useDailyCare } from '@/contexts/dailyCare';
+import { Edit2, Trash2 } from 'lucide-react';
 
 interface DogGroupCardProps {
   group: {
@@ -13,87 +11,66 @@ interface DogGroupCardProps {
     description?: string;
     color?: string;
   };
-  onEdit: (group: any) => void;
+  onEdit: (groupId: string) => void;
   onDelete: (groupId: string) => void;
 }
 
 const DogGroupCard: React.FC<DogGroupCardProps> = ({ group, onEdit, onDelete }) => {
-  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-  const { dogStatuses } = useDailyCare();
+  // Determine background color based on group color
+  const getBgColor = () => {
+    switch (group.color) {
+      case 'blue': return 'bg-blue-100 dark:bg-blue-900/20';
+      case 'green': return 'bg-green-100 dark:bg-green-900/20';
+      case 'teal': return 'bg-teal-100 dark:bg-teal-900/20';
+      case 'purple': return 'bg-purple-100 dark:bg-purple-900/20';
+      case 'yellow': return 'bg-yellow-100 dark:bg-yellow-900/20';
+      case 'red': return 'bg-red-100 dark:bg-red-900/20';
+      default: return 'bg-gray-100 dark:bg-gray-800/50';
+    }
+  };
 
-  // Get background color based on group color
-  const getGroupColor = (color: string | undefined): string => {
-    switch (color) {
-      case 'blue': return 'bg-blue-100 border-blue-300 text-blue-800';
-      case 'teal': return 'bg-teal-100 border-teal-300 text-teal-800';
-      case 'yellow': return 'bg-yellow-100 border-yellow-300 text-yellow-800';
-      case 'red': return 'bg-red-100 border-red-300 text-red-800';
-      case 'green': return 'bg-green-100 border-green-300 text-green-800';
-      case 'purple': return 'bg-purple-100 border-purple-300 text-purple-800';
-      default: return 'bg-gray-100 border-gray-300 text-gray-800';
+  // Determine border color based on group color
+  const getBorderColor = () => {
+    switch (group.color) {
+      case 'blue': return 'border-blue-300 dark:border-blue-800';
+      case 'green': return 'border-green-300 dark:border-green-800';
+      case 'teal': return 'border-teal-300 dark:border-teal-800';
+      case 'purple': return 'border-purple-300 dark:border-purple-800';
+      case 'yellow': return 'border-yellow-300 dark:border-yellow-800';
+      case 'red': return 'border-red-300 dark:border-red-800';
+      default: return 'border-gray-300 dark:border-gray-700';
     }
   };
 
   return (
-    <>
-      <Card className={`border overflow-hidden ${getGroupColor(group.color)}`}>
-        <CardContent className="p-5">
-          <div className="flex justify-between items-start mb-3">
-            <div className="flex items-center">
-              <Users className="h-5 w-5 mr-2" />
-              <h3 className="font-medium text-lg">{group.name}</h3>
-            </div>
-            <div className="flex space-x-2">
-              <Button 
-                size="sm" 
-                variant="ghost"
-                className="h-8 w-8 p-0"
-                onClick={() => onEdit(group)}
-              >
-                <Edit className="h-4 w-4" />
-                <span className="sr-only">Edit</span>
-              </Button>
-              <Button 
-                size="sm" 
-                variant="ghost"
-                className="h-8 w-8 p-0 hover:text-red-600 hover:bg-red-50"
-                onClick={() => onDelete(group.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Delete</span>
-              </Button>
-            </div>
-          </div>
-          
-          {group.description && (
-            <p className="text-sm mb-4 opacity-90">{group.description}</p>
-          )}
-          
-          <div className="mt-4 pt-3 border-t border-current border-opacity-20 flex justify-between items-center">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="text-xs p-2"
-              onClick={() => setAssignDialogOpen(true)}
-            >
-              <UserPlus className="h-3.5 w-3.5 mr-1" />
-              Assign Dogs
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Dog Assignment Dialog */}
-      {dogStatuses && (
-        <DogAssignmentDialog
-          open={assignDialogOpen}
-          onOpenChange={setAssignDialogOpen}
-          groupId={group.id}
-          groupName={group.name}
-          dogs={dogStatuses}
-        />
-      )}
-    </>
+    <Card className={`${getBgColor()} border ${getBorderColor()} shadow-sm`}>
+      <CardContent className="pt-6">
+        <h3 className="text-lg font-semibold mb-2">{group.name}</h3>
+        {group.description && (
+          <p className="text-sm text-muted-foreground">{group.description}</p>
+        )}
+      </CardContent>
+      <CardFooter className="flex justify-end gap-2 pt-2">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => onEdit(group.id)}
+          className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+        >
+          <Edit2 className="h-4 w-4 mr-1" />
+          Edit
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => onDelete(group.id)}
+          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-100"
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          Delete
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 
