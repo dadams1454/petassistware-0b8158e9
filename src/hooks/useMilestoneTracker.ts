@@ -53,12 +53,17 @@ export const useMilestoneTracker = (puppyId: string) => {
         }
       }
       
+      // Convert Date to ISO string for database storage
+      const milestoneDateString = milestone.milestone_date.toISOString().split('T')[0];
+      
       // Insert new milestone
       const { data, error } = await supabase
         .from('puppy_milestones')
         .insert({
           puppy_id: puppyId,
-          ...milestone
+          milestone_type: milestone.milestone_type,
+          milestone_date: milestoneDateString,
+          notes: milestone.notes
         })
         .select();
       
@@ -76,7 +81,7 @@ export const useMilestoneTracker = (puppyId: string) => {
         const fieldToUpdate = milestoneFieldMap[milestone.milestone_type];
         
         if (fieldToUpdate) {
-          const dateStr = milestone.milestone_date.toISOString().split('T')[0];
+          const dateStr = milestoneDateString;
           
           await supabase
             .from('puppies')

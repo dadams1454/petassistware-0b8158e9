@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/tabs';
 import WeightTracker from './weight/WeightTracker';
 import MilestoneTracker from './milestones/MilestoneTracker';
+import SocializationTracker from './socialization/SocializationTracker';
 import { Puppy } from './types';
 
 const PuppyDetail: React.FC = () => {
@@ -95,13 +96,7 @@ const PuppyDetail: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="socialization">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center text-muted-foreground">
-                    Socialization tracking coming soon
-                  </div>
-                </CardContent>
-              </Card>
+              <SocializationTracker puppyId={puppyId!} />
             </TabsContent>
           </Tabs>
         </CardContent>

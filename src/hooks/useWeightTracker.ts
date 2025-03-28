@@ -47,11 +47,20 @@ export const useWeightTracker = (puppyId: string) => {
         }
       }
       
+      // Convert Date to string if it's a Date object
+      const dateString = typeof record.date === 'string' 
+        ? record.date 
+        : record.date.toISOString().split('T')[0];
+      
       // Insert new weight record
       const { data, error } = await supabase
         .from('weight_records')
         .insert({
-          ...record,
+          puppy_id: puppyId,
+          date: dateString,
+          weight: record.weight,
+          weight_unit: record.weight_unit,
+          notes: record.notes,
           percent_change: percentChange
         })
         .select();
