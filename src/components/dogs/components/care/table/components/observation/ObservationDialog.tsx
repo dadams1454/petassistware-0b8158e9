@@ -1,8 +1,12 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import DialogContentComponent from './DialogContent';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { FormEvent, useState } from 'react';
 
 export type ObservationType = 'heat' | 'behavior' | 'other';
 
@@ -18,11 +22,7 @@ interface ObservationDialogProps {
     created_at: string;
     category?: string;
   }>;
-  timeSlots?: string[];
   isMobile?: boolean;
-  activeCategory?: string;
-  defaultObservationType?: ObservationType;
-  selectedTimeSlot?: string;
   dialogTitle?: string;
 }
 
@@ -33,18 +33,98 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   dogName,
   onSubmit,
   existingObservations = [],
-  timeSlots = [],
   isMobile = false,
-  activeCategory = 'feeding',
-  defaultObservationType = 'other',
-  selectedTimeSlot = '',
   dialogTitle = 'Observation'
 }) => {
-  // Function to adapt the onSubmit prop to the expected form event handler
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [observationType, setObservationType] = useState<ObservationType>('other');
+  const [observationNote, setObservationNote] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // The actual implementation will be handled in the DialogContent component
+    setIsSubmitting(true);
+    
+    try {
+      await onSubmit(dogId, observationNote, observationType);
+      setObservationNote('');
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error submitting observation:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const Content = () => (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-4">
+        <RadioGroup 
+          value={observationType} 
+          onValueChange={(value) => setObservationType(value as ObservationType)}
+          className="flex flex-col space-y-2"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="behavior" id="behavior" />
+            <Label htmlFor="behavior">Behavior</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="heat" id="heat" />
+            <Label htmlFor="heat">Heat</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="other" id="other" />
+            <Label htmlFor="other">Other</Label>
+          </div>
+        </RadioGroup>
+      </div>
+
+      <div>
+        <Textarea
+          placeholder="Enter observation notes..."
+          value={observationNote}
+          onChange={(e) => setObservationNote(e.target.value)}
+          rows={4}
+          className="w-full"
+        />
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => onOpenChange(false)}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit"
+          disabled={!observationNote.trim() || isSubmitting}
+        >
+          Save Observation
+        </Button>
+      </div>
+
+      {existingObservations.length > 0 && (
+        <div className="border-t pt-4 mt-4">
+          <h4 className="text-sm font-medium mb-2">Recent Observations</h4>
+          <div className="space-y-3">
+            {existingObservations.map((obs, index) => (
+              <div key={index} className="text-sm border-l-2 border-primary pl-3">
+                <div className="flex justify-between">
+                  <span className="font-medium capitalize">{obs.observation_type}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {new Date(obs.created_at).toLocaleString()}
+                  </span>
+                </div>
+                <p className="mt-1">{obs.observation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </form>
+  );
 
   // Use mobile sheet for mobile devices, dialog for desktop
   if (isMobile) {
@@ -54,18 +134,9 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
           <SheetHeader>
             <SheetTitle>{dialogTitle} for {dogName}</SheetTitle>
           </SheetHeader>
-          <DialogContentComponent 
-            dogId={dogId}
-            dogName={dogName}
-            onSubmit={handleSubmit}
-            existingObservations={existingObservations}
-            timeSlots={timeSlots}
-            activeCategory={activeCategory}
-            defaultObservationType={defaultObservationType}
-            selectedTimeSlot={selectedTimeSlot}
-            onOpenChange={onOpenChange}
-            originalOnSubmit={onSubmit}
-          />
+          <div className="mt-4">
+            <Content />
+          </div>
         </SheetContent>
       </Sheet>
     );
@@ -77,18 +148,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         <DialogHeader>
           <DialogTitle>{dialogTitle} for {dogName}</DialogTitle>
         </DialogHeader>
-        <DialogContentComponent 
-          dogId={dogId}
-          dogName={dogName}
-          onSubmit={handleSubmit}
-          existingObservations={existingObservations}
-          timeSlots={timeSlots}
-          activeCategory={activeCategory}
-          defaultObservationType={defaultObservationType}
-          selectedTimeSlot={selectedTimeSlot}
-          onOpenChange={onOpenChange}
-          originalOnSubmit={onSubmit}
-        />
+        <Content />
       </DialogContent>
     </Dialog>
   );

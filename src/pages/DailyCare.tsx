@@ -42,7 +42,7 @@ const DailyCare: React.FC = () => {
             Daily Care Time Table
           </h1>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Track feeding, medications and exercise for all your dogs
+            Track feeding and medications for all your dogs
             {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
           </p>
         </div>
@@ -67,6 +67,7 @@ const DailyCare: React.FC = () => {
               onRefresh={() => handleRefresh(true)} 
               isRefreshing={isLoading}
               currentDate={currentDate}
+              initialCategory="feeding"
             />
           </div>
         </div>
