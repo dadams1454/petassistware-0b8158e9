@@ -17,15 +17,20 @@ export const useCellActions = (
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { queueOperation } = useOperationQueue();
-  const { protectClick } = useClickProtection();
+  const { trackClick } = useClickProtection();
   
   // Handle cell click with protection against double clicks
-  const handleCellClick = useCallback(protectClick((
+  const handleCellClick = useCallback((
     dogId: string, 
     dogName: string, 
     timeSlot: string, 
     category: string
   ) => {
+    // Use trackClick to prevent rapid clicking
+    if (!trackClick(dogName, timeSlot)) {
+      return; // Don't proceed if click is blocked
+    }
+    
     // We've removed potty break handling
     console.log(`Cell clicked: ${dogId}, ${dogName}, ${timeSlot}, ${category}`);
     
@@ -40,7 +45,7 @@ export const useCellActions = (
     if (onRefresh) {
       onRefresh();
     }
-  }), [toast, onRefresh]);
+  }, [toast, onRefresh, trackClick]);
   
   return {
     isLoading,
