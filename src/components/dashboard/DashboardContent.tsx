@@ -7,6 +7,7 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
+import DogLetOutTab from './tabs/DogLetOutTab';
 import CareLogDialog from './dialogs/CareLogDialog';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
@@ -133,6 +134,31 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             currentDate={currentDate}
             dogStatuses={dogStatuses || []}
           />
+        </TabsContent>
+        
+        <TabsContent value="dogletout">
+          <DogLetOutTab 
+            onRefreshDogs={handleManualRefresh}
+            dogStatuses={dogStatuses || []}
+          />
+        </TabsContent>
+        
+        <TabsContent value="events">
+          <div className="text-center p-12 border rounded-md">
+            <h3 className="text-xl font-medium mb-2">Events Feature Coming Soon</h3>
+            <p className="text-muted-foreground">
+              This section will show upcoming events and allow event management.
+            </p>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="reports">
+          <div className="text-center p-12 border rounded-md">
+            <h3 className="text-xl font-medium mb-2">Reports Feature Coming Soon</h3>
+            <p className="text-muted-foreground">
+              This section will provide reports on dog care activities and other metrics.
+            </p>
+          </div>
         </TabsContent>
       </Tabs>
 
