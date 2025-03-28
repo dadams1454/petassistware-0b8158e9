@@ -1,3 +1,4 @@
+
 export interface Puppy {
   id: string;
   name: string | null;
@@ -17,8 +18,6 @@ export interface Puppy {
   updated_at?: string;
   
   // Weight tracking fields
-  birth_weight: string | number | null;
-  current_weight: string | number | null;
   weight_history?: WeightRecord[] | null;
   weight_notes?: string | null;
 
