@@ -74,6 +74,7 @@ const DogRow: React.FC<DogRowProps> = ({
           dogName={dog.dog_name}
           timeSlot={timeSlot}
           category={activeCategory}
+          hasPottyBreak={false}
           hasCareLogged={hasCareLogged(dog.dog_id, timeSlot, activeCategory)}
           onClick={() => onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory)}
           onContextMenu={(e) => onCellContextMenu(e, dog.dog_id, dog.dog_name, timeSlot, activeCategory)}

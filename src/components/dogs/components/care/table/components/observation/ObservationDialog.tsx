@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import DialogContentComponent from './DialogContent';
@@ -40,6 +40,12 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   selectedTimeSlot = '',
   dialogTitle = 'Observation'
 }) => {
+  // Function to adapt the onSubmit prop to the expected form event handler
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // The actual implementation will be handled in the DialogContent component
+  };
+
   // Use mobile sheet for mobile devices, dialog for desktop
   if (isMobile) {
     return (
@@ -51,13 +57,14 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
           <DialogContentComponent 
             dogId={dogId}
             dogName={dogName}
-            onSubmit={onSubmit}
+            onSubmit={handleSubmit}
             existingObservations={existingObservations}
             timeSlots={timeSlots}
             activeCategory={activeCategory}
             defaultObservationType={defaultObservationType}
             selectedTimeSlot={selectedTimeSlot}
             onOpenChange={onOpenChange}
+            originalOnSubmit={onSubmit}
           />
         </SheetContent>
       </Sheet>
@@ -73,13 +80,14 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
         <DialogContentComponent 
           dogId={dogId}
           dogName={dogName}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
           existingObservations={existingObservations}
           timeSlots={timeSlots}
           activeCategory={activeCategory}
           defaultObservationType={defaultObservationType}
           selectedTimeSlot={selectedTimeSlot}
           onOpenChange={onOpenChange}
+          originalOnSubmit={onSubmit}
         />
       </DialogContent>
     </Dialog>
