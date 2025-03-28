@@ -1,114 +1,76 @@
 
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { MutableRefObject } from 'react';
 
-/**
- * Hook to manage click handlers for the time table
- */
+// Define the hook interface
 export const useHandlers = (
   activeCategory: string,
-  clickCountRef: React.MutableRefObject<number>,
-  errorCountRef: React.MutableRefObject<number>,
-  setDebugInfo: (info: string) => void,
+  clickCountRef: MutableRefObject<number>,
+  errorCountRef: MutableRefObject<number>,
+  setDebugInfo: (info: any) => void,
   setSelectedDogId: (id: string | null) => void,
   setObservationDialogOpen: (open: boolean) => void,
   handleCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void,
   onRefresh: () => void
 ) => {
-  const navigate = useNavigate();
-
-  // Navigation handler for dog clicks
+  // Handle dog name click
   const handleDogClick = useCallback((dogId: string) => {
-    console.log('Navigating to dog details:', dogId);
-    navigate(`/dogs/${dogId}`);
-  }, [navigate]);
+    setDebugInfo(prev => ({
+      ...prev,
+      lastAction: `Dog clicked: ${dogId}`
+    }));
+    
+    // For now, we'll do nothing when dog name is clicked
+    console.log(`Dog clicked: ${dogId}`);
+  }, [setDebugInfo]);
 
-  // Handler for care log clicks
+  // Handle care log click 
   const handleCareLogClick = useCallback((dogId: string, dogName: string) => {
-    console.log(`🚨 Care log click for ${dogName} (${dogId}) in category ${activeCategory}`);
+    setDebugInfo(prev => ({
+      ...prev,
+      lastAction: `Care log clicked: ${dogId}, ${dogName}`
+    }));
     
-    // Update debug info
-    setDebugInfo(`Care log clicked for ${dogName}`);
-    
-    // Set the selected dog ID 
-    setSelectedDogId(dogId);
-    
-    console.log(`Selected dog set to ${dogId}, dialog will open via LogCareButton effect`);
-  }, [activeCategory, setDebugInfo, setSelectedDogId]);
-
-  // Handler for observation clicks
-  const handleObservationClick = useCallback((dogId: string, dogName: string) => {
-    console.log(`🔍 Observation click for ${dogName} (${dogId}) in category ${activeCategory}`);
-    
-    // Set the selected dog ID
-    setSelectedDogId(dogId);
-    
-    // Open the observation dialog
-    setObservationDialogOpen(true);
-    
-    // Update debug info
-    setDebugInfo(`Observation dialog opened for ${dogName}`);
-  }, [activeCategory, setSelectedDogId, setObservationDialogOpen, setDebugInfo]);
-
-  // Create a stable cell click handler with enhanced error prevention
-  const memoizedCellClickHandler = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
-    // Increment click count
-    clickCountRef.current += 1;
-    const clickNumber = clickCountRef.current;
-    
-    // Log debug info
-    console.log(`Cell clicked: ${clickNumber} times (${dogName}, ${timeSlot}, ${category})`);
-    setDebugInfo(`Last click: ${dogName} at ${timeSlot} (Click #${clickNumber})`);
-    
-    // Extra protection for the 6th click
-    if (clickNumber >= 5) {
-      console.log(`⚠️ CRITICAL: Click #${clickNumber} - applying extra protections`);
-    }
-    
-    // Wrap in try-catch to prevent errors from bubbling up
-    try {
-      handleCellClick(dogId, dogName, timeSlot, category);
-    } catch (error) {
-      // Increment error count
-      errorCountRef.current += 1;
-      console.error(`Error #${errorCountRef.current} in cell click handler:`, error);
-      
-      // Still update the debug info to show error occurred
-      setDebugInfo(`Error on click #${clickNumber} for ${dogName} (${errorCountRef.current} errors total)`);
-    }
-    
-    // Return false to prevent default behavior
-    return false;
-  }, [handleCellClick, clickCountRef, errorCountRef, setDebugInfo]);
-
-  // Handle cell right-click for observations/notes with improved error handling
-  const handleCellContextMenu = useCallback((e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => {
-    // Prevent default context menu
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('Right-clicked on cell:', dogId, dogName, timeSlot, category);
-    
-    // Return false to explicitly prevent default behavior
-    return false;
-  }, []);
+    console.log(`Care log clicked: ${dogId}, ${dogName}`);
+    // No implementation needed after potty breaks removal
+  }, [setDebugInfo]);
   
-  // Error reset handler with improved debugging
+  // Handle observation click
+  const handleObservationClick = useCallback((dogId: string, dogName: string) => {
+    setDebugInfo(prev => ({
+      ...prev,
+      lastAction: `Observation clicked: ${dogId}, ${dogName}`
+    }));
+    
+    setSelectedDogId(dogId);
+    setObservationDialogOpen(true);
+  }, [setDebugInfo, setSelectedDogId, setObservationDialogOpen]);
+  
+  // Memoized cell click handler (avoids recreating function for each cell)
+  const memoizedCellClickHandler = useCallback((dogId: string, dogName: string, timeSlot: string, category: string) => {
+    handleCellClick(dogId, dogName, timeSlot, category);
+  }, [handleCellClick]);
+  
+  // Handle cell context menu (right click)
+  const handleCellContextMenu = useCallback((e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => {
+    e.preventDefault();
+    
+    setDebugInfo(prev => ({
+      ...prev,
+      lastAction: `Cell right-clicked: ${dogId}, ${timeSlot}, ${category}`
+    }));
+    
+    // For now, we'll just log the action
+    console.log(`Cell right-clicked: ${dogId}, ${dogName}, ${timeSlot}, ${category}`);
+  }, [setDebugInfo]);
+  
+  // Handle error reset for ErrorBoundary
   const handleErrorReset = useCallback(() => {
-    console.log("Resetting after error");
-    // Reset click counter
-    clickCountRef.current = 0;
-    setDebugInfo('Clicks reset after error');
-    
-    // Log error count
-    console.log(`Total errors before reset: ${errorCountRef.current}`);
-    errorCountRef.current = 0;
-    
-    // Call refresh with a small delay to prevent immediate errors
-    setTimeout(() => {
-      onRefresh();
-    }, 100);
-  }, [onRefresh, clickCountRef, errorCountRef, setDebugInfo]);
+    console.log('Error boundary reset');
+    errorCountRef.current += 1;
+    // Reset any error state and try to refresh
+    onRefresh();
+  }, [errorCountRef, onRefresh]);
 
   return {
     handleDogClick,
