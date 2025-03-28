@@ -42,6 +42,11 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const navigate = useNavigate();
   
+  // Add the missing function that was referenced
+  const handleNavigateToDogs = () => {
+    navigate('/dogs');
+  };
+  
   // Fetch all dogs for care dashboard if not provided
   const { data: dogs, isLoading, refetch } = useQuery({
     queryKey: ['dashboardDogs'],
