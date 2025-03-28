@@ -11,7 +11,7 @@ interface Dog {
   microchip_number: string;
   notes: string;
   photo_url: string;
-  updated_at: string;
+  updated_at?: string; // Make optional
   litter_number: number;
 }
 
@@ -50,7 +50,7 @@ interface Litter {
   male_count: number;
   female_count: number;
   notes: string;
-  updated_at: string;
+  updated_at?: string; // Make optional to match the puppies/types.ts definition
   documents_url: string;
   puppies?: Puppy[];
   dam?: Dog;

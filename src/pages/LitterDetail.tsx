@@ -47,9 +47,8 @@ const LitterDetail = () => {
       // Process the data to ensure it has all required fields
       const processedData = {
         ...data,
-        // Add updated_at explicitly - it might not exist in the database response
-        // so we use created_at as a fallback value
-        updated_at: data.created_at
+        // Add updated_at explicitly - using created_at as a fallback value
+        updated_at: data.updated_at || data.created_at
       };
 
       console.log('Processed litter data:', processedData);

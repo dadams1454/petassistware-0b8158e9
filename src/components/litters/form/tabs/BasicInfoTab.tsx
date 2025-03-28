@@ -35,7 +35,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
             <FormItem>
               <FormLabel>Litter Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter litter name" {...field} />
+                <Input placeholder="Enter litter name" {...field} value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>

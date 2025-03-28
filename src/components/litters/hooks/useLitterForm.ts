@@ -118,7 +118,7 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       const processedData = {
         ...data,
         birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
-        expected_go_home_date: data.expected_go_home_date.toISOString().split('T')[0],
+        expected_go_home_date: data.expected_go_home_date ? data.expected_go_home_date.toISOString().split('T')[0] : null,
         akc_registration_date: data.akc_registration_date?.toISOString().split('T')[0] || null,
         first_mating_date: data.first_mating_date?.toISOString().split('T')[0] || null,
         last_mating_date: data.last_mating_date?.toISOString().split('T')[0] || null,
