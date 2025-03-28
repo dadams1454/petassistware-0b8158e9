@@ -1,40 +1,31 @@
 
-import { Puppy } from "@/components/litters/puppies/types";
-
-export type PuppyAgeGroup = 
-  | 'first24hours' 
-  | 'first48hours' 
-  | 'first7days'
-  | 'week2' 
-  | 'week3to4' 
-  | 'week5to7'
-  | 'week8to10' 
-  | 'over10weeks';
+import { Puppy } from '@/components/litters/puppies/types';
 
 export interface PuppyWithAge extends Puppy {
   ageInDays: number;
-  ageGroup: PuppyAgeGroup;
+  litters?: {
+    id: string;
+    name: string;
+    whelping_date: string;
+  };
 }
 
 export interface PuppyAgeGroupData {
-  id: PuppyAgeGroup;
-  label: string;
+  id: string;
+  name: string;
+  startDay: number;
+  endDay: number;
   description: string;
-  daysRange: {
-    min: number;
-    max: number | null;
-  };
-  key: string;
-  milestones: string[];
-  criticalTasks: string[];
+  milestones: string;
+  careChecks?: string[];
 }
 
-export interface PuppyCareTask {
+export interface PuppyCareLog {
   id: string;
-  taskName: string;
-  ageGroup: PuppyAgeGroup;
-  isRequired: boolean;
-  description?: string;
-  frequency: 'daily' | 'weekly' | 'once' | 'custom';
-  lastCompleted?: Date | null;
+  puppy_id: string;
+  timestamp: string | Date;
+  care_type: string;
+  notes?: string;
+  created_by: string;
+  created_at: string;
 }
