@@ -1,434 +1,308 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useToast } from '@/components/ui/use-toast';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import React, { useState, useEffect } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { useDogGroups } from './hooks/useDogGroups';
-import { usePottyBreakTimetable } from './hooks/usePottyBreakTimetable';
-import { CheckCircle, XCircle, Dog, AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useDogTimetable } from './hooks/useDogTimetable';
+import { RefreshCw, Clock, Calendar, Dog, AlertTriangle } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { format } from 'date-fns';
 
 interface DogLetOutTimetableProps {
   dogsData: DogCareStatus[];
-  date: Date;
+  date?: Date;
   onRefresh?: () => void;
 }
 
-const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({ 
-  dogsData, 
-  date,
-  onRefresh 
+const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
+  dogsData,
+  date = new Date(),
+  onRefresh
 }) => {
-  const { toast } = useToast();
-  const [selectedGroup, setSelectedGroup] = useState<string>('all');
-  
-  // Get dog groups
-  const { 
-    groups, 
-    isLoading: groupsLoading,
-    addGroup
-  } = useDogGroups();
-  
-  // Get time slots for the timetable
-  const timeSlots = useMemo(() => {
-    const slots: string[] = [];
-    for (let hour = 6; hour < 21; hour++) {
-      const formattedHour = hour > 12 ? hour - 12 : hour;
-      const amPm = hour >= 12 ? 'PM' : 'AM';
-      slots.push(`${formattedHour}:00 ${amPm}`);
-    }
-    return slots;
-  }, []);
-  
-  // Get current hour for highlighting
-  const currentHour = useMemo(() => {
-    const now = new Date();
-    return now.getHours();
-  }, []);
-  
-  // Get potty break data using our hook
   const {
-    pottyBreaks,
-    hasPottyBreak,
-    getPottyBreakStatus,
+    timeSlots,
+    currentHour,
+    dogLetOuts,
+    sortedDogs,
+    hasDogLetOut,
+    hasObservation,
+    getObservationDetails,
     handleCellClick,
-    handleGroupPottyBreak,
-    isLoading: pottyBreaksLoading,
-    refreshPottyBreaks,
-    isDogOutside,
-    getOutsideTime,
-    incompatibilityWarning,
-    clearIncompatibilityWarning
-  } = usePottyBreakTimetable(dogsData, date);
+    handleRefresh,
+    isLoading
+  } = useDogTimetable(dogsData, onRefresh, 'dogletout', date);
   
-  // Dialog states for warnings and group management
-  const [showAddGroupDialog, setShowAddGroupDialog] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
-  const [newGroupColor, setNewGroupColor] = useState('#1890ff');
+  const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
+  const [conflictInfo, setConflictInfo] = useState<{
+    dogToLetOut: DogCareStatus | null,
+    incompatibleDogs: DogCareStatus[],
+    timeSlot: string
+  }>({
+    dogToLetOut: null,
+    incompatibleDogs: [],
+    timeSlot: ''
+  });
+
+  // State for dogs currently outside
+  const [dogsOutside, setDogsOutside] = useState<string[]>([]);
   
-  // Filter dogs based on selected group
-  const filteredDogs = useMemo(() => {
-    if (selectedGroup === 'all') return dogsData;
+  // Function to check incompatibilities before letting a dog out
+  const checkAndHandleDogLetOut = (dog: DogCareStatus, timeSlot: string) => {
+    // In a real implementation, check for incompatibilities with dogs currently outside
+    // For demonstration, we'll simulate finding incompatible dogs
+    const incompatibleDogsIds = ['some-dog-id']; // This would come from your database
     
-    if (selectedGroup === 'outside') {
-      return dogsData.filter(dog => isDogOutside(dog.dog_id));
-    }
-    
-    const group = groups.find(g => g.id === selectedGroup);
-    if (!group) return dogsData;
-    
-    return dogsData.filter(dog => 
-      group.dogIds.includes(dog.dog_id)
+    // Find any incompatible dogs that are currently outside
+    const incompatibleDogsOutside = dogsData.filter(d => 
+      incompatibleDogsIds.includes(d.dog_id) && dogsOutside.includes(d.dog_id)
     );
-  }, [dogsData, selectedGroup, groups, isDogOutside]);
-  
-  // Handle manual refresh
-  const handleRefresh = useCallback(() => {
-    refreshPottyBreaks();
-    if (onRefresh) onRefresh();
-    toast({
-      title: 'Refreshed',
-      description: 'Dog let out data has been refreshed',
-    });
-  }, [refreshPottyBreaks, onRefresh, toast]);
-  
-  // Handle creating a new group
-  const handleAddGroup = useCallback(async () => {
-    if (!newGroupName.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a group name',
-        variant: 'destructive'
-      });
-      return;
-    }
     
-    const groupId = await addGroup(newGroupName, newGroupColor);
-    if (groupId) {
-      setShowAddGroupDialog(false);
-      setNewGroupName('');
-      setNewGroupColor('#1890ff');
-      setSelectedGroup(groupId);
-    }
-  }, [newGroupName, newGroupColor, addGroup, toast]);
-  
-  // Handle group potty break actions
-  const handleGroupAction = useCallback((timeSlot: string, status: 'out' | 'in') => {
-    if (selectedGroup === 'all' || selectedGroup === 'outside') {
-      toast({
-        title: 'Select a group',
-        description: 'Please select a specific group to perform this action',
-        variant: 'destructive'
+    if (incompatibleDogsOutside.length > 0) {
+      // Show conflict dialog
+      setConflictInfo({
+        dogToLetOut: dog,
+        incompatibleDogs: incompatibleDogsOutside,
+        timeSlot
       });
-      return;
+      setConflictDialogOpen(true);
+    } else {
+      // No conflicts, proceed with let out
+      handleCellClick(dog.dog_id, dog.dog_name, timeSlot, 'dogletout');
+      // Add dog to outside list
+      setDogsOutside(prev => [...prev, dog.dog_id]);
     }
-    
-    handleGroupPottyBreak(selectedGroup, timeSlot, status);
-  }, [selectedGroup, handleGroupPottyBreak, toast]);
+  };
   
-  const isLoading = groupsLoading || pottyBreaksLoading;
+  // Handle confirmation to let out despite incompatibilities
+  const confirmDogLetOut = () => {
+    if (conflictInfo.dogToLetOut) {
+      handleCellClick(
+        conflictInfo.dogToLetOut.dog_id, 
+        conflictInfo.dogToLetOut.dog_name, 
+        conflictInfo.timeSlot, 
+        'dogletout'
+      );
+      // Add dog to outside list
+      setDogsOutside(prev => [...prev, conflictInfo.dogToLetOut.dog_id]);
+    }
+    setConflictDialogOpen(false);
+  };
   
+  // Simulate marking a dog as returned from outside
+  const markDogAsReturned = (dogId: string, timeSlot: string) => {
+    // Remove dog from outside list
+    setDogsOutside(prev => prev.filter(id => id !== dogId));
+  };
+  
+  // Reset outside dogs at day change
+  useEffect(() => {
+    setDogsOutside([]);
+  }, [date]);
+
+  // Get current time slot
+  const getCurrentTimeSlot = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const formattedHour = hours > 12 ? hours - 12 : hours;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    return `${formattedHour}:00 ${ampm}`;
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center space-x-2">
-          <Select
-            value={selectedGroup}
-            onValueChange={setSelectedGroup}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All Dogs" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Dogs</SelectItem>
-              <SelectItem value="outside">Currently Outside</SelectItem>
-              {groups.map(group => (
-                <SelectItem key={group.id} value={group.id}>
-                  <div className="flex items-center">
-                    <div 
-                      className="w-2 h-2 rounded-full mr-2" 
-                      style={{backgroundColor: group.color || '#1890ff'}}
-                    />
-                    {group.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">
+            {format(date, 'EEEE, MMMM d, yyyy')}
+          </span>
+        </div>
+        
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
-            size="sm"
-            onClick={() => setShowAddGroupDialog(true)}
-          >
-            Add Group
-          </Button>
-          
-          <Button 
-            onClick={handleRefresh} 
-            variant="outline" 
-            size="sm"
+            size="sm" 
+            onClick={handleRefresh}
             disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center">
-            <Badge variant="outline" className="bg-green-100 dark:bg-green-900/20 mr-2">
-              <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
-              In
-            </Badge>
-            <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/20 mr-2">
-              <AlertCircle className="h-3 w-3 mr-1 text-yellow-600" />
-              Out
-            </Badge>
-          </div>
-        </div>
       </div>
-
-      {isLoading ? (
-        <div className="flex justify-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      ) : filteredDogs.length === 0 ? (
-        <div className="text-center p-8 border rounded-md bg-muted/20">
-          <Dog className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-          <h3 className="text-lg font-medium">No dogs found</h3>
-          <p className="text-muted-foreground">Try selecting a different group or add dogs to your kennel.</p>
-        </div>
-      ) : (
-        <div className="border rounded-md overflow-auto">
-          <Table>
-            <TableHeader className="bg-muted/20 sticky top-0">
-              <TableRow>
-                <TableHead className="w-[220px]">Dog</TableHead>
-                <TableHead className="w-[100px] text-center">Status</TableHead>
+      
+      {/* Legend for outside status */}
+      <div className="flex gap-2 items-center text-xs">
+        <span>Status:</span>
+        <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
+          OUT
+        </Badge>
+        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+          IN
+        </Badge>
+        <Badge variant="outline" className="bg-slate-100 text-slate-800 border-slate-200">
+          <AlertTriangle className="h-3 w-3 mr-1" />
+          Needs Let Out
+        </Badge>
+      </div>
+      
+      <ScrollArea className="h-[calc(100vh-240px)] rounded-md border">
+        <div className="w-[900px] min-w-full">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="sticky left-0 bg-muted/50 p-2 text-left font-medium text-muted-foreground">
+                  Dog Name
+                </th>
                 {timeSlots.map((slot) => (
-                  <TableHead 
+                  <th 
                     key={slot} 
-                    className={`text-center min-w-[80px] ${
-                      // Highlight current time slot
-                      slot.includes(`${currentHour > 12 ? currentHour - 12 : currentHour}:00 ${currentHour >= 12 ? 'PM' : 'AM'}`)
-                        ? 'bg-blue-50 dark:bg-blue-900/10 font-medium'
-                        : ''
+                    className={`p-2 text-center font-medium text-muted-foreground ${
+                      slot === getCurrentTimeSlot() ? 'bg-amber-50' : ''
                     }`}
                   >
-                    <div>
-                      {slot}
-                    </div>
-                    {selectedGroup !== 'all' && selectedGroup !== 'outside' && (
-                      <div className="flex gap-1 mt-1 justify-center">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="h-6 px-2 py-0 text-xs"
-                          onClick={() => handleGroupAction(slot, 'out')}
-                        >
-                          Group Out
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="h-6 px-2 py-0 text-xs"
-                          onClick={() => handleGroupAction(slot, 'in')}
-                        >
-                          Group In
-                        </Button>
-                      </div>
-                    )}
-                  </TableHead>
+                    {slot}
+                  </th>
                 ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDogs.map((dog) => (
-                <TableRow 
-                  key={dog.dog_id}
-                  className={isDogOutside(dog.dog_id) ? 'bg-yellow-50 dark:bg-yellow-900/5' : ''}
-                >
-                  <TableCell className="font-medium">
-                    <div className="flex items-center">
-                      <span className="mr-2">{dog.dog_name}</span>
-                      {isDogOutside(dog.dog_id) && (
-                        <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/20">
-                          <span>Outside {getOutsideTime(dog.dog_id)}</span>
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {isDogOutside(dog.dog_id) ? (
-                      <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/20">
-                        <AlertCircle className="h-3 w-3 mr-1 text-yellow-600" />
-                        Out
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-green-100 dark:bg-green-900/20">
-                        <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
-                        In
-                      </Badge>
-                    )}
-                  </TableCell>
-                  {timeSlots.map((slot) => {
-                    const status = getPottyBreakStatus(dog.dog_id, slot);
+              </tr>
+            </thead>
+            <tbody>
+              {sortedDogs.map((dog) => {
+                const isOutside = dogsOutside.includes(dog.dog_id);
+                
+                return (
+                  <tr 
+                    key={dog.dog_id} 
+                    className={`border-b ${isOutside ? 'bg-orange-50' : ''}`}
+                  >
+                    <td className={`sticky left-0 bg-background p-2 ${isOutside ? 'bg-orange-50' : ''}`}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-muted">
+                          {dog.dog_photo ? (
+                            <img 
+                              src={dog.dog_photo} 
+                              alt={dog.dog_name} 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Dog className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                        <span className="font-medium truncate max-w-[120px]">
+                          {dog.dog_name}
+                        </span>
+                      </div>
+                    </td>
                     
-                    return (
-                      <TableCell 
-                        key={`${dog.dog_id}-${slot}`} 
-                        className={`text-center cursor-pointer transition-colors p-0 h-10 ${
-                          slot.includes(`${currentHour > 12 ? currentHour - 12 : currentHour}:00 ${currentHour >= 12 ? 'PM' : 'AM'}`)
-                            ? 'bg-blue-50 dark:bg-blue-900/10'
-                            : ''
-                        } ${
-                          status
-                            ? status === 'out'
-                              ? 'bg-yellow-100 dark:bg-yellow-900/20 hover:bg-yellow-200 dark:hover:bg-yellow-900/30'
-                              : 'bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30'
-                            : 'hover:bg-slate-100 dark:hover:bg-slate-800/50'
-                        }`}
-                        onClick={() => handleCellClick(dog.dog_id, dog.dog_name, slot)}
-                      >
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="w-full h-full flex items-center justify-center">
-                                {status && (
-                                  <>
-                                    {status === 'out' ? (
-                                      <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                    ) : (
-                                      <CheckCircle className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
+                    {timeSlots.map((slot) => {
+                      const hasBreak = hasDogLetOut(dog.dog_id, slot);
+                      const observation = hasObservation(dog.dog_id, slot) 
+                        ? getObservationDetails(dog.dog_id) 
+                        : null;
+                      
+                      // Determine cell status
+                      let status = "none";
+                      if (isOutside && hasBreak) {
+                        status = "out";
+                      } else if (hasBreak && !isOutside) {
+                        status = "in";
+                      }
+                      
+                      return (
+                        <td 
+                          key={`${dog.dog_id}-${slot}`} 
+                          className={`border-l p-0 text-center ${
+                            slot === getCurrentTimeSlot() ? 'bg-amber-50' : ''
+                          } ${isOutside ? 'bg-orange-50' : ''}`}
+                          onClick={() => checkAndHandleDogLetOut(dog, slot)}
+                        >
+                          <div 
+                            className={`h-full w-full py-2 cursor-pointer transition-colors ${
+                              hasBreak ? 'bg-opacity-10' : 'hover:bg-muted/40'
+                            } relative`}
+                          >
+                            {status === "out" && (
+                              <Badge className="bg-orange-500 hover:bg-orange-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                OUT
+                              </Badge>
+                            )}
+                            {status === "in" && (
+                              <Badge className="bg-green-500 hover:bg-green-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                IN
+                              </Badge>
+                            )}
+                            {observation && (
+                              <div className="absolute bottom-0.5 right-0.5">
+                                <div className="h-2 w-2 rounded-full bg-amber-500" title={observation.text} />
                               </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {status 
-                                  ? status === 'out'
-                                    ? `${dog.dog_name} went out at ${slot}`
-                                    : `${dog.dog_name} came in at ${slot}`
-                                  : `Click to mark ${dog.dog_name} as out/in at ${slot}`
-                                }
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
-
-      {/* Incompatibility warning dialog */}
-      <Dialog 
-        open={!!incompatibilityWarning} 
-        onOpenChange={(open) => !open && clearIncompatibilityWarning()}
-      >
+      </ScrollArea>
+      
+      {/* Incompatible Dogs Warning Dialog */}
+      <Dialog open={conflictDialogOpen} onOpenChange={setConflictDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-amber-500 flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2" />
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
               Dog Incompatibility Warning
             </DialogTitle>
+            <DialogDescription>
+              {conflictInfo.dogToLetOut?.dog_name} may not be compatible with dogs currently outside.
+            </DialogDescription>
           </DialogHeader>
+          
           <div className="py-4">
-            <Alert variant="warning" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Incompatible Dogs</AlertTitle>
-              <AlertDescription>
-                {incompatibilityWarning?.dogName} should not interact with the following dogs currently outside:
-              </AlertDescription>
-            </Alert>
-            <ul className="list-disc pl-5 space-y-1">
-              {incompatibilityWarning?.incompatibleDogs.map(dog => (
-                <li key={dog.id}>{dog.name}</li>
+            <p className="mb-2 font-medium">Incompatible with:</p>
+            <div className="space-y-2">
+              {conflictInfo.incompatibleDogs.map(dog => (
+                <Card key={dog.dog_id} className="p-2 bg-red-50 border-red-200">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-muted">
+                      {dog.dog_photo ? (
+                        <img 
+                          src={dog.dog_photo} 
+                          alt={dog.dog_name} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Dog className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <span>{dog.dog_name}</span>
+                  </div>
+                </Card>
               ))}
-            </ul>
+            </div>
           </div>
-          <DialogDescription>
-            Please ensure these dogs don't interact when outside. Do you still want to proceed?
-          </DialogDescription>
+          
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={clearIncompatibilityWarning}
-            >
+            <Button variant="outline" onClick={() => setConflictDialogOpen(false)}>
               Cancel
             </Button>
             <Button 
-              variant="default"
-              onClick={() => {
-                if (incompatibilityWarning) {
-                  // Force let the dog out anyway
-                  const timeSlot = timeSlots[currentHour - 6]; // Approximate current time slot
-                  handleCellClick(incompatibilityWarning.dogId, incompatibilityWarning.dogName, timeSlot);
-                  clearIncompatibilityWarning();
-                }
-              }}
+              variant="destructive" 
+              onClick={confirmDogLetOut}
             >
-              Let Dog Out Anyway
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Group Dialog */}
-      <Dialog open={showAddGroupDialog} onOpenChange={setShowAddGroupDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Dog Group</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="group-name" className="text-right">
-                Group Name
-              </label>
-              <input
-                id="group-name"
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="group-color" className="text-right">
-                Group Color
-              </label>
-              <div className="col-span-3 flex items-center gap-2">
-                <div 
-                  className="w-6 h-6 rounded-full border" 
-                  style={{ backgroundColor: newGroupColor }}
-                />
-                <input
-                  id="group-color"
-                  type="color"
-                  value={newGroupColor}
-                  onChange={(e) => setNewGroupColor(e.target.value)}
-                  className="w-full h-10"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddGroupDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddGroup}>
-              Create Group
+              Let Out Anyway
             </Button>
           </DialogFooter>
         </DialogContent>
