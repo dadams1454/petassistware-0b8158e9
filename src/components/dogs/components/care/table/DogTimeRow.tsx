@@ -1,10 +1,7 @@
 
-import React, { useCallback, memo, useMemo } from 'react';
-import { TableRow } from '@/components/ui/table';
+import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import TimeSlotCell from './components/TimeSlotCell';
-import DogNameCell from './components/DogNameCell';
-import ObservationCell from './components/ObservationCell';
+import { TableRow, TableCell } from '@/components/ui/table';
 
 interface DogTimeRowProps {
   dog: DogCareStatus;
@@ -12,134 +9,92 @@ interface DogTimeRowProps {
   rowColor: string;
   activeCategory: string;
   hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
-  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
-  hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string } | null;
-  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  onCareLogClick: (dogId: string, dogName: string) => void;
+  hasCareLogged: (dogId: string, hour: number) => boolean;
+  hasObservation: (dogId: string, hour: number) => boolean;
+  getObservationDetails: (dogId: string, hour: number) => any;
+  onCellClick: (dogId: string, hour: number) => void;
+  onCellContextMenu: (e: React.MouseEvent, dogId: string, hour: number) => void;
+  onCareLogClick: (dogId: string) => void;
   onDogClick: (dogId: string) => void;
-  onObservationClick: (dogId: string, dogName: string) => void;
+  onObservationClick: (dogId: string, hour: number) => void;
   currentHour?: number;
-  isMobile?: boolean;
-  isPendingFeeding?: (dogId: string, timeSlot: string) => boolean;
 }
 
-// Use memo to prevent unnecessary re-renders of entire rows
-const DogTimeRow = memo(({
+const DogTimeRow: React.FC<DogTimeRowProps> = ({
   dog,
   timeSlots,
   rowColor,
   activeCategory,
-  hasPottyBreak,
   hasCareLogged,
   hasObservation,
-  getObservationDetails,
   onCellClick,
   onCellContextMenu,
   onCareLogClick,
   onDogClick,
   onObservationClick,
-  currentHour,
-  isMobile = false,
-  isPendingFeeding = () => false
-}: DogTimeRowProps) => {
-  // Memoize these handler functions to prevent rebuilding on every render
-  const handleDogNameClick = useCallback(() => {
-    onDogClick(dog.dog_id);
-  }, [dog.dog_id, onDogClick]);
-  
-  const handleCareLogClick = useCallback(() => {
-    onCareLogClick(dog.dog_id, dog.dog_name);
-  }, [dog.dog_id, dog.dog_name, onCareLogClick]);
-  
-  const handleObservationClick = useCallback(() => {
-    onObservationClick(dog.dog_id, dog.dog_name);
-  }, [dog.dog_id, dog.dog_name, onObservationClick]);
-  
-  // Handle cell click for this specific dog
-  const handleCellClick = useCallback((timeSlot: string) => {
-    onCellClick(dog.dog_id, dog.dog_name, timeSlot, activeCategory);
-  }, [dog.dog_id, dog.dog_name, onCellClick, activeCategory]);
-
-  // Handle context menu for this specific dog
-  const handleCellContextMenu = useCallback((e: React.MouseEvent, timeSlot: string) => {
-    onCellContextMenu(e, dog.dog_id, dog.dog_name, timeSlot, activeCategory);
-  }, [dog.dog_id, dog.dog_name, onCellContextMenu, activeCategory]);
-
-  // Get hours from time slot - memoize this function
-  const getHourFromTimeSlot = useCallback((timeSlot: string): number => {
-    if (timeSlot.includes('AM')) {
-      const hour = parseInt(timeSlot.split(':')[0]);
-      return hour === 12 ? 0 : hour;  // 12 AM is hour 0
-    } else {
-      const hour = parseInt(timeSlot.split(':')[0]);
-      return hour === 12 ? 12 : hour + 12;  // 12 PM is hour 12, 1 PM is hour 13, etc.
-    }
-  }, []);
-  
-  // Get observation details only once per render
-  const observationDetails = useMemo(() => getObservationDetails(dog.dog_id), [dog.dog_id, getObservationDetails]);
-  
-  // Check observation once per render
-  const dogHasObservation = useMemo(() => hasObservation(dog.dog_id, ''), [dog.dog_id, hasObservation]);
-
-  // Memoize the row class to prevent recalculation
-  const rowClass = useMemo(() => `${rowColor} hover:bg-opacity-80 dark:hover:bg-opacity-40 transition-colors duration-200`, 
-    [rowColor]);
-
+  currentHour
+}) => {
   return (
-    <TableRow className={rowClass} key={dog.dog_id}>
-      {/* Dog Name Cell */}
-      <DogNameCell 
-        dog={dog} 
-        onCareLogClick={handleCareLogClick} 
-        onDogClick={handleDogNameClick} 
-        activeCategory={activeCategory}
-      />
-      
-      {/* Observations Cell */}
-      <ObservationCell 
-        dogId={dog.dog_id}
-        dogName={dog.dog_name}
-        dogHasObservation={dogHasObservation}
-        observationDetails={observationDetails}
-        onClick={handleObservationClick}
-        activeCategory={activeCategory}
-      />
-      
-      {/* Time Slots - memoize this to prevent recreation of all cells */}
-      {timeSlots.map((timeSlot) => {
-        // Check if this time slot corresponds to the current hour
-        const hour = getHourFromTimeSlot(timeSlot);
-        const isTimeSlotCurrentHour = currentHour !== undefined && hour === currentHour;
-        
-        // Create click handlers for this specific time slot
-        const handleTimeSlotClick = () => handleCellClick(timeSlot);
-        const handleTimeSlotContextMenu = (e: React.MouseEvent) => handleCellContextMenu(e, timeSlot);
-        
+    <TableRow className={rowColor}>
+      {/* Dog name cell */}
+      <TableCell 
+        className="sticky left-0 bg-inherit font-medium z-10 cursor-pointer hover:bg-accent/50"
+        onClick={() => onDogClick(dog.dog_id)}
+      >
+        <div className="flex items-center space-x-2">
+          {dog.dog_photo && (
+            <div className="w-8 h-8 rounded-full overflow-hidden">
+              <img 
+                src={dog.dog_photo} 
+                alt={dog.dog_name} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <span>{dog.dog_name}</span>
+        </div>
+      </TableCell>
+
+      {/* Observations cell */}
+      <TableCell 
+        className="cursor-pointer hover:bg-accent/50"
+        onClick={() => onObservationClick(dog.dog_id, 0)}
+      >
+        <div className="flex items-center justify-center">
+          {hasObservation(dog.dog_id, 0) ? (
+            <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-xs">
+              Has notes
+            </span>
+          ) : (
+            <span className="text-muted-foreground text-xs">No notes</span>
+          )}
+        </div>
+      </TableCell>
+
+      {/* Time slot cells */}
+      {timeSlots.map((slot, index) => {
+        const isHighlighted = currentHour !== undefined && (
+          (slot.includes('AM') && parseInt(slot.split(':')[0]) + (slot.includes('12') ? 0 : 12) === currentHour) || 
+          (slot.includes('PM') && parseInt(slot.split(':')[0]) + (slot.includes('12') ? 12 : 0) === currentHour)
+        );
+
         return (
-          <TimeSlotCell
-            key={`${dog.dog_id}-${timeSlot}`}
-            dogId={dog.dog_id}
-            dogName={dog.dog_name}
-            timeSlot={timeSlot}
-            category={activeCategory}
-            hasPottyBreak={hasPottyBreak(dog.dog_id, timeSlot)}
-            hasCareLogged={hasCareLogged(dog.dog_id, timeSlot, activeCategory)}
-            onClick={handleTimeSlotClick}
-            onContextMenu={handleTimeSlotContextMenu}
-            isCurrentHour={isTimeSlotCurrentHour}
-            isIncident={activeCategory === 'feeding' && hasObservation(dog.dog_id, timeSlot)}
-            isPendingFeeding={activeCategory === 'feeding' ? isPendingFeeding(dog.dog_id, timeSlot) : false}
-          />
+          <TableCell 
+            key={`${dog.dog_id}-${slot}`}
+            className={`text-center cursor-pointer hover:bg-accent/50 ${isHighlighted ? 'bg-yellow-100/50 dark:bg-yellow-900/20' : ''}`}
+            onClick={() => onCellClick(dog.dog_id, index)}
+            onContextMenu={(e) => onCellContextMenu(e, dog.dog_id, index)}
+          >
+            {hasCareLogged(dog.dog_id, index) ? (
+              <div className="w-4 h-4 bg-green-500 rounded-full mx-auto" />
+            ) : (
+              <div className="w-4 h-4 border border-gray-300 dark:border-gray-700 rounded-full mx-auto" />
+            )}
+          </TableCell>
         );
       })}
     </TableRow>
   );
-});
-
-// Add display name for better debugging
-DogTimeRow.displayName = 'DogTimeRow';
+};
 
 export default DogTimeRow;

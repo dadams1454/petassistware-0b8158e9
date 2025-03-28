@@ -1,22 +1,21 @@
 
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import DogRow from './DogRow';
+import DogTimeRow from '../DogTimeRow';
 
 interface TimeTableContentProps {
   sortedDogs: DogCareStatus[];
   timeSlots: string[];
   activeCategory: string;
-  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
-  hasObservation: (dogId: string, timeSlot: string) => boolean;
-  getObservationDetails: (dogId: string) => { text: string; type: string } | null;
-  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
-  onCareLogClick: (dogId: string, dogName: string) => void;
+  hasCareLogged: (dogId: string, hour: number) => boolean;
+  hasObservation: (dogId: string, hour: number) => boolean;
+  getObservationDetails: (dogId: string, hour: number) => any;
+  onCellClick: (dogId: string, hour: number) => void;
+  onCellContextMenu: (e: React.MouseEvent, dogId: string, hour: number) => void;
+  onCareLogClick: (dogId: string) => void;
   onDogClick: (dogId: string) => void;
-  onObservationClick: (dogId: string, dogName: string) => void;
+  onObservationClick: (dogId: string, hour: number) => void;
   currentHour?: number;
-  isMobile?: boolean;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({
@@ -31,8 +30,7 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onCareLogClick,
   onDogClick,
   onObservationClick,
-  currentHour,
-  isMobile = false
+  currentHour
 }) => {
   return (
     <div className="relative overflow-x-auto border-t">
@@ -64,23 +62,32 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
           </tr>
         </thead>
         <tbody>
-          {sortedDogs.map((dog) => (
-            <DogRow
-              key={dog.dog_id}
-              dog={dog}
-              timeSlots={timeSlots}
-              activeCategory={activeCategory}
-              hasCareLogged={hasCareLogged}
-              hasObservation={hasObservation}
-              getObservationDetails={getObservationDetails}
-              onCellClick={onCellClick}
-              onCellContextMenu={onCellContextMenu}
-              onCareLogClick={onCareLogClick}
-              onDogClick={onDogClick}
-              onObservationClick={onObservationClick}
-              isMobile={isMobile}
-            />
-          ))}
+          {sortedDogs.map((dog) => {
+            // Calculate a simple striped row background
+            const rowBgClass = parseInt(dog.dog_id) % 2 === 0 
+              ? 'bg-white dark:bg-gray-950' 
+              : 'bg-gray-50 dark:bg-gray-900/50';
+              
+            return (
+              <DogTimeRow
+                key={dog.dog_id}
+                dog={dog}
+                timeSlots={timeSlots}
+                rowColor={rowBgClass}
+                activeCategory={activeCategory}
+                hasPottyBreak={() => false}
+                hasCareLogged={hasCareLogged}
+                hasObservation={hasObservation}
+                getObservationDetails={getObservationDetails}
+                onCellClick={onCellClick}
+                onCellContextMenu={onCellContextMenu}
+                onCareLogClick={onCareLogClick}
+                onDogClick={onDogClick}
+                onObservationClick={onObservationClick}
+                currentHour={currentHour}
+              />
+            );
+          })}
         </tbody>
       </table>
     </div>
