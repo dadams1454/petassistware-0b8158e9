@@ -29,3 +29,10 @@ export interface PuppyCareLog {
   created_by: string;
   created_at: string;
 }
+
+export interface PuppyManagementStats {
+  totalPuppies: number;
+  activeLitters: number;
+  upcomingVaccinations: number;
+  recentWeightChecks: number;
+}
