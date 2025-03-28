@@ -8,7 +8,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
-import PottyBreakGroupSelector from '@/components/dogs/components/care/potty/PottyBreakGroupSelector';
 import { useToast } from '@/components/ui/use-toast';
 import { DogCareCard } from '@/components/dashboard/DogCareCard';
 import { recordCareActivity } from '@/services/careService';
@@ -16,9 +15,8 @@ import { EmptyState, SectionHeader } from '@/components/ui/standardized';
 import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
 import { careCategories } from '@/components/dogs/components/care/CareCategories';
-import PottyBreakManager from '@/components/dogs/components/care/potty/PottyBreakManager';
 import FeedingTab from '@/components/dashboard/tabs/FeedingTab';
-import PottyBreaksTab from '@/components/dashboard/tabs/PottyBreaksTab';
+import DogLetOutTab from '@/components/dashboard/tabs/DogLetOutTab';
 import MedicationsTab from '@/components/dashboard/tabs/MedicationsTab';
 import GroomingTab from '@/components/dashboard/tabs/GroomingTab';
 import NotesTab from '@/components/dashboard/tabs/NotesTab';
@@ -40,7 +38,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
 }) => {
   const { toast } = useToast();
   const [viewMode, setViewMode] = useState<string>('table'); // 'table', 'cards', or 'groups'
-  const [careCategory, setCareCategory] = useState<string>('feeding'); // Default to feeding instead of pottybreaks
+  const [careCategory, setCareCategory] = useState<string>('feeding'); // Default to feeding
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const navigate = useNavigate();
   
@@ -77,45 +75,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     },
   });
 
-  // Handle group potty break logging
-  const handleGroupPottyBreak = async (dogIds: string[]) => {
-    if (!dogIds.length) return;
-    
-    try {
-      // Log potty break for each dog in the group
-      const timestamp = new Date().toISOString();
-      const promises = dogIds.map(dogId => 
-        recordCareActivity({
-          dog_id: dogId,
-          activity_type: 'potty',
-          timestamp,
-          notes: 'Group potty break'
-        })
-      );
-      
-      await Promise.all(promises);
-      
-      toast({
-        title: 'Potty Break Recorded',
-        description: `Potty break recorded for ${dogIds.length} dogs.`,
-      });
-      
-      // Refresh data
-      refetch();
-    } catch (error) {
-      console.error('Error recording group potty break:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to record potty break.',
-        variant: 'destructive',
-      });
-    }
-  };
-  
-  const handleNavigateToDogs = () => {
-    navigate('/dogs');
-  };
-  
   const handleRefresh = async () => {
     try {
       await refetch();
@@ -147,9 +106,9 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   // Determine which tab component to show based on the category
   const renderCategoryContent = () => {
     switch (careCategory) {
-      case 'pottybreaks':
+      case 'dogletout':
         return (
-          <PottyBreaksTab 
+          <DogLetOutTab 
             onRefreshDogs={handleRefresh}
             dogStatuses={effectiveDogStatuses}
           />

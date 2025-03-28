@@ -6,11 +6,11 @@ import {
   Baby, 
   Scissors, 
   Building2, 
-  Droplet, // Changed from DropletHalf to Droplet
   Dumbbell, 
   Heart, 
   GraduationCap,
-  StickyNote
+  StickyNote,
+  Dog
 } from 'lucide-react';
 
 export interface CareCategory {
@@ -30,10 +30,10 @@ export const careCategories: CareCategory[] = [
     description: 'Track meals and food intake'
   },
   {
-    id: 'pottybreaks',
-    name: 'Potty Breaks',
-    icon: <Droplet className="h-4 w-4" />, // Changed from DropletHalf to Droplet
-    description: 'Track bathroom breaks'
+    id: 'dogletout',
+    name: 'Dog Let Out',
+    icon: <Dog className="h-4 w-4" />,
+    description: 'Track when dogs are let outside'
   },
   {
     id: 'medication',
