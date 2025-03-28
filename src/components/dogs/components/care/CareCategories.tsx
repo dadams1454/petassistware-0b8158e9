@@ -2,7 +2,6 @@
 import React from 'react';
 import { 
   Coffee, 
-  Droplet, 
   Scissors, 
   Dumbbell, 
   Heart, 
@@ -18,11 +17,6 @@ export const careCategories = [
     id: 'facility',
     name: 'Facility',
     icon: <Building2 className="h-4 w-4" />,
-  },
-  {
-    id: 'pottybreaks',
-    name: 'Potty Breaks',
-    icon: <Droplet className="h-4 w-4" />,
   },
   {
     id: 'feeding',
