@@ -7,7 +7,7 @@ import {
   RotateCw, 
   Scissors, 
   Heart, 
-  Droplets, 
+  Dog, 
   Building, 
   BookOpen
 } from 'lucide-react';
@@ -57,7 +57,7 @@ export const getDefaultCategories = (): TabDescriptor[] => [
   { id: 'exercise', name: 'Exercise', icon: <RotateCw className="h-4 w-4" /> },
   { id: 'grooming', name: 'Grooming', icon: <Scissors className="h-4 w-4" /> },
   { id: 'wellness', name: 'Wellness', icon: <Heart className="h-4 w-4" /> },
-  { id: 'hydration', name: 'Hydration', icon: <Droplets className="h-4 w-4" /> },
+  { id: 'letdogout', name: 'Let Dog Out', icon: <Dog className="h-4 w-4" /> },
   { id: 'facility', name: 'Facility', icon: <Building className="h-4 w-4" /> },
   { id: 'notes', name: 'Notes', icon: <BookOpen className="h-4 w-4" /> },
 ];

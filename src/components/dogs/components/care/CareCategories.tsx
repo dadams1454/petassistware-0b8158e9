@@ -6,7 +6,7 @@ import {
   Baby, 
   Scissors, 
   Building2, 
-  Droplet, // Changed from DropletHalf to Droplet
+  Dog, 
   Dumbbell, 
   Heart, 
   GraduationCap,
@@ -30,10 +30,10 @@ export const careCategories: CareCategory[] = [
     description: 'Track meals and food intake'
   },
   {
-    id: 'pottybreaks',
-    name: 'Potty Breaks',
-    icon: <Droplet className="h-4 w-4" />, // Changed from DropletHalf to Droplet
-    description: 'Track bathroom breaks'
+    id: 'letdogout',
+    name: 'Let Dog Out',
+    icon: <Dog className="h-4 w-4" />,
+    description: 'Track when dogs go outside'
   },
   {
     id: 'medication',
