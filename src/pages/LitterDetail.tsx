@@ -13,7 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/standardiz
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
-import type { Litter } from '@/components/litters/puppies/types';
+import type { Litter } from '@/types/litter'; // Import from the .d.ts file for type consistency
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,7 +44,13 @@ const LitterDetail = () => {
         throw error;
       }
 
-      return data as Litter;
+      // Ensure required properties exist or add them with default values
+      const processedData = {
+        ...data,
+        updated_at: data.updated_at || data.created_at, // Use created_at as fallback if updated_at is missing
+      };
+
+      return processedData as Litter;
     },
     enabled: !!id && id !== 'new', // Only run the query if id exists and is not "new"
   });
