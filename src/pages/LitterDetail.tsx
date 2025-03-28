@@ -45,11 +45,10 @@ const LitterDetail = () => {
       }
 
       // Process the data to ensure it has all required fields
-      // The data from Supabase doesn't have 'updated_at', so we add it
+      // Add updated_at property explicitly since the type requires it
       const processedData = {
         ...data,
-        // Make sure updated_at exists by using created_at as fallback
-        updated_at: data.updated_at || data.created_at
+        updated_at: data.created_at // Use created_at as fallback since updated_at doesn't exist in DB response
       };
 
       return processedData as Litter;
