@@ -1,5 +1,5 @@
 
-interface Dog {
+export interface Dog {
   id: string;
   created_at: string;
   name: string;
@@ -15,7 +15,7 @@ interface Dog {
   litter_number: number;
 }
 
-interface Puppy {
+export interface Puppy {
   id: string;
   created_at: string;
   name: string;
@@ -38,7 +38,7 @@ interface Puppy {
   akc_registration_number?: string;
 }
 
-interface Litter {
+export interface Litter {
   id: string;
   created_at: string;
   litter_name: string;
@@ -50,7 +50,7 @@ interface Litter {
   male_count: number;
   female_count: number;
   notes: string;
-  updated_at?: string; // Make optional to match the puppies/types.ts definition
+  updated_at?: string; // Make optional
   documents_url: string;
   puppies?: Puppy[];
   dam?: Dog | {
@@ -86,4 +86,5 @@ interface Litter {
   last_mating_date?: string;
   kennel_name?: string;
   breeding_notes?: string;
+  status?: string;
 }

@@ -12,7 +12,7 @@ import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
-import { Litter } from '@/types/litter'; // Import from types/litter instead
+import { Litter } from '@/types/litter'; // Import from regular .ts file instead of .d.ts
 
 const Litters = () => {
   const navigate = useNavigate();

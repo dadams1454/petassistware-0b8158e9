@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PuppiesList from '../PuppiesList';
 import WaitlistManager from '../../waitlist/WaitlistManager';
 import LitterTimeline from './LitterTimeline';
-import { Puppy } from '../puppies/types';
+import { Puppy } from '@/types/litter'; // Update import here too
 
 interface LitterTabsProps {
   litterId: string;

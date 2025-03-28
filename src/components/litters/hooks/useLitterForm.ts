@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthProvider';
-import { Litter } from '../puppies/types';
+import { Litter } from '@/types/litter'; // Update import here too
 
 export interface LitterFormData {
   litter_name: string;

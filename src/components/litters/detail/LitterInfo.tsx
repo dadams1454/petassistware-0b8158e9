@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { format, differenceInWeeks, differenceInDays } from 'date-fns';
 import { Circle, Calendar, Info, Users, Heart, Dog, MessageSquare } from 'lucide-react';
 import DashboardCard from '@/components/dashboard/DashboardCard';
-import { Litter } from '@/types/litter';
+import { Litter } from '@/types/litter'; // Import from regular .ts file instead of .d.ts
 
 interface LitterInfoProps {
   litter: Litter;

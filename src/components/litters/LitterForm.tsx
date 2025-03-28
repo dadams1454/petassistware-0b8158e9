@@ -4,7 +4,7 @@ import { useLitterForm } from './hooks/useLitterForm';
 import { useDamInfoUpdater } from './hooks/useDamInfoUpdater';
 import { usePuppyCounter } from './hooks/usePuppyCounter';
 import LitterFormLayout from './form/LitterFormLayout';
-import { Litter } from '@/types/litter'; // Import from types/litter instead
+import { Litter } from '@/types/litter'; // Import from regular .ts file instead of .d.ts
 
 interface LitterFormProps {
   initialData?: Litter;

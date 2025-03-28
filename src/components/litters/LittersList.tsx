@@ -6,7 +6,7 @@ import EmptyLitterState from './components/EmptyLitterState';
 import DeleteLitterDialog from './components/DeleteLitterDialog';
 import LitterTableView from './components/LitterTableView';
 import LitterCardView from './views/LitterCardView';
-import { Litter } from './puppies/types';
+import { Litter } from '@/types/litter'; // Update import here too
 import useLitterActions from './hooks/useLitterActions';
 
 interface LittersListProps {
