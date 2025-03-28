@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import OverviewTab from './tabs/OverviewTab';
+import DogLetOutTab from './tabs/DogLetOutTab';
 import EventsTab from './tabs/EventsTab';
 import ReportsTab from './tabs/ReportsTab';
 import DailyCareTab from './tabs/DailyCareTab';
@@ -60,6 +61,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
       
       <TabsContent value="dailycare" className="mt-6 w-full">
         <DailyCareTab 
+          onRefreshDogs={handleRefreshDogs}
+          dogStatuses={dogStatuses}
+        />
+      </TabsContent>
+      
+      <TabsContent value="dogletout" className="mt-6 w-full">
+        <DogLetOutTab 
           onRefreshDogs={handleRefreshDogs}
           dogStatuses={dogStatuses}
         />
