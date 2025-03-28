@@ -39,22 +39,23 @@ const DogGroupCard: React.FC<DogGroupCardProps> = ({
   const renderManagementUI = () => {
     if (onEdit && onDelete) {
       return (
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => onEdit(group)}
+            className="h-7 px-2"
           >
-            <Edit2 className="h-4 w-4 mr-1" />
+            <Edit2 className="h-3 w-3 mr-1" />
             Edit
           </Button>
           <Button 
             variant="outline" 
             size="sm"
-            className="text-red-500 hover:bg-red-50 hover:text-red-600"
+            className="text-red-500 hover:bg-red-50 hover:text-red-600 h-7 px-2"
             onClick={() => onDelete && onDelete(group.id)}
           >
-            <X className="h-4 w-4 mr-1" />
+            <X className="h-3 w-3 mr-1" />
             Delete
           </Button>
         </div>
@@ -63,15 +64,16 @@ const DogGroupCard: React.FC<DogGroupCardProps> = ({
 
     // Original dog let out management UI
     return (
-      <div className="flex gap-2">
+      <div className="flex gap-1">
         {onAddDog && (
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => onAddDog(group)}
+            className="h-7 px-2"
           >
-            <Plus className="h-4 w-4 mr-1" />
-            Add Dog
+            <Plus className="h-3 w-3 mr-1" />
+            Add
           </Button>
         )}
         
@@ -81,8 +83,9 @@ const DogGroupCard: React.FC<DogGroupCardProps> = ({
               variant="outline" 
               size="sm" 
               onClick={() => onSelect(group)}
+              className="h-7 px-2"
             >
-              <Edit2 className="h-4 w-4 mr-1" />
+              <Edit2 className="h-3 w-3 mr-1" />
               Manage
             </Button>
           )
@@ -92,8 +95,9 @@ const DogGroupCard: React.FC<DogGroupCardProps> = ({
               variant="outline"
               size="sm"
               onClick={onClose}
+              className="h-7 px-2"
             >
-              <X className="h-4 w-4 mr-1" />
+              <X className="h-3 w-3 mr-1" />
               Close
             </Button>
           )
@@ -111,27 +115,29 @@ const DogGroupCard: React.FC<DogGroupCardProps> = ({
         className="h-2" 
         style={{ backgroundColor: group.color || '#1890ff' }}
       />
-      <CardContent className="pt-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">{group.name}</h3>
+      <CardContent className="pt-3 pb-2 px-3">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-base font-medium truncate">{group.name}</h3>
           {renderManagementUI()}
         </div>
         
         {(dogsData && dogsData.length > 0) && (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-1 mb-2">
             {!group.dogIds || group.dogIds.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No dogs in this group</p>
+              <p className="text-xs text-muted-foreground">No dogs in this group</p>
             ) : (
               groupDogs.map(dog => (
                 <Badge 
                   key={dog.dog_id} 
                   variant="outline"
-                  className="flex items-center"
+                  className="flex items-center text-xs px-1.5 py-0.5"
                 >
-                  {dog.dog_name}
+                  <span className="truncate max-w-[80px]" title={dog.dog_name}>
+                    {dog.dog_name}
+                  </span>
                   {isSelected && onRemoveDog && (
                     <X 
-                      className="h-3 w-3 ml-1 cursor-pointer" 
+                      className="h-2.5 w-2.5 ml-1 cursor-pointer" 
                       onClick={() => onRemoveDog(group.id, dog.dog_id)}
                     />
                   )}
@@ -142,7 +148,7 @@ const DogGroupCard: React.FC<DogGroupCardProps> = ({
         )}
         
         {group.description && (
-          <p className="text-sm text-muted-foreground">{group.description}</p>
+          <p className="text-xs text-muted-foreground">{group.description}</p>
         )}
       </CardContent>
     </Card>

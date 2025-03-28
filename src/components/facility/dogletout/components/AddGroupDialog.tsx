@@ -25,29 +25,29 @@ const AddGroupDialog: React.FC<AddGroupDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Create New Dog Group</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="group-name" className="text-right">
+        <div className="grid gap-3 py-3">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <label htmlFor="group-name" className="text-right text-sm">
               Group Name
             </label>
             <Input
               id="group-name"
               value={newGroupName}
               onChange={(e) => onGroupNameChange(e.target.value)}
-              className="col-span-3"
+              className="col-span-3 h-8 text-sm"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="group-color" className="text-right">
+          <div className="grid grid-cols-4 items-center gap-3">
+            <label htmlFor="group-color" className="text-right text-sm">
               Group Color
             </label>
             <div className="col-span-3 flex items-center gap-2">
               <div 
-                className="w-6 h-6 rounded-full border" 
+                className="w-5 h-5 rounded-full border" 
                 style={{ backgroundColor: newGroupColor }}
               />
               <input
@@ -55,16 +55,16 @@ const AddGroupDialog: React.FC<AddGroupDialogProps> = ({
                 type="color"
                 value={newGroupColor}
                 onChange={(e) => onGroupColorChange(e.target.value)}
-                className="w-full h-10"
+                className="w-full h-8"
               />
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={onAddGroup}>
+          <Button size="sm" onClick={onAddGroup}>
             Create Group
           </Button>
         </DialogFooter>

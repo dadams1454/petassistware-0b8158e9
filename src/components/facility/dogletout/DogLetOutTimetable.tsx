@@ -51,12 +51,12 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
     dogName: '' 
   });
   
-  // Generate time slots from 6am to 10pm
-  const timeSlots = Array.from({ length: 17 }, (_, i) => {
+  // Generate time slots from 6am to 6pm (reduced range to fit better on screen)
+  const timeSlots = Array.from({ length: 13 }, (_, i) => {
     const hour = i + 6; // Starting from 6am
     const h = hour % 12 === 0 ? 12 : hour % 12;
     const ampm = hour < 12 ? 'AM' : 'PM';
-    return `${h}:00 ${ampm}`;
+    return `${h}${ampm}`;
   });
 
   // Effect to fetch dog let out data when date changes
@@ -147,87 +147,94 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
         </div>
       ) : (
         <div className="border rounded-md overflow-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="sticky left-0 bg-background">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => requestSort('dog_name')}
-                    className="w-full flex justify-start px-2"
-                  >
-                    Dog
-                    {sortConfig?.key === 'dog_name' && (
-                      <span className="ml-2">
-                        {sortConfig.direction === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </Button>
-                </TableHead>
-                
-                {timeSlots.map((timeSlot) => (
-                  <TableHead key={timeSlot} className="text-center w-24 min-w-24">
-                    <div className="flex flex-col items-center">
-                      <span>{timeSlot}</span>
-                      {timeSlotHasActivity(timeSlot) && (
-                        <Badge variant="outline" className="mt-1">
-                          {getDogsLetOutCount(timeSlot)}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            
-            <TableBody>
-              {sortedDogs.map((dog) => (
-                <TableRow key={dog.dog_id}>
-                  <TableCell className="sticky left-0 bg-background font-medium">
-                    <div className="flex items-center gap-2">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedDogs.includes(dog.dog_id)}
-                        onChange={() => toggleDogSelection(dog.dog_id)} 
-                        className="h-4 w-4 rounded border-gray-300"
-                      />
-                      {dog.requires_special_handling && (
-                        <AlertCircle className="h-4 w-4 text-amber-500" />
-                      )}
-                      {dog.dog_name}
-                    </div>
-                  </TableCell>
-                  
-                  {timeSlots.map((timeSlot) => {
-                    const isLetOut = hasDogLetOut(dog.dog_id, timeSlot);
-                    
-                    return (
-                      <TableCell 
-                        key={`${dog.dog_id}-${timeSlot}`} 
-                        className={`text-center cursor-pointer hover:bg-muted transition-colors ${
-                          isLetOut ? 'bg-green-50 dark:bg-green-900/20' : ''
-                        }`}
-                        onClick={() => handleCellClick(dog.dog_id, dog.dog_name, timeSlot)}
-                      >
-                        {isLetOut ? (
-                          <Check className="h-5 w-5 text-green-500 dark:text-green-400 mx-auto" />
-                        ) : null}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))}
-              
-              {sortedDogs.length === 0 && (
+          <div className="max-h-[calc(100vh-300px)] overflow-auto">
+            <Table>
+              <TableHeader className="sticky top-0 z-10">
                 <TableRow>
-                  <TableCell colSpan={timeSlots.length + 1} className="h-24 text-center">
-                    No dogs found
-                  </TableCell>
+                  <TableHead className="sticky left-0 bg-background whitespace-nowrap w-[120px] min-w-[120px]">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => requestSort('dog_name')}
+                      className="w-full flex justify-start px-2"
+                    >
+                      Dog
+                      {sortConfig?.key === 'dog_name' && (
+                        <span className="ml-2">
+                          {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </Button>
+                  </TableHead>
+                  
+                  {timeSlots.map((timeSlot) => (
+                    <TableHead 
+                      key={timeSlot} 
+                      className="text-center w-12 min-w-12 px-1 whitespace-nowrap"
+                    >
+                      <div className="flex flex-col items-center text-xs">
+                        <span>{timeSlot}</span>
+                        {timeSlotHasActivity(timeSlot) && (
+                          <Badge variant="outline" className="mt-1 px-1 text-[10px]">
+                            {getDogsLetOutCount(timeSlot)}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableHead>
+                  ))}
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              
+              <TableBody>
+                {sortedDogs.map((dog) => (
+                  <TableRow key={dog.dog_id}>
+                    <TableCell className="sticky left-0 bg-background font-medium py-2 px-1 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedDogs.includes(dog.dog_id)}
+                          onChange={() => toggleDogSelection(dog.dog_id)} 
+                          className="h-3 w-3 rounded border-gray-300"
+                        />
+                        {dog.requires_special_handling && (
+                          <AlertCircle className="h-3 w-3 text-amber-500" />
+                        )}
+                        <span className="text-sm truncate max-w-[80px]" title={dog.dog_name}>
+                          {dog.dog_name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    
+                    {timeSlots.map((timeSlot) => {
+                      const isLetOut = hasDogLetOut(dog.dog_id, timeSlot);
+                      
+                      return (
+                        <TableCell 
+                          key={`${dog.dog_id}-${timeSlot}`} 
+                          className={`text-center cursor-pointer hover:bg-muted transition-colors p-1 ${
+                            isLetOut ? 'bg-green-50 dark:bg-green-900/20' : ''
+                          }`}
+                          onClick={() => handleCellClick(dog.dog_id, dog.dog_name, timeSlot)}
+                        >
+                          {isLetOut ? (
+                            <Check className="h-4 w-4 text-green-500 dark:text-green-400 mx-auto" />
+                          ) : null}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+                
+                {sortedDogs.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={timeSlots.length + 1} className="h-24 text-center">
+                      No dogs found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
       
