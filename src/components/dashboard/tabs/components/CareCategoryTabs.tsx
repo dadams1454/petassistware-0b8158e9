@@ -12,10 +12,19 @@ const CareCategoryTabs: React.FC<CareCategoryTabsProps> = ({
   activeCategory,
   onCategoryChange
 }) => {
+  // Re-order categories to prioritize dogletout and feeding
+  const orderedCategories = [...careCategories].sort((a, b) => {
+    if (a.id === 'feeding') return -1;
+    if (b.id === 'feeding') return 1;
+    if (a.id === 'dogletout') return -1;
+    if (b.id === 'dogletout') return 1;
+    return 0;
+  });
+
   return (
     <Tabs value={activeCategory} onValueChange={onCategoryChange} className="w-full">
       <TabsList className="w-full justify-start overflow-auto p-1 bg-background border-b">
-        {careCategories.map(category => (
+        {orderedCategories.map(category => (
           <TabsTrigger 
             key={category.id} 
             value={category.id} 

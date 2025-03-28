@@ -7,7 +7,6 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
-import DogLetOutTab from './tabs/DogLetOutTab';
 import CareLogDialog from './dialogs/CareLogDialog';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
@@ -132,13 +131,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
             onRefreshDogs={handleManualRefresh} 
             isRefreshing={isRefreshing}
             currentDate={currentDate}
-            dogStatuses={dogStatuses || []}
-          />
-        </TabsContent>
-        
-        <TabsContent value="dogletout">
-          <DogLetOutTab 
-            onRefreshDogs={handleManualRefresh}
             dogStatuses={dogStatuses || []}
           />
         </TabsContent>

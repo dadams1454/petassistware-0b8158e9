@@ -4,7 +4,6 @@ import { TabsList as ShadcnTabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   LayoutDashboard, 
   Calendar, 
-  Dog,
   FileBarChart,
   RefreshCw
 } from 'lucide-react';
@@ -42,15 +41,6 @@ const TabsList: React.FC<TabsListProps> = ({
         >
           <Calendar className="h-4 w-4 mr-2" />
           <span>Daily Care</span>
-        </TabsTrigger>
-        
-        <TabsTrigger 
-          value="dogletout" 
-          className={`transition-all ${activeTab === 'dogletout' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
-          onClick={() => onTabChange('dogletout')}
-        >
-          <Dog className="h-4 w-4 mr-2" />
-          <span>Dog Let Out</span>
         </TabsTrigger>
         
         <TabsTrigger 
