@@ -35,9 +35,9 @@ const Dashboard: React.FC = () => {
           ) : (
             <DashboardContent 
               isLoading={isLoading}
-              stats={stats}
-              events={events}
-              activities={activities}
+              stats={stats || []}
+              events={events || []}
+              activities={activities || []}
             />
           )}
         </DailyCareProvider>

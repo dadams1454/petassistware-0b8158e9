@@ -4,8 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 // Get all dogs that haven't been let out in X minutes
 export const getDogsNeedingLetOut = async (thresholdMinutes = 300): Promise<any[]> => {
   try {
-    const { data, error } = await supabase.rpc('get_dogs_needing_let_out', {
-      threshold_minutes: thresholdMinutes
+    // Use supabase.functions.invoke instead of supabase.rpc for custom functions
+    const { data, error } = await supabase.functions.invoke('get_dogs_needing_let_out', {
+      body: { threshold_minutes: thresholdMinutes }
     });
 
     if (error) {
