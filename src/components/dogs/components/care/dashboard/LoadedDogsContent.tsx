@@ -1,10 +1,8 @@
+
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import DogCareGrid from '../grid/DogCareGrid';
-import DogCareList from '../list/DogCareList';
-import DogCareTable from '../table/DogCareTable';
+import { Card } from '@/components/ui/card';
 import PuppiesTab from '../puppies/PuppiesTab';
-import PottyObservationDialog from '../potty/PottyObservationDialog';
 
 interface LoadedDogsContentProps {
   dogStatuses: DogCareStatus[];
@@ -32,71 +30,18 @@ const LoadedDogsContent: React.FC<LoadedDogsContentProps> = ({
     return <PuppiesTab onRefresh={onCareLogSuccess} />;
   }
   
-  // Otherwise, filter dogs by category and show the appropriate view
-  const filteredDogs = selectedCategory === 'all' 
-    ? dogStatuses 
-    : dogStatuses.filter(dog => {
-        // Each category would have its own filtering logic
-        switch (selectedCategory) {
-          case 'potty':
-            return true; // All dogs need potty breaks
-          case 'feeding':
-            return true; // All dogs need feeding
-          case 'medications':
-            return true; // For now, show all dogs in medications tab
-          case 'health':
-            return true; // For now, show all dogs in health tab
-          case 'exercise':
-            return true; // For now, show all dogs in exercise tab
-          default:
-            return true;
-        }
-      });
-  
-  // Render the selected view
-  const renderContent = () => {
-    switch (activeView) {
-      case 'grid':
-        return (
-          <DogCareGrid 
-            dogs={filteredDogs} 
-            category={selectedCategory}
-            onLogCare={onLogCare}
-          />
-        );
-      case 'table':
-        return (
-          <DogCareTable 
-            dogs={filteredDogs} 
-            category={selectedCategory}
-            onLogCare={onLogCare}
-          />
-        );
-      case 'list':
-        return (
-          <DogCareList 
-            dogs={filteredDogs} 
-            category={selectedCategory}
-            onLogCare={onLogCare}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
+  // For now, show a simple card with the view info until we implement the other views
   return (
-    <div>
-      {renderContent()}
-      
-      {/* Potty observation dialog */}
-      <PottyObservationDialog
-        open={dialogOpen && selectedCategory === 'potty'}
-        onOpenChange={setDialogOpen}
-        selectedDog={selectedDogId ? dogStatuses.find(d => d.dog_id === selectedDogId) : null}
-        onSuccess={onCareLogSuccess}
-      />
-    </div>
+    <Card className="p-6">
+      <p className="text-center text-muted-foreground">
+        {activeView === 'grid' && 'Grid view will be implemented here'}
+        {activeView === 'table' && 'Table view will be implemented here'}
+        {activeView === 'list' && 'List view will be implemented here'}
+      </p>
+      <p className="text-center mt-4">
+        Showing {dogStatuses.length} dogs for category: {selectedCategory}
+      </p>
+    </Card>
   );
 };
 

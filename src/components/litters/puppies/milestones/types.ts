@@ -11,11 +11,22 @@ export interface Milestone {
 export type MilestoneType = 
   | 'eyes_open'
   | 'ears_open'
+  | 'first_crawl'
+  | 'standing'
+  | 'walking'
   | 'first_walk'
   | 'full_mobility'
   | 'first_bark'
+  | 'first_solid_food'
   | 'first_food'
   | 'fully_weaned'
+  | 'first_vaccination'
+  | 'microchipped'
+  | 'temperament_test'
+  | 'deworming'
+  | 'socialization_started'
+  | 'teeth_eruption'
+  | 'grooming_start'
   | 'custom';
 
 export interface MilestoneOption {

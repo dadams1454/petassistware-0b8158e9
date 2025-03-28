@@ -1,209 +1,276 @@
 
-import { useState, useEffect, useMemo } from 'react';
-import { differenceInDays } from 'date-fns';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupData } from '@/types/puppyTracking';
-import { useToast } from '@/components/ui/use-toast';
+import { Puppy } from '@/components/litters/puppies/types';
 
-// Define the age groups data
-const ageGroups: PuppyAgeGroupData[] = [
+// Age group data with milestones and critical tasks
+const ageGroupsData: PuppyAgeGroupData[] = [
   {
     id: 'first24hours',
     label: 'First 24 Hours',
-    description: 'Critical monitoring period right after birth',
+    description: 'Critical period for newborn puppies requiring constant monitoring.',
     daysRange: { min: 0, max: 1 },
-    key: '0-1d',
-    milestones: ['First feeding', 'Weight check'],
-    criticalTasks: ['Monitor temperature', 'Ensure nursing', 'Check umbilical cord']
+    key: 'first_24_hours',
+    milestones: [
+      'First nursing',
+      'Weight recorded at birth',
+      'Color/markings identified'
+    ],
+    criticalTasks: [
+      'Ensure nursing and colostrum intake',
+      'Keep warm (85-90°F)',
+      'Monitor for distress',
+      'Check for birth defects'
+    ]
   },
   {
     id: 'first48hours',
-    label: 'First 48 Hours',
-    description: 'Continued close monitoring',
+    label: '24-48 Hours',
+    description: 'Continued close monitoring as puppies establish feeding patterns.',
     daysRange: { min: 1, max: 2 },
-    key: '1-2d',
-    milestones: ['Weight gain check', 'Activity level assessment'],
-    criticalTasks: ['Monitor nursing frequency', 'Check for dehydration']
+    key: 'first_48_hours',
+    milestones: [
+      'Regular nursing established',
+      'Slight weight gain',
+      'Stronger movements'
+    ],
+    criticalTasks: [
+      'Monitor weight (should not lose >10%)',
+      'Ensure all puppies are nursing',
+      'Check for adequate elimination',
+      'Maintain environmental warmth'
+    ]
   },
   {
     id: 'first7days',
-    label: 'First Week',
-    description: 'Initial development period',
+    label: 'Days 3-7',
+    description: 'First week of life with rapid development and continued vulnerability.',
     daysRange: { min: 2, max: 7 },
-    key: '2-7d',
-    milestones: ['Daily weight monitoring', 'Umbilical cord healing'],
-    criticalTasks: ['Regular weighing', 'Monitor temperature', 'Check for milk intake']
+    key: 'first_week',
+    milestones: [
+      'Steady weight gain',
+      'Stronger crawling movements',
+      'Stronger nursing reflexes'
+    ],
+    criticalTasks: [
+      'Daily weight monitoring',
+      'Maintain environmental temperature (80-85°F)',
+      'Ensure dam is producing adequate milk',
+      'First deworming (if recommended by vet)'
+    ]
   },
   {
     id: 'week2',
     label: 'Week 2',
-    description: 'Eyes beginning to open',
-    daysRange: { min: 7, max: 14 },
-    key: '7-14d',
-    milestones: ['Eyes opening', 'Crawling improvement'],
-    criticalTasks: ['Daily weighing', 'Environment cleaning', 'Temperature regulation']
+    description: 'Eyes begin to open and puppies become more aware of surroundings.',
+    daysRange: { min: 8, max: 14 },
+    key: 'week_two',
+    milestones: [
+      'Eyes opening (10-14 days)',
+      'Ear canals begin to open',
+      'More coordinated movements'
+    ],
+    criticalTasks: [
+      'Continued weight monitoring',
+      'Begin gentle handling sessions',
+      'Maintain clean environment',
+      'Gradually reduce temperature (75-80°F)'
+    ]
   },
   {
     id: 'week3to4',
     label: 'Weeks 3-4',
-    description: 'Starting to walk and exploring',
-    daysRange: { min: 14, max: 28 },
-    key: '14-28d',
-    milestones: ['Walking', 'Playing with littermates', 'First teeth'],
-    criticalTasks: ['Introduce weaning foods', 'Socialization begins', 'Deworming']
+    description: 'Beginning of socialization period with increased mobility and awareness.',
+    daysRange: { min: 15, max: 28 },
+    key: 'weeks_three_to_four',
+    milestones: [
+      'Walking begins',
+      'Teeth eruption starts',
+      'Beginning of play behavior',
+      'First barks/vocalizations'
+    ],
+    criticalTasks: [
+      'Begin weaning process',
+      'Introduce solid food (gruel)',
+      'Provide safe exploration space',
+      'Regular deworming',
+      'Begin socialization with gentle handling'
+    ]
   },
   {
     id: 'week5to7',
     label: 'Weeks 5-7',
-    description: 'Socialization and weaning period',
-    daysRange: { min: 28, max: 49 },
-    key: '28-49d',
-    milestones: ['Fully weaned', 'Interactive play', 'Personality development'],
-    criticalTasks: ['Full weaning', 'Vaccinations', 'Socialization training']
+    description: 'Prime socialization period with rapid learning and development.',
+    daysRange: { min: 29, max: 49 },
+    key: 'weeks_five_to_seven',
+    milestones: [
+      'Fully weaned from mother',
+      'Established play behaviors',
+      'Social hierarchy development',
+      'Enhanced coordination'
+    ],
+    criticalTasks: [
+      'Structured socialization sessions',
+      'Introduction to various surfaces/textures',
+      'Begin housebreaking basics',
+      'First vaccinations',
+      'Exposure to household sounds'
+    ]
   },
   {
     id: 'week8to10',
     label: 'Weeks 8-10',
-    description: 'Preparing for new homes',
-    daysRange: { min: 49, max: 70 },
-    key: '49-70d',
-    milestones: ['Health check for adoption', 'Microchipping'],
-    criticalTasks: ['Final health assessment', 'Prepare adoption paperwork', 'Advanced socialization']
+    description: 'Preparation period for going to new homes with focus on temperament development.',
+    daysRange: { min: 50, max: 70 },
+    key: 'weeks_eight_to_ten',
+    milestones: [
+      'Ready for new homes',
+      'Continued behavioral development',
+      'Established feeding patterns'
+    ],
+    criticalTasks: [
+      'Temperament testing',
+      'Continued vaccination protocol',
+      'Microchipping',
+      'Prepare adoption paperwork',
+      'Basic training introduction'
+    ]
   },
   {
     id: 'over10weeks',
     label: 'Over 10 Weeks',
-    description: 'Ready for adoption or transitioning to kennel dogs',
-    daysRange: { min: 70, max: null },
-    key: '70+d',
-    milestones: ['Readiness assessment', 'Adoption or kennel transition'],
-    criticalTasks: ['Final vaccinations', 'Prepare for transition', 'Advanced training']
+    description: 'Extended stay puppies requiring continued development focus.',
+    daysRange: { min: 71, max: null },
+    key: 'over_ten_weeks',
+    milestones: [
+      'Enhanced training capabilities',
+      'Further socialization opportunities',
+      'Established routines'
+    ],
+    criticalTasks: [
+      'Continued training reinforcement',
+      'Complete vaccination protocol',
+      'Regular exercise routines',
+      'Preparation for transition to adult dog status'
+    ]
   }
 ];
 
-export const usePuppyTracking = () => {
-  const [puppies, setPuppies] = useState<PuppyWithAge[]>([]);
+export function usePuppyTracking() {
+  const [puppiesByAgeGroup, setPuppiesByAgeGroup] = useState<Record<PuppyAgeGroup, PuppyWithAge[]>>({
+    first24hours: [],
+    first48hours: [],
+    first7days: [],
+    week2: [],
+    week3to4: [],
+    week5to7: [],
+    week8to10: [],
+    over10weeks: []
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
+  
+  // Function to determine age group based on days
+  const determineAgeGroup = (ageInDays: number): PuppyAgeGroup => {
+    for (const group of ageGroupsData) {
+      if (
+        ageInDays >= group.daysRange.min && 
+        (group.daysRange.max === null || ageInDays <= group.daysRange.max)
+      ) {
+        return group.id;
+      }
+    }
+    return 'over10weeks'; // Default to oldest group if no match
+  };
+  
+  // Function to calculate age in days
+  const calculateAgeInDays = (birthDate: string): number => {
+    const birth = new Date(birthDate);
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - birth.getTime());
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  };
+  
+  // Function to fetch puppies and categorize them
   const fetchPuppies = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Get active litters first (those with puppies under care)
+      // Query active litters first to get the puppies
       const { data: litters, error: littersError } = await supabase
         .from('litters')
-        .select('id, litter_name, birth_date')
-        .eq('status', 'active');
-
+        .select('id, birth_date')
+        .order('birth_date', { ascending: false });
+        
       if (littersError) throw littersError;
       
       if (!litters || litters.length === 0) {
-        setPuppies([]);
         setIsLoading(false);
-        return;
+        return; // No litters, so no puppies
       }
       
-      // Get all puppies from active litters
+      // Get all puppies from the active litters
       const litterIds = litters.map(litter => litter.id);
-      const { data: puppiesData, error: puppiesError } = await supabase
-        .from('puppies')
-        .select('*, litter_id')
-        .in('litter_id', litterIds)
-        .not('status', 'eq', 'Deceased'); // Exclude deceased puppies
       
+      const { data: puppies, error: puppiesError } = await supabase
+        .from('puppies')
+        .select('*, litters!inner(birth_date)')
+        .in('litter_id', litterIds);
+        
       if (puppiesError) throw puppiesError;
       
-      if (!puppiesData) {
-        setPuppies([]);
+      if (!puppies || puppies.length === 0) {
         setIsLoading(false);
-        return;
+        return; // No puppies found
       }
       
-      // Add birth date info from litters to puppies
-      const processedPuppies = puppiesData.map(puppy => {
-        const litter = litters.find(l => l.id === puppy.litter_id);
-        const birthDateStr = puppy.birth_date || (litter ? litter.birth_date : null);
-        const birthDate = birthDateStr ? new Date(birthDateStr) : new Date();
-        const today = new Date();
-        
-        // Calculate age in days
-        const ageInDays = differenceInDays(today, birthDate);
-        
-        // Determine age group
+      // Process puppies and group by age
+      const groupedPuppies: Record<PuppyAgeGroup, PuppyWithAge[]> = {
+        first24hours: [],
+        first48hours: [],
+        first7days: [],
+        week2: [],
+        week3to4: [],
+        week5to7: [],
+        week8to10: [],
+        over10weeks: []
+      };
+      
+      puppies.forEach((puppy: any) => {
+        const birthDate = puppy.litters.birth_date;
+        const ageInDays = calculateAgeInDays(birthDate);
         const ageGroup = determineAgeGroup(ageInDays);
         
-        return {
-          ...puppy,
-          birthDate: birthDate,
+        const puppyWithAge: PuppyWithAge = {
+          ...puppy as Puppy, 
           ageInDays,
           ageGroup
         };
+        
+        groupedPuppies[ageGroup].push(puppyWithAge);
       });
       
-      setPuppies(processedPuppies);
-    } catch (err) {
-      console.error('Error fetching puppies:', err);
-      setError('Failed to fetch puppies. Please try again.');
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch puppies data.',
-        variant: 'destructive',
-      });
+      setPuppiesByAgeGroup(groupedPuppies);
+    } catch (error) {
+      console.error('Error fetching puppies:', error);
+      setError('Failed to load puppies. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Helper function to determine age group
-  const determineAgeGroup = (ageInDays: number): PuppyAgeGroup => {
-    for (const group of ageGroups) {
-      if (
-        ageInDays >= group.daysRange.min && 
-        (group.daysRange.max === null || ageInDays < group.daysRange.max)
-      ) {
-        return group.id;
-      }
-    }
-    return 'over10weeks'; // Default for any puppy that doesn't fit other categories
-  };
-  
-  // Group puppies by age group
-  const puppiesByAgeGroup = useMemo(() => {
-    const grouped: Record<PuppyAgeGroup, PuppyWithAge[]> = {
-      first24hours: [],
-      first48hours: [],
-      first7days: [],
-      week2: [],
-      week3to4: [],
-      week5to7: [],
-      week8to10: [],
-      over10weeks: []
-    };
-    
-    puppies.forEach(puppy => {
-      grouped[puppy.ageGroup].push(puppy);
-    });
-    
-    return grouped;
-  }, [puppies]);
-  
+  // Fetch puppies on component mount
   useEffect(() => {
     fetchPuppies();
   }, []);
   
   return {
-    puppies,
     puppiesByAgeGroup,
-    ageGroups,
+    ageGroups: ageGroupsData,
     isLoading,
     error,
     refetch: fetchPuppies
   };
-};
-
-export const useAgeGroups = () => {
-  return ageGroups;
-};
+}

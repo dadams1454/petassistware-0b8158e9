@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { RefreshCw, Paw, AlertCircle } from 'lucide-react';
+import { RefreshCw, Dog, AlertCircle } from 'lucide-react';
 import { usePuppyTracking } from '@/hooks/usePuppyTracking';
 import { PuppyAgeGroup } from '@/types/puppyTracking';
 import PuppyAgeGroupSection from './PuppyAgeGroupSection';
@@ -65,7 +65,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
       return (
         <Card>
           <CardContent className="p-6 text-center">
-            <Paw className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <Dog className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium">No Puppies Found</h3>
             <p className="text-muted-foreground mb-4">
               There are no puppies currently tracked in the system.
