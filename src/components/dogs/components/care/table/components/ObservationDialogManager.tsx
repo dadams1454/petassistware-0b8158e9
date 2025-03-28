@@ -36,8 +36,6 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
   // Determine default observation type based on category
   const getDefaultObservationType = (): ObservationType => {
     switch (activeCategory) {
-      case 'pottybreaks':
-        return 'accident';
       case 'medication':
         return 'other';
       case 'feeding':

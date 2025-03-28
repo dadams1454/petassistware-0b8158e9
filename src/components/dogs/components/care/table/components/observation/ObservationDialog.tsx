@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import DialogContentComponent from './DialogContent';
 
-export type ObservationType = 'accident' | 'heat' | 'behavior' | 'other';
+export type ObservationType = 'heat' | 'behavior' | 'other';
 
 interface ObservationDialogProps {
   open: boolean;
@@ -35,7 +35,7 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   existingObservations = [],
   timeSlots = [],
   isMobile = false,
-  activeCategory = 'pottybreaks',
+  activeCategory = 'feeding',
   defaultObservationType = 'other',
   selectedTimeSlot = '',
   dialogTitle = 'Observation'

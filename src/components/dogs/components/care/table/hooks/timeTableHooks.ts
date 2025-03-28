@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { ObservationType } from '../components/observation/ObservationDialog';
