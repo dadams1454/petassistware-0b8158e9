@@ -10,7 +10,7 @@ interface ObservationDialogManagerProps {
   onSubmit: (dogId: string, observation: string, observationType: ObservationType, timestamp?: Date) => Promise<void>;
   observations: Array<{
     observation: string;
-    observation_type: string;
+    observation_type: ObservationType | string;
     created_at: string;
     category?: string;
   }>;
@@ -47,6 +47,12 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
     }
   };
 
+  // Convert observations to ensure observation_type is ObservationType
+  const typedObservations = observations.map(obs => ({
+    ...obs,
+    observation_type: obs.observation_type as ObservationType
+  }));
+
   return (
     <ObservationDialog
       open={observationDialogOpen}
@@ -54,7 +60,7 @@ const ObservationDialogManager: React.FC<ObservationDialogManagerProps> = ({
       dogId={selectedDog.dog_id}
       dogName={selectedDog.dog_name}
       onSubmit={onSubmit}
-      existingObservations={observations}
+      existingObservations={typedObservations}
       timeSlots={timeSlots}
       isMobile={isMobile}
       activeCategory={activeCategory}
