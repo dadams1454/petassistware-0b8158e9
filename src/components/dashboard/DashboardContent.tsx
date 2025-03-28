@@ -40,15 +40,17 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   };
   
   return (
-    <Tabs value={activeTab} className="space-y-4">
-      <TabsList 
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onRefreshDogs={handleRefreshDogs}
-        isRefreshing={refreshingDogs}
-      />
+    <Tabs value={activeTab} className="space-y-4 w-full max-w-full overflow-hidden">
+      <div className="w-full overflow-x-auto pb-1">
+        <TabsList 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onRefreshDogs={handleRefreshDogs}
+          isRefreshing={refreshingDogs}
+        />
+      </div>
       
-      <TabsContent value="overview" className="mt-6">
+      <TabsContent value="overview" className="mt-6 w-full">
         <OverviewTab 
           stats={stats} 
           activities={activities} 
@@ -57,25 +59,25 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         />
       </TabsContent>
       
-      <TabsContent value="dailycare" className="mt-6">
+      <TabsContent value="dailycare" className="mt-6 w-full">
         <DailyCareTab 
           onRefreshDogs={handleRefreshDogs}
           dogStatuses={dogStatuses}
         />
       </TabsContent>
       
-      <TabsContent value="dogletout" className="mt-6">
+      <TabsContent value="dogletout" className="mt-6 w-full">
         <DogLetOutTab 
           onRefreshDogs={handleRefreshDogs}
           dogStatuses={dogStatuses}
         />
       </TabsContent>
       
-      <TabsContent value="events" className="mt-6">
+      <TabsContent value="events" className="mt-6 w-full">
         <EventsTab events={events} isLoading={isLoading} />
       </TabsContent>
       
-      <TabsContent value="reports" className="mt-6">
+      <TabsContent value="reports" className="mt-6 w-full">
         <ReportsTab onRefresh={handleRefreshDogs} />
       </TabsContent>
     </Tabs>

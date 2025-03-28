@@ -37,7 +37,7 @@ const DogLetOutTab: React.FC<DogLetOutTabProps> = ({
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden">
       {/* Reminder Card with Enhanced Observation Capabilities */}
       {effectiveDogStatuses && effectiveDogStatuses.length > 0 && (
         <DogLetOutReminderCard 
@@ -47,22 +47,24 @@ const DogLetOutTab: React.FC<DogLetOutTabProps> = ({
       )}
       
       {/* Tab navigation for dog let out and groups */}
-      <Tabs defaultValue="dogletout" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="dogletout">
-            <FileText className="h-4 w-4 mr-2" />
-            Dog Let Out Log
-          </TabsTrigger>
-          <TabsTrigger value="groups">
-            <Users className="h-4 w-4 mr-2" />
-            Dog Groups
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="dogletout" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="overflow-x-auto pb-1">
+          <TabsList className="w-auto min-w-[240px]">
+            <TabsTrigger value="dogletout">
+              <FileText className="h-4 w-4 mr-2" />
+              Dog Let Out Log
+            </TabsTrigger>
+            <TabsTrigger value="groups">
+              <Users className="h-4 w-4 mr-2" />
+              Dog Groups
+            </TabsTrigger>
+          </TabsList>
+        </div>
         
         {/* Dog Let Out Manager Tab */}
-        <TabsContent value="dogletout">
+        <TabsContent value="dogletout" className="w-full">
           {effectiveDogStatuses && effectiveDogStatuses.length > 0 ? (
-            <div id="dog-let-out-manager">
+            <div id="dog-let-out-manager" className="w-full">
               <DogLetOutManager 
                 dogs={effectiveDogStatuses}
                 onRefresh={onRefreshDogs}
@@ -79,7 +81,7 @@ const DogLetOutTab: React.FC<DogLetOutTabProps> = ({
         </TabsContent>
         
         {/* Dog Groups Management Tab */}
-        <TabsContent value="groups">
+        <TabsContent value="groups" className="w-full">
           {effectiveDogStatuses && effectiveDogStatuses.length > 0 ? (
             <DogGroupManagement 
               dogs={effectiveDogStatuses}

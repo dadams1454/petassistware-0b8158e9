@@ -50,7 +50,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   const statsToDisplay = stats && stats.length > 0 ? stats : defaultStats;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statsToDisplay.map((stat, index) => (
           <StatCard key={index} stat={stat} />
@@ -58,20 +58,20 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Card>
+        <Card className="w-full">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Recent Activities</CardTitle>
+            <CardTitle className="text-xl truncate">Recent Activities</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             <RecentActivities activities={activities} isLoading={isLoading} />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="w-full">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Upcoming Events</CardTitle>
+            <CardTitle className="text-xl truncate">Upcoming Events</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             <UpcomingEvents events={events} isLoading={isLoading} />
           </CardContent>
         </Card>

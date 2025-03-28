@@ -10,24 +10,24 @@ interface ReportsTabProps {
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ onRefresh }) => {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 w-full max-w-full overflow-x-hidden">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-2xl font-bold">Reports</h2>
-        <Button onClick={onRefresh} variant="outline">
+        <Button onClick={onRefresh} variant="outline" className="shrink-0">
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh Data
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
+        <Card className="w-full">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center">
-              <BarChart className="mr-2 h-5 w-5" />
-              Dog Health Summary
+              <BarChart className="mr-2 h-5 w-5 flex-shrink-0" />
+              <span className="truncate">Dog Health Summary</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             <div className="h-60 flex items-center justify-center bg-muted/20 rounded-md">
               <div className="text-center space-y-2">
                 <FileText className="h-8 w-8 mx-auto text-muted-foreground" />
@@ -37,14 +37,14 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ onRefresh }) => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="w-full">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center">
-              <FileText className="mr-2 h-5 w-5" />
-              Care Activities
+              <FileText className="mr-2 h-5 w-5 flex-shrink-0" />
+              <span className="truncate">Care Activities</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             <div className="h-60 flex items-center justify-center bg-muted/20 rounded-md">
               <div className="text-center space-y-2">
                 <FileText className="h-8 w-8 mx-auto text-muted-foreground" />
@@ -55,11 +55,11 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ onRefresh }) => {
         </Card>
       </div>
 
-      <Card>
+      <Card className="w-full">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Export Reports</CardTitle>
+          <CardTitle className="text-xl truncate">Export Reports</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-hidden">
           <div className="flex flex-wrap gap-4">
             <Button variant="outline" className="space-x-2">
               <FileText className="h-4 w-4" />
