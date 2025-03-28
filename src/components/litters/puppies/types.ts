@@ -1,4 +1,3 @@
-
 export interface Puppy {
   id: string;
   name: string | null;
@@ -17,6 +16,12 @@ export interface Puppy {
   created_at: string;
   updated_at?: string;
   
+  // Weight tracking fields
+  birth_weight: string | number | null;
+  current_weight: string | number | null;
+  weight_history?: WeightRecord[] | null;
+  weight_notes?: string | null;
+
   // Health monitoring fields
   deworming_dates?: string | null;
   vaccination_dates?: string | null;
@@ -26,6 +31,27 @@ export interface Puppy {
   akc_litter_number?: string | null;
   akc_registration_number?: string | null;
   akc_verified?: boolean;
+}
+
+export interface PuppyFormData {
+  name: string;
+  gender: string;
+  status: 'Available' | 'Reserved' | 'Sold' | 'Kept' | 'Deceased';
+  color: string;
+  birth_date: Date | null;
+  birth_weight: string | number | null;
+  current_weight: string | number | null;
+  weight_notes?: string;
+  microchip_number: string;
+  sale_price: number | string | null;
+  deworming_dates: string;
+  vaccination_dates: string;
+  vet_check_dates: string;
+  notes: string;
+  photo_url: string;
+  birth_time: string;
+  akc_litter_number: string;
+  akc_registration_number: string;
 }
 
 export interface Litter {
@@ -101,24 +127,11 @@ export interface Dog {
   breeder_id: string | null;
 }
 
-export interface PuppyFormData {
-  name: string;
-  gender: string;
-  status: 'Available' | 'Reserved' | 'Sold' | 'Kept' | 'Deceased';
-  color: string;
-  birth_date: Date | null;
-  birth_weight: string | number | null;
-  current_weight: string | number | null;
-  microchip_number: string;
-  sale_price: number | string | null;
-  deworming_dates: string;
-  vaccination_dates: string;
-  vet_check_dates: string;
-  notes: string;
-  photo_url: string;
-  birth_time: string;
-  akc_litter_number: string;
-  akc_registration_number: string;
+export interface WeightRecord {
+  date: string;
+  weight: number;
+  weight_unit: 'lbs' | 'kg' | 'g' | 'oz';
+  notes?: string;
 }
 
 export interface PuppyFormProps {

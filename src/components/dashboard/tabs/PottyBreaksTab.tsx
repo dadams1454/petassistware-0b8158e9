@@ -25,10 +25,10 @@ const PottyBreaksTab: React.FC<PottyBreaksTabProps> = ({
         </div>
         <h3 className="text-xl font-semibold mb-2">Potty Breaks Feature Removed</h3>
         <p className="text-muted-foreground text-center max-w-md mb-6">
-          The dedicated potty breaks feature has been deprecated. Please use the Daily Care section 
-          for tracking all dog care activities including potty breaks.
+          The dedicated potty breaks feature has been replaced with the comprehensive Daily Care section. 
+          Please use the Daily Care section for tracking all dog care activities.
         </p>
-        <Button onClick={onRefreshDogs}>View Other Care Categories</Button>
+        <Button onClick={() => navigate("/dogs/care")}>Go to Daily Care</Button>
       </CardContent>
     </Card>
   );
