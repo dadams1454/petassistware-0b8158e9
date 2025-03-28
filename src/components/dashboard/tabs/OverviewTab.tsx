@@ -2,9 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Calendar, DollarSign, Users } from 'lucide-react';
-import { StatCard } from '@/components/dashboard/StatCard';
-import { RecentActivities } from '@/components/dashboard/RecentActivities';
-import { UpcomingEvents } from '@/components/dashboard/UpcomingEvents';
+import StatCard from '@/components/dashboard/StatCard';
+import RecentActivities from '@/components/dashboard/RecentActivities';
+import UpcomingEvents from '@/components/dashboard/UpcomingEvents';
 
 interface OverviewTabProps {
   stats: any[];

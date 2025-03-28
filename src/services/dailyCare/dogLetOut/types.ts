@@ -4,7 +4,7 @@ export interface DogGroup {
   name: string;
   description?: string;
   color?: string;
-  dogIds?: string[]; // Adding the missing dogIds property
+  dogIds: string[]; // Making sure this property exists and is required
   dogsCount?: number;
   dogs?: Array<{
     id: string;
