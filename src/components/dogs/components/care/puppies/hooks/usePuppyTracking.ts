@@ -81,7 +81,7 @@ export const usePuppyTracking = () => {
         // Get all active litters
         const { data: litters, error: littersError } = await supabase
           .from('litters')
-          .select('id, whelping_date')
+          .select('id, birth_date')
           .not('status', 'eq', 'archived');
           
         if (littersError) throw littersError;
@@ -109,7 +109,7 @@ export const usePuppyTracking = () => {
         // Flatten and process the puppies
         const allPuppies = puppiesArrays.flat().map(puppy => {
           // Calculate age in days
-          const birthDate = puppy.birth_date || puppy.litters?.whelping_date;
+          const birthDate = puppy.birth_date || puppy.litters?.birth_date;
           let ageInDays = 0;
           
           if (birthDate) {

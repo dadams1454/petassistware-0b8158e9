@@ -1,23 +1,23 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 import { Puppy } from '@/components/litters/puppies/types';
+
+// Define a type for age group IDs
+type AgeGroupId = 'first24hours' | 'first48hours' | 'first7days' | 'week2' | 
+                 'week3to4' | 'week5to7' | 'week8to10' | 'over10weeks';
 
 // Age group data with milestones and critical tasks
 const ageGroupsData: PuppyAgeGroupData[] = [
   {
     id: 'first24hours',
-    label: 'First 24 Hours',
+    name: 'First 24 Hours',
+    startDay: 0,
+    endDay: 1,
     description: 'Critical period for newborn puppies requiring constant monitoring.',
-    daysRange: { min: 0, max: 1 },
-    key: 'first_24_hours',
-    milestones: [
-      'First nursing',
-      'Weight recorded at birth',
-      'Color/markings identified'
-    ],
-    criticalTasks: [
+    milestones: 'First nursing, Weight recorded at birth, Color/markings identified',
+    careChecks: [
       'Ensure nursing and colostrum intake',
       'Keep warm (85-90°F)',
       'Monitor for distress',
@@ -26,16 +26,12 @@ const ageGroupsData: PuppyAgeGroupData[] = [
   },
   {
     id: 'first48hours',
-    label: '24-48 Hours',
+    name: '24-48 Hours',
+    startDay: 1,
+    endDay: 2,
     description: 'Continued close monitoring as puppies establish feeding patterns.',
-    daysRange: { min: 1, max: 2 },
-    key: 'first_48_hours',
-    milestones: [
-      'Regular nursing established',
-      'Slight weight gain',
-      'Stronger movements'
-    ],
-    criticalTasks: [
+    milestones: 'Regular nursing established, Slight weight gain, Stronger movements',
+    careChecks: [
       'Monitor weight (should not lose >10%)',
       'Ensure all puppies are nursing',
       'Check for adequate elimination',
@@ -44,16 +40,12 @@ const ageGroupsData: PuppyAgeGroupData[] = [
   },
   {
     id: 'first7days',
-    label: 'Days 3-7',
+    name: 'Days 3-7',
+    startDay: 2,
+    endDay: 7,
     description: 'First week of life with rapid development and continued vulnerability.',
-    daysRange: { min: 2, max: 7 },
-    key: 'first_week',
-    milestones: [
-      'Steady weight gain',
-      'Stronger crawling movements',
-      'Stronger nursing reflexes'
-    ],
-    criticalTasks: [
+    milestones: 'Steady weight gain, Stronger crawling movements, Stronger nursing reflexes',
+    careChecks: [
       'Daily weight monitoring',
       'Maintain environmental temperature (80-85°F)',
       'Ensure dam is producing adequate milk',
@@ -62,16 +54,12 @@ const ageGroupsData: PuppyAgeGroupData[] = [
   },
   {
     id: 'week2',
-    label: 'Week 2',
+    name: 'Week 2',
+    startDay: 8,
+    endDay: 14,
     description: 'Eyes begin to open and puppies become more aware of surroundings.',
-    daysRange: { min: 8, max: 14 },
-    key: 'week_two',
-    milestones: [
-      'Eyes opening (10-14 days)',
-      'Ear canals begin to open',
-      'More coordinated movements'
-    ],
-    criticalTasks: [
+    milestones: 'Eyes opening (10-14 days), Ear canals begin to open, More coordinated movements',
+    careChecks: [
       'Continued weight monitoring',
       'Begin gentle handling sessions',
       'Maintain clean environment',
@@ -80,17 +68,12 @@ const ageGroupsData: PuppyAgeGroupData[] = [
   },
   {
     id: 'week3to4',
-    label: 'Weeks 3-4',
+    name: 'Weeks 3-4',
+    startDay: 15,
+    endDay: 28,
     description: 'Beginning of socialization period with increased mobility and awareness.',
-    daysRange: { min: 15, max: 28 },
-    key: 'weeks_three_to_four',
-    milestones: [
-      'Walking begins',
-      'Teeth eruption starts',
-      'Beginning of play behavior',
-      'First barks/vocalizations'
-    ],
-    criticalTasks: [
+    milestones: 'Walking begins, Teeth eruption starts, Beginning of play behavior, First barks/vocalizations',
+    careChecks: [
       'Begin weaning process',
       'Introduce solid food (gruel)',
       'Provide safe exploration space',
@@ -100,17 +83,12 @@ const ageGroupsData: PuppyAgeGroupData[] = [
   },
   {
     id: 'week5to7',
-    label: 'Weeks 5-7',
+    name: 'Weeks 5-7',
+    startDay: 29,
+    endDay: 49,
     description: 'Prime socialization period with rapid learning and development.',
-    daysRange: { min: 29, max: 49 },
-    key: 'weeks_five_to_seven',
-    milestones: [
-      'Fully weaned from mother',
-      'Established play behaviors',
-      'Social hierarchy development',
-      'Enhanced coordination'
-    ],
-    criticalTasks: [
+    milestones: 'Fully weaned from mother, Established play behaviors, Social hierarchy development, Enhanced coordination',
+    careChecks: [
       'Structured socialization sessions',
       'Introduction to various surfaces/textures',
       'Begin housebreaking basics',
@@ -120,16 +98,12 @@ const ageGroupsData: PuppyAgeGroupData[] = [
   },
   {
     id: 'week8to10',
-    label: 'Weeks 8-10',
+    name: 'Weeks 8-10',
+    startDay: 50,
+    endDay: 70,
     description: 'Preparation period for going to new homes with focus on temperament development.',
-    daysRange: { min: 50, max: 70 },
-    key: 'weeks_eight_to_ten',
-    milestones: [
-      'Ready for new homes',
-      'Continued behavioral development',
-      'Established feeding patterns'
-    ],
-    criticalTasks: [
+    milestones: 'Ready for new homes, Continued behavioral development, Established feeding patterns',
+    careChecks: [
       'Temperament testing',
       'Continued vaccination protocol',
       'Microchipping',
@@ -139,16 +113,12 @@ const ageGroupsData: PuppyAgeGroupData[] = [
   },
   {
     id: 'over10weeks',
-    label: 'Over 10 Weeks',
+    name: 'Over 10 Weeks',
+    startDay: 71,
+    endDay: 999,
     description: 'Extended stay puppies requiring continued development focus.',
-    daysRange: { min: 71, max: null },
-    key: 'over_ten_weeks',
-    milestones: [
-      'Enhanced training capabilities',
-      'Further socialization opportunities',
-      'Established routines'
-    ],
-    criticalTasks: [
+    milestones: 'Enhanced training capabilities, Further socialization opportunities, Established routines',
+    careChecks: [
       'Continued training reinforcement',
       'Complete vaccination protocol',
       'Regular exercise routines',
@@ -158,7 +128,7 @@ const ageGroupsData: PuppyAgeGroupData[] = [
 ];
 
 export function usePuppyTracking() {
-  const [puppiesByAgeGroup, setPuppiesByAgeGroup] = useState<Record<PuppyAgeGroup, PuppyWithAge[]>>({
+  const [puppiesByAgeGroup, setPuppiesByAgeGroup] = useState<Record<AgeGroupId, PuppyWithAge[]>>({
     first24hours: [],
     first48hours: [],
     first7days: [],
@@ -172,13 +142,13 @@ export function usePuppyTracking() {
   const [error, setError] = useState<string | null>(null);
   
   // Function to determine age group based on days
-  const determineAgeGroup = (ageInDays: number): PuppyAgeGroup => {
+  const determineAgeGroup = (ageInDays: number): AgeGroupId => {
     for (const group of ageGroupsData) {
       if (
-        ageInDays >= group.daysRange.min && 
-        (group.daysRange.max === null || ageInDays <= group.daysRange.max)
+        ageInDays >= group.startDay && 
+        ageInDays <= group.endDay
       ) {
-        return group.id;
+        return group.id as AgeGroupId;
       }
     }
     return 'over10weeks'; // Default to oldest group if no match
@@ -227,7 +197,7 @@ export function usePuppyTracking() {
       }
       
       // Process puppies and group by age
-      const groupedPuppies: Record<PuppyAgeGroup, PuppyWithAge[]> = {
+      const groupedPuppies: Record<AgeGroupId, PuppyWithAge[]> = {
         first24hours: [],
         first48hours: [],
         first7days: [],
@@ -241,15 +211,14 @@ export function usePuppyTracking() {
       puppies.forEach((puppy: any) => {
         const birthDate = puppy.litters.birth_date;
         const ageInDays = calculateAgeInDays(birthDate);
-        const ageGroup = determineAgeGroup(ageInDays);
+        const ageGroupId = determineAgeGroup(ageInDays);
         
         const puppyWithAge: PuppyWithAge = {
           ...puppy as Puppy, 
-          ageInDays,
-          ageGroup
+          ageInDays
         };
         
-        groupedPuppies[ageGroup].push(puppyWithAge);
+        groupedPuppies[ageGroupId].push(puppyWithAge);
       });
       
       setPuppiesByAgeGroup(groupedPuppies);

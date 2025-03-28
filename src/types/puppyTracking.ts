@@ -5,8 +5,8 @@ export interface PuppyWithAge extends Puppy {
   ageInDays: number;
   litters?: {
     id: string;
-    name: string;
-    whelping_date: string;
+    name?: string;
+    birth_date: string;
   };
 }
 

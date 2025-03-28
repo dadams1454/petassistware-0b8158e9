@@ -1,5 +1,4 @@
 
-
 export interface Milestone {
   id: string;
   puppy_id: string;
@@ -46,4 +45,3 @@ export interface MilestoneTrackerProps {
   birthDate?: string | Date | null;
   onMilestoneAdded?: () => void;
 }
-
