@@ -1,24 +1,17 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Check, Dog, Clock, MapPin, RefreshCw } from 'lucide-react';
-import { DogCareStatus } from '@/types/dailyCare';
-import { useDailyCare } from '@/contexts/dailyCare';
-import { useDogLetOut } from './hooks/useDogLetOut';
-import { useDogSorting } from './hooks/useDogSorting';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { DogCareStatus } from '@/types/dailyCare';
+import { useDogGroups } from './hooks/useDogGroups';
+import { usePottyBreakTimetable } from './hooks/usePottyBreakTimetable';
+import { CheckCircle, XCircle, Dog, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface DogLetOutTimetableProps {
   dogsData: DogCareStatus[];
@@ -26,268 +19,416 @@ interface DogLetOutTimetableProps {
   onRefresh?: () => void;
 }
 
-const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
-  dogsData,
+const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({ 
+  dogsData, 
   date,
-  onRefresh
+  onRefresh 
 }) => {
-  const { dogStatuses } = useDailyCare();
-  const dogs = dogsData.length > 0 ? dogsData : dogStatuses || [];
-  const { sortedDogs, sortConfig, requestSort } = useDogSorting(dogs);
   const { toast } = useToast();
+  const [selectedGroup, setSelectedGroup] = useState<string>('all');
   
-  // Get timeSlots, dogLetOuts, and operations for the date
+  // Get dog groups
   const { 
-    dogLetOuts, 
-    isLoading, 
-    fetchDogLetOuts, 
-    hasDogLetOut
-  } = useDogLetOut(date);
-
-  const [selectedDogs, setSelectedDogs] = useState<string[]>([]);
-  const [warningDialog, setWarningDialog] = useState({ 
-    open: false, 
-    dogId: '', 
-    dogName: '' 
-  });
+    groups, 
+    isLoading: groupsLoading,
+    addGroup
+  } = useDogGroups();
   
-  // Generate time slots from 6am to 6pm (reduced range to fit better on screen)
-  const timeSlots = Array.from({ length: 13 }, (_, i) => {
-    const hour = i + 6; // Starting from 6am
-    const h = hour % 12 === 0 ? 12 : hour % 12;
-    const ampm = hour < 12 ? 'AM' : 'PM';
-    return `${h}${ampm}`;
-  });
-
-  // Effect to fetch dog let out data when date changes
-  useEffect(() => {
-    fetchDogLetOuts();
-  }, [date, fetchDogLetOuts]);
+  // Get time slots for the timetable
+  const timeSlots = useMemo(() => {
+    const slots: string[] = [];
+    for (let hour = 6; hour < 21; hour++) {
+      const formattedHour = hour > 12 ? hour - 12 : hour;
+      const amPm = hour >= 12 ? 'PM' : 'AM';
+      slots.push(`${formattedHour}:00 ${amPm}`);
+    }
+    return slots;
+  }, []);
   
-  // Refresh data
-  const handleRefresh = useCallback(() => {
-    fetchDogLetOuts(true);
-    if (onRefresh) onRefresh();
-  }, [fetchDogLetOuts, onRefresh]);
+  // Get current hour for highlighting
+  const currentHour = useMemo(() => {
+    const now = new Date();
+    return now.getHours();
+  }, []);
   
-  // Handle clicking on a cell in the timetable
-  const handleCellClick = useCallback((dogId: string, dogName: string, timeSlot: string) => {
-    // Check if the dog has been let out at this time
-    const isLetOut = hasDogLetOut(dogId, timeSlot);
+  // Get potty break data using our hook
+  const {
+    pottyBreaks,
+    hasPottyBreak,
+    getPottyBreakStatus,
+    handleCellClick,
+    handleGroupPottyBreak,
+    isLoading: pottyBreaksLoading,
+    refreshPottyBreaks,
+    isDogOutside,
+    getOutsideTime,
+    incompatibilityWarning,
+    clearIncompatibilityWarning
+  } = usePottyBreakTimetable(dogsData, date);
+  
+  // Dialog states for warnings and group management
+  const [showAddGroupDialog, setShowAddGroupDialog] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupColor, setNewGroupColor] = useState('#1890ff');
+  
+  // Filter dogs based on selected group
+  const filteredDogs = useMemo(() => {
+    if (selectedGroup === 'all') return dogsData;
     
-    if (isLetOut) {
-      // Remove the dog let out
-      toast({
-        title: 'Let Out Removed',
-        description: `Let out entry for ${dogName} at ${timeSlot} has been removed`,
-      });
-    } else {
-      // Add dog let out
-      toast({
-        title: 'Dog Let Out',
-        description: `${dogName} was let out at ${timeSlot}`,
-      });
+    if (selectedGroup === 'outside') {
+      return dogsData.filter(dog => isDogOutside(dog.dog_id));
     }
-  }, [hasDogLetOut, toast]);
-  
-  // Toggle dog selection
-  const toggleDogSelection = useCallback((dogId: string) => {
-    setSelectedDogs(prev => 
-      prev.includes(dogId) 
-        ? prev.filter(id => id !== dogId) 
-        : [...prev, dogId]
+    
+    const group = groups.find(g => g.id === selectedGroup);
+    if (!group) return dogsData;
+    
+    return dogsData.filter(dog => 
+      group.dogIds.includes(dog.dog_id)
     );
-  }, []);
+  }, [dogsData, selectedGroup, groups, isDogOutside]);
   
-  // Clear selected dogs
-  const clearSelectedDogs = useCallback(() => {
-    setSelectedDogs([]);
-  }, []);
-
-  // Confirm warning dialog
-  const handleConfirmWarning = useCallback(() => {
-    if (warningDialog.dogId && warningDialog.dogName) {
-      // Proceed with let out after warning
-      setWarningDialog({ open: false, dogId: '', dogName: '' });
+  // Handle manual refresh
+  const handleRefresh = useCallback(() => {
+    refreshPottyBreaks();
+    if (onRefresh) onRefresh();
+    toast({
+      title: 'Refreshed',
+      description: 'Dog let out data has been refreshed',
+    });
+  }, [refreshPottyBreaks, onRefresh, toast]);
+  
+  // Handle creating a new group
+  const handleAddGroup = useCallback(async () => {
+    if (!newGroupName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a group name',
+        variant: 'destructive'
+      });
+      return;
     }
-  }, [warningDialog]);
+    
+    const groupId = await addGroup(newGroupName, newGroupColor);
+    if (groupId) {
+      setShowAddGroupDialog(false);
+      setNewGroupName('');
+      setNewGroupColor('#1890ff');
+      setSelectedGroup(groupId);
+    }
+  }, [newGroupName, newGroupColor, addGroup, toast]);
   
-  // Get count of dogs let out at a specific time
-  const getDogsLetOutCount = useCallback((timeSlot: string) => {
-    return dogs.filter(dog => hasDogLetOut(dog.dog_id, timeSlot)).length;
-  }, [dogs, hasDogLetOut]);
-
-  // Check if a specific time slot has any dog let out
-  const timeSlotHasActivity = useCallback((timeSlot: string) => {
-    return getDogsLetOutCount(timeSlot) > 0;
-  }, [getDogsLetOutCount]);
-
-  // Render the timetable
+  // Handle group potty break actions
+  const handleGroupAction = useCallback((timeSlot: string, status: 'out' | 'in') => {
+    if (selectedGroup === 'all' || selectedGroup === 'outside') {
+      toast({
+        title: 'Select a group',
+        description: 'Please select a specific group to perform this action',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    handleGroupPottyBreak(selectedGroup, timeSlot, status);
+  }, [selectedGroup, handleGroupPottyBreak, toast]);
+  
+  const isLoading = groupsLoading || pottyBreaksLoading;
+  
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">
-          Let Out Schedule for {date.toLocaleDateString()}
-        </h3>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleRefresh} 
-          disabled={isLoading}
-          className="gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center space-x-2">
+          <Select
+            value={selectedGroup}
+            onValueChange={setSelectedGroup}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Dogs" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Dogs</SelectItem>
+              <SelectItem value="outside">Currently Outside</SelectItem>
+              {groups.map(group => (
+                <SelectItem key={group.id} value={group.id}>
+                  <div className="flex items-center">
+                    <div 
+                      className="w-2 h-2 rounded-full mr-2" 
+                      style={{backgroundColor: group.color || '#1890ff'}}
+                    />
+                    {group.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowAddGroupDialog(true)}
+          >
+            Add Group
+          </Button>
+          
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            size="sm"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center">
+            <Badge variant="outline" className="bg-green-100 dark:bg-green-900/20 mr-2">
+              <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+              In
+            </Badge>
+            <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/20 mr-2">
+              <AlertCircle className="h-3 w-3 mr-1 text-yellow-600" />
+              Out
+            </Badge>
+          </div>
+        </div>
       </div>
-      
+
       {isLoading ? (
-        <div className="flex justify-center py-8">
+        <div className="flex justify-center p-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : filteredDogs.length === 0 ? (
+        <div className="text-center p-8 border rounded-md bg-muted/20">
+          <Dog className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+          <h3 className="text-lg font-medium">No dogs found</h3>
+          <p className="text-muted-foreground">Try selecting a different group or add dogs to your kennel.</p>
         </div>
       ) : (
         <div className="border rounded-md overflow-auto">
-          <div className="max-h-[calc(100vh-300px)] overflow-auto">
-            <Table>
-              <TableHeader className="sticky top-0 z-10">
-                <TableRow>
-                  <TableHead className="sticky left-0 bg-background whitespace-nowrap w-[120px] min-w-[120px]">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => requestSort('dog_name')}
-                      className="w-full flex justify-start px-2"
-                    >
-                      Dog
-                      {sortConfig?.key === 'dog_name' && (
-                        <span className="ml-2">
-                          {sortConfig.direction === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </Button>
-                  </TableHead>
-                  
-                  {timeSlots.map((timeSlot) => (
-                    <TableHead 
-                      key={timeSlot} 
-                      className="text-center w-12 min-w-12 px-1 whitespace-nowrap"
-                    >
-                      <div className="flex flex-col items-center text-xs">
-                        <span>{timeSlot}</span>
-                        {timeSlotHasActivity(timeSlot) && (
-                          <Badge variant="outline" className="mt-1 px-1 text-[10px]">
-                            {getDogsLetOutCount(timeSlot)}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              
-              <TableBody>
-                {sortedDogs.map((dog) => (
-                  <TableRow key={dog.dog_id}>
-                    <TableCell className="sticky left-0 bg-background font-medium py-2 px-1 whitespace-nowrap">
-                      <div className="flex items-center gap-1">
-                        <input 
-                          type="checkbox" 
-                          checked={selectedDogs.includes(dog.dog_id)}
-                          onChange={() => toggleDogSelection(dog.dog_id)} 
-                          className="h-3 w-3 rounded border-gray-300"
-                        />
-                        {dog.requires_special_handling && (
-                          <AlertCircle className="h-3 w-3 text-amber-500" />
-                        )}
-                        <span className="text-sm truncate max-w-[80px]" title={dog.dog_name}>
-                          {dog.dog_name}
-                        </span>
-                      </div>
-                    </TableCell>
-                    
-                    {timeSlots.map((timeSlot) => {
-                      const isLetOut = hasDogLetOut(dog.dog_id, timeSlot);
-                      
-                      return (
-                        <TableCell 
-                          key={`${dog.dog_id}-${timeSlot}`} 
-                          className={`text-center cursor-pointer hover:bg-muted transition-colors p-1 ${
-                            isLetOut ? 'bg-green-50 dark:bg-green-900/20' : ''
-                          }`}
-                          onClick={() => handleCellClick(dog.dog_id, dog.dog_name, timeSlot)}
+          <Table>
+            <TableHeader className="bg-muted/20 sticky top-0">
+              <TableRow>
+                <TableHead className="w-[220px]">Dog</TableHead>
+                <TableHead className="w-[100px] text-center">Status</TableHead>
+                {timeSlots.map((slot) => (
+                  <TableHead 
+                    key={slot} 
+                    className={`text-center min-w-[80px] ${
+                      // Highlight current time slot
+                      slot.includes(`${currentHour > 12 ? currentHour - 12 : currentHour}:00 ${currentHour >= 12 ? 'PM' : 'AM'}`)
+                        ? 'bg-blue-50 dark:bg-blue-900/10 font-medium'
+                        : ''
+                    }`}
+                  >
+                    <div>
+                      {slot}
+                    </div>
+                    {selectedGroup !== 'all' && selectedGroup !== 'outside' && (
+                      <div className="flex gap-1 mt-1 justify-center">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-6 px-2 py-0 text-xs"
+                          onClick={() => handleGroupAction(slot, 'out')}
                         >
-                          {isLetOut ? (
-                            <Check className="h-4 w-4 text-green-500 dark:text-green-400 mx-auto" />
-                          ) : null}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
+                          Group Out
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-6 px-2 py-0 text-xs"
+                          onClick={() => handleGroupAction(slot, 'in')}
+                        >
+                          Group In
+                        </Button>
+                      </div>
+                    )}
+                  </TableHead>
                 ))}
-                
-                {sortedDogs.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={timeSlots.length + 1} className="h-24 text-center">
-                      No dogs found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredDogs.map((dog) => (
+                <TableRow 
+                  key={dog.dog_id}
+                  className={isDogOutside(dog.dog_id) ? 'bg-yellow-50 dark:bg-yellow-900/5' : ''}
+                >
+                  <TableCell className="font-medium">
+                    <div className="flex items-center">
+                      <span className="mr-2">{dog.dog_name}</span>
+                      {isDogOutside(dog.dog_id) && (
+                        <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/20">
+                          <span>Outside {getOutsideTime(dog.dog_id)}</span>
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {isDogOutside(dog.dog_id) ? (
+                      <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-900/20">
+                        <AlertCircle className="h-3 w-3 mr-1 text-yellow-600" />
+                        Out
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-green-100 dark:bg-green-900/20">
+                        <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                        In
+                      </Badge>
+                    )}
+                  </TableCell>
+                  {timeSlots.map((slot) => {
+                    const status = getPottyBreakStatus(dog.dog_id, slot);
+                    
+                    return (
+                      <TableCell 
+                        key={`${dog.dog_id}-${slot}`} 
+                        className={`text-center cursor-pointer transition-colors p-0 h-10 ${
+                          slot.includes(`${currentHour > 12 ? currentHour - 12 : currentHour}:00 ${currentHour >= 12 ? 'PM' : 'AM'}`)
+                            ? 'bg-blue-50 dark:bg-blue-900/10'
+                            : ''
+                        } ${
+                          status
+                            ? status === 'out'
+                              ? 'bg-yellow-100 dark:bg-yellow-900/20 hover:bg-yellow-200 dark:hover:bg-yellow-900/30'
+                              : 'bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30'
+                            : 'hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                        }`}
+                        onClick={() => handleCellClick(dog.dog_id, dog.dog_name, slot)}
+                      >
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="w-full h-full flex items-center justify-center">
+                                {status && (
+                                  <>
+                                    {status === 'out' ? (
+                                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                                    ) : (
+                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                {status 
+                                  ? status === 'out'
+                                    ? `${dog.dog_name} went out at ${slot}`
+                                    : `${dog.dog_name} came in at ${slot}`
+                                  : `Click to mark ${dog.dog_name} as out/in at ${slot}`
+                                }
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
-      
-      {selectedDogs.length > 0 && (
-        <Card className="mt-4 bg-muted/30">
-          <CardContent className="pt-4 pb-2 flex justify-between items-center">
-            <div>
-              <span className="font-medium">Selected:</span> {selectedDogs.length} dogs
-            </div>
-            <div className="space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={clearSelectedDogs}
-              >
-                Clear
-              </Button>
-              <Button 
-                size="sm" 
-                className="gap-2"
-              >
-                <Dog className="h-4 w-4" />
-                Let Out Selected
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      
-      {/* Warning Dialog */}
-      <Dialog open={warningDialog.open} onOpenChange={(open) => setWarningDialog(prev => ({ ...prev, open }))}>
+
+      {/* Incompatibility warning dialog */}
+      <Dialog 
+        open={!!incompatibilityWarning} 
+        onOpenChange={(open) => !open && clearIncompatibilityWarning()}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Compatibility Warning</DialogTitle>
-            <DialogDescription>
-              There may be compatibility issues letting out {warningDialog.dogName} at this time.
-            </DialogDescription>
+            <DialogTitle className="text-amber-500 flex items-center">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              Dog Incompatibility Warning
+            </DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <Alert variant="warning">
+            <Alert variant="warning" className="mb-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
+              <AlertTitle>Incompatible Dogs</AlertTitle>
               <AlertDescription>
-                Some dogs currently outside may not be compatible with {warningDialog.dogName}.
+                {incompatibilityWarning?.dogName} should not interact with the following dogs currently outside:
               </AlertDescription>
             </Alert>
+            <ul className="list-disc pl-5 space-y-1">
+              {incompatibilityWarning?.incompatibleDogs.map(dog => (
+                <li key={dog.id}>{dog.name}</li>
+              ))}
+            </ul>
           </div>
+          <DialogDescription>
+            Please ensure these dogs don't interact when outside. Do you still want to proceed?
+          </DialogDescription>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setWarningDialog({ open: false, dogId: '', dogName: '' })}>
+            <Button 
+              variant="outline" 
+              onClick={clearIncompatibilityWarning}
+            >
               Cancel
             </Button>
-            <Button onClick={handleConfirmWarning}>
-              Proceed Anyway
+            <Button 
+              variant="default"
+              onClick={() => {
+                if (incompatibilityWarning) {
+                  // Force let the dog out anyway
+                  const timeSlot = timeSlots[currentHour - 6]; // Approximate current time slot
+                  handleCellClick(incompatibilityWarning.dogId, incompatibilityWarning.dogName, timeSlot);
+                  clearIncompatibilityWarning();
+                }
+              }}
+            >
+              Let Dog Out Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Group Dialog */}
+      <Dialog open={showAddGroupDialog} onOpenChange={setShowAddGroupDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Dog Group</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="group-name" className="text-right">
+                Group Name
+              </label>
+              <input
+                id="group-name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="group-color" className="text-right">
+                Group Color
+              </label>
+              <div className="col-span-3 flex items-center gap-2">
+                <div 
+                  className="w-6 h-6 rounded-full border" 
+                  style={{ backgroundColor: newGroupColor }}
+                />
+                <input
+                  id="group-color"
+                  type="color"
+                  value={newGroupColor}
+                  onChange={(e) => setNewGroupColor(e.target.value)}
+                  className="w-full h-10"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddGroupDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddGroup}>
+              Create Group
             </Button>
           </DialogFooter>
         </DialogContent>

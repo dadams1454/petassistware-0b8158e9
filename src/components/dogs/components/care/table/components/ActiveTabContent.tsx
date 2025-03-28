@@ -11,24 +11,27 @@ interface ActiveTabContentProps {
   activeCategory: string;
   sortedDogs: DogCareStatus[];
   timeSlots: string[];
-  hasCareLogged: (dogId: string, hour: number) => boolean;
-  hasObservation: (dogId: string, hour: number) => boolean;
-  getObservationDetails: (dogId: string, hour: number) => { text: string; type: string } | null;
-  onCellClick: (dogId: string, hour: number) => void;
-  onCellContextMenu: (e: React.MouseEvent, dogId: string, hour: number) => void;
-  onCareLogClick: (dogId: string) => void;
+  hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasObservation: (dogId: string, timeSlot: string) => boolean;
+  getObservationDetails: (dogId: string) => { text: string; type: string } | null;
+  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
-  onObservationClick: (dogId: string, hour: number) => void;
+  onObservationClick: (dogId: string, dogName: string) => void;
   onRefresh: () => void;
   onCategoryChange?: (category: string) => void;
   currentHour?: number;
   isMobile?: boolean;
+  isPendingFeeding?: (dogId: string, timeSlot: string) => boolean;
 }
 
 const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   activeCategory,
   sortedDogs,
   timeSlots,
+  hasPottyBreak,
   hasCareLogged,
   hasObservation,
   getObservationDetails,
@@ -41,6 +44,7 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   onCategoryChange,
   currentHour,
   isMobile = false,
+  isPendingFeeding = () => false
 }) => {
   return (
     <Card className="border p-0 overflow-hidden">
@@ -59,6 +63,7 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
           sortedDogs={sortedDogs}
           timeSlots={timeSlots}
           activeCategory={activeCategory}
+          hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
           hasObservation={hasObservation}
           getObservationDetails={getObservationDetails}
@@ -69,6 +74,7 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
           onObservationClick={onObservationClick}
           currentHour={currentHour}
           isMobile={isMobile}
+          isPendingFeeding={isPendingFeeding}
         />
       </TableContainer>
       

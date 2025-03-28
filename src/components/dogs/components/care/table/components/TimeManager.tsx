@@ -1,11 +1,12 @@
 
 import { useState, useEffect, useMemo } from 'react';
+import { generateTimeSlots } from '../dogGroupColors';
 import { 
   MedicationFrequency, 
   getTimeSlotsForFrequency 
 } from '@/utils/medicationUtils';
 
-export const useTimeManager = (activeCategory = 'feeding') => {
+export const useTimeManager = (activeCategory = 'pottybreaks') => {
   // Get current time and hour
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [currentHour, setCurrentHour] = useState<number>(currentTime.getHours());
@@ -16,12 +17,18 @@ export const useTimeManager = (activeCategory = 'feeding') => {
     if (activeCategory === 'feeding') {
       // For feeding, show morning, afternoon, and evening slots
       return ['7:00 AM (Breakfast)', '12:00 PM (Lunch)', '6:00 PM (Dinner)'];
-    } else if (activeCategory === 'medication') {
+    } else if (activeCategory === 'medications') {
       // For medications, use frequency-based slots (default to monthly)
       return getTimeSlotsForFrequency(MedicationFrequency.MONTHLY);
+    } else if (activeCategory === 'exercise' || activeCategory === 'training') {
+      // For exercise/training, show morning and afternoon slots
+      return ['8:00 AM', '12:00 PM', '4:00 PM'];
+    } else if (activeCategory === 'grooming') {
+      // For grooming, show weekly slots
+      return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     } else {
-      // Default to feeding slots
-      return ['7:00 AM (Breakfast)', '12:00 PM (Lunch)', '6:00 PM (Dinner)'];
+      // For potty breaks and other categories, use the standard hourly slots
+      return generateTimeSlots(currentTime, activeCategory);
     }
   }, [currentTime, activeCategory]);
   
@@ -38,11 +45,30 @@ export const useTimeManager = (activeCategory = 'feeding') => {
   
   // Memo-ize the timeslot headers to prevent re-renders
   const timeSlotHeaders = useMemo(() => {
-    return timeSlots.map(slot => ({
-      slot,
-      isCurrent: false
-    }));
-  }, [timeSlots]);
+    if (activeCategory === 'feeding' || activeCategory === 'medications' || 
+        activeCategory === 'exercise' || activeCategory === 'training' || 
+        activeCategory === 'grooming') {
+      // For these categories, we don't need current hour highlighting
+      return timeSlots.map(slot => ({
+        slot,
+        isCurrent: false
+      }));
+    }
+    
+    // For potty breaks and other hourly categories, use the original logic
+    return timeSlots.map(slot => {
+      const [hours, minutesPart] = slot.split(':');
+      const [minutes, period] = minutesPart.split(' ');
+      let hour = parseInt(hours);
+      if (period === 'PM' && hour !== 12) hour += 12;
+      if (period === 'AM' && hour === 12) hour = 0;
+      
+      return {
+        slot,
+        isCurrent: hour === currentHour
+      };
+    });
+  }, [timeSlots, currentHour, activeCategory]);
 
   return {
     currentTime,

@@ -1,12 +1,15 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Filter, Check, X } from 'lucide-react';
 import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Filter } from 'lucide-react';
 import { EVENT_TYPES, EVENT_COLORS } from '@/pages/Calendar';
 
 interface EventTypeFiltersProps {
@@ -26,66 +29,66 @@ const EventTypeFilters: React.FC<EventTypeFiltersProps> = ({
   filterMenuOpen,
   setFilterMenuOpen
 }) => {
+  // Function to get color styling for an event type
+  const getEventTypeStyle = (eventType: string) => {
+    return EVENT_COLORS[eventType] || EVENT_COLORS['Other'];
+  };
+
   return (
     <Popover open={filterMenuOpen} onOpenChange={setFilterMenuOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-1"
-        >
-          <Filter size={14} />
-          <span className="hidden sm:inline text-xs">Filter Events</span>
-          <span className="inline sm:hidden text-xs">Filter</span>
-          {activeFilters.length > 0 && activeFilters.length < EVENT_TYPES.length && (
-            <span className="bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
+        <Button variant="outline" className="flex items-center gap-2">
+          <Filter size={16} />
+          Filter
+          {activeFilters.length < EVENT_TYPES.length && (
+            <Badge variant="secondary" className="ml-1">
               {activeFilters.length}
-            </span>
+            </Badge>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="end">
-        <div className="flex justify-between mb-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-xs h-6 px-2"
-            onClick={selectAllFilters}
-          >
-            Select All
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-xs h-6 px-2"
-            onClick={clearAllFilters}
-          >
-            Clear All
-          </Button>
-        </div>
-        
-        <div className="space-y-1 max-h-[250px] overflow-y-auto py-1">
-          {EVENT_TYPES.map(eventType => {
-            const { bg, text } = EVENT_COLORS[eventType];
-            const isActive = activeFilters.includes(eventType);
-            
-            return (
-              <Button
-                key={eventType}
-                variant="ghost"
-                size="sm"
-                className={`w-full justify-start h-7 px-2 ${isActive ? 'bg-accent' : ''}`}
-                onClick={() => toggleFilter(eventType)}
+      <PopoverContent className="w-80 p-4" align="end">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium">Filter By Event Type</h4>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs px-2"
+                onClick={selectAllFilters}
               >
-                <div className="flex items-center w-full">
-                  <span className={`mr-2 h-4 w-4 rounded-full flex items-center justify-center ${bg}`}>
-                    {isActive && <Check size={10} className={text} />}
-                  </span>
-                  <span className="text-xs truncate">{eventType}</span>
-                </div>
+                Select All
               </Button>
-            );
-          })}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs px-2"
+                onClick={clearAllFilters}
+              >
+                Clear All
+              </Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {EVENT_TYPES.map(eventType => {
+              const { bg, text } = getEventTypeStyle(eventType);
+              return (
+                <div key={eventType} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`filter-${eventType}`}
+                    checked={activeFilters.includes(eventType)}
+                    onCheckedChange={() => toggleFilter(eventType)}
+                  />
+                  <Label htmlFor={`filter-${eventType}`} className="flex items-center gap-2">
+                    <span className={`inline-block px-2 py-1 text-xs rounded-full ${bg} ${text}`}>
+                      {eventType}
+                    </span>
+                  </Label>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </PopoverContent>
     </Popover>

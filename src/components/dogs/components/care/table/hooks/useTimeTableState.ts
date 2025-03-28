@@ -1,6 +1,7 @@
 
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
+import usePottyBreakTable from './usePottyBreakTable';
 import {
   useDialogState,
   useDebugState,
@@ -14,7 +15,7 @@ export const useTimeTableState = (
   onRefresh: () => void,
   isRefreshing: boolean,
   currentDate: Date,
-  initialCategory: string = 'feeding'
+  initialCategory: string = 'pottybreaks'
 ) => {
   // Use the debug state hook
   const { clickCountRef, errorCountRef, debugInfo, setDebugInfo } = useDebugState();
@@ -35,52 +36,34 @@ export const useTimeTableState = (
     selectedDogId, 
     setSelectedDogId 
   } = useDialogState(activeCategory);
-
-  // Generate default timeSlots
-  const timeSlots = Array.from({ length: 12 }, (_, i) => {
-    const hour = i + 6; // Start at 6 AM
-    const formattedHour = hour <= 12 ? hour : hour - 12;
-    const ampm = hour < 12 || hour === 24 ? 'AM' : 'PM';
-    return `${formattedHour}:00 ${ampm}`;
-  });
   
-  // Simple stub functions for the time being
-  const sortedDogs = dogsStatus;
-  const isLoading = isRefreshing;
-  const showLoading = isRefreshing;
+  // Use the potty break table hook to get all the necessary data and handlers
+  const {
+    sortedDogs,
+    hasPottyBreak,
+    hasCareLogged,
+    hasObservation,
+    getObservationDetails,
+    handleCellClick,
+    handleRefresh,
+    isLoading,
+    timeSlots
+  } = usePottyBreakTable(dogsStatus, onRefresh, activeCategory, currentDate);
   
-  // Stub functions for care tracking
-  const hasCareLogged = useCallback((dogId: string, hour: number): boolean => {
-    return false;
-  }, []);
+  // Use the observation handling hook
+  const { observations, handleObservationSubmit } = useObservationHandling(
+    dogsStatus, 
+    activeCategory, 
+    onRefresh
+  );
   
-  const hasObservation = useCallback((dogId: string, hour: number): boolean => {
-    return false;
-  }, []);
-  
-  const getObservationDetails = useCallback((dogId: string, hour: number) => {
-    return null;
-  }, []);
-  
-  const handleCellClick = useCallback((dogId: string, hour: number) => {
-    console.log(`Cell clicked: dog ${dogId}, hour ${hour}`);
-  }, []);
-  
-  const handleCellContextMenu = useCallback((e: React.MouseEvent, dogId: string, hour: number) => {
-    e.preventDefault();
-    console.log(`Cell right-clicked: dog ${dogId}, hour ${hour}`);
-  }, []);
-  
-  const handleRefresh = useCallback(() => {
-    onRefresh();
-  }, [onRefresh]);
-  
-  // Use the handlers hook for additional handlers
+  // Use the handlers hook
   const {
     handleDogClick,
     handleCareLogClick,
     handleObservationClick,
     memoizedCellClickHandler,
+    handleCellContextMenu,
     handleErrorReset
   } = useHandlers(
     activeCategory,
@@ -93,12 +76,8 @@ export const useTimeTableState = (
     onRefresh
   );
 
-  // Use the observation handling hook
-  const { observations, handleObservationSubmit } = useObservationHandling(
-    dogsStatus, 
-    activeCategory, 
-    onRefresh
-  );
+  // Combine loading states
+  const showLoading = isRefreshing || isLoading;
 
   return {
     isDialogOpen,
@@ -108,6 +87,7 @@ export const useTimeTableState = (
     clickCountRef,
     errorCountRef,
     sortedDogs,
+    hasPottyBreak,
     hasCareLogged,
     hasObservation,
     getObservationDetails,

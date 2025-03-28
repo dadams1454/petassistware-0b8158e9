@@ -5,39 +5,10 @@ import DashboardContent from '@/components/dashboard/DashboardContent';
 import { useDashboardData } from '@/components/dashboard/useDashboardData';
 import { DailyCareProvider } from '@/contexts/dailyCare';
 import { PageHeader, LoadingState, ErrorState } from '@/components/ui/standardized';
-import { Users, BarChart, DollarSign, UserRound } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   // Use the hook to fetch all dashboard data - using the centralized refresh system
   const { isLoading, error, stats, events, activities, refresh } = useDashboardData();
-  
-  // Convert stats object to array format expected by DashboardContent
-  const statsArray = stats ? [
-    {
-      title: 'Dogs',
-      value: String(stats.activeDogs),
-      icon: <Users className="h-4 w-4 text-muted-foreground" />,
-      description: 'Active dogs in your kennel'
-    },
-    {
-      title: 'Litters',
-      value: String(stats.activeLitters),
-      icon: <BarChart className="h-4 w-4 text-muted-foreground" />,
-      description: 'Current litters'
-    },
-    {
-      title: 'Puppies',
-      value: String(stats.availablePuppies),
-      icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
-      description: 'Available puppies'
-    },
-    {
-      title: 'Customers',
-      value: String(stats.totalCustomers),
-      icon: <UserRound className="h-4 w-4 text-muted-foreground" />,
-      description: 'Total customers'
-    }
-  ] : [];
   
   return (
     <PageContainer>
@@ -64,9 +35,9 @@ const Dashboard: React.FC = () => {
           ) : (
             <DashboardContent 
               isLoading={isLoading}
-              stats={statsArray}
-              events={events || []}
-              activities={activities || []}
+              stats={stats}
+              events={events}
+              activities={activities}
             />
           )}
         </DailyCareProvider>

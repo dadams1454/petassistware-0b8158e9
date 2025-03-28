@@ -1,7 +1,7 @@
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useObservations } from '../pottyBreakHooks/useObservations';
 import { DogCareStatus } from '@/types/dailyCare';
-import { ObservationType } from '../../components/observation/ObservationDialog';
 
 /**
  * Hook to manage observation functionality
@@ -11,41 +11,31 @@ export const useObservationHandling = (
   activeCategory: string,
   onRefresh: () => void
 ) => {
-  // State to hold observations
-  const [observations, setObservations] = useState<Record<string, any[]>>({});
+  // Get observations and add observation function
+  const { observations, addObservation } = useObservations(dogsStatus);
   
   // Handler for observation submission
   const handleObservationSubmit = useCallback(async (
     dogId: string, 
-    observation: string, 
-    observationType: ObservationType,
+    observationText: string, 
+    observationType: 'accident' | 'heat' | 'behavior' | 'other',
     timestamp?: Date
   ): Promise<void> => {
-    console.log('Observation submitted:', { dogId, observation, observationType, timestamp });
+    // Always use 'observation' category now that we only have potty breaks
+    const category = 'observation';
     
-    // Store the observation locally (would typically be saved to a database)
-    setObservations(prev => {
-      const dogObservations = prev[dogId] || [];
-      return {
-        ...prev,
-        [dogId]: [
-          ...dogObservations,
-          {
-            id: Date.now().toString(),
-            observation,
-            observation_type: observationType,
-            created_at: (timestamp || new Date()).toISOString()
-          }
-        ]
-      };
-    });
+    // Determine the time slot based on timestamp
+    const timeSlot = timestamp ? `${timestamp.getHours() % 12 || 12}:00 ${timestamp.getHours() >= 12 ? 'PM' : 'AM'}` : '';
     
-    // After submission, refresh the data
+    // Add the observation
+    await addObservation(dogId, observationText, observationType, timeSlot, category, timestamp);
+    
+    // Refresh data
     onRefresh();
-    
-    // Return a resolved promise to satisfy TypeScript
-    return Promise.resolve();
-  }, [onRefresh, setObservations]);
+  }, [activeCategory, addObservation, onRefresh]);
 
-  return { observations, handleObservationSubmit };
+  return {
+    observations,
+    handleObservationSubmit
+  };
 };

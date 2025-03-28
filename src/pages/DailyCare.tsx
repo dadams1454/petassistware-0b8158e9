@@ -6,6 +6,7 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Dog } from 'lucide-react';
+import PottyBreakReminderCard from '@/components/dogs/components/care/potty/PottyBreakReminderCard';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
 import { EmptyState } from '@/components/ui/standardized';
@@ -42,7 +43,7 @@ const DailyCare: React.FC = () => {
             Daily Care Time Table
           </h1>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Track feeding and medications for all your dogs
+            Track potty breaks, feeding, medications and exercise for all your dogs
             {dogStatuses ? ` (${dogStatuses.length} dogs)` : ' (Loading...)'}
           </p>
         </div>
@@ -60,6 +61,18 @@ const DailyCare: React.FC = () => {
         </Card>
       ) : dogStatuses && dogStatuses.length > 0 ? (
         <div className="space-y-6">
+          {/* Reminder Card */}
+          <PottyBreakReminderCard 
+            dogs={dogStatuses}
+            onLogPottyBreak={() => {
+              // Just scroll to the timetable on click
+              const timeTableSection = document.getElementById('dog-time-table');
+              if (timeTableSection) {
+                timeTableSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          />
+          
           {/* Time Table */}
           <div id="dog-time-table">
             <DogTimeTable 
@@ -67,7 +80,6 @@ const DailyCare: React.FC = () => {
               onRefresh={() => handleRefresh(true)} 
               isRefreshing={isLoading}
               currentDate={currentDate}
-              initialCategory="feeding"
             />
           </div>
         </div>

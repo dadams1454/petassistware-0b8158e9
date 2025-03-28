@@ -1,78 +1,77 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { TableCell } from '@/components/ui/table';
-import { StickyNote, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Heart, Activity, MessageCircle, PencilLine } from 'lucide-react';
+
+interface ObservationDetails {
+  text: string;
+  type: string;
+  timeSlot?: string;
+  category?: string;
+}
 
 interface ObservationCellProps {
   dogId: string;
   dogName: string;
   dogHasObservation: boolean;
-  observationDetails: { text: string; type: string } | null;
-  onClick: () => void;
+  observationDetails: ObservationDetails | null;
   activeCategory: string;
+  onClick: () => void;
 }
 
-const ObservationCell: React.FC<ObservationCellProps> = ({
+// Memoize the component to prevent unnecessary re-renders
+const ObservationCell: React.FC<ObservationCellProps> = memo(({
   dogId,
   dogName,
   dogHasObservation,
   observationDetails,
-  onClick,
-  activeCategory
+  activeCategory,
+  onClick
 }) => {
-  // Determine what icon to show based on observation type
-  const getIcon = () => {
-    if (!dogHasObservation) return null;
-
-    if (observationDetails?.type === 'accident' || observationDetails?.type === 'warning') {
-      return (
-        <AlertTriangle 
-          className="h-4 w-4 text-amber-500 dark:text-amber-400 mr-1.5" 
-          aria-label="Warning or incident observation"
-        />
-      );
+  // Function to get observation icon based on type
+  const getObservationIcon = (type: string) => {
+    switch (type) {
+      case 'accident':
+        return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
+      case 'heat':
+        return <Heart className="h-4 w-4 text-red-500 flex-shrink-0" />;
+      case 'behavior':
+        return <Activity className="h-4 w-4 text-blue-500 flex-shrink-0" />;
+      default:
+        return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
     }
-    
-    return (
-      <StickyNote 
-        className="h-4 w-4 text-blue-500 dark:text-blue-400 mr-1.5" 
-        aria-label="General observation"
-      />
-    );
-  };
-
-  // Get a short preview of the observation text
-  const getObservationPreview = () => {
-    if (!dogHasObservation || !observationDetails?.text) return null;
-    
-    const text = observationDetails.text;
-    return text.length > 20 ? `${text.substring(0, 20)}...` : text;
   };
 
   return (
     <TableCell 
+      className="p-2 border-r border-slate-200 dark:border-slate-700 max-w-[220px] cell-status-transition cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
       onClick={onClick}
-      className={`
-        px-4 py-2 
-        cursor-pointer
-        text-sm text-muted-foreground
-        ${dogHasObservation ? 'hover:bg-slate-100 dark:hover:bg-slate-800' : ''}
-      `}
     >
-      <div className="flex items-center">
-        {getIcon()}
-        {getObservationPreview() ? (
-          <span className="text-xs truncate max-w-[120px]">
-            {getObservationPreview()}
+      {dogHasObservation && observationDetails ? (
+        <div className="flex items-start gap-2">
+          {getObservationIcon(observationDetails.type)}
+          <div className="overflow-hidden">
+            <div className="text-xs font-medium capitalize text-gray-700 dark:text-gray-300">
+              {observationDetails.type}
+            </div>
+            <div className="text-xs line-clamp-3 text-gray-600 dark:text-gray-400">
+              {observationDetails.text}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400 dark:text-gray-600">
+            No observations
           </span>
-        ) : (
-          <span className="text-xs text-muted-foreground italic">
-            {dogHasObservation ? "Click to view" : "No notes"}
-          </span>
-        )}
-      </div>
+          <PencilLine className="h-3 w-3 text-gray-400 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      )}
     </TableCell>
   );
-};
+});
+
+// Add display name for better React DevTools debugging
+ObservationCell.displayName = 'ObservationCell';
 
 export default ObservationCell;

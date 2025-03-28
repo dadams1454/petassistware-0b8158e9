@@ -1,14 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { FormEvent, useState } from 'react';
+import DialogContentComponent from './DialogContent';
 
-export type ObservationType = 'heat' | 'behavior' | 'other';
+export type ObservationType = 'accident' | 'heat' | 'behavior' | 'other';
 
 interface ObservationDialogProps {
   open: boolean;
@@ -22,7 +18,11 @@ interface ObservationDialogProps {
     created_at: string;
     category?: string;
   }>;
+  timeSlots?: string[];
   isMobile?: boolean;
+  activeCategory?: string;
+  defaultObservationType?: ObservationType;
+  selectedTimeSlot?: string;
   dialogTitle?: string;
 }
 
@@ -33,122 +33,112 @@ const ObservationDialog: React.FC<ObservationDialogProps> = ({
   dogName,
   onSubmit,
   existingObservations = [],
+  timeSlots = [],
   isMobile = false,
+  activeCategory = 'pottybreaks',
+  defaultObservationType = 'other',
+  selectedTimeSlot = '',
   dialogTitle = 'Observation'
 }) => {
-  const [observationType, setObservationType] = useState<ObservationType>('other');
-  const [observationNote, setObservationNote] = useState('');
+  const [observation, setObservation] = useState('');
+  const [observationType, setObservationType] = useState<ObservationType>(defaultObservationType);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [observationDate, setObservationDate] = useState<Date>(new Date());
+  const [dialogSelectedTimeSlot, setDialogSelectedTimeSlot] = useState<string>(selectedTimeSlot);
 
-  const handleSubmit = async (e: FormEvent) => {
+  // Always use the current date and time
+  const currentDateTime = useMemo(() => new Date(), [open]);
+
+  // Update observation type and reset form when the dialog opens
+  useEffect(() => {
+    if (open) {
+      // Reset the observation type to default
+      setObservationType(defaultObservationType);
+      
+      // Set the selected time slot if provided
+      if (selectedTimeSlot) {
+        setDialogSelectedTimeSlot(selectedTimeSlot);
+      } else if (timeSlots && timeSlots.length > 0) {
+        // Default to first time slot if none selected and timeSlots exists
+        setDialogSelectedTimeSlot(timeSlots[0]);
+      }
+      
+      // Always use current date/time when dialog opens
+      setObservationDate(currentDateTime);
+      
+      // Reset observation text
+      setObservation('');
+    }
+  }, [open, activeCategory, defaultObservationType, selectedTimeSlot, timeSlots, currentDateTime]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
+    // Allow empty observation text, just use the observation type as the text if needed
+    let observationText = observation.trim();
+    
+    if (!observationText) {
+      // Default text based on observation type
+      observationText = `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
+    }
+    
+    setIsSubmitting(true);
     try {
-      await onSubmit(dogId, observationNote, observationType);
-      setObservationNote('');
+      // Use the observation date that was set
+      await onSubmit(dogId, observationText, observationType, observationDate);
+      setObservation('');
       onOpenChange(false);
-    } catch (error) {
-      console.error('Error submitting observation:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const Content = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-4">
-        <RadioGroup 
-          value={observationType} 
-          onValueChange={(value) => setObservationType(value as ObservationType)}
-          className="flex flex-col space-y-2"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="behavior" id="behavior" />
-            <Label htmlFor="behavior">Behavior</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="heat" id="heat" />
-            <Label htmlFor="heat">Heat</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="other" id="other" />
-            <Label htmlFor="other">Other</Label>
-          </div>
-        </RadioGroup>
-      </div>
-
-      <div>
-        <Textarea
-          placeholder="Enter observation notes..."
-          value={observationNote}
-          onChange={(e) => setObservationNote(e.target.value)}
-          rows={4}
-          className="w-full"
-        />
-      </div>
-
-      <div className="flex justify-end space-x-2">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => onOpenChange(false)}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button 
-          type="submit"
-          disabled={!observationNote.trim() || isSubmitting}
-        >
-          Save Observation
-        </Button>
-      </div>
-
-      {existingObservations.length > 0 && (
-        <div className="border-t pt-4 mt-4">
-          <h4 className="text-sm font-medium mb-2">Recent Observations</h4>
-          <div className="space-y-3">
-            {existingObservations.map((obs, index) => (
-              <div key={index} className="text-sm border-l-2 border-primary pl-3">
-                <div className="flex justify-between">
-                  <span className="font-medium capitalize">{obs.observation_type}</span>
-                  <span className="text-muted-foreground text-xs">
-                    {new Date(obs.created_at).toLocaleString()}
-                  </span>
-                </div>
-                <p className="mt-1">{obs.observation}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </form>
+  
+  // The dialog content
+  const dialogContent = (
+    <DialogContentComponent
+      existingObservations={existingObservations}
+      observation={observation}
+      setObservation={setObservation}
+      observationType={observationType}
+      setObservationType={setObservationType}
+      onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
+      onCancel={() => onOpenChange(false)}
+      observationDate={observationDate}
+      setObservationDate={setObservationDate}
+      timeSlot={dialogSelectedTimeSlot}
+      timeSlots={timeSlots || []} // Ensure timeSlots is always an array
+      selectedTimeSlot={dialogSelectedTimeSlot}
+      setSelectedTimeSlot={setDialogSelectedTimeSlot}
+      isMobile={isMobile}
+      activeCategory={activeCategory}
+    />
   );
-
-  // Use mobile sheet for mobile devices, dialog for desktop
-  if (isMobile) {
-    return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>{dialogTitle} for {dogName}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">
-            <Content />
-          </div>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  return (
+  
+  // Create a more specific title with the dog's name
+  const fullTitle = `${dialogTitle} for ${dogName}`;
+  
+  // Use regular Dialog on desktop, Sheet on mobile
+  return isMobile ? (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="h-auto max-h-[85vh] overflow-auto pb-10">
+        <SheetHeader className="mb-4">
+          <SheetTitle className="flex items-center gap-2">
+            <span>{fullTitle}</span>
+          </SheetTitle>
+        </SheetHeader>
+        {dialogContent}
+      </SheetContent>
+    </Sheet>
+  ) : (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{dialogTitle} for {dogName}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <span>{fullTitle}</span>
+          </DialogTitle>
         </DialogHeader>
-        <Content />
+        {dialogContent}
       </DialogContent>
     </Dialog>
   );

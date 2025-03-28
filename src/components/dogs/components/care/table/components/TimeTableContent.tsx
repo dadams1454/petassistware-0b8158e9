@@ -1,28 +1,33 @@
 
 import React from 'react';
+import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
 import { DogCareStatus } from '@/types/dailyCare';
 import DogTimeRow from '../DogTimeRow';
+import { getDogRowColor } from '../dogGroupColors';
 
 interface TimeTableContentProps {
   sortedDogs: DogCareStatus[];
   timeSlots: string[];
   activeCategory: string;
-  hasCareLogged: (dogId: string, hour: number) => boolean;
-  hasObservation: (dogId: string, hour: number) => boolean;
-  getObservationDetails: (dogId: string, hour: number) => any;
-  onCellClick: (dogId: string, hour: number) => void;
-  onCellContextMenu: (e: React.MouseEvent, dogId: string, hour: number) => void;
-  onCareLogClick: (dogId: string) => void;
+  hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasObservation: (dogId: string, timeSlot: string) => boolean;
+  getObservationDetails: (dogId: string) => { text: string; type: string; timeSlot?: string; category?: string; } | null;
+  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCellContextMenu: (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
-  onObservationClick: (dogId: string, hour: number) => void;
+  onObservationClick: (dogId: string, dogName: string) => void;
   currentHour?: number;
   isMobile?: boolean;
+  isPendingFeeding?: (dogId: string, timeSlot: string) => boolean;
 }
 
 const TimeTableContent: React.FC<TimeTableContentProps> = ({
   sortedDogs,
   timeSlots,
   activeCategory,
+  hasPottyBreak,
   hasCareLogged,
   hasObservation,
   getObservationDetails,
@@ -32,67 +37,57 @@ const TimeTableContent: React.FC<TimeTableContentProps> = ({
   onDogClick,
   onObservationClick,
   currentHour,
-  isMobile
+  isMobile = false,
+  isPendingFeeding = () => false
 }) => {
+  // If timeSlots is empty or not provided, use default empty array
+  const effectiveTimeSlots = timeSlots && timeSlots.length > 0 ? timeSlots : [];
+  
   return (
-    <div className="relative overflow-x-auto border-t">
-      <table className="w-full text-sm text-left">
-        <thead className="text-xs text-muted-foreground bg-accent/30">
-          <tr className="border-b">
-            <th className="px-2 py-3 font-medium sticky left-0 bg-accent/30 z-10 min-w-[120px]">
-              <span className="pl-1">Dog</span>
-            </th>
-            <th className="px-2 py-3 font-medium min-w-[150px]">
-              Observations
-            </th>
-            {timeSlots.map((slot, index) => (
-              <th
-                key={slot}
-                className={`px-3 py-3 font-medium text-center ${
-                  currentHour && 
-                  (
-                    (slot.includes('AM') && parseInt(slot.split(':')[0]) + (slot.includes('12') ? 0 : 12) === currentHour) || 
-                    (slot.includes('PM') && parseInt(slot.split(':')[0]) + (slot.includes('12') ? 12 : 0) === currentHour)
-                  ) 
-                    ? 'bg-yellow-100 dark:bg-yellow-950' 
-                    : ''
-                }`}
-              >
-                {slot}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {sortedDogs.map((dog) => {
-            // Calculate a simple striped row background
-            const rowBgClass = parseInt(dog.dog_id) % 2 === 0 
-              ? 'bg-white dark:bg-gray-950' 
-              : 'bg-gray-50 dark:bg-gray-900/50';
-              
-            return (
-              <DogTimeRow
-                key={dog.dog_id}
-                dog={dog}
-                timeSlots={timeSlots}
-                rowColor={rowBgClass}
-                activeCategory={activeCategory}
-                hasPottyBreak={() => false}
-                hasCareLogged={(dogId, hour) => hasCareLogged(dogId, hour)}
-                hasObservation={(dogId, hour) => hasObservation(dogId, hour)}
-                getObservationDetails={getObservationDetails}
-                onCellClick={onCellClick}
-                onCellContextMenu={onCellContextMenu}
-                onCareLogClick={onCareLogClick}
-                onDogClick={onDogClick}
-                onObservationClick={onObservationClick}
-                currentHour={currentHour}
-              />
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <Table>
+      <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
+        <TableRow>
+          <TableHead className="w-[160px] md:w-[250px]">Dog</TableHead>
+          <TableHead className="w-[220px]">Observations</TableHead>
+          {effectiveTimeSlots.map((slot) => (
+            <TableHead 
+              key={slot} 
+              className={`text-center w-[80px] ${
+                currentHour !== undefined && 
+                slot.includes(`${currentHour > 12 ? currentHour - 12 : currentHour === 0 ? 12 : currentHour}:00 ${currentHour >= 12 ? 'PM' : 'AM'}`)
+                  ? 'bg-blue-50 dark:bg-blue-900/10 font-medium'
+                  : ''
+              }`}
+            >
+              {slot}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {sortedDogs.map((dog, index) => (
+          <DogTimeRow
+            key={dog.dog_id}
+            dog={dog}
+            timeSlots={effectiveTimeSlots}
+            rowColor={getDogRowColor(index)}
+            activeCategory={activeCategory}
+            hasPottyBreak={hasPottyBreak}
+            hasCareLogged={hasCareLogged}
+            hasObservation={hasObservation}
+            getObservationDetails={getObservationDetails}
+            onCellClick={onCellClick}
+            onCellContextMenu={onCellContextMenu}
+            onCareLogClick={onCareLogClick}
+            onDogClick={onDogClick}
+            onObservationClick={onObservationClick}
+            currentHour={currentHour}
+            isMobile={isMobile}
+            isPendingFeeding={isPendingFeeding}
+          />
+        ))}
+      </TableBody>
+    </Table>
   );
 };
 

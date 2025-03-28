@@ -37,9 +37,9 @@ const EventDialog: React.FC<EventDialogProps> = ({
 }) => {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogContent className="sm:max-w-[500px] max-w-[95vw] max-h-[90vh] overflow-hidden">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle className="text-base sm:text-lg">
+          <DialogTitle>
             {isCreating 
               ? (selectedEvent?.id ? 'Edit Event' : 'Create New Event') 
               : 'Event Details'}
@@ -47,28 +47,24 @@ const EventDialog: React.FC<EventDialogProps> = ({
         </DialogHeader>
         
         {isCreating ? (
-          <div className="max-h-[calc(90vh-130px)] overflow-y-auto pr-1">
-            <EventForm 
-              onSubmit={onSave} 
-              initialData={selectedEvent || undefined}
-              defaultDate={selectedDate}
-            />
-          </div>
+          <EventForm 
+            onSubmit={onSave} 
+            initialData={selectedEvent || undefined}
+            defaultDate={selectedDate}
+          />
         ) : (
           selectedEvent && (
-            <div className="max-h-[calc(90vh-130px)] overflow-y-auto pr-1">
-              <EventDetails 
-                event={selectedEvent} 
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            </div>
+            <EventDetails 
+              event={selectedEvent} 
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           )
         )}
         
         {!isCreating && (
-          <DialogFooter className="mt-2">
-            <Button variant="outline" onClick={onClose} size="sm">
+          <DialogFooter>
+            <Button variant="outline" onClick={onClose}>
               Close
             </Button>
           </DialogFooter>

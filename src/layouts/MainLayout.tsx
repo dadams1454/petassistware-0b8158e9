@@ -15,14 +15,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, hideNavbar = false })
   return (
     <UserPreferencesProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex h-screen w-full overflow-hidden bg-background">
+        <div className="flex h-screen overflow-hidden bg-background">
           <Sidebar />
-          <SidebarInset className="w-full">
+          <SidebarInset>
             {!hideNavbar && <Navbar />}
-            <main className="flex-1 p-2 sm:p-4 md:p-6 overflow-auto w-full max-w-full">
-              <div className="max-w-full overflow-x-hidden">
-                {children || <Outlet />}
-              </div>
+            <main className="flex-1 p-4 md:p-6 overflow-auto">
+              {children || <Outlet />}
               <Toaster />
             </main>
           </SidebarInset>
