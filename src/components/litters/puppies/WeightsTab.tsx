@@ -1,61 +1,89 @@
 
 import React from 'react';
+import { z } from 'zod';
 import { UseFormReturn } from 'react-hook-form';
-import WeightInput from '@/components/dogs/form/WeightInput';
-import { Weight, Scale, Info } from 'lucide-react';
-import { PuppyFormData } from './types';
-import { WeightUnit } from '@/types/dog';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import WeightTracker from './weight/WeightTracker';
 
 interface WeightsTabProps {
-  form: UseFormReturn<PuppyFormData>;
+  form: UseFormReturn<any>;
+  puppyId?: string;
+  showFullTracker?: boolean;
 }
 
-const WeightsTab: React.FC<WeightsTabProps> = ({ form }) => {
+const WeightsTab: React.FC<WeightsTabProps> = ({ 
+  form, 
+  puppyId,
+  showFullTracker = false 
+}) => {
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-3">
-        <Weight className="h-5 w-5 text-primary" />
-        <h3 className="text-sm font-medium">Weight Tracking</h3>
+      {/* Basic weight form fields */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="birth_weight"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Birth Weight (oz)</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Enter birth weight" 
+                  {...field} 
+                  value={field.value || ''} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="current_weight"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Current Weight (oz)</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Enter current weight" 
+                  {...field} 
+                  value={field.value || ''} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Scale className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Birth Weight</span>
-          </div>
-          <WeightInput 
-            form={form} 
-            name="birth_weight" 
-            label="Birth Weight" 
-            defaultUnit="oz"
-          />
+
+      <FormField
+        control={form.control}
+        name="weight_notes"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Weight Notes</FormLabel>
+            <FormControl>
+              <Textarea 
+                placeholder="Enter any notes about weight or growth patterns" 
+                className="min-h-[100px]" 
+                {...field} 
+                value={field.value || ''} 
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Only show the full weight tracker if we have a puppyId and showFullTracker is true */}
+      {puppyId && showFullTracker && (
+        <div className="mt-8">
+          <WeightTracker puppyId={puppyId} />
         </div>
-        
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Scale className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Current Weight</span>
-          </div>
-          <WeightInput 
-            form={form} 
-            name="current_weight" 
-            label="Current Weight" 
-            defaultUnit="oz"
-          />
-        </div>
-      </div>
-      
-      <div className="bg-muted p-4 rounded-md mt-4">
-        <div className="flex items-start gap-2">
-          <Info className="h-4 w-4 text-muted-foreground mt-0.5" />
-          <p className="text-sm text-muted-foreground">
-            You can switch between ounces (oz) and grams (g) for weight measurements. The system will automatically 
-            convert values when you change units. For more detailed weight tracking over time, we'll be adding 
-            a dedicated weight history feature in a future update.
-          </p>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

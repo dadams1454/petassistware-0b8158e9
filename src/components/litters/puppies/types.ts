@@ -30,6 +30,16 @@ export interface Puppy {
   akc_litter_number?: string | null;
   akc_registration_number?: string | null;
   akc_verified?: boolean;
+  
+  // New fields from database migration
+  presentation?: string | null;
+  assistance_required?: boolean;
+  assistance_notes?: string | null;
+  birth_order?: number | null;
+  eyes_open_date?: string | null;
+  ears_open_date?: string | null;
+  first_walk_date?: string | null;
+  fully_mobile_date?: string | null;
 }
 
 export interface PuppyFormData {
@@ -51,6 +61,11 @@ export interface PuppyFormData {
   birth_time: string;
   akc_litter_number: string;
   akc_registration_number: string;
+  // New fields
+  presentation?: string;
+  assistance_required?: boolean;
+  assistance_notes?: string;
+  birth_order?: number | string;
 }
 
 export interface Litter {
