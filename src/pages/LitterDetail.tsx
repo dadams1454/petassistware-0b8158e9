@@ -102,7 +102,9 @@ const LitterDetail = () => {
           <div className="space-y-6">
             <LitterHeader 
               litter={litter} 
-              onEdit={() => setIsEditDialogOpen(true)} 
+              sire={litter.sire}
+              dam={litter.dam}
+              onEditClick={() => setIsEditDialogOpen(true)} 
             />
             <LitterInfo litter={litter} />
             <LitterTabs 
