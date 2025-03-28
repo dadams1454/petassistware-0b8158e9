@@ -48,7 +48,7 @@ const LitterDetail = () => {
       // Add updated_at property explicitly since the type requires it
       const processedData = {
         ...data,
-        updated_at: data.created_at // Use created_at as fallback since updated_at doesn't exist in DB response
+        updated_at: data.updated_at || data.created_at // Use created_at as fallback if updated_at doesn't exist
       };
 
       return processedData as Litter;
