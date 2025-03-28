@@ -8,6 +8,7 @@ export interface DogGroup {
   name: string;
   description?: string;
   color?: string;
+  dogIds: string[]; // Changed from members to dogIds and made required
   members?: string[];
   created_at?: string;
 }
@@ -42,6 +43,7 @@ export const useDogGroups = () => {
         description: group.description,
         color: group.color,
         created_at: group.created_at,
+        dogIds: group.dog_group_members?.map((member: any) => member.dog_id) || [],
         members: group.dog_group_members?.map((member: any) => member.dog_id) || []
       }));
 
@@ -206,6 +208,7 @@ export const useDogGroups = () => {
         if (group.id === groupId) {
           return {
             ...group,
+            dogIds: [...(group.dogIds || []), dogId],
             members: [...(group.members || []), dogId]
           };
         }
@@ -243,6 +246,7 @@ export const useDogGroups = () => {
         if (group.id === groupId) {
           return {
             ...group,
+            dogIds: (group.dogIds || []).filter(id => id !== dogId),
             members: (group.members || []).filter(id => id !== dogId)
           };
         }

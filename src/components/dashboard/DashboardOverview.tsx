@@ -23,38 +23,52 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data, isLoading, 
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Dogs"
-          value={data.totalDogs}
+          stat={{
+            title: "Total Dogs",
+            value: data.totalDogs,
+          }}
           isLoading={isLoading}
         />
         <StatCard
-          title="Active Dogs"
-          value={data.activeDogs}
+          stat={{
+            title: "Active Dogs",
+            value: data.activeDogs,
+          }}
           isLoading={isLoading}
         />
         <StatCard
-          title="Total Litters"
-          value={data.totalLitters}
+          stat={{
+            title: "Total Litters",
+            value: data.totalLitters,
+          }}
           isLoading={isLoading}
         />
         <StatCard
-          title="Active Litters"
-          value={data.activeLitters}
+          stat={{
+            title: "Active Litters",
+            value: data.activeLitters,
+          }}
           isLoading={isLoading}
         />
         <StatCard
-          title="Total Puppies"
-          value={data.totalPuppies}
+          stat={{
+            title: "Total Puppies",
+            value: data.totalPuppies,
+          }}
           isLoading={isLoading}
         />
         <StatCard
-          title="Available Puppies"
-          value={data.availablePuppies}
+          stat={{
+            title: "Available Puppies",
+            value: data.availablePuppies,
+          }}
           isLoading={isLoading}
         />
          <StatCard
-          title="Total Customers"
-          value={data.totalCustomers}
+          stat={{
+            title: "Total Customers",
+            value: data.totalCustomers,
+          }}
           isLoading={isLoading}
         />
       </CardContent>
