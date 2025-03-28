@@ -1,23 +1,20 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Users, Dog, Plus, Building2, Baby, StickyNote } from 'lucide-react';
+import { RefreshCw, Dog, Baby } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
-import PottyBreakGroupSelector from '@/components/dogs/components/care/potty/PottyBreakGroupSelector';
 import { useToast } from '@/components/ui/use-toast';
 import { DogCareCard } from '@/components/dashboard/DogCareCard';
-import { recordCareActivity } from '@/services/careService';
 import { EmptyState, SectionHeader } from '@/components/ui/standardized';
 import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
 import { careCategories } from '@/components/dogs/components/care/CareCategories';
-import PottyBreakManager from '@/components/dogs/components/care/potty/PottyBreakManager';
 import FeedingTab from '@/components/dashboard/tabs/FeedingTab';
-import PottyBreaksTab from '@/components/dashboard/tabs/PottyBreaksTab';
 import MedicationsTab from '@/components/dashboard/tabs/MedicationsTab';
 import GroomingTab from '@/components/dashboard/tabs/GroomingTab';
 import NotesTab from '@/components/dashboard/tabs/NotesTab';
@@ -37,8 +34,8 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   dogStatuses = []
 }) => {
   const { toast } = useToast();
-  const [viewMode, setViewMode] = useState<string>('table'); // 'table', 'cards', or 'groups'
-  const [careCategory, setCareCategory] = useState<string>('pottybreaks'); // Default to potty breaks
+  const [viewMode, setViewMode] = useState<string>('table'); // 'table' or 'cards'
+  const [careCategory, setCareCategory] = useState<string>('feeding'); // Default to feeding
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const navigate = useNavigate();
   
@@ -75,41 +72,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
     },
   });
 
-  // Handle group potty break logging
-  const handleGroupPottyBreak = async (dogIds: string[]) => {
-    if (!dogIds.length) return;
-    
-    try {
-      // Log potty break for each dog in the group
-      const timestamp = new Date().toISOString();
-      const promises = dogIds.map(dogId => 
-        recordCareActivity({
-          dog_id: dogId,
-          activity_type: 'potty',
-          timestamp,
-          notes: 'Group potty break'
-        })
-      );
-      
-      await Promise.all(promises);
-      
-      toast({
-        title: 'Potty Break Recorded',
-        description: `Potty break recorded for ${dogIds.length} dogs.`,
-      });
-      
-      // Refresh data
-      refetch();
-    } catch (error) {
-      console.error('Error recording group potty break:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to record potty break.',
-        variant: 'destructive',
-      });
-    }
-  };
-  
   const handleNavigateToDogs = () => {
     navigate('/dogs');
   };
@@ -145,13 +107,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
   // Determine which tab component to show based on the category
   const renderCategoryContent = () => {
     switch (careCategory) {
-      case 'pottybreaks':
-        return (
-          <PottyBreaksTab 
-            onRefreshDogs={handleRefresh}
-            dogStatuses={effectiveDogStatuses}
-          />
-        );
       case 'feeding':
         return (
           <FeedingTab 
@@ -253,8 +208,8 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         </TabsList>
       </Tabs>
       
-      {/* View mode selector - only for potty breaks or other suitable categories */}
-      {(careCategory === 'pottybreaks') && (
+      {/* View mode selector */}
+      {!noDogs && !showLoading && (
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             {currentCategory.icon}
@@ -264,10 +219,6 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
             <TabsList>
               <TabsTrigger value="table">Time Table</TabsTrigger>
               <TabsTrigger value="cards">Cards</TabsTrigger>
-              <TabsTrigger value="groups">
-                <Users className="h-4 w-4 mr-2" />
-                Groups
-              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -293,58 +244,38 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         </Card>
       ) : (
         <>
-          {/* For potty breaks, show the view mode options */}
-          {careCategory === 'pottybreaks' ? (
-            <Tabs value={viewMode} className="w-full">
-              {/* Table View */}
-              <TabsContent value="table" className="w-full">
-                <DogTimeTable 
-                  dogsStatus={effectiveDogStatuses} 
-                  onRefresh={handleRefresh} 
-                  isRefreshing={showLoading} 
-                  currentDate={currentDate}
-                  hideTopLevelTabs={true} // Hide the duplicate category tabs
-                  initialCategory={careCategory} // Pass the selected category
-                />
-              </TabsContent>
-              
-              {/* Card View */}
-              <TabsContent value="cards">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {effectiveDogStatuses.map((dog) => (
-                    <DogCareCard 
-                      key={dog.dog_id} 
-                      dog={{
-                        id: dog.dog_id,
-                        name: dog.dog_name,
-                        photo_url: dog.dog_photo
-                      }} 
-                    />
-                  ))}
-                </div>
-              </TabsContent>
-              
-              {/* Groups View */}
-              <TabsContent value="groups">
-                <div className="space-y-6">
-                  <p className="text-muted-foreground">
-                    Select a dog group to quickly record potty breaks for multiple dogs at once.
-                  </p>
-                  <PottyBreakGroupSelector 
-                    dogs={effectiveDogStatuses} 
-                    onGroupSelected={handleGroupPottyBreak} 
+          <Tabs value={viewMode} className="w-full">
+            {/* Table View */}
+            <TabsContent value="table" className="w-full">
+              <DogTimeTable 
+                dogsStatus={effectiveDogStatuses} 
+                onRefresh={handleRefresh} 
+                isRefreshing={showLoading} 
+                currentDate={currentDate}
+                hideTopLevelTabs={true} 
+                initialCategory={careCategory}
+              />
+            </TabsContent>
+            
+            {/* Card View */}
+            <TabsContent value="cards">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {effectiveDogStatuses.map((dog) => (
+                  <DogCareCard 
+                    key={dog.dog_id} 
+                    dog={{
+                      id: dog.dog_id,
+                      name: dog.dog_name,
+                      photo_url: dog.dog_photo
+                    }} 
                   />
-                  <PottyBreakManager 
-                    dogs={effectiveDogStatuses}
-                    onRefresh={handleRefresh}
-                  />
-                </div>
-              </TabsContent>
-            </Tabs>
-          ) : (
-            /* For other categories, show the dedicated tab content */
-            renderCategoryContent()
-          )}
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          {/* Show the appropriate category content */}
+          {renderCategoryContent()}
         </>
       )}
     </div>
