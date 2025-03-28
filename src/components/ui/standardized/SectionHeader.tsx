@@ -1,38 +1,28 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 
 interface SectionHeaderProps {
   title: string;
   description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-    icon?: React.ReactNode;
-  };
+  action?: React.ReactNode;
+  className?: string;
 }
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   description,
-  action
+  action,
+  className = '',
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+    <div className={`flex flex-col sm:flex-row justify-between sm:items-center mb-4 ${className}`}>
       <div>
-        <h2 className="text-xl font-semibold">{title}</h2>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        <h3 className="text-lg font-semibold leading-tight">{title}</h3>
+        {description && (
+          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+        )}
       </div>
-      
-      {action && (
-        <Button 
-          size="sm" 
-          onClick={action.onClick}
-        >
-          {action.icon && <span className="mr-2">{action.icon}</span>}
-          {action.label}
-        </Button>
-      )}
+      {action && <div className="mt-2 sm:mt-0">{action}</div>}
     </div>
   );
 };

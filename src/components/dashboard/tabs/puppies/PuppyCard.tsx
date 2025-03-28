@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
     }
   };
   
-  const getGenderColor = (gender: string) => {
+  const getGenderColor = (gender: string | null) => {
     return gender?.toLowerCase() === 'male' ? 'text-blue-500' : 'text-pink-500';
   };
   
@@ -37,37 +37,48 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
     return puppy.name.substring(0, 2).toUpperCase();
   };
   
+  const getStatusColor = () => {
+    switch (puppy.status?.toLowerCase()) {
+      case 'available':
+        return 'bg-green-100 text-green-800 hover:bg-green-200';
+      case 'reserved':
+        return 'bg-amber-100 text-amber-800 hover:bg-amber-200';
+      case 'sold':
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      case 'kept':
+        return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
+      default:
+        return '';
+    }
+  };
+  
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2 pt-4">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-2">
-            <Avatar>
-              <AvatarImage src={puppy.photo_url || undefined} alt={puppy.name || 'Puppy'} />
-              <AvatarFallback className="bg-primary/10 text-primary">
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-base">
-                {puppy.name || 'Unnamed Puppy'}
-              </CardTitle>
-              <div className="flex gap-1 items-center text-xs text-muted-foreground">
-                <span className={getGenderColor(puppy.gender || '')}>
-                  {puppy.gender || 'Unknown'}
-                </span>
-                <span>•</span>
-                <span>{puppy.color || 'Unknown color'}</span>
-              </div>
-            </div>
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div className="flex items-center border-b p-4 bg-muted/30">
+        <Avatar className="h-12 w-12 mr-3">
+          <AvatarImage src={puppy.photo_url || undefined} alt={puppy.name || 'Puppy'} />
+          <AvatarFallback className="bg-primary/10 text-primary">
+            {getInitials()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <h3 className="font-medium line-clamp-1">
+            {puppy.name || 'Unnamed Puppy'}
+          </h3>
+          <div className="flex gap-1 items-center text-xs text-muted-foreground">
+            <span className={getGenderColor(puppy.gender)}>
+              {puppy.gender || 'Unknown'}
+            </span>
+            <span>•</span>
+            <span>{puppy.color || 'Unknown color'}</span>
           </div>
-          <Badge variant="outline">
-            {puppy.status || 'Available'}
-          </Badge>
         </div>
-      </CardHeader>
+        <Badge variant="outline" className={getStatusColor()}>
+          {puppy.status || 'Available'}
+        </Badge>
+      </div>
       
-      <CardContent className="pb-2">
+      <CardContent className="p-4">
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center gap-1">
             <Baby className="h-4 w-4 text-muted-foreground" />
@@ -95,14 +106,9 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
             <span className="font-medium">{ageGroup.name}</span>
           </div>
         </div>
-        
-        <div className="mt-3 p-2 rounded-md bg-primary/5 text-xs">
-          <h4 className="font-medium mb-1">Upcoming Milestones:</h4>
-          <p className="text-muted-foreground line-clamp-2">{ageGroup.milestones}</p>
-        </div>
       </CardContent>
       
-      <CardFooter className="pt-2 pb-3">
+      <CardFooter className="pt-0 pb-3 px-4">
         <Button 
           variant="ghost" 
           size="sm" 
