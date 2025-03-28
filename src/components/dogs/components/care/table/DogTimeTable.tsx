@@ -25,7 +25,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   isRefreshing,
   currentDate,
   hideTopLevelTabs = false,
-  initialCategory = 'feeding' // Changed default from pottybreaks to feeding
+  initialCategory = 'feeding' // Kept as feeding
 }) => {
   const isMobile = useIsMobile();
   

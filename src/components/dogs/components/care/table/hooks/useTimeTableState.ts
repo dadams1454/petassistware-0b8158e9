@@ -15,7 +15,7 @@ export const useTimeTableState = (
   onRefresh: () => void,
   isRefreshing: boolean,
   currentDate: Date,
-  initialCategory: string = 'pottybreaks'
+  initialCategory: string = 'feeding'  // Changed from pottybreaks to feeding
 ) => {
   // Use the debug state hook
   const { clickCountRef, errorCountRef, debugInfo, setDebugInfo } = useDebugState();

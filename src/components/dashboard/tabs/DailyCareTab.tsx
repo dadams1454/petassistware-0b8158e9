@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,7 +39,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
 }) => {
   const { toast } = useToast();
   const [viewMode, setViewMode] = useState<string>('table'); // 'table', 'cards', or 'groups'
-  const [careCategory, setCareCategory] = useState<string>('pottybreaks'); // Default to potty breaks
+  const [careCategory, setCareCategory] = useState<string>('feeding'); // Default to feeding instead of pottybreaks
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const navigate = useNavigate();
   
@@ -253,26 +254,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         </TabsList>
       </Tabs>
       
-      {/* View mode selector - only for potty breaks or other suitable categories */}
-      {(careCategory === 'pottybreaks') && (
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            {currentCategory.icon}
-            <span>{currentCategory.name}</span>
-          </h3>
-          <Tabs value={viewMode} onValueChange={setViewMode} className="mr-2">
-            <TabsList>
-              <TabsTrigger value="table">Time Table</TabsTrigger>
-              <TabsTrigger value="cards">Cards</TabsTrigger>
-              <TabsTrigger value="groups">
-                <Users className="h-4 w-4 mr-2" />
-                Groups
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      )}
-      
+      {/* Render appropriate content based on category */}
       {showLoading ? (
         <div className="flex justify-center p-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -292,60 +274,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
           </CardContent>
         </Card>
       ) : (
-        <>
-          {/* For potty breaks, show the view mode options */}
-          {careCategory === 'pottybreaks' ? (
-            <Tabs value={viewMode} className="w-full">
-              {/* Table View */}
-              <TabsContent value="table" className="w-full">
-                <DogTimeTable 
-                  dogsStatus={effectiveDogStatuses} 
-                  onRefresh={handleRefresh} 
-                  isRefreshing={showLoading} 
-                  currentDate={currentDate}
-                  hideTopLevelTabs={true} // Hide the duplicate category tabs
-                  initialCategory={careCategory} // Pass the selected category
-                />
-              </TabsContent>
-              
-              {/* Card View */}
-              <TabsContent value="cards">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {effectiveDogStatuses.map((dog) => (
-                    <DogCareCard 
-                      key={dog.dog_id} 
-                      dog={{
-                        id: dog.dog_id,
-                        name: dog.dog_name,
-                        photo_url: dog.dog_photo
-                      }} 
-                    />
-                  ))}
-                </div>
-              </TabsContent>
-              
-              {/* Groups View */}
-              <TabsContent value="groups">
-                <div className="space-y-6">
-                  <p className="text-muted-foreground">
-                    Select a dog group to quickly record potty breaks for multiple dogs at once.
-                  </p>
-                  <PottyBreakGroupSelector 
-                    dogs={effectiveDogStatuses} 
-                    onGroupSelected={handleGroupPottyBreak} 
-                  />
-                  <PottyBreakManager 
-                    dogs={effectiveDogStatuses}
-                    onRefresh={handleRefresh}
-                  />
-                </div>
-              </TabsContent>
-            </Tabs>
-          ) : (
-            /* For other categories, show the dedicated tab content */
-            renderCategoryContent()
-          )}
-        </>
+        renderCategoryContent()
       )}
     </div>
   );

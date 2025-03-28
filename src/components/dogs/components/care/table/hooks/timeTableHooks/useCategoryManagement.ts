@@ -1,10 +1,11 @@
+
 import { useState, useCallback, MutableRefObject } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export const useCategoryManagement = (
   setDebugInfo: (info: any) => void,
   clickCountRef: MutableRefObject<number>,
-  initialCategory: string = 'pottybreaks'
+  initialCategory: string = 'feeding'  // Changed from pottybreaks to feeding
 ) => {
   // Use search params to keep track of the active category in the URL
   const [searchParams, setSearchParams] = useSearchParams();
