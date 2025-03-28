@@ -52,10 +52,12 @@ export const useWeightTracker = (puppyId: string) => {
         ? record.date 
         : record.date.toISOString().split('T')[0];
       
-      // Insert new weight record
+      // Insert new weight record - use dog_id: null when we're tracking a puppy
+      // This accommodates the dual-purpose table that tracks both dogs and puppies
       const { data, error } = await supabase
         .from('weight_records')
         .insert({
+          dog_id: null, // Use null for dog_id when tracking puppies
           puppy_id: puppyId,
           date: dateString,
           weight: record.weight,

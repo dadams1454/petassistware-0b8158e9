@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { Trash2 } from 'lucide-react';
@@ -6,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Milestone, MilestoneOption } from './types';
-import { milestoneOptions } from './milestoneOptions';
+import { milestoneOptions } from './milestoneData';
 
 interface MilestoneListProps {
   milestones: Milestone[];
