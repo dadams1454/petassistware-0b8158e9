@@ -9,7 +9,7 @@ import {
   DialogFooter 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Puppy } from '@/types/litter'; // Import Puppy from our types file
+import { Puppy } from '@/types/litter'; // Import Puppy from our unified types file
 
 interface DeletePuppyDialogProps {
   puppy: Puppy | null;

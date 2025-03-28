@@ -1,7 +1,17 @@
 
-import { Puppy } from '@/components/litters/puppies/types';
+export interface WeightRecord {
+  id?: string;
+  puppy_id?: string;
+  date: string | Date;
+  weight: number;
+  weight_unit: 'oz' | 'g' | 'lbs' | 'kg';
+  percent_change?: number | null;
+  notes?: string | null;
+  created_at?: string;
+}
 
-export interface PuppyWithAge extends Puppy {
+// Adding other types from the existing puppyTracking.ts
+export interface PuppyWithAge {
   ageInDays: number;
   litters?: {
     id: string;

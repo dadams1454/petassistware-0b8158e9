@@ -2,7 +2,7 @@
 import React from 'react';
 import { Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Puppy } from '@/types/litter'; // Import Puppy from our types file
+import { Puppy } from '@/types/litter'; // Import Puppy from our unified types file
 
 interface PuppyActionsProps {
   puppy: Puppy;

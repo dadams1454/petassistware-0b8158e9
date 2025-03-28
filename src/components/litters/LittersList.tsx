@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { Columns, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ interface LittersListProps {
   onRefresh: () => Promise<any>;
 }
 
-// Add the type definition for OrganizedLitters to match the litters format
+// Define OrganizedLitters interface using the imported Litter type
 interface OrganizedLitters {
   active: Litter[];
   other: Litter[];

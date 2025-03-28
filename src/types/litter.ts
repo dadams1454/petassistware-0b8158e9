@@ -1,4 +1,6 @@
 
+import { WeightRecord } from './puppyTracking';
+
 export interface Dog {
   id: string;
   created_at: string;
@@ -14,6 +16,8 @@ export interface Dog {
   updated_at?: string; // Make optional
   litter_number: number;
 }
+
+export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg';
 
 export interface Puppy {
   id: string;
@@ -49,7 +53,7 @@ export interface Puppy {
   weight_history?: Array<{
     date: string;
     weight: number;
-    weight_unit: string;
+    weight_unit: WeightUnit; // Using the string literal type
     notes?: string;
   }> | null;
 }

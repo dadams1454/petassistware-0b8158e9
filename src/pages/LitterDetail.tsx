@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -55,15 +54,6 @@ const LitterDetail = () => {
     },
     enabled: !!id && id !== 'new', // Only run the query if id exists and is not "new"
   });
-
-  const handleEditSuccess = async () => {
-    setIsEditDialogOpen(false);
-    await refetch();
-    toast({
-      title: "Success!",
-      description: "Litter updated successfully.",
-    });
-  };
 
   // If we're trying to access a non-existent litter ID
   if (error && id !== 'new') {
@@ -149,6 +139,16 @@ const LitterDetail = () => {
       </Dialog>
     </MainLayout>
   );
+  
+  // Function for handling edit success
+  async function handleEditSuccess() {
+    setIsEditDialogOpen(false);
+    await refetch();
+    toast({
+      title: "Success!",
+      description: "Litter updated successfully.",
+    });
+  }
 };
 
 export default LitterDetail;

@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { LitterFormData } from './useLitterForm';
-import { Litter } from '@/types/litter'; // Import Litter from our types file
+import { Litter } from '@/types/litter'; // Import from our unified types file
 
 interface UseDamInfoUpdaterProps {
   form: UseFormReturn<LitterFormData>;
