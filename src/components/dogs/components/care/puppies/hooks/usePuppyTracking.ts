@@ -118,9 +118,24 @@ export const usePuppyTracking = () => {
             ageInDays = Math.floor((now - birthDateTime) / (1000 * 60 * 60 * 24));
           }
           
+          // Ensure all required properties for PuppyWithAge are included
           return {
-            ...puppy,
-            ageInDays
+            id: puppy.id,
+            litter_id: puppy.litter_id,
+            name: puppy.name,
+            gender: puppy.gender,
+            color: puppy.color,
+            status: puppy.status,
+            birth_date: puppy.birth_date,
+            current_weight: puppy.current_weight,
+            photo_url: puppy.photo_url,
+            microchip_number: puppy.microchip_number,
+            ageInDays,
+            litters: {
+              id: puppy.litter_id,
+              name: puppy.litters?.litter_name,
+              birth_date: puppy.litters?.birth_date || ''
+            }
           } as PuppyWithAge;
         });
         

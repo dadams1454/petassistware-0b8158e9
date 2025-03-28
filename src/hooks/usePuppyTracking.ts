@@ -173,8 +173,18 @@ export const usePuppyTracking = () => {
           // Make sure we safely access litters.name or default to undefined
           const litterName = puppy.litters?.litter_name;
           
+          // Ensure all required properties for PuppyWithAge are included
           return {
-            ...puppy,
+            id: puppy.id,
+            litter_id: puppy.litter_id,
+            name: puppy.name,
+            gender: puppy.gender,
+            color: puppy.color,
+            status: puppy.status,
+            birth_date: puppy.birth_date,
+            current_weight: puppy.current_weight,
+            photo_url: puppy.photo_url,
+            microchip_number: puppy.microchip_number,
             ageInDays,
             litters: {
               id: puppy.litter_id,

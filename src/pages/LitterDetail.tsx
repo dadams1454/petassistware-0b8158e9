@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -46,11 +47,11 @@ const LitterDetail = () => {
       // Process the data to ensure it has all required fields
       const processedData = {
         ...data,
-        updated_at: data.updated_at || data.created_at // Explicitly add updated_at if missing
-      };
+        updated_at: data.updated_at || data.created_at, // Explicitly add updated_at if missing
+      } as Litter; // Add type assertion to Litter
 
       console.log('Processed litter data:', processedData);
-      return processedData as Litter;
+      return processedData;
     },
     enabled: !!id && id !== 'new', // Only run the query if id exists and is not "new"
   });

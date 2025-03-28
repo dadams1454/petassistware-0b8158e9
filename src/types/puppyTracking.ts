@@ -10,9 +10,19 @@ export interface WeightRecord {
   created_at?: string;
 }
 
-// Adding other types from the existing puppyTracking.ts
+// Extending PuppyWithAge to include all the properties needed by our components
 export interface PuppyWithAge {
+  id: string;
   ageInDays: number;
+  name?: string | null;
+  gender?: string | null;
+  color?: string | null;
+  status?: string | null;
+  birth_date?: string | null;
+  current_weight?: string | number | null;
+  photo_url?: string | null;
+  litter_id?: string | null;
+  microchip_number?: string | null;
   litters?: {
     id: string;
     name?: string;
