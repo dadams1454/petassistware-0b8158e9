@@ -45,12 +45,14 @@ const LitterDetail = () => {
       }
 
       // Process the data to ensure it has all required fields
-      // Add updated_at property explicitly since the type requires it
       const processedData = {
         ...data,
-        updated_at: data.updated_at || data.created_at // Use created_at as fallback if updated_at doesn't exist
+        // Add updated_at explicitly - it might not exist in the database response
+        // so we use created_at as a fallback value
+        updated_at: data.updated_at || data.created_at
       };
 
+      console.log('Processed litter data:', processedData);
       return processedData as Litter;
     },
     enabled: !!id && id !== 'new', // Only run the query if id exists and is not "new"
