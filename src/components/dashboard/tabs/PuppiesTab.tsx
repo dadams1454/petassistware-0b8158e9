@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,8 +44,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
       <ErrorState 
         title="Error Loading Puppies" 
         message={error} 
-        actionLabel="Try Again"
-        onAction={onRefresh}
+        onRetry={onRefresh}
       />
     );
   }

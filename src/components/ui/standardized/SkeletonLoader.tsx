@@ -6,13 +6,15 @@ interface SkeletonLoaderProps {
   count?: number;
   height?: number;
   className?: string;
-  variant?: 'default' | 'card' | 'list' | 'table';
+  width?: string;
+  variant?: 'default' | 'card' | 'list' | 'table' | 'text' | 'banner';
 }
 
 const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   count = 3,
   height = 20,
   className = '',
+  width = 'w-full',
   variant = 'default'
 }) => {
   const renderDefaultSkeletons = () => {
@@ -21,7 +23,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       .map((_, i) => (
         <Skeleton 
           key={`skeleton-${i}`} 
-          className={`h-${height} w-full mb-2 ${className}`} 
+          className={`h-${height} ${width} mb-2 ${className}`} 
         />
       ));
   };
@@ -72,6 +74,30 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     );
   };
 
+  const renderTextSkeletons = () => {
+    return Array(count)
+      .fill(0)
+      .map((_, i) => (
+        <Skeleton 
+          key={`text-skeleton-${i}`} 
+          className={`h-${height} ${width} mb-2 ${className}`} 
+        />
+      ));
+  };
+
+  const renderBannerSkeletons = () => {
+    return (
+      <div className="w-full rounded-lg overflow-hidden">
+        <Skeleton className="h-40 w-full" />
+        <div className="p-4">
+          <Skeleton className="h-6 w-3/4 mb-4" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-5/6" />
+        </div>
+      </div>
+    );
+  };
+
   switch (variant) {
     case 'card':
       return <div className="space-y-3">{renderCardSkeletons()}</div>;
@@ -79,6 +105,10 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       return <div>{renderListSkeletons()}</div>;
     case 'table':
       return <div>{renderTableSkeletons()}</div>;
+    case 'text':
+      return <div>{renderTextSkeletons()}</div>;
+    case 'banner':
+      return <div>{renderBannerSkeletons()}</div>;
     default:
       return <div>{renderDefaultSkeletons()}</div>;
   }

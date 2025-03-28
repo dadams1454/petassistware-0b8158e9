@@ -132,7 +132,7 @@ export const usePuppyTracking = () => {
         // Get all active litters
         const { data: litters, error: littersError } = await supabase
           .from('litters')
-          .select('id, birth_date')
+          .select('id, birth_date, litter_name')
           .not('status', 'eq', 'archived');
           
         if (littersError) throw littersError;
@@ -149,7 +149,7 @@ export const usePuppyTracking = () => {
         const puppiesPromises = litters.map(async (litter) => {
           const { data: puppiesData, error: puppiesError } = await supabase
             .from('puppies')
-            .select('*, litters(birth_date)')
+            .select('*, litters(birth_date, litter_name)')
             .eq('litter_id', litter.id);
             
           if (puppiesError) throw puppiesError;
@@ -170,12 +170,15 @@ export const usePuppyTracking = () => {
             ageInDays = Math.floor((now - birthDateTime) / (1000 * 60 * 60 * 24));
           }
           
+          // Make sure we safely access litters.name or default to undefined
+          const litterName = puppy.litters?.litter_name;
+          
           return {
             ...puppy,
             ageInDays,
             litters: {
               id: puppy.litter_id,
-              name: puppy.litters?.name || undefined,
+              name: litterName, // Use the litter name property we safely accessed
               birth_date: puppy.litters?.birth_date || ''
             }
           } as PuppyWithAge;
