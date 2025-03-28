@@ -25,7 +25,7 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
   isRefreshing,
   currentDate,
   hideTopLevelTabs = false,
-  initialCategory = 'pottybreaks'
+  initialCategory = 'feeding'
 }) => {
   const isMobile = useIsMobile();
   
@@ -37,7 +37,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     clickCountRef,
     errorCountRef,
     sortedDogs,
-    hasPottyBreak,
     hasCareLogged,
     hasObservation,
     getObservationDetails,
@@ -69,61 +68,6 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     ? observations[selectedDogId] || [] 
     : [];
 
-  // Create wrapper functions to bridge type differences between the hooks and components
-  const hasPottyBreakWrapper = (dogId: string, hour: number): boolean => {
-    // Convert hour to timeSlot string format if needed
-    const timeSlot = timeSlots && timeSlots[hour] ? timeSlots[hour] : '';
-    return hasPottyBreak(dogId, timeSlot);
-  };
-
-  const hasCareLoggedWrapper = (dogId: string, hour: number): boolean => {
-    const timeSlot = timeSlots && timeSlots[hour] ? timeSlots[hour] : '';
-    return hasCareLogged(dogId, timeSlot, activeCategory);
-  };
-
-  const hasObservationWrapper = (dogId: string, hour: number): boolean => {
-    const timeSlot = timeSlots && timeSlots[hour] ? timeSlots[hour] : '';
-    return hasObservation(dogId, timeSlot);
-  };
-
-  const getObservationDetailsWrapper = (dogId: string, hour: number): any => {
-    return getObservationDetails(dogId, activeCategory);
-  };
-
-  const onCellClickWrapper = (dogId: string, hour: number): void => {
-    // Get the dog from the array
-    const dog = sortedDogs.find(d => d.dog_id === dogId);
-    if (!dog) return;
-    
-    const timeSlot = timeSlots && timeSlots[hour] ? timeSlots[hour] : '';
-    memoizedCellClickHandler(dogId, dog.dog_name, timeSlot, activeCategory);
-  };
-
-  const onCellContextMenuWrapper = (event: React.MouseEvent, dogId: string, hour: number): void => {
-    // Get the dog from the array
-    const dog = sortedDogs.find(d => d.dog_id === dogId);
-    if (!dog) return;
-    
-    const timeSlot = timeSlots && timeSlots[hour] ? timeSlots[hour] : '';
-    handleCellContextMenu(event, dogId, dog.dog_name, timeSlot, activeCategory);
-  };
-
-  const onCareLogClickWrapper = (dogId: string): void => {
-    // Get the dog from the array
-    const dog = sortedDogs.find(d => d.dog_id === dogId);
-    if (!dog) return;
-    
-    handleCareLogClick(dogId, dog.dog_name);
-  };
-
-  const onObservationClickWrapper = (dogId: string, hour: number): void => {
-    // Get the dog from the array
-    const dog = sortedDogs.find(d => d.dog_id === dogId);
-    if (!dog) return;
-    
-    handleObservationClick(dogId, dog.dog_name);
-  };
-
   return (
     <ErrorBoundary onReset={handleErrorReset} name="DogTimeTable">
       <div className="w-full space-y-4 relative" onClick={(e) => e.stopPropagation()}>
@@ -151,15 +95,14 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
           activeCategory={activeCategory}
           dogsStatus={dogsStatus || []} 
           sortedDogs={sortedDogs || []} 
-          hasPottyBreak={hasPottyBreakWrapper}
-          hasCareLogged={hasCareLoggedWrapper}
-          hasObservation={hasObservationWrapper}
-          getObservationDetails={getObservationDetailsWrapper}
-          onCellClick={onCellClickWrapper}
-          onCellContextMenu={onCellContextMenuWrapper}
-          onCareLogClick={onCareLogClickWrapper}
+          hasCareLogged={hasCareLogged}
+          hasObservation={hasObservation}
+          getObservationDetails={getObservationDetails}
+          onCellClick={memoizedCellClickHandler}
+          onCellContextMenu={handleCellContextMenu}
+          onCareLogClick={handleCareLogClick}
           onDogClick={handleDogClick}
-          onObservationClick={onObservationClickWrapper}
+          onObservationClick={handleObservationClick}
           onRefresh={handleRefresh}
           onCategoryChange={handleCategoryChange}
           showLoading={showLoading}

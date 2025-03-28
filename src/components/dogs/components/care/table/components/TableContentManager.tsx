@@ -11,7 +11,6 @@ interface TableContentManagerProps {
   activeCategory: string;
   dogsStatus: DogCareStatus[];
   sortedDogs: DogCareStatus[];
-  hasPottyBreak: (dogId: string, hour: number) => boolean;
   hasCareLogged: (dogId: string, hour: number) => boolean;
   hasObservation: (dogId: string, hour: number) => boolean;
   getObservationDetails: (dogId: string, hour: number) => any;
@@ -31,7 +30,6 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
   activeCategory,
   dogsStatus,
   sortedDogs,
-  hasPottyBreak,
   hasCareLogged,
   hasObservation,
   getObservationDetails,
@@ -52,12 +50,6 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
   }
 
   // Create wrapper functions to adapt to the TimeTableContent interface which uses strings
-  const hasPottyBreakWrapper = (dogId: string, timeSlot: string): boolean => {
-    const hourIndex = timeSlots.indexOf(timeSlot);
-    const hour = hourIndex >= 0 ? hourIndex : 0;
-    return hasPottyBreak(dogId, hour);
-  };
-
   const hasCareLoggedWrapper = (dogId: string, timeSlot: string, category: string): boolean => {
     const hourIndex = timeSlots.indexOf(timeSlot);
     const hour = hourIndex >= 0 ? hourIndex : 0;
@@ -111,10 +103,9 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
       >
         {/* Main table content */}
         <TimeTableContent
-          activeCategory={activeCategory}
           sortedDogs={sortedDogs}
           timeSlots={timeSlots}
-          hasPottyBreak={hasPottyBreakWrapper}
+          activeCategory={activeCategory}
           hasCareLogged={hasCareLoggedWrapper}
           hasObservation={hasObservationWrapper}
           getObservationDetails={getObservationDetailsWrapper}
