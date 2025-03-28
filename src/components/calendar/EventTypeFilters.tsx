@@ -32,13 +32,13 @@ const EventTypeFilters: React.FC<EventTypeFiltersProps> = ({
         <Button 
           variant="outline" 
           size="sm" 
-          className="flex items-center gap-2"
+          className="flex items-center gap-1"
         >
-          <Filter size={16} />
-          <span className="hidden sm:inline">Filter Events</span>
-          <span className="inline sm:hidden">Filter</span>
+          <Filter size={14} />
+          <span className="hidden sm:inline text-xs">Filter Events</span>
+          <span className="inline sm:hidden text-xs">Filter</span>
           {activeFilters.length > 0 && activeFilters.length < EVENT_TYPES.length && (
-            <span className="bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
               {activeFilters.length}
             </span>
           )}
@@ -49,7 +49,7 @@ const EventTypeFilters: React.FC<EventTypeFiltersProps> = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-xs h-7 px-2"
+            className="text-xs h-6 px-2"
             onClick={selectAllFilters}
           >
             Select All
@@ -57,14 +57,14 @@ const EventTypeFilters: React.FC<EventTypeFiltersProps> = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-xs h-7 px-2"
+            className="text-xs h-6 px-2"
             onClick={clearAllFilters}
           >
             Clear All
           </Button>
         </div>
         
-        <div className="space-y-1 max-h-[300px] overflow-y-auto py-1">
+        <div className="space-y-1 max-h-[250px] overflow-y-auto py-1">
           {EVENT_TYPES.map(eventType => {
             const { bg, text } = EVENT_COLORS[eventType];
             const isActive = activeFilters.includes(eventType);
@@ -74,7 +74,7 @@ const EventTypeFilters: React.FC<EventTypeFiltersProps> = ({
                 key={eventType}
                 variant="ghost"
                 size="sm"
-                className={`w-full justify-start h-8 px-2 ${isActive ? 'bg-accent' : ''}`}
+                className={`w-full justify-start h-7 px-2 ${isActive ? 'bg-accent' : ''}`}
                 onClick={() => toggleFilter(eventType)}
               >
                 <div className="flex items-center w-full">

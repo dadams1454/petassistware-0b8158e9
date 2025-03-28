@@ -51,25 +51,25 @@ const EventList: React.FC<EventListProps> = ({
       ) : isLoading ? (
         <div className="py-4 text-center">Loading events...</div>
       ) : eventsOnSelectedDate.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-280px)]">
           {eventsOnSelectedDate.map(event => {
             const { bg, text } = getEventTypeStyle(event.event_type);
             return (
               <div 
                 key={event.id}
-                className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
                 onClick={() => onEventClick(event)}
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-1">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium truncate">{event.title}</h3>
+                    <div className="flex items-center gap-1">
+                      <h3 className="font-medium text-sm truncate">{event.title}</h3>
                       {event.is_recurring && (
-                        <Repeat size={16} className="text-slate-400 flex-shrink-0" aria-label="Recurring Event" />
+                        <Repeat size={14} className="text-slate-400 flex-shrink-0" aria-label="Recurring Event" />
                       )}
                     </div>
                     {event.description && (
-                      <p className="text-sm text-slate-600 mt-1 line-clamp-2">{event.description}</p>
+                      <p className="text-xs text-slate-600 mt-1 line-clamp-2">{event.description}</p>
                     )}
                     {event.is_recurring && (
                       <p className="text-xs text-slate-500 mt-1">
@@ -77,7 +77,7 @@ const EventList: React.FC<EventListProps> = ({
                       </p>
                     )}
                   </div>
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full flex-shrink-0 ml-2 ${
+                  <span className={`inline-block px-2 py-1 text-xs rounded-full flex-shrink-0 ml-1 ${
                     event.status === 'upcoming' 
                       ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
                       : event.status === 'completed'
@@ -89,8 +89,8 @@ const EventList: React.FC<EventListProps> = ({
                     {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                   </span>
                 </div>
-                <div className="mt-2 flex items-center">
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${bg} ${text}`}>
+                <div className="mt-1 flex items-center">
+                  <span className={`inline-block px-2 py-0.5 text-xs rounded-full ${bg} ${text}`}>
                     {event.event_type}
                   </span>
                 </div>
