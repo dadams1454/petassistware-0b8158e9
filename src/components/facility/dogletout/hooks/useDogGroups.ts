@@ -83,6 +83,7 @@ export const useDogGroups = () => {
         description: data.description,
         color: data.color,
         created_at: data.created_at,
+        dogIds: [], // Add empty dogIds array for new groups
         members: []
       }]);
 
