@@ -37,8 +37,8 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, onViewDetails }) => {
   // Get puppy color for display
   const colorDisplay = puppy.color || 'Not specified';
   
-  // Get the latest weight if available
-  const weightDisplay = puppy.weight ? `${puppy.weight} lbs` : 'Not recorded';
+  // Get the latest weight if available - using current_weight property instead of weight
+  const weightDisplay = puppy.current_weight ? `${puppy.current_weight} lbs` : 'Not recorded';
   
   return (
     <Card className="overflow-hidden h-full flex flex-col">
