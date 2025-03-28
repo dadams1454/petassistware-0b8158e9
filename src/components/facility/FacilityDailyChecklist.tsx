@@ -5,13 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { CheckCircle, Clipboard, ClipboardCheck, Edit } from 'lucide-react';
+import { CheckCircle, Edit } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { FacilityArea, FacilityTask } from '@/types/facility';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import FacilityTaskDialog from './FacilityTaskDialog';
 
 interface ChecklistTask extends FacilityTask {
   completed: boolean;
@@ -25,7 +23,11 @@ interface ChecklistArea {
   tasks: ChecklistTask[];
 }
 
-const FacilityDailyChecklist: React.FC = () => {
+interface FacilityDailyChecklistProps {
+  onEditTask?: (taskId: string) => void;
+}
+
+const FacilityDailyChecklist: React.FC<FacilityDailyChecklistProps> = ({ onEditTask }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -33,8 +35,6 @@ const FacilityDailyChecklist: React.FC = () => {
   const [completedBy, setCompletedBy] = useState('');
   const [verifiedBy, setVerifiedBy] = useState('');
   const [areas, setAreas] = useState<ChecklistArea[]>([]);
-  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const currentDate = new Date().toLocaleDateString();
 
   useEffect(() => {
@@ -202,16 +202,6 @@ const FacilityDailyChecklist: React.FC = () => {
     }
   };
 
-  const handleEditTask = (taskId: string) => {
-    setSelectedTaskId(taskId);
-    setIsTaskDialogOpen(true);
-  };
-
-  const handleTaskSaved = () => {
-    setIsTaskDialogOpen(false);
-    fetchAreasAndTasks();
-  };
-
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -280,15 +270,17 @@ const FacilityDailyChecklist: React.FC = () => {
                           </td>
                           <td className="p-2 text-center">{task.completed ? task.time : '—'}</td>
                           <td className="p-2 flex gap-1 justify-center">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-8 w-8 p-0"
-                              onClick={() => handleEditTask(task.id)}
-                            >
-                              <Edit className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
+                            {onEditTask && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 w-8 p-0"
+                                onClick={() => onEditTask(task.id)}
+                              >
+                                <Edit className="h-4 w-4" />
+                                <span className="sr-only">Edit</span>
+                              </Button>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -340,33 +332,12 @@ const FacilityDailyChecklist: React.FC = () => {
               onClick={saveChecklist}
               className="gap-2"
             >
-              <ClipboardCheck className="h-4 w-4" />
+              <CheckCircle className="h-4 w-4" />
               Save Checklist
             </Button>
           </div>
         </CardContent>
       </Card>
-
-      {/* Edit Task Dialog */}
-      <Dialog 
-        open={isTaskDialogOpen} 
-        onOpenChange={setIsTaskDialogOpen}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              Edit Task
-            </DialogTitle>
-          </DialogHeader>
-          
-          <FacilityTaskDialog
-            taskId={selectedTaskId}
-            areas={areas.filter(area => area.id !== 'unassigned')}
-            onSuccess={handleTaskSaved}
-            onCancel={() => setIsTaskDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
