@@ -1,17 +1,10 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { DogGroup } from './types/dogGroupTypes';
+import * as dogGroupsApi from './api/dogGroupsApi';
 
-export interface DogGroup {
-  id: string;
-  name: string;
-  description?: string;
-  color?: string;
-  dogIds: string[]; // Changed from members to dogIds and made required
-  members?: string[];
-  created_at?: string;
-}
+export type { DogGroup } from './types/dogGroupTypes';
 
 export const useDogGroups = () => {
   const [groups, setGroups] = useState<DogGroup[]>([]);
@@ -22,32 +15,8 @@ export const useDogGroups = () => {
   const fetchGroups = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('dog_groups')
-        .select(`
-          id,
-          name,
-          description,
-          color,
-          created_at,
-          dog_group_members(dog_id)
-        `)
-        .order('name');
-
-      if (error) throw error;
-
-      // Transform the data to include members
-      const transformedGroups = data.map(group => ({
-        id: group.id,
-        name: group.name,
-        description: group.description,
-        color: group.color,
-        created_at: group.created_at,
-        dogIds: group.dog_group_members?.map((member: any) => member.dog_id) || [],
-        members: group.dog_group_members?.map((member: any) => member.dog_id) || []
-      }));
-
-      setGroups(transformedGroups);
+      const data = await dogGroupsApi.fetchDogGroups();
+      setGroups(data);
     } catch (error) {
       console.error('Error fetching dog groups:', error);
       toast({
@@ -68,31 +37,17 @@ export const useDogGroups = () => {
   ) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('dog_groups')
-        .insert([{ name, color, description }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
+      const newGroup = await dogGroupsApi.addDogGroup(name, color, description);
+      
       // Add the new group to the state
-      setGroups(prev => [...prev, { 
-        id: data.id, 
-        name: data.name,
-        description: data.description,
-        color: data.color,
-        created_at: data.created_at,
-        dogIds: [], // Add empty dogIds array for new groups
-        members: []
-      }]);
+      setGroups(prev => [...prev, newGroup]);
 
       toast({
         title: 'Group Created',
         description: `Dog group "${name}" has been created`
       });
 
-      return data;
+      return newGroup.id;
     } catch (error) {
       console.error('Error adding dog group:', error);
       toast({
@@ -115,23 +70,16 @@ export const useDogGroups = () => {
   ) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('dog_groups')
-        .update({ name, color, description })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
+      const updatedGroup = await dogGroupsApi.updateDogGroup(id, name, color, description);
 
       // Update the group in state
       setGroups(prev => prev.map(group => 
         group.id === id 
           ? { 
               ...group, 
-              name: data.name, 
-              description: data.description, 
-              color: data.color 
+              name: updatedGroup.name, 
+              description: updatedGroup.description, 
+              color: updatedGroup.color 
             } 
           : group
       ));
@@ -141,7 +89,7 @@ export const useDogGroups = () => {
         description: `Dog group "${name}" has been updated`
       });
 
-      return data;
+      return updatedGroup;
     } catch (error) {
       console.error('Error updating dog group:', error);
       toast({
@@ -159,21 +107,7 @@ export const useDogGroups = () => {
   const deleteGroup = useCallback(async (id: string) => {
     setIsLoading(true);
     try {
-      // First, delete all group members
-      const { error: membersError } = await supabase
-        .from('dog_group_members')
-        .delete()
-        .eq('group_id', id);
-
-      if (membersError) throw membersError;
-
-      // Then delete the group
-      const { error } = await supabase
-        .from('dog_groups')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await dogGroupsApi.deleteDogGroup(id);
 
       // Update the state
       setGroups(prev => prev.filter(group => group.id !== id));
@@ -198,11 +132,7 @@ export const useDogGroups = () => {
   // Add a dog to a group
   const addDogToGroup = useCallback(async (groupId: string, dogId: string) => {
     try {
-      const { error } = await supabase
-        .from('dog_group_members')
-        .insert({ group_id: groupId, dog_id: dogId });
-
-      if (error) throw error;
+      await dogGroupsApi.addDogToGroup(groupId, dogId);
 
       // Update the state
       setGroups(prev => prev.map(group => {
@@ -234,13 +164,7 @@ export const useDogGroups = () => {
   // Remove a dog from a group
   const removeDogFromGroup = useCallback(async (groupId: string, dogId: string) => {
     try {
-      const { error } = await supabase
-        .from('dog_group_members')
-        .delete()
-        .eq('group_id', groupId)
-        .eq('dog_id', dogId);
-
-      if (error) throw error;
+      await dogGroupsApi.removeDogFromGroup(groupId, dogId);
 
       // Update the state
       setGroups(prev => prev.map(group => {
