@@ -1,7 +1,6 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { usePottyBreakData } from './pottyBreakHooks/usePottyBreakData';
 import { useCareLogsData } from './pottyBreakHooks/useCareLogsData';
 import { useCellActions } from './pottyBreakHooks/useCellActions';
 import { useRefreshHandler } from './pottyBreakHooks/useRefreshHandler';
@@ -11,10 +10,10 @@ import { useDogSorting } from './pottyBreakHooks/useDogSorting';
 const usePottyBreakTable = (
   dogsStatus: DogCareStatus[], 
   onRefresh?: () => void,
-  activeCategory: string = 'pottybreaks',
+  activeCategory: string = 'feeding',
   currentDate: Date = new Date()
 ) => {
-  // Set up time slots for the table - only potty break time slots now
+  // Set up time slots for the table
   const [timeSlots] = useState(() => {
     const slots: string[] = [];
     for (let hour = 6; hour < 21; hour++) {
@@ -41,15 +40,7 @@ const usePottyBreakTable = (
     return () => clearInterval(intervalId);
   }, []);
   
-  // Use the potty breaks data hook - pass the currentDate parameter
-  const { 
-    pottyBreaks, 
-    setPottyBreaks, 
-    hasPottyBreak, 
-    isLoading: pottyLoading 
-  } = usePottyBreakData(currentDate);
-  
-  // Use the care logs data hook for other care types - pass an empty array as fallback
+  // Use care logs data hook for all care types
   const { hasCareLogged, isLoading: careLoading } = useCareLogsData(dogsStatus || []);
   
   // Use the observations hook
@@ -60,11 +51,11 @@ const usePottyBreakTable = (
     isLoading: obsLoading 
   } = useObservations(dogsStatus);
   
-  // Use the cell actions hook
+  // Use the cell actions hook with empty potty breaks data
   const { isLoading: actionLoading, handleCellClick } = useCellActions(
     currentDate, 
-    pottyBreaks, 
-    setPottyBreaks, 
+    {}, // Empty potty breaks data
+    () => {}, // Empty setter
     onRefresh,
     activeCategory
   );
@@ -77,13 +68,15 @@ const usePottyBreakTable = (
   
   // Overall loading state
   const isLoading = useMemo(() => {
-    return pottyLoading || careLoading || obsLoading || actionLoading || isRefreshing;
-  }, [pottyLoading, careLoading, obsLoading, actionLoading, isRefreshing]);
+    return careLoading || obsLoading || actionLoading || isRefreshing;
+  }, [careLoading, obsLoading, actionLoading, isRefreshing]);
+  
+  // Provide an empty hasPottyBreak function as replacement
+  const hasPottyBreak = useCallback(() => false, []);
   
   return {
     timeSlots,
     currentHour,
-    pottyBreaks,
     sortedDogs,
     hasPottyBreak,
     hasCareLogged,
@@ -92,7 +85,7 @@ const usePottyBreakTable = (
     handleCellClick,
     handleRefresh,
     isLoading,
-    isPendingFeeding: () => false // Always return false since we removed feeding
+    isPendingFeeding: () => false
   };
 };
 

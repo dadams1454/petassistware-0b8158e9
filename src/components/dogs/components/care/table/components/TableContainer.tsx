@@ -1,42 +1,57 @@
-
 import React from 'react';
+import { RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import NoDogsMessage from './NoDogsMessage';
+import { getAvatarByCategory } from '../../utils/getAvatarByCategory';
 
 interface TableContainerProps {
-  children: React.ReactNode;
   activeCategory: string;
   dogsCount: number;
-  isMobile?: boolean;
   onRefresh: () => void;
+  isLoading?: boolean;
+  isMobile?: boolean;
+  children: React.ReactNode;
 }
 
-const TableContainer: React.FC<TableContainerProps> = ({ 
-  children, 
+const TableContainer: React.FC<TableContainerProps> = ({
   activeCategory,
   dogsCount,
+  onRefresh,
+  isLoading = false,
   isMobile = false,
-  onRefresh 
+  children
 }) => {
-  return (
-    <div className="w-full overflow-auto border rounded-md relative">
-      <div className="sticky left-0 z-10 bg-background px-4 py-2 border-b flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">
-            {activeCategory === 'pottybreaks' ? 'Potty Break Schedule' : 'Feeding Schedule'}
-          </span>
-          <span className="text-xs text-muted-foreground">{dogsCount} dogs</span>
-        </div>
-        {isMobile && (
-          <button 
+  // Get the appropriate icon for the category
+  const CategoryIcon = getAvatarByCategory(activeCategory);
+  
+  // If there are no dogs, display a message
+  if (dogsCount === 0) {
+    return (
+      <div className="p-6 bg-white dark:bg-gray-950">
+        <NoDogsMessage
+          title={`No dogs found for ${activeCategory} tracking`}
+          description="Add dogs to see their care schedule"
+          icon={CategoryIcon}
+        >
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onRefresh}
-            className="text-xs text-primary"
+            disabled={isLoading}
+            className="mt-4"
           >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
-          </button>
-        )}
+          </Button>
+        </NoDogsMessage>
       </div>
-      <div className={`${isMobile ? 'overflow-x-auto' : ''}`}>
-        {children}
-      </div>
+    );
+  }
+  
+  // Otherwise, render the table
+  return (
+    <div className="relative overflow-x-auto max-h-[calc(100vh-300px)] overflow-y-auto">
+      {children}
     </div>
   );
 };

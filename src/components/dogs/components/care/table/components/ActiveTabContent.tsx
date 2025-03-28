@@ -11,7 +11,6 @@ interface ActiveTabContentProps {
   activeCategory: string;
   sortedDogs: DogCareStatus[];
   timeSlots: string[];
-  hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
   hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
   hasObservation: (dogId: string, timeSlot: string) => boolean;
   getObservationDetails: (dogId: string) => { text: string; type: string } | null;
@@ -24,14 +23,12 @@ interface ActiveTabContentProps {
   onCategoryChange?: (category: string) => void;
   currentHour?: number;
   isMobile?: boolean;
-  isPendingFeeding?: (dogId: string, timeSlot: string) => boolean;
 }
 
 const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   activeCategory,
   sortedDogs,
   timeSlots,
-  hasPottyBreak,
   hasCareLogged,
   hasObservation,
   getObservationDetails,
@@ -44,7 +41,6 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
   onCategoryChange,
   currentHour,
   isMobile = false,
-  isPendingFeeding = () => false
 }) => {
   return (
     <Card className="border p-0 overflow-hidden">
@@ -63,7 +59,6 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
           sortedDogs={sortedDogs}
           timeSlots={timeSlots}
           activeCategory={activeCategory}
-          hasPottyBreak={hasPottyBreak}
           hasCareLogged={hasCareLogged}
           hasObservation={hasObservation}
           getObservationDetails={getObservationDetails}
@@ -74,7 +69,6 @@ const ActiveTabContent: React.FC<ActiveTabContentProps> = ({
           onObservationClick={onObservationClick}
           currentHour={currentHour}
           isMobile={isMobile}
-          isPendingFeeding={isPendingFeeding}
         />
       </TableContainer>
       

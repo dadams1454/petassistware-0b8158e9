@@ -10,11 +10,6 @@ import { CareCategory } from './components/types';
 // Define the care categories for the table view
 export const careCategories: CareCategory[] = [
   {
-    id: 'pottybreaks',
-    name: 'Potty Breaks',
-    icon: <Coffee className="h-4 w-4 text-blue-500" />,
-  },
-  {
     id: 'feeding',
     name: 'Feeding',
     icon: <Utensils className="h-4 w-4 text-orange-500" />,
