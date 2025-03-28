@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -125,6 +124,21 @@ export const useChecklistData = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Transform task data for checklist format
+  const transformTaskToChecklistTask = (task: FacilityTask): ChecklistTask => {
+    return {
+      ...task,
+      completed: false,
+      staffId: null,
+      initials: '',
+      time: '',
+      // Add these to match the ChecklistTask interface
+      assigned_to: task.assigned_to,
+      last_generated: task.last_generated,
+      next_due: task.next_due
+    };
   };
 
   // Function to handle task completion
@@ -268,13 +282,16 @@ export const useChecklistData = () => {
         
       if (error) throw error;
       
-      // Update local state
-      const newTask = {
+      // Update local state with properly typed data
+      const newTask: ChecklistTask = {
         ...data[0],
         completed: false,
         staffId: null,
         initials: '',
-        time: ''
+        time: '',
+        assigned_to: null,
+        last_generated: null,
+        next_due: null
       };
       
       const newAreas = [...areas];
@@ -551,6 +568,8 @@ export const useChecklistData = () => {
     editingTaskId,
     newAreaName,
     newTaskDescription,
+    setNewAreaName,        // Added these two that were missing
+    setNewTaskDescription, // and causing the errors
     toggleTask,
     updateTaskStaff,
     updateInitials,

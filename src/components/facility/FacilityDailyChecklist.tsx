@@ -31,8 +31,8 @@ const FacilityDailyChecklist: React.FC<FacilityDailyChecklistProps> = ({ onEditT
     editingTaskId,
     newAreaName,
     newTaskDescription,
-    setNewAreaName,
-    setNewTaskDescription,
+    setNewAreaName,        // Now these are properly included from the hook
+    setNewTaskDescription, // and will not cause TypeScript errors
     toggleTask,
     updateTaskStaff,
     updateInitials,

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Clipboard, ListChecks } from 'lucide-react';
+import { ListChecks } from 'lucide-react';
 
 interface FacilityTabHeaderProps {
   currentView: 'checklist';
@@ -14,7 +14,7 @@ const FacilityTabHeader: React.FC<FacilityTabHeaderProps> = ({
   return (
     <div className="flex gap-2">
       <Button
-        variant="default"
+        variant={currentView === 'checklist' ? 'default' : 'outline'}
         className="gap-1"
       >
         <ListChecks className="h-4 w-4" />

@@ -31,7 +31,7 @@ export const useFacilityData = () => {
         
       if (areasError) throw areasError;
       
-      // Fetch tasks
+      // Fetch tasks with correct typing
       const { data: tasksData, error: tasksError } = await supabase
         .from('facility_tasks')
         .select(`
@@ -44,8 +44,24 @@ export const useFacilityData = () => {
       if (tasksError) throw tasksError;
       
       setAreas(areasData);
-      setTasks(tasksData);
-      setFilteredTasks(tasksData);
+      // Here we need to ensure the data conforms to FacilityTask type
+      const typedTasks: FacilityTask[] = tasksData.map((task: any) => ({
+        id: task.id,
+        name: task.name,
+        description: task.description,
+        frequency: task.frequency,
+        custom_days: task.custom_days,
+        area_id: task.area_id,
+        created_at: task.created_at,
+        active: task.active,
+        assigned_to: task.assigned_to || null,
+        last_generated: task.last_generated || null,
+        next_due: task.next_due || null,
+        facility_areas: task.facility_areas
+      }));
+      
+      setTasks(typedTasks);
+      setFilteredTasks(typedTasks);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
