@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDogGroups } from './hooks/useDogGroups';
 import { usePottyBreakTimetable } from './hooks/usePottyBreakTimetable';
-import { CheckCircle, XCircle, Dog, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Dog, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface DogLetOutTimetableProps {
   dogsData: DogCareStatus[];
