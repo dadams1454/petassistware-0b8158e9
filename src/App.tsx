@@ -74,11 +74,8 @@ function App() {
                 
                 <Route element={<ProtectedRoute resource="litters" />}>
                   <Route path="/litters" element={<Litters />} />
+                  <Route path="/litters/new" element={<AddLitter />} />
                   <Route path="/litters/:id" element={<LitterDetail />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute resource="litters" action="add" />}>
-                  <Route path="/litters/add" element={<AddLitter />} />
                 </Route>
                 
                 <Route element={<ProtectedRoute resource="calendar" />}>
