@@ -11,15 +11,15 @@ interface TableContentManagerProps {
   activeCategory: string;
   dogsStatus: DogCareStatus[];
   sortedDogs: DogCareStatus[];
-  hasPottyBreak: (dogId: string, hour: number) => boolean;
-  hasCareLogged: (dogId: string, hour: number) => boolean;
-  hasObservation: (dogId: string, hour: number) => boolean;
-  getObservationDetails: (dogId: string, hour: number) => any;
-  onCellClick: (dogId: string, hour: number) => void;
-  onCellContextMenu: (event: React.MouseEvent, dogId: string, hour: number) => void;
-  onCareLogClick: (dogId: string) => void;
+  hasPottyBreak: (dogId: string, timeSlot: string) => boolean;
+  hasCareLogged: (dogId: string, timeSlot: string, category: string) => boolean;
+  hasObservation: (dogId: string, timeSlot: string) => boolean;
+  getObservationDetails: (dogId: string) => any;
+  onCellClick: (dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCellContextMenu: (event: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string) => void;
+  onCareLogClick: (dogId: string, dogName: string) => void;
   onDogClick: (dogId: string) => void;
-  onObservationClick: (dogId: string, hour: number) => void;
+  onObservationClick: (dogId: string, dogName: string) => void;
   onRefresh: () => void;
   onCategoryChange: (category: string) => void;
   showLoading: boolean;
@@ -51,49 +51,6 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
     return <NoDogsState onRefresh={onRefresh} />;
   }
 
-  // Create wrapper functions to adapt to the TimeTableContent interface which uses strings
-  const hasPottyBreakWrapper = (dogId: string, timeSlot: string): boolean => {
-    const hourIndex = timeSlots.indexOf(timeSlot);
-    const hour = hourIndex >= 0 ? hourIndex : 0;
-    return hasPottyBreak(dogId, hour);
-  };
-
-  const hasCareLoggedWrapper = (dogId: string, timeSlot: string, category: string): boolean => {
-    const hourIndex = timeSlots.indexOf(timeSlot);
-    const hour = hourIndex >= 0 ? hourIndex : 0;
-    return hasCareLogged(dogId, hour);
-  };
-
-  const hasObservationWrapper = (dogId: string, timeSlot: string): boolean => {
-    const hourIndex = timeSlots.indexOf(timeSlot);
-    const hour = hourIndex >= 0 ? hourIndex : 0;
-    return hasObservation(dogId, hour);
-  };
-
-  const getObservationDetailsWrapper = (dogId: string): any => {
-    return getObservationDetails(dogId, 0);
-  };
-
-  const onCellClickWrapper = (dogId: string, dogName: string, timeSlot: string, category: string): void => {
-    const hourIndex = timeSlots.indexOf(timeSlot);
-    const hour = hourIndex >= 0 ? hourIndex : 0;
-    onCellClick(dogId, hour);
-  };
-
-  const onCellContextMenuWrapper = (e: React.MouseEvent, dogId: string, dogName: string, timeSlot: string, category: string): void => {
-    const hourIndex = timeSlots.indexOf(timeSlot);
-    const hour = hourIndex >= 0 ? hourIndex : 0;
-    onCellContextMenu(e, dogId, hour);
-  };
-
-  const onCareLogClickWrapper = (dogId: string, dogName: string): void => {
-    onCareLogClick(dogId);
-  };
-
-  const onObservationClickWrapper = (dogId: string, dogName: string): void => {
-    onObservationClick(dogId, 0);
-  };
-
   return (
     <div className="relative">
       {/* Top section with category tabs */}
@@ -114,15 +71,15 @@ const TableContentManager: React.FC<TableContentManagerProps> = ({
           activeCategory={activeCategory}
           sortedDogs={sortedDogs}
           timeSlots={timeSlots}
-          hasPottyBreak={hasPottyBreakWrapper}
-          hasCareLogged={hasCareLoggedWrapper}
-          hasObservation={hasObservationWrapper}
-          getObservationDetails={getObservationDetailsWrapper}
-          onCellClick={onCellClickWrapper}
-          onCellContextMenu={onCellContextMenuWrapper}
-          onCareLogClick={onCareLogClickWrapper}
+          hasPottyBreak={hasPottyBreak}
+          hasCareLogged={hasCareLogged}
+          hasObservation={hasObservation}
+          getObservationDetails={getObservationDetails}
+          onCellClick={onCellClick}
+          onCellContextMenu={onCellContextMenu}
+          onCareLogClick={onCareLogClick}
           onDogClick={onDogClick}
-          onObservationClick={onObservationClickWrapper}
+          onObservationClick={onObservationClick}
         />
       </TableContainer>
       

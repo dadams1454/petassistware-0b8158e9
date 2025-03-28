@@ -72,7 +72,7 @@ const usePottyBreakTable = (
   }, [careLoading, obsLoading, actionLoading, isRefreshing]);
   
   // Empty implementation for hasPottyBreak
-  const hasPottyBreak = useCallback(() => false, []);
+  const hasPottyBreak = useCallback((dogId: string, timeSlot: string) => false, []);
   
   return {
     timeSlots,
