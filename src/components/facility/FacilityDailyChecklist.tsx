@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { CheckCircle, Clipboard, ClipboardCheck } from 'lucide-react';
+import { CheckCircle, Clipboard, ClipboardCheck, Edit } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { FacilityArea, FacilityTask } from '@/types/facility';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import FacilityTaskDialog from './FacilityTaskDialog';
 
 interface ChecklistTask extends FacilityTask {
   completed: boolean;
@@ -31,62 +33,45 @@ const FacilityDailyChecklist: React.FC = () => {
   const [completedBy, setCompletedBy] = useState('');
   const [verifiedBy, setVerifiedBy] = useState('');
   const [areas, setAreas] = useState<ChecklistArea[]>([]);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const currentDate = new Date().toLocaleDateString();
 
   useEffect(() => {
-    const fetchAreasAndTasks = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch areas
-        const { data: areasData, error: areasError } = await supabase
-          .from('facility_areas')
-          .select('*')
-          .order('name');
-          
-        if (areasError) throw areasError;
+    fetchAreasAndTasks();
+  }, [toast]);
+
+  const fetchAreasAndTasks = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch areas
+      const { data: areasData, error: areasError } = await supabase
+        .from('facility_areas')
+        .select('*')
+        .order('name');
         
-        // Fetch tasks with proper typing
-        const { data: tasksData, error: tasksError } = await supabase
-          .from('facility_tasks')
-          .select(`
-            *,
-            facility_areas(*)
-          `)
-          .eq('active', true)
-          .order('name');
-          
-        if (tasksError) throw tasksError;
+      if (areasError) throw areasError;
+      
+      // Fetch tasks with proper typing
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('facility_tasks')
+        .select(`
+          *,
+          facility_areas(*)
+        `)
+        .eq('active', true)
+        .order('name');
         
-        // Transform into checklist format with proper typing
-        const checklistAreas: ChecklistArea[] = [];
-        
-        // Group tasks by area
-        areasData.forEach((area: FacilityArea) => {
-          // Type assertion with partial to ensure compatibility
-          const areaTasks = (tasksData as any[])
-            .filter(task => task.area_id === area.id)
-            .map(task => ({
-              ...task,
-              assigned_to: task.assigned_to || null,
-              last_generated: task.last_generated || null,
-              next_due: task.next_due || null,
-              completed: false,
-              initials: '',
-              time: ''
-            } as ChecklistTask));
-            
-          if (areaTasks.length > 0) {
-            checklistAreas.push({
-              id: area.id,
-              name: area.name,
-              tasks: areaTasks
-            });
-          }
-        });
-        
-        // Add tasks with no assigned area
-        const unassignedTasks = (tasksData as any[])
-          .filter(task => !task.area_id)
+      if (tasksError) throw tasksError;
+      
+      // Transform into checklist format with proper typing
+      const checklistAreas: ChecklistArea[] = [];
+      
+      // Group tasks by area
+      areasData.forEach((area: FacilityArea) => {
+        // Type assertion with partial to ensure compatibility
+        const areaTasks = (tasksData as any[])
+          .filter(task => task.area_id === area.id)
           .map(task => ({
             ...task,
             assigned_to: task.assigned_to || null,
@@ -97,29 +82,48 @@ const FacilityDailyChecklist: React.FC = () => {
             time: ''
           } as ChecklistTask));
           
-        if (unassignedTasks.length > 0) {
+        if (areaTasks.length > 0) {
           checklistAreas.push({
-            id: 'unassigned',
-            name: 'General Tasks',
-            tasks: unassignedTasks
+            id: area.id,
+            name: area.name,
+            tasks: areaTasks
           });
         }
+      });
+      
+      // Add tasks with no assigned area
+      const unassignedTasks = (tasksData as any[])
+        .filter(task => !task.area_id)
+        .map(task => ({
+          ...task,
+          assigned_to: task.assigned_to || null,
+          last_generated: task.last_generated || null,
+          next_due: task.next_due || null,
+          completed: false,
+          initials: '',
+          time: ''
+        } as ChecklistTask));
         
-        setAreas(checklistAreas);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load facility checklist data',
-          variant: 'destructive'
+      if (unassignedTasks.length > 0) {
+        checklistAreas.push({
+          id: 'unassigned',
+          name: 'General Tasks',
+          tasks: unassignedTasks
         });
-      } finally {
-        setIsLoading(false);
       }
-    };
-    
-    fetchAreasAndTasks();
-  }, [toast]);
+      
+      setAreas(checklistAreas);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load facility checklist data',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Function to handle task completion
   const toggleTask = (areaIndex: number, taskIndex: number) => {
@@ -198,6 +202,16 @@ const FacilityDailyChecklist: React.FC = () => {
     }
   };
 
+  const handleEditTask = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleTaskSaved = () => {
+    setIsTaskDialogOpen(false);
+    fetchAreasAndTasks();
+  };
+
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -241,7 +255,7 @@ const FacilityDailyChecklist: React.FC = () => {
                         <th className="p-2 text-left">Task</th>
                         <th className="w-20 p-2 text-center">Initials</th>
                         <th className="w-24 p-2 text-center">Time</th>
-                        <th className="w-24 p-2 text-center">Notes</th>
+                        <th className="w-24 p-2 text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -265,9 +279,15 @@ const FacilityDailyChecklist: React.FC = () => {
                             />
                           </td>
                           <td className="p-2 text-center">{task.completed ? task.time : '—'}</td>
-                          <td className="p-2">
-                            <Button variant="outline" size="sm">
-                              Add
+                          <td className="p-2 flex gap-1 justify-center">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleEditTask(task.id)}
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
                             </Button>
                           </td>
                         </tr>
@@ -326,6 +346,27 @@ const FacilityDailyChecklist: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Task Dialog */}
+      <Dialog 
+        open={isTaskDialogOpen} 
+        onOpenChange={setIsTaskDialogOpen}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Edit Task
+            </DialogTitle>
+          </DialogHeader>
+          
+          <FacilityTaskDialog
+            taskId={selectedTaskId}
+            areas={areas.filter(area => area.id !== 'unassigned')}
+            onSuccess={handleTaskSaved}
+            onCancel={() => setIsTaskDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

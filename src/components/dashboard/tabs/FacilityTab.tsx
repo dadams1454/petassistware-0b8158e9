@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ const FacilityTab: React.FC<FacilityTabProps> = ({ onRefreshData, dogStatuses })
   const [selectedFrequency, setSelectedFrequency] = useState('all');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'tasks' | 'checklist'>('tasks');
+  const [activeTaskTab, setActiveTaskTab] = useState<'list' | 'checklist'>('list');
   
   // Fetch facility areas
   const { data: areas, isLoading: isLoadingAreas } = useQuery({
@@ -196,36 +198,63 @@ const FacilityTab: React.FC<FacilityTabProps> = ({ onRefreshData, dogStatuses })
               <TabsTrigger value="quarterly">Quarterly</TabsTrigger>
               <TabsTrigger value="custom">Custom</TabsTrigger>
             </TabsList>
-          </Tabs>
-          
-          {isLoading ? (
-            <div className="flex justify-center p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            
+            <div className="mt-4">
+              <div className="flex justify-end mb-4">
+                <Tabs
+                  value={activeTaskTab}
+                  onValueChange={(value) => setActiveTaskTab(value as 'list' | 'checklist')}
+                  className="w-auto"
+                >
+                  <TabsList>
+                    <TabsTrigger value="list" className="flex items-center gap-1">
+                      <Clipboard className="h-4 w-4" />
+                      <span>List View</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="checklist" className="flex items-center gap-1">
+                      <ListChecks className="h-4 w-4" />
+                      <span>Checklist View</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              
+              {isLoading ? (
+                <div className="flex justify-center p-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+              ) : filteredTasks && filteredTasks.length > 0 ? (
+                <>
+                  {activeTaskTab === 'list' ? (
+                    <FacilityTasksList 
+                      tasks={filteredTasks} 
+                      onEdit={handleEditTask}
+                      onRefresh={refetchTasks}
+                    />
+                  ) : (
+                    <FacilityDailyChecklist />
+                  )}
+                </>
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <EmptyState
+                      icon={<Building2 className="h-12 w-12 text-muted-foreground" />}
+                      title="No Tasks Found"
+                      description={searchQuery 
+                        ? "No tasks match your search criteria. Try a different search term." 
+                        : "Start by adding facility management tasks."
+                      }
+                      action={{
+                        label: "Add Task",
+                        onClick: handleAddTask
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              )}
             </div>
-          ) : filteredTasks && filteredTasks.length > 0 ? (
-            <FacilityTasksList 
-              tasks={filteredTasks} 
-              onEdit={handleEditTask}
-              onRefresh={refetchTasks}
-            />
-          ) : (
-            <Card>
-              <CardContent className="pt-6">
-                <EmptyState
-                  icon={<Building2 className="h-12 w-12 text-muted-foreground" />}
-                  title="No Tasks Found"
-                  description={searchQuery 
-                    ? "No tasks match your search criteria. Try a different search term." 
-                    : "Start by adding facility management tasks."
-                  }
-                  action={{
-                    label: "Add Task",
-                    onClick: handleAddTask
-                  }}
-                />
-              </CardContent>
-            </Card>
-          )}
+          </Tabs>
         </>
       ) : (
         <FacilityDailyChecklist />
