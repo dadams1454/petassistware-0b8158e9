@@ -3,7 +3,7 @@ import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
-  Coffee, Dog, Scissors, Dumbbell, Heart, Clipboard, LifeBuoy, Pill
+  Coffee, Droplet, Scissors, Dumbbell, Heart, Clipboard, LifeBuoy, Pill
 } from 'lucide-react';
 
 export interface CategoryTabsProps {
@@ -22,8 +22,8 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
   // Define category icons
   const getCategoryIcon = (categoryId: string) => {
     switch (categoryId) {
-      case 'letdogout':
-        return <Dog className="h-4 w-4" />;
+      case 'pottybreaks':
+        return <Droplet className="h-4 w-4" />;
       case 'feeding':
         return <Coffee className="h-4 w-4" />;
       case 'grooming':
