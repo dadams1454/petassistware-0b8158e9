@@ -23,6 +23,7 @@ import MedicationsTab from '@/components/dashboard/tabs/MedicationsTab';
 import GroomingTab from '@/components/dashboard/tabs/GroomingTab';
 import NotesTab from '@/components/dashboard/tabs/NotesTab';
 import FacilityTab from '@/components/dashboard/tabs/FacilityTab';
+import PuppiesTab from '@/components/dogs/components/care/puppies/PuppiesTab';
 
 interface DailyCareTabProps {
   onRefreshDogs: () => void;
@@ -190,25 +191,7 @@ const DailyCareTab: React.FC<DailyCareTabProps> = ({
         );
       case 'puppies':
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Baby className="h-5 w-5 text-primary" />
-                <span>Puppy Management</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="py-8 text-center">
-                <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 mb-4">
-                  <Baby className="h-10 w-10 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Coming Soon</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Puppy management features are currently under development. Soon you'll be able to track feeding schedules, weight tracking, and development milestones for your puppies.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <PuppiesTab onRefresh={handleRefresh} />
         );
       default:
         return (

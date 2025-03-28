@@ -1,55 +1,87 @@
 
 import React from 'react';
 import { TabsList as ShadcnTabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Layout, CalendarDays, Dog, Activity, ScrollText, Baby } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Calendar, 
+  Dog,
+  FileBarChart,
+  RefreshCw
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TabsListProps {
   activeTab: string;
-  onTabChange: (value: string) => void;
+  onTabChange: (tab: string) => void;
   onRefreshDogs: () => void;
-  isRefreshing: boolean;
+  isRefreshing?: boolean;
 }
 
-const TabsList: React.FC<TabsListProps> = ({
-  activeTab,
+const TabsList: React.FC<TabsListProps> = ({ 
+  activeTab, 
   onTabChange,
   onRefreshDogs,
-  isRefreshing
+  isRefreshing = false
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row justify-between gap-2 mb-4">
-      <ShadcnTabsList className="h-auto grid grid-cols-3 sm:grid-cols-6 gap-1">
-        <TabsTrigger value="overview" onClick={() => onTabChange('overview')}>
-          <Layout className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Overview</span>
+    <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
+      <ShadcnTabsList className="h-auto bg-transparent p-0 overflow-x-auto flex-wrap">
+        <TabsTrigger 
+          value="overview" 
+          className={`transition-all ${activeTab === 'overview' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          onClick={() => onTabChange('overview')}
+        >
+          <LayoutDashboard className="h-4 w-4 mr-2" />
+          <span>Overview</span>
         </TabsTrigger>
         
-        <TabsTrigger value="dailycare" onClick={() => onTabChange('dailycare')}>
-          <CalendarDays className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Daily Care</span>
+        <TabsTrigger 
+          value="dailycare" 
+          className={`transition-all ${activeTab === 'dailycare' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          onClick={() => onTabChange('dailycare')}
+        >
+          <Calendar className="h-4 w-4 mr-2" />
+          <span>Daily Care</span>
         </TabsTrigger>
         
-        <TabsTrigger value="dogletout" onClick={() => onTabChange('dogletout')}>
+        <TabsTrigger 
+          value="dogletout" 
+          className={`transition-all ${activeTab === 'dogletout' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          onClick={() => onTabChange('dogletout')}
+        >
           <Dog className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Dog Let Out</span>
+          <span>Dog Let Out</span>
         </TabsTrigger>
         
-        <TabsTrigger value="puppies" onClick={() => onTabChange('puppies')}>
-          <Baby className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Puppies</span>
+        <TabsTrigger 
+          value="events" 
+          className={`transition-all ${activeTab === 'events' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          onClick={() => onTabChange('events')}
+        >
+          <Calendar className="h-4 w-4 mr-2" />
+          <span>Events</span>
         </TabsTrigger>
         
-        <TabsTrigger value="events" onClick={() => onTabChange('events')}>
-          <Activity className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Events</span>
-        </TabsTrigger>
-        
-        <TabsTrigger value="reports" onClick={() => onTabChange('reports')}>
-          <ScrollText className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Reports</span>
+        <TabsTrigger 
+          value="reports" 
+          className={`transition-all ${activeTab === 'reports' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          onClick={() => onTabChange('reports')}
+        >
+          <FileBarChart className="h-4 w-4 mr-2" />
+          <span>Reports</span>
         </TabsTrigger>
       </ShadcnTabsList>
+      
+      <Button 
+        onClick={onRefreshDogs} 
+        variant="outline" 
+        size="sm" 
+        className="gap-2"
+        disabled={isRefreshing}
+      >
+        <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+        <span>Refresh</span>
+      </Button>
     </div>
   );
 };
