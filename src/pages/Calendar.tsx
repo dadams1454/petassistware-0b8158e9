@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
@@ -8,7 +9,7 @@ import { Plus } from 'lucide-react';
 import { fetchEvents, createEvent, updateEvent, deleteEvent } from '@/services/eventService';
 import { format } from 'date-fns';
 
-// Import the new components
+// Import the components
 import CalendarSidebar from '@/components/calendar/CalendarSidebar';
 import EventList from '@/components/calendar/EventList';
 import EventTypeFilters from '@/components/calendar/EventTypeFilters';
@@ -221,10 +222,10 @@ const CalendarPage = () => {
 
   return (
     <MainLayout>
-      <div className="container py-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="container max-w-full py-6 px-4">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h1 className="text-2xl font-bold">Event Calendar</h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <EventTypeFilters
               activeFilters={activeFilters}
               toggleFilter={toggleFilter}
@@ -243,7 +244,7 @@ const CalendarPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
           <CalendarSidebar 
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}

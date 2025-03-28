@@ -37,7 +37,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
 }) => {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[550px] max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>
             {isCreating 
@@ -47,18 +47,22 @@ const EventDialog: React.FC<EventDialogProps> = ({
         </DialogHeader>
         
         {isCreating ? (
-          <EventForm 
-            onSubmit={onSave} 
-            initialData={selectedEvent || undefined}
-            defaultDate={selectedDate}
-          />
+          <div className="max-h-[70vh] overflow-y-auto">
+            <EventForm 
+              onSubmit={onSave} 
+              initialData={selectedEvent || undefined}
+              defaultDate={selectedDate}
+            />
+          </div>
         ) : (
           selectedEvent && (
-            <EventDetails 
-              event={selectedEvent} 
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
+            <div className="max-h-[70vh] overflow-y-auto">
+              <EventDetails 
+                event={selectedEvent} 
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            </div>
           )
         )}
         

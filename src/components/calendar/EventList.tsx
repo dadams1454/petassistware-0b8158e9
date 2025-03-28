@@ -40,7 +40,7 @@ const EventList: React.FC<EventListProps> = ({
 
   return (
     <DashboardCard 
-      className="md:col-span-2"
+      className="md:col-span-2 min-w-0"
       title={selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'No date selected'}
       icon={<CalendarIcon size={18} />}
     >
@@ -61,15 +61,15 @@ const EventList: React.FC<EventListProps> = ({
                 onClick={() => onEventClick(event)}
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{event.title}</h3>
+                      <h3 className="font-medium truncate">{event.title}</h3>
                       {event.is_recurring && (
-                        <Repeat size={16} className="text-slate-400" aria-label="Recurring Event" />
+                        <Repeat size={16} className="text-slate-400 flex-shrink-0" aria-label="Recurring Event" />
                       )}
                     </div>
                     {event.description && (
-                      <p className="text-sm text-slate-600 mt-1">{event.description}</p>
+                      <p className="text-sm text-slate-600 mt-1 line-clamp-2">{event.description}</p>
                     )}
                     {event.is_recurring && (
                       <p className="text-xs text-slate-500 mt-1">
@@ -77,7 +77,7 @@ const EventList: React.FC<EventListProps> = ({
                       </p>
                     )}
                   </div>
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                  <span className={`inline-block px-2 py-1 text-xs rounded-full flex-shrink-0 ml-2 ${
                     event.status === 'upcoming' 
                       ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
                       : event.status === 'completed'

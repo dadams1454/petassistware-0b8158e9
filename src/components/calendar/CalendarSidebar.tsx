@@ -16,12 +16,12 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   eventDates 
 }) => {
   return (
-    <DashboardCard className="md:col-span-1" noPadding={false}>
+    <DashboardCard className="md:col-span-1 min-w-0 overflow-hidden" noPadding={false}>
       <Calendar
         mode="single"
         selected={selectedDate}
         onSelect={setSelectedDate}
-        className="w-full pointer-events-auto"
+        className="w-full pointer-events-auto max-w-full overflow-hidden"
         modifiers={{
           hasEvent: (date) => 
             eventDates.some(eventDate => 
