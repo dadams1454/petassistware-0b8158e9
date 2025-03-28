@@ -1,12 +1,14 @@
-
-import React, { useEffect } from 'react';
-import CareTabsContent from '../CareTabsContent';
+import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import DogCareGrid from '../grid/DogCareGrid';
+import DogCareList from '../list/DogCareList';
+import DogCareTable from '../table/DogCareTable';
+import PuppiesTab from '../puppies/PuppiesTab';
+import PottyObservationDialog from '../potty/PottyObservationDialog';
 
 interface LoadedDogsContentProps {
   dogStatuses: DogCareStatus[];
-  activeView: string;
+  activeView: 'grid' | 'table' | 'list';
   selectedCategory: string;
   selectedDogId: string | null;
   dialogOpen: boolean;
@@ -25,41 +27,76 @@ const LoadedDogsContent: React.FC<LoadedDogsContentProps> = ({
   onLogCare,
   onCareLogSuccess
 }) => {
-  useEffect(() => {
-    console.log(`🐕 LoadedDogsContent received ${dogStatuses.length} dogs`);
-    if (dogStatuses.length > 0) {
-      console.log('🐕 Dog names:', dogStatuses.map(d => d.dog_name).join(', '));
+  // If Puppies tab is selected, show the PuppiesTab component
+  if (selectedCategory === 'puppies') {
+    return <PuppiesTab onRefresh={onCareLogSuccess} />;
+  }
+  
+  // Otherwise, filter dogs by category and show the appropriate view
+  const filteredDogs = selectedCategory === 'all' 
+    ? dogStatuses 
+    : dogStatuses.filter(dog => {
+        // Each category would have its own filtering logic
+        switch (selectedCategory) {
+          case 'potty':
+            return true; // All dogs need potty breaks
+          case 'feeding':
+            return true; // All dogs need feeding
+          case 'medications':
+            return true; // For now, show all dogs in medications tab
+          case 'health':
+            return true; // For now, show all dogs in health tab
+          case 'exercise':
+            return true; // For now, show all dogs in exercise tab
+          default:
+            return true;
+        }
+      });
+  
+  // Render the selected view
+  const renderContent = () => {
+    switch (activeView) {
+      case 'grid':
+        return (
+          <DogCareGrid 
+            dogs={filteredDogs} 
+            category={selectedCategory}
+            onLogCare={onLogCare}
+          />
+        );
+      case 'table':
+        return (
+          <DogCareTable 
+            dogs={filteredDogs} 
+            category={selectedCategory}
+            onLogCare={onLogCare}
+          />
+        );
+      case 'list':
+        return (
+          <DogCareList 
+            dogs={filteredDogs} 
+            category={selectedCategory}
+            onLogCare={onLogCare}
+          />
+        );
+      default:
+        return null;
     }
-  }, [dogStatuses]);
+  };
 
   return (
-    <>
-      <Alert className="mb-4 border-green-500 bg-green-50 dark:bg-green-900/20">
-        <AlertTitle className="font-semibold text-green-700 dark:text-green-300">
-          Dogs Loaded: {dogStatuses.length}
-        </AlertTitle>
-        <AlertDescription className="text-green-600 dark:text-green-400">
-          {dogStatuses.length > 0 ? (
-            <>
-              <span className="font-medium">Available dogs:</span> {dogStatuses.map(d => d.dog_name).join(', ')}
-            </>
-          ) : (
-            "No dogs available. Try refreshing the page or adding dogs to the system."
-          )}
-        </AlertDescription>
-      </Alert>
+    <div>
+      {renderContent()}
       
-      <CareTabsContent
-        activeTab={activeView}
-        dogsStatus={dogStatuses}
-        onLogCare={onLogCare}
-        selectedDogId={selectedDogId}
-        dialogOpen={dialogOpen}
-        setDialogOpen={setDialogOpen}
-        onCareLogSuccess={onCareLogSuccess}
-        selectedCategory={selectedCategory}
+      {/* Potty observation dialog */}
+      <PottyObservationDialog
+        open={dialogOpen && selectedCategory === 'potty'}
+        onOpenChange={setDialogOpen}
+        selectedDog={selectedDogId ? dogStatuses.find(d => d.dog_id === selectedDogId) : null}
+        onSuccess={onCareLogSuccess}
       />
-    </>
+    </div>
   );
 };
 
