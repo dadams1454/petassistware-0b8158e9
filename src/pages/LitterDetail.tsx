@@ -44,11 +44,13 @@ const LitterDetail = () => {
         throw error;
       }
 
-      // Process the data to ensure it has all required fields
-      const processedData = {
+      // Create a new object that includes all properties from data
+      // and explicitly add updated_at if it doesn't exist
+      const processedData: Litter = {
         ...data,
-        updated_at: data.updated_at || data.created_at, // Explicitly add updated_at if missing
-      } as Litter; // Add type assertion to Litter
+        // Explicitly add the updated_at field with a fallback to created_at
+        updated_at: data.updated_at || data.created_at
+      };
 
       console.log('Processed litter data:', processedData);
       return processedData;
