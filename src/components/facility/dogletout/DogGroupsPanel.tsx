@@ -1,23 +1,14 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/components/ui/use-toast';
-import { Plus, Trash, Edit, Dog, MoreHorizontal, Check, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Trash2, Edit2, Plus, X } from 'lucide-react';
 import { DogCareStatus } from '@/types/dailyCare';
-import { useDogGroups } from './hooks/useDogGroups';
+import { useDogGroups, DogGroup } from './hooks/useDogGroups';
+import { useToast } from '@/components/ui/use-toast';
 
 interface DogGroupsPanelProps {
   dogsData: DogCareStatus[];
@@ -26,129 +17,159 @@ interface DogGroupsPanelProps {
 
 const DogGroupsPanel: React.FC<DogGroupsPanelProps> = ({ 
   dogsData,
-  onGroupsUpdated
+  onGroupsUpdated 
 }) => {
   const { toast } = useToast();
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<string | null>(null);
-  const [groupName, setGroupName] = useState('');
-  const [groupColor, setGroupColor] = useState('#4CAF50');
-  const [selectedDogs, setSelectedDogs] = useState<string[]>([]);
-  
-  // Use our custom hook to manage dog groups
   const { 
     groups, 
+    isLoading, 
     addGroup, 
-    updateGroup, 
-    removeGroup,
-    isLoading 
+    addDogToGroup, 
+    removeDogFromGroup 
   } = useDogGroups();
   
-  const handleOpenDialog = (groupId?: string) => {
-    if (groupId) {
-      // We're editing an existing group
-      const group = groups.find(g => g.id === groupId);
-      if (group) {
-        setEditingGroup(groupId);
-        setGroupName(group.name);
-        setGroupColor(group.color);
-        setSelectedDogs(group.dogIds);
-      }
-    } else {
-      // Creating a new group
-      setEditingGroup(null);
-      setGroupName('');
-      setGroupColor('#4CAF50');
-      setSelectedDogs([]);
-    }
-    setOpenDialog(true);
-  };
+  const [selectedGroup, setSelectedGroup] = useState<DogGroup | null>(null);
+  const [showAddDogDialog, setShowAddDogDialog] = useState(false);
+  const [showAddGroupDialog, setShowAddGroupDialog] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupColor, setNewGroupColor] = useState('#1890ff');
   
-  const handleSave = async () => {
-    if (!groupName.trim()) {
+  // Handle creating a new group
+  const handleAddGroup = useCallback(async () => {
+    if (!newGroupName.trim()) {
       toast({
-        title: "Group name required",
-        description: "Please enter a name for this group",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Please enter a group name',
+        variant: 'destructive'
       });
       return;
     }
     
-    try {
-      if (editingGroup) {
-        // Update existing group
-        await updateGroup(editingGroup, {
-          name: groupName,
-          color: groupColor,
-          dogIds: selectedDogs
-        });
-        toast({
-          title: "Group updated",
-          description: `The group "${groupName}" has been updated`
-        });
-      } else {
-        // Create new group
-        await addGroup({
-          name: groupName,
-          color: groupColor,
-          dogIds: selectedDogs
-        });
-        toast({
-          title: "Group created",
-          description: `New group "${groupName}" has been created`
-        });
-      }
-      
-      setOpenDialog(false);
+    const groupId = await addGroup(newGroupName, newGroupColor);
+    if (groupId) {
+      setShowAddGroupDialog(false);
+      setNewGroupName('');
+      setNewGroupColor('#1890ff');
       if (onGroupsUpdated) onGroupsUpdated();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "There was a problem saving the group",
-        variant: "destructive"
-      });
-      console.error("Error saving group:", error);
     }
-  };
+  }, [newGroupName, newGroupColor, addGroup, toast, onGroupsUpdated]);
   
-  const handleDelete = async (groupId: string) => {
-    if (confirm("Are you sure you want to delete this group?")) {
-      try {
-        await removeGroup(groupId);
-        toast({
-          title: "Group deleted",
-          description: "The group has been deleted"
-        });
-        if (onGroupsUpdated) onGroupsUpdated();
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "There was a problem deleting the group",
-          variant: "destructive"
-        });
-        console.error("Error deleting group:", error);
-      }
-    }
-  };
+  // Get list of dogs that are not in the selected group
+  const availableDogs = useCallback(() => {
+    if (!selectedGroup) return [];
+    
+    return dogsData.filter(
+      dog => !selectedGroup.dogIds.includes(dog.dog_id)
+    );
+  }, [dogsData, selectedGroup]);
   
-  const toggleDogSelection = (dogId: string) => {
-    setSelectedDogs(prev => 
-      prev.includes(dogId)
-        ? prev.filter(id => id !== dogId)
-        : [...prev, dogId]
+  // Add dog to selected group
+  const handleAddDogToGroup = useCallback(async (dogId: string) => {
+    if (!selectedGroup) return;
+    
+    await addDogToGroup(selectedGroup.id, dogId);
+    setShowAddDogDialog(false);
+    if (onGroupsUpdated) onGroupsUpdated();
+  }, [selectedGroup, addDogToGroup, onGroupsUpdated]);
+  
+  // Remove dog from selected group
+  const handleRemoveDogFromGroup = useCallback(async (dogId: string) => {
+    if (!selectedGroup) return;
+    
+    await removeDogFromGroup(selectedGroup.id, dogId);
+    if (onGroupsUpdated) onGroupsUpdated();
+  }, [selectedGroup, removeDogFromGroup, onGroupsUpdated]);
+  
+  const renderGroupCard = (group: DogGroup) => {
+    const isSelected = selectedGroup?.id === group.id;
+    const groupDogs = dogsData.filter(dog => group.dogIds.includes(dog.dog_id));
+    
+    return (
+      <Card 
+        key={group.id} 
+        className={`mb-4 overflow-hidden transition-all ${isSelected ? 'ring-2 ring-primary' : ''}`}
+      >
+        <div 
+          className="h-2" 
+          style={{ backgroundColor: group.color || '#1890ff' }}
+        />
+        <CardContent className="pt-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">{group.name}</h3>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setSelectedGroup(group);
+                  setShowAddDogDialog(true);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Dog
+              </Button>
+              
+              {!isSelected ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSelectedGroup(group)}
+                >
+                  <Edit2 className="h-4 w-4 mr-1" />
+                  Manage
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedGroup(null)}
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Close
+                </Button>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            {group.dogIds.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No dogs in this group</p>
+            ) : (
+              groupDogs.map(dog => (
+                <Badge 
+                  key={dog.dog_id} 
+                  variant="outline"
+                  className="flex items-center"
+                >
+                  {dog.dog_name}
+                  {isSelected && (
+                    <X 
+                      className="h-3 w-3 ml-1 cursor-pointer" 
+                      onClick={() => handleRemoveDogFromGroup(dog.dog_id)}
+                    />
+                  )}
+                </Badge>
+              ))
+            )}
+          </div>
+          
+          {group.description && (
+            <p className="text-sm text-muted-foreground">{group.description}</p>
+          )}
+        </CardContent>
+      </Card>
     );
   };
   
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Dog Groups</h3>
-          <p className="text-muted-foreground">Create and manage groups for potty breaks</p>
-        </div>
-        <Button onClick={() => handleOpenDialog()} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Group
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Dog Groups</h2>
+        <Button
+          onClick={() => setShowAddGroupDialog(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          New Group
         </Button>
       </div>
       
@@ -157,158 +178,99 @@ const DogGroupsPanel: React.FC<DogGroupsPanelProps> = ({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : groups.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-            <Dog className="h-10 w-10 text-muted-foreground mb-2" />
-            <h3 className="text-lg font-medium">No Groups Created</h3>
-            <p className="text-muted-foreground mb-4">Create dog groups to manage potty breaks efficiently</p>
-            <Button onClick={() => handleOpenDialog()} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create First Group
-            </Button>
-          </CardContent>
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground mb-4">No dog groups found. Create your first group to organize your dogs.</p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {groups.map(group => {
-            const groupDogs = dogsData.filter(dog => group.dogIds.includes(dog.dog_id));
-            
-            return (
-              <Card key={group.id} className="overflow-hidden">
-                <div 
-                  className="p-4 flex justify-between items-center" 
-                  style={{ backgroundColor: `${group.color}30` }}
-                >
-                  <div className="flex items-center">
-                    <Badge 
-                      className="mr-2" 
-                      style={{ backgroundColor: group.color }}
-                    >
-                      {groupDogs.length}
-                    </Badge>
-                    <h3 className="font-medium">{group.name}</h3>
-                  </div>
-                  <div className="flex space-x-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleOpenDialog(group.id)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => handleDelete(group.id)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  {groupDogs.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">No dogs in this group</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {groupDogs.map(dog => (
-                        <Badge key={dog.dog_id} variant="outline" className="flex items-center gap-1">
-                          <Dog className="h-3 w-3" />
-                          {dog.dog_name}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="grid gap-4 md:grid-cols-2">
+          {groups.map(renderGroupCard)}
         </div>
       )}
       
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent className="max-w-2xl">
+      {/* Add Group Dialog */}
+      <Dialog open={showAddGroupDialog} onOpenChange={setShowAddGroupDialog}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editingGroup ? 'Edit Group' : 'Create New Group'}
-            </DialogTitle>
+            <DialogTitle>Create New Dog Group</DialogTitle>
           </DialogHeader>
-          
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="group-name" className="text-right">Name</Label>
-              <Input 
-                id="group-name" 
-                value={groupName} 
-                onChange={e => setGroupName(e.target.value)} 
+              <label htmlFor="group-name" className="text-right">
+                Group Name
+              </label>
+              <Input
+                id="group-name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
                 className="col-span-3"
-                placeholder="Enter group name"
               />
             </div>
-            
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="group-color" className="text-right">Color</Label>
+              <label htmlFor="group-color" className="text-right">
+                Group Color
+              </label>
               <div className="col-span-3 flex items-center gap-2">
-                <input 
-                  type="color" 
-                  id="group-color"
-                  value={groupColor} 
-                  onChange={e => setGroupColor(e.target.value)} 
-                  className="w-10 h-10 rounded"
-                />
                 <div 
-                  className="w-full h-10 rounded" 
-                  style={{ backgroundColor: `${groupColor}30` }}
+                  className="w-6 h-6 rounded-full border" 
+                  style={{ backgroundColor: newGroupColor }}
                 />
-              </div>
-            </div>
-            
-            <Separator className="my-2" />
-            
-            <div className="space-y-2">
-              <Label>Select Dogs</Label>
-              <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
-                {dogsData.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">No dogs available</p>
-                ) : (
-                  <div className="space-y-2">
-                    {dogsData.map(dog => (
-                      <div 
-                        key={dog.dog_id} 
-                        className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
-                          selectedDogs.includes(dog.dog_id) 
-                            ? 'bg-primary/10' 
-                            : 'hover:bg-muted'
-                        }`}
-                        onClick={() => toggleDogSelection(dog.dog_id)}
-                      >
-                        <div className="flex items-center">
-                          <Dog className="h-4 w-4 mr-2" />
-                          <span>{dog.dog_name}</span>
-                        </div>
-                        <Badge variant={selectedDogs.includes(dog.dog_id) ? "default" : "outline"}>
-                          {selectedDogs.includes(dog.dog_id) ? (
-                            <Check className="h-3 w-3" />
-                          ) : (
-                            <Plus className="h-3 w-3" />
-                          )}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {selectedDogs.length} dog(s) selected
+                <input
+                  id="group-color"
+                  type="color"
+                  value={newGroupColor}
+                  onChange={(e) => setNewGroupColor(e.target.value)}
+                  className="w-full h-10"
+                />
               </div>
             </div>
           </div>
-          
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenDialog(false)}>
+            <Button variant="outline" onClick={() => setShowAddGroupDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editingGroup ? 'Save Changes' : 'Create Group'}
+            <Button onClick={handleAddGroup}>
+              Create Group
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Add Dog to Group Dialog */}
+      <Dialog open={showAddDogDialog} onOpenChange={setShowAddDogDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Dogs to Group</DialogTitle>
+          </DialogHeader>
+          {selectedGroup && (
+            <div className="py-4">
+              <h3 className="font-medium mb-2">
+                Select dogs to add to <span className="font-bold">{selectedGroup.name}</span>
+              </h3>
+              
+              {availableDogs().length === 0 ? (
+                <p className="text-muted-foreground">
+                  All dogs are already in this group.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {availableDogs().map(dog => (
+                    <Badge 
+                      key={dog.dog_id} 
+                      variant="outline"
+                      className="cursor-pointer hover:bg-primary/10 transition-colors"
+                      onClick={() => handleAddDogToGroup(dog.dog_id)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      {dog.dog_name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDogDialog(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

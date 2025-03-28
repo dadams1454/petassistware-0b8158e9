@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDogGroups } from './hooks/useDogGroups';
 import { usePottyBreakTimetable } from './hooks/usePottyBreakTimetable';
@@ -27,7 +30,8 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
   // Get dog groups
   const { 
     groups, 
-    isLoading: groupsLoading 
+    isLoading: groupsLoading,
+    addGroup
   } = useDogGroups();
   
   // Get time slots for the timetable
@@ -51,23 +55,28 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
   const {
     pottyBreaks,
     hasPottyBreak,
+    getPottyBreakStatus,
     handleCellClick,
+    handleGroupPottyBreak,
     isLoading: pottyBreaksLoading,
-    refreshPottyBreaks
+    refreshPottyBreaks,
+    isDogOutside,
+    getOutsideTime,
+    incompatibilityWarning,
+    clearIncompatibilityWarning
   } = usePottyBreakTimetable(dogsData, date);
+  
+  // Dialog states for warnings and group management
+  const [showAddGroupDialog, setShowAddGroupDialog] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupColor, setNewGroupColor] = useState('#1890ff');
   
   // Filter dogs based on selected group
   const filteredDogs = useMemo(() => {
     if (selectedGroup === 'all') return dogsData;
     
     if (selectedGroup === 'outside') {
-      return dogsData.filter(dog => {
-        // Check if dog has any active potty breaks
-        return timeSlots.some(timeSlot => {
-          const status = pottyBreaks[dog.dog_id]?.find(brk => brk.timeSlot === timeSlot);
-          return status && status.status === 'out';
-        });
-      });
+      return dogsData.filter(dog => isDogOutside(dog.dog_id));
     }
     
     const group = groups.find(g => g.id === selectedGroup);
@@ -76,7 +85,7 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
     return dogsData.filter(dog => 
       group.dogIds.includes(dog.dog_id)
     );
-  }, [dogsData, selectedGroup, groups, pottyBreaks, timeSlots]);
+  }, [dogsData, selectedGroup, groups, isDogOutside]);
   
   // Handle manual refresh
   const handleRefresh = useCallback(() => {
@@ -88,42 +97,39 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
     });
   }, [refreshPottyBreaks, onRefresh, toast]);
   
-  // Handle cell click to mark dog as out/in
-  const onCellClick = useCallback((dogId: string, dogName: string, timeSlot: string) => {
-    handleCellClick(dogId, dogName, timeSlot);
-  }, [handleCellClick]);
-  
-  // Check if a dog is currently out
-  const isDogOutside = useCallback((dogId: string) => {
-    return timeSlots.some(timeSlot => {
-      const breaks = pottyBreaks[dogId] || [];
-      return breaks.some(brk => brk.status === 'out');
-    });
-  }, [timeSlots, pottyBreaks]);
-  
-  // Get time since dog was let out (for outside dogs)
-  const getOutsideTime = useCallback((dogId: string) => {
-    const now = new Date();
-    const dogBreaks = pottyBreaks[dogId] || [];
-    
-    const latestBreak = dogBreaks
-      .filter(brk => brk.status === 'out')
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
-    
-    if (!latestBreak) return null;
-    
-    const outTime = new Date(latestBreak.timestamp);
-    const diffMs = now.getTime() - outTime.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 60) {
-      return `${diffMins}m`;
-    } else {
-      const hours = Math.floor(diffMins / 60);
-      const mins = diffMins % 60;
-      return `${hours}h ${mins}m`;
+  // Handle creating a new group
+  const handleAddGroup = useCallback(async () => {
+    if (!newGroupName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a group name',
+        variant: 'destructive'
+      });
+      return;
     }
-  }, [pottyBreaks]);
+    
+    const groupId = await addGroup(newGroupName, newGroupColor);
+    if (groupId) {
+      setShowAddGroupDialog(false);
+      setNewGroupName('');
+      setNewGroupColor('#1890ff');
+      setSelectedGroup(groupId);
+    }
+  }, [newGroupName, newGroupColor, addGroup, toast]);
+  
+  // Handle group potty break actions
+  const handleGroupAction = useCallback((timeSlot: string, status: 'out' | 'in') => {
+    if (selectedGroup === 'all' || selectedGroup === 'outside') {
+      toast({
+        title: 'Select a group',
+        description: 'Please select a specific group to perform this action',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    handleGroupPottyBreak(selectedGroup, timeSlot, status);
+  }, [selectedGroup, handleGroupPottyBreak, toast]);
   
   const isLoading = groupsLoading || pottyBreaksLoading;
   
@@ -142,10 +148,26 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
               <SelectItem value="all">All Dogs</SelectItem>
               <SelectItem value="outside">Currently Outside</SelectItem>
               {groups.map(group => (
-                <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                <SelectItem key={group.id} value={group.id}>
+                  <div className="flex items-center">
+                    <div 
+                      className="w-2 h-2 rounded-full mr-2" 
+                      style={{backgroundColor: group.color || '#1890ff'}}
+                    />
+                    {group.name}
+                  </div>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowAddGroupDialog(true)}
+          >
+            Add Group
+          </Button>
           
           <Button 
             onClick={handleRefresh} 
@@ -199,7 +221,29 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
                         : ''
                     }`}
                   >
-                    {slot}
+                    <div>
+                      {slot}
+                    </div>
+                    {selectedGroup !== 'all' && selectedGroup !== 'outside' && (
+                      <div className="flex gap-1 mt-1 justify-center">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-6 px-2 py-0 text-xs"
+                          onClick={() => handleGroupAction(slot, 'out')}
+                        >
+                          Group Out
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-6 px-2 py-0 text-xs"
+                          onClick={() => handleGroupAction(slot, 'in')}
+                        >
+                          Group In
+                        </Button>
+                      </div>
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -234,8 +278,7 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
                     )}
                   </TableCell>
                   {timeSlots.map((slot) => {
-                    const hasBreak = hasPottyBreak(dog.dog_id, slot);
-                    const breakStatus = pottyBreaks[dog.dog_id]?.find(brk => brk.timeSlot === slot)?.status;
+                    const status = getPottyBreakStatus(dog.dog_id, slot);
                     
                     return (
                       <TableCell 
@@ -245,21 +288,21 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
                             ? 'bg-blue-50 dark:bg-blue-900/10'
                             : ''
                         } ${
-                          hasBreak
-                            ? breakStatus === 'out'
+                          status
+                            ? status === 'out'
                               ? 'bg-yellow-100 dark:bg-yellow-900/20 hover:bg-yellow-200 dark:hover:bg-yellow-900/30'
                               : 'bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30'
                             : 'hover:bg-slate-100 dark:hover:bg-slate-800/50'
                         }`}
-                        onClick={() => onCellClick(dog.dog_id, dog.dog_name, slot)}
+                        onClick={() => handleCellClick(dog.dog_id, dog.dog_name, slot)}
                       >
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div className="w-full h-full flex items-center justify-center">
-                                {hasBreak && (
+                                {status && (
                                   <>
-                                    {breakStatus === 'out' ? (
+                                    {status === 'out' ? (
                                       <AlertCircle className="h-4 w-4 text-yellow-600" />
                                     ) : (
                                       <CheckCircle className="h-4 w-4 text-green-600" />
@@ -270,8 +313,8 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>
-                                {hasBreak 
-                                  ? breakStatus === 'out'
+                                {status 
+                                  ? status === 'out'
                                     ? `${dog.dog_name} went out at ${slot}`
                                     : `${dog.dog_name} came in at ${slot}`
                                   : `Click to mark ${dog.dog_name} as out/in at ${slot}`
@@ -289,6 +332,107 @@ const DogLetOutTimetable: React.FC<DogLetOutTimetableProps> = ({
           </Table>
         </div>
       )}
+
+      {/* Incompatibility warning dialog */}
+      <Dialog 
+        open={!!incompatibilityWarning} 
+        onOpenChange={(open) => !open && clearIncompatibilityWarning()}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-amber-500 flex items-center">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              Dog Incompatibility Warning
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Alert variant="warning" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Incompatible Dogs</AlertTitle>
+              <AlertDescription>
+                {incompatibilityWarning?.dogName} should not interact with the following dogs currently outside:
+              </AlertDescription>
+            </Alert>
+            <ul className="list-disc pl-5 space-y-1">
+              {incompatibilityWarning?.incompatibleDogs.map(dog => (
+                <li key={dog.id}>{dog.name}</li>
+              ))}
+            </ul>
+          </div>
+          <DialogDescription>
+            Please ensure these dogs don't interact when outside. Do you still want to proceed?
+          </DialogDescription>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={clearIncompatibilityWarning}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="default"
+              onClick={() => {
+                if (incompatibilityWarning) {
+                  // Force let the dog out anyway
+                  const timeSlot = timeSlots[currentHour - 6]; // Approximate current time slot
+                  handleCellClick(incompatibilityWarning.dogId, incompatibilityWarning.dogName, timeSlot);
+                  clearIncompatibilityWarning();
+                }
+              }}
+            >
+              Let Dog Out Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Group Dialog */}
+      <Dialog open={showAddGroupDialog} onOpenChange={setShowAddGroupDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Dog Group</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="group-name" className="text-right">
+                Group Name
+              </label>
+              <input
+                id="group-name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="group-color" className="text-right">
+                Group Color
+              </label>
+              <div className="col-span-3 flex items-center gap-2">
+                <div 
+                  className="w-6 h-6 rounded-full border" 
+                  style={{ backgroundColor: newGroupColor }}
+                />
+                <input
+                  id="group-color"
+                  type="color"
+                  value={newGroupColor}
+                  onChange={(e) => setNewGroupColor(e.target.value)}
+                  className="w-full h-10"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddGroupDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddGroup}>
+              Create Group
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
