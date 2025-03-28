@@ -13,7 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/standardiz
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
-import { Litter } from '@/components/litters/puppies/types'; // Changed import to use the defined interface
+import { Litter } from '@/components/litters/puppies/types'; // Using the defined interface from puppies/types
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,11 +44,12 @@ const LitterDetail = () => {
         throw error;
       }
 
-      // Add updated_at if it doesn't exist in the data
+      // Process the data to ensure it has all required fields
+      // The data from Supabase doesn't have 'updated_at', so we add it
       const processedData = {
         ...data,
-        // Add any required fields with sensible defaults
-        updated_at: data.updated_at || data.created_at // Use created_at as fallback
+        // Make sure updated_at exists by using created_at as fallback
+        updated_at: data.updated_at || data.created_at
       };
 
       return processedData as Litter;
