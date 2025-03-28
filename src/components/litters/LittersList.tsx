@@ -6,13 +6,20 @@ import EmptyLitterState from './components/EmptyLitterState';
 import DeleteLitterDialog from './components/DeleteLitterDialog';
 import LitterTableView from './components/LitterTableView';
 import LitterCardView from './views/LitterCardView';
-import { Litter } from '@/types/litter'; // Update import here too
+import { Litter } from '@/types/litter'; // Import from our types file
 import useLitterActions from './hooks/useLitterActions';
 
 interface LittersListProps {
   litters: Litter[];
   onEditLitter: (litter: Litter) => void;
   onRefresh: () => Promise<any>;
+}
+
+// Add the type definition for OrganizedLitters to match the litters format
+interface OrganizedLitters {
+  active: Litter[];
+  other: Litter[];
+  archived: Litter[];
 }
 
 const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefresh }) => {
@@ -27,7 +34,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
   } = useLitterActions(onRefresh, setLitterToDelete);
 
   // Organize litters by status and dam gender
-  const organizedLitters = useMemo(() => {
+  const organizedLitters: OrganizedLitters = useMemo(() => {
     const activeLitters = litters.filter(litter => litter.status !== 'archived' && litter.dam?.gender === 'Female');
     const otherActiveLitters = litters.filter(litter => litter.status !== 'archived' && litter.dam?.gender !== 'Female');
     const archivedLitters = litters.filter(litter => litter.status === 'archived');

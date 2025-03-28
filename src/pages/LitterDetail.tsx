@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -12,7 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/standardiz
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
-import { Litter } from '@/types/litter'; // Import from regular .ts file instead of .d.ts
+import { Litter } from '@/types/litter'; // Import from regular .ts file
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,7 +47,7 @@ const LitterDetail = () => {
       // Process the data to ensure it has all required fields
       const processedData = {
         ...data,
-        updated_at: data.updated_at || data.created_at // Ensure updated_at is present
+        updated_at: data.updated_at || data.created_at // Explicitly add updated_at if missing
       };
 
       console.log('Processed litter data:', processedData);

@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Layers, Calendar, Target, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import { Litter } from '@/types/litter'; // Import Litter from our types file
 
 interface WelpingProgressCardProps {
   litter: Litter;
