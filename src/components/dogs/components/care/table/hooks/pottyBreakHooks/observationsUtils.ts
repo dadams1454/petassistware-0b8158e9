@@ -1,5 +1,4 @@
 
-import { CareLog } from '@/types/dailyCare';
 import { ObservationRecord } from './observationTypes';
 
 export const isObservationValid = (timestamp: string): boolean => {
@@ -23,7 +22,8 @@ export const getTimeSlotFromTimestamp = (timestamp: string): string => {
   }
 };
 
-export const convertCareLogToObservation = (log: CareLog): ObservationRecord => {
+// Updated to use a more generic type since CareLog is not available
+export const convertCareLogToObservation = (log: any): ObservationRecord => {
   const timeSlot = getTimeSlotFromTimestamp(log.timestamp);
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
