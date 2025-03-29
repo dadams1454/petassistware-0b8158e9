@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { useDailyCare } from '@/contexts/dailyCare';
-import PottyBreakGroupSelector from '@/components/dogs/components/care/potty/PottyBreakGroupSelector';
 import { useToast } from '@/components/ui/use-toast';
 import { DogCareCard } from '@/components/dashboard/DogCareCard';
 import { recordCareActivity } from '@/services/careService';
@@ -16,7 +14,6 @@ import { EmptyState, SectionHeader } from '@/components/ui/standardized';
 import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
 import { careCategories } from '@/components/dogs/components/care/CareCategories';
-import PottyBreakManager from '@/components/dogs/components/care/potty/PottyBreakManager';
 import FeedingTab from '@/components/dashboard/tabs/FeedingTab';
 import PottyBreaksTab from '@/components/dashboard/tabs/PottyBreaksTab';
 import MedicationsTab from '@/components/dashboard/tabs/MedicationsTab';
