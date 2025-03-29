@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DogProfile } from '@/types/dog';
+import { DogProfile, DogGender } from '@/types/dog';
 import { Edit, Calendar, Calculator } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
