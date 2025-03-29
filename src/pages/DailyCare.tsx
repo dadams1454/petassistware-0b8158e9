@@ -2,7 +2,7 @@
 import React from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
-import { useDailyCare } from '@/contexts/dailyCare';
+import { DailyCareProvider, useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Dog } from 'lucide-react';
@@ -11,7 +11,8 @@ import { useRefreshData } from '@/hooks/useRefreshData';
 import { EmptyState } from '@/components/ui/standardized';
 import { useNavigate } from 'react-router-dom';
 
-const DailyCare: React.FC = () => {
+// Create a wrapped component to use the context safely
+const DailyCareContent: React.FC = () => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { currentDate } = useRefresh();
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const DailyCare: React.FC = () => {
     navigate('/dogs');
   };
 
-  const content = (
+  return (
     <>
       <div className="mb-6 flex justify-between items-center">
         <div>
@@ -85,8 +86,17 @@ const DailyCare: React.FC = () => {
       )}
     </>
   );
+};
 
-  return <MainLayout>{content}</MainLayout>;
+// Main component that provides the context
+const DailyCare: React.FC = () => {
+  return (
+    <MainLayout>
+      <DailyCareProvider>
+        <DailyCareContent />
+      </DailyCareProvider>
+    </MainLayout>
+  );
 };
 
 export default DailyCare;
