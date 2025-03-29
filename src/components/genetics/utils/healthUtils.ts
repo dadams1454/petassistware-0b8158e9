@@ -1,7 +1,8 @@
 import { GeneticHealthMarker } from '@/types/genetics';
+import React from 'react';
 
 /**
- * Helper function to get color for status indicator
+ * Get color class for health status indicator
  */
 export function getStatusColor(status: string): string {
   switch (status) {
@@ -17,7 +18,7 @@ export function getStatusColor(status: string): string {
 }
 
 /**
- * Helper function to get result with appropriate color
+ * Format test result with appropriate color
  */
 export function getResultWithColor(result: string): JSX.Element {
   if (result.toLowerCase().includes('clear')) {
@@ -31,14 +32,29 @@ export function getResultWithColor(result: string): JSX.Element {
 }
 
 /**
- * Helper function to capitalize the first letter
+ * Format date for display
+ */
+export function formatDate(dateString: string): string {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(date);
+}
+
+/**
+ * Capitalize first letter of string
  */
 export function capitalizeFirst(str: string): string {
+  if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
- * Helper function to format condition names
+ * Format condition names for display
  */
 export function formatConditionName(condition: string): string {
   // Convert common abbreviations
@@ -70,11 +86,11 @@ export function getHealthSummary(healthMarkers: Record<string, GeneticHealthMark
   
   for (const [condition, data] of Object.entries(healthMarkers)) {
     if (data.status === 'carrier') {
-      carriers.push(condition);
+      carriers.push(formatConditionName(condition));
     } else if (data.status === 'affected') {
-      affected.push(condition);
+      affected.push(formatConditionName(condition));
     } else if (data.status === 'clear') {
-      clear.push(condition);
+      clear.push(formatConditionName(condition));
     }
   }
   
