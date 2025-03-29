@@ -21,7 +21,7 @@ export const DogSelector: React.FC<DogSelectorProps> = ({
   label,
   disabled = false
 }) => {
-  const { dogs, loading } = useDogsData();
+  const { dogs, isLoading: loading } = useDogsData();
   
   // Filter dogs by sex if specified
   const filteredDogs = filterSex 
