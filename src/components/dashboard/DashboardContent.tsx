@@ -8,6 +8,9 @@ import { useToast } from '@/components/ui/use-toast';
 import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
 import DogLetOutTab from './tabs/DogLetOutTab';
+import PuppiesTab from './tabs/PuppiesTab';
+import FacilityTab from './tabs/FacilityTab';
+import TrainingTab from './tabs/TrainingTab';
 import CareLogDialog from './dialogs/CareLogDialog';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
@@ -137,6 +140,25 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         <TabsContent value="dogletout">
           <DogLetOutTab 
             onRefreshDogs={handleManualRefresh}
+            dogStatuses={dogStatuses || []}
+          />
+        </TabsContent>
+        
+        <TabsContent value="puppies">
+          <PuppiesTab 
+            onRefresh={handleManualRefresh}
+          />
+        </TabsContent>
+        
+        <TabsContent value="training">
+          <TrainingTab 
+            onRefresh={handleManualRefresh}
+          />
+        </TabsContent>
+        
+        <TabsContent value="facility">
+          <FacilityTab 
+            onRefreshData={handleManualRefresh}
             dogStatuses={dogStatuses || []}
           />
         </TabsContent>

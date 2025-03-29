@@ -6,7 +6,10 @@ import {
   Calendar, 
   Dog,
   FileBarChart,
-  RefreshCw
+  RefreshCw,
+  Building2,
+  Baby,
+  GraduationCap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -51,6 +54,33 @@ const TabsList: React.FC<TabsListProps> = ({
         >
           <Dog className="h-4 w-4 mr-2" />
           <span>Dog Let Out</span>
+        </TabsTrigger>
+        
+        <TabsTrigger 
+          value="puppies" 
+          className={`transition-all ${activeTab === 'puppies' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          onClick={() => onTabChange('puppies')}
+        >
+          <Baby className="h-4 w-4 mr-2" />
+          <span>Puppies</span>
+        </TabsTrigger>
+        
+        <TabsTrigger 
+          value="training" 
+          className={`transition-all ${activeTab === 'training' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          onClick={() => onTabChange('training')}
+        >
+          <GraduationCap className="h-4 w-4 mr-2" />
+          <span>Training</span>
+        </TabsTrigger>
+        
+        <TabsTrigger 
+          value="facility" 
+          className={`transition-all ${activeTab === 'facility' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          onClick={() => onTabChange('facility')}
+        >
+          <Building2 className="h-4 w-4 mr-2" />
+          <span>Facility</span>
         </TabsTrigger>
         
         <TabsTrigger 
