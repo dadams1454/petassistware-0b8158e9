@@ -76,6 +76,7 @@ function App() {
                   <Route path="/litters" element={<Litters />} />
                   <Route path="/litters/new" element={<AddLitter />} />
                   <Route path="/litters/:id" element={<LitterDetail />} />
+                  <Route path="/welping/:id" element={<WelpingPage />} />
                 </Route>
                 
                 <Route element={<ProtectedRoute resource="calendar" />}>
