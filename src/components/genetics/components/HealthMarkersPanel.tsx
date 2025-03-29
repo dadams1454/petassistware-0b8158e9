@@ -1,42 +1,41 @@
 
 import React from 'react';
 import { DogGenotype } from '@/types/genetics';
-import { getStatusColor, formatConditionName, capitalizeFirst } from '../utils/healthUtils';
-import { formatDateForDisplay } from '@/utils/dateUtils';
+import { formatConditionName, getResultWithColorProps, formatDate } from '../utils/healthUtils';
 
 interface HealthMarkersPanelProps {
-  geneticData: DogGenotype;
+  dogGenetics: DogGenotype;
+  showTitle?: boolean;
 }
 
-export const HealthMarkersPanel: React.FC<HealthMarkersPanelProps> = ({ geneticData }) => {
+export const HealthMarkersPanel: React.FC<HealthMarkersPanelProps> = ({ 
+  dogGenetics, 
+  showTitle = true 
+}) => {
+  const hasHealthMarkers = Object.keys(dogGenetics.healthMarkers).length > 0;
+  
   return (
-    <div className="p-4">
-      <h3 className="text-md font-semibold mb-3">Health Markers</h3>
+    <div className="mt-4">
+      {showTitle && <h4 className="text-sm font-semibold mb-2">Health Test Results</h4>}
       
-      {Object.keys(geneticData.healthMarkers).length > 0 ? (
-        <div className="grid grid-cols-1 gap-2">
-          {Object.entries(geneticData.healthMarkers).map(([condition, data]) => (
-            <div key={condition} className="flex items-center">
-              <div
-                className={`w-3 h-3 rounded-full mr-2 ${getStatusColor(data.status)}`}
-              ></div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">
-                  {formatConditionName(condition)}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {capitalizeFirst(data.status)} ({data.genotype})
-                  {data.testDate && ` • ${formatDateForDisplay(data.testDate)}`}
-                  {data.labName && ` • ${data.labName}`}
-                </div>
+      {hasHealthMarkers ? (
+        <div className="space-y-2">
+          {Object.entries(dogGenetics.healthMarkers).map(([condition, data], index) => (
+            <div key={index} className="flex justify-between items-center text-sm py-1 border-b border-gray-100">
+              <div className="font-medium">{formatConditionName(condition)}</div>
+              <div className="flex items-center">
+                <span {...getResultWithColorProps(data.status)}>
+                  {data.status.charAt(0).toUpperCase() + data.status.slice(1)}
+                </span>
+                <span className="text-xs text-gray-500 ml-2">
+                  {data.testDate ? formatDate(data.testDate) : ''}
+                </span>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-gray-500 text-sm italic">
-          No health tests recorded yet.
-        </div>
+        <div className="text-sm text-gray-500 italic">No health tests recorded</div>
       )}
     </div>
   );

@@ -19,16 +19,17 @@ export function getStatusColor(status: string): string {
 
 /**
  * Format test result with appropriate color
+ * Returns the JSX.Element parameters needed for creating the element in the component
  */
-export function getResultWithColor(result: string): JSX.Element {
+export function getResultWithColorProps(result: string): { className: string; children: string } {
   if (result.toLowerCase().includes('clear')) {
-    return <span className="text-green-600 font-medium">{result}</span>;
+    return { className: "text-green-600 font-medium", children: result };
   } else if (result.toLowerCase().includes('carrier')) {
-    return <span className="text-yellow-600 font-medium">{result}</span>;
+    return { className: "text-yellow-600 font-medium", children: result };
   } else if (result.toLowerCase().includes('affected')) {
-    return <span className="text-red-600 font-medium">{result}</span>;
+    return { className: "text-red-600 font-medium", children: result };
   }
-  return <span>{result}</span>;
+  return { className: "", children: result };
 }
 
 /**
@@ -78,8 +79,14 @@ export function formatConditionName(condition: string): string {
 
 /**
  * Get a summary of health markers for compact view
+ * Returns the data needed to render the health summary
  */
-export function getHealthSummary(healthMarkers: Record<string, GeneticHealthMarker>): JSX.Element {
+export function getHealthSummaryData(healthMarkers: Record<string, GeneticHealthMarker>): {
+  affected: string[];
+  carriers: string[];
+  clear: string[];
+  hasTests: boolean;
+} {
   const carriers: string[] = [];
   const affected: string[] = [];
   const clear: string[] = [];
@@ -94,28 +101,10 @@ export function getHealthSummary(healthMarkers: Record<string, GeneticHealthMark
     }
   }
   
-  return (
-    <>
-      {affected.length > 0 && (
-        <span className="text-red-600">
-          Affected: {affected.join(', ')}
-        </span>
-      )}
-      {affected.length > 0 && carriers.length > 0 && <span className="mx-1">•</span>}
-      {carriers.length > 0 && (
-        <span className="text-yellow-600">
-          Carrier: {carriers.join(', ')}
-        </span>
-      )}
-      {(affected.length > 0 || carriers.length > 0) && clear.length > 0 && <span className="mx-1">•</span>}
-      {clear.length > 0 && (
-        <span className="text-green-600">
-          Clear: {clear.length} tests
-        </span>
-      )}
-      {affected.length === 0 && carriers.length === 0 && clear.length === 0 && (
-        <span className="text-gray-500 italic">No health tests recorded</span>
-      )}
-    </>
-  );
+  return {
+    affected,
+    carriers,
+    clear,
+    hasTests: affected.length > 0 || carriers.length > 0 || clear.length > 0
+  };
 }

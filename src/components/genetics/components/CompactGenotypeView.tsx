@@ -1,42 +1,51 @@
 
 import React from 'react';
 import { DogGenotype } from '@/types/genetics';
-import { determinePhenotype } from '../utils/colorUtils';
-import { getHealthSummary } from '../utils/healthUtils';
+import { getHealthSummaryData } from '../utils/healthUtils';
 
 interface CompactGenotypeViewProps {
-  geneticData: DogGenotype;
-  showColorTraits: boolean;
-  showHealthTests: boolean;
+  dogGenetics: DogGenotype;
 }
 
-export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
-  geneticData,
-  showColorTraits,
-  showHealthTests
-}) => {
+export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({ dogGenetics }) => {
+  const healthSummary = getHealthSummaryData(dogGenetics.healthMarkers);
+  
   return (
     <div className="text-sm">
-      {showColorTraits && (
-        <div className="mb-2">
-          <span className="font-medium">Color: </span>
-          {determinePhenotype(
-            geneticData.baseColor,
-            geneticData.brownDilution,
-            geneticData.dilution
-          )}
-          <span className="text-gray-500 ml-1">
-            ({geneticData.baseColor}, {geneticData.brownDilution})
-          </span>
-        </div>
-      )}
+      <div className="mb-1">
+        <span className="font-medium">Color:</span>{' '}
+        {dogGenetics.baseColor}{' • '}
+        {dogGenetics.brownDilution}{' • '}
+        {dogGenetics.dilution}
+      </div>
       
-      {showHealthTests && Object.keys(geneticData.healthMarkers).length > 0 && (
-        <div>
-          <span className="font-medium">Health: </span>
-          {getHealthSummary(geneticData.healthMarkers)}
-        </div>
-      )}
+      <div>
+        <span className="font-medium">Health:</span>{' '}
+        {healthSummary.hasTests ? (
+          <span>
+            {healthSummary.affected.length > 0 && (
+              <span className="text-red-600">
+                Affected: {healthSummary.affected.join(', ')}
+              </span>
+            )}
+            {healthSummary.affected.length > 0 && healthSummary.carriers.length > 0 && <span className="mx-1">•</span>}
+            {healthSummary.carriers.length > 0 && (
+              <span className="text-yellow-600">
+                Carrier: {healthSummary.carriers.join(', ')}
+              </span>
+            )}
+            {(healthSummary.affected.length > 0 || healthSummary.carriers.length > 0) && 
+              healthSummary.clear.length > 0 && <span className="mx-1">•</span>}
+            {healthSummary.clear.length > 0 && (
+              <span className="text-green-600">
+                Clear: {healthSummary.clear.length} tests
+              </span>
+            )}
+          </span>
+        ) : (
+          <span className="text-gray-500 italic">No health tests recorded</span>
+        )}
+      </div>
     </div>
   );
 };
