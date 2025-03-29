@@ -4,7 +4,7 @@ import { LitterFormData } from '../types/litterFormTypes';
 /**
  * Processes form data to prepare it for submission to the database
  */
-export const processFormData = (data: LitterFormData, userId: string, today: Date): Record<string, any> => {
+export const processFormData = (data: LitterFormData, userId: string, today: Date) => {
   // Process the data to handle null values and date formatting
   const processedData = {
     ...data,
