@@ -43,7 +43,12 @@ const LitterParentCard: React.FC<LitterParentCardProps> = ({
             </div>
           ) : (
             <div className="w-full sm:w-1/3 h-32 sm:h-full bg-muted flex items-center justify-center">
-              <Dog className="h-12 w-12 text-muted-foreground/50" />
+              <svg className="h-12 w-12 text-muted-foreground/50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 16c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.1 0 2.1.3 2.97.84"></path>
+                <path d="M12 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2"></path>
+                <path d="M18 16c3.31 0 6-2.69 6-6s-2.69-6-6-6c-1.1 0-2.1.3-2.97.84"></path>
+                <path d="M12 14c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2"></path>
+              </svg>
             </div>
           )}
           
