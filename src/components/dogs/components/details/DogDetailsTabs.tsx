@@ -67,8 +67,7 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
 
       <TabsContent value="breeding">
         <BreedingTab 
-          dogId={dog.id}
-          gender={dog.gender}
+          dog={dog}
           onEdit={onEdit}
         />
       </TabsContent>

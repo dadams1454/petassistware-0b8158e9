@@ -27,7 +27,12 @@ const RecordTypeField: React.FC<RecordTypeFieldProps> = ({ form }) => {
               <SelectItem value="vaccination">Vaccination</SelectItem>
               <SelectItem value="medication">Medication</SelectItem>
               <SelectItem value="surgery">Surgery</SelectItem>
+              <SelectItem value="dental">Dental</SelectItem>
+              <SelectItem value="allergy">Allergy</SelectItem>
+              <SelectItem value="test">Test/Screening</SelectItem>
               <SelectItem value="observation">Observation</SelectItem>
+              <SelectItem value="deworming">Deworming</SelectItem>
+              <SelectItem value="grooming">Grooming</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>

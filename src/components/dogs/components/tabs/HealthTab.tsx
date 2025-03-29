@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, AlertTriangle, Calendar, Activity } from 'lucide-react';
 import { useHealthRecords } from '../../hooks/useHealthRecords';
 import { useWeightTracking } from '../../hooks/useWeightTracking';
-import { HealthRecordType } from '@/types/health';
+import { HealthRecordTypeEnum, WeightUnitEnum } from '@/types/health';
 import HealthRecordsList from '../health/HealthRecordsList';
 import VaccinationSection from '../health/VaccinationSection';
 import WeightTrackingSection from '../health/WeightTrackingSection';
@@ -30,7 +30,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
   const [activeTab, setActiveTab] = useState('summary');
   const [recordDialogOpen, setRecordDialogOpen] = useState(false);
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
-  const [selectedRecordType, setSelectedRecordType] = useState<HealthRecordType>(HealthRecordType.Examination);
+  const [selectedRecordType, setSelectedRecordType] = useState(HealthRecordTypeEnum.Examination);
   const [selectedRecord, setSelectedRecord] = useState<string | null>(null);
   
   const { 
@@ -54,7 +54,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     growthStats 
   } = useWeightTracking(dogId);
   
-  const handleAddRecord = (type: HealthRecordType) => {
+  const handleAddRecord = (type: HealthRecordTypeEnum) => {
     setSelectedRecordType(type);
     setSelectedRecord(null);
     setRecordDialogOpen(true);
@@ -96,6 +96,10 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
     );
   }
   
+  // Ensure proper type casting for healthRecords and weightHistory
+  const safeHealthRecords = healthRecords || [];
+  const safeWeightHistory = weightHistory || [];
+  
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -103,7 +107,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         description="Track vaccinations, examinations, medications, and weight over time"
         action={{
           label: "Add Record",
-          onClick: () => handleAddRecord(HealthRecordType.Examination),
+          onClick: () => handleAddRecord(HealthRecordTypeEnum.Examination),
           icon: <Plus className="h-4 w-4" />
         }}
       />
@@ -117,7 +121,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
           Add Weight
         </ActionButton>
         
-        <ActionButton onClick={() => handleAddRecord(HealthRecordType.Examination)}>
+        <ActionButton onClick={() => handleAddRecord(HealthRecordTypeEnum.Examination)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Record
         </ActionButton>
@@ -133,13 +137,13 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsList>
         
         <TabsContent value="summary" className="space-y-4 pt-4">
-          {!healthRecords || healthRecords.length === 0 ? (
+          {!safeHealthRecords || safeHealthRecords.length === 0 ? (
             <EmptyState
               title="No health records yet"
               description="Start tracking this dog's health by adding records for vaccinations, examinations, or medications."
               action={{
                 label: "Add First Record",
-                onClick: () => handleAddRecord(HealthRecordType.Examination)
+                onClick: () => handleAddRecord(HealthRecordTypeEnum.Examination)
               }}
             />
           ) : (
@@ -148,9 +152,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
                 dogId={dogId}
                 upcomingVaccinations={getUpcomingVaccinations()}
                 overdueVaccinations={getOverdueVaccinations()}
-                recentExaminations={getRecordsByType(HealthRecordType.Examination).slice(0, 3)}
-                currentMedications={getRecordsByType(HealthRecordType.Medication)}
-                latestWeight={weightHistory?.[0]}
+                recentExaminations={getRecordsByType(HealthRecordTypeEnum.Examination).slice(0, 3)}
+                currentMedications={getRecordsByType(HealthRecordTypeEnum.Medication)}
+                latestWeight={safeWeightHistory[0]}
                 growthStats={growthStats}
                 isLoading={recordsLoading || weightLoading}
               />
@@ -200,7 +204,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
                 </CardHeader>
                 <CardContent>
                   <HealthRecordsList 
-                    records={healthRecords?.slice(0, 5) || []}
+                    records={safeHealthRecords.slice(0, 5)}
                     onEdit={handleEditRecord}
                     onDelete={deleteHealthRecord}
                     emptyMessage="No recent health activities"
@@ -212,21 +216,21 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="vaccinations" className="pt-4">
-          {getRecordsByType(HealthRecordType.Vaccination).length === 0 ? (
+          {getRecordsByType(HealthRecordTypeEnum.Vaccination).length === 0 ? (
             <EmptyState
               title="No vaccination records"
               description="Start tracking this dog's vaccinations to ensure they stay up-to-date on important shots."
               action={{
                 label: "Add Vaccination",
-                onClick: () => handleAddRecord(HealthRecordType.Vaccination)
+                onClick: () => handleAddRecord(HealthRecordTypeEnum.Vaccination)
               }}
             />
           ) : (
             <VaccinationSection 
-              vaccinations={getRecordsByType(HealthRecordType.Vaccination)}
+              vaccinations={getRecordsByType(HealthRecordTypeEnum.Vaccination)}
               upcomingVaccinations={getUpcomingVaccinations()}
               overdueVaccinations={getOverdueVaccinations()}
-              onAdd={() => handleAddRecord(HealthRecordType.Vaccination)}
+              onAdd={() => handleAddRecord(HealthRecordTypeEnum.Vaccination)}
               onEdit={handleEditRecord}
               onDelete={deleteHealthRecord}
               isLoading={recordsLoading}
@@ -235,13 +239,13 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="examinations" className="pt-4">
-          {getRecordsByType(HealthRecordType.Examination).length === 0 ? (
+          {getRecordsByType(HealthRecordTypeEnum.Examination).length === 0 ? (
             <EmptyState
               title="No examination records"
               description="Keep track of vet visits and health check-ups by adding examination records."
               action={{
                 label: "Add Examination",
-                onClick: () => handleAddRecord(HealthRecordType.Examination)
+                onClick: () => handleAddRecord(HealthRecordTypeEnum.Examination)
               }}
             />
           ) : (
@@ -250,7 +254,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
                 <CardTitle>Examination Records</CardTitle>
                 <ActionButton
                   size="sm"
-                  onClick={() => handleAddRecord(HealthRecordType.Examination)}
+                  onClick={() => handleAddRecord(HealthRecordTypeEnum.Examination)}
                   icon={<Plus className="h-4 w-4" />}
                 >
                   Add Examination
@@ -258,7 +262,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
               </CardHeader>
               <CardContent>
                 <HealthRecordsList 
-                  records={getRecordsByType(HealthRecordType.Examination)}
+                  records={getRecordsByType(HealthRecordTypeEnum.Examination)}
                   onEdit={handleEditRecord}
                   onDelete={deleteHealthRecord}
                   emptyMessage="No examination records found"
@@ -270,13 +274,13 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="medications" className="pt-4">
-          {getRecordsByType(HealthRecordType.Medication).length === 0 ? (
+          {getRecordsByType(HealthRecordTypeEnum.Medication).length === 0 ? (
             <EmptyState
               title="No medication records"
               description="Track medications, supplements, and treatments by adding medication records."
               action={{
                 label: "Add Medication",
-                onClick: () => handleAddRecord(HealthRecordType.Medication)
+                onClick: () => handleAddRecord(HealthRecordTypeEnum.Medication)
               }}
             />
           ) : (
@@ -285,7 +289,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
                 <CardTitle>Medication Records</CardTitle>
                 <ActionButton
                   size="sm"
-                  onClick={() => handleAddRecord(HealthRecordType.Medication)}
+                  onClick={() => handleAddRecord(HealthRecordTypeEnum.Medication)}
                   icon={<Plus className="h-4 w-4" />}
                 >
                   Add Medication
@@ -293,7 +297,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
               </CardHeader>
               <CardContent>
                 <HealthRecordsList 
-                  records={getRecordsByType(HealthRecordType.Medication)}
+                  records={getRecordsByType(HealthRecordTypeEnum.Medication)}
                   onEdit={handleEditRecord}
                   onDelete={deleteHealthRecord}
                   emptyMessage="No medication records found"
@@ -305,7 +309,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
         </TabsContent>
         
         <TabsContent value="weight" className="pt-4">
-          {!weightHistory || weightHistory.length === 0 ? (
+          {!safeWeightHistory || safeWeightHistory.length === 0 ? (
             <EmptyState
               title="No weight history"
               description="Start tracking this dog's weight to monitor growth and health over time."
@@ -316,7 +320,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
             />
           ) : (
             <WeightTrackingSection 
-              weightHistory={weightHistory || []}
+              weightHistory={safeWeightHistory}
               growthStats={growthStats}
               onAddWeight={() => setWeightDialogOpen(true)}
               isLoading={weightLoading}
@@ -330,7 +334,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
           open={recordDialogOpen}
           onOpenChange={setRecordDialogOpen}
           dogId={dogId}
-          record={selectedRecord ? healthRecords?.find(r => r.id === selectedRecord) || null : null}
+          record={selectedRecord ? safeHealthRecords.find(r => r.id === selectedRecord) || null : null}
           onSave={handleSaveRecord}
         />
       )}

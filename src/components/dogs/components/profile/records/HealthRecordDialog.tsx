@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -37,7 +38,7 @@ import { cn } from '@/lib/utils';
 import { HealthRecord, HealthRecordType } from '@/types/health';
 import { useHealthRecords } from '../../../hooks/useHealthRecords';
 
-// Define form validation schema - use string literals matching HealthRecordType
+// Define form validation schema with string literals
 const healthRecordSchema = z.object({
   date: z.date({
     required_error: 'Date is required',
@@ -50,6 +51,9 @@ const healthRecordSchema = z.object({
     'observation',
     'deworming',
     'grooming',
+    'dental',
+    'allergy',
+    'test',
     'other'
   ], {
     required_error: 'Record type is required',
@@ -86,7 +90,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
     resolver: zodResolver(healthRecordSchema),
     defaultValues: record ? {
       date: new Date(record.date || record.visit_date),
-      record_type: record.record_type,
+      record_type: record.record_type as HealthRecordType,
       title: record.title,
       description: record.description || '',
       performed_by: record.performed_by || '',
@@ -172,6 +176,9 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
                         <SelectItem value="observation">Observation</SelectItem>
                         <SelectItem value="deworming">Deworming</SelectItem>
                         <SelectItem value="grooming">Grooming</SelectItem>
+                        <SelectItem value="dental">Dental</SelectItem>
+                        <SelectItem value="allergy">Allergy</SelectItem>
+                        <SelectItem value="test">Test/Screening</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>

@@ -12,7 +12,7 @@ import VaccinationsTabContent from './records/VaccinationsTabContent';
 import ExaminationsTabContent from './records/ExaminationsTabContent';
 import MedicationsTabContent from './records/MedicationsTabContent';
 import AllRecordsTabContent from './records/AllRecordsTabContent';
-import { HealthRecord, HealthRecordType } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
 
 // Create a type adapter function to convert between health and dog record types if needed
 const adaptHealthRecord = (record: any): HealthRecord => {
@@ -21,7 +21,7 @@ const adaptHealthRecord = (record: any): HealthRecord => {
     dog_id: record.dog_id,
     visit_date: record.visit_date || record.date,
     date: record.date || record.visit_date, // Add for UI components
-    record_type: record.record_type as HealthRecordType,
+    record_type: record.record_type,
     title: record.title,
     description: record.description || record.record_notes || '',
     performed_by: record.performed_by || record.vet_name || '',
@@ -114,7 +114,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
     });
   };
   
-  const getRecordsByType = (type: HealthRecordType): HealthRecord[] => {
+  const getRecordsByType = (type: string): HealthRecord[] => {
     return healthRecords?.filter(record => record.record_type === type) || [];
   };
 
@@ -156,7 +156,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         
         <TabsContent value="examinations" className="space-y-4 pt-4">
           <ExaminationsTabContent 
-            records={getRecordsByType(HealthRecordType.Examination)}
+            records={getRecordsByType(HealthRecordTypeEnum.Examination)}
             onAddRecord={handleAddRecord}
             onEditRecord={handleEditRecord}
           />
@@ -164,7 +164,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         
         <TabsContent value="medications" className="space-y-4 pt-4">
           <MedicationsTabContent 
-            records={getRecordsByType(HealthRecordType.Medication)}
+            records={getRecordsByType(HealthRecordTypeEnum.Medication)}
             onAddRecord={handleAddRecord}
             onEditRecord={handleEditRecord}
           />
@@ -172,7 +172,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         
         <TabsContent value="all-records" className="space-y-4 pt-4">
           <AllRecordsTabContent 
-            records={healthRecords}
+            records={healthRecords || []}
             onAddRecord={handleAddRecord}
             onEditRecord={handleEditRecord}
           />
