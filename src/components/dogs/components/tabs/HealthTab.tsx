@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, AlertTriangle, Calendar, Activity } from 'lucide-react';
 import { useHealthRecords } from '../../hooks/useHealthRecords';
 import { useWeightTracking } from '../../hooks/useWeightTracking';
-import { HealthRecordTypeEnum, WeightUnitEnum } from '@/types/health';
+import { HealthRecordTypeEnum, WeightUnitEnum, HealthRecord, WeightRecord } from '@/types/health';
 import HealthRecordsList from '../health/HealthRecordsList';
 import VaccinationSection from '../health/VaccinationSection';
 import WeightTrackingSection from '../health/WeightTrackingSection';
@@ -97,8 +97,15 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
   }
   
   // Ensure proper type casting for healthRecords and weightHistory
-  const safeHealthRecords = healthRecords || [];
-  const safeWeightHistory = weightHistory || [];
+  const safeHealthRecords = healthRecords?.map(record => ({
+    ...record,
+    record_type: record.record_type as any
+  })) as HealthRecord[] || [];
+  
+  const safeWeightHistory = weightHistory?.map(record => ({
+    ...record,
+    weight_unit: record.weight_unit as any
+  })) as WeightRecord[] || [];
   
   return (
     <div className="space-y-6">
@@ -150,10 +157,10 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
             <>
               <HealthSummaryCard 
                 dogId={dogId}
-                upcomingVaccinations={getUpcomingVaccinations()}
-                overdueVaccinations={getOverdueVaccinations()}
-                recentExaminations={getRecordsByType(HealthRecordTypeEnum.Examination).slice(0, 3)}
-                currentMedications={getRecordsByType(HealthRecordTypeEnum.Medication)}
+                upcomingVaccinations={getUpcomingVaccinations() as HealthRecord[]}
+                overdueVaccinations={getOverdueVaccinations() as HealthRecord[]}
+                recentExaminations={getRecordsByType(HealthRecordTypeEnum.Examination).map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
+                currentMedications={getRecordsByType(HealthRecordTypeEnum.Medication).map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
                 latestWeight={safeWeightHistory[0]}
                 growthStats={growthStats}
                 isLoading={recordsLoading || weightLoading}
@@ -169,7 +176,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
                   </CardHeader>
                   <CardContent>
                     <HealthRecordsList 
-                      records={getOverdueVaccinations()}
+                      records={getOverdueVaccinations().map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
                       onEdit={handleEditRecord}
                       onDelete={deleteHealthRecord}
                       emptyMessage="No overdue vaccinations"
@@ -187,7 +194,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
                 </CardHeader>
                 <CardContent>
                   <HealthRecordsList 
-                    records={getUpcomingVaccinations()}
+                    records={getUpcomingVaccinations().map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
                     onEdit={handleEditRecord}
                     onDelete={deleteHealthRecord}
                     emptyMessage="No upcoming health events"
@@ -227,9 +234,9 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
             />
           ) : (
             <VaccinationSection 
-              vaccinations={getRecordsByType(HealthRecordTypeEnum.Vaccination)}
-              upcomingVaccinations={getUpcomingVaccinations()}
-              overdueVaccinations={getOverdueVaccinations()}
+              vaccinations={getRecordsByType(HealthRecordTypeEnum.Vaccination).map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
+              upcomingVaccinations={getUpcomingVaccinations().map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
+              overdueVaccinations={getOverdueVaccinations().map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
               onAdd={() => handleAddRecord(HealthRecordTypeEnum.Vaccination)}
               onEdit={handleEditRecord}
               onDelete={deleteHealthRecord}
@@ -262,7 +269,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
               </CardHeader>
               <CardContent>
                 <HealthRecordsList 
-                  records={getRecordsByType(HealthRecordTypeEnum.Examination)}
+                  records={getRecordsByType(HealthRecordTypeEnum.Examination).map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
                   onEdit={handleEditRecord}
                   onDelete={deleteHealthRecord}
                   emptyMessage="No examination records found"
@@ -297,7 +304,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
               </CardHeader>
               <CardContent>
                 <HealthRecordsList 
-                  records={getRecordsByType(HealthRecordTypeEnum.Medication)}
+                  records={getRecordsByType(HealthRecordTypeEnum.Medication).map(r => ({...r, record_type: r.record_type as any})) as HealthRecord[]}
                   onEdit={handleEditRecord}
                   onDelete={deleteHealthRecord}
                   emptyMessage="No medication records found"
