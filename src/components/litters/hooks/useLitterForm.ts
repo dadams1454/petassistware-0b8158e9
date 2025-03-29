@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
@@ -41,15 +42,19 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { user } = useAuth(); // Get the current authenticated user
 
+  // Get today's date for default birth date
+  const today = new Date();
+  const defaultGoHomeDate = new Date(today.getTime() + 8 * 7 * 24 * 60 * 60 * 1000); // 8 weeks from today
+
   // Initialize form with initial data values
   const form = useForm<LitterFormData>({
     defaultValues: {
       litter_name: initialData?.litter_name || '',
       dam_id: initialData?.dam_id || null,
       sire_id: initialData?.sire_id || null,
-      birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
-      expected_go_home_date: initialData?.expected_go_home_date ? new Date(initialData.expected_go_home_date) : new Date(Date.now() + 8 * 7 * 24 * 60 * 60 * 1000), // Default to 8 weeks from now
-      puppy_count: initialData?.puppy_count || null,
+      birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : today,
+      expected_go_home_date: initialData?.expected_go_home_date ? new Date(initialData.expected_go_home_date) : defaultGoHomeDate,
+      puppy_count: initialData?.puppy_count || 0,
       male_count: initialData?.male_count || null,
       female_count: initialData?.female_count || null,
       notes: initialData?.notes || null,
@@ -113,10 +118,15 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       // Debug logging
       console.log('Submitting form with data:', data);
       
+      // Make sure birth_date is not null
+      if (!data.birth_date) {
+        data.birth_date = today;
+      }
+      
       // Process the data to handle null values and date formatting
       const processedData = {
         ...data,
-        birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
+        birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : today.toISOString().split('T')[0],
         expected_go_home_date: data.expected_go_home_date ? data.expected_go_home_date.toISOString().split('T')[0] : null,
         akc_registration_date: data.akc_registration_date?.toISOString().split('T')[0] || null,
         first_mating_date: data.first_mating_date?.toISOString().split('T')[0] || null,
