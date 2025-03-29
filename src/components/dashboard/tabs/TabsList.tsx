@@ -1,17 +1,13 @@
 
 import React from 'react';
-import { TabsList as ShadcnTabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  FileBarChart,
-  RefreshCw
-} from 'lucide-react';
+import { Tabs, TabsList as ShadcnTabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Home, Calendar, BarChart3, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 interface TabsListProps {
   activeTab: string;
-  onTabChange: (tab: string) => void;
+  onTabChange: (value: string) => void;
   onRefreshDogs: () => void;
   isRefreshing?: boolean;
 }
@@ -23,53 +19,57 @@ const TabsList: React.FC<TabsListProps> = ({
   isRefreshing = false
 }) => {
   return (
-    <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
-      <ShadcnTabsList className="h-auto bg-transparent p-0 overflow-x-auto flex-wrap">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+      <ShadcnTabsList className="mb-0 h-auto p-1 bg-background border overflow-x-auto max-w-full flex-wrap">
         <TabsTrigger 
           value="overview" 
-          className={`transition-all ${activeTab === 'overview' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           onClick={() => onTabChange('overview')}
+          data-state={activeTab === 'overview' ? 'active' : 'inactive'}
         >
-          <LayoutDashboard className="h-4 w-4 mr-2" />
+          <Home className="h-4 w-4" />
           <span>Overview</span>
         </TabsTrigger>
         
         <TabsTrigger 
           value="dailycare" 
-          className={`transition-all ${activeTab === 'dailycare' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           onClick={() => onTabChange('dailycare')}
+          data-state={activeTab === 'dailycare' ? 'active' : 'inactive'}
         >
-          <Calendar className="h-4 w-4 mr-2" />
+          <FileText className="h-4 w-4" />
           <span>Daily Care</span>
         </TabsTrigger>
         
         <TabsTrigger 
           value="events" 
-          className={`transition-all ${activeTab === 'events' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           onClick={() => onTabChange('events')}
+          data-state={activeTab === 'events' ? 'active' : 'inactive'}
         >
-          <Calendar className="h-4 w-4 mr-2" />
+          <Calendar className="h-4 w-4" />
           <span>Events</span>
         </TabsTrigger>
         
         <TabsTrigger 
           value="reports" 
-          className={`transition-all ${activeTab === 'reports' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           onClick={() => onTabChange('reports')}
+          data-state={activeTab === 'reports' ? 'active' : 'inactive'}
         >
-          <FileBarChart className="h-4 w-4 mr-2" />
+          <BarChart3 className="h-4 w-4" />
           <span>Reports</span>
         </TabsTrigger>
       </ShadcnTabsList>
       
-      <Button 
-        onClick={onRefreshDogs} 
-        variant="outline" 
-        size="sm" 
-        className="gap-2"
+      <Button
+        onClick={onRefreshDogs}
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-1.5 h-9 ml-auto"
         disabled={isRefreshing}
       >
-        <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+        <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
         <span>Refresh</span>
       </Button>
     </div>

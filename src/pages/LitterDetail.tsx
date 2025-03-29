@@ -13,7 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/standardiz
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
-import { Litter, Dog } from '@/types/litter';
+import { Litter } from '@/types/litter'; // Import from regular .ts file
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,9 +52,7 @@ const LitterDetail = () => {
       const processedData: Litter = {
         ...rawData,
         // Explicitly add the updated_at field with a fallback to created_at
-        updated_at: rawData.updated_at || rawData.created_at,
-        dam: rawData.dam,
-        sire: rawData.sire
+        updated_at: rawData.updated_at || rawData.created_at
       };
 
       console.log('Processed litter data:', processedData);

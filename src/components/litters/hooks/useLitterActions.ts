@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Litter } from '@/types/litter';
+import { Litter } from '../puppies/types';
 
 const useLitterActions = (
   onRefresh: () => Promise<any>,

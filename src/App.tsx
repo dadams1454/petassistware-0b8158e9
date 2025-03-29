@@ -88,7 +88,6 @@ function App() {
                 
                 <Route element={<ProtectedRoute resource="welping" />}>
                   <Route path="/welping" element={<WelpingPage />} />
-                  <Route path="/welping/:id" element={<WelpingPage />} />
                 </Route>
                 
                 <Route element={<ProtectedRoute resource="users" />}>

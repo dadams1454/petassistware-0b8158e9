@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { Columns, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import EmptyLitterState from './components/EmptyLitterState';
 import DeleteLitterDialog from './components/DeleteLitterDialog';
 import LitterTableView from './components/LitterTableView';
 import LitterCardView from './views/LitterCardView';
-import { Litter } from '@/types/litter'; // Make sure we're using the same type throughout
+import { Litter } from '@/types/litter'; // Import from our types file
 import useLitterActions from './hooks/useLitterActions';
 
 interface LittersListProps {
@@ -84,7 +83,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
         <LitterTableView 
           litters={litters} 
           onEditLitter={onEditLitter} 
-          onDeleteLitter={(litter) => setLitterToDelete(litter)}
+          onDeleteLitter={setLitterToDelete}
           onArchiveLitter={handleArchiveLitter}
           onUnarchiveLitter={handleUnarchiveLitter}
         />
@@ -92,7 +91,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
         <LitterCardView 
           organizedLitters={organizedLitters}
           onEditLitter={onEditLitter}
-          onDeleteLitter={(litter) => setLitterToDelete(litter)}
+          onDeleteLitter={setLitterToDelete}
           onArchiveLitter={handleArchiveLitter}
           onUnarchiveLitter={handleUnarchiveLitter}
         />

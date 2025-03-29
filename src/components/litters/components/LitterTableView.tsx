@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Litter } from '@/types/litter';
+import { Litter } from '../puppies/types';
 
 interface LitterTableViewProps {
   litters: Litter[];

@@ -6,11 +6,11 @@ import {
   Baby, 
   Scissors, 
   Building2, 
+  Dog, 
   Dumbbell, 
   Heart, 
   GraduationCap,
-  StickyNote,
-  Dog
+  StickyNote
 } from 'lucide-react';
 
 export interface CareCategory {
@@ -30,10 +30,10 @@ export const careCategories: CareCategory[] = [
     description: 'Track meals and food intake'
   },
   {
-    id: 'dogletout',
-    name: 'Dog Let Out',
+    id: 'letdogout',
+    name: 'Let Dog Out',
     icon: <Dog className="h-4 w-4" />,
-    description: 'Track when dogs are let outside'
+    description: 'Track when dogs go outside'
   },
   {
     id: 'medication',

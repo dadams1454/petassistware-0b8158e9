@@ -1,26 +1,20 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
-import { DailyCareProvider, useDailyCare } from '@/contexts/dailyCare';
+import { useDailyCare } from '@/contexts/dailyCare';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Dog } from 'lucide-react';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
 import { EmptyState } from '@/components/ui/standardized';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DogCareStatus } from '@/types/dailyCare';
-import DailyCareTab from '@/components/dashboard/tabs/DailyCareTab';
+import { useNavigate } from 'react-router-dom';
 
-// Create a wrapped component to use the context safely
-const DailyCareContent: React.FC = () => {
+const DailyCare: React.FC = () => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { currentDate } = useRefresh();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const initialCategory = searchParams.get('category') || 'feeding';
 
   // Use the centralized refresh hook
   const { 
@@ -40,7 +34,7 @@ const DailyCareContent: React.FC = () => {
     navigate('/dogs');
   };
 
-  return (
+  const content = (
     <>
       <div className="mb-6 flex justify-between items-center">
         <div>
@@ -65,12 +59,17 @@ const DailyCareContent: React.FC = () => {
           </div>
         </Card>
       ) : dogStatuses && dogStatuses.length > 0 ? (
-        <DailyCareTab 
-          onRefreshDogs={handleRefresh}
-          currentDate={currentDate}
-          dogStatuses={dogStatuses}
-          initialCategory={initialCategory as string}
-        />
+        <div className="space-y-6">
+          {/* Time Table */}
+          <div id="dog-time-table">
+            <DogTimeTable 
+              dogsStatus={dogStatuses} 
+              onRefresh={() => handleRefresh(true)} 
+              isRefreshing={isLoading}
+              currentDate={currentDate}
+            />
+          </div>
+        </div>
       ) : (
         <Card className="p-8">
           <EmptyState
@@ -86,17 +85,8 @@ const DailyCareContent: React.FC = () => {
       )}
     </>
   );
-};
 
-// Main component that provides the context
-const DailyCare: React.FC = () => {
-  return (
-    <MainLayout>
-      <DailyCareProvider>
-        <DailyCareContent />
-      </DailyCareProvider>
-    </MainLayout>
-  );
+  return <MainLayout>{content}</MainLayout>;
 };
 
 export default DailyCare;
