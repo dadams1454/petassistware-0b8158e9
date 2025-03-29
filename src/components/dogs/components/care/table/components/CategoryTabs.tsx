@@ -22,7 +22,7 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
   // Define category icons
   const getCategoryIcon = (categoryId: string) => {
     switch (categoryId) {
-      case 'letdogout':
+      case 'dogletout':
         return <Dog className="h-4 w-4" />;
       case 'feeding':
         return <Coffee className="h-4 w-4" />;

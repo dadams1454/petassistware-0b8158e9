@@ -29,18 +29,6 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
     handleCategoryChange
   } = useCareDashboard();
 
-  // Convert string categories to TabDescriptor format
-  const categoryTabs = categories.map(categoryId => {
-    // Find the matching category from careCategories if available
-    const categoryInfo = careCategories.find(c => c.id === categoryId);
-    
-    return {
-      id: categoryId,
-      name: categoryInfo?.name || categoryId,
-      icon: categoryInfo?.icon || <span className="h-4 w-4" />
-    };
-  });
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -62,7 +50,7 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
       
       {categories.length > 0 && (
         <TopCategoryTabs 
-          categories={categoryTabs}
+          categories={categories}
           selectedCategory={selectedCategory}
           onCategoryChange={handleCategoryChange}
         />
@@ -93,6 +81,3 @@ const CareDashboard: React.FC<CareDashboardProps> = () => {
 };
 
 export default CareDashboard;
-
-// Import at the top - adding it at the bottom to avoid needing to reorganize the entire file
-import { careCategories } from '@/components/dogs/components/care/CareCategories';
