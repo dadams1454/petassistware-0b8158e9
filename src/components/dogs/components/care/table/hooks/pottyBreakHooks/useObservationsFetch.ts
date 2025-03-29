@@ -11,14 +11,14 @@ export const useObservationsFetch = (dogs: DogCareStatus[]) => {
   const { fetchDogCareLogs } = useDailyCare();
   const { toast } = useToast();
   const fetchInProgress = useRef(false);
-  const cachedObservations = useRef<ObservationsMap>({});
+  const cachedObservations = useRef<ObservationMap>({});
   const lastFetchTime = useRef<Record<string, number>>({});
   
   // Cache expiration time - 2 minutes
   const CACHE_EXPIRATION = 2 * 60 * 1000;
 
   // Load observations for all dogs with caching
-  const fetchObservations = useCallback(async (forceRefresh = false): Promise<ObservationsMap> => {
+  const fetchObservations = useCallback(async (forceRefresh = false): Promise<ObservationMap> => {
     if (!dogs.length) return {};
     
     // Skip if already fetching
@@ -32,7 +32,7 @@ export const useObservationsFetch = (dogs: DogCareStatus[]) => {
     
     try {
       // Create a map to store observations for each dog
-      const observationsMap: ObservationsMap = {};
+      const observationsMap: ObservationMap = {};
       const now = Date.now();
       let fetchCount = 0;
       
