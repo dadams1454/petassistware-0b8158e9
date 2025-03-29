@@ -1,19 +1,20 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import OverviewTab from '../tabs/OverviewTab';
-import HealthTab from '../tabs/HealthTab';
-import GalleryTab from '../tabs/GalleryTab';
-import NotesTab from '../tabs/NotesTab';
-import PedigreeTab from '../tabs/PedigreeTab';
-import BreedingTab from '../tabs/BreedingTab';
-import GeneticsTab from '../tabs/GeneticsTab';
 import { DogProfile } from '@/types/dog';
 
-interface DogDetailsTabsProps {
+// Import tabs
+import OverviewTab from '../tabs/OverviewTab';
+import HealthTab from '../tabs/HealthTab';
+import PedigreeTab from '../tabs/PedigreeTab';
+import BreedingTab from '../tabs/BreedingTab';
+import DocumentsTab from '../tabs/DocumentsTab';
+import GalleryTab from '../tabs/GalleryTab';
+import NotesTab from '../tabs/NotesTab';
+import GeneticsTab from '../tabs/GeneticsTab';
+
+export interface DogDetailsTabsProps {
   dog: DogProfile;
-  activeTab?: string;
-  setActiveTab?: (value: string) => void;
   events?: any[];
   onViewEvent?: (event: any) => void;
   onAddAppointment?: () => void;
@@ -23,28 +24,21 @@ interface DogDetailsTabsProps {
 
 const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
   dog,
-  activeTab = "overview",
-  setActiveTab,
   events = [],
   onViewEvent = () => {},
   onAddAppointment = () => {},
   isFullPage = false,
   onEdit
 }) => {
-  const handleTabChange = (value: string) => {
-    if (setActiveTab) {
-      setActiveTab(value);
-    }
-  };
-
   return (
-    <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-6">
-      <TabsList className="mb-4 grid grid-cols-2 md:grid-cols-7 w-full">
+    <Tabs defaultValue="overview" className="w-full">
+      <TabsList className="mb-4">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="health">Health</TabsTrigger>
         <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
         <TabsTrigger value="breeding">Breeding</TabsTrigger>
         <TabsTrigger value="genetics">Genetics</TabsTrigger>
+        <TabsTrigger value="documents">Documents</TabsTrigger>
         <TabsTrigger value="gallery">Gallery</TabsTrigger>
         <TabsTrigger value="notes">Notes</TabsTrigger>
       </TabsList>
@@ -54,7 +48,7 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
           dog={dog} 
           events={events} 
           onViewEvent={onViewEvent} 
-          onAddAppointment={onAddAppointment}
+          onAddAppointment={onAddAppointment} 
         />
       </TabsContent>
 
@@ -67,12 +61,14 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
       <TabsContent value="pedigree">
         <PedigreeTab 
           dogId={dog.id}
+          currentDog={dog}
         />
       </TabsContent>
 
       <TabsContent value="breeding">
         <BreedingTab 
           dogId={dog.id}
+          gender={dog.gender}
           onEdit={onEdit}
         />
       </TabsContent>
@@ -80,19 +76,25 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
       <TabsContent value="genetics">
         <GeneticsTab 
           dogId={dog.id} 
-          dogName={dog.name}
+          dogName={dog.name} 
+        />
+      </TabsContent>
+
+      <TabsContent value="documents">
+        <DocumentsTab 
+          dogId={dog.id} 
         />
       </TabsContent>
 
       <TabsContent value="gallery">
         <GalleryTab 
-          dogId={dog.id}
+          dogId={dog.id} 
         />
       </TabsContent>
 
       <TabsContent value="notes">
         <NotesTab 
-          dogId={dog.id} 
+          dogId={dog.id}
         />
       </TabsContent>
     </Tabs>

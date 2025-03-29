@@ -1,384 +1,364 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Toggle } from '@/components/ui/toggle';
-import { AlertCircle, Filter, Dna } from 'lucide-react';
-import { InteractivePedigreeProps } from '@/types/genetics';
 import { supabase, customSupabase } from '@/integrations/supabase/client';
-import { processGeneticData } from '@/services/genetics/processGeneticData';
+import { GeneticHealthStatus } from '@/types/genetics';
 import { getStatusColor } from '../utils/healthUtils';
+
+interface FamilyMember {
+  id: string;
+  name: string;
+  gender: 'male' | 'female';
+  birthdate?: string;
+  genetic_health?: Record<string, GeneticHealthStatus>;
+  parentId?: string;
+  level: number;
+  position: number;
+}
+
+export interface InteractivePedigreeProps {
+  dogId: string;
+  currentDog?: any;
+  generations?: number;
+}
 
 export const InteractivePedigree: React.FC<InteractivePedigreeProps> = ({
   dogId,
   currentDog,
   generations = 3
 }) => {
-  const [pedigreeData, setPedigreeData] = useState<any>(null);
+  const [pedigreeData, setPedigreeData] = useState<FamilyMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [availableFilters, setAvailableFilters] = useState<{id: string, name: string}[]>([]);
-  const [visibleGenerations, setVisibleGenerations] = useState(3);
+  const [visibleGenerations, setVisibleGenerations] = useState(generations);
+  const [healthMarkers, setHealthMarkers] = useState<Record<string, Record<string, GeneticHealthStatus>>>({});
   
+  // Fetch pedigree data when the component mounts
   useEffect(() => {
-    async function fetchPedigree() {
-      setLoading(true);
+    const fetchPedigree = async () => {
+      if (!dogId) return;
+      
       try {
-        const data = await buildPedigree(dogId, generations);
-        setPedigreeData(data);
+        setLoading(true);
         
-        // Extract available health tests for filters
-        const allHealthMarkers = new Set<string>();
+        // Get the dog's relationships
+        const { data: relationships, error: relationshipsError } = await supabase
+          .from('dog_relationships')
+          .select('*')
+          .or(`dog_id.eq.${dogId},related_dog_id.eq.${dogId}`);
         
-        // Recursively extract health markers
-        function extractMarkers(node: any) {
-          if (!node) return;
-          
-          // Check for genetic tests
-          if (node.geneticTests && node.geneticTests.length > 0) {
-            node.geneticTests.forEach((test: any) => {
-              if (test.test_type !== 'Color Panel') {
-                allHealthMarkers.add(test.test_type);
-              }
-            });
+        if (relationshipsError) throw relationshipsError;
+        
+        // Get the related dogs
+        const relatedDogIds = relationships.map(rel => 
+          rel.dog_id === dogId ? rel.related_dog_id : rel.dog_id
+        );
+        
+        // Add the current dog
+        relatedDogIds.push(dogId);
+        
+        // Fetch all the dogs
+        const { data: dogData, error: dogError } = await supabase
+          .from('dogs')
+          .select('*')
+          .in('id', relatedDogIds);
+        
+        if (dogError) throw dogError;
+        
+        // Fetch genetic health data
+        const healthData: Record<string, Record<string, GeneticHealthStatus>> = {};
+        
+        for (const id of relatedDogIds) {
+          try {
+            const { data: geneticTests, error: geneticError } = await supabase
+              .from('dog_genetic_tests')
+              .select('*')
+              .eq('dog_id', id);
+            
+            if (!geneticError && geneticTests) {
+              healthData[id] = {};
+              
+              geneticTests.forEach((test: any) => {
+                if (test.test_type !== 'Color Panel') {
+                  // Extract status from result string
+                  const resultMatch = test.result?.match(/^(clear|carrier|affected)/i);
+                  if (resultMatch) {
+                    const status = resultMatch[1].toLowerCase() as GeneticHealthStatus;
+                    healthData[id][test.test_type] = status;
+                  }
+                }
+              });
+            }
+          } catch (err) {
+            console.error('Error fetching genetic data:', err);
           }
-          
-          // Check children
-          if (node.sire) extractMarkers(node.sire);
-          if (node.dam) extractMarkers(node.dam);
         }
         
-        extractMarkers(data);
+        setHealthMarkers(healthData);
         
-        // Set available filters
-        const filters = Array.from(allHealthMarkers).map(marker => ({
-          id: marker,
-          name: marker
-        }));
+        // Create the pedigree data structure
+        const buildPedigree = (dogs: any[], relationships: any[]) => {
+          // Find the current dog
+          const currentDogData = dogs.find(dog => dog.id === dogId);
+          if (!currentDogData) return [];
+          
+          // Create the family tree
+          const familyTree: FamilyMember[] = [
+            {
+              id: currentDogData.id,
+              name: currentDogData.name,
+              gender: currentDogData.gender,
+              birthdate: currentDogData.birthdate,
+              level: 0,
+              position: 0,
+            }
+          ];
+          
+          // Function to find parents
+          const findParents = (dogId: string, level: number, position: number) => {
+            // Find sire (father) relationship
+            const sireRel = relationships.find(rel => 
+              (rel.dog_id === dogId && rel.relationship_type === 'sire') || 
+              (rel.related_dog_id === dogId && rel.relationship_type === 'offspring' && 
+               dogs.find(d => d.id === rel.dog_id)?.gender === 'male')
+            );
+            
+            // Find dam (mother) relationship
+            const damRel = relationships.find(rel => 
+              (rel.dog_id === dogId && rel.relationship_type === 'dam') || 
+              (rel.related_dog_id === dogId && rel.relationship_type === 'offspring' && 
+               dogs.find(d => d.id === rel.dog_id)?.gender === 'female')
+            );
+            
+            // Add sire if found
+            if (sireRel) {
+              const sireId = sireRel.dog_id === dogId ? sireRel.related_dog_id : sireRel.dog_id;
+              const sireData = dogs.find(dog => dog.id === sireId);
+              
+              if (sireData && level < visibleGenerations) {
+                const newPosition = position * 2 - 1;
+                familyTree.push({
+                  id: sireData.id,
+                  name: sireData.name,
+                  gender: 'male',
+                  birthdate: sireData.birthdate,
+                  parentId: dogId,
+                  level: level + 1,
+                  position: newPosition,
+                });
+                
+                // Recursive call to find this sire's parents
+                findParents(sireData.id, level + 1, newPosition);
+              }
+            }
+            
+            // Add dam if found
+            if (damRel) {
+              const damId = damRel.dog_id === dogId ? damRel.related_dog_id : damRel.dog_id;
+              const damData = dogs.find(dog => dog.id === damId);
+              
+              if (damData && level < visibleGenerations) {
+                const newPosition = position * 2;
+                familyTree.push({
+                  id: damData.id,
+                  name: damData.name,
+                  gender: 'female',
+                  birthdate: damData.birthdate,
+                  parentId: dogId,
+                  level: level + 1,
+                  position: newPosition,
+                });
+                
+                // Recursive call to find this dam's parents
+                findParents(damData.id, level + 1, newPosition);
+              }
+            }
+          };
+          
+          // Start finding parents from the current dog
+          findParents(dogId, 0, 0);
+          
+          return familyTree;
+        };
         
-        setAvailableFilters(filters);
-      } catch (err) {
-        console.error('Error fetching pedigree:', err);
-        setError('Failed to load pedigree data');
+        const pedigree = buildPedigree(dogData, relationships);
+        setPedigreeData(pedigree);
+      } catch (error) {
+        console.error('Error fetching pedigree:', error);
       } finally {
         setLoading(false);
       }
-    }
+    };
     
     fetchPedigree();
-  }, [dogId, generations]);
+  }, [dogId, visibleGenerations]);
   
-  // Build pedigree tree recursively
-  async function buildPedigree(id: string, depth: number): Promise<any> {
-    if (depth <= 0 || !id) return null;
-    
-    try {
-      // Get dog details
-      const { data: dog, error: dogError } = await supabase
-        .from('dogs')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (dogError) throw dogError;
-      
-      // Get genetic test data
-      const { data: geneticTests, error: testError } = await customSupabase
-        .from('dog_genetic_tests')
-        .select('*')
-        .eq('dog_id', id);
-      
-      if (testError) throw testError;
-      
-      // Process genetic data
-      let processedGenetics = null;
-      if (geneticTests && geneticTests.length > 0) {
-        processedGenetics = processGeneticData({
-          dogId: id,
-          tests: geneticTests
-        });
-      }
-      
-      // Get relationship information
-      const { data: relationships, error: relError } = await supabase
-        .from('dog_relationships')
-        .select('*')
-        .eq('dog_id', id);
-      
-      if (relError) throw relError;
-      
-      // Find sire and dam
-      let sireId = null;
-      let damId = null;
-      
-      if (relationships) {
-        relationships.forEach(rel => {
-          if (rel.relationship_type === 'sire') {
-            sireId = rel.related_dog_id;
-          } else if (rel.relationship_type === 'dam') {
-            damId = rel.related_dog_id;
-          }
-        });
-      }
-      
-      // Recursively build sire and dam
-      const [sire, dam] = await Promise.all([
-        sireId ? buildPedigree(sireId, depth - 1) : null,
-        damId ? buildPedigree(damId, depth - 1) : null
-      ]);
-      
-      return {
-        id,
-        name: dog.name,
-        gender: dog.gender,
-        breed: dog.breed,
-        color: dog.color,
-        birthdate: dog.birthdate,
-        photoUrl: dog.photo_url,
-        geneticTests: geneticTests || [],
-        processedGenetics,
-        sire,
-        dam,
-        depth: generations - depth + 1
-      };
-    } catch (err) {
-      console.error(`Error building pedigree for ${id}:`, err);
-      return null;
-    }
-  }
-  
-  const toggleFilter = (filterId: string) => {
-    setActiveFilters(prev => 
-      prev.includes(filterId) 
-        ? prev.filter(f => f !== filterId)
-        : [...prev, filterId]
-    );
-  };
-  
-  // Check if a dog has a specific health marker status based on filters
-  const hasFilteredStatus = (dog: any, filters: string[]) => {
-    if (!dog || !dog.geneticTests || !filters.length) return false;
-    
-    return dog.geneticTests.some((test: any) => 
-      filters.includes(test.test_type) && 
-      test.result.toLowerCase().includes('affected')
-    );
-  };
-  
-  // Get genetic status for a specific filter
-  const getGeneticStatus = (dog: any, filter: string) => {
-    if (!dog || !dog.geneticTests) return null;
-    
-    const test = dog.geneticTests.find((t: any) => t.test_type === filter);
-    if (!test) return null;
-    
-    const resultLower = test.result.toLowerCase();
-    if (resultLower.includes('clear')) return 'clear';
-    if (resultLower.includes('carrier')) return 'carrier';
-    if (resultLower.includes('affected')) return 'affected';
-    return null;
-  };
-  
-  const renderPedigreeNode = (node: any, depth = 0) => {
-    if (!node) {
+  const renderPedigreeTree = () => {
+    if (loading) {
       return (
-        <div className="pedigree-node-empty">
-          <div className="w-32 h-20 bg-gray-100 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center">
-            <span className="text-gray-400 text-xs">Unknown</span>
-          </div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-64 bg-gray-200 rounded-md"></div>
         </div>
       );
     }
     
-    // Skip rendering if beyond visible generations
-    if (node.depth > visibleGenerations) return null;
+    if (pedigreeData.length === 0) {
+      return (
+        <div className="text-center p-8">
+          <h3 className="text-lg font-medium mb-2">No Pedigree Data Available</h3>
+          <p className="text-gray-500">There is no pedigree information available for this dog.</p>
+        </div>
+      );
+    }
     
-    // Check if this dog is highlighted by any active filters
-    const isHighlighted = activeFilters.length > 0 && 
-      activeFilters.some(filter => getGeneticStatus(node, filter) === 'affected');
+    const maxLevel = Math.min(visibleGenerations, 
+      pedigreeData.reduce((max, member) => Math.max(max, member.level), 0)
+    );
     
-    const hasCarrier = activeFilters.length > 0 && 
-      activeFilters.some(filter => getGeneticStatus(node, filter) === 'carrier');
-      
-    let highlightClass = '';
-    if (isHighlighted) highlightClass = 'ring-2 ring-red-500';
-    else if (hasCarrier) highlightClass = 'ring-2 ring-yellow-500';
+    // Calculate the width based on the maximum generation level
+    const totalWidth = Math.pow(2, maxLevel) * 120;
+    
+    const calculatePosition = (level: number, position: number, totalWidth: number) => {
+      const cellsInLevel = Math.pow(2, level);
+      const cellWidth = totalWidth / cellsInLevel;
+      return (position + 0.5) * cellWidth;
+    };
     
     return (
-      <div className="pedigree-node">
-        <div className={`w-32 p-2 border rounded-md bg-white ${highlightClass}`}>
-          <div className="text-sm font-medium truncate mb-1">{node.name}</div>
-          <div className="flex justify-between items-center">
-            <Badge variant="outline" className="text-xs">
-              {node.gender}
-            </Badge>
-            {node.geneticTests && node.geneticTests.length > 0 && (
-              <Dna className="h-3 w-3 text-primary" />
-            )}
-          </div>
-          
-          {/* Display test statuses for active filters */}
-          {activeFilters.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1">
-              {activeFilters.map(filter => {
-                const status = getGeneticStatus(node, filter);
-                if (!status) return null;
+      <div className="pedigree-container relative overflow-x-auto" style={{ minHeight: (maxLevel + 1) * 100 + 'px' }}>
+        <svg className="pedigree-connections absolute" width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0, zIndex: 0 }}>
+          {pedigreeData.map((member) => {
+            if (member.parentId) {
+              const parent = pedigreeData.find(p => p.id === member.parentId);
+              if (parent) {
+                const parentX = calculatePosition(parent.level, parent.position, totalWidth);
+                const memberX = calculatePosition(member.level, member.position, totalWidth);
+                const parentY = parent.level * 100 + 40;
+                const memberY = member.level * 100 + 40;
                 
                 return (
-                  <div 
-                    key={filter}
-                    className={`w-2 h-2 rounded-full ${getStatusColor(status)}`}
-                    title={`${filter}: ${status}`}
+                  <line 
+                    key={`line-${parent.id}-${member.id}`}
+                    x1={parentX} 
+                    y1={parentY} 
+                    x2={memberX} 
+                    y2={memberY}
+                    stroke="#CBD5E1"
+                    strokeWidth="1.5"
                   />
                 );
-              })}
-            </div>
-          )}
-        </div>
+              }
+            }
+            return null;
+          })}
+        </svg>
         
-        {(node.sire || node.dam) && (
-          <div className="pedigree-children">
-            {renderPedigreeNode(node.sire, depth + 1)}
-            {renderPedigreeNode(node.dam, depth + 1)}
-          </div>
-        )}
+        <div className="pedigree-nodes" style={{ width: totalWidth + 'px' }}>
+          {pedigreeData.map((member) => {
+            // Health indicators
+            const hasHealthMarkers = healthMarkers[member.id] && Object.keys(healthMarkers[member.id]).length > 0;
+            
+            const dogHealthMarkers = healthMarkers[member.id] || {};
+            
+            return (
+              <div 
+                key={member.id}
+                className="pedigree-node absolute"
+                style={{ 
+                  left: calculatePosition(member.level, member.position, totalWidth) - 60 + 'px',
+                  top: member.level * 100 + 'px',
+                  width: '120px',
+                  zIndex: 1
+                }}
+              >
+                <div 
+                  className={`
+                    flex flex-col items-center p-2 border rounded-md shadow-sm
+                    ${member.gender === 'male' ? 'bg-blue-50 border-blue-200' : 'bg-pink-50 border-pink-200'}
+                  `}
+                >
+                  <div className="text-sm font-medium truncate w-full text-center">{member.name}</div>
+                  
+                  {hasHealthMarkers && (
+                    <div className="flex gap-1 mt-1">
+                      {Object.entries(dogHealthMarkers).slice(0, 3).map(([test, status]) => (
+                        <div 
+                          key={test} 
+                          className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}
+                          title={`${test}: ${status}`}
+                        ></div>
+                      ))}
+                      {Object.keys(dogHealthMarkers).length > 3 && (
+                        <div className="text-xs">+{Object.keys(dogHealthMarkers).length - 3}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   };
   
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-8 flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  if (error || !pedigreeData) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h3 className="text-lg font-medium mb-2">Pedigree Data Not Available</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            {error || "Unable to display pedigree for this dog."}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center text-lg font-medium">
-          <Family className="h-5 w-5 mr-2" /> Interactive Pedigree
-        </CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-lg">Interactive Pedigree</CardTitle>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setVisibleGenerations(Math.max(1, visibleGenerations - 1))}
+            disabled={visibleGenerations <= 1}
+          >
+            - Gen
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setVisibleGenerations(visibleGenerations + 1)}
+            disabled={visibleGenerations >= 5}
+          >
+            + Gen
+          </Button>
+        </div>
       </CardHeader>
-      
       <CardContent>
-        <div className="mb-4 space-y-2">
-          <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4" />
-            <span className="text-sm font-medium">Health Filters:</span>
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
-            {availableFilters.map(filter => (
-              <Toggle
-                key={filter.id}
-                pressed={activeFilters.includes(filter.id)}
-                onPressedChange={() => toggleFilter(filter.id)}
-                size="sm"
-              >
-                {filter.name}
-              </Toggle>
-            ))}
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Generations:</span>
-            <div className="flex items-center space-x-1">
-              {[1, 2, 3, 4, 5].map(gen => (
-                <Button
-                  key={gen}
-                  variant={visibleGenerations === gen ? "default" : "outline"}
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setVisibleGenerations(gen)}
-                >
-                  {gen}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
+        {renderPedigreeTree()}
         
-        <div className="pedigree-tree">
-          {renderPedigreeNode(pedigreeData)}
-        </div>
-        
-        <div className="mt-4 border-t pt-4">
-          <div className="text-sm font-medium mb-2">Legend:</div>
-          <div className="flex flex-wrap gap-4 text-xs">
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-green-500 mr-1" />
-              <span>Clear</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-yellow-500 mr-1" />
-              <span>Carrier</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-red-500 mr-1" />
-              <span>Affected</span>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-      
-      <style jsx>
-        {`
-          .pedigree-tree {
-            display: flex;
-            padding: 1rem;
-            min-width: 800px;
+        <style>
+          {`
+          .pedigree-container {
+            position: relative;
             overflow-x: auto;
+            margin-top: 1rem;
+          }
+          
+          .pedigree-nodes {
+            position: relative;
+            min-height: 400px;
           }
           
           .pedigree-node {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            margin: 0.5rem;
+            transition: all 0.3s ease;
           }
           
-          .pedigree-children {
-            display: flex;
-            flex-direction: column;
-            margin-left: 2rem;
-            position: relative;
+          .health-marker-clear {
+            background-color: #10B981;
           }
           
-          .pedigree-children::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: -1rem;
-            width: 1rem;
-            height: 1px;
-            background-color: #d1d5db;
+          .health-marker-carrier {
+            background-color: #F59E0B;
           }
           
-          .pedigree-node-empty {
-            margin: 0.5rem;
+          .health-marker-affected {
+            background-color: #EF4444;
           }
-        `}
-      </style>
+          `}
+        </style>
+      </CardContent>
     </Card>
   );
 };

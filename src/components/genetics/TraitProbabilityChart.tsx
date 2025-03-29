@@ -4,7 +4,7 @@ import { DogGenotype } from '@/types/genetics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { calculateColorProbabilities } from './utils/geneticCalculations';
 import { ColorProbabilityPieChart } from './components/ColorProbabilityPieChart';
-import { ChartLegend } from './components/ChartLegend';
+import ChartLegend from './components/ChartLegend';
 import { GenotypeInfoPanel } from './components/GenotypeInfoPanel';
 
 interface TraitProbabilityChartProps {
@@ -29,7 +29,7 @@ export const TraitProbabilityChart: React.FC<TraitProbabilityChartProps> = ({
       </CardHeader>
       <CardContent>
         <ColorProbabilityPieChart colorData={colorData} />
-        <ChartLegend colorData={colorData} />
+        <ChartLegend data={colorData} />
         <GenotypeInfoPanel sireGenotype={sireGenotype} damGenotype={damGenotype} />
       </CardContent>
     </Card>

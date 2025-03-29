@@ -1,7 +1,37 @@
 
-import { supabase, customSupabase, GeneticTestRow, GeneticAuditLogRow, GeneticCalculationRow } from '@/integrations/supabase/client';
+import { supabase, customSupabase } from '@/integrations/supabase/client';
 import { getMockGeneticData } from './mockGeneticData';
-import { GeneticCompatibility } from '@/types/genetics';
+import { GeneticCompatibility, DogGenotype } from '@/types/genetics';
+
+interface GeneticTestRow {
+  id: string;
+  dog_id: string;
+  test_type: string;
+  test_date: string;
+  result: string;
+  lab_name: string;
+  certificate_url?: string;
+  verified?: boolean;
+  created_at: string;
+}
+
+interface GeneticAuditLogRow {
+  id: string;
+  dog_id: string;
+  user_id?: string;
+  action: string;
+  details: any;
+  created_at: string;
+}
+
+interface GeneticCalculationRow {
+  id: string;
+  dog_id: string;
+  calculation_type: string;
+  value: number;
+  details?: any;
+  created_at: string;
+}
 
 /**
  * Helper function to fetch dog genetic data from the API
@@ -9,10 +39,10 @@ import { GeneticCompatibility } from '@/types/genetics';
 export async function fetchDogGeneticData(dogId: string): Promise<any> {
   try {
     // Attempt to fetch actual genetic data from Supabase
-    const { data: actualData, error: actualError } = await customSupabase
-      .from<GeneticTestRow>('dog_genetic_tests')
-      .eq('dog_id', dogId)
-      .select('*');
+    const { data: actualData, error: actualError } = await supabase
+      .from('dog_genetic_tests')
+      .select('*')
+      .eq('dog_id', dogId);
     
     if (actualError) {
       throw actualError;
@@ -47,8 +77,8 @@ export async function batchImportGeneticTests(tests: any[]): Promise<any> {
     }));
     
     // Insert into Supabase
-    const { data, error } = await customSupabase
-      .from<GeneticTestRow>('dog_genetic_tests')
+    const { data, error } = await supabase
+      .from('dog_genetic_tests')
       .insert(processedTests);
     
     if (error) throw error;
@@ -73,8 +103,8 @@ async function logGeneticActivity(dogId: string, action: string, details: any): 
   try {
     const userData = (await supabase.auth.getUser()).data;
     
-    await customSupabase
-      .from<GeneticAuditLogRow>('genetic_audit_logs')
+    await supabase
+      .from('genetic_audit_logs')
       .insert({
         dog_id: dogId,
         user_id: userData?.user?.id,
@@ -93,15 +123,15 @@ async function logGeneticActivity(dogId: string, action: string, details: any): 
 export async function fetchGeneticCompatibility(sireId: string, damId: string): Promise<GeneticCompatibility | null> {
   try {
     // First get COI value if it exists
-    const { data: calculations, error: calcError } = await customSupabase
-      .from<GeneticCalculationRow>('dog_genetic_calculations')
-      .eq('dog_id', sireId)
+    const { data: calculations, error: calcError } = await supabase
+      .from('dog_genetic_calculations')
       .select('*');
     
     if (calcError) throw calcError;
     
     // Find COI calculation if it exists
-    const coiCalculation = calculations?.find(calc => 
+    const coiCalculation = calculations?.find((calc: any) => 
+      calc.dog_id === sireId &&
       calc.calculation_type === 'coi' && 
       calc.value !== null
     );
