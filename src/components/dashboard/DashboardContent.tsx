@@ -129,10 +129,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
         
         <TabsContent value="dailycare">
           <DailyCareTab 
-            onRefreshDogs={handleManualRefresh} 
-            isRefreshing={isRefreshing}
-            currentDate={currentDate}
-            dogStatuses={dogStatuses || []}
+            dogId=""
+            dogName="All Dogs"
           />
         </TabsContent>
         
