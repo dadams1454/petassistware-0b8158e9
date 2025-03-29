@@ -1,73 +1,80 @@
 
 /**
- * Formats a Date object or string to a database-friendly ISO date string (YYYY-MM-DD)
+ * Format a date string for display
+ * @param dateString ISO date string or other date format
+ * @returns Formatted date string (e.g., "Jan 15, 2023")
  */
-export const formatDateForDatabase = (date: Date | string | null | undefined): string | undefined => {
-  if (!date) return undefined;
-  if (typeof date === 'string') {
-    // If already a string, make sure it's formatted correctly
-    const parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime())) return undefined;
-    return parsedDate.toISOString().split('T')[0];
-  }
-  return date.toISOString().split('T')[0];
-};
-
-/**
- * Parses a database date string to a Date object for UI components
- */
-export const parseDatabaseDate = (dateString: string | null | undefined): Date | undefined => {
-  if (!dateString) return undefined;
+export function formatDateForDisplay(dateString: string): string {
+  if (!dateString) return '';
+  
   const date = new Date(dateString);
-  return isNaN(date.getTime()) ? undefined : date;
-};
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return dateString; // Return original string if invalid date
+  }
+  
+  // Return formatted date
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(date);
+}
 
 /**
- * Formats a date for display in the UI
+ * Get age in years and months from a birthdate
+ * @param birthdate ISO date string
+ * @returns Age string (e.g., "2 years, 3 months")
  */
-export const formatDateForDisplay = (date: Date | string | null | undefined, format: 'short' | 'medium' | 'long' = 'medium'): string => {
-  if (!date) return 'N/A';
+export function getAgeFromBirthdate(birthdate: string): string {
+  if (!birthdate) return '';
   
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) return 'Invalid date';
+  const birthDate = new Date(birthdate);
+  const now = new Date();
   
-  const options: Intl.DateTimeFormatOptions = 
-    format === 'short' ? { month: 'numeric', day: 'numeric', year: '2-digit' } :
-    format === 'long' ? { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' } :
-    { month: 'short', day: 'numeric', year: 'numeric' };
-    
-  return dateObj.toLocaleDateString('en-US', options);
-};
+  // Check if birthdate is valid
+  if (isNaN(birthDate.getTime())) {
+    return '';
+  }
+  
+  let years = now.getFullYear() - birthDate.getFullYear();
+  let months = now.getMonth() - birthDate.getMonth();
+  
+  // Adjust years and months if needed
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  
+  // Format the age string
+  if (years === 0) {
+    return `${months} month${months !== 1 ? 's' : ''}`;
+  } else if (months === 0) {
+    return `${years} year${years !== 1 ? 's' : ''}`;
+  } else {
+    return `${years} year${years !== 1 ? 's' : ''}, ${months} month${months !== 1 ? 's' : ''}`;
+  }
+}
 
 /**
- * Checks if a date is overdue (before today)
+ * Format a date for input fields (YYYY-MM-DD)
+ * @param date Date object or date string
+ * @returns Formatted date string (YYYY-MM-DD)
  */
-export const isDateOverdue = (date: Date | string | null | undefined): boolean => {
-  if (!date) return false;
+export function formatDateForInput(date: Date | string | null): string {
+  if (!date) return '';
+  
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) return false;
   
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  dateObj.setHours(0, 0, 0, 0);
+  // Check if date is valid
+  if (isNaN(dateObj.getTime())) {
+    return '';
+  }
   
-  return dateObj < today;
-};
-
-/**
- * Checks if a date is coming up within the specified number of days
- */
-export const isDateUpcoming = (date: Date | string | null | undefined, daysAhead = 30): boolean => {
-  if (!date) return false;
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) return false;
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
   
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  dateObj.setHours(0, 0, 0, 0);
-  
-  const futureDate = new Date(today);
-  futureDate.setDate(today.getDate() + daysAhead);
-  
-  return dateObj >= today && dateObj <= futureDate;
-};
+  return `${year}-${month}-${day}`;
+}

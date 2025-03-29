@@ -1,16 +1,8 @@
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { 
-  Select, 
-  SelectContent, 
-  SelectGroup, 
-  SelectItem, 
-  SelectLabel, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import React from 'react';
+import { useDogsData } from '@/components/dogs/hooks/useDogsData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface DogSelectorProps {
   value: string;
@@ -18,55 +10,39 @@ interface DogSelectorProps {
   placeholder?: string;
   filterSex?: 'male' | 'female';
   label?: string;
+  disabled?: boolean;
 }
 
-export const DogSelector: React.FC<DogSelectorProps> = ({ 
-  value, 
-  onChange, 
-  placeholder = 'Select a dog...', 
+export const DogSelector: React.FC<DogSelectorProps> = ({
+  value,
+  onChange,
+  placeholder = 'Select a dog...',
   filterSex,
-  label
+  label,
+  disabled = false
 }) => {
-  const { data: dogs, isLoading } = useQuery({
-    queryKey: ['dogs', filterSex],
-    queryFn: async () => {
-      let query = supabase
-        .from('dogs')
-        .select('id, name, breed, gender');
-      
-      if (filterSex) {
-        // Map 'male' or 'female' to the actual DB values
-        const genderValue = filterSex === 'male' ? 'Male' : 'Female';
-        query = query.eq('gender', genderValue);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching dogs:', error);
-        throw error;
-      }
-      
-      return data || [];
-    }
-  });
-
-  const handleChange = (newValue: string) => {
-    onChange(newValue === 'none' ? '' : newValue);
-  };
-
+  const { dogs, loading } = useDogsData();
+  
+  // Filter dogs by sex if specified
+  const filteredDogs = filterSex 
+    ? dogs.filter(dog => dog.gender === filterSex)
+    : dogs;
+  
   return (
-    <div>
-      {label && <div className="mb-2 text-sm font-medium">{label}</div>}
-      <Select value={value || 'none'} onValueChange={handleChange} disabled={isLoading}>
+    <div className="space-y-2">
+      {label && <Label>{label}</Label>}
+      <Select
+        value={value}
+        onValueChange={onChange}
+        disabled={disabled || loading}
+      >
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="none">{placeholder}</SelectItem>
-          {dogs?.map(dog => (
+          {filteredDogs.map(dog => (
             <SelectItem key={dog.id} value={dog.id}>
-              {dog.name} {dog.breed ? `(${dog.breed})` : ''}
+              {dog.name}
             </SelectItem>
           ))}
         </SelectContent>
