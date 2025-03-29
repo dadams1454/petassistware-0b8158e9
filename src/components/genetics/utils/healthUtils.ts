@@ -1,5 +1,5 @@
+
 import { GeneticHealthMarker } from '@/types/genetics';
-import React from 'react';
 
 /**
  * Get color class for health status indicator
@@ -19,17 +19,17 @@ export function getStatusColor(status: string): string {
 
 /**
  * Format test result with appropriate color
- * Returns the JSX.Element parameters needed for creating the element in the component
+ * Returns the props needed for creating the element in the component
  */
-export function getResultWithColorProps(result: string): { className: string; children: string } {
+export function getResultWithColorProps(result: string): { className: string; children?: string } {
   if (result.toLowerCase().includes('clear')) {
-    return { className: "text-green-600 font-medium", children: result };
+    return { className: "text-green-600 font-medium" };
   } else if (result.toLowerCase().includes('carrier')) {
-    return { className: "text-yellow-600 font-medium", children: result };
+    return { className: "text-yellow-600 font-medium" };
   } else if (result.toLowerCase().includes('affected')) {
-    return { className: "text-red-600 font-medium", children: result };
+    return { className: "text-red-600 font-medium" };
   }
-  return { className: "", children: result };
+  return { className: "" };
 }
 
 /**
