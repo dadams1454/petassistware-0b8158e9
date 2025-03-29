@@ -6,7 +6,7 @@ import EmptyLitterState from './components/EmptyLitterState';
 import DeleteLitterDialog from './components/DeleteLitterDialog';
 import LitterTableView from './components/LitterTableView';
 import LitterCardView from './views/LitterCardView';
-import { Litter } from '@/types/litter'; // Import from our unified types file
+import { Litter } from '@/types/litter'; // Make sure we're using the same type throughout
 import useLitterActions from './hooks/useLitterActions';
 
 interface LittersListProps {
