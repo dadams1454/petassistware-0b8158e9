@@ -47,14 +47,17 @@ export interface GeneticCompatibility {
 export interface MultiTraitMatrixProps {
   dogId: string;
   dogData?: DogGenotype;
+  dogGenetics?: DogGenotype;
 }
 
 export interface HealthMarkersPanelProps {
   dogData?: DogGenotype;
+  geneticData?: DogGenotype;
 }
 
 export interface CompactGenotypeViewProps {
   dogData?: DogGenotype;
+  geneticData?: DogGenotype;
   showColorTraits?: boolean;
   showHealthTests?: boolean;
 }
@@ -73,4 +76,24 @@ export interface InteractivePedigreeProps {
 
 export interface HistoricalCOIChartProps {
   dogId: string;
+}
+
+export interface HealthWarning {
+  condition: string;
+  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  affectedPercentage?: number;
+}
+
+export interface PairingAnalysis {
+  coi: number;
+  healthWarnings: HealthWarning[];
+  compatibleTests: string[];
+  incompatibleTests: string[];
+  traitPredictions?: any;
+}
+
+export interface ColorProbability {
+  color: string;
+  percentage: number;
 }

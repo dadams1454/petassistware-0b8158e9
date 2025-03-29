@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
-import { Family, AlertCircle, Filter, Dna } from 'lucide-react';
+import { AlertCircle, Filter, Dna } from 'lucide-react';
 import { InteractivePedigreeProps } from '@/types/genetics';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, customSupabase } from '@/integrations/supabase/client';
 import { processGeneticData } from '@/services/genetics/processGeneticData';
 import { getStatusColor } from '../utils/healthUtils';
 
@@ -85,7 +85,7 @@ export const InteractivePedigree: React.FC<InteractivePedigreeProps> = ({
       if (dogError) throw dogError;
       
       // Get genetic test data
-      const { data: geneticTests, error: testError } = await supabase
+      const { data: geneticTests, error: testError } = await customSupabase
         .from('dog_genetic_tests')
         .select('*')
         .eq('dog_id', id);

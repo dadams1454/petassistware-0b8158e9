@@ -44,6 +44,7 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
         onViewEvent={handleViewEvent}
         onAddAppointment={handleAddAppointment}
         isFullPage={isFullPage}
+        onEdit={() => setIsEditDialogOpen(true)}
       />
 
       {/* Edit Dialog */}

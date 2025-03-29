@@ -66,3 +66,21 @@ export function calculateAge(birthdate: string | Date): string {
   
   return `${years} year${years !== 1 ? 's' : ''}`;
 }
+
+/**
+ * Format date for chart labels
+ */
+export function formatDateForChart(date: string | Date): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/**
+ * Format date for chart tooltips
+ */
+export function formatDate(date: string | Date): string {
+  if (!date) return '';
+  
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}

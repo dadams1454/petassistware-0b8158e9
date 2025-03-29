@@ -1,10 +1,6 @@
+import { GeneticHealthStatus } from '@/types/genetics';
 
-import { GeneticHealthMarker } from '@/types/genetics';
-
-/**
- * Get color class for health status indicator
- */
-export function getStatusColor(status: string): string {
+export const getStatusColor = (status: GeneticHealthStatus) => {
   switch (status) {
     case 'clear':
       return 'bg-green-500';
@@ -13,51 +9,40 @@ export function getStatusColor(status: string): string {
     case 'affected':
       return 'bg-red-500';
     default:
-      return 'bg-gray-400';
+      return 'bg-gray-300';
   }
-}
+};
 
-/**
- * Format test result with appropriate color
- * Returns the props needed for creating the element in the component
- */
-export function getResultWithColorProps(result: string): { className: string; children?: string } {
-  if (result.toLowerCase().includes('clear')) {
-    return { className: "text-green-600 font-medium" };
-  } else if (result.toLowerCase().includes('carrier')) {
-    return { className: "text-yellow-600 font-medium" };
-  } else if (result.toLowerCase().includes('affected')) {
-    return { className: "text-red-600 font-medium" };
-  }
-  return { className: "" };
-}
-
-/**
- * Format date for display
- */
-export function formatDate(dateString: string): string {
-  if (!dateString) return '';
+export const getHealthSummaryData = (healthMarkers: Record<string, any>) => {
+  const result = {
+    hasTests: false,
+    clear: [] as string[],
+    carriers: [] as string[],
+    affected: [] as string[]
+  };
   
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  }).format(date);
-}
+  if (!healthMarkers || Object.keys(healthMarkers).length === 0) {
+    return result;
+  }
+  
+  result.hasTests = true;
+  
+  for (const [condition, marker] of Object.entries(healthMarkers)) {
+    const formattedCondition = formatConditionName(condition);
+    
+    if (marker.status === 'clear') {
+      result.clear.push(formattedCondition);
+    } else if (marker.status === 'carrier') {
+      result.carriers.push(formattedCondition);
+    } else if (marker.status === 'affected') {
+      result.affected.push(formattedCondition);
+    }
+  }
+  
+  return result;
+};
 
-/**
- * Capitalize first letter of string
- */
-export function capitalizeFirst(str: string): string {
-  if (!str) return '';
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-/**
- * Format condition names for display
- */
-export function formatConditionName(condition: string): string {
+export const formatConditionName = (condition: string): string => {
   // Convert common abbreviations
   const abbreviations: Record<string, string> = {
     'DM': 'Degenerative Myelopathy',
@@ -75,36 +60,10 @@ export function formatConditionName(condition: string): string {
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-}
+};
 
-/**
- * Get a summary of health markers for compact view
- * Returns the data needed to render the health summary
- */
-export function getHealthSummaryData(healthMarkers: Record<string, GeneticHealthMarker> = {}): {
-  affected: string[];
-  carriers: string[];
-  clear: string[];
-  hasTests: boolean;
-} {
-  const carriers: string[] = [];
-  const affected: string[] = [];
-  const clear: string[] = [];
-  
-  for (const [condition, data] of Object.entries(healthMarkers)) {
-    if (data.status === 'carrier') {
-      carriers.push(formatConditionName(condition));
-    } else if (data.status === 'affected') {
-      affected.push(formatConditionName(condition));
-    } else if (data.status === 'clear') {
-      clear.push(formatConditionName(condition));
-    }
-  }
-  
-  return {
-    affected,
-    carriers,
-    clear,
-    hasTests: affected.length > 0 || carriers.length > 0 || clear.length > 0
-  };
-}
+export const formatDate = (dateStr: string | Date): string => {
+  if (!dateStr) return 'Unknown';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};

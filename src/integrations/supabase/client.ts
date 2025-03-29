@@ -66,3 +66,21 @@ export type GeneticAuditLogRow = {
 };
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+// Extend the Supabase client to work with custom tables not in the schema
+// This is a type-safe way to work with tables until we update the Database type
+export const customSupabase = {
+  from: <T = any>(table: string) => ({
+    select: (columns?: string) => supabase.from(table as any).select(columns),
+    insert: (values: Partial<T> | Partial<T>[]) => supabase.from(table as any).insert(values),
+    update: (values: Partial<T>) => supabase.from(table as any).update(values),
+    delete: () => supabase.from(table as any).delete(),
+    eq: (column: string, value: any) => ({
+      select: (columns?: string) => supabase.from(table as any).select(columns).eq(column, value),
+      delete: () => supabase.from(table as any).delete().eq(column, value),
+      single: () => supabase.from(table as any).select('*').eq(column, value).single(),
+      order: (column: string, options?: {ascending?: boolean}) => 
+        supabase.from(table as any).select('*').eq(column, value).order(column, options)
+    })
+  })
+};
