@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Edit, Dog } from 'lucide-react';
+import { Edit, Dog as DogIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Litter, Dog as DogType } from '@/types/litter';
@@ -39,13 +39,13 @@ const LitterHeader: React.FC<LitterHeaderProps> = ({
         <LitterParentCard
           title="Dam (Mother)"
           dog={dam}
-          icon={<Dog className="h-5 w-5 text-pink-500" />}
+          icon={<DogIcon className="h-5 w-5 text-pink-500" />}
         />
         
         <LitterParentCard
           title="Sire (Father)"
           dog={sire}
-          icon={<Dog className="h-5 w-5 text-blue-500" />}
+          icon={<DogIcon className="h-5 w-5 text-blue-500" />}
         />
       </div>
 

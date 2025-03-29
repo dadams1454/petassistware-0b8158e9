@@ -21,17 +21,18 @@ export const getPredictedColors = async (
   damColor: string,
   sireColor: string
 ): Promise<PuppyColorPrediction[]> => {
-  const { data, error } = await supabase
-    .rpc('predict_puppy_colors', {
-      breed_name: breed,
-      dam_color: damColor,
-      sire_color: sireColor
-    });
+  // Use the rpc method correctly to call the database function
+  const { data, error } = await supabase.rpc('predict_puppy_colors', {
+    breed_name: breed,
+    dam_color: damColor,
+    sire_color: sireColor
+  });
   
   if (error) {
     console.error('Error predicting puppy colors:', error);
     throw error;
   }
   
+  // Ensure we return an array
   return data || [];
 };
