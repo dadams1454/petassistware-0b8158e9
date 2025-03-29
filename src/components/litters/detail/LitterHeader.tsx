@@ -3,9 +3,8 @@ import React from 'react';
 import { Edit, Dog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Litter } from '@/types/litter';
+import { Litter, Dog as DogType } from '@/types/litter';
 import LitterParentCard from './LitterParentCard';
-import { Dog as DogType } from '@/types/litter';
 import ColorPrediction from './ColorPrediction';
 
 interface LitterHeaderProps {
