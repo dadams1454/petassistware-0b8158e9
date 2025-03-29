@@ -70,6 +70,9 @@ export function useDogGenetics(dogId: string): UseDogGeneticsReturn {
 async function fetchDogGeneticData(dogId: string): Promise<any> {
   try {
     // Attempt to fetch actual genetic data from Supabase
+    // This is now commented out since we don't have the table yet
+    // In a real implementation, we would uncomment this
+    /*
     const { data: actualData, error: actualError } = await supabase
       .from('dog_genetic_tests')
       .select('*')
@@ -83,11 +86,12 @@ async function fetchDogGeneticData(dogId: string): Promise<any> {
         tests: actualData
       };
     }
+    */
     
     // If no real data, use mock data
     return getMockGeneticData(dogId);
   } catch (error) {
-    console.error("Error fetching from Supabase:", error);
+    console.error("Error fetching data:", error);
     // Fallback to mock data
     return getMockGeneticData(dogId);
   }

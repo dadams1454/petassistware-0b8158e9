@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
 import { HealthWarningCard } from './HealthWarningCard';
@@ -55,18 +56,22 @@ export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityProps> =
     const coi = calculateCOI(sireGenetics, damGenetics);
     
     // Check for health condition carrier status
-    for (const [condition, sireStatus] of Object.entries(sireGenetics.healthMarkers)) {
+    for (const [condition, sireMarker] of Object.entries(sireGenetics.healthMarkers)) {
+      // Type assertion to access status property
+      const sireStatus = (sireMarker as any).status;
+      
       // Check if both dogs have data for this condition
       if (damGenetics.healthMarkers[condition]) {
-        const damStatus = damGenetics.healthMarkers[condition];
+        const damMarker = damGenetics.healthMarkers[condition];
+        const damStatus = (damMarker as any).status;
         
         // Add to compatible tests list if both are clear
-        if (sireStatus.status === 'clear' && damStatus.status === 'clear') {
+        if (sireStatus === 'clear' && damStatus === 'clear') {
           compatibleTests.push(condition);
         }
         
         // Check for carrier × carrier scenarios
-        if (sireStatus.status === 'carrier' && damStatus.status === 'carrier') {
+        if (sireStatus === 'carrier' && damStatus === 'carrier') {
           healthWarnings.push({
             condition,
             riskLevel: 'critical',
@@ -77,8 +82,8 @@ export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityProps> =
         }
         
         // Check for affected × carrier scenarios
-        if ((sireStatus.status === 'affected' && damStatus.status === 'carrier') ||
-            (sireStatus.status === 'carrier' && damStatus.status === 'affected')) {
+        if ((sireStatus === 'affected' && damStatus === 'carrier') ||
+            (sireStatus === 'carrier' && damStatus === 'affected')) {
           healthWarnings.push({
             condition,
             riskLevel: 'high',
@@ -89,7 +94,7 @@ export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityProps> =
         }
         
         // Check for affected × affected scenarios
-        if (sireStatus.status === 'affected' && damStatus.status === 'affected') {
+        if (sireStatus === 'affected' && damStatus === 'affected') {
           healthWarnings.push({
             condition,
             riskLevel: 'critical',

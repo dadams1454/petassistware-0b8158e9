@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { ColorProbability, DogGenotype } from '@/types/genetics';
+import { DogGenotype } from '@/types/genetics';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface TraitProbabilityChartProps {
   sireGenotype: DogGenotype;
@@ -10,19 +11,78 @@ interface TraitProbabilityChartProps {
   title?: string;
 }
 
-// Helper function to get color code for chart visualization
-function getColorCode(colorName: string): string {
-  const colorMap: Record<string, string> = {
-    'Black': '#212529',
-    'Grey': '#adb5bd',
-    'Brown': '#795548',
-    'Light Brown': '#a98274',
-    'Red': '#fd7e14',
-    'Cream': '#f8deb5'
-  };
-  
-  return colorMap[colorName] || '#212529';
+interface ColorProbability {
+  name: string;
+  probability: number;
+  color: string;
 }
+
+export const TraitProbabilityChart: React.FC<TraitProbabilityChartProps> = ({
+  sireGenotype,
+  damGenotype,
+  traitType,
+  title = 'Offspring Color Probability'
+}) => {
+  const colorData = calculateColorProbabilities(sireGenotype, damGenotype);
+  
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={colorData}
+                dataKey="probability"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                label={({ name, probability }) => `${name}: ${probability}%`}
+              >
+                {colorData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                formatter={(value: any) => [`${value}%`, 'Probability']}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        
+        <div className="mt-4">
+          <div className="grid grid-cols-2 gap-2">
+            {colorData.map((item, index) => (
+              <div key={index} className="flex items-center">
+                <div 
+                  className="w-4 h-4 mr-2 rounded-sm" 
+                  style={{ backgroundColor: item.color }} 
+                />
+                <span>{item.name} ({item.probability}%)</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <h4 className="text-sm font-semibold mb-2">Genotype Information</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p><span className="font-semibold">Sire:</span> {sireGenotype.baseColor}, {sireGenotype.brownDilution}, {sireGenotype.dilution}</p>
+            </div>
+            <div>
+              <p><span className="font-semibold">Dam:</span> {damGenotype.baseColor}, {damGenotype.brownDilution}, {damGenotype.dilution}</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 // Helper function to calculate color inheritance
 function calculateColorProbabilities(
@@ -137,68 +197,18 @@ function determinePhenotype(
   }
 }
 
-export const TraitProbabilityChart: React.FC<TraitProbabilityChartProps> = ({
-  sireGenotype,
-  damGenotype,
-  traitType,
-  title = 'Offspring Color Probability'
-}) => {
-  const colorData = calculateColorProbabilities(sireGenotype, damGenotype);
+// Get color code for chart visualization
+function getColorCode(colorName: string): string {
+  const colorMap: Record<string, string> = {
+    'Black': '#212529',
+    'Grey': '#adb5bd',
+    'Brown': '#795548',
+    'Light Brown': '#a98274',
+    'Red': '#fd7e14',
+    'Cream': '#f8deb5'
+  };
   
-  return (
-    <div className="flex flex-col p-4 bg-white rounded-lg shadow">
-      <h3 className="text-lg font-bold mb-4">{title}</h3>
-      
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={colorData}
-              dataKey="probability"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              label={({ name, probability }) => `${name}: ${probability}%`}
-            >
-              {colorData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip 
-              formatter={(value) => [`${value}%`, 'Probability']}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-      
-      <div className="mt-4">
-        <div className="grid grid-cols-2 gap-2">
-          {colorData.map((item, index) => (
-            <div key={index} className="flex items-center">
-              <div 
-                className="w-4 h-4 mr-2 rounded-sm" 
-                style={{ backgroundColor: item.color }} 
-              />
-              <span>{item.name} ({item.probability}%)</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <h4 className="text-sm font-semibold mb-2">Genotype Information</h4>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p><span className="font-semibold">Sire:</span> {sireGenotype.baseColor}, {sireGenotype.brownDilution}, {sireGenotype.dilution}</p>
-          </div>
-          <div>
-            <p><span className="font-semibold">Dam:</span> {damGenotype.baseColor}, {damGenotype.brownDilution}, {damGenotype.dilution}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+  return colorMap[colorName] || '#212529';
+}
 
 export default TraitProbabilityChart;
