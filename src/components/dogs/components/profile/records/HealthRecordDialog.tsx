@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -35,7 +34,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { HealthRecord, HealthRecordType } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
 import { useHealthRecords } from '../../../hooks/useHealthRecords';
 
 // Define form validation schema with string literals
@@ -43,19 +42,7 @@ const healthRecordSchema = z.object({
   date: z.date({
     required_error: 'Date is required',
   }),
-  record_type: z.enum([
-    'vaccination', 
-    'examination', 
-    'medication', 
-    'surgery', 
-    'observation',
-    'deworming',
-    'grooming',
-    'dental',
-    'allergy',
-    'test',
-    'other'
-  ], {
+  record_type: z.nativeEnum(HealthRecordTypeEnum, {
     required_error: 'Record type is required',
   }),
   title: z.string().min(1, 'Title is required'),
@@ -89,8 +76,8 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
   const form = useForm<HealthRecordFormValues>({
     resolver: zodResolver(healthRecordSchema),
     defaultValues: record ? {
-      date: new Date(record.date || record.visit_date),
-      record_type: record.record_type as HealthRecordType,
+      date: new Date(record.date || record.visit_date || ''),
+      record_type: record.record_type as HealthRecordTypeEnum,
       title: record.title,
       description: record.description || '',
       performed_by: record.performed_by || '',
@@ -98,7 +85,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
       next_due_date: record.next_due_date ? new Date(record.next_due_date) : undefined,
     } : {
       date: new Date(),
-      record_type: 'vaccination',
+      record_type: HealthRecordTypeEnum.Vaccination,
       title: '',
       description: '',
       performed_by: '',
@@ -116,7 +103,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
         dog_id: dogId,
         visit_date: values.date.toISOString(), // Save to visit_date field for database
         date: values.date.toISOString(), // Include date for UI components
-        record_type: values.record_type as HealthRecordType,
+        record_type: values.record_type as HealthRecordTypeEnum,
         title: values.title,
         description: values.description || '',
         performed_by: values.performed_by,
@@ -169,17 +156,17 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="vaccination">Vaccination</SelectItem>
-                        <SelectItem value="examination">Examination</SelectItem>
-                        <SelectItem value="medication">Medication</SelectItem>
-                        <SelectItem value="surgery">Surgery</SelectItem>
-                        <SelectItem value="observation">Observation</SelectItem>
-                        <SelectItem value="deworming">Deworming</SelectItem>
-                        <SelectItem value="grooming">Grooming</SelectItem>
-                        <SelectItem value="dental">Dental</SelectItem>
-                        <SelectItem value="allergy">Allergy</SelectItem>
-                        <SelectItem value="test">Test/Screening</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Vaccination}>Vaccination</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Examination}>Examination</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Medication}>Medication</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Surgery}>Surgery</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Observation}>Observation</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Deworming}>Deworming</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Grooming}>Grooming</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Dental}>Dental</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Allergy}>Allergy</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Test}>Test/Screening</SelectItem>
+                        <SelectItem value={HealthRecordTypeEnum.Other}>Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

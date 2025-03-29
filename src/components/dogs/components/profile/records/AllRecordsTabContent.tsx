@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { PlusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { HealthRecord, HealthRecordType } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
 import { getHealthRecordIcon, getHealthRecordColor } from '../utils/healthRecordUtils';
 
 interface AllRecordsTabContentProps {

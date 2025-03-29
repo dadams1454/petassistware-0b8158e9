@@ -26,7 +26,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { WeightRecord } from '@/types/health';
+import { WeightRecord, WeightUnitEnum } from '@/types/health';
 
 interface WeightEntryDialogProps {
   dogId: string;
@@ -47,7 +47,7 @@ const weightEntrySchema = z.object({
   }).positive({
     message: 'Weight must be greater than 0',
   }),
-  weight_unit: z.enum(['lbs', 'kg', 'g', 'oz'], {
+  unit: z.nativeEnum(WeightUnitEnum, {
     required_error: 'Unit is required',
   }),
   notes: z.string().optional(),
@@ -67,7 +67,7 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
     defaultValues: {
       date: new Date(),
       weight: 0,
-      weight_unit: 'lbs',
+      unit: WeightUnitEnum.Pounds,
       notes: '',
     }
   });
@@ -80,7 +80,8 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
         dog_id: dogId,
         date: values.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
         weight: values.weight,
-        weight_unit: values.weight_unit,
+        unit: values.unit,
+        weight_unit: values.unit, // Add both for compatibility
         notes: values.notes
       };
       

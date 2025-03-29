@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, TrendingUp } from 'lucide-react';
-import { WeightRecord } from '@/types/health';
+import { WeightRecord, WeightUnitEnum } from '@/types/health';
 import { format } from 'date-fns';
 import {
   LineChart,
@@ -38,12 +38,12 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
   const chartData = weightHistory
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .map(record => {
-      const weightInKg = convertToKg(record.weight, record.weight_unit);
+      const weightInKg = convertToKg(record.weight, record.unit || record.weight_unit as WeightUnitEnum);
       return {
         date: format(new Date(record.date), 'MMM d'),
         weight: weightInKg,
         originalWeight: record.weight,
-        unit: record.weight_unit,
+        unit: record.unit || record.weight_unit,
         formattedDate: format(new Date(record.date), 'MMM d, yyyy')
       };
     });
@@ -215,8 +215,8 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
                       let change = null;
                       
                       if (previousRecord) {
-                        const currentKg = convertToKg(record.weight, record.weight_unit);
-                        const prevKg = convertToKg(previousRecord.weight, previousRecord.weight_unit);
+                        const currentKg = convertToKg(record.weight, record.unit || record.weight_unit as WeightUnitEnum);
+                        const prevKg = convertToKg(previousRecord.weight, previousRecord.unit || previousRecord.weight_unit as WeightUnitEnum);
                         change = currentKg - prevKg;
                       }
                       
@@ -226,7 +226,7 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
                             {format(new Date(record.date), 'MMM d, yyyy')}
                           </td>
                           <td className="px-4 py-2 text-sm text-right">
-                            {record.weight} {record.weight_unit}
+                            {record.weight} {record.unit || record.weight_unit}
                           </td>
                           <td className="px-4 py-2 text-sm text-right">
                             {change !== null ? (
@@ -251,13 +251,13 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
 // Helper function to convert weight to kg for consistent comparisons
 const convertToKg = (weight: number, unit: string): number => {
   switch (unit) {
-    case 'kg':
+    case WeightUnitEnum.Kilograms:
       return weight;
-    case 'lbs':
+    case WeightUnitEnum.Pounds:
       return weight * 0.453592;
-    case 'g':
+    case WeightUnitEnum.Grams:
       return weight / 1000;
-    case 'oz':
+    case WeightUnitEnum.Ounces:
       return weight * 0.0283495;
     default:
       return weight;
