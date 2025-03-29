@@ -6,12 +6,12 @@ import { CalendarDays, Edit, PawPrint, Dog } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Litter, Dog as DogType } from '@/types/litter'; // Import both types from litter.ts
+import { Litter, Dog as DogType, SimpleDog } from '@/types/litter'; // Import SimpleDog type
 
 interface LitterHeaderProps {
   litter: Litter;
-  sire?: DogType | null;
-  dam?: DogType | null;
+  sire?: DogType | SimpleDog | null;
+  dam?: DogType | SimpleDog | null;
   onEditClick: () => void;
 }
 

@@ -13,7 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/standardiz
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
-import { Litter } from '@/types/litter'; // Import from regular .ts file
+import { Litter, SimpleDog } from '@/types/litter'; // Import SimpleDog type
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -105,7 +105,7 @@ const LitterDetail = () => {
           <div className="space-y-6">
             <LitterHeader 
               litter={litter} 
-              sire={litter.sire}
+              sire={litter.sire} 
               dam={litter.dam}
               onEditClick={() => setIsEditDialogOpen(true)} 
             />

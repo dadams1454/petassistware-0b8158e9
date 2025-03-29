@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import MainLayout from '@/layouts/MainLayout';
-import { Litter, Puppy } from '@/types/litter'; // Import from our updated types file
+import { Litter, Puppy, SimpleDog } from '@/types/litter'; // Import SimpleDog type
 import WelpingPageHeader from '@/components/welping/WelpingPageHeader';
 import LitterDetailsCard from '@/components/welping/LitterDetailsCard';
 import WelpingTabContent from '@/components/welping/WelpingTabContent';

@@ -1,4 +1,3 @@
-
 import { WeightRecord } from './puppyTracking';
 
 // Define a minimal dog interface that both simple and full dog objects match
@@ -16,6 +15,19 @@ export interface Dog {
   photo_url: string;
   updated_at?: string; // Make optional
   litter_number: number;
+}
+
+// Define a simplified dog interface for litter relationships
+export interface SimpleDog {
+  id: string;
+  name: string;
+  breed?: string | null;
+  gender?: string;
+  color?: string | null;
+  photo_url?: string | null;
+  registration_number?: string | null;
+  microchip_number?: string | null;
+  litter_number?: number;
 }
 
 export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg';
@@ -75,27 +87,8 @@ export interface Litter {
   documents_url: string | null;
   puppies?: Puppy[];
   breeder_id: string; // Add breeder_id to match the type in puppies/types.ts
-  dam?: Dog | {
-    id: string;
-    name: string;
-    breed?: string | null;
-    color?: string | null;
-    photo_url?: string | null;
-    gender?: string;
-    litter_number?: number;
-    registration_number?: string | null;
-    microchip_number?: string | null;
-  } | null;
-  sire?: Dog | {
-    id: string;
-    name: string;
-    breed?: string | null;
-    color?: string | null;
-    photo_url?: string | null;
-    gender?: string;
-    registration_number?: string | null;
-    microchip_number?: string | null;
-  } | null;
+  dam?: Dog | SimpleDog | null;
+  sire?: Dog | SimpleDog | null;
   // AKC compliance fields
   akc_registration_number?: string | null;
   akc_registration_date?: string | null;

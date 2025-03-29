@@ -4,9 +4,8 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Litter } from '@/types/litter';
+import { Litter, SimpleDog } from '@/types/litter';
 
 interface LitterDetailsCardProps {
   litter: Litter;
