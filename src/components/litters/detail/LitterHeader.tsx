@@ -10,8 +10,8 @@ import { Litter, Dog as DogType } from '@/types/litter'; // Import both types fr
 
 interface LitterHeaderProps {
   litter: Litter;
-  sire?: DogType | null;
-  dam?: DogType | null;
+  sire?: DogType['sire'];
+  dam?: DogType['dam'];
   onEditClick: () => void;
 }
 
