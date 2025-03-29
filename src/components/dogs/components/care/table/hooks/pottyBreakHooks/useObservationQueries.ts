@@ -1,8 +1,7 @@
-
 import { useCallback } from 'react';
-import { ObservationsMap } from './observationTypes';
+import { ObservationMap } from './observationTypes';
 
-export const useObservationQueries = (observations: ObservationsMap) => {
+export const useObservationQueries = (observations: ObservationMap) => {
   // Check if a dog has an observation based on category and time slot
   const hasObservation = useCallback((dogId: string, timeSlot: string = '', activeCategory: string = 'pottybreaks') => {
     // Determine which category to filter by

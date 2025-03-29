@@ -2,12 +2,12 @@
 import { useState, useCallback, useRef } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
-import { ObservationsMap } from './observationTypes';
+import { ObservationMap } from './observationTypes';
 import { getTimeSlotFromTimestamp } from './observationsUtils';
 
 export const useObservationActions = (
-  observations: ObservationsMap,
-  setObservations: React.Dispatch<React.SetStateAction<ObservationsMap>>
+  observations: ObservationMap,
+  setObservations: React.Dispatch<React.SetStateAction<ObservationMap>>
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submissionLock = useRef(false); // Use ref to prevent race conditions

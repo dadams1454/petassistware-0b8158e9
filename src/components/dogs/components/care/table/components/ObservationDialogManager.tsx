@@ -1,7 +1,7 @@
-
 import React from 'react';
-import ObservationDialog, { ObservationType } from './observation/ObservationDialog';
+import ObservationDialog from './observation/ObservationDialog';
 import { DogCareStatus } from '@/types/dailyCare';
+import { ObservationType } from '../hooks/pottyBreakHooks/observationTypes';
 
 interface ObservationDialogManagerProps {
   selectedDog?: DogCareStatus;

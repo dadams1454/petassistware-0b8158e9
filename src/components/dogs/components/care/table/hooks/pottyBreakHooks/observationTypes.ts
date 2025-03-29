@@ -21,3 +21,5 @@ export interface ObservationDetails {
   timeSlot?: string;
   category?: string;
 }
+
+export type ObservationType = 'accident' | 'heat' | 'behavior' | 'other';

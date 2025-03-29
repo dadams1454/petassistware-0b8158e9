@@ -3,7 +3,7 @@ import { useState, useCallback, useRef } from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
-import { ObservationsMap } from './observationTypes';
+import { ObservationMap } from './observationTypes';
 import { isObservationValid, convertCareLogToObservation } from './observationsUtils';
 
 export const useObservationsFetch = (dogs: DogCareStatus[]) => {

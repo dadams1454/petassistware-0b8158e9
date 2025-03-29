@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 interface ObservationListProps {
   existingObservations: Array<{
     observation: string;
-    observation_type: 'accident' | 'heat' | 'behavior' | 'other';
+    observation_type: ObservationType;
     created_at: string;
     category?: string;
   }>;
