@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
 import { DailyCareProvider, useDailyCare } from '@/contexts/dailyCare';
@@ -9,13 +9,18 @@ import { RefreshCw, Dog } from 'lucide-react';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
 import { EmptyState } from '@/components/ui/standardized';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DogCareStatus } from '@/types/dailyCare';
+import DailyCareTab from '@/components/dashboard/tabs/DailyCareTab';
 
 // Create a wrapped component to use the context safely
 const DailyCareContent: React.FC = () => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { currentDate } = useRefresh();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'feeding';
 
   // Use the centralized refresh hook
   const { 
@@ -60,17 +65,12 @@ const DailyCareContent: React.FC = () => {
           </div>
         </Card>
       ) : dogStatuses && dogStatuses.length > 0 ? (
-        <div className="space-y-6">
-          {/* Time Table */}
-          <div id="dog-time-table">
-            <DogTimeTable 
-              dogsStatus={dogStatuses} 
-              onRefresh={() => handleRefresh(true)} 
-              isRefreshing={isLoading}
-              currentDate={currentDate}
-            />
-          </div>
-        </div>
+        <DailyCareTab 
+          onRefreshDogs={handleRefresh}
+          currentDate={currentDate}
+          dogStatuses={dogStatuses}
+          initialCategory={initialCategory as string}
+        />
       ) : (
         <Card className="p-8">
           <EmptyState

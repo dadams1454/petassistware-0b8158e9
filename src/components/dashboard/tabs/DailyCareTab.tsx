@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { useDogCareDashboard } from '@/hooks/useDogCareDashboard';
 import { DogCareStatus } from '@/types/dailyCare';
@@ -14,15 +14,24 @@ interface DailyCareTabProps {
   isRefreshing?: boolean;
   currentDate?: Date;
   dogStatuses?: DogCareStatus[];
+  initialCategory?: string;
 }
 
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ 
   onRefreshDogs,
   isRefreshing = false,
   currentDate = new Date(),
-  dogStatuses = []
+  dogStatuses = [],
+  initialCategory = 'feeding'
 }) => {
-  const [careCategory, setCareCategory] = useState<string>('feeding'); // Default to feeding
+  const [careCategory, setCareCategory] = useState<string>(initialCategory); 
+  
+  // Update category if initialCategory changes
+  useEffect(() => {
+    if (initialCategory) {
+      setCareCategory(initialCategory);
+    }
+  }, [initialCategory]);
   
   const {
     effectiveDogStatuses,
