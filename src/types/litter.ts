@@ -1,6 +1,7 @@
 
 import { WeightRecord } from './puppyTracking';
 
+// Define a minimal dog interface that both simple and full dog objects match
 export interface Dog {
   id: string;
   created_at: string;
