@@ -6,7 +6,8 @@ import {
   FormItem, 
   FormLabel, 
   FormControl, 
-  FormMessage 
+  FormMessage,
+  FormDescription 
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,6 +48,9 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
           name="birth_date" 
           label="Birth Date" 
         />
+        <FormDescription className="col-span-2 -mt-4 text-sm">
+          If this is a planned litter and there's no birth date yet, you can leave it blank. The system will use today's date temporarily and you can update it later.
+        </FormDescription>
 
         <LitterDatePicker 
           form={form} 

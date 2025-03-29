@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
@@ -113,10 +114,16 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps) =>
       // Debug logging
       console.log('Submitting form with data:', data);
       
+      // If we're creating a new litter and birth_date is null, set it to today's date
+      // This fixes the database constraint issue
+      if (!initialData && !data.birth_date) {
+        data.birth_date = new Date();
+      }
+      
       // Process the data to handle null values and date formatting
       const processedData = {
         ...data,
-        birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
+        birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0], // Ensure birth_date is never null
         expected_go_home_date: data.expected_go_home_date ? data.expected_go_home_date.toISOString().split('T')[0] : null,
         akc_registration_date: data.akc_registration_date?.toISOString().split('T')[0] || null,
         first_mating_date: data.first_mating_date?.toISOString().split('T')[0] || null,
