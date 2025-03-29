@@ -33,4 +33,36 @@ export type CommunicationTemplatesRow = {
   updated_at: string;
 };
 
+export type GeneticTestRow = {
+  id: string;
+  dog_id: string;
+  test_type: string;
+  test_date: string;
+  result: string;
+  lab_name: string;
+  certificate_url?: string;
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  verified_by?: string;
+};
+
+export type GeneticCalculationRow = {
+  id: string;
+  dog_id: string;
+  calculation_type: string;
+  value: number;
+  calculation_date: string;
+};
+
+export type GeneticAuditLogRow = {
+  id: string;
+  dog_id: string;
+  user_id?: string;
+  action: string;
+  details: Record<string, any>;
+  created_at: string;
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);

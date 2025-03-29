@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { getMockGeneticData } from './mockGeneticData';
+import { GeneticCompatibility } from '@/types/genetics';
 
 /**
  * Helper function to fetch dog genetic data from the API
@@ -35,19 +36,30 @@ export async function fetchDogGeneticData(dogId: string): Promise<any> {
  */
 export async function batchImportGeneticTests(tests: any[]): Promise<{ success: boolean; error?: string }> {
   try {
+    // Add created_by field to each test
+    const testsWithUser = tests.map(test => ({
+      ...test,
+      created_by: supabase.auth.getUser().then(response => response.data.user?.id)
+    }));
+    
     const { data, error } = await supabase
       .from('dog_genetic_tests')
-      .insert(tests);
+      .insert(testsWithUser);
     
     if (error) throw error;
     
     // Log the activity in the audit log
-    await supabase.from('genetic_audit_logs').insert({
-      dog_id: tests[0].dog_id, // Assuming all tests are for the same dog
-      user_id: (await supabase.auth.getUser()).data.user?.id,
-      action: 'batch_import',
-      details: { tests_count: tests.length }
-    });
+    const userId = (await supabase.auth.getUser()).data.user?.id;
+    if (userId) {
+      await supabase
+        .from('genetic_audit_logs')
+        .insert({
+          dog_id: tests[0].dog_id, 
+          user_id: userId,
+          action: 'batch_import',
+          details: { tests_count: tests.length }
+        });
+    }
     
     return { success: true };
   } catch (error) {
@@ -62,7 +74,7 @@ export async function batchImportGeneticTests(tests: any[]): Promise<{ success: 
 /**
  * Calculate compatibility between two dogs
  */
-export async function calculateCompatibility(sireId: string, damId: string): Promise<any> {
+export async function calculateCompatibility(sireId: string, damId: string): Promise<GeneticCompatibility> {
   try {
     // First check if we have a cached calculation
     const { data: cachedData, error: cachedError } = await supabase
@@ -72,7 +84,7 @@ export async function calculateCompatibility(sireId: string, damId: string): Pro
       .single();
     
     if (!cachedError && cachedData) {
-      return JSON.parse(cachedData.value);
+      return JSON.parse(cachedData.value.toString());
     }
     
     // Otherwise calculate compatibility using our existing logic

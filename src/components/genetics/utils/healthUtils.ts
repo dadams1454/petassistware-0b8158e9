@@ -81,7 +81,7 @@ export function formatConditionName(condition: string): string {
  * Get a summary of health markers for compact view
  * Returns the data needed to render the health summary
  */
-export function getHealthSummaryData(healthMarkers: Record<string, GeneticHealthMarker>): {
+export function getHealthSummaryData(healthMarkers: Record<string, GeneticHealthMarker> = {}): {
   affected: string[];
   carriers: string[];
   clear: string[];

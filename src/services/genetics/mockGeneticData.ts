@@ -1,115 +1,65 @@
 
-import { DogGenotype } from '@/types/genetics';
-
 /**
- * Get mock genetic data for demo purposes
- * This will be replaced by real API calls in production
+ * This file provides mock genetic data for dogs when real data isn't available
+ * It will be replaced with real data from API/database when available
  */
-export function getMockGeneticData(dogId: string): any {
-  // Mock data for different dogs (used for demo only)
-  const mockData: Record<string, any> = {
-    // Dog 1: Bella (female, carrier for DM)
-    'dog1': {
-      dogId: 'dog1',
-      name: 'Bella',
-      tests: [
-        {
-          testId: 'test1',
-          testType: 'DM',
-          testDate: '2023-03-15',
-          result: 'Carrier (A/N)',
-          labName: 'Animal Genetics'
-        },
-        {
-          testId: 'test2',
-          testType: 'Cystinuria',
-          testDate: '2023-03-15',
-          result: 'Clear (N/N)',
-          labName: 'Animal Genetics'
-        },
-        {
-          testId: 'test3',
-          testType: 'DCM',
-          testDate: '2023-01-10',
-          result: 'Clear (N/N)',
-          labName: 'Embark'
-        },
-        {
-          testId: 'test4',
-          testType: 'Color Panel',
-          testDate: '2023-01-10',
-          result: 'E/e, B/b, D/D, a/a',
-          labName: 'Embark'
-        }
-      ]
-    },
-    
-    // Dog 2: Max (male, carrier for DM)
-    'dog2': {
-      dogId: 'dog2',
-      name: 'Max',
-      tests: [
-        {
-          testId: 'test5',
-          testType: 'DM',
-          testDate: '2023-03-10',
-          result: 'Carrier (A/N)',
-          labName: 'Animal Genetics'
-        },
-        {
-          testId: 'test6',
-          testType: 'vWD',
-          testDate: '2023-03-10',
-          result: 'Clear (N/N)',
-          labName: 'Animal Genetics'
-        },
-        {
-          testId: 'test7',
-          testType: 'PRA',
-          testDate: '2023-02-20',
-          result: 'Clear (N/N)',
-          labName: 'Paw Print Genetics'
-        },
-        {
-          testId: 'test8',
-          testType: 'Color Panel',
-          testDate: '2023-02-20',
-          result: 'E/E, B/B, D/d, a/a',
-          labName: 'Paw Print Genetics'
-        }
-      ]
-    },
-    
-    // Default mock data for any dog
-    'default': {
-      dogId: dogId,
-      name: 'Unknown Dog',
-      tests: [
-        {
-          testId: 'color1',
-          testType: 'Color Panel',
-          testDate: '2023-05-15',
-          result: 'E/e, B/b, D/d, a/a',
-          labName: 'Generic Lab'
-        },
-        {
-          testId: 'health1',
-          testType: 'DM',
-          testDate: '2023-05-15',
-          result: 'Clear (N/N)',
-          labName: 'Generic Lab'
-        },
-        {
-          testId: 'health2',
-          testType: 'vWD',
-          testDate: '2023-05-15',
-          result: 'Clear (N/N)',
-          labName: 'Generic Lab'
-        }
-      ]
-    }
+
+export function getMockGeneticData(dogId: string) {
+  return {
+    dogId,
+    tests: [
+      {
+        id: `test-${dogId}-1`,
+        dog_id: dogId,
+        test_type: 'Color Panel',
+        test_date: '2023-10-15',
+        result: 'E/e, B/B, d/d, a/a, k/k',
+        lab_name: 'Animal Genetics',
+        certificate_url: null,
+        verified: true,
+        created_at: '2023-10-16T10:00:00Z',
+        updated_at: '2023-10-16T10:00:00Z'
+      },
+      {
+        id: `test-${dogId}-2`,
+        dog_id: dogId,
+        test_type: 'DM (Degenerative Myelopathy)',
+        test_date: '2023-10-15',
+        result: 'Clear (N/N)',
+        lab_name: 'Animal Genetics',
+        certificate_url: null,
+        verified: true,
+        created_at: '2023-10-16T10:00:00Z',
+        updated_at: '2023-10-16T10:00:00Z'
+      },
+      {
+        id: `test-${dogId}-3`,
+        dog_id: dogId,
+        test_type: 'vWD (von Willebrand Disease)',
+        test_date: '2023-10-15',
+        result: 'Carrier (N/A)',
+        lab_name: 'Animal Genetics',
+        certificate_url: null,
+        verified: true,
+        created_at: '2023-10-16T10:00:00Z',
+        updated_at: '2023-10-16T10:00:00Z'
+      }
+    ]
   };
-  
-  // Return mock data if available, otherwise default
-  return mockData[dogId] || mockData['default'];
+}
+
+// Generate random health status for testing
+export function getRandomStatus() {
+  const statuses = ['clear', 'carrier', 'affected'];
+  return statuses[Math.floor(Math.random() * statuses.length)];
+}
+
+// Generate random genotype notation for testing
+export function getRandomGenotype(status: string) {
+  switch (status) {
+    case 'clear': return 'N/N';
+    case 'carrier': return 'N/A';
+    case 'affected': return 'A/A';
+    default: return 'N/N';
+  }
 }

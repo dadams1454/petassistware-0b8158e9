@@ -631,6 +631,91 @@ export type Database = {
           },
         ]
       }
+      dog_genetic_calculations: {
+        Row: {
+          calculation_date: string | null
+          calculation_type: string
+          dog_id: string
+          id: string
+          value: number
+        }
+        Insert: {
+          calculation_date?: string | null
+          calculation_type: string
+          dog_id: string
+          id?: string
+          value: number
+        }
+        Update: {
+          calculation_date?: string | null
+          calculation_type?: string
+          dog_id?: string
+          id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dog_genetic_calculations_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dog_genetic_tests: {
+        Row: {
+          certificate_url: string | null
+          created_at: string | null
+          created_by: string | null
+          dog_id: string
+          id: string
+          lab_name: string
+          result: string
+          test_date: string
+          test_type: string
+          updated_at: string | null
+          verified: boolean | null
+          verified_by: string | null
+        }
+        Insert: {
+          certificate_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          dog_id: string
+          id?: string
+          lab_name: string
+          result: string
+          test_date: string
+          test_type: string
+          updated_at?: string | null
+          verified?: boolean | null
+          verified_by?: string | null
+        }
+        Update: {
+          certificate_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          dog_id?: string
+          id?: string
+          lab_name?: string
+          result?: string
+          test_date?: string
+          test_type?: string
+          updated_at?: string | null
+          verified?: boolean | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dog_genetic_tests_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dog_group_members: {
         Row: {
           created_at: string
@@ -1255,6 +1340,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "feeding_schedules_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genetic_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json
+          dog_id: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details: Json
+          dog_id: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json
+          dog_id?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genetic_audit_logs_dog_id_fkey"
             columns: ["dog_id"]
             isOneToOne: false
             referencedRelation: "dogs"

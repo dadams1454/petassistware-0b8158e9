@@ -2,188 +2,271 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { FileText, Download, Printer, Mail, FileDown } from 'lucide-react';
+import { GeneticReportGeneratorProps } from '@/types/genetics';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Download, Printer, Share2 } from 'lucide-react';
-import { DogGenotype } from '@/types/genetics';
-import { formatConditionName } from '../utils/healthUtils';
+import { formatConditionName, getHealthSummaryData } from '../utils/healthUtils';
 
-interface GeneticReportGeneratorProps {
-  dogId: string;
-  dogName?: string;
-  dogGenetics?: DogGenotype;
-}
-
-export const GeneticReportGenerator: React.FC<GeneticReportGeneratorProps> = ({ 
-  dogId, 
-  dogName = 'Dog',
+export const GeneticReportGenerator: React.FC<GeneticReportGeneratorProps> = ({
+  dogId,
+  dogName = 'This dog',
   dogGenetics
 }) => {
   const { toast } = useToast();
-  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-  const [reportType, setReportType] = useState('health_certificate');
-  const [includedSections, setIncludedSections] = useState<string[]>([
-    'health_tests',
-    'color_genetics',
-    'coi_analysis'
-  ]);
+  const [includeSections, setIncludeSections] = useState({
+    healthSummary: true,
+    detailedHealthTests: true,
+    colorGenetics: true,
+    coi: true,
+    breedingRecommendations: false
+  });
+  const [reportType, setReportType] = useState<'detailed' | 'summary' | 'certificate'>('detailed');
+  const [isGenerating, setIsGenerating] = useState(false);
   
-  // Handle report generation
-  const handleGenerateReport = () => {
-    toast({
-      title: "Report Generated",
-      description: "The genetic report has been generated successfully."
-    });
+  // Toggle a section
+  const toggleSection = (section: keyof typeof includeSections) => {
+    setIncludeSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+  
+  // Generate PDF report
+  const generateReport = () => {
+    setIsGenerating(true);
     
-    // Close the dialog
-    setIsGenerateDialogOpen(false);
-    
-    // In a real implementation, this would generate a PDF or other report format
-    // For now, we'll simulate a download delay
+    // Simulate report generation
     setTimeout(() => {
       toast({
-        title: "Report Ready",
-        description: "Your report is ready to download.",
-        action: (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => simulateDownload()}
-          >
-            Download
-          </Button>
-        ),
+        title: "Report Generated",
+        description: `A ${reportType} report for ${dogName} has been generated.`
       });
+      setIsGenerating(false);
     }, 1500);
   };
   
-  // Simulate a download
-  const simulateDownload = () => {
-    // Create a placeholder PDF file
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,Genetic Report for ' + dogName);
-    element.setAttribute('download', `${dogName.replace(/\s+/g, '_')}_genetic_report.pdf`);
+  // Send report by email
+  const sendReportByEmail = () => {
+    toast({
+      title: "Email Sent",
+      description: `A ${reportType} report for ${dogName} has been sent by email.`
+    });
+  };
+  
+  // Export data in CSV format
+  const exportCSV = () => {
+    if (!dogGenetics) {
+      toast({
+        title: "Export Failed",
+        description: "No genetic data available to export.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    element.style.display = 'none';
-    document.body.appendChild(element);
+    // Create CSV content
+    let csvContent = "Test Type,Date,Result,Lab\n";
     
-    element.click();
+    dogGenetics.testResults.forEach(test => {
+      csvContent += `"${test.testType}","${test.testDate}","${test.result}","${test.labName}"\n`;
+    });
     
-    document.body.removeChild(element);
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${dogName.replace(/\s+/g, '_')}_genetic_tests.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "CSV Export Complete",
+      description: "Genetic test data has been exported to CSV format."
+    });
   };
   
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Reports & Documentation</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center text-lg font-medium">
+          <FileText className="h-5 w-5 mr-2" /> Genetic Report Generator
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => setIsGenerateDialogOpen(true)}>
-                <CardContent className="p-6 flex items-center">
-                  <FileText className="h-8 w-8 text-primary mr-4" />
-                  <div>
-                    <h3 className="font-medium">Generate Health Certificate</h3>
-                    <p className="text-sm text-gray-500">Create official documentation of genetic test results</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => {
-                setReportType('breeder_report');
-                setIsGenerateDialogOpen(true);
-              }}>
-                <CardContent className="p-6 flex items-center">
-                  <FileText className="h-8 w-8 text-primary mr-4" />
-                  <div>
-                    <h3 className="font-medium">Breeder Report</h3>
-                    <p className="text-sm text-gray-500">Detailed analysis for breeding decisions</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <div>
+              <h3 className="text-sm font-semibold mb-2">Report Type</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  variant={reportType === 'detailed' ? 'default' : 'outline'}
+                  className="w-full h-10 p-0"
+                  onClick={() => setReportType('detailed')}
+                >
+                  Detailed
+                </Button>
+                <Button
+                  variant={reportType === 'summary' ? 'default' : 'outline'}
+                  className="w-full h-10 p-0"
+                  onClick={() => setReportType('summary')}
+                >
+                  Summary
+                </Button>
+                <Button
+                  variant={reportType === 'certificate' ? 'default' : 'outline'}
+                  className="w-full h-10 p-0"
+                  onClick={() => setReportType('certificate')}
+                >
+                  Certificate
+                </Button>
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => simulateDownload()}>
-                <CardContent className="p-4 flex items-center">
-                  <Download className="h-5 w-5 text-primary mr-3" />
-                  <div>
-                    <h3 className="font-medium text-sm">Export Raw Data</h3>
-                    <p className="text-xs text-gray-500">CSV format</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => {
-                toast({
-                  title: "Print Preview",
-                  description: "Print functionality would open here."
-                });
-              }}>
-                <CardContent className="p-4 flex items-center">
-                  <Printer className="h-5 w-5 text-primary mr-3" />
-                  <div>
-                    <h3 className="font-medium text-sm">Print Report</h3>
-                    <p className="text-xs text-gray-500">For physical records</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => {
-                toast({
-                  title: "Share Options",
-                  description: "Sharing functionality would open here."
-                });
-              }}>
-                <CardContent className="p-4 flex items-center">
-                  <Share2 className="h-5 w-5 text-primary mr-3" />
-                  <div>
-                    <h3 className="font-medium text-sm">Share Results</h3>
-                    <p className="text-xs text-gray-500">Email or link</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <div>
+              <h3 className="text-sm font-semibold mb-2">Include Sections</h3>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="healthSummary" 
+                    checked={includeSections.healthSummary}
+                    onCheckedChange={() => toggleSection('healthSummary')}
+                  />
+                  <Label htmlFor="healthSummary">Health Summary</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="detailedHealthTests" 
+                    checked={includeSections.detailedHealthTests}
+                    onCheckedChange={() => toggleSection('detailedHealthTests')}
+                  />
+                  <Label htmlFor="detailedHealthTests">Detailed Health Tests</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="colorGenetics" 
+                    checked={includeSections.colorGenetics}
+                    onCheckedChange={() => toggleSection('colorGenetics')}
+                  />
+                  <Label htmlFor="colorGenetics">Color Genetics</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="coi" 
+                    checked={includeSections.coi}
+                    onCheckedChange={() => toggleSection('coi')}
+                  />
+                  <Label htmlFor="coi">COI Analysis</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="breedingRecommendations" 
+                    checked={includeSections.breedingRecommendations}
+                    onCheckedChange={() => toggleSection('breedingRecommendations')}
+                  />
+                  <Label htmlFor="breedingRecommendations">Breeding Recommendations</Label>
+                </div>
+              </div>
             </div>
             
-            <div className="pt-4">
-              <h3 className="font-medium mb-2">Report Preview</h3>
-              <div className="border rounded-md p-4 bg-white">
-                <div className="text-center mb-4">
-                  <h2 className="text-xl font-bold">{reportType === 'health_certificate' ? 'Genetic Health Certificate' : 'Breeder Genetic Report'}</h2>
-                  <div className="text-sm text-gray-500">{dogName}</div>
+            <div className="space-y-2">
+              <Button 
+                className="w-full" 
+                onClick={generateReport}
+                disabled={isGenerating}
+              >
+                {isGenerating 
+                  ? <><span className="animate-spin mr-2">⟳</span> Generating Report...</>
+                  : <><Download className="h-4 w-4 mr-2" /> Generate PDF Report</>
+                }
+              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" onClick={sendReportByEmail}>
+                  <Mail className="h-4 w-4 mr-2" /> Email
+                </Button>
+                <Button variant="outline" onClick={() => window.print()}>
+                  <Printer className="h-4 w-4 mr-2" /> Print
+                </Button>
+              </div>
+              <Button variant="outline" className="w-full" onClick={exportCSV}>
+                <FileDown className="h-4 w-4 mr-2" /> Export as CSV
+              </Button>
+            </div>
+          </div>
+          
+          <div className="border rounded-md p-4 bg-muted/30">
+            <h3 className="text-sm font-semibold mb-2">Report Preview</h3>
+            
+            {!dogGenetics ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
+                <p>No genetic data available for preview</p>
+              </div>
+            ) : (
+              <div className="space-y-4 text-sm">
+                <div className="text-center border-b pb-2">
+                  <h2 className="font-bold">{reportType === 'certificate' ? 'Genetic Health Certificate' : 'Genetic Report'}</h2>
+                  <p>{dogName}</p>
                 </div>
                 
-                {includedSections.includes('health_tests') && dogGenetics && (
-                  <div className="mb-4">
-                    <h3 className="font-medium border-b pb-1 mb-2">Health Test Results</h3>
-                    <table className="w-full text-sm">
+                {includeSections.healthSummary && (
+                  <div>
+                    <h3 className="font-medium">Health Summary</h3>
+                    {(() => {
+                      const summary = getHealthSummaryData(dogGenetics.healthMarkers);
+                      
+                      if (!summary.hasTests) {
+                        return <p className="text-muted-foreground">No health test data available</p>;
+                      }
+                      
+                      return (
+                        <div className="space-y-1">
+                          {summary.affected.length > 0 && (
+                            <p>
+                              <span className="font-semibold text-red-600">Affected by:</span>{' '}
+                              {summary.affected.join(', ')}
+                            </p>
+                          )}
+                          {summary.carriers.length > 0 && (
+                            <p>
+                              <span className="font-semibold text-yellow-600">Carrier for:</span>{' '}
+                              {summary.carriers.join(', ')}
+                            </p>
+                          )}
+                          {summary.clear.length > 0 && (
+                            <p>
+                              <span className="font-semibold text-green-600">Clear for:</span>{' '}
+                              {summary.clear.join(', ')}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+                
+                {includeSections.detailedHealthTests && dogGenetics.testResults.length > 0 && (
+                  <div>
+                    <h3 className="font-medium">Detailed Test Results</h3>
+                    <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-gray-50">
-                          <th className="text-left py-2 px-3">Test</th>
-                          <th className="text-left py-2 px-3">Result</th>
-                          <th className="text-left py-2 px-3">Genotype</th>
+                        <tr className="border-b">
+                          <th className="text-left py-1">Test</th>
+                          <th className="text-left py-1">Result</th>
+                          <th className="text-left py-1">Date</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {Object.entries(dogGenetics.healthMarkers).map(([test, data]) => (
-                          <tr key={test} className="border-b">
-                            <td className="py-2 px-3">{formatConditionName(test)}</td>
-                            <td className="py-2 px-3">
-                              <span className={`px-2 py-0.5 rounded-full text-xs ${
-                                data.status === 'clear' ? 'bg-green-100 text-green-800' :
-                                data.status === 'carrier' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
-                              }`}>
-                                {data.status.charAt(0).toUpperCase() + data.status.slice(1)}
-                              </span>
-                            </td>
-                            <td className="py-2 px-3 font-mono">{data.genotype}</td>
+                        {dogGenetics.testResults.filter(t => t.testType !== 'Color Panel').map((test, i) => (
+                          <tr key={i} className="border-b">
+                            <td className="py-1">{formatConditionName(test.testType)}</td>
+                            <td className="py-1">{test.result}</td>
+                            <td className="py-1">{new Date(test.testDate).toLocaleDateString()}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -191,176 +274,37 @@ export const GeneticReportGenerator: React.FC<GeneticReportGeneratorProps> = ({
                   </div>
                 )}
                 
-                {includedSections.includes('color_genetics') && dogGenetics && (
-                  <div className="mb-4">
-                    <h3 className="font-medium border-b pb-1 mb-2">Color Genetics</h3>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div className="bg-gray-50 p-2 rounded">
-                        <div className="font-medium">Base Color (E Locus)</div>
-                        <div>{dogGenetics.baseColor}</div>
-                      </div>
-                      <div className="bg-gray-50 p-2 rounded">
-                        <div className="font-medium">Brown Dilution (B Locus)</div>
-                        <div>{dogGenetics.brownDilution}</div>
-                      </div>
-                      <div className="bg-gray-50 p-2 rounded">
-                        <div className="font-medium">Dilution (D Locus)</div>
-                        <div>{dogGenetics.dilution}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {includedSections.includes('coi_analysis') && (
+                {includeSections.colorGenetics && (
                   <div>
-                    <h3 className="font-medium border-b pb-1 mb-2">Coefficient of Inbreeding</h3>
-                    <div className="text-sm">
-                      <div className="mb-2">
-                        <span className="font-medium">10-generation COI:</span> 4.2%
+                    <h3 className="font-medium">Color Genetics</h3>
+                    <div className="grid grid-cols-2 gap-x-4 text-xs">
+                      <div className="flex justify-between">
+                        <span>Base Color (E Locus):</span>
+                        <span className="font-medium">{dogGenetics.baseColor}</span>
                       </div>
-                      <div className="h-4 w-full bg-gray-100 rounded-full">
-                        <div 
-                          className="h-full bg-blue-500 rounded-full" 
-                          style={{ width: '4.2%' }}
-                        />
+                      <div className="flex justify-between">
+                        <span>Brown (B Locus):</span>
+                        <span className="font-medium">{dogGenetics.brownDilution}</span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Breed average: 6.5% • Recommended maximum: 12.5%
+                      <div className="flex justify-between">
+                        <span>Dilution (D Locus):</span>
+                        <span className="font-medium">{dogGenetics.dilution}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Agouti (A Locus):</span>
+                        <span className="font-medium">{dogGenetics.agouti}</span>
                       </div>
                     </div>
                   </div>
                 )}
+                
+                {/* Additional sections would be rendered here based on includeSections state */}
               </div>
-            </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
-      
-      {/* Generate Report Dialog */}
-      <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Generate Genetic Report</DialogTitle>
-            <DialogDescription>
-              Customize the genetic report for {dogName}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="report-type" className="text-right">Report Type</Label>
-              <Select
-                defaultValue={reportType}
-                onValueChange={setReportType}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select report type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="health_certificate">Health Certificate</SelectItem>
-                  <SelectItem value="breeder_report">Breeder Report</SelectItem>
-                  <SelectItem value="puppy_buyer">Puppy Buyer Report</SelectItem>
-                  <SelectItem value="veterinary">Veterinary Report</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right mt-2">Include Sections</Label>
-              <div className="col-span-3 space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="health_tests" 
-                    checked={includedSections.includes('health_tests')}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setIncludedSections([...includedSections, 'health_tests']);
-                      } else {
-                        setIncludedSections(includedSections.filter(s => s !== 'health_tests'));
-                      }
-                    }}
-                  />
-                  <Label htmlFor="health_tests">Health Test Results</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="color_genetics" 
-                    checked={includedSections.includes('color_genetics')}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setIncludedSections([...includedSections, 'color_genetics']);
-                      } else {
-                        setIncludedSections(includedSections.filter(s => s !== 'color_genetics'));
-                      }
-                    }}
-                  />
-                  <Label htmlFor="color_genetics">Color Genetics</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="coi_analysis" 
-                    checked={includedSections.includes('coi_analysis')}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setIncludedSections([...includedSections, 'coi_analysis']);
-                      } else {
-                        setIncludedSections(includedSections.filter(s => s !== 'coi_analysis'));
-                      }
-                    }}
-                  />
-                  <Label htmlFor="coi_analysis">COI Analysis</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="pedigree" 
-                    checked={includedSections.includes('pedigree')}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setIncludedSections([...includedSections, 'pedigree']);
-                      } else {
-                        setIncludedSections(includedSections.filter(s => s !== 'pedigree'));
-                      }
-                    }}
-                  />
-                  <Label htmlFor="pedigree">Pedigree Visualization</Label>
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="breeder-name" className="text-right">Breeder Name</Label>
-              <Input
-                id="breeder-name"
-                placeholder="Your kennel name"
-                className="col-span-3"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="report-logo" className="text-right">Logo</Label>
-              <Input
-                id="report-logo"
-                type="file"
-                accept="image/*"
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsGenerateDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleGenerateReport}>
-              Generate Report
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

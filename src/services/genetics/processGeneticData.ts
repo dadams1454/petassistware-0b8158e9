@@ -23,15 +23,17 @@ export function processGeneticData(rawData: any): DogGenotype {
     rawData.tests.forEach((test: any) => {
       // Add to test results array
       processedData.testResults.push({
-        testId: test.testId || test.id || `test-${Math.random().toString(36).substr(2, 9)}`,
-        testType: test.testType || test.test_type || 'Unknown',
-        testDate: test.testDate || test.test_date || new Date().toISOString().split('T')[0],
+        testId: test.id || `test-${Math.random().toString(36).substring(2, 9)}`,
+        testType: test.test_type || 'Unknown',
+        testDate: test.test_date || new Date().toISOString().split('T')[0],
         result: test.result || 'Unknown',
-        labName: test.labName || test.lab_name || 'Unknown Lab'
+        labName: test.lab_name || 'Unknown Lab',
+        certificateUrl: test.certificate_url,
+        verified: test.verified
       });
       
       // Process color panel results
-      if (test.testType === 'Color Panel' || test.test_type === 'Color Panel') {
+      if (test.test_type === 'Color Panel') {
         const colorResults = test.result.split(', ');
         colorResults.forEach((result: string) => {
           if (result.startsWith('E')) processedData.baseColor = result;
@@ -49,22 +51,22 @@ export function processGeneticData(rawData: any): DogGenotype {
           const [, status, genotype] = resultMatch;
           
           // Map status text to our standard format
-          let standardStatus: 'clear' | 'carrier' | 'affected';
+          let standardStatus: 'clear' | 'carrier' | 'affected' | 'unknown' = 'unknown';
           if (status.toLowerCase() === 'clear' || status.toLowerCase() === 'normal') {
             standardStatus = 'clear';
           } else if (status.toLowerCase() === 'carrier') {
             standardStatus = 'carrier';
-          } else {
+          } else if (status.toLowerCase() === 'affected' || status.toLowerCase() === 'positive') {
             standardStatus = 'affected';
           }
           
           // Add to health markers
-          processedData.healthMarkers[test.testType || test.test_type] = {
+          processedData.healthMarkers[test.test_type] = {
             status: standardStatus,
             genotype,
-            testDate: test.testDate || test.test_date,
-            labName: test.labName || test.lab_name,
-            certificateUrl: test.certificateUrl || test.certificate_url
+            testDate: test.test_date,
+            labName: test.lab_name,
+            certificateUrl: test.certificate_url
           };
         }
       }

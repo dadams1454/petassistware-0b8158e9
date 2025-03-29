@@ -1,20 +1,19 @@
 
 /**
- * Format a date string for display
- * @param dateString ISO date string or other date format
- * @returns Formatted date string (e.g., "Jan 15, 2023")
+ * Format a date string to a database-friendly format (YYYY-MM-DD)
  */
-export function formatDateForDisplay(dateString: string): string {
-  if (!dateString) return '';
+export function formatDateForDatabase(dateStr: string | Date): string {
+  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * Format a date to a human-readable format
+ */
+export function formatDateForDisplay(dateStr: string | Date): string {
+  if (!dateStr) return '';
   
-  const date = new Date(dateString);
-  
-  // Check if date is valid
-  if (isNaN(date.getTime())) {
-    return dateString; // Return original string if invalid date
-  }
-  
-  // Return formatted date
+  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
@@ -23,58 +22,47 @@ export function formatDateForDisplay(dateString: string): string {
 }
 
 /**
- * Get age in years and months from a birthdate
- * @param birthdate ISO date string
- * @returns Age string (e.g., "2 years, 3 months")
+ * Get a human-readable time ago string
  */
-export function getAgeFromBirthdate(birthdate: string): string {
-  if (!birthdate) return '';
-  
-  const birthDate = new Date(birthdate);
+export function timeAgo(dateStr: string | Date): string {
+  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
   const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.round(diffMs / 1000);
+  const diffMin = Math.round(diffSec / 60);
+  const diffHour = Math.round(diffMin / 60);
+  const diffDay = Math.round(diffHour / 24);
+  const diffMonth = Math.round(diffDay / 30);
+  const diffYear = Math.round(diffDay / 365);
   
-  // Check if birthdate is valid
-  if (isNaN(birthDate.getTime())) {
-    return '';
-  }
-  
-  let years = now.getFullYear() - birthDate.getFullYear();
-  let months = now.getMonth() - birthDate.getMonth();
-  
-  // Adjust years and months if needed
-  if (months < 0) {
-    years--;
-    months += 12;
-  }
-  
-  // Format the age string
-  if (years === 0) {
-    return `${months} month${months !== 1 ? 's' : ''}`;
-  } else if (months === 0) {
-    return `${years} year${years !== 1 ? 's' : ''}`;
-  } else {
-    return `${years} year${years !== 1 ? 's' : ''}, ${months} month${months !== 1 ? 's' : ''}`;
-  }
+  if (diffSec < 60) return `${diffSec} second${diffSec !== 1 ? 's' : ''} ago`;
+  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+  if (diffDay < 30) return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+  if (diffMonth < 12) return `${diffMonth} month${diffMonth !== 1 ? 's' : ''} ago`;
+  return `${diffYear} year${diffYear !== 1 ? 's' : ''} ago`;
 }
 
 /**
- * Format a date for input fields (YYYY-MM-DD)
- * @param date Date object or date string
- * @returns Formatted date string (YYYY-MM-DD)
+ * Calculate age from a birthdate
  */
-export function formatDateForInput(date: Date | string | null): string {
-  if (!date) return '';
+export function calculateAge(birthdate: string | Date): string {
+  const birth = typeof birthdate === 'string' ? new Date(birthdate) : birthdate;
+  const now = new Date();
   
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  let years = now.getFullYear() - birth.getFullYear();
+  const months = now.getMonth() - birth.getMonth();
   
-  // Check if date is valid
-  if (isNaN(dateObj.getTime())) {
-    return '';
+  if (months < 0 || (months === 0 && now.getDate() < birth.getDate())) {
+    years--;
   }
   
-  const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const day = String(dateObj.getDate()).padStart(2, '0');
+  if (years < 1) {
+    // Calculate months for puppies
+    let monthsAge = months;
+    if (monthsAge < 0) monthsAge += 12;
+    return `${monthsAge} month${monthsAge !== 1 ? 's' : ''}`;
+  }
   
-  return `${year}-${month}-${day}`;
+  return `${years} year${years !== 1 ? 's' : ''}`;
 }

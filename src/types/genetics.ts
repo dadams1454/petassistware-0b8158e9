@@ -1,71 +1,76 @@
 
-// Define type for genetic health marker
+export type GeneticHealthStatus = 'clear' | 'carrier' | 'affected' | 'unknown';
+
 export interface GeneticHealthMarker {
-  status: 'clear' | 'carrier' | 'affected';
+  status: GeneticHealthStatus;
   genotype: string;
   testDate?: string;
   labName?: string;
   certificateUrl?: string;
 }
 
-// Define type for dog genetic data
+export interface GeneticTest {
+  testId: string;
+  testType: string;
+  testDate: string;
+  result: string;
+  labName: string;
+  certificateUrl?: string;
+  verified?: boolean;
+}
+
 export interface DogGenotype {
-  // Basic info
   dogId: string;
   updatedAt: string;
-  
-  // Color genes
-  baseColor: string; // E/e (black/red)
-  brownDilution: string; // B/b (brown dilution)
-  dilution: string; // D/d (dilution)
-  agouti: string; // A/a (agouti)
-  patterns: string[]; // Special patterns (landseer, etc)
-  
-  // Health markers
-  healthMarkers: {
-    [key: string]: GeneticHealthMarker;
+  baseColor: string;
+  brownDilution: string;
+  dilution: string;
+  agouti: string;
+  patterns: string[];
+  healthMarkers: Record<string, GeneticHealthMarker>;
+  testResults: GeneticTest[];
+}
+
+export interface GeneticCompatibility {
+  calculationDate: string;
+  compatibility: {
+    coi: number;
+    healthRisks: Array<{
+      condition: string;
+      risk: string;
+      probability: number;
+    }>;
+    colorProbabilities: Record<string, number>;
   };
-  
-  // Test metadata
-  testResults: {
-    testId: string;
-    testType: string;
-    testDate: string;
-    result: string;
-    labName: string;
-    certificateUrl?: string;
-  }[];
 }
 
-export interface HealthWarning {
-  condition: string;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  affectedPercentage?: number;
+export interface MultiTraitMatrixProps {
+  dogId: string;
+  dogData?: DogGenotype;
 }
 
-export interface ColorProbability {
-  name: string;
-  probability: number;
-  color: string;
+export interface HealthMarkersPanelProps {
+  dogData?: DogGenotype;
 }
 
-export interface PairingAnalysis {
-  coi: number; // Coefficient of Inbreeding
-  healthWarnings: HealthWarning[];
-  compatibleTests: string[];
-  incompatibleTests: string[];
-  traitPredictions: {
-    color: Record<string, number>; // Color name -> percentage
-    size: {
-      males: string;
-      females: string;
-    };
-    coat: string;
-  };
-  commonAncestors?: {
-    dogId: string;
-    name: string;
-    relationship: string;
-  }[];
+export interface CompactGenotypeViewProps {
+  dogData?: DogGenotype;
+  showColorTraits?: boolean;
+  showHealthTests?: boolean;
+}
+
+export interface GeneticReportGeneratorProps {
+  dogId: string;
+  dogName?: string;
+  dogGenetics?: DogGenotype;
+}
+
+export interface InteractivePedigreeProps {
+  dogId: string;
+  currentDog?: any;
+  generations?: number;
+}
+
+export interface HistoricalCOIChartProps {
+  dogId: string;
 }
