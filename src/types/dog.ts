@@ -1,3 +1,4 @@
+
 export type DogColor = 
   | 'black'
   | 'brown'
@@ -24,7 +25,10 @@ export type DogBreed =
   | 'dachshund'
   | 'mixed';
 
-export type DogGender = 'male' | 'female';
+export enum DogGender {
+  Male = 'male',
+  Female = 'female'
+}
 
 export type DogSize = 'small' | 'medium' | 'large' | 'giant';
 
@@ -56,7 +60,7 @@ export type RegistrationOrganization =
   | 'other';
 
 // Import from health.ts to ensure consistent types
-import { HealthRecordType, HealthRecord } from '@/types/health';
+import { HealthRecordTypeEnum, HealthRecord } from '@/types/health';
 
 export interface DogProfile {
   id: string;
@@ -95,6 +99,7 @@ export interface DogProfile {
 // Re-export for backward compatibility
 // Using 'export type' instead of 'export' because of 'isolatedModules'
 export type { 
-  HealthRecord, 
-  HealthRecordType 
+  HealthRecord
 };
+
+export { HealthRecordTypeEnum };
