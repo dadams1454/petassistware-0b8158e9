@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -6,8 +5,7 @@ import { CalendarDays, Edit, PawPrint, Dog } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Litter } from '@/types/litter';
-import { Dog as DogType } from '@/types/dog';
+import { Litter, Dog as DogType } from '@/types/litter'; // Import both types from litter.ts
 
 interface LitterHeaderProps {
   litter: Litter;
