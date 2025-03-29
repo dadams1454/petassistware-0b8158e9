@@ -36,33 +36,6 @@ export type Database = {
         }
         Relationships: []
       }
-      breed_colors: {
-        Row: {
-          breed: string
-          color_code: string | null
-          color_name: string
-          created_at: string
-          id: string
-          is_akc_recognized: boolean
-        }
-        Insert: {
-          breed: string
-          color_code?: string | null
-          color_name: string
-          created_at?: string
-          id?: string
-          is_akc_recognized?: boolean
-        }
-        Update: {
-          breed?: string
-          color_code?: string | null
-          color_name?: string
-          created_at?: string
-          id?: string
-          is_akc_recognized?: boolean
-        }
-        Relationships: []
-      }
       breeder_profiles: {
         Row: {
           breeding_experience: string | null
@@ -311,74 +284,6 @@ export type Database = {
           description?: string | null
           id?: string
           title?: string
-        }
-        Relationships: []
-      }
-      color_genetics: {
-        Row: {
-          breed: string
-          color_name: string
-          created_at: string
-          genotype: string
-          id: string
-          inheritance_pattern: string
-          is_dominant: boolean
-        }
-        Insert: {
-          breed: string
-          color_name: string
-          created_at?: string
-          genotype: string
-          id?: string
-          inheritance_pattern: string
-          is_dominant?: boolean
-        }
-        Update: {
-          breed?: string
-          color_name?: string
-          created_at?: string
-          genotype?: string
-          id?: string
-          inheritance_pattern?: string
-          is_dominant?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "color_genetics_breed_color_name_fkey"
-            columns: ["breed", "color_name"]
-            isOneToOne: false
-            referencedRelation: "breed_colors"
-            referencedColumns: ["breed", "color_name"]
-          },
-        ]
-      }
-      color_inheritance_rules: {
-        Row: {
-          breed: string
-          created_at: string
-          id: string
-          offspring_genotype: string
-          parent1_genotype: string
-          parent2_genotype: string
-          probability: number
-        }
-        Insert: {
-          breed: string
-          created_at?: string
-          id?: string
-          offspring_genotype: string
-          parent1_genotype: string
-          parent2_genotype: string
-          probability: number
-        }
-        Update: {
-          breed?: string
-          created_at?: string
-          id?: string
-          offspring_genotype?: string
-          parent1_genotype?: string
-          parent2_genotype?: string
-          probability?: number
         }
         Relationships: []
       }

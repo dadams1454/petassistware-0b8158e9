@@ -37,7 +37,7 @@ export const useTimeTableState = (
     setSelectedDogId 
   } = useDialogState(activeCategory);
   
-  // Use the table hook to get all the necessary data and handlers
+  // Use the potty break table hook to get all the necessary data and handlers
   const {
     sortedDogs,
     hasPottyBreak,
