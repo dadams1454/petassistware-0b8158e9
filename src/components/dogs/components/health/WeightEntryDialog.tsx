@@ -81,7 +81,8 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
         date: values.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
         weight: values.weight,
         unit: values.unit,
-        weight_unit: values.unit, // Add both for compatibility
+        // We also include weight_unit for backward compatibility
+        weight_unit: values.unit,
         notes: values.notes
       };
       
@@ -166,7 +167,7 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
               
               <FormField
                 control={form.control}
-                name="weight_unit"
+                name="unit"
                 render={({ field }) => (
                   <FormItem className="w-24">
                     <FormLabel>Unit*</FormLabel>
@@ -180,10 +181,10 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="lbs">lbs</SelectItem>
-                        <SelectItem value="kg">kg</SelectItem>
-                        <SelectItem value="g">g</SelectItem>
-                        <SelectItem value="oz">oz</SelectItem>
+                        <SelectItem value={WeightUnitEnum.Pounds}>lbs</SelectItem>
+                        <SelectItem value={WeightUnitEnum.Kilograms}>kg</SelectItem>
+                        <SelectItem value={WeightUnitEnum.Grams}>g</SelectItem>
+                        <SelectItem value={WeightUnitEnum.Ounces}>oz</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

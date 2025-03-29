@@ -96,8 +96,8 @@ export interface WeightRecord {
   id: string;
   dog_id: string;
   weight: number;
-  unit: WeightUnitEnum; // The interface property
-  weight_unit?: string; // For database compatibility
+  unit: WeightUnitEnum; // The interface property - main property to use
+  weight_unit?: string; // For database compatibility - kept for backward compatibility
   date: string;
   notes?: string;
   created_at: string;
@@ -113,7 +113,7 @@ export const adaptHealthRecord = (record: any): HealthRecord => {
     record_type: record.record_type,
     title: record.title || '',
     description: record.description || record.record_notes || '',
-    date: record.date || record.visit_date || new Date().toISOString(),
+    date: record.visit_date || record.date || new Date().toISOString(),
     visit_date: record.visit_date,
     performed_by: record.performed_by || record.vet_name || '',
     next_due_date: record.next_due_date,
@@ -130,7 +130,7 @@ export const adaptWeightRecord = (record: any): WeightRecord => {
     id: record.id,
     dog_id: record.dog_id,
     weight: record.weight,
-    unit: record.unit || record.weight_unit as WeightUnitEnum,
+    unit: (record.unit || record.weight_unit) as WeightUnitEnum,
     weight_unit: record.weight_unit, // Keep the original property
     date: record.date,
     notes: record.notes,

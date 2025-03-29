@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { 
   HealthRecord, 
@@ -37,21 +36,24 @@ export const getHealthRecordsByType = async (dogId: string, type: HealthRecordTy
 };
 
 export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>): Promise<HealthRecord> => {
+  // Prepare database record from our interface
+  const dbRecord = {
+    dog_id: record.dog_id,
+    record_type: record.record_type,
+    title: record.title,
+    description: record.description,
+    visit_date: record.date || record.visit_date,
+    performed_by: record.performed_by,
+    next_due_date: record.next_due_date,
+    vet_name: record.performed_by || '',  // Ensure vet_name is provided
+    record_notes: record.description || '', // Map description to record_notes
+    // Include any other relevant fields
+    ...record
+  };
+
   const { data, error } = await supabase
     .from('health_records')
-    .insert([
-      {
-        dog_id: record.dog_id,
-        record_type: record.record_type,
-        title: record.title,
-        description: record.description,
-        visit_date: record.date || record.visit_date,
-        performed_by: record.performed_by,
-        next_due_date: record.next_due_date,
-        // Include any other relevant fields
-        ...record
-      }
-    ])
+    .insert([dbRecord])
     .select()
     .single();
 
