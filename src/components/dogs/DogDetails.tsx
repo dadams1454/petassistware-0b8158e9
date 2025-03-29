@@ -12,7 +12,6 @@ interface DogDetailsProps {
 }
 
 const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
-  const [activeTab, setActiveTab] = useState("overview");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   // Use our custom hook to manage events
@@ -38,8 +37,6 @@ const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
       
       <DogDetailsTabs
         dog={dog}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         events={events}
         onViewEvent={handleViewEvent}
         onAddAppointment={handleAddAppointment}

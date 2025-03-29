@@ -1,11 +1,11 @@
 
 import { supabase, customSupabase } from '@/integrations/supabase/client';
-import { formatDateForDisplay } from '@/utils/dateUtils';
+import { HealthRecord, HealthRecordType } from '@/types/health';
 
 /**
  * Fetch all health records for a dog
  */
-export async function fetchDogHealthRecords(dogId: string) {
+export async function getHealthRecords(dogId: string) {
   try {
     const { data, error } = await supabase
       .from('health_records')
@@ -187,3 +187,4 @@ export async function deleteWeightRecord(id: string) {
     throw error;
   }
 }
+

@@ -1,86 +1,94 @@
 
 /**
- * Format a date string to a database-friendly format (YYYY-MM-DD)
+ * Format a date for display
  */
-export function formatDateForDatabase(dateStr: string | Date): string {
-  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
-  return date.toISOString().split('T')[0];
-}
-
-/**
- * Format a date to a human-readable format
- */
-export function formatDateForDisplay(dateStr: string | Date): string {
-  if (!dateStr) return '';
-  
-  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  }).format(date);
-}
-
-/**
- * Get a human-readable time ago string
- */
-export function timeAgo(dateStr: string | Date): string {
-  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.round(diffMs / 1000);
-  const diffMin = Math.round(diffSec / 60);
-  const diffHour = Math.round(diffMin / 60);
-  const diffDay = Math.round(diffHour / 24);
-  const diffMonth = Math.round(diffDay / 30);
-  const diffYear = Math.round(diffDay / 365);
-  
-  if (diffSec < 60) return `${diffSec} second${diffSec !== 1 ? 's' : ''} ago`;
-  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
-  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
-  if (diffDay < 30) return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
-  if (diffMonth < 12) return `${diffMonth} month${diffMonth !== 1 ? 's' : ''} ago`;
-  return `${diffYear} year${diffYear !== 1 ? 's' : ''} ago`;
-}
-
-/**
- * Calculate age from a birthdate
- */
-export function calculateAge(birthdate: string | Date): string {
-  const birth = typeof birthdate === 'string' ? new Date(birthdate) : birthdate;
-  const now = new Date();
-  
-  let years = now.getFullYear() - birth.getFullYear();
-  const months = now.getMonth() - birth.getMonth();
-  
-  if (months < 0 || (months === 0 && now.getDate() < birth.getDate())) {
-    years--;
-  }
-  
-  if (years < 1) {
-    // Calculate months for puppies
-    let monthsAge = months;
-    if (monthsAge < 0) monthsAge += 12;
-    return `${monthsAge} month${monthsAge !== 1 ? 's' : ''}`;
-  }
-  
-  return `${years} year${years !== 1 ? 's' : ''}`;
-}
-
-/**
- * Format date for chart labels
- */
-export function formatDateForChart(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-/**
- * Format date for chart tooltips
- */
-export function formatDate(date: string | Date): string {
+export const formatDateForDisplay = (date: Date | string): string => {
   if (!date) return '';
   
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-}
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+/**
+ * Format a date for database storage (ISO format)
+ */
+export const formatDateForDatabase = (date: Date | string): string => {
+  if (!date) return '';
+  
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toISOString();
+};
+
+/**
+ * Get a formatted date string for "today"
+ */
+export const getTodayFormatted = (): string => {
+  return formatDateForDisplay(new Date());
+};
+
+/**
+ * Calculate the difference in days between two dates
+ */
+export const daysBetween = (start: Date | string, end: Date | string): number => {
+  const startDate = typeof start === 'string' ? new Date(start) : start;
+  const endDate = typeof end === 'string' ? new Date(end) : end;
+  
+  const differenceInTime = endDate.getTime() - startDate.getTime();
+  return Math.floor(differenceInTime / (1000 * 3600 * 24));
+};
+
+/**
+ * Add days to a date
+ */
+export const addDays = (date: Date | string, days: number): Date => {
+  const d = typeof date === 'string' ? new Date(date) : new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+};
+
+/**
+ * Check if a date is in the past
+ */
+export const isDateInPast = (date: Date | string): boolean => {
+  const checkDate = typeof date === 'string' ? new Date(date) : date;
+  const today = new Date();
+  
+  // Reset time part for comparing just the date
+  today.setHours(0, 0, 0, 0);
+  checkDate.setHours(0, 0, 0, 0);
+  
+  return checkDate < today;
+};
+
+/**
+ * Check if a date is in the future
+ */
+export const isDateInFuture = (date: Date | string): boolean => {
+  const checkDate = typeof date === 'string' ? new Date(date) : date;
+  const today = new Date();
+  
+  // Reset time part for comparing just the date
+  today.setHours(0, 0, 0, 0);
+  checkDate.setHours(0, 0, 0, 0);
+  
+  return checkDate > today;
+};
+
+/**
+ * Format a date as YYYY-MM-DD (for input[type="date"])
+ */
+export const formatDateForInput = (date: Date | string): string => {
+  if (!date) return '';
+  
+  const d = typeof date === 'string' ? new Date(date) : date;
+  
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+};
