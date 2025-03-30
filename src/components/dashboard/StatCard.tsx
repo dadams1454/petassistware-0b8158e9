@@ -1,33 +1,40 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 
-export interface StatCardProps {
+interface StatCardProps {
   title: string;
-  value: number;
+  value: number | string;
+  change?: number;
   isLoading?: boolean;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, isLoading = false }) => {
+const StatCard: React.FC<StatCardProps> = ({ 
+  title, 
+  value, 
+  change, 
+  isLoading = false 
+}) => {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex flex-col space-y-1">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {title}
-          </p>
+    <div className="bg-white border rounded-lg p-6 shadow-sm">
+      {isLoading ? (
+        <>
+          <Skeleton className="h-5 w-24 mb-2" />
+          <Skeleton className="h-8 w-16" />
+        </>
+      ) : (
+        <>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">{title}</h3>
+          <p className="text-3xl font-bold">{value}</p>
           
-          {isLoading ? (
-            <Skeleton className="h-8 w-20" />
-          ) : (
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              {value.toLocaleString()}
-            </p>
+          {change !== undefined && (
+            <div className={`text-sm mt-2 ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {change >= 0 ? '+' : ''}{change}%
+            </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
+        </>
+      )}
+    </div>
   );
 };
 

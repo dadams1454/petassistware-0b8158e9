@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardData } from '@/services/dashboardService';
 import StatCard from './StatCard';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -16,12 +15,13 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data, isLoading, 
   const { user } = useAuth();
   
   return (
-    <Card className="col-span-3">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Overview</CardTitle>
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold">Overview</h2>
         {user && <GenerateTestDataButton />}
-      </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <StatCard
           title="Total Dogs"
           value={data.totalDogs}
@@ -52,13 +52,13 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data, isLoading, 
           value={data.availablePuppies}
           isLoading={isLoading}
         />
-         <StatCard
+        <StatCard
           title="Total Customers"
           value={data.totalCustomers}
           isLoading={isLoading}
         />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

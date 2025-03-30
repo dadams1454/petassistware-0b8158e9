@@ -20,10 +20,10 @@ const NavLinks: React.FC<NavLinksProps> = ({ currentPath, userRole }) => {
         <Link
           key={item.to}
           to={item.to}
-          className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+          className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
             currentPath === item.to
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'text-blue-600 bg-blue-50'
+              : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
           }`}
         >
           {item.icon}

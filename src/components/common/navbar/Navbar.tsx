@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
 import Logo from '../Logo';
 import NavLinks from './NavLinks';
@@ -13,29 +13,30 @@ const Navbar: React.FC = () => {
   const { user, userRole } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  console.log('Current user role:', userRole); // Debugging
-
   return (
-    <nav className="bg-background border-b w-full">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
+    <nav className="bg-white border-b w-full px-4 py-2">
+      <div className="flex items-center justify-between h-14">
+        <div className="flex items-center">
+          <div className="flex-shrink-0 flex items-center">
+            <Link to="/dashboard" className="flex items-center gap-2">
               <Logo />
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <NavLinks currentPath={location.pathname} userRole={userRole} />
-            </div>
+              <span className="text-lg font-semibold">Pet Assist Ware</span>
+            </Link>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <UserMenu />
+          <div className="hidden md:ml-10 md:flex md:space-x-8">
+            <NavLinks currentPath={location.pathname} userRole={userRole} />
           </div>
-          <div className="-mr-2 flex items-center sm:hidden">
-            <MobileMenu 
-              isOpen={mobileMenuOpen} 
-              onToggle={() => setMobileMenuOpen(!mobileMenuOpen)} 
-            />
-          </div>
+        </div>
+        
+        <div className="hidden md:flex md:items-center">
+          <UserMenu />
+        </div>
+        
+        <div className="md:hidden">
+          <MobileMenu 
+            isOpen={mobileMenuOpen} 
+            onToggle={() => setMobileMenuOpen(!mobileMenuOpen)} 
+          />
         </div>
       </div>
 
