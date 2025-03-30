@@ -1,53 +1,42 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
 
-interface ActionProps {
-  label: string;
-  onClick: () => void;
-  icon?: React.ReactNode;
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
-}
+import React from 'react';
+import { Button, ButtonProps } from '@/components/ui/button';
 
 interface SectionHeaderProps {
   title: string;
   description?: string;
-  action?: React.ReactNode | ActionProps;
-  className?: string;
+  action?: {
+    label: string;
+    onClick: () => void;
+    variant?: ButtonProps['variant'];
+    icon?: React.ReactNode;
+  };
 }
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   description,
-  action,
-  className = '',
+  action
 }) => {
-  const renderAction = () => {
-    if (!action) return null;
-    
-    // Check if action is an object with label and onClick properties
-    if (typeof action === 'object' && 'label' in action && 'onClick' in action) {
-      const { label, onClick, icon, variant = 'outline' } = action as ActionProps;
-      return (
-        <Button variant={variant} onClick={onClick} size="sm" className="gap-2">
-          {icon}
-          {label}
-        </Button>
-      );
-    }
-    
-    // Otherwise, render the action as is
-    return action;
-  };
-  
   return (
-    <div className={`flex flex-col sm:flex-row justify-between sm:items-center mb-4 ${className}`}>
+    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-4">
       <div>
-        <h3 className="text-lg font-semibold leading-tight">{title}</h3>
+        <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
         {description && (
-          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      {action && <div className="mt-2 sm:mt-0">{renderAction()}</div>}
+      
+      {action && (
+        <Button
+          onClick={action.onClick}
+          variant={action.variant || "default"}
+          className="sm:self-start"
+        >
+          {action.icon}
+          {action.label}
+        </Button>
+      )}
     </div>
   );
 };
