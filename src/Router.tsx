@@ -2,11 +2,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
-import DogDetailPage from '@/pages/DogDetail';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
 import Dogs from '@/pages/Dogs';
+import DogProfilePage from '@/pages/DogProfile';
 import WeightTracking from '@/pages/WeightTracking';
 import Customers from '@/pages/Customers';
 import Litters from '@/pages/Litters';
@@ -79,7 +79,7 @@ const Router = () => {
       {/* Dog routes */}
       <Route path="/dogs/:id" element={
         <ProtectedRoute>
-          <DogDetailPage />
+          <DogProfilePage />
         </ProtectedRoute>
       } />
       

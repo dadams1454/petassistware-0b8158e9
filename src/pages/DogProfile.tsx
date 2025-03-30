@@ -1,128 +1,26 @@
+
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Edit, Trash2 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Edit } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import DogProfileDetails from '@/components/dogs/components/profile/DogProfileDetails';
-import DogHealthRecords from '@/components/dogs/components/profile/DogHealthRecords';
-import DogCareHistory from '@/components/dogs/components/profile/DogCareHistory';
 import EditDogDialog from '@/components/dogs/components/details/EditDogDialog';
-import { DogProfile, DogGender, DogStatus, WeightUnit } from '@/types/dog';
 import { Button } from '@/components/ui/button';
-import GeneticsTab from '@/components/dogs/components/tabs/GeneticsTab';
-import PedigreeTab from '@/components/dogs/components/tabs/PedigreeTab';
+import { useDogProfileData } from '@/hooks/useDogProfileData';
+import DogProfileTabs from '@/components/dogs/components/profile/DogProfileTabs';
+import DogDeleteHandler from '@/components/dogs/components/profile/DogDeleteHandler';
 
 // Import standardized components
 import {
   PageHeader,
   LoadingState,
-  ErrorState,
-  ConfirmDialog
+  ErrorState
 } from '@/components/ui/standardized';
 
 const DogProfilePage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  
-  // Fetch the specific dog data
-  const { data: dog, isLoading, error, refetch } = useQuery({
-    queryKey: ['dog', id],
-    queryFn: async () => {
-      if (!id) return null;
-      
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (error) {
-        toast({
-          title: 'Error fetching dog details',
-          description: error.message,
-          variant: 'destructive',
-        });
-        throw new Error(error.message);
-      }
-      
-      // Create a properly typed DogProfile object with all required fields
-      const dogWithDefaults: DogProfile = {
-        id: data.id,
-        name: data.name,
-        breed: data.breed,
-        gender: (data.gender || 'male') as DogGender,
-        birthdate: data.birthdate || '',
-        color: data.color || '',
-        weight: data.weight || 0,
-        weight_unit: 'lbs' as WeightUnit, // Default value
-        status: 'active' as DogStatus, // Default value
-        photo_url: data.photo_url,
-        microchip_number: data.microchip_number,
-        registration_number: data.registration_number,
-        notes: data.notes,
-        is_pregnant: data.is_pregnant || false,
-        last_heat_date: data.last_heat_date,
-        tie_date: data.tie_date,
-        litter_number: data.litter_number || 0,
-        created_at: data.created_at || new Date().toISOString(),
-        pedigree: data.pedigree || false,
-        requires_special_handling: data.requires_special_handling || false,
-        potty_alert_threshold: data.potty_alert_threshold,
-        max_time_between_breaks: data.max_time_between_breaks,
-        vaccination_type: data.vaccination_type,
-        vaccination_notes: data.vaccination_notes,
-        last_vaccination_date: data.last_vaccination_date,
-        owner_id: data.owner_id,
-        // Provide default values for missing properties
-        sire_id: undefined,
-        dam_id: undefined,
-        registration_organization: undefined,
-        microchip_location: undefined,
-        group_ids: undefined
-      };
-      
-      return dogWithDefaults;
-    },
-  });
-
-  const handleDeleteDog = async () => {
-    if (!id) return;
-    
-    setIsDeleting(true);
-    try {
-      const { error } = await supabase
-        .from('dogs')
-        .delete()
-        .eq('id', id);
-        
-      if (error) throw error;
-      
-      toast({
-        title: 'Dog deleted',
-        description: 'The dog has been permanently deleted',
-      });
-      
-      navigate('/dogs');
-    } catch (error) {
-      toast({
-        title: 'Error deleting dog',
-        description: error instanceof Error ? error.message : 'An unknown error occurred',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsDeleting(false);
-      setIsDeleteDialogOpen(false);
-    }
-  };
-
+  const { dog, isLoading, error, refetch } = useDogProfileData(id);
   
   if (isLoading) {
     return (
@@ -168,64 +66,15 @@ const DogProfilePage = () => {
             }
           />
           
-          <div className="flex justify-end mb-4">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Dog
-            </Button>
-          </div>
+          <DogDeleteHandler dogId={dog.id} />
           
-          <Tabs defaultValue="details" className="mt-6">
-            <TabsList>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="health">Health Records</TabsTrigger>
-              <TabsTrigger value="care">Care History</TabsTrigger>
-              <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
-              <TabsTrigger value="genetics">Genetics</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="details" className="mt-4">
-              <DogProfileDetails dog={dog} />
-            </TabsContent>
-            
-            <TabsContent value="health" className="mt-4">
-              <DogHealthRecords dogId={dog.id} />
-            </TabsContent>
-            
-            <TabsContent value="care" className="mt-4">
-              <DogCareHistory dogId={dog.id} />
-            </TabsContent>
-
-            <TabsContent value="pedigree" className="mt-4">
-              <PedigreeTab dogId={dog.id} currentDog={dog} />
-            </TabsContent>
-            
-            <TabsContent value="genetics" className="mt-4">
-              <GeneticsTab dogId={dog.id} dogName={dog.name} />
-            </TabsContent>
-          </Tabs>
+          <DogProfileTabs dog={dog} />
           
           {/* Edit Dialog */}
           <EditDogDialog 
             open={isEditDialogOpen}
             onOpenChange={setIsEditDialogOpen}
             dog={dog}
-          />
-          
-          {/* Delete Confirmation Dialog */}
-          <ConfirmDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-            title="Delete Dog Profile"
-            description="Are you sure you want to delete this dog? This action cannot be undone."
-            confirmLabel="Delete"
-            variant="destructive"
-            isLoading={isDeleting}
-            onConfirm={handleDeleteDog}
           />
         </div>
       </MainLayout>
