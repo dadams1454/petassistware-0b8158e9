@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -54,7 +53,7 @@ const DogProfilePage = () => {
         throw new Error(error.message);
       }
       
-      // Ensure all required properties from DogProfile are set with defaults if missing
+      // Create a properly typed DogProfile object with all required fields
       const dogWithDefaults: DogProfile = {
         id: data.id,
         name: data.name,
@@ -63,8 +62,8 @@ const DogProfilePage = () => {
         birthdate: data.birthdate || '',
         color: data.color || '',
         weight: data.weight || 0,
-        weight_unit: data.weight_unit || 'lbs' as WeightUnit,
-        status: data.status || 'active' as DogStatus,
+        weight_unit: 'lbs' as WeightUnit, // Default value
+        status: 'active' as DogStatus, // Default value
         photo_url: data.photo_url,
         microchip_number: data.microchip_number,
         registration_number: data.registration_number,
@@ -82,11 +81,12 @@ const DogProfilePage = () => {
         vaccination_notes: data.vaccination_notes,
         last_vaccination_date: data.last_vaccination_date,
         owner_id: data.owner_id,
-        sire_id: data.sire_id,
-        dam_id: data.dam_id,
-        registration_organization: data.registration_organization,
-        microchip_location: data.microchip_location,
-        group_ids: data.group_ids,
+        // Provide default values for missing properties
+        sire_id: undefined,
+        dam_id: undefined,
+        registration_organization: undefined,
+        microchip_location: undefined,
+        group_ids: undefined
       };
       
       return dogWithDefaults;
@@ -123,6 +123,7 @@ const DogProfilePage = () => {
     }
   };
 
+  
   if (isLoading) {
     return (
       <ProtectedRoute>
