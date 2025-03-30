@@ -1,59 +1,91 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import TextareaInput from '@/components/dogs/form/TextareaInput';
-import { PlusCircle, Syringe, Stethoscope, FileText } from 'lucide-react';
-import { PuppyFormData } from './types';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { PuppyFormValues } from '@/hooks/usePuppyForm';
 
 interface HealthTabProps {
-  form: UseFormReturn<PuppyFormData>;
+  form: UseFormReturn<PuppyFormValues>;
 }
 
 const HealthTab: React.FC<HealthTabProps> = ({ form }) => {
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-1">
-        <PlusCircle className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-medium">Deworming</h3>
+      <div className="grid md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="vaccination_dates"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Vaccination Dates</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Enter vaccination dates" 
+                  {...field} 
+                  value={field.value || ''} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="deworming_dates"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Deworming Dates</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Enter deworming dates" 
+                  {...field} 
+                  value={field.value || ''} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
-      <TextareaInput
-        form={form}
-        name="deworming_dates"
-        label="Deworming Dates"
-        placeholder="Enter deworming dates and details (e.g., June 1 - Panacur, June 14 - Drontal)"
-      />
-      
-      <div className="flex items-center gap-2 mb-1 mt-4">
-        <Syringe className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-medium">Vaccinations</h3>
-      </div>
-      <TextareaInput
-        form={form}
-        name="vaccination_dates"
-        label="Vaccination Dates"
-        placeholder="Enter vaccination dates and details (e.g., June 28 - DHPP, July 12 - DHPP Booster)"
-      />
-      
-      <div className="flex items-center gap-2 mb-1 mt-4">
-        <Stethoscope className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-medium">Veterinary Checks</h3>
-      </div>
-      <TextareaInput
-        form={form}
+
+      <FormField
+        control={form.control}
         name="vet_check_dates"
-        label="Vet Check Dates"
-        placeholder="Enter vet check dates and findings"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Vet Check Dates</FormLabel>
+            <FormControl>
+              <Input 
+                placeholder="Enter vet check dates" 
+                {...field} 
+                value={field.value || ''} 
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
       />
-      
-      <div className="flex items-center gap-2 mb-1 mt-4">
-        <FileText className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-medium">Additional Notes</h3>
-      </div>
-      <TextareaInput
-        form={form}
-        name="notes"
-        label="Additional Notes"
-        placeholder="Any other health information or general notes about the puppy"
+
+      <FormField
+        control={form.control}
+        name="health_notes"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Health Notes</FormLabel>
+            <FormControl>
+              <Textarea 
+                placeholder="Enter any health-related notes" 
+                className="min-h-[100px]" 
+                {...field} 
+                value={field.value || ''} 
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
       />
     </div>
   );

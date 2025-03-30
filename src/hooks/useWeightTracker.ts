@@ -14,6 +14,7 @@ export const useWeightTracker = (puppyId: string) => {
   const { 
     data: weightRecords,
     isLoading,
+    error,
     refetch
   } = useQuery({
     queryKey: ['weight-records', puppyId],
@@ -51,8 +52,12 @@ export const useWeightTracker = (puppyId: string) => {
       let dateString = '';
       if (typeof record.date === 'string') {
         dateString = record.date;
-      } else if (record.date instanceof Date) {
-        dateString = record.date.toISOString().split('T')[0];
+      } else if (record.date) {
+        // Check if it's a Date object
+        const dateObj = record.date as unknown as Date;
+        if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+          dateString = dateObj.toISOString().split('T')[0];
+        }
       }
       
       // Insert new weight record - use dog_id: null when we're tracking a puppy

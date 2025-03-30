@@ -58,6 +58,7 @@ export interface PuppyFormData {
   assistance_notes?: string;
   sale_price?: number;
   notes?: string;
+  weight_notes?: string;
 }
 
 export interface SocializationCategory {

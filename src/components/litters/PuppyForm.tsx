@@ -9,7 +9,7 @@ import HealthTab from './puppies/HealthTab';
 import AKCRegistrationTab from './puppies/AKCRegistrationTab';
 import NewOwnerTab from './puppies/NewOwnerTab';
 import { PuppyFormProps } from './puppies/types';
-import { usePuppyForm } from '@/hooks/usePuppyForm';
+import { usePuppyForm, PuppyFormValues } from '@/hooks/usePuppyForm';
 
 const PuppyForm: React.FC<PuppyFormProps> = ({ 
   litterId, 
@@ -23,9 +23,14 @@ const PuppyForm: React.FC<PuppyFormProps> = ({
     onSuccess: onSuccess || (() => {})
   });
 
+  // Create a wrapper function to handle the form submission
+  const onSubmit = (data: PuppyFormValues) => {
+    return handleSubmit(data);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid grid-cols-5 mb-4">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>

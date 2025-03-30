@@ -1,14 +1,14 @@
 
 import React from 'react';
-import { z } from 'zod';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import WeightTracker from './weight/WeightTracker';
+import { PuppyFormValues } from '@/hooks/usePuppyForm';
 
 interface WeightsTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<PuppyFormValues>;
   puppyId?: string;
   showFullTracker?: boolean;
 }

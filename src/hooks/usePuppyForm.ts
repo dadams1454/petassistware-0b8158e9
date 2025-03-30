@@ -9,7 +9,7 @@ import { Puppy, PuppyFormData } from '@/components/litters/puppies/types';
 
 const puppySchema = z.object({
   name: z.string().optional(),
-  gender: z.enum(['Male', 'Female']),
+  gender: z.enum(['Male', 'Female']).default('Male'),
   color: z.string().min(1, 'Color is required'),
   birth_weight: z.string().optional(),
   current_weight: z.string().optional(),
@@ -23,6 +23,7 @@ const puppySchema = z.object({
   assistance_notes: z.string().optional(),
   sale_price: z.number().optional(),
   notes: z.string().optional(),
+  weight_notes: z.string().optional(),
 });
 
 export type PuppyFormValues = z.infer<typeof puppySchema>;

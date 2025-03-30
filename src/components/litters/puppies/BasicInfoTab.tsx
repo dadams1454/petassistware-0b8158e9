@@ -1,55 +1,32 @@
 
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { format } from 'date-fns';
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button as UIButton } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PuppyFormData } from './types';
-import { genderOptions, statusOptions, colorOptions } from './constants';
+import { UseFormReturn } from 'react-hook-form';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PuppyFormValues } from '@/hooks/usePuppyForm';
 
 interface BasicInfoTabProps {
-  form: UseFormReturn<PuppyFormData>;
+  form: UseFormReturn<PuppyFormValues>;
   litterId: string;
 }
 
-const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
+const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
   return (
     <div className="space-y-4">
-      {/* Puppy Name */}
+      {/* Name Field */}
       <FormField
         control={form.control}
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Puppy Name</FormLabel>
+            <FormLabel>Name</FormLabel>
             <FormControl>
-              <Input
-                placeholder="Enter puppy name"
-                {...field}
-                value={field.value || ''}
+              <Input 
+                placeholder="Enter puppy name" 
+                {...field} 
+                value={field.value || ''} 
               />
             </FormControl>
             <FormMessage />
@@ -57,18 +34,17 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
         )}
       />
 
-      {/* Two-column layout for Gender and Color */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Gender */}
+        {/* Gender Field */}
         <FormField
           control={form.control}
           name="gender"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Gender</FormLabel>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -76,11 +52,8 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {genderOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -88,37 +61,25 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
           )}
         />
 
-        {/* Color */}
+        {/* Color Field */}
         <FormField
           control={form.control}
           name="color"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Color</FormLabel>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select color" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {colorOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <Input 
+                  placeholder="Enter color" 
+                  {...field} 
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
 
-      {/* Two-column layout for Birth Date and Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Birth Date */}
         <FormField
@@ -127,46 +88,38 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Birth Date</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <UIButton
-                      variant="outline"
-                      className={cn(
-                        "pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        field.value instanceof Date 
-                          ? format(field.value, "PPP")
-                          : typeof field.value === 'string'
-                            ? format(new Date(field.value), "PPP")
-                            : "Select date"
-                      ) : (
-                        "Select date"
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </UIButton>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value instanceof Date ? field.value : undefined}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <DatePicker 
+                date={field.value} 
+                onSelect={field.onChange} 
+              />
               <FormMessage />
             </FormItem>
           )}
         />
 
+        {/* Birth Order */}
+        <FormField
+          control={form.control}
+          name="birth_order"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Birth Order</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  placeholder="Enter birth order" 
+                  {...field} 
+                  value={field.value || ''} 
+                  onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Birth Time */}
         <FormField
           control={form.control}
@@ -175,11 +128,29 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
             <FormItem>
               <FormLabel>Birth Time</FormLabel>
               <FormControl>
-                <Input
-                  type="time"
-                  placeholder="hh:mm"
-                  {...field}
-                  value={field.value || ''}
+                <Input 
+                  placeholder="e.g., 14:30" 
+                  {...field} 
+                  value={field.value || ''} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Presentation */}
+        <FormField
+          control={form.control}
+          name="presentation"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Presentation</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="e.g., Normal, Breech" 
+                  {...field} 
+                  value={field.value || ''} 
                 />
               </FormControl>
               <FormMessage />
@@ -188,37 +159,37 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
         />
       </div>
 
-      {/* Two-column layout for Microchip and Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Microchip Number */}
+        {/* Assistance Required */}
         <FormField
           control={form.control}
-          name="microchip_number"
+          name="assistance_required"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Microchip Number</FormLabel>
+            <FormItem className="flex flex-row items-center gap-2 space-y-0">
               <FormControl>
-                <Input
-                  placeholder="Enter microchip number"
-                  {...field}
-                  value={field.value || ''}
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  checked={field.value}
+                  onChange={field.onChange}
                 />
               </FormControl>
+              <FormLabel className="leading-none">Assistance Required</FormLabel>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Status */}
+        {/* Status Field */}
         <FormField
           control={form.control}
           name="status"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Status</FormLabel>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -226,11 +197,10 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {statusOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Available">Available</SelectItem>
+                  <SelectItem value="Reserved">Reserved</SelectItem>
+                  <SelectItem value="Sold">Sold</SelectItem>
+                  <SelectItem value="Unavailable">Unavailable</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -239,25 +209,26 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form, litterId }) => {
         />
       </div>
 
-      {/* Notes */}
-      <FormField
-        control={form.control}
-        name="notes"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Notes</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Enter any additional notes about this puppy"
-                className="min-h-[100px]"
-                {...field}
-                value={field.value || ''}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {/* Assistance Notes - only show if assistance is required */}
+      {form.watch("assistance_required") && (
+        <FormField
+          control={form.control}
+          name="assistance_notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Assistance Notes</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Enter details about assistance provided" 
+                  {...field} 
+                  value={field.value || ''} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
     </div>
   );
 };
