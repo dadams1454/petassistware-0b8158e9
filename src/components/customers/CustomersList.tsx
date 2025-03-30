@@ -9,10 +9,13 @@ import { usePuppyData } from './hooks/usePuppyData';
 import SearchBar from './components/SearchBar';
 import CustomerRow from './components/CustomerRow';
 
-interface CustomersListProps {
-  customers: Customer[];
+export interface CustomersListProps {
+  customers?: Customer[];
   isLoading: boolean;
   onCustomerUpdated: () => void;
+  filters?: any;
+  sort?: any;
+  onEditCustomer?: (customer: Customer) => void;
 }
 
 interface GroupedCustomers {
@@ -26,9 +29,10 @@ interface GroupedCustomers {
 }
 
 const CustomersList: React.FC<CustomersListProps> = ({ 
-  customers, 
+  customers = [], // Provide default empty array to prevent "undefined" errors
   isLoading,
-  onCustomerUpdated
+  onCustomerUpdated,
+  onEditCustomer
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const puppiesData = usePuppyData(customers);
@@ -137,6 +141,7 @@ const CustomersList: React.FC<CustomersListProps> = ({
                           customer={customer}
                           puppyInfo={puppyInfo}
                           onCustomerUpdated={onCustomerUpdated}
+                          onEditCustomer={onEditCustomer}
                         />
                       ))
                     )}
