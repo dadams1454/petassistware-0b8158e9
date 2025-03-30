@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 import { Litter } from '@/types/litter';
 
 export const useLitterActions = () => {
@@ -29,7 +30,10 @@ export const useLitterActions = () => {
         title: 'Litter Deleted',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been deleted.`,
         variant: 'default',
-        action: <button onClick={() => navigate('/litters')}>View Litters</button>
+        action: {
+          label: 'View Litters',
+          onClick: () => navigate('/litters')
+        }
       });
       
     } catch (error: any) {
@@ -62,7 +66,10 @@ export const useLitterActions = () => {
         title: 'Litter Archived',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been archived.`,
         variant: 'default',
-        action: <button onClick={() => navigate('/litters')}>View Litters</button>
+        action: {
+          label: 'View Litters',
+          onClick: () => navigate('/litters')
+        }
       });
       
     } catch (error: any) {
@@ -95,7 +102,10 @@ export const useLitterActions = () => {
         title: 'Litter Unarchived',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been unarchived.`,
         variant: 'default',
-        action: <button onClick={() => navigate('/litters')}>View Litters</button>
+        action: {
+          label: 'View Litters',
+          onClick: () => navigate('/litters')
+        }
       });
       
     } catch (error: any) {
