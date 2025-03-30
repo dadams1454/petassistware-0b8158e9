@@ -14,4 +14,40 @@ export const calculatePercentChange = (
   return ((currentWeight - previousWeight) / previousWeight) * 100;
 };
 
+export const convertWeight = (
+  weight: number,
+  fromUnit: string,
+  toUnit: string
+): number => {
+  if (fromUnit === toUnit) return weight;
+  
+  // Convert to grams first as a common unit
+  let weightInGrams = weight;
+  
+  // Convert from original unit to grams
+  switch (fromUnit) {
+    case 'oz':
+      weightInGrams = weight * 28.3495;
+      break;
+    case 'lbs':
+      weightInGrams = weight * 453.592;
+      break;
+    case 'kg':
+      weightInGrams = weight * 1000;
+      break;
+  }
+  
+  // Convert from grams to target unit
+  switch (toUnit) {
+    case 'oz':
+      return weightInGrams / 28.3495;
+    case 'lbs':
+      return weightInGrams / 453.592;
+    case 'kg':
+      return weightInGrams / 1000;
+    default:
+      return weightInGrams;
+  }
+};
+
 export default weightUnits;

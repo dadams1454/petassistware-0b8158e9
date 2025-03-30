@@ -20,12 +20,12 @@ const PuppyForm: React.FC<PuppyFormProps> = ({
   const { form, isSubmitting, handleSubmit } = usePuppyForm({
     litterId,
     initialData,
-    onSuccess
+    onSuccess: onSuccess || (() => {})
   });
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid grid-cols-5 mb-4">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>

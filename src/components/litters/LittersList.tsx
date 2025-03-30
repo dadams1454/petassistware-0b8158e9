@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { Columns, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import DeleteLitterDialog from './components/DeleteLitterDialog';
 import LitterTableView from './components/LitterTableView';
 import LitterCardView from './views/LitterCardView';
 import { Litter } from '@/types/litter'; // Import from our types file
-import useLitterActions from './hooks/useLitterActions';
+import { useLitterActions } from './hooks/useLitterActions';
 
 interface LittersListProps {
   litters: Litter[];

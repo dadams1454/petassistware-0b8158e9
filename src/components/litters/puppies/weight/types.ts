@@ -7,6 +7,7 @@ export interface WeightRecord {
   weight_unit: string;
   notes?: string;
   created_at: string;
+  percent_change?: number;
 }
 
 export interface WeightChartData {
@@ -17,6 +18,7 @@ export interface WeightChartData {
 export interface WeightTrackerProps {
   puppyId: string;
   onWeightAdded?: () => void;
+  onAddSuccess?: () => void;
 }
 
 export interface WeightFormData {

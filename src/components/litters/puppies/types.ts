@@ -1,11 +1,9 @@
 
-import { SocializationCategory } from '@/components/litters/puppies/types';
-
 export interface PuppyFormProps {
   litterId: string;
   initialData?: Puppy | null;
-  onSuccess: () => void;
-  onCancel: () => void;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 export interface Puppy {
@@ -20,7 +18,6 @@ export interface Puppy {
   photo_url?: string;
   status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
   birth_order?: number;
-  // Add missing properties from database schema
   birth_weight?: string;
   birth_time?: string;
   presentation?: string;
@@ -46,15 +43,14 @@ export interface PuppyWithAge extends Puppy {
 }
 
 export interface PuppyFormData {
-  name: string;
+  name?: string;
   gender: 'Male' | 'Female';
   color: string;
-  birth_date: string;
+  birth_date?: string | Date;
   current_weight?: string;
   microchip_number?: string;
   birth_order?: number;
   status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
-  // Add missing form fields
   birth_weight?: string;
   birth_time?: string;
   presentation?: string;
@@ -83,12 +79,16 @@ export interface SocializationRecord {
 export interface SocializationCategoryOption {
   id: string;
   name: string;
-  experiences: string[];
+  value: string;
+  label: string;
+  examples: string[];
 }
 
 export interface SocializationReactionOption {
   id: string;
   name: string;
+  value: string;
+  label: string;
   color: string;
 }
 
@@ -100,4 +100,5 @@ export interface WeightChartData {
 export interface WeightTrackerProps {
   puppyId: string;
   onWeightAdded?: () => void;
+  onAddSuccess?: () => void;
 }

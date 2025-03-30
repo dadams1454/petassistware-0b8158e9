@@ -1,151 +1,175 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useUser } from '@/contexts/AuthProvider';
-import { toast } from '@/components/ui/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 
-const AdminSetup: React.FC = () => {
-  const { user } = useUser();
-  const [isSetupComplete, setIsSetupComplete] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [tenantName, setTenantName] = useState('');
-  const [isTermsChecked, setIsTermsChecked] = useState(false);
-  const navigate = useNavigate();
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthProvider';
+import { useToast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import OrganizationSetup from '@/components/admin/OrganizationSetup';
+import UserManagement from '@/components/admin/UserManagement';
+import PermissionsSetup from '@/components/admin/PermissionsSetup';
+
+const AdminSetup = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [isTenantAdmin, setIsTenantAdmin] = useState(false);
+  const [tenantSettings, setTenantSettings] = useState<any>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const checkSetup = async () => {
-      setIsLoading(true);
-      try {
-        // Check if the user has a breeder profile
-        const { data: profile, error: profileError } = await supabase
-          .from('breeder_profiles')
-          .select('id')
-          .eq('id', user?.id)
-          .single();
+    checkUserPermissions();
+  }, [user]);
 
-        if (profileError) {
-          console.error('Error checking breeder profile:', profileError);
-          throw profileError;
-        }
-
-        setIsSetupComplete(!!profile);
-        if (!!profile) {
-          navigate('/dashboard');
-        }
-      } catch (error) {
-        console.error('Error during setup check:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to check setup status. Please try again.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (user) {
-      checkSetup();
-    }
-  }, [user, navigate]);
-
-  const handleSetupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!isTermsChecked) {
-      toast({
-        title: 'Terms not accepted',
-        description: 'Please accept the terms and conditions to continue.',
-        variant: 'destructive',
-      });
+  const checkUserPermissions = async () => {
+    if (!user) {
+      setLoading(false);
       return;
     }
 
-    setIsLoading(true);
     try {
-      // Create a new breeder profile
-      const { error: insertError } = await supabase
+      // Check if the user is a tenant admin
+      const { data: profileData, error: profileError } = await supabase
         .from('breeder_profiles')
-        .insert([{
-          id: user?.id,
-          tenant_name: tenantName,
-        }]);
+        .select('role, tenant_id')
+        .eq('id', user.id)
+        .single();
 
-      if (insertError) {
-        console.error('Error creating breeder profile:', insertError);
-        throw insertError;
+      if (profileError) throw profileError;
+
+      const isAdmin = profileData?.role === 'admin' || profileData?.role === 'owner';
+      setIsTenantAdmin(isAdmin);
+
+      // If admin, get tenant settings
+      if (isAdmin && profileData.tenant_id) {
+        try {
+          // This section would load settings from a tenant_settings table if you have one
+          // For now, we'll just set a placeholder
+          setTenantSettings({
+            id: profileData.tenant_id,
+            name: 'Your Organization'
+          });
+        } catch (settingsError) {
+          console.error('Error loading tenant settings:', settingsError);
+        }
       }
-
-      toast({
-        title: 'Setup Complete',
-        description: 'Your account has been successfully set up.',
-      });
-      navigate('/dashboard');
     } catch (error) {
-      console.error('Error during setup:', error);
+      console.error('Error checking permissions:', error);
       toast({
         title: 'Error',
-        description: 'Failed to complete setup. Please try again.',
+        description: 'Failed to check your permissions.',
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  if (isLoading) {
-    return <div className="text-center">Loading...</div>;
+  if (loading) {
+    return (
+      <Card className="mx-auto max-w-6xl">
+        <CardContent className="pt-6">
+          <div className="flex justify-center py-10">
+            <p>Loading admin settings...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
-  if (isSetupComplete) {
-    return <div className="text-center">Setup complete. Redirecting to dashboard...</div>;
+  if (!user) {
+    return (
+      <Card className="mx-auto max-w-6xl">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center py-10 text-center">
+            <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
+            <p className="mb-4">You need to be logged in to access admin settings.</p>
+            <Button>Login</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!isTenantAdmin) {
+    return (
+      <Card className="mx-auto max-w-6xl">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center py-10 text-center">
+            <h2 className="text-2xl font-bold mb-4">Access Restricted</h2>
+            <p>You don't have permission to access admin settings.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <Card className="w-full max-w-md p-8">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Account Setup</CardTitle>
-          <CardDescription className="text-center">
-            Complete the setup to start managing your breeding operations.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSetupSubmit} className="space-y-6">
-            <div>
-              <Label htmlFor="tenantName">Organization Name</Label>
-              <Input
-                type="text"
-                id="tenantName"
-                placeholder="Enter your organization name"
-                value={tenantName}
-                onChange={(e) => setTenantName(e.target.value)}
-                required
+    <div className="container max-w-6xl py-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Admin Settings</h1>
+        <p className="text-muted-foreground mt-2">
+          Configure your organization, manage users, and set access permissions
+        </p>
+      </div>
+
+      <Tabs defaultValue="organization" className="space-y-6">
+        <TabsList className="grid grid-cols-3 w-full md:w-[600px]">
+          <TabsTrigger value="organization">Organization</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="organization">
+          <Card>
+            <CardHeader>
+              <CardTitle>Organization Settings</CardTitle>
+              <CardDescription>
+                Configure your organization's profile and preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <OrganizationSetup 
+                initialData={tenantSettings} 
+                onSubmit={async (data) => {
+                  toast({
+                    title: 'Organization updated',
+                    description: 'Your organization settings have been saved.'
+                  });
+                }} 
               />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={isTermsChecked}
-                  onCheckedChange={(checked) => setIsTermsChecked(!!checked)}
-                />
-                <Label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                  I agree to the <a href="#" className="text-blue-500">terms and conditions</a>
-                </Label>
-              </div>
-            </div>
-            <Button disabled={isLoading} className="w-full">
-              Complete Setup
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <Card>
+            <CardHeader>
+              <CardTitle>User Management</CardTitle>
+              <CardDescription>
+                Manage users and assign roles within your organization
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <UserManagement tenantId={tenantSettings?.id} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="permissions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Access Permissions</CardTitle>
+              <CardDescription>
+                Configure role-based access controls for your organization
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PermissionsSetup tenantId={tenantSettings?.id} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

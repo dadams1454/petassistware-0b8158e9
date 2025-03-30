@@ -1,95 +1,86 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Baby, Scale, CalendarDays } from 'lucide-react';
-import { PuppyWithAge } from '@/types/puppyTracking';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart, PawPrint, Scale } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { formatDistanceToNow } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
+import { PuppyWithAge } from '@/types/puppyTracking';
+import { Link } from 'react-router-dom';
 
 interface PuppyCardProps {
   puppy: PuppyWithAge;
-  onViewDetails?: (puppyId: string) => void;
+  className?: string;
 }
 
-const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, onViewDetails }) => {
-  const handleViewDetails = () => {
-    if (onViewDetails) onViewDetails(puppy.id);
+const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, className }) => {
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy');
+    } catch (e) {
+      return 'Unknown';
+    }
   };
+
+  // Calculate age in weeks from days
+  const ageInWeeks = Math.floor(puppy.ageInDays / 7);
   
-  // Format the puppy's age to be more readable
-  const formattedAge = puppy.ageInDays < 7 
-    ? `${puppy.ageInDays} days` 
-    : puppy.ageInDays < 31 
-      ? `${Math.floor(puppy.ageInDays / 7)} weeks, ${puppy.ageInDays % 7} days`
-      : `${Math.floor(puppy.ageInDays / 30)} months`;
-      
-  // Format the puppy's birth date if available
-  const birthDateText = puppy.birth_date 
-    ? formatDistanceToNow(new Date(puppy.birth_date), { addSuffix: true })
-    : puppy.litters?.birth_date
-      ? formatDistanceToNow(new Date(puppy.litters.birth_date), { addSuffix: true })
-      : 'Unknown';
-      
-  // Get puppy gender for display
-  const genderDisplay = puppy.gender === 'male' ? 'Male' : puppy.gender === 'female' ? 'Female' : 'Unknown';
-  
-  // Get puppy color for display
-  const colorDisplay = puppy.color || 'Not specified';
-  
-  // Get the latest weight if available - using current_weight property instead of weight
-  const weightDisplay = puppy.current_weight ? `${puppy.current_weight} lbs` : 'Not recorded';
-  
+  // Determine badge color based on gender
+  const genderBadgeColor = puppy.gender === 'Male' 
+    ? "bg-blue-100 text-blue-800" 
+    : "bg-pink-100 text-pink-800";
+
   return (
-    <Card className="overflow-hidden h-full flex flex-col">
-      <div className="relative pt-4 px-4 flex items-center justify-center bg-gradient-to-b from-purple-50 to-white dark:from-purple-950/20 dark:to-background">
-        <div className="absolute top-4 right-4">
-          <Badge variant="outline" className="bg-white/80 dark:bg-black/50 backdrop-blur-sm">
-            {genderDisplay}
+    <Card className={className}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex justify-between items-center">
+          <span>{puppy.name || `Puppy ${puppy.id?.substring(0, 4) || '#'}`}</span>
+          <Badge variant="outline" className={genderBadgeColor}>
+            {puppy.gender}
           </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <p className="text-muted-foreground">Age</p>
+            <p className="font-medium">{ageInWeeks} weeks ({puppy.ageInDays} days)</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Color</p>
+            <p className="font-medium">{puppy.color || 'Not specified'}</p>
+          </div>
+          {puppy.current_weight && (
+            <div className="col-span-2">
+              <p className="text-muted-foreground">Current Weight</p>
+              <p className="font-medium">{puppy.current_weight} oz</p>
+            </div>
+          )}
         </div>
-        <div className="h-24 w-24 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
-          <Baby className="h-12 w-12 text-purple-600 dark:text-purple-400" />
-        </div>
-      </div>
-      
-      <CardContent className="pt-4 px-6 pb-2 flex-grow">
-        <h3 className="text-lg font-semibold text-center mb-1">{puppy.name || `Puppy ${puppy.microchip_number || '#'+puppy.id.substring(0, 4)}`}</h3>
-        <p className="text-sm text-center text-muted-foreground mb-4">
-          {puppy.litters?.name ? `Litter: ${puppy.litters.name}` : 'Unknown litter'}
-        </p>
         
-        <div className="space-y-2">
-          <div className="flex items-center text-sm">
-            <CalendarDays className="h-4 w-4 mr-2 text-muted-foreground" />
-            <span className="text-muted-foreground">Age:</span>
-            <span className="ml-auto font-medium">{formattedAge}</span>
-          </div>
+        <div className="flex gap-2 pt-2">
+          <Link 
+            to={`/litters/${puppy.litter_id}/puppies/${puppy.id}`}
+            className="text-xs flex items-center gap-1 text-primary hover:underline"
+          >
+            <PawPrint className="h-3 w-3" /> View Details
+          </Link>
           
-          <div className="flex items-center text-sm">
-            <Scale className="h-4 w-4 mr-2 text-muted-foreground" />
-            <span className="text-muted-foreground">Weight:</span>
-            <span className="ml-auto font-medium">{weightDisplay}</span>
-          </div>
+          <Link 
+            to={`/litters/${puppy.litter_id}/puppies/${puppy.id}/weight`}
+            className="text-xs flex items-center gap-1 text-primary hover:underline"
+          >
+            <Scale className="h-3 w-3" /> Weight Tracking
+          </Link>
           
-          <div className="flex items-center text-sm">
-            <div className="h-4 w-4 mr-2 rounded-full" 
-              style={{ backgroundColor: puppy.color ? puppy.color : '#cccccc' }} />
-            <span className="text-muted-foreground">Color:</span>
-            <span className="ml-auto font-medium">{colorDisplay}</span>
-          </div>
+          <Link 
+            to={`/litters/${puppy.litter_id}/puppies/${puppy.id}/chart`}
+            className="text-xs flex items-center gap-1 text-primary hover:underline"
+          >
+            <BarChart className="h-3 w-3" /> Growth Charts
+          </Link>
         </div>
       </CardContent>
-      
-      <CardFooter className="p-6 pt-2">
-        <Button 
-          onClick={handleViewDetails} 
-          variant="outline" 
-          className="w-full"
-        >
-          View Details
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

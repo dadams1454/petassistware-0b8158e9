@@ -7,7 +7,8 @@ export interface Customer {
   phone?: string;
   address?: string;
   notes?: string;
-  metadata?: Record<string, any>;
+  metadata?: any;
+  created_at?: string;
 }
 
 export interface CustomerWithMeta extends Customer {

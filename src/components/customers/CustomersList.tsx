@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,14 +25,24 @@ import {
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Customer } from '@/components/customers/types/customer';
-import { CustomerRow } from './components/CustomerRow';
+import { Customer } from './types/customer';
+import CustomerRow from './components/CustomerRow';
 
 interface CustomersListProps {
   className?: string;
+  customers?: Customer[];
+  isLoading?: boolean;
+  onCustomerUpdated?: () => Promise<void>;
+  onEditCustomer?: (customer: Customer) => void;
 }
 
-const CustomersList: React.FC<CustomersListProps> = ({ className }) => {
+const CustomersList: React.FC<CustomersListProps> = ({ 
+  className,
+  customers: externalCustomers,
+  isLoading: externalIsLoading,
+  onCustomerUpdated: externalOnCustomerUpdated,
+  onEditCustomer
+}) => {
   const { toast } = useToast();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,9 +52,19 @@ const CustomersList: React.FC<CustomersListProps> = ({ className }) => {
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Use external data if provided, otherwise load data internally
   useEffect(() => {
-    loadCustomers();
-  }, []);
+    if (externalCustomers) {
+      setCustomers(externalCustomers);
+      if (externalIsLoading !== undefined) {
+        setIsLoading(externalIsLoading);
+      } else {
+        setIsLoading(false);
+      }
+    } else {
+      loadCustomers();
+    }
+  }, [externalCustomers, externalIsLoading]);
 
   const loadCustomers = async () => {
     setIsLoading(true);
@@ -65,6 +86,14 @@ const CustomersList: React.FC<CustomersListProps> = ({ className }) => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onCustomerUpdated = async () => {
+    if (externalOnCustomerUpdated) {
+      await externalOnCustomerUpdated();
+    } else {
+      await loadCustomers();
     }
   };
 
@@ -133,7 +162,12 @@ const CustomersList: React.FC<CustomersListProps> = ({ className }) => {
               </TableRow>
             ) : (
               paginatedCustomers.map((customer) => (
-                <CustomerRow key={customer.id} customer={customer} onCustomerUpdated={loadCustomers} />
+                <CustomerRow 
+                  key={customer.id} 
+                  customer={customer} 
+                  onCustomerUpdated={onCustomerUpdated}
+                  onEditCustomer={onEditCustomer} 
+                />
               ))
             )}
           </TableBody>
@@ -145,17 +179,25 @@ const CustomersList: React.FC<CustomersListProps> = ({ className }) => {
                     <PaginationItem>
                       <PaginationPrevious
                         href="#"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1) {
+                            handlePageChange(currentPage - 1);
+                          }
+                        }}
+                        aria-disabled={currentPage === 1}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                       />
                     </PaginationItem>
                     {Array.from({ length: totalPages }, (_, i) => (
-                      <PaginationItem key={i + 1} active={currentPage === i + 1}>
+                      <PaginationItem key={i + 1}>
                         <PaginationLink
                           href="#"
-                          onClick={() => handlePageChange(i + 1)}
-                          isCurrent={currentPage === i + 1}
-                          disabled={currentPage === i + 1}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(i + 1);
+                          }}
+                          isActive={currentPage === i + 1}
                         >
                           {i + 1}
                         </PaginationLink>
@@ -164,8 +206,14 @@ const CustomersList: React.FC<CustomersListProps> = ({ className }) => {
                     <PaginationItem>
                       <PaginationNext
                         href="#"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages || totalPages === 0}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) {
+                            handlePageChange(currentPage + 1);
+                          }
+                        }}
+                        aria-disabled={currentPage === totalPages || totalPages === 0}
+                        className={currentPage === totalPages || totalPages === 0 ? "pointer-events-none opacity-50" : ""}
                       />
                     </PaginationItem>
                   </PaginationContent>

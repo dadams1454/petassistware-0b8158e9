@@ -1,246 +1,242 @@
+
 import React from 'react';
 import { Litter } from '@/types/litter';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { format, formatDistanceToNow } from 'date-fns';
-import { CalendarClock, Dog, MapPin, Users, PlusCircle, Pencil, Trash2, Eye, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Archive, Edit, Eye, RefreshCw, Trash } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { format, differenceInDays } from 'date-fns';
+import { Link } from 'react-router-dom';
+
+interface OrganizedLitters {
+  active: Litter[];
+  other: Litter[];
+  archived: Litter[];
+}
 
 interface LitterCardViewProps {
+  organizedLitters: OrganizedLitters;
+  onEditLitter: (litter: Litter) => void;
+  onDeleteLitter: (litter: Litter) => void;
+  onArchiveLitter: (litter: Litter) => void;
+  onUnarchiveLitter: (litter: Litter) => void;
+}
+
+interface LitterSectionProps {
+  title: string;
   litters: Litter[];
   onEditLitter: (litter: Litter) => void;
   onDeleteLitter: (litter: Litter) => void;
+  onArchiveLitter: (litter: Litter) => void;
+  onUnarchiveLitter: (litter: Litter) => void;
+  isArchived?: boolean;
 }
 
-const LitterCardView: React.FC<LitterCardViewProps> = ({ 
-  litters, 
-  onEditLitter, 
-  onDeleteLitter 
-}) => {
-  const navigate = useNavigate();
-
-  const handleViewLitter = (litterId: string) => {
-    navigate(`/litters/${litterId}`);
-  };
-
-  const handleViewPuppies = (litterId: string) => {
-    navigate(`/litters/${litterId}/puppies`);
-  };
-
-  const handleViewWelping = (litterId: string) => {
-    navigate(`/welping/${litterId}`);
-  };
-
-  const getStatusColor = (status?: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'planned':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-purple-100 text-purple-800';
-      case 'archived':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
+// A single litter card component
+const LitterCard: React.FC<{
+  litter: Litter;
+  onEdit: (litter: Litter) => void;
+  onDelete: (litter: Litter) => void;
+  onArchive: (litter: Litter) => void;
+  onUnarchive: (litter: Litter) => void;
+}> = ({ litter, onEdit, onDelete, onArchive, onUnarchive }) => {
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Not set';
+    if (!dateString) return '-';
     try {
       return format(new Date(dateString), 'MMM d, yyyy');
     } catch (e) {
-      return 'Invalid date';
+      return dateString;
     }
   };
 
-  const getTimeAgo = (dateString?: string) => {
-    if (!dateString) return '';
+  const getAgeBadge = (birthDate?: string) => {
+    if (!birthDate) return null;
+    
     try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+      const days = differenceInDays(new Date(), new Date(birthDate));
+      const weeks = Math.floor(days / 7);
+      
+      if (days < 0) {
+        return <Badge variant="outline">Due in {Math.abs(days)} days</Badge>;
+      }
+      
+      if (weeks < 1) {
+        return <Badge variant="success" className="bg-green-100 text-green-800">{days} days</Badge>;
+      }
+      
+      if (weeks < 8) {
+        return <Badge variant="success" className="bg-green-100 text-green-800">{weeks} weeks</Badge>;
+      }
+      
+      if (weeks < 12) {
+        return <Badge variant="warning" className="bg-amber-100 text-amber-800">{weeks} weeks</Badge>;
+      }
+      
+      return <Badge variant="destructive" className="bg-red-100 text-red-800">{weeks} weeks</Badge>;
     } catch (e) {
-      return '';
+      return null;
     }
   };
 
-  const getDogInitials = (name?: string) => {
-    if (!name) return '??';
-    const parts = name.split(' ');
-    if (parts.length === 1) return name.substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
-
-  if (litters.length === 0) {
-    return (
-      <Card className="text-center p-8">
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="rounded-full bg-muted p-3">
-            <Dog className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <CardTitle>No Litters Found</CardTitle>
-          <CardDescription>
-            You haven't added any litters yet. Create your first litter to get started.
-          </CardDescription>
-          <Button className="mt-2">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Your First Litter
-          </Button>
-        </div>
-      </Card>
-    );
-  }
+  const isArchived = litter.status === 'archived';
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {litters.map((litter) => (
-        <Card key={litter.id} className="overflow-hidden hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-xl">
-                  {litter.litter_name || 'Unnamed Litter'}
-                </CardTitle>
-                <CardDescription>
-                  {formatDate(litter.birth_date)}
-                  {litter.birth_date && (
-                    <span className="ml-1 text-xs">
-                      ({getTimeAgo(litter.birth_date)})
-                    </span>
-                  )}
-                </CardDescription>
-              </div>
-              <Badge className={getStatusColor(litter.status)}>
-                {litter.status || 'Active'}
-              </Badge>
-            </div>
-          </CardHeader>
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">
+              {litter.litter_name || `${litter.dam?.name || 'Unknown'} × ${litter.sire?.name || 'Unknown'}`}
+            </CardTitle>
+            <CardDescription>
+              Birth Date: {formatDate(litter.birth_date)}
+            </CardDescription>
+          </div>
+          {getAgeBadge(litter.birth_date)}
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <div>
+            <p className="text-muted-foreground">Dam</p>
+            <p className="font-medium">{litter.dam?.name || 'Unknown'}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Sire</p>
+            <p className="font-medium">{litter.sire?.name || 'Unknown'}</p>
+          </div>
           
-          <CardContent className="pb-2">
-            <div className="space-y-3">
-              {/* Parents */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={litter.dam?.photo_url} alt={litter.dam?.name} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {getDogInitials(litter.dam?.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium line-clamp-1">
-                      {litter.dam?.name || 'Unknown Dam'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Dam</p>
-                  </div>
-                </div>
-                
-                <ArrowRight className="h-4 w-4 text-muted-foreground mx-1" />
-                
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={litter.sire?.photo_url} alt={litter.sire?.name} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {getDogInitials(litter.sire?.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium line-clamp-1">
-                      {litter.sire?.name || 'Unknown Sire'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Sire</p>
-                  </div>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              {/* Litter Info */}
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    {litter.puppy_count || litter.puppies?.length || 0} puppies
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-1.5">
-                  <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    {formatDate(litter.expected_go_home_date)}
-                  </span>
-                </div>
-                
-                {litter.kennel_name && (
-                  <div className="flex items-center gap-1.5 col-span-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="truncate">{litter.kennel_name}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-          
-          <CardFooter className="pt-2 flex flex-wrap gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex-1"
-              onClick={() => handleViewLitter(litter.id)}
-            >
-              <Eye className="h-3.5 w-3.5 mr-1" />
-              Details
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex-1"
-              onClick={() => handleViewPuppies(litter.id)}
-            >
-              <Dog className="h-3.5 w-3.5 mr-1" />
-              Puppies
-            </Button>
-            
-            <div className="w-full flex gap-2 mt-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex-1"
-                onClick={() => onEditLitter(litter)}
-              >
-                <Pencil className="h-3.5 w-3.5 mr-1" />
-                Edit
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex-1 text-destructive hover:text-destructive"
-                onClick={() => onDeleteLitter(litter)}
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1" />
-                Delete
-              </Button>
-              
-              {litter.birth_date && new Date(litter.birth_date) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => handleViewWelping(litter.id)}
-                >
-                  <Dog className="h-3.5 w-3.5 mr-1" />
-                  Welping
-                </Button>
+          <div>
+            <p className="text-muted-foreground">Puppies</p>
+            <p className="font-medium">
+              {litter.puppies?.length || '0'} 
+              {litter.male_count !== undefined && litter.female_count !== undefined && (
+                <span> ({litter.male_count}M / {litter.female_count}F)</span>
               )}
+            </p>
+          </div>
+
+          {litter.expected_go_home_date && (
+            <div>
+              <p className="text-muted-foreground">Go Home Date</p>
+              <p className="font-medium">{formatDate(litter.expected_go_home_date)}</p>
             </div>
-          </CardFooter>
-        </Card>
-      ))}
+          )}
+
+          {litter.akc_registration_number && (
+            <div className="col-span-2">
+              <p className="text-muted-foreground">AKC Registration</p>
+              <p className="font-medium">{litter.akc_registration_number}</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="flex justify-between pt-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link to={`/litters/${litter.id}`}>
+            <Eye className="h-4 w-4 mr-2" />
+            View Details
+          </Link>
+        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" onClick={() => onEdit(litter)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          {isArchived ? (
+            <Button variant="ghost" size="sm" onClick={() => onUnarchive(litter)}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={() => onArchive(litter)}>
+              <Archive className="h-4 w-4" />
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={() => onDelete(litter)}>
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+};
+
+// Litter section component
+const LitterSection: React.FC<LitterSectionProps> = ({
+  title,
+  litters,
+  onEditLitter,
+  onDeleteLitter,
+  onArchiveLitter,
+  onUnarchiveLitter,
+  isArchived = false
+}) => {
+  if (litters.length === 0) return null;
+
+  return (
+    <div className="mb-8">
+      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+        {title}
+        <Badge variant={isArchived ? "outline" : "default"}>
+          {litters.length}
+        </Badge>
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {litters.map(litter => (
+          <LitterCard
+            key={litter.id}
+            litter={litter}
+            onEdit={onEditLitter}
+            onDelete={onDeleteLitter}
+            onArchive={onArchiveLitter}
+            onUnarchive={onUnarchiveLitter}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Main LitterCardView component
+const LitterCardView: React.FC<LitterCardViewProps> = ({
+  organizedLitters,
+  onEditLitter,
+  onDeleteLitter,
+  onArchiveLitter,
+  onUnarchiveLitter
+}) => {
+  return (
+    <div>
+      <LitterSection
+        title="Active Litters"
+        litters={organizedLitters.active}
+        onEditLitter={onEditLitter}
+        onDeleteLitter={onDeleteLitter}
+        onArchiveLitter={onArchiveLitter}
+        onUnarchiveLitter={onUnarchiveLitter}
+      />
+      
+      {organizedLitters.other.length > 0 && (
+        <LitterSection
+          title="Other Active Litters"
+          litters={organizedLitters.other}
+          onEditLitter={onEditLitter}
+          onDeleteLitter={onDeleteLitter}
+          onArchiveLitter={onArchiveLitter}
+          onUnarchiveLitter={onUnarchiveLitter}
+        />
+      )}
+      
+      {organizedLitters.archived.length > 0 && (
+        <LitterSection
+          title="Archived Litters"
+          litters={organizedLitters.archived}
+          onEditLitter={onEditLitter}
+          onDeleteLitter={onDeleteLitter}
+          onArchiveLitter={onArchiveLitter}
+          onUnarchiveLitter={onUnarchiveLitter}
+          isArchived={true}
+        />
+      )}
     </div>
   );
 };
