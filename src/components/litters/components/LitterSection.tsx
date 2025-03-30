@@ -1,7 +1,7 @@
 
 import React from 'react';
 import LitterCard from './LitterCard';
-import { Litter } from '../puppies/types';
+import { Litter } from '@/types/litter'; // Import from our unified types file
 
 interface LitterSectionProps {
   title: string;

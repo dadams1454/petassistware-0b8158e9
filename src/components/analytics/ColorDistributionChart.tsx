@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info } from 'lucide-react';
+import { Puppy } from '@/types/litter'; // Import Puppy from our types file
 
 interface ColorDistributionChartProps {
   puppies: Puppy[];

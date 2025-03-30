@@ -12,7 +12,7 @@ import LitterForm from '@/components/litters/LitterForm';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
-import { Litter } from '@/components/litters/puppies/types';
+import { Litter } from '@/types/litter'; // Import from regular .ts file instead of .d.ts
 
 const Litters = () => {
   const navigate = useNavigate();
@@ -39,7 +39,14 @@ const Litters = () => {
 
       if (error) throw error;
       console.log('Fetched litters data:', data);
-      return data as unknown as Litter[]; // Explicitly cast to Litter[] type
+      
+      // Process the data to ensure all litters have the required fields
+      const processedData = data.map((litter: any) => ({
+        ...litter,
+        updated_at: litter.updated_at || litter.created_at
+      }));
+      
+      return processedData as Litter[]; 
     },
     enabled: !!user,
   });
@@ -112,7 +119,7 @@ const Litters = () => {
           </DialogHeader>
           {selectedLitter && (
             <LitterForm 
-              initialData={selectedLitter as Litter}
+              initialData={selectedLitter}
               onSuccess={handleEditSuccess} 
             />
           )}

@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import DialogContentComponent from './DialogContent';
-
-export type ObservationType = 'accident' | 'heat' | 'behavior' | 'other';
+import { ObservationType } from '../../hooks/pottyBreakHooks/observationTypes';
 
 interface ObservationDialogProps {
   open: boolean;

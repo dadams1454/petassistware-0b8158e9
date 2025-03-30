@@ -1,7 +1,6 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { HealthRecord, HealthRecordType } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
 import { 
   getHealthRecords, 
   getHealthRecordsByType,
@@ -28,7 +27,7 @@ export const useHealthRecords = (dogId: string) => {
   });
 
   // Fetch records by type
-  const getRecordsByType = (type: HealthRecordType) => {
+  const getRecordsByType = (type: HealthRecordTypeEnum) => {
     return healthRecords?.filter(record => record.record_type === type) || [];
   };
 
@@ -101,7 +100,7 @@ export const useHealthRecords = (dogId: string) => {
     
     return healthRecords
       .filter(record => 
-        record.record_type === 'vaccination' && 
+        record.record_type === HealthRecordTypeEnum.Vaccination && 
         record.next_due_date && 
         new Date(record.next_due_date) >= today &&
         new Date(record.next_due_date) <= futureDate
@@ -118,7 +117,7 @@ export const useHealthRecords = (dogId: string) => {
     const today = new Date();
     return healthRecords
       .filter(record => 
-        record.record_type === 'vaccination' && 
+        record.record_type === HealthRecordTypeEnum.Vaccination && 
         record.next_due_date && 
         new Date(record.next_due_date) < today
       )

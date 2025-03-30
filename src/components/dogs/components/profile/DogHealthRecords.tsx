@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,50 +11,7 @@ import VaccinationsTabContent from './records/VaccinationsTabContent';
 import ExaminationsTabContent from './records/ExaminationsTabContent';
 import MedicationsTabContent from './records/MedicationsTabContent';
 import AllRecordsTabContent from './records/AllRecordsTabContent';
-import { HealthRecord, HealthRecordType } from '@/types/health';
-
-// Create a type adapter function to convert between health and dog record types if needed
-const adaptHealthRecord = (record: any): HealthRecord => {
-  return {
-    id: record.id,
-    dog_id: record.dog_id,
-    visit_date: record.visit_date || record.date,
-    date: record.date || record.visit_date, // Add for UI components
-    record_type: record.record_type as HealthRecordType,
-    title: record.title,
-    description: record.description || record.record_notes || '',
-    performed_by: record.performed_by || record.vet_name || '',
-    next_due_date: record.next_due_date,
-    attachments: record.attachments,
-    created_at: record.created_at,
-    updated_at: record.updated_at,
-    // Copy all the specific fields for different record types
-    ...(record.vaccine_name && { vaccine_name: record.vaccine_name }),
-    ...(record.manufacturer && { manufacturer: record.manufacturer }),
-    ...(record.lot_number && { lot_number: record.lot_number }),
-    ...(record.administration_route && { administration_route: record.administration_route }),
-    ...(record.expiration_date && { expiration_date: record.expiration_date }),
-    ...(record.reminder_sent !== undefined && { reminder_sent: record.reminder_sent }),
-    ...(record.medication_name && { medication_name: record.medication_name }),
-    ...(record.dosage !== undefined && { dosage: record.dosage }),
-    ...(record.dosage_unit && { dosage_unit: record.dosage_unit }),
-    ...(record.frequency && { frequency: record.frequency }),
-    ...(record.duration !== undefined && { duration: record.duration }),
-    ...(record.duration_unit && { duration_unit: record.duration_unit }),
-    ...(record.start_date && { start_date: record.start_date }),
-    ...(record.end_date && { end_date: record.end_date }),
-    ...(record.prescription_number && { prescription_number: record.prescription_number }),
-    ...(record.examination_type && { examination_type: record.examination_type }),
-    ...(record.findings && { findings: record.findings }),
-    ...(record.recommendations && { recommendations: record.recommendations }),
-    ...(record.vet_clinic && { vet_clinic: record.vet_clinic }),
-    ...(record.procedure_name && { procedure_name: record.procedure_name }),
-    ...(record.surgeon && { surgeon: record.surgeon }),
-    ...(record.anesthesia_used && { anesthesia_used: record.anesthesia_used }),
-    ...(record.recovery_notes && { recovery_notes: record.recovery_notes }),
-    ...(record.follow_up_date && { follow_up_date: record.follow_up_date })
-  };
-};
+import { HealthRecord, HealthRecordTypeEnum, adaptHealthRecord } from '@/types/health';
 
 interface DogHealthRecordsProps {
   dogId: string;
@@ -114,7 +70,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
     });
   };
   
-  const getRecordsByType = (type: HealthRecordType): HealthRecord[] => {
+  const getRecordsByType = (type: string): HealthRecord[] => {
     return healthRecords?.filter(record => record.record_type === type) || [];
   };
 
@@ -156,7 +112,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         
         <TabsContent value="examinations" className="space-y-4 pt-4">
           <ExaminationsTabContent 
-            records={getRecordsByType(HealthRecordType.Examination)}
+            records={getRecordsByType(HealthRecordTypeEnum.Examination)}
             onAddRecord={handleAddRecord}
             onEditRecord={handleEditRecord}
           />
@@ -164,7 +120,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         
         <TabsContent value="medications" className="space-y-4 pt-4">
           <MedicationsTabContent 
-            records={getRecordsByType(HealthRecordType.Medication)}
+            records={getRecordsByType(HealthRecordTypeEnum.Medication)}
             onAddRecord={handleAddRecord}
             onEditRecord={handleEditRecord}
           />
@@ -172,7 +128,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         
         <TabsContent value="all-records" className="space-y-4 pt-4">
           <AllRecordsTabContent 
-            records={healthRecords}
+            records={healthRecords || []}
             onAddRecord={handleAddRecord}
             onEditRecord={handleEditRecord}
           />
