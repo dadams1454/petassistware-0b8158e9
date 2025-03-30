@@ -1,27 +1,37 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+// Define UserRole type and export it
+export type UserRole = 'user' | 'staff' | 'manager' | 'admin' | 'owner';
+
 interface User {
   id: string;
   email: string;
   name?: string;
+  user_metadata?: {
+    avatarUrl?: string;
+  };
 }
 
 interface AuthContextType {
   user: User | null;
-  userRole: string;
+  userRole: UserRole;
+  tenantId: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  signOut: () => Promise<void>; // Added alias for logout for compatibility
   resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  userRole: '',
+  userRole: 'user',
+  tenantId: null,
   loading: true,
   login: async () => {},
   logout: async () => {},
+  signOut: async () => {}, // Added alias for logout for compatibility
   resetPassword: async () => {},
 });
 
@@ -29,15 +39,19 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState('user');
+  const [userRole, setUserRole] = useState<UserRole>('user');
   const [loading, setLoading] = useState(true);
+  const [tenantId, setTenantId] = useState<string | null>('tenant-123'); // Mock tenant ID
 
   useEffect(() => {
     // Create a mock user for development purposes
     const mockUser = {
       id: '123',
       email: 'test@example.com',
-      name: 'Test User'
+      name: 'Test User',
+      user_metadata: {
+        avatarUrl: ''
+      }
     };
     
     // Simulate loading delay
@@ -59,6 +73,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: '123',
         email,
         name: 'User Name',
+        user_metadata: {
+          avatarUrl: ''
+        }
       });
       setUserRole('admin');
     } catch (error) {
@@ -74,13 +91,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       // Simulate logout
       setUser(null);
-      setUserRole('');
+      setUserRole('user');
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Add an alias for logout to maintain compatibility
+  const signOut = logout;
 
   const resetPassword = async (email: string) => {
     try {
@@ -95,9 +115,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     userRole,
+    tenantId,
     loading,
     login,
     logout,
+    signOut,
     resetPassword,
   };
 
