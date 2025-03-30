@@ -1,101 +1,52 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Litter } from '@/types/litter';
 
-const useLitterActions = (
-  onRefresh: () => Promise<any>,
-  setLitterToDelete: (litter: Litter | null) => void
-) => {
-  const [isActionInProgress, setIsActionInProgress] = useState(false);
+export const useLitterActions = () => {
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDeleteLitter = async () => {
-    setIsActionInProgress(true);
+  const deleteLitter = async (litterId: string) => {
+    setIsDeleting(true);
     try {
-      // The litterToDelete is set in the state of the parent component
-      await supabase
+      const { error } = await supabase
         .from('litters')
         .delete()
-        .eq('id', setLitterToDelete);
-      
+        .eq('id', litterId);
+
+      if (error) {
+        throw error;
+      }
+
       toast({
-        title: "Litter deleted",
-        description: "The litter has been successfully deleted.",
+        title: 'Success!',
+        description: 'Litter deleted successfully.',
       });
-      
-      onRefresh();
-      setLitterToDelete(null);
-    } catch (error) {
-      console.error('Error deleting litter:', error);
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "There was a problem deleting the litter.",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
       });
     } finally {
-      setIsActionInProgress(false);
+      setIsDeleting(false);
     }
   };
 
-  const handleArchiveLitter = async (litter: Litter) => {
-    setIsActionInProgress(true);
-    try {
-      await supabase
-        .from('litters')
-        .update({ status: 'archived' })
-        .eq('id', litter.id);
-      
-      toast({
-        title: "Litter archived",
-        description: "The litter has been archived successfully.",
-      });
-      
-      onRefresh();
-    } catch (error) {
-      console.error('Error archiving litter:', error);
-      toast({
-        title: "Error",
-        description: "There was a problem archiving the litter.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsActionInProgress(false);
-    }
-  };
-
-  const handleUnarchiveLitter = async (litter: Litter) => {
-    setIsActionInProgress(true);
-    try {
-      await supabase
-        .from('litters')
-        .update({ status: 'active' })
-        .eq('id', litter.id);
-      
-      toast({
-        title: "Litter activated",
-        description: "The litter has been restored to active status.",
-      });
-      
-      onRefresh();
-    } catch (error) {
-      console.error('Error unarchiving litter:', error);
-      toast({
-        title: "Error",
-        description: "There was a problem activating the litter.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsActionInProgress(false);
-    }
+  const handleDeleteLitter = (litter: Litter) => {
+    toast({
+      title: 'Delete Litter?',
+      description: `Are you sure you want to delete ${litter.litter_name}? This action cannot be undone.`,
+      action: {
+        label: 'Delete',
+        onClick: () => deleteLitter(litter.id),
+      },
+    });
   };
 
   return {
-    isActionInProgress,
-    handleDeleteLitter,
-    handleArchiveLitter,
-    handleUnarchiveLitter,
+    isDeleting,
+    deleteLitter,
+    handleDeleteLitter
   };
 };
-
-export default useLitterActions;

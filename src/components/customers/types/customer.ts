@@ -7,10 +7,10 @@ export interface Customer {
   phone?: string;
   address?: string;
   notes?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface CustomerWithMeta extends Customer {
-  metadata?: Record<string, any>;
   created_at?: string;
 }
 
@@ -27,4 +27,9 @@ export interface CustomerFormValues {
   interested_color?: string;
   waitlist?: boolean;
   litter_id?: string;
+  customer_type?: string;
+  customer_since?: string;
+  interested_puppy_id?: string;
+  interested_litter_id?: string;
+  waitlist_type?: string;
 }

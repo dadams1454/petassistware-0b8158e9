@@ -1,158 +1,181 @@
+import React, { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Customer } from '@/components/customers/types/customer';
+import { CustomerRow } from './components/CustomerRow';
 
-import React, { useState } from 'react';
-import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Layers } from 'lucide-react';
-import { Customer } from './types/customer';
-import { usePuppyData } from './hooks/usePuppyData';
-import SearchBar from './components/SearchBar';
-import CustomerRow from './components/CustomerRow';
-
-export interface CustomersListProps {
-  customers?: Customer[];
-  isLoading: boolean;
-  onCustomerUpdated: () => void;
-  filters?: any;
-  sort?: any;
-  onEditCustomer?: (customer: Customer) => void;
+interface CustomersListProps {
+  className?: string;
 }
 
-interface GroupedCustomers {
-  [litterName: string]: {
-    litterName: string;
-    customers: {
-      customer: Customer;
-      puppyInfo: ReturnType<typeof CustomersList.prototype.getPuppyInfo>;
-    }[];
-  };
-}
+const CustomersList: React.FC<CustomersListProps> = ({ className }) => {
+  const { toast } = useToast();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
-const CustomersList: React.FC<CustomersListProps> = ({ 
-  customers = [], // Provide default empty array to prevent "undefined" errors
-  isLoading,
-  onCustomerUpdated,
-  onEditCustomer
-}) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const puppiesData = usePuppyData(customers);
+  const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredCustomers = customers.filter(customer => {
-    const searchTermLower = searchTerm.toLowerCase();
-    return (
-      customer.first_name.toLowerCase().includes(searchTermLower) ||
-      customer.last_name.toLowerCase().includes(searchTermLower) ||
-      (customer.email && customer.email.toLowerCase().includes(searchTermLower)) ||
-      (customer.phone && customer.phone.toLowerCase().includes(searchTermLower))
-    );
-  });
+  useEffect(() => {
+    loadCustomers();
+  }, []);
 
-  const getPuppyInfo = (customer: Customer) => {
-    const puppyId = customer.metadata?.interested_puppy_id;
-    if (!puppyId || !puppiesData[puppyId]) return null;
-    
-    const puppy = puppiesData[puppyId];
-    return {
-      id: puppy.id,
-      name: puppy.name || `Puppy ${puppy.id.substring(0, 8)}`,
-      color: puppy.color,
-      gender: puppy.gender,
-      litterName: puppy.litterName
-    };
-  };
+  const loadCustomers = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  const groupCustomersByLitter = (customers: Customer[]): GroupedCustomers => {
-    const grouped: GroupedCustomers = {
-      'No Litter Assigned': {
-        litterName: 'No Litter Assigned',
-        customers: []
-      }
-    };
+      if (error) throw error;
 
-    customers.forEach(customer => {
-      const puppyInfo = getPuppyInfo(customer);
-      const litterName = puppyInfo?.litterName || 'No Litter Assigned';
-      
-      if (!grouped[litterName]) {
-        grouped[litterName] = {
-          litterName,
-          customers: []
-        };
-      }
-      
-      grouped[litterName].customers.push({
-        customer,
-        puppyInfo
+      setCustomers(data || []);
+    } catch (error) {
+      console.error('Error loading customers:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load customers. Please try again.',
+        variant: 'destructive',
       });
-    });
-
-    return grouped;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const groupedCustomers = groupCustomersByLitter(filteredCustomers);
+  const handleCreateCustomer = () => {
+    navigate('/customers/new');
+  };
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  let filteredCustomers = [...customers];
+
+  if (searchQuery) {
+    filteredCustomers = customers.filter(customer => 
+      customer.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customer.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (customer.email && customer.email.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }
+
+  const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        <SearchBar 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-        />
+    <div className={cn("container mx-auto py-6 px-4", className)}>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+        <div className="text-2xl font-semibold">Customers</div>
+        <div className="flex items-center space-x-2">
+          <Input
+            type="search"
+            placeholder="Search customers..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-md"
+          />
+          <Button onClick={handleCreateCustomer}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Customer
+          </Button>
+        </div>
+      </div>
 
-        {isLoading ? (
-          <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {Object.entries(groupedCustomers).map(([litterName, group]) => (
-              <div key={litterName} className="border rounded-lg">
-                <div className="bg-muted p-3 rounded-t-lg flex items-center gap-2">
-                  <Layers className="h-5 w-5 text-muted-foreground" />
-                  <h3 className="font-medium">{litterName}</h3>
-                  <span className="text-sm text-muted-foreground">
-                    ({group.customers.length} customers)
-                  </span>
-                </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Contact Information</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Interested Puppy</TableHead>
-                      <TableHead>Address</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {group.customers.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
-                          No customers in this group
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      group.customers.map(({ customer, puppyInfo }) => (
-                        <CustomerRow
-                          key={customer.id}
-                          customer={customer}
-                          puppyInfo={puppyInfo}
-                          onCustomerUpdated={onCustomerUpdated}
-                          onEditCustomer={onEditCustomer}
-                        />
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">Loading customers...</TableCell>
+              </TableRow>
+            ) : paginatedCustomers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">No customers found.</TableCell>
+              </TableRow>
+            ) : (
+              paginatedCustomers.map((customer) => (
+                <CustomerRow key={customer.id} customer={customer} onCustomerUpdated={loadCustomers} />
+              ))
+            )}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={5}>
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <PaginationItem key={i + 1} active={currentPage === i + 1}>
+                        <PaginationLink
+                          href="#"
+                          onClick={() => handlePageChange(i + 1)}
+                          isCurrent={currentPage === i + 1}
+                          disabled={currentPage === i + 1}
+                        >
+                          {i + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages || totalPages === 0}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </div>
+    </div>
   );
 };
 

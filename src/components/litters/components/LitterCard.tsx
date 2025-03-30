@@ -1,178 +1,118 @@
-
 import React from 'react';
-import { format, differenceInWeeks } from 'date-fns';
-import { Eye, Edit, Trash2, Archive, ArchiveRestore, Award } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Litter } from '../puppies/types';
+import { CalendarClock, Users, MapPin, Dog, BadgeInfo } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
+import { Litter } from '@/types/litter';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 
 interface LitterCardProps {
   litter: Litter;
-  onEdit: (litter: Litter) => void;
-  onDelete: (litter: Litter) => void;
-  onArchive: (litter: Litter) => void;
-  onUnarchive?: (litter: Litter) => void;
+  onEditLitter: (litter: Litter) => void;
+  onViewLitter: (litter: Litter) => void;
 }
 
-const LitterCard: React.FC<LitterCardProps> = ({ 
-  litter, 
-  onEdit, 
-  onDelete, 
-  onArchive,
-  onUnarchive 
-}) => {
-  const navigate = useNavigate();
-  
-  // Calculate litter age in weeks
-  const birthDate = new Date(litter.birth_date);
-  const ageInWeeks = differenceInWeeks(new Date(), birthDate);
-  
-  // Count available puppies and get unique colors
-  const availablePuppies = litter.puppies ? litter.puppies.filter(p => p.status === 'Available') : [];
-  const totalPuppies = litter.puppies ? litter.puppies.length : 0;
-  const colors = [...new Set((litter.puppies || []).map(p => p.color).filter(Boolean))];
-  
-  const isArchived = litter.status === 'archived';
-  
+const LitterCard: React.FC<LitterCardProps> = ({ litter, onEditLitter, onViewLitter }) => {
+  const getStatusColor = (status: string | undefined) => {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'planned':
+        return 'bg-blue-100 text-blue-800';
+      case 'archived':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getInitials = () => {
+    if (!litter.litter_name) return 'LT';
+    return litter.litter_name.substring(0, 2).toUpperCase();
+  };
+
   return (
-    <Card className={`overflow-hidden ${isArchived ? 'bg-muted/30' : ''}`}>
-      <CardContent className="p-0">
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              {/* Litter Name (displayed prominently) */}
-              {litter.litter_name && (
-                <h2 className="font-bold text-xl mb-1">
-                  {litter.litter_name}
-                </h2>
-              )}
-              <h3 className="font-semibold text-lg">
-                {litter.dam?.name || 'Unknown Dam'} × {litter.sire?.name || 'Unknown Sire'}
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                Born: {format(new Date(litter.birth_date), 'MMM d, yyyy')}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                ID: {litter.id.substring(0, 8)}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {isArchived && (
-                <Badge variant="outline" className="bg-muted text-muted-foreground rounded-full px-3 py-0.5 text-sm font-medium">
-                  Archived
-                </Badge>
-              )}
-              <Badge variant="outline" className="bg-primary/10 text-primary rounded-full px-3 py-0.5 text-sm font-medium">
-                {ageInWeeks} weeks old
-              </Badge>
-            </div>
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div className="flex items-center border-b p-4 bg-muted/30">
+        <Avatar className="h-10 w-10 mr-3">
+          <AvatarImage src={litter.documents_url || undefined} alt={litter.litter_name || 'Litter'} />
+          <AvatarFallback className="bg-primary/10 text-primary">
+            {getInitials()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <h3 className="font-medium line-clamp-1">
+            {litter.litter_name || 'Unnamed Litter'}
+          </h3>
+          <div className="flex gap-1 items-center text-xs text-muted-foreground">
+            <CalendarClock className="h-3.5 w-3.5" />
+            <span>
+              Born{' '}
+              {litter.birth_date
+                ? formatDistanceToNow(new Date(litter.birth_date), {
+                    addSuffix: true,
+                  })
+                : 'Unknown'}
+            </span>
           </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Dam:</span> 
-              <span className="text-sm text-muted-foreground">{litter.dam?.name || 'Unknown'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Sire:</span> 
-              <span className="text-sm text-muted-foreground">{litter.sire?.name || 'Unknown'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Total Puppies:</span> 
-              <span className="text-sm text-muted-foreground">
-                {totalPuppies}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Available:</span> 
-              <span className="text-sm font-medium text-green-600">
-                {availablePuppies.length} puppies
-              </span>
-            </div>
-            {litter.akc_registration_number && (
-              <div className="flex justify-between">
-                <span className="text-sm font-medium flex items-center">
-                  <Award className="h-3.5 w-3.5 mr-1 text-purple-600" />
-                  AKC #:
-                </span> 
-                <span className="text-sm text-purple-600 font-medium">
-                  {litter.akc_registration_number}
-                </span>
-              </div>
+        </div>
+        <Badge variant="outline" className={getStatusColor(litter.status)}>
+          {litter.status || 'Planned'}
+        </Badge>
+      </div>
+      <CardContent className="p-4 grid gap-2">
+        <div className="flex items-center gap-1 text-sm">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">
+            {litter.puppy_count || 0} Puppies
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-sm">
+          <Dog className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">
+            Dam:{' '}
+            {litter.dam?.name ? (
+              litter.dam.name
+            ) : (
+              <span className="italic text-muted-foreground">Unknown</span>
             )}
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Colors:</span> 
-              <div className="flex flex-wrap justify-end gap-1">
-                {colors.length > 0 ? (
-                  colors.map((color, idx) => (
-                    <Badge key={idx} variant="outline" className="text-xs">
-                      {color}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-sm text-muted-foreground">N/A</span>
-                )}
-              </div>
-            </div>
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-sm">
+          <Dog className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">
+            Sire:{' '}
+            {litter.sire?.name ? (
+              litter.sire.name
+            ) : (
+              <span className="italic text-muted-foreground">Unknown</span>
+            )}
+          </span>
+        </div>
+        {litter.kennel_name && (
+          <div className="flex items-center gap-1 text-sm">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">{litter.kennel_name}</span>
           </div>
-        </div>
-        
-        <div className="flex border-t">
-          <Button 
-            variant="ghost" 
-            className="flex-1 rounded-none py-2 h-12"
-            onClick={() => navigate(`/litters/${litter.id}`)}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            View
-          </Button>
-          <div className="w-px bg-border" />
-          <Button 
-            variant="ghost" 
-            className="flex-1 rounded-none py-2 h-12"
-            onClick={() => onEdit(litter)}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-          <div className="w-px bg-border" />
-          {!isArchived ? (
-            <>
-              <Button 
-                variant="ghost" 
-                className="flex-1 rounded-none py-2 h-12 text-amber-600 hover:text-amber-700"
-                onClick={() => onArchive(litter)}
-              >
-                <Archive className="h-4 w-4 mr-2" />
-                Archive
-              </Button>
-              <div className="w-px bg-border" />
-            </>
-          ) : onUnarchive ? (
-            <>
-              <Button 
-                variant="ghost" 
-                className="flex-1 rounded-none py-2 h-12 text-emerald-600 hover:text-emerald-700"
-                onClick={() => onUnarchive(litter)}
-              >
-                <ArchiveRestore className="h-4 w-4 mr-2" />
-                Unarchive
-              </Button>
-              <div className="w-px bg-border" />
-            </>
-          ) : null}
-          <Button 
-            variant="ghost" 
-            className="flex-1 rounded-none py-2 h-12 text-destructive hover:text-destructive"
-            onClick={() => onDelete(litter)}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        </div>
+        )}
+        {litter.akc_registration_number && (
+          <div className="flex items-center gap-1 text-sm">
+            <BadgeInfo className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">
+              AKC: {litter.akc_registration_number}
+            </span>
+          </div>
+        )}
       </CardContent>
+      <CardFooter className="flex justify-end p-4 pt-0">
+        <Button variant="outline" size="sm" onClick={() => onEditLitter(litter)}>
+          Edit
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => onViewLitter(litter)}>
+          View
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

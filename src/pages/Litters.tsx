@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
@@ -32,7 +31,7 @@ const Litters: React.FC = () => {
       
       if (error) throw error;
       
-      setLitters(data as Litter[]);
+      setLitters(data as unknown as Litter[]);
     } catch (error) {
       console.error('Error loading litters:', error);
       toast({

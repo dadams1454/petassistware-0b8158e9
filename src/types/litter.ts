@@ -13,6 +13,18 @@ export interface Puppy {
   photo_url?: string;
   status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
   birth_order?: number;
+  birth_weight?: string;
+  birth_time?: string;
+  presentation?: string;
+  assistance_required?: boolean;
+  assistance_notes?: string;
+  sale_price?: number;
+  notes?: string;
+  vaccination_dates?: string;
+  deworming_dates?: string;
+  vet_check_dates?: string;
+  akc_litter_number?: string;
+  akc_registration_number?: string;
 }
 
 export interface SimpleDog {
@@ -41,6 +53,14 @@ export interface Litter {
   breeder_id: string;
   puppies?: Puppy[];
   kennel_name?: string;
+  akc_registration_date?: string;
+  akc_verified?: boolean;
+  akc_litter_color?: string;
+  breeding_notes?: string;
+  documents_url?: string;
+  first_mating_date?: string;
+  last_mating_date?: string;
+  created_at?: string;
 }
 
 export interface Dog {
@@ -65,3 +85,10 @@ export interface Dog {
   vaccination_notes?: string;
   owner_id?: string;
 }
+
+export interface WeightUnit {
+  value: string;
+  label: string;
+}
+
+export type WeightUnitValue = 'oz' | 'g' | 'lbs' | 'kg' | 'both';

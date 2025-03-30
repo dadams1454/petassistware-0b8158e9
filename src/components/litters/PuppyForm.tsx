@@ -14,7 +14,8 @@ import { usePuppyForm } from '@/hooks/usePuppyForm';
 const PuppyForm: React.FC<PuppyFormProps> = ({ 
   litterId, 
   initialData, 
-  onSuccess 
+  onSuccess,
+  onCancel 
 }) => {
   const { form, isSubmitting, handleSubmit } = usePuppyForm({
     litterId,
@@ -56,6 +57,16 @@ const PuppyForm: React.FC<PuppyFormProps> = ({
         </Tabs>
 
         <div className="flex justify-end space-x-2 pt-4">
+          {onCancel && (
+            <CustomButton
+              type="button"
+              variant="secondary"
+              onClick={onCancel}
+              fullWidth={false}
+            >
+              Cancel
+            </CustomButton>
+          )}
           <CustomButton
             type="submit"
             variant="primary"

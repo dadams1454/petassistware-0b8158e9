@@ -4,7 +4,7 @@ import { SocializationCategory } from '@/components/litters/puppies/types';
 export interface PuppyFormProps {
   litterId: string;
   initialData?: Puppy | null;
-  onSubmit: () => void;
+  onSuccess: () => void;
   onCancel: () => void;
 }
 
@@ -20,10 +20,29 @@ export interface Puppy {
   photo_url?: string;
   status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
   birth_order?: number;
+  // Add missing properties from database schema
+  birth_weight?: string;
+  birth_time?: string;
+  presentation?: string;
+  assistance_required?: boolean;
+  assistance_notes?: string;
+  sale_price?: number;
+  notes?: string;
+  vaccination_dates?: string;
+  deworming_dates?: string;
+  vet_check_dates?: string;
+  akc_litter_number?: string;
+  akc_registration_number?: string;
 }
 
 export interface PuppyWithAge extends Puppy {
   age_in_weeks: number;
+  ageInDays: number;
+  litters?: {
+    id: string;
+    name?: string;
+    birth_date: string;
+  };
 }
 
 export interface PuppyFormData {
@@ -35,6 +54,14 @@ export interface PuppyFormData {
   microchip_number?: string;
   birth_order?: number;
   status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
+  // Add missing form fields
+  birth_weight?: string;
+  birth_time?: string;
+  presentation?: string;
+  assistance_required?: boolean;
+  assistance_notes?: string;
+  sale_price?: number;
+  notes?: string;
 }
 
 export interface SocializationCategory {

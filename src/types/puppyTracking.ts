@@ -1,4 +1,6 @@
 
+import { Puppy } from '@/components/litters/puppies/types';
+
 export interface PuppyWithAge extends Puppy {
   ageInDays: number;
   litters?: {

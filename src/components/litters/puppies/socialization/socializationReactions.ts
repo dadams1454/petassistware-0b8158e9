@@ -1,55 +1,13 @@
 
-import { SocializationReactionOption } from './types';
+import { SocializationCategory } from '../types';
 
-export const socializationReactions: SocializationReactionOption[] = [
-  {
-    value: 'curious',
-    label: 'Curious',
-    description: 'Showed interest and approached willingly'
-  },
-  {
-    value: 'excited',
-    label: 'Excited',
-    description: 'Showed enthusiasm and positive energy'
-  },
-  {
-    value: 'playful',
-    label: 'Playful',
-    description: 'Engaged in play behavior'
-  },
-  {
-    value: 'cautious',
-    label: 'Cautious',
-    description: 'Hesitant at first but eventually approached'
-  },
-  {
-    value: 'neutral',
-    label: 'Neutral',
-    description: 'Neither positive nor negative reaction'
-  },
-  {
-    value: 'hesitant',
-    label: 'Hesitant',
-    description: 'Showed reluctance and needed encouragement'
-  },
-  {
-    value: 'startled',
-    label: 'Startled',
-    description: 'Initially surprised but recovered quickly'
-  },
-  {
-    value: 'fearful',
-    label: 'Fearful',
-    description: 'Showed signs of fear or anxiety'
-  },
-  {
-    value: 'avoidant',
-    label: 'Avoidant',
-    description: 'Actively tried to avoid the experience'
-  },
-  {
-    value: 'aggressive',
-    label: 'Aggressive',
-    description: 'Showed aggression or defensive behavior'
-  }
+export const socializationReactions = [
+  { id: 'curious', name: 'Curious', color: 'bg-blue-100 text-blue-800' },
+  { id: 'cautious', name: 'Cautious', color: 'bg-yellow-100 text-yellow-800' },
+  { id: 'confident', name: 'Confident', color: 'bg-green-100 text-green-800' },
+  { id: 'fearful', name: 'Fearful', color: 'bg-red-100 text-red-800' },
+  { id: 'playful', name: 'Playful', color: 'bg-purple-100 text-purple-800' },
+  { id: 'indifferent', name: 'Indifferent', color: 'bg-gray-100 text-gray-800' }
 ];
+
+export default socializationReactions;

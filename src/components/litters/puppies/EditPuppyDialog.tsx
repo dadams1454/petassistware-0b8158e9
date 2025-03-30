@@ -25,6 +25,11 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
   onOpenChange, 
   onSuccess 
 }) => {
+  // Create a wrapper function for onCancel
+  const handleCancel = () => {
+    onOpenChange(false);
+  };
+  
   // Create a wrapper function that returns a Promise<void>
   const handleSuccess = async () => {
     try {
@@ -51,7 +56,8 @@ const EditPuppyDialog: React.FC<EditPuppyDialogProps> = ({
         <PuppyForm 
           initialData={puppy} 
           litterId={litterId}
-          onSuccess={handleSuccess} 
+          onSuccess={handleSuccess}
+          onCancel={handleCancel}
         />
       </DialogContent>
     </Dialog>
