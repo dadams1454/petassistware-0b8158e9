@@ -14,6 +14,7 @@ import Calendar from '@/pages/Calendar';
 import Communications from '@/pages/Communications';
 import AdminSetup from '@/pages/AdminSetup';
 import Users from '@/pages/Users';
+import AuditLogs from '@/pages/AuditLogs';
 
 const Router = () => {
   return (
@@ -66,6 +67,12 @@ const Router = () => {
       <Route path="/admin-setup" element={
         <ProtectedRoute>
           <AdminSetup />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/audit-logs" element={
+        <ProtectedRoute requiredRoles={['admin', 'owner']}>
+          <AuditLogs />
         </ProtectedRoute>
       } />
       

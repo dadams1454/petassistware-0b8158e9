@@ -36,6 +36,54 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          new_state: Json | null
+          notes: string | null
+          previous_state: Json | null
+          tenant_id: string | null
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          new_state?: Json | null
+          notes?: string | null
+          previous_state?: Json | null
+          tenant_id?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          new_state?: Json | null
+          notes?: string | null
+          previous_state?: Json | null
+          tenant_id?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       breed_colors: {
         Row: {
           breed: string
@@ -521,6 +569,7 @@ export type Database = {
           metadata: Json | null
           notes: string | null
           phone: string | null
+          tenant_id: string | null
         }
         Insert: {
           address?: string | null
@@ -532,6 +581,7 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           phone?: string | null
+          tenant_id?: string | null
         }
         Update: {
           address?: string | null
@@ -543,6 +593,7 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           phone?: string | null
+          tenant_id?: string | null
         }
         Relationships: []
       }
@@ -759,6 +810,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          tenant_id: string | null
         }
         Insert: {
           color?: string | null
@@ -766,6 +818,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          tenant_id?: string | null
         }
         Update: {
           color?: string | null
@@ -773,6 +826,7 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          tenant_id?: string | null
         }
         Relationships: []
       }
@@ -943,6 +997,7 @@ export type Database = {
           potty_alert_threshold: number | null
           registration_number: string | null
           requires_special_handling: boolean | null
+          tenant_id: string | null
           tie_date: string | null
           vaccination_notes: string | null
           vaccination_type: string | null
@@ -969,6 +1024,7 @@ export type Database = {
           potty_alert_threshold?: number | null
           registration_number?: string | null
           requires_special_handling?: boolean | null
+          tenant_id?: string | null
           tie_date?: string | null
           vaccination_notes?: string | null
           vaccination_type?: string | null
@@ -995,6 +1051,7 @@ export type Database = {
           potty_alert_threshold?: number | null
           registration_number?: string | null
           requires_special_handling?: boolean | null
+          tenant_id?: string | null
           tie_date?: string | null
           vaccination_notes?: string | null
           vaccination_type?: string | null
@@ -2216,11 +2273,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      format_audit_log: {
+        Args: {
+          log_entry: unknown
+        }
+        Returns: string
+      }
+      get_tenant_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      is_admin_or_owner: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_medication_log: {
         Args: {
           log_record: unknown
         }
         Returns: boolean
+      }
+      log_audit_event: {
+        Args: {
+          action: string
+          entity_type: string
+          entity_id: string
+          previous_state?: Json
+          new_state?: Json
+          notes?: string
+        }
+        Returns: string
       }
     }
     Enums: {

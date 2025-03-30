@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import OrganizationSetup from '@/components/admin/OrganizationSetup';
 import UserManagement from '@/components/admin/UserManagement';
@@ -72,6 +72,10 @@ const AdminSetup = () => {
     navigate('/dashboard');
   };
 
+  const handleViewAuditLogs = () => {
+    navigate('/audit-logs');
+  };
+
   if (loading) {
     return (
       <Card className="mx-auto max-w-6xl">
@@ -124,14 +128,24 @@ const AdminSetup = () => {
             Configure your organization, manage users, and set access permissions
           </p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={handleBackToDashboard}
-          className="flex items-center gap-2"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleViewAuditLogs}
+            className="flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            View Audit Logs
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleBackToDashboard}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="organization" className="space-y-6">
