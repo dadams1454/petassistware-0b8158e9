@@ -96,3 +96,18 @@ export const navItems = [
     description: 'Configure your kennel settings'
   }
 ];
+
+// Adding the missing functions that are being imported
+export const getNavItems = () => {
+  return navItems.map(item => ({
+    name: item.title,
+    to: item.href,
+    icon: <item.icon className="h-5 w-5" />,
+    description: item.description
+  }));
+};
+
+export const filterNavItemsByRole = (items: ReturnType<typeof getNavItems>, role: string) => {
+  // For now, we're not filtering by role, but the function is here for future use
+  return items;
+};

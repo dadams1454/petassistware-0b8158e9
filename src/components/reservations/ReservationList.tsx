@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Reservation } from '@/types/reservation';
@@ -68,7 +67,7 @@ export const ReservationList: React.FC<ReservationListProps> = ({
       case 'Ready for Pickup':
         return <Badge variant="default">Ready for Pickup</Badge>;
       case 'Completed':
-        return <Badge variant="success">Completed</Badge>;
+        return <Badge variant="default">Completed</Badge>; // Changed from "success" to "default"
       case 'Cancelled':
         return <Badge variant="destructive">Cancelled</Badge>;
       default:
