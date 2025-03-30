@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ToastAction } from '@/components/ui/toast';
 import { Litter } from '@/types/litter';
+import { ToastAction } from '@/components/ui/toast';
 
-export const useLitterActions = (onRefresh?: () => Promise<any>, setLitterToDelete?: (litter: Litter | null) => void) => {
+export const useLitterActions = (onRefresh: () => Promise<void>) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isUnarchiving, setIsUnarchiving] = useState(false);
@@ -30,13 +30,15 @@ export const useLitterActions = (onRefresh?: () => Promise<any>, setLitterToDele
         title: 'Litter Deleted',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been deleted.`,
         variant: 'default',
-        action: <ToastAction altText="View Litters" onClick={() => navigate('/litters')}>
-          View Litters
-        </ToastAction>
+        action: (
+          <ToastAction altText="View litters" onClick={() => navigate('/litters')}>
+            View Litters
+          </ToastAction>
+        )
       });
       
-      if (onRefresh) await onRefresh();
-      if (setLitterToDelete) setLitterToDelete(null);
+      // Refresh the litters list
+      await onRefresh();
       
     } catch (error: any) {
       console.error('Error deleting litter:', error);
@@ -68,12 +70,15 @@ export const useLitterActions = (onRefresh?: () => Promise<any>, setLitterToDele
         title: 'Litter Archived',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been archived.`,
         variant: 'default',
-        action: <ToastAction altText="View Litters" onClick={() => navigate('/litters')}>
-          View Litters
-        </ToastAction>
+        action: (
+          <ToastAction altText="View litters" onClick={() => navigate('/litters')}>
+            View Litters
+          </ToastAction>
+        )
       });
       
-      if (onRefresh) await onRefresh();
+      // Refresh the litters list
+      await onRefresh();
       
     } catch (error: any) {
       console.error('Error archiving litter:', error);
@@ -105,12 +110,15 @@ export const useLitterActions = (onRefresh?: () => Promise<any>, setLitterToDele
         title: 'Litter Unarchived',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been unarchived.`,
         variant: 'default',
-        action: <ToastAction altText="View Litters" onClick={() => navigate('/litters')}>
-          View Litters
-        </ToastAction>
+        action: (
+          <ToastAction altText="View litters" onClick={() => navigate('/litters')}>
+            View Litters
+          </ToastAction>
+        )
       });
       
-      if (onRefresh) await onRefresh();
+      // Refresh the litters list
+      await onRefresh();
       
     } catch (error: any) {
       console.error('Error unarchiving litter:', error);
