@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +10,7 @@ import LitterStatistics from './LitterStatistics';
 import LitterComparison from './LitterComparison';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertCircle, BarChart, ArrowLeftRight } from 'lucide-react';
+import { Puppy } from '@/types/litter';
 
 interface BreedingAnalyticsProps {
   className?: string;
@@ -50,7 +50,12 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
 
   // Get the selected litter data
   const selectedLitter = litters?.find(litter => litter.id === selectedLitterId);
-  const puppies = selectedLitter?.puppies || [];
+  
+  // Make sure we properly handle the gender typing when processing puppies
+  const puppies: Puppy[] = (selectedLitter?.puppies || []).map(puppy => ({
+    ...puppy,
+    gender: (puppy.gender === 'Male' || puppy.gender === 'Female') ? puppy.gender : 'Male' as 'Male' // Default to 'Male' if invalid
+  }));
 
   if (littersError) {
     return (
@@ -65,6 +70,7 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
     );
   }
 
+  
   return (
     <Card className={className}>
       <CardContent className="p-6">

@@ -6,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { Litter } from '@/types/litter';
 
-export const useLitterActions = () => {
+export const useLitterActions = (onRefresh?: () => Promise<any>, setLitterToDelete?: (litter: Litter | null) => void) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isUnarchiving, setIsUnarchiving] = useState(false);
@@ -30,11 +30,13 @@ export const useLitterActions = () => {
         title: 'Litter Deleted',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been deleted.`,
         variant: 'default',
-        action: {
-          label: 'View Litters',
-          onClick: () => navigate('/litters')
-        }
+        action: <ToastAction altText="View Litters" onClick={() => navigate('/litters')}>
+          View Litters
+        </ToastAction>
       });
+      
+      if (onRefresh) await onRefresh();
+      if (setLitterToDelete) setLitterToDelete(null);
       
     } catch (error: any) {
       console.error('Error deleting litter:', error);
@@ -66,11 +68,12 @@ export const useLitterActions = () => {
         title: 'Litter Archived',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been archived.`,
         variant: 'default',
-        action: {
-          label: 'View Litters',
-          onClick: () => navigate('/litters')
-        }
+        action: <ToastAction altText="View Litters" onClick={() => navigate('/litters')}>
+          View Litters
+        </ToastAction>
       });
+      
+      if (onRefresh) await onRefresh();
       
     } catch (error: any) {
       console.error('Error archiving litter:', error);
@@ -102,11 +105,12 @@ export const useLitterActions = () => {
         title: 'Litter Unarchived',
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been unarchived.`,
         variant: 'default',
-        action: {
-          label: 'View Litters',
-          onClick: () => navigate('/litters')
-        }
+        action: <ToastAction altText="View Litters" onClick={() => navigate('/litters')}>
+          View Litters
+        </ToastAction>
       });
+      
+      if (onRefresh) await onRefresh();
       
     } catch (error: any) {
       console.error('Error unarchiving litter:', error);

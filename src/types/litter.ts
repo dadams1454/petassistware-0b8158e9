@@ -1,5 +1,6 @@
 
-import { UserRole } from '@/contexts/AuthProvider';
+// Remove import of UserRole that's causing issues
+// import { UserRole } from '@/contexts/AuthProvider';
 
 export interface Puppy {
   id: string;

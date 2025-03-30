@@ -31,7 +31,13 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
     handleDeleteLitter,
     handleArchiveLitter,
     handleUnarchiveLitter
-  } = useLitterActions(onRefresh, setLitterToDelete);
+  } = useLitterActions(onRefresh);
+
+  const confirmDeleteLitter = () => {
+    if (litterToDelete) {
+      handleDeleteLitter(litterToDelete);
+    }
+  };
 
   // Organize litters by status and dam gender
   const organizedLitters: OrganizedLitters = useMemo(() => {
@@ -101,7 +107,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
       <DeleteLitterDialog
         isOpen={isDeleteDialogOpen}
         onOpenChange={(open) => !open && setLitterToDelete(null)}
-        onConfirm={handleDeleteLitter}
+        onConfirm={confirmDeleteLitter}
         onCancel={() => setLitterToDelete(null)}
       />
     </div>

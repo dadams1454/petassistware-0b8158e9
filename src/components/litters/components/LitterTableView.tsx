@@ -1,19 +1,13 @@
 
 import React from 'react';
-import { format, differenceInDays } from 'date-fns';
-import { Edit, Trash, Archive, Refresh, Eye } from 'lucide-react';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from '@/components/ui/table';
+import { Archive, ArchiveRestore, Edit, FileEdit, Trash, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Litter } from '@/types/litter';
-import { Link } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 
 interface LitterTableViewProps {
   litters: Litter[];
@@ -30,136 +24,173 @@ const LitterTableView: React.FC<LitterTableViewProps> = ({
   onArchiveLitter,
   onUnarchiveLitter
 }) => {
+  // Correctly format the date
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
+    if (!dateString) return 'N/A';
+    
     try {
-      return format(new Date(dateString), 'MMM d, yyyy');
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
     } catch (e) {
-      return dateString;
+      return 'Invalid date';
     }
   };
-
+  
+  const getTimeSince = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (e) {
+      return 'Invalid date';
+    }
+  };
+  
+  // Get badge props based on litter status
   const getStatusBadge = (status?: string) => {
-    if (!status) return <Badge variant="outline">Active</Badge>;
-    
-    switch (status.toLowerCase()) {
-      case 'archived':
-        return <Badge variant="secondary">Archived</Badge>;
+    switch (status) {
       case 'active':
-        return <Badge variant="default">Active</Badge>;
+        return {
+          variant: 'default' as const,
+          label: 'Active'
+        };
+      case 'complete':
+        return {
+          variant: 'default' as const,
+          label: 'Complete'
+        };
       case 'planned':
-        return <Badge variant="outline">Planned</Badge>;
+        return {
+          variant: 'outline' as const,
+          label: 'Planned'
+        };
+      case 'archived':
+        return {
+          variant: 'secondary' as const,
+          label: 'Archived'
+        };
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return {
+          variant: 'outline' as const,
+          label: status || 'Unknown'
+        };
     }
   };
-
-  const getAgeBadge = (birthDate?: string) => {
-    if (!birthDate) return null;
-    
-    try {
-      const days = differenceInDays(new Date(), new Date(birthDate));
-      const weeks = Math.floor(days / 7);
-      
-      if (days < 0) {
-        return <Badge variant="outline">Due in {Math.abs(days)} days</Badge>;
-      }
-      
-      if (weeks < 1) {
-        return <Badge variant="success" className="bg-green-100 text-green-800">{days} days</Badge>;
-      }
-      
-      if (weeks < 8) {
-        return <Badge variant="success" className="bg-green-100 text-green-800">{weeks} weeks</Badge>;
-      }
-      
-      if (weeks < 12) {
-        return <Badge variant="warning" className="bg-amber-100 text-amber-800">{weeks} weeks</Badge>;
-      }
-      
-      return <Badge variant="destructive" className="bg-red-100 text-red-800">{weeks} weeks</Badge>;
-    } catch (e) {
-      return null;
-    }
-  };
-
+  
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Litter Name</TableHead>
-            <TableHead>Dam</TableHead>
-            <TableHead>Sire</TableHead>
+            <TableHead>Dam & Sire</TableHead>
             <TableHead>Birth Date</TableHead>
-            <TableHead>Age</TableHead>
             <TableHead>Puppies</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {litters.map((litter) => (
-            <TableRow key={litter.id}>
-              <TableCell className="font-medium">
-                {litter.litter_name || `${litter.dam?.name || 'Unknown'} × ${litter.sire?.name || 'Unknown'}`}
-              </TableCell>
-              <TableCell>{litter.dam?.name || 'Unknown'}</TableCell>
-              <TableCell>{litter.sire?.name || 'Unknown'}</TableCell>
-              <TableCell>{formatDate(litter.birth_date)}</TableCell>
-              <TableCell>{getAgeBadge(litter.birth_date)}</TableCell>
-              <TableCell>
-                {(litter.puppies?.length || 0) > 0 ? (
-                  <Badge variant="outline" className="bg-blue-50 text-blue-800">
-                    {litter.puppies?.length || '0'} puppies
-                  </Badge>
-                ) : (
-                  <Badge variant="outline">No puppies</Badge>
-                )}
-              </TableCell>
-              <TableCell>{getStatusBadge(litter.status)}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end space-x-1">
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link to={`/litters/${litter.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEditLitter(litter)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  {litter.status === 'archived' ? (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onUnarchiveLitter(litter)}
-                    >
-                      <Refresh className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onArchiveLitter(litter)}
-                    >
-                      <Archive className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDeleteLitter(litter)}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
+          {litters.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                No litters found
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            litters.map((litter) => {
+              const { variant, label } = getStatusBadge(litter.status);
+              
+              return (
+                <TableRow key={litter.id}>
+                  <TableCell className="font-medium">
+                    {litter.litter_name || 'Unnamed Litter'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <div className="text-sm">
+                        <span className="text-muted-foreground mr-1">Dam:</span> 
+                        {litter.dam?.name || 'Unknown'}
+                      </div>
+                      <div className="text-sm">
+                        <span className="text-muted-foreground mr-1">Sire:</span> 
+                        {litter.sire?.name || 'Unknown'}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-0">
+                      <div>{formatDate(litter.birth_date)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {getTimeSince(litter.birth_date)}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">{litter.puppy_count || 0}</span>
+                        <span className="text-muted-foreground text-xs">total</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {litter.male_count || 0} male • {litter.female_count || 0} female
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={variant}>{label}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => onEditLitter(litter)}
+                        title="Edit litter details"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      
+                      {litter.status === 'archived' ? (
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => onUnarchiveLitter(litter)}
+                          title="Unarchive litter"
+                        >
+                          <ArchiveRestore className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => onArchiveLitter(litter)}
+                          title="Archive litter"
+                        >
+                          <Archive className="h-4 w-4" />
+                        </Button>
+                      )}
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => onDeleteLitter(litter)}
+                        className="text-destructive hover:text-destructive/80"
+                        title="Delete litter"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </div>

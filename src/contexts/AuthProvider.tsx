@@ -1,11 +1,13 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
-interface AuthContextType {
+// Define UserRole type and export it
+export type UserRole = 'user' | 'staff' | 'manager' | 'admin' | 'owner';
+
+export interface AuthContextType {
   user: User | null;
-  userRole: string | null;
+  userRole: UserRole | null;
   tenantId: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;

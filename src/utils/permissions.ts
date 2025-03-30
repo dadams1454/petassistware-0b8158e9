@@ -1,7 +1,7 @@
 import { UserRole } from '@/contexts/AuthProvider';
 
 // Define the hierarchy of roles (from lowest to highest privileges)
-export const ROLE_HIERARCHY: UserRole[] = ['user', 'staff', 'manager', 'admin'];
+export const ROLE_HIERARCHY: UserRole[] = ['user', 'staff', 'manager', 'admin', 'owner'];
 
 // Check if a user's role meets the required minimum role
 export const hasMinimumRole = (userRole: UserRole | null, requiredRole: UserRole): boolean => {
@@ -24,10 +24,10 @@ export interface PermissionRules {
 // Centralized permissions configuration
 export const PERMISSIONS = {
   dogs: {
-    view: ['user', 'staff', 'manager', 'admin'],
-    add: ['staff', 'manager', 'admin'],
-    edit: ['staff', 'manager', 'admin'],
-    delete: ['manager', 'admin']
+    view: ['user', 'staff', 'manager', 'admin', 'owner'],
+    add: ['staff', 'manager', 'admin', 'owner'],
+    edit: ['staff', 'manager', 'admin', 'owner'],
+    delete: ['manager', 'admin', 'owner']
   } as PermissionRules,
   
   customers: {
