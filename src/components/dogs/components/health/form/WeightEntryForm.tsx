@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Form } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { useWeightEntryForm } from '../hooks/useWeightEntryForm';
 import WeightDatePicker from './WeightDatePicker';
 import WeightValueInput from './WeightValueInput';
