@@ -1,9 +1,11 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { 
   HealthRecord, 
   HealthRecordTypeEnum, 
   HealthRecordType,
   WeightRecord,
+  WeightUnitEnum,
   adaptHealthRecord,
   adaptWeightRecord
 } from '@/types/health';
@@ -63,18 +65,22 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
 };
 
 export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>): Promise<HealthRecord> => {
+  const dbUpdates = {
+    record_type: updates.record_type,
+    title: updates.title,
+    description: updates.description,
+    visit_date: updates.date || updates.visit_date,
+    performed_by: updates.performed_by,
+    next_due_date: updates.next_due_date,
+    vet_name: updates.performed_by || undefined,
+    record_notes: updates.description || undefined,
+    // Include any other relevant fields
+    ...updates
+  };
+
   const { data, error } = await supabase
     .from('health_records')
-    .update({
-      record_type: updates.record_type,
-      title: updates.title,
-      description: updates.description,
-      visit_date: updates.date || updates.visit_date,
-      performed_by: updates.performed_by,
-      next_due_date: updates.next_due_date,
-      // Include any other relevant fields
-      ...updates
-    })
+    .update(dbUpdates)
     .eq('id', id)
     .select()
     .single();
