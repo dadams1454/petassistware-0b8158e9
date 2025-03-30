@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Puppy, PuppyFormData } from '@/components/litters/puppies/types';
+import { Puppy } from '@/components/litters/puppies/types';
 
 const puppySchema = z.object({
   name: z.string().optional(),
@@ -24,6 +24,14 @@ const puppySchema = z.object({
   sale_price: z.number().optional(),
   notes: z.string().optional(),
   weight_notes: z.string().optional(),
+  // Add missing fields for AKC registration
+  akc_litter_number: z.string().optional(),
+  akc_registration_number: z.string().optional(),
+  // Add missing fields for health information
+  vaccination_dates: z.string().optional(),
+  deworming_dates: z.string().optional(),
+  vet_check_dates: z.string().optional(),
+  health_notes: z.string().optional(),
 });
 
 export type PuppyFormValues = z.infer<typeof puppySchema>;
@@ -53,6 +61,15 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
     assistance_notes: initialData?.assistance_notes || '',
     sale_price: initialData?.sale_price || undefined,
     notes: initialData?.notes || '',
+    weight_notes: initialData?.weight_notes || '',
+    // Initialize AKC registration fields
+    akc_litter_number: initialData?.akc_litter_number || '',
+    akc_registration_number: initialData?.akc_registration_number || '',
+    // Initialize health information fields
+    vaccination_dates: initialData?.vaccination_dates || '',
+    deworming_dates: initialData?.deworming_dates || '',
+    vet_check_dates: initialData?.vet_check_dates || '',
+    health_notes: initialData?.health_notes || '',
   };
 
   // Add birth_date if it exists

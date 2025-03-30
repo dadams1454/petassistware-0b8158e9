@@ -30,6 +30,8 @@ export interface Puppy {
   vet_check_dates?: string;
   akc_litter_number?: string;
   akc_registration_number?: string;
+  health_notes?: string;
+  weight_notes?: string;
 }
 
 export interface PuppyWithAge extends Puppy {
@@ -59,6 +61,14 @@ export interface PuppyFormData {
   sale_price?: number;
   notes?: string;
   weight_notes?: string;
+  // Added fields for AKC registration
+  akc_litter_number?: string;
+  akc_registration_number?: string;
+  // Added fields for health information
+  vaccination_dates?: string;
+  deworming_dates?: string;
+  vet_check_dates?: string;
+  health_notes?: string;
 }
 
 export interface SocializationCategory {
