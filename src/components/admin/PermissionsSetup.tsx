@@ -1,248 +1,148 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/ui/standardized';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 interface PermissionsSetupProps {
   tenantId?: string;
 }
 
-type Role = 'admin' | 'manager' | 'staff' | 'user';
-
-interface Permission {
-  id: string;
-  name: string;
-  description: string;
-  roles: {
-    [key in Role]: {
-      view: boolean;
-      create: boolean;
-      edit: boolean;
-      delete: boolean;
-    }
-  }
-}
-
-const defaultPermissions: Permission[] = [
+// Define sample permission modules
+const permissionModules = [
   {
-    id: 'dogs',
     name: 'Dogs',
-    description: 'Manage dog profiles and records',
-    roles: {
-      admin: { view: true, create: true, edit: true, delete: true },
-      manager: { view: true, create: true, edit: true, delete: false },
-      staff: { view: true, create: true, edit: true, delete: false },
-      user: { view: true, create: false, edit: false, delete: false }
-    }
+    permissions: [
+      { name: 'View Dogs', key: 'dogs.view' },
+      { name: 'Create Dogs', key: 'dogs.create' },
+      { name: 'Edit Dogs', key: 'dogs.edit' },
+      { name: 'Delete Dogs', key: 'dogs.delete' },
+    ],
   },
   {
-    id: 'litters',
     name: 'Litters',
-    description: 'Manage litters and puppies',
-    roles: {
-      admin: { view: true, create: true, edit: true, delete: true },
-      manager: { view: true, create: true, edit: true, delete: false },
-      staff: { view: true, create: false, edit: false, delete: false },
-      user: { view: false, create: false, edit: false, delete: false }
-    }
+    permissions: [
+      { name: 'View Litters', key: 'litters.view' },
+      { name: 'Create Litters', key: 'litters.create' },
+      { name: 'Edit Litters', key: 'litters.edit' },
+      { name: 'Delete Litters', key: 'litters.delete' },
+    ],
   },
   {
-    id: 'customers',
     name: 'Customers',
-    description: 'Manage customer information',
-    roles: {
-      admin: { view: true, create: true, edit: true, delete: true },
-      manager: { view: true, create: true, edit: true, delete: false },
-      staff: { view: true, create: true, edit: true, delete: false },
-      user: { view: false, create: false, edit: false, delete: false }
-    }
-  },
-  {
-    id: 'users',
-    name: 'Users',
-    description: 'Manage user accounts',
-    roles: {
-      admin: { view: true, create: true, edit: true, delete: true },
-      manager: { view: false, create: false, edit: false, delete: false },
-      staff: { view: false, create: false, edit: false, delete: false },
-      user: { view: false, create: false, edit: false, delete: false }
-    }
+    permissions: [
+      { name: 'View Customers', key: 'customers.view' },
+      { name: 'Create Customers', key: 'customers.create' },
+      { name: 'Edit Customers', key: 'customers.edit' },
+      { name: 'Delete Customers', key: 'customers.delete' },
+    ],
   },
 ];
 
+// Define sample roles
+const roles = [
+  { name: 'Admin', key: 'admin', description: 'Full access to all features' },
+  { name: 'Manager', key: 'manager', description: 'Can manage most aspects but cannot delete or modify system settings' },
+  { name: 'Breeder', key: 'breeder', description: 'Can manage dogs and litters but limited customer access' },
+  { name: 'Assistant', key: 'assistant', description: 'Limited read access and basic operations' },
+];
+
 const PermissionsSetup: React.FC<PermissionsSetupProps> = ({ tenantId }) => {
-  const [permissions, setPermissions] = useState<Permission[]>(defaultPermissions);
-  const [activeRole, setActiveRole] = useState<Role>('admin');
+  const { toast } = useToast();
   
-  const handlePermissionChange = (
-    permissionId: string,
-    action: 'view' | 'create' | 'edit' | 'delete',
-    checked: boolean
-  ) => {
-    setPermissions(permissions.map(permission => {
-      if (permission.id === permissionId) {
-        return {
-          ...permission,
-          roles: {
-            ...permission.roles,
-            [activeRole]: {
-              ...permission.roles[activeRole],
-              [action]: checked
-            }
-          }
-        };
-      }
-      return permission;
-    }));
+  // Mock permissions matrix - in a real app, this would be fetched from your backend
+  const mockPermissionsMatrix: Record<string, Record<string, boolean>> = {
+    admin: Object.fromEntries(
+      permissionModules.flatMap(module => 
+        module.permissions.map(permission => [permission.key, true])
+      )
+    ),
+    manager: Object.fromEntries(
+      permissionModules.flatMap(module => 
+        module.permissions.map(permission => [permission.key, 
+          !permission.key.includes('delete') && !permission.key.includes('system')
+        ])
+      )
+    ),
+    breeder: Object.fromEntries(
+      permissionModules.flatMap(module => 
+        module.permissions.map(permission => [permission.key, 
+          (module.name === 'Dogs' || module.name === 'Litters') && !permission.key.includes('delete')
+        ])
+      )
+    ),
+    assistant: Object.fromEntries(
+      permissionModules.flatMap(module => 
+        module.permissions.map(permission => [permission.key, 
+          permission.key.includes('view')
+        ])
+      )
+    ),
   };
-  
+
+  const handleSavePermissions = () => {
+    toast({
+      title: "Permissions Saved",
+      description: "Role permissions have been updated successfully.",
+      variant: "default",
+    });
+  };
+
+  if (!tenantId) {
+    return <EmptyState title="No Organization Selected" description="Please set up your organization details first." />;
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h3 className="text-lg font-medium">Role-Based Access Control</h3>
-        <p className="text-muted-foreground">
-          Define what each role in your organization can do.
-        </p>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Role-Based Permissions</h3>
+        <Button onClick={handleSavePermissions}>Save Changes</Button>
       </div>
       
-      <Tabs value={activeRole} onValueChange={(value) => setActiveRole(value as Role)}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="admin">Admin</TabsTrigger>
-          <TabsTrigger value="manager">Manager</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
-          <TabsTrigger value="user">User</TabsTrigger>
-        </TabsList>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[200px]">Resource</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-center">View</TableHead>
-                  <TableHead className="text-center">Create</TableHead>
-                  <TableHead className="text-center">Edit</TableHead>
-                  <TableHead className="text-center">Delete</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {permissions.map((permission) => (
-                  <TableRow key={permission.id}>
-                    <TableCell className="font-medium">
-                      {permission.name}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {permission.description}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch 
-                        checked={permission.roles[activeRole].view}
-                        onCheckedChange={(checked) => 
-                          handlePermissionChange(permission.id, 'view', checked)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch 
-                        checked={permission.roles[activeRole].create}
-                        onCheckedChange={(checked) => 
-                          handlePermissionChange(permission.id, 'create', checked)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch 
-                        checked={permission.roles[activeRole].edit}
-                        onCheckedChange={(checked) => 
-                          handlePermissionChange(permission.id, 'edit', checked)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch 
-                        checked={permission.roles[activeRole].delete}
-                        onCheckedChange={(checked) => 
-                          handlePermissionChange(permission.id, 'delete', checked)
-                        }
-                      />
+      <Card>
+        <CardContent className="p-0 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[200px]">Permission</TableHead>
+                {roles.map(role => (
+                  <TableHead key={role.key} className="text-center">
+                    {role.name}
+                    <div className="text-xs font-normal text-muted-foreground">{role.description}</div>
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {permissionModules.map(module => (
+                <React.Fragment key={module.name}>
+                  <TableRow className="bg-muted/50">
+                    <TableCell colSpan={roles.length + 1} className="font-medium">
+                      {module.name}
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </Tabs>
-      
-      <div className="flex justify-end gap-4">
-        <Button variant="outline">Reset to Defaults</Button>
-        <Button>Save Changes</Button>
-      </div>
-      
-      <div className="mt-6">
-        <h3 className="text-lg font-medium mb-2">Role Descriptions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Admin</h4>
-                <Badge>Highest Access</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Full access to all features including user management and system settings.
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Manager</h4>
-                <Badge variant="secondary">High Access</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Can manage most breeding operations but cannot manage users or system settings.
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Staff</h4>
-                <Badge variant="outline">Limited Access</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Day-to-day operations like dog care, customer interactions, and data entry.
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">User</h4>
-                <Badge variant="outline">Basic Access</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Read-only access to basic information. Typically for customers or temporary access.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                  {module.permissions.map(permission => (
+                    <TableRow key={permission.key}>
+                      <TableCell>{permission.name}</TableCell>
+                      {roles.map(role => (
+                        <TableCell key={`${role.key}-${permission.key}`} className="text-center">
+                          <Switch 
+                            checked={mockPermissionsMatrix[role.key][permission.key]} 
+                            disabled={role.key === 'admin'} // Admin always has all permissions
+                          />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };

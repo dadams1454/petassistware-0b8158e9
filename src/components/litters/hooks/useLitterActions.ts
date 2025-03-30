@@ -1,117 +1,123 @@
 
 import { useState } from 'react';
-import { toast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ToastAction } from '@/components/ui/toast';
+import { toast } from '@/hooks/use-toast';
 import { Litter } from '@/types/litter';
 
-export const useLitterActions = (
-  onRefresh: () => Promise<any>,
-  setLitterToDelete: React.Dispatch<React.SetStateAction<Litter | null>>
-) => {
+export const useLitterActions = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
-  
-  const handleDeleteLitter = async () => {
-    if (!isDeleting) {
-      setIsDeleting(true);
-      try {
-        // Assume litterToDelete is set when this is called
-        const { error } = await supabase
-          .from('litters')
-          .delete()
-          .eq('id', setLitterToDelete as any);
+  const [isUnarchiving, setIsUnarchiving] = useState(false);
+  const navigate = useNavigate();
 
-        if (error) throw error;
-        
-        toast({
-          title: "Litter deleted",
-          description: "The litter has been removed successfully",
-          action: <ToastAction altText="Close">Close</ToastAction>
-        });
-        
-        await onRefresh();
-        setLitterToDelete(null);
-      } catch (error) {
-        console.error('Error deleting litter:', error);
-        toast({
-          title: "Error",
-          description: "There was a problem deleting the litter",
-          variant: "destructive",
-        });
-      } finally {
-        setIsDeleting(false);
-      }
+  const handleDeleteLitter = async (litter: Litter) => {
+    if (!litter.id) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      // Delete the litter
+      const { error } = await supabase
+        .from('litters')
+        .delete()
+        .eq('id', litter.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Litter Deleted',
+        description: `Litter "${litter.litter_name || 'Unnamed'}" has been deleted.`,
+        variant: 'default',
+        action: <button onClick={() => navigate('/litters')}>View Litters</button>
+      });
+      
+    } catch (error: any) {
+      console.error('Error deleting litter:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to delete litter: ${error.message}`,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const handleArchiveLitter = async (litter: Litter) => {
-    if (!isArchiving) {
-      setIsArchiving(true);
-      try {
-        const { error } = await supabase
-          .from('litters')
-          .update({ status: 'archived' })
-          .eq('id', litter.id);
-
-        if (error) throw error;
-        
-        toast({
-          title: "Litter archived",
-          description: "The litter has been archived successfully",
-          action: <ToastAction altText="Close">Close</ToastAction>
-        });
-        
-        await onRefresh();
-      } catch (error) {
-        console.error('Error archiving litter:', error);
-        toast({
-          title: "Error",
-          description: "There was a problem archiving the litter",
-          variant: "destructive",
-        });
-      } finally {
-        setIsArchiving(false);
-      }
+    if (!litter.id) return;
+    
+    setIsArchiving(true);
+    
+    try {
+      // Archive the litter by setting status to 'archived'
+      const { error } = await supabase
+        .from('litters')
+        .update({ status: 'archived' })
+        .eq('id', litter.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Litter Archived',
+        description: `Litter "${litter.litter_name || 'Unnamed'}" has been archived.`,
+        variant: 'default',
+        action: <button onClick={() => navigate('/litters')}>View Litters</button>
+      });
+      
+    } catch (error: any) {
+      console.error('Error archiving litter:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to archive litter: ${error.message}`,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsArchiving(false);
     }
   };
 
   const handleUnarchiveLitter = async (litter: Litter) => {
-    if (!isArchiving) {
-      setIsArchiving(true);
-      try {
-        const { error } = await supabase
-          .from('litters')
-          .update({ status: 'active' })
-          .eq('id', litter.id);
-
-        if (error) throw error;
-        
-        toast({
-          title: "Litter activated",
-          description: "The litter has been reactivated successfully",
-          action: <ToastAction altText="Close">Close</ToastAction>
-        });
-        
-        await onRefresh();
-      } catch (error) {
-        console.error('Error activating litter:', error);
-        toast({
-          title: "Error",
-          description: "There was a problem activating the litter",
-          variant: "destructive",
-        });
-      } finally {
-        setIsArchiving(false);
-      }
+    if (!litter.id) return;
+    
+    setIsUnarchiving(true);
+    
+    try {
+      // Unarchive the litter by setting status to 'active'
+      const { error } = await supabase
+        .from('litters')
+        .update({ status: 'active' })
+        .eq('id', litter.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Litter Unarchived',
+        description: `Litter "${litter.litter_name || 'Unnamed'}" has been unarchived.`,
+        variant: 'default',
+        action: <button onClick={() => navigate('/litters')}>View Litters</button>
+      });
+      
+    } catch (error: any) {
+      console.error('Error unarchiving litter:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to unarchive litter: ${error.message}`,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsUnarchiving(false);
     }
   };
-
+  
   return {
     isDeleting,
     isArchiving,
+    isUnarchiving,
     handleDeleteLitter,
     handleArchiveLitter,
     handleUnarchiveLitter
   };
 };
+
+export default useLitterActions;

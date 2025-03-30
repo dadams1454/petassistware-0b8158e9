@@ -12,10 +12,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 // Define the organization schema
 const organizationSchema = z.object({
   name: z.string().min(2, { message: "Organization name must be at least 2 characters." }),
-  contactEmail: z.string().email({ message: "Please enter a valid email address." }).optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  description: z.string().optional(),
+  contactEmail: z.string().email({ message: "Please enter a valid email address." }).optional().or(z.literal('')),
+  phone: z.string().optional().or(z.literal('')),
+  address: z.string().optional().or(z.literal('')),
+  description: z.string().optional().or(z.literal('')),
   website: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
