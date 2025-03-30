@@ -1,6 +1,5 @@
 
 import React from 'react';
-import MainLayout from '@/layouts/MainLayout';
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -8,10 +7,10 @@ interface PageContainerProps {
 
 /**
  * Standard wrapper for page content.
- * Ensures consistent usage of MainLayout across all pages.
+ * Ensures consistent layout across all pages without nesting MainLayout.
  */
 const PageContainer: React.FC<PageContainerProps> = ({ children }) => {
-  return <MainLayout>{children}</MainLayout>;
+  return <div className="w-full">{children}</div>;
 };
 
 export default PageContainer;

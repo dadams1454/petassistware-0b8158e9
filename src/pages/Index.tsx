@@ -10,9 +10,11 @@ const Index: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <HeroSection />
-      <FeatureSection />
-      <CTASection />
+      <main className="flex-1">
+        <HeroSection />
+        <FeatureSection />
+        <CTASection />
+      </main>
       <Footer />
     </div>
   );

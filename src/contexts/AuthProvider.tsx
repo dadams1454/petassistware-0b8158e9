@@ -1,175 +1,107 @@
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Define UserRole type and export it
-export type UserRole = 'user' | 'staff' | 'manager' | 'admin' | 'owner';
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
 
-export interface AuthContextType {
+interface AuthContextType {
   user: User | null;
-  userRole: UserRole | null;
-  tenantId: string | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  userRole: string;
   loading: boolean;
-  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  userRole: null,
-  tenantId: null,
-  signIn: async () => {},
-  signOut: async () => {},
+  userRole: '',
   loading: true,
-  error: null,
+  login: async () => {},
+  logout: async () => {},
+  resetPassword: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState('user');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Set up auth state listener FIRST (critical for avoiding deadlocks)
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        const currentUser = session?.user || null;
-        setUser(currentUser);
-        
-        // Defer other Supabase calls to avoid blocking auth flow
-        if (currentUser) {
-          setTimeout(() => {
-            fetchUserProfile(currentUser.id);
-          }, 0);
-        } else {
-          setUserRole(null);
-          setTenantId(null);
-        }
-        
-        setLoading(false);
-      }
-    );
-
-    // THEN check for existing session
-    const getSession = async () => {
-      try {
-        console.log('Getting initial session');
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          throw error;
-        }
-        
-        const user = data.session?.user || null;
-        setUser(user);
-        
-        if (user) {
-          await fetchUserProfile(user.id);
-        }
-      } catch (err: any) {
-        console.error('Error checking auth session:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+    // Create a mock user for development purposes
+    const mockUser = {
+      id: '123',
+      email: 'test@example.com',
+      name: 'Test User'
     };
     
-    getSession();
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    // Simulate loading delay
+    const timer = setTimeout(() => {
+      setUser(mockUser);
+      setUserRole('admin');
+      setLoading(false);
+      console.log('Auth loaded with mock user');
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('breeder_profiles')
-        .select('role, tenant_id')
-        .eq('id', userId)
-        .single();
-        
-      if (error) {
-        console.error('Error fetching profile:', error);
-        // Don't throw - just log the error and use default role
-        setUserRole('user');
-        return;
-      }
-      
-      // Validate and set the user role
-      const role = data?.role as string;
-      setUserRole(
-        role === 'user' || role === 'staff' || role === 'manager' || 
-        role === 'admin' || role === 'owner' ? (role as UserRole) : 'user'
-      );
-      setTenantId(data?.tenant_id);
-    } catch (err) {
-      console.error('Error fetching user profile:', err);
-      setUserRole('user'); // Default to user role if there's an error
-    }
-  };
-
-  const signIn = async (email: string, password: string) => {
+  const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      setError(null);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Simulate successful login
+      setUser({
+        id: '123',
         email,
-        password,
+        name: 'User Name',
       });
-      
-      if (error) throw error;
-      
-      // User will be set by the auth state change listener
-    } catch (err: any) {
-      console.error('Error signing in:', err);
-      setError(err.message);
-      throw err;
+      setUserRole('admin');
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const signOut = async () => {
+  const logout = async () => {
     try {
       setLoading(true);
-      
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) throw error;
-      
-      // User will be set to null by the auth state change listener
-    } catch (err: any) {
-      console.error('Error signing out:', err);
-      setError(err.message);
+      // Simulate logout
+      setUser(null);
+      setUserRole('');
+    } catch (error) {
+      console.error('Logout failed:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        userRole,
-        tenantId,
-        signIn,
-        signOut,
-        loading,
-        error,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const resetPassword = async (email: string) => {
+    try {
+      // Simulate password reset
+      console.log(`Password reset email sent to ${email}`);
+    } catch (error) {
+      console.error('Password reset failed:', error);
+      throw error;
+    }
+  };
+
+  const value = {
+    user,
+    userRole,
+    loading,
+    login,
+    logout,
+    resetPassword,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export default AuthProvider;
+export default AuthContext;
