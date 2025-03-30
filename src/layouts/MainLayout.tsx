@@ -14,11 +14,10 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children, hideNavbar = false }) => {
   return (
     <UserPreferencesProvider>
-      <SidebarProvider defaultOpen={true}>
-        <div className="flex h-screen overflow-hidden bg-background">
-          <Sidebar />
-          <div className="flex-1 flex flex-col">
-            {!hideNavbar && <Navbar />}
+      <SidebarProvider defaultOpen={false}>
+        <div className="flex flex-col h-screen overflow-hidden bg-background">
+          {!hideNavbar && <Navbar />}
+          <div className="flex-1 flex flex-col overflow-auto">
             <main className="flex-1 overflow-auto">
               {children || <Outlet />}
               <Toaster />

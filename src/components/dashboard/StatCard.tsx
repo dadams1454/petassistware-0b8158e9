@@ -24,11 +24,11 @@ const StatCard: React.FC<StatCardProps> = ({
         </>
       ) : (
         <>
-          <h3 className="text-sm font-medium text-gray-500 mb-1">{title}</h3>
-          <p className="text-3xl font-bold">{value}</p>
+          <h3 className="text-sm font-medium text-gray-500 text-center mb-2">{title}</h3>
+          <p className="text-3xl font-bold text-center">{value}</p>
           
           {change !== undefined && (
-            <div className={`text-sm mt-2 ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-sm mt-2 text-center ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {change >= 0 ? '+' : ''}{change}%
             </div>
           )}

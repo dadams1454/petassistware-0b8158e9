@@ -15,28 +15,28 @@ const Navbar: React.FC = () => {
 
   return (
     <nav className="bg-white border-b w-full px-4 py-2">
-      <div className="flex items-center justify-between h-14">
-        <div className="flex items-center">
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/dashboard" className="flex items-center gap-2">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between h-14">
+          <div className="flex items-center">
+            <Link to="/dashboard" className="flex-shrink-0">
               <Logo />
-              <span className="text-lg font-semibold">Pet Assist Ware</span>
             </Link>
           </div>
-          <div className="hidden md:ml-10 md:flex md:space-x-8">
+          
+          <div className="hidden md:flex md:items-center md:space-x-1">
             <NavLinks currentPath={location.pathname} userRole={userRole} />
           </div>
-        </div>
-        
-        <div className="hidden md:flex md:items-center">
-          <UserMenu />
-        </div>
-        
-        <div className="md:hidden">
-          <MobileMenu 
-            isOpen={mobileMenuOpen} 
-            onToggle={() => setMobileMenuOpen(!mobileMenuOpen)} 
-          />
+          
+          <div className="hidden md:flex md:items-center">
+            <UserMenu />
+          </div>
+          
+          <div className="md:hidden">
+            <MobileMenu 
+              isOpen={mobileMenuOpen} 
+              onToggle={() => setMobileMenuOpen(!mobileMenuOpen)} 
+            />
+          </div>
         </div>
       </div>
 
