@@ -1,7 +1,9 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth, UserRole } from '@/contexts/AuthProvider';
 import { LoadingState, UnauthorizedState } from '@/components/ui/standardized';
+import { AuthLoadingState } from '@/components/ui/standardized';
 import { hasMinimumRole, PERMISSIONS, hasPermission } from '@/utils/permissions';
 
 interface ProtectedRouteProps {
@@ -26,29 +28,45 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, loading, userRole } = useAuth();
   const location = useLocation();
   const isDevelopment = process.env.NODE_ENV === 'development';
+  const [authTimeout, setAuthTimeout] = React.useState(false);
 
   // Debug logging in development environment
-  if (isDevelopment) {
-    console.log('[ProtectedRoute]', { 
-      loading, 
-      user: !!user, 
-      userRole, 
-      requiredRoles, 
-      resource, 
-      action,
-      path: location.pathname
-    });
-  }
-
-  // If authentication is still loading, show the loading state
-  if (loading) {
-    return <LoadingState message="Verifying authentication..." fullPage={true} />;
-  }
-
-  // If user is not authenticated, redirect to login page
-  if (!user) {
+  useEffect(() => {
     if (isDevelopment) {
-      console.log('[Auth] User not authenticated, redirecting to:', fallbackPath);
+      console.log('[ProtectedRoute]', { 
+        loading, 
+        user: !!user, 
+        userRole, 
+        requiredRoles, 
+        resource, 
+        action,
+        path: location.pathname
+      });
+    }
+  }, [loading, user, userRole, requiredRoles, resource, action, location.pathname]);
+
+  // Set a timeout to prevent getting stuck in authentication loading state
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setAuthTimeout(true);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setAuthTimeout(false);
+    }
+  }, [loading]);
+
+  // If authentication is still loading and timeout hasn't occurred, show the loading state
+  if (loading && !authTimeout) {
+    return <AuthLoadingState message="Verifying authentication..." fullPage={true} onRetry={() => window.location.reload()} />;
+  }
+
+  // If auth loading timed out but user isn't available, redirect to login
+  if ((loading && authTimeout) || !user) {
+    if (isDevelopment) {
+      console.log(`[Auth] ${authTimeout ? 'Auth timeout' : 'User not authenticated'}, redirecting to:`, fallbackPath);
     }
     return <Navigate to={fallbackPath} state={{ from: location.pathname }} replace />;
   }

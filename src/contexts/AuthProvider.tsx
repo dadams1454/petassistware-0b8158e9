@@ -36,9 +36,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check active sessions and sets the user
+    // Set up auth state listener FIRST (critical for avoiding deadlocks)
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event);
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+        
+        // Defer other Supabase calls to avoid blocking auth flow
+        if (currentUser) {
+          setTimeout(() => {
+            fetchUserProfile(currentUser.id);
+          }, 0);
+        } else {
+          setUserRole(null);
+          setTenantId(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    // THEN check for existing session
     const getSession = async () => {
       try {
+        console.log('Getting initial session');
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -61,23 +83,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     getSession();
 
-    // Set up auth state listener
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        const currentUser = session?.user || null;
-        setUser(currentUser);
-        
-        if (currentUser) {
-          await fetchUserProfile(currentUser.id);
-        } else {
-          setUserRole(null);
-          setTenantId(null);
-        }
-        
-        setLoading(false);
-      }
-    );
-
     return () => {
       authListener.subscription.unsubscribe();
     };
@@ -91,15 +96,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        // Don't throw - just log the error and use default role
+        setUserRole('user');
+        return;
+      }
       
       // Validate and set the user role
-      const role = data.role as string;
+      const role = data?.role as string;
       setUserRole(
         role === 'user' || role === 'staff' || role === 'manager' || 
         role === 'admin' || role === 'owner' ? (role as UserRole) : 'user'
       );
-      setTenantId(data.tenant_id);
+      setTenantId(data?.tenant_id);
     } catch (err) {
       console.error('Error fetching user profile:', err);
       setUserRole('user'); // Default to user role if there's an error

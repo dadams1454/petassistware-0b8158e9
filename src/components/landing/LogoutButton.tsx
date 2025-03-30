@@ -28,7 +28,7 @@ const LogoutButton: React.FC = () => {
       
       // Redirect to auth page
       console.log("Redirecting to auth page...");
-      navigate('/auth');
+      navigate('/auth', { replace: true });
     } catch (error: any) {
       console.error('Error signing out:', error);
       toast({
