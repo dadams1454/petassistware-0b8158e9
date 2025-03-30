@@ -326,6 +326,7 @@ const HealthTab: React.FC<HealthTabProps> = ({ dogId }) => {
             />
           ) : (
             <WeightTrackingSection 
+              dogId={dogId}
               weightHistory={safeWeightHistory}
               growthStats={growthStats}
               onAddWeight={() => setWeightDialogOpen(true)}
