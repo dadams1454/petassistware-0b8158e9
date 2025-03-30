@@ -9,30 +9,57 @@ import WeightHistoryChart from './WeightHistoryChart';
 import WeightRecordsTable from './WeightRecordsTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
+import { WeightRecord } from '@/types/health';
 
 interface WeightTrackingSectionProps {
-  dogId: string;
+  dogId?: string;
+  weightHistory?: WeightRecord[];
+  growthStats?: any;
+  onAddWeight?: () => void;
+  isLoading?: boolean;
 }
 
-const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({ dogId }) => {
+const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({ 
+  dogId,
+  weightHistory,
+  growthStats,
+  onAddWeight,
+  isLoading: externalLoading
+}) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { weightRecords, isLoading, error, addWeightRecord, refetch } = useWeightTracking(dogId);
+  
+  // Only use the hook if dogId is provided and no external data is passed
+  const { 
+    weightHistory: hookWeightHistory, 
+    isLoading: hookLoading, 
+    error, 
+    addWeightRecord, 
+    refetch 
+  } = useWeightTracking(dogId || '');
+
+  // Use external data if provided, otherwise use data from the hook
+  const records = weightHistory || hookWeightHistory || [];
+  const loading = externalLoading !== undefined ? externalLoading : hookLoading;
 
   const handleAddWeight = async (weightRecord: any) => {
     try {
-      await addWeightRecord(weightRecord);
+      if (onAddWeight) {
+        onAddWeight();
+      } else if (dogId) {
+        await addWeightRecord(weightRecord);
+        refetch();
+      }
       setIsAddDialogOpen(false);
-      refetch();
     } catch (error) {
       console.error('Failed to add weight record:', error);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingState message="Loading weight history..." />;
   }
 
-  if (error) {
+  if (error && !weightHistory) {
     return <ErrorState title="Error" message="Could not load weight data" />;
   }
 
@@ -45,7 +72,7 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({ dogId }) 
         </Button>
       </div>
 
-      {weightRecords && weightRecords.length > 0 ? (
+      {records && records.length > 0 ? (
         <Tabs defaultValue="chart" className="w-full">
           <TabsList>
             <TabsTrigger value="chart">Chart</TabsTrigger>
@@ -54,12 +81,12 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({ dogId }) 
           <TabsContent value="chart">
             <Card>
               <CardContent className="pt-6">
-                <WeightHistoryChart weightRecords={weightRecords} />
+                <WeightHistoryChart weightRecords={records} />
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="table">
-            <WeightRecordsTable weightRecords={weightRecords} />
+            <WeightRecordsTable weightRecords={records} />
           </TabsContent>
         </Tabs>
       ) : (
@@ -76,7 +103,7 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({ dogId }) 
         </div>
       )}
 
-      {isAddDialogOpen && (
+      {isAddDialogOpen && dogId && (
         <WeightEntryDialog
           dogId={dogId}
           onClose={() => setIsAddDialogOpen(false)}
