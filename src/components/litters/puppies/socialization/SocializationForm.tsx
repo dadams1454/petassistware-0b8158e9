@@ -6,7 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SocializationCategory } from '../types';
-import { DatePicker } from '@/components/ui/date-picker';
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Predefined categories
 const SOCIALIZATION_CATEGORIES = [
@@ -127,11 +131,29 @@ const SocializationForm: React.FC<SocializationFormProps> = ({ onSubmit, isSubmi
       {/* Date of Experience */}
       <div>
         <Label htmlFor="date">Date *</Label>
-        <DatePicker 
-          date={experienceDate} 
-          onSelect={setExperienceDate} 
-          className="w-full"
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !experienceDate && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {experienceDate ? format(experienceDate, "PPP") : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={experienceDate}
+              onSelect={setExperienceDate}
+              initialFocus
+              className="pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Reaction */}

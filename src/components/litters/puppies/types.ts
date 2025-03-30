@@ -97,8 +97,16 @@ export interface WeightChartData {
   weight: number;
 }
 
+export interface WeightChartProps {
+  weightRecords: WeightRecord[];
+  displayUnit: 'oz' | 'g' | 'lbs' | 'kg';
+}
+
 export interface WeightTrackerProps {
   puppyId: string;
   onWeightAdded?: () => void;
   onAddSuccess?: () => void;
 }
+
+// Import this from the weight types
+import { WeightRecord } from './weight/types';

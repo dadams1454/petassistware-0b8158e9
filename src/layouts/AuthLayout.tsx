@@ -5,31 +5,22 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { LoadingState } from '@/components/ui/standardized';
 
 const AuthLayout: React.FC = () => {
-  const { user, loading, refreshSession } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
   const [initialRefreshDone, setInitialRefreshDone] = useState(false);
   
-  // Only refresh session once on mount
+  // Only check session once on mount
   useEffect(() => {
     let mounted = true;
     
     if (!initialRefreshDone) {
-      console.log('AuthLayout: performing initial session refresh');
+      console.log('AuthLayout: performing initial session check');
       
       // Add a small delay to prevent conflicts with AuthProvider initialization
       const timer = setTimeout(() => {
         if (mounted) {
-          refreshSession()
-            .then(() => {
-              if (mounted) {
-                console.log('AuthLayout: initial session refresh complete');
-                setInitialRefreshDone(true);
-              }
-            })
-            .catch(err => {
-              console.error('Error refreshing session in AuthLayout:', err);
-              if (mounted) setInitialRefreshDone(true);
-            });
+          console.log('AuthLayout: initial session check complete');
+          setInitialRefreshDone(true);
         }
       }, 300);
       
@@ -38,7 +29,7 @@ const AuthLayout: React.FC = () => {
         mounted = false;
       };
     }
-  }, [refreshSession, initialRefreshDone]);
+  }, [initialRefreshDone]);
   
   // Handle different states
   if (loading && !initialRefreshDone) {

@@ -1,19 +1,12 @@
 
 import React from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
 import { Litter } from '@/types/litter';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Archive, Trash, Edit, RotateCcw } from 'lucide-react';
+import { Edit, Archive, Trash2, RotateCcw } from 'lucide-react';
+import { formatDateForDisplay } from '@/utils/dateUtils';
 
-export interface LitterCardProps {
+interface LitterCardProps {
   litter: Litter;
   onEditLitter: (litter: Litter) => void;
   onDeleteLitter: (litter: Litter) => void;
@@ -22,124 +15,97 @@ export interface LitterCardProps {
 }
 
 const LitterCard: React.FC<LitterCardProps> = ({ 
-  litter, 
-  onEditLitter, 
-  onDeleteLitter, 
-  onArchiveLitter, 
-  onUnarchiveLitter 
+  litter,
+  onEditLitter,
+  onDeleteLitter,
+  onArchiveLitter,
+  onUnarchiveLitter
 }) => {
   const isArchived = litter.status === 'archived';
-  const litterName = litter.litter_name || `${litter.dam?.name || 'Unknown'} × ${litter.sire?.name || 'Unknown'}`;
   
-  // Format dates
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Not set';
-    return new Date(dateString).toLocaleDateString();
+  // Function to format the litter name
+  const getLitterName = () => {
+    if (litter.litter_name) return litter.litter_name;
+    
+    const damName = litter.dam ? litter.dam.name : 'Unknown Dam';
+    return `${damName}'s Litter`;
   };
-  
-  const birthDate = formatDate(litter.birth_date);
-  const expectedGoHome = formatDate(litter.expected_go_home_date);
-  
-  // Puppy counts
-  const maleCount = litter.male_count || 0;
-  const femaleCount = litter.female_count || 0;
-  const totalPuppies = litter.puppy_count || (maleCount + femaleCount) || (litter.puppies?.length || 0);
-  
+
   return (
-    <Card className={isArchived ? "opacity-70" : ""}>
+    <Card className={`${isArchived ? 'opacity-75' : ''}`}>
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">{litterName}</CardTitle>
-            <CardDescription>
-              Born: {birthDate}
-            </CardDescription>
-          </div>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEditLitter(litter)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Litter
-              </DropdownMenuItem>
-              
-              {isArchived ? (
-                onUnarchiveLitter && (
-                  <DropdownMenuItem onClick={() => onUnarchiveLitter(litter)}>
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Unarchive Litter
-                  </DropdownMenuItem>
-                )
-              ) : (
-                <DropdownMenuItem onClick={() => onArchiveLitter(litter)}>
-                  <Archive className="h-4 w-4 mr-2" />
-                  Archive Litter
-                </DropdownMenuItem>
-              )}
-              
-              <DropdownMenuItem 
-                className="text-destructive focus:text-destructive"
-                onClick={() => onDeleteLitter(litter)}
-              >
-                <Trash className="h-4 w-4 mr-2" />
-                Delete Litter
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <CardTitle className="text-lg flex justify-between items-center">
+          <span className="truncate">{getLitterName()}</span>
+          {isArchived && (
+            <span className="text-xs bg-gray-200 text-gray-700 rounded-full px-2 py-1">
+              Archived
+            </span>
+          )}
+        </CardTitle>
       </CardHeader>
-      
-      <CardContent>
-        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+      <CardContent className="pb-2">
+        <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <p className="text-muted-foreground">Dam:</p>
-            <p>{litter.dam?.name || 'Not set'}</p>
+            <p className="text-muted-foreground">Birth Date</p>
+            <p>{litter.birth_date ? formatDateForDisplay(new Date(litter.birth_date)) : 'Not set'}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Sire:</p>
-            <p>{litter.sire?.name || 'Not set'}</p>
+            <p className="text-muted-foreground">Puppies</p>
+            <p>{litter.puppy_count || 0} total</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Go Home:</p>
-            <p>{expectedGoHome}</p>
+            <p className="text-muted-foreground">Dam</p>
+            <p>{litter.dam ? litter.dam.name : 'Not set'}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Total Puppies:</p>
-            <p>{totalPuppies}</p>
+            <p className="text-muted-foreground">Sire</p>
+            <p>{litter.sire ? litter.sire.name : 'Not set'}</p>
           </div>
         </div>
-        
-        {totalPuppies > 0 && (
-          <div className="flex gap-3 text-xs mt-2">
-            {maleCount > 0 && (
-              <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                {maleCount} Male{maleCount !== 1 && 's'}
-              </div>
-            )}
-            {femaleCount > 0 && (
-              <div className="bg-pink-100 text-pink-800 px-2 py-1 rounded">
-                {femaleCount} Female{femaleCount !== 1 && 's'}
-              </div>
-            )}
-          </div>
-        )}
       </CardContent>
-      
-      <CardFooter className="pt-0">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full"
-          onClick={() => onEditLitter(litter)}
-        >
-          View Details
-        </Button>
+      <CardFooter className="flex justify-end gap-2 pt-1">
+        {isArchived ? (
+          <>
+            {onUnarchiveLitter && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => onUnarchiveLitter(litter)}
+              >
+                <RotateCcw className="h-4 w-4 mr-1" />
+                Unarchive
+              </Button>
+            )}
+          </>
+        ) : (
+          <>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onEditLitter(litter)}
+            >
+              <Edit className="h-4 w-4" />
+              <span className="sr-only">Edit</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onArchiveLitter(litter)}
+            >
+              <Archive className="h-4 w-4" />
+              <span className="sr-only">Archive</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onDeleteLitter(litter)}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Delete</span>
+            </Button>
+          </>
+        )}
       </CardFooter>
     </Card>
   );

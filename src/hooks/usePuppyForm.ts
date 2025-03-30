@@ -5,16 +5,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Puppy } from '@/types/litter';
+import { Puppy, PuppyFormData } from '@/components/litters/puppies/types';
 
 const puppySchema = z.object({
   name: z.string().optional(),
-  gender: z.string().min(1, 'Gender is required'),
+  gender: z.enum(['Male', 'Female']),
   color: z.string().min(1, 'Color is required'),
   birth_weight: z.string().optional(),
   current_weight: z.string().optional(),
   microchip_number: z.string().optional(),
-  status: z.string().default('Available'),
+  status: z.enum(['Available', 'Reserved', 'Sold', 'Unavailable']).default('Available'),
   birth_date: z.date().optional(),
   birth_time: z.string().optional(),
   birth_order: z.number().int().optional(),
@@ -39,7 +39,7 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
   // Parse initialData to match form schema
   const defaultValues: Partial<PuppyFormValues> = {
     name: initialData?.name || '',
-    gender: initialData?.gender || '',
+    gender: initialData?.gender || 'Male',
     color: initialData?.color || '',
     birth_weight: initialData?.birth_weight || '',
     current_weight: initialData?.current_weight || '',
@@ -117,6 +117,6 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
   return {
     form,
     isSubmitting,
-    handleSubmit: form.handleSubmit(handleSubmit)
+    handleSubmit
   };
 };
