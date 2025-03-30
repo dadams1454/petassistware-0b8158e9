@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PuppiesList from '../PuppiesList';
 import WaitlistManager from '../../waitlist/WaitlistManager';
 import LitterTimeline from './LitterTimeline';
-import { Puppy } from '@/types/litter'; // Import from our unified types file
+import { Puppy } from '../puppies/types';
 
 interface LitterTabsProps {
   litterId: string;
@@ -36,7 +36,7 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
       <TabsContent value="puppies" className="mt-6">
         <PuppiesList 
           litterId={litterId} 
-          puppies={puppies} 
+          puppies={puppies as Puppy[]} // Explicit cast to Puppy[]
           onRefresh={handleRefresh} 
         />
       </TabsContent>

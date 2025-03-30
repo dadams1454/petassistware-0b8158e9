@@ -1,8 +1,6 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, AlertTriangle, Info } from 'lucide-react';
-import { Puppy } from '@/types/litter'; // Import Puppy from our types file
 
 interface LitterStatisticsProps {
   puppies: Puppy[];

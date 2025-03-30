@@ -1,25 +1,70 @@
 
+import { supabase } from '@/integrations/supabase/client';
+import { DailyCarelog } from '@/types/dailyCare';
+
 /**
- * This file serves as a compatibility layer for integrating with the new Dog Let Out functionality
- * It provides stub methods that redirect to the new functionality or provide appropriate warnings
+ * Records a potty break as a daily care log to ensure it appears in the dog's care history
  */
-
-export const getPottyBreakTracking = async (): Promise<any> => {
-  console.warn('getPottyBreakTracking is deprecated, use Dog Let Out functionality instead');
-  return { pottyBreaks: {} };
+export const recordPottyBreakAsCareLog = async (
+  dogId: string, 
+  timestamp: string, 
+  userId: string,
+  notes?: string
+): Promise<DailyCarelog | null> => {
+  try {
+    // Format the time for display in the notes if not provided
+    const formattedTime = new Date(timestamp).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    
+    const careLogData = {
+      dog_id: dogId,
+      category: 'Potty Breaks',
+      task_name: 'Potty Break',
+      timestamp,
+      notes: notes || `Dog was taken outside at ${formattedTime}`,
+      created_by: userId
+    };
+    
+    const { data, error } = await supabase
+      .from('daily_care_logs')
+      .insert([careLogData])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error recording potty break as care log:', error);
+      throw error;
+    }
+    
+    return data as DailyCarelog;
+  } catch (error) {
+    console.error('Error in recordPottyBreakAsCareLog:', error);
+    return null;
+  }
 };
 
-export const logPottyBreak = async (dogId: string, dogName: string, timeSlot: string): Promise<boolean> => {
-  console.warn('logPottyBreak is deprecated, use Dog Let Out functionality instead');
-  return false;
-};
-
-export const getScheduledBreaks = async (): Promise<string[]> => {
-  console.warn('getScheduledBreaks is deprecated, use Dog Let Out functionality instead');
-  return [];
-};
-
-export const getDogLastPottyTime = async (dogId: string): Promise<string | null> => {
-  console.warn('getDogLastPottyTime is deprecated, use Dog Let Out functionality instead');
-  return null;
+/**
+ * Gets all potty break care logs for a specific dog
+ */
+export const getPottyBreakLogsForDog = async (dogId: string): Promise<DailyCarelog[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('daily_care_logs')
+      .select('*')
+      .eq('dog_id', dogId)
+      .eq('category', 'Potty Breaks')
+      .order('timestamp', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching potty break logs:', error);
+      throw error;
+    }
+    
+    return data as DailyCarelog[];
+  } catch (error) {
+    console.error('Error in getPottyBreakLogsForDog:', error);
+    return [];
+  }
 };

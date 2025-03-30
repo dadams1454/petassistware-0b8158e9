@@ -1,25 +1,14 @@
 
-export interface ObservationRecord {
+export type ObservationType = {
   id: string;
   dog_id: string;
   created_at: string;
   observation: string;
-  observation_type: string;
+  observation_type: 'accident' | 'heat' | 'behavior' | 'other';
   created_by: string;
   expires_at: string;
-  timeSlot?: string;
-  category?: string;
+  timeSlot?: string; // Add time slot to track when the observation occurred
+  category?: string;  // Add category to differentiate observations
 }
 
-export interface ObservationMap {
-  [dogId: string]: ObservationRecord[];
-}
-
-export interface ObservationDetails {
-  text: string;
-  type: string;
-  timeSlot?: string;
-  category?: string;
-}
-
-export type ObservationType = 'accident' | 'heat' | 'behavior' | 'other';
+export type ObservationsMap = Record<string, ObservationType[]>;

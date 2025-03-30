@@ -1,78 +1,74 @@
 
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 import MainLayout from '@/layouts/MainLayout';
-import BackButton from '@/components/common/BackButton';
+import LitterForm from '@/components/litters/LitterForm';
 import LitterHeader from '@/components/litters/detail/LitterHeader';
 import LitterInfo from '@/components/litters/detail/LitterInfo';
 import LitterTabs from '@/components/litters/detail/LitterTabs';
-import { EmptyState, ErrorState, LoadingState } from '@/components/ui/standardized';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import LitterForm from '@/components/litters/LitterForm';
-import { toast } from '@/components/ui/use-toast';
-import { Litter, SimpleDog } from '@/types/litter'; // Import SimpleDog type
+import { Award, Calendar, Check, FileCheck } from 'lucide-react';
+import { Litter, Puppy } from '@/components/litters/puppies/types';
 
 const LitterDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  // Skip this query if we're on the "new" route - this is the fix for the error
   const { data: litter, isLoading, error, refetch } = useQuery({
     queryKey: ['litter', id],
     queryFn: async () => {
-      if (!id || id === 'new') {
-        throw new Error('Invalid litter ID');
-      }
-
+      if (!id) throw new Error('Litter ID is required');
+      
+      // Expanded query to get complete dam and sire information
       const { data, error } = await supabase
         .from('litters')
         .select(`
           *,
-          dam:dogs!litters_dam_id_fkey(*),
-          sire:dogs!litters_sire_id_fkey(*),
-          puppies(*)
+          dam:dogs!litters_dam_id_fkey(id, name, breed, color, photo_url, litter_number, gender, registration_number, microchip_number),
+          sire:dogs!litters_sire_id_fkey(id, name, breed, color, photo_url, gender, registration_number, microchip_number),
+          puppies!puppies_litter_id_fkey(*)
         `)
         .eq('id', id)
         .single();
 
-      if (error) {
-        console.error('Error loading litter:', error);
-        throw error;
-      }
-
-      // We need to use a type assertion here because the data returned from Supabase
-      // doesn't exactly match our Litter type definition
-      const rawData = data as any;
-      
-      // Create a processed data object with the proper Litter type
-      const processedData: Litter = {
-        ...rawData,
-        // Explicitly add the updated_at field with a fallback to created_at
-        updated_at: rawData.updated_at || rawData.created_at
-      };
-
-      console.log('Processed litter data:', processedData);
-      return processedData;
-    },
-    enabled: !!id && id !== 'new', // Only run the query if id exists and is not "new"
+      if (error) throw error;
+      console.log('Fetched detailed litter data:', data);
+      return data as Litter; // Cast to Litter type
+    }
   });
 
-  // If we're trying to access a non-existent litter ID
-  if (error && id !== 'new') {
+  const handleEditSuccess = async () => {
+    setIsEditDialogOpen(false);
+    await refetch();
+    toast({
+      title: "Success!",
+      description: "Litter updated successfully.",
+    });
+  };
+
+  if (isLoading) {
     return (
       <MainLayout>
-        <div className="container mx-auto py-6 space-y-6">
-          <BackButton fallbackPath="/litters" />
-          <ErrorState 
-            title="Litter Not Found"
-            message="The litter you're looking for doesn't exist or you don't have permission to view it."
-            onRetry={() => navigate('/litters')}
-            actionLabel="Back to Litters"
-          />
+        <div className="container mx-auto py-6">
+          <p>Loading litter details...</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error || !litter) {
+    console.error("Error loading litter:", error);
+    return (
+      <MainLayout>
+        <div className="container mx-auto py-6">
+          <div className="mt-6 text-center text-red-500">
+            <p>Error loading litter details. The litter may not exist.</p>
+          </div>
         </div>
       </MainLayout>
     );
@@ -81,52 +77,59 @@ const LitterDetail = () => {
   return (
     <MainLayout>
       <div className="container mx-auto py-6 space-y-6">
-        <div className="flex items-center gap-4">
-          <BackButton fallbackPath="/litters" />
-          {isLoading ? (
-            <h1 className="text-3xl font-bold">Loading Litter...</h1>
-          ) : litter ? (
-            <h1 className="text-3xl font-bold">
-              {litter.litter_name || "Unnamed Litter"}
-            </h1>
-          ) : (
-            <h1 className="text-3xl font-bold">Litter Not Found</h1>
-          )}
-        </div>
+        <LitterHeader 
+          litter={litter as any} 
+          sire={litter?.sire}
+          dam={litter?.dam}
+          onEditClick={() => setIsEditDialogOpen(true)} 
+        />
 
-        {isLoading ? (
-          <LoadingState 
-            message="Loading litter details..." 
-            showSkeleton={true}
-            skeletonVariant="card"
-            skeletonCount={3}
-          />
-        ) : litter ? (
-          <div className="space-y-6">
-            <LitterHeader 
-              litter={litter} 
-              sire={litter.sire} 
-              dam={litter.dam}
-              onEditClick={() => setIsEditDialogOpen(true)} 
-            />
-            <LitterInfo litter={litter} />
+        {/* AKC Compliance Status Card - show when AKC registration number exists */}
+        {litter?.akc_registration_number && (
+          <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <Award className="h-8 w-8 text-purple-600" />
+                  <div>
+                    <h3 className="font-semibold text-purple-800">AKC Registration</h3>
+                    <p className="text-sm text-purple-700">{litter.akc_registration_number}</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="bg-white border-purple-200 text-purple-700 flex items-center gap-1">
+                    <FileCheck className="h-3.5 w-3.5" />
+                    <span>Registered</span>
+                  </Badge>
+                  {litter.akc_registration_date && (
+                    <Badge variant="outline" className="bg-white border-purple-200 text-purple-700 flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>{new Date(litter.akc_registration_date).toLocaleDateString()}</span>
+                    </Badge>
+                  )}
+                  {litter.akc_verified && (
+                    <Badge variant="outline" className="bg-white border-green-200 text-green-700 flex items-center gap-1">
+                      <Check className="h-3.5 w-3.5" />
+                      <span>Verified</span>
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <LitterInfo litter={litter as any} />
+          <div className="lg:col-span-2">
             <LitterTabs 
-              litterId={litter.id} 
-              litterName={litter.litter_name}
-              dogBreed={litter.dam?.breed}
-              puppies={litter.puppies}
+              litterId={litter?.id as string} 
+              litterName={litter?.litter_name} 
+              dogBreed={litter?.sire?.breed || litter?.dam?.breed}
+              puppies={(litter?.puppies || []) as Puppy[]} // Cast to Puppy[] type
             />
           </div>
-        ) : id !== 'new' ? (
-          <EmptyState
-            title="Litter Not Found"
-            description="The litter you're looking for doesn't exist or you don't have permission to view it."
-            action={{
-              label: "Go to Litters",
-              onClick: () => navigate('/litters')
-            }}
-          />
-        ) : null}
+        </div>
       </div>
 
       {/* Edit Litter Dialog */}
@@ -137,7 +140,7 @@ const LitterDetail = () => {
           </DialogHeader>
           {litter && (
             <LitterForm 
-              initialData={litter}
+              initialData={litter as any} // Use type assertion to bypass the type check
               onSuccess={handleEditSuccess} 
             />
           )}
@@ -145,16 +148,6 @@ const LitterDetail = () => {
       </Dialog>
     </MainLayout>
   );
-  
-  // Function for handling edit success
-  async function handleEditSuccess() {
-    setIsEditDialogOpen(false);
-    await refetch();
-    toast({
-      title: "Success!",
-      description: "Litter updated successfully.",
-    });
-  }
 };
 
 export default LitterDetail;

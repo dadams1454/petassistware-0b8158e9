@@ -5,19 +5,23 @@ import { Loader2 } from 'lucide-react';
 
 interface DialogFooterButtonsProps {
   onCancel: () => void;
-  isSubmitting: boolean;
+  isEditing: boolean;
+  isSubmitting?: boolean;
   submitLabel?: string;
   cancelLabel?: string;
+  danger?: boolean;
 }
 
-const DialogFooterButtons: React.FC<DialogFooterButtonsProps> = ({
-  onCancel,
-  isSubmitting,
-  submitLabel = "Save",
-  cancelLabel = "Cancel"
+const DialogFooterButtons: React.FC<DialogFooterButtonsProps> = ({ 
+  onCancel, 
+  isEditing, 
+  isSubmitting = false,
+  submitLabel,
+  cancelLabel = "Cancel",
+  danger = false 
 }) => {
   return (
-    <div className="flex justify-end gap-2 mt-6">
+    <>
       <Button 
         type="button" 
         variant="outline" 
@@ -28,12 +32,19 @@ const DialogFooterButtons: React.FC<DialogFooterButtonsProps> = ({
       </Button>
       <Button 
         type="submit" 
+        variant={danger ? "destructive" : "default"}
         disabled={isSubmitting}
       >
-        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {submitLabel}
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {isEditing ? 'Updating...' : 'Saving...'}
+          </>
+        ) : (
+          submitLabel || (isEditing ? 'Update Record' : 'Add Record')
+        )}
       </Button>
-    </div>
+    </>
   );
 };
 

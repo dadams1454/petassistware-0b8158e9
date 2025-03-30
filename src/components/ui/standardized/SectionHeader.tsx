@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 interface SectionHeaderProps {
   title: string;
@@ -8,7 +8,6 @@ interface SectionHeaderProps {
   action?: {
     label: string;
     onClick: () => void;
-    variant?: ButtonProps['variant'];
     icon?: React.ReactNode;
   };
 }
@@ -19,21 +18,18 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   action
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
-        {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        )}
+        <h2 className="text-xl font-semibold">{title}</h2>
+        {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
       
       {action && (
-        <Button
+        <Button 
+          size="sm" 
           onClick={action.onClick}
-          variant={action.variant || "default"}
-          className="sm:self-start"
         >
-          {action.icon}
+          {action.icon && <span className="mr-2">{action.icon}</span>}
           {action.label}
         </Button>
       )}

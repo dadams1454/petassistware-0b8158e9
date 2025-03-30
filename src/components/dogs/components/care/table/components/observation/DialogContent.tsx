@@ -1,7 +1,8 @@
+
 import React from 'react';
 import ObservationForm from './ObservationForm';
 import ObservationList from './ObservationList';
-import { ObservationType } from '../../hooks/pottyBreakHooks/observationTypes';
+import { ObservationType } from './ObservationDialog';
 
 interface DialogContentProps {
   existingObservations: Array<{

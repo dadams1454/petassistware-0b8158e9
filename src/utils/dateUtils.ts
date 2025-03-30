@@ -1,94 +1,73 @@
 
 /**
- * Format a date for display
+ * Formats a Date object or string to a database-friendly ISO date string (YYYY-MM-DD)
  */
-export const formatDateForDisplay = (date: Date | string): string => {
-  if (!date) return '';
+export const formatDateForDatabase = (date: Date | string | null | undefined): string | undefined => {
+  if (!date) return undefined;
+  if (typeof date === 'string') {
+    // If already a string, make sure it's formatted correctly
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) return undefined;
+    return parsedDate.toISOString().split('T')[0];
+  }
+  return date.toISOString().split('T')[0];
+};
+
+/**
+ * Parses a database date string to a Date object for UI components
+ */
+export const parseDatabaseDate = (dateString: string | null | undefined): Date | undefined => {
+  if (!dateString) return undefined;
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? undefined : date;
+};
+
+/**
+ * Formats a date for display in the UI
+ */
+export const formatDateForDisplay = (date: Date | string | null | undefined, format: 'short' | 'medium' | 'long' = 'medium'): string => {
+  if (!date) return 'N/A';
   
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
-
-/**
- * Format a date for database storage (ISO format)
- */
-export const formatDateForDatabase = (date: Date | string): string => {
-  if (!date) return '';
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return 'Invalid date';
   
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toISOString();
+  const options: Intl.DateTimeFormatOptions = 
+    format === 'short' ? { month: 'numeric', day: 'numeric', year: '2-digit' } :
+    format === 'long' ? { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' } :
+    { month: 'short', day: 'numeric', year: 'numeric' };
+    
+  return dateObj.toLocaleDateString('en-US', options);
 };
 
 /**
- * Get a formatted date string for "today"
+ * Checks if a date is overdue (before today)
  */
-export const getTodayFormatted = (): string => {
-  return formatDateForDisplay(new Date());
-};
-
-/**
- * Calculate the difference in days between two dates
- */
-export const daysBetween = (start: Date | string, end: Date | string): number => {
-  const startDate = typeof start === 'string' ? new Date(start) : start;
-  const endDate = typeof end === 'string' ? new Date(end) : end;
+export const isDateOverdue = (date: Date | string | null | undefined): boolean => {
+  if (!date) return false;
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return false;
   
-  const differenceInTime = endDate.getTime() - startDate.getTime();
-  return Math.floor(differenceInTime / (1000 * 3600 * 24));
-};
-
-/**
- * Add days to a date
- */
-export const addDays = (date: Date | string, days: number): Date => {
-  const d = typeof date === 'string' ? new Date(date) : new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-};
-
-/**
- * Check if a date is in the past
- */
-export const isDateInPast = (date: Date | string): boolean => {
-  const checkDate = typeof date === 'string' ? new Date(date) : date;
   const today = new Date();
-  
-  // Reset time part for comparing just the date
   today.setHours(0, 0, 0, 0);
-  checkDate.setHours(0, 0, 0, 0);
+  dateObj.setHours(0, 0, 0, 0);
   
-  return checkDate < today;
+  return dateObj < today;
 };
 
 /**
- * Check if a date is in the future
+ * Checks if a date is coming up within the specified number of days
  */
-export const isDateInFuture = (date: Date | string): boolean => {
-  const checkDate = typeof date === 'string' ? new Date(date) : date;
+export const isDateUpcoming = (date: Date | string | null | undefined, daysAhead = 30): boolean => {
+  if (!date) return false;
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return false;
+  
   const today = new Date();
-  
-  // Reset time part for comparing just the date
   today.setHours(0, 0, 0, 0);
-  checkDate.setHours(0, 0, 0, 0);
+  dateObj.setHours(0, 0, 0, 0);
   
-  return checkDate > today;
-};
-
-/**
- * Format a date as YYYY-MM-DD (for input[type="date"])
- */
-export const formatDateForInput = (date: Date | string): string => {
-  if (!date) return '';
+  const futureDate = new Date(today);
+  futureDate.setDate(today.getDate() + daysAhead);
   
-  const d = typeof date === 'string' ? new Date(date) : date;
-  
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  
-  return `${year}-${month}-${day}`;
+  return dateObj >= today && dateObj <= futureDate;
 };

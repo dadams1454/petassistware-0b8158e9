@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ObservationType } from '../../hooks/pottyBreakHooks/observationTypes';
+import { ObservationType } from './ObservationDialog';
 import { AlertTriangle, ThermometerSnowflake, Activity, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

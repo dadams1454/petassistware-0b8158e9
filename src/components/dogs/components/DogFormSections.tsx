@@ -7,7 +7,6 @@ import BasicInfoTab from './tabs/BasicInfoTab';
 import HealthTab from './tabs/HealthTab';
 import BreedingTab from './tabs/BreedingTab';
 import DetailsTab from './tabs/DetailsTab';
-import { DogGender } from '@/types/dog';
 
 interface DogFormSectionsProps {
   form: UseFormReturn<any>;
@@ -33,7 +32,7 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
 
   // Check for scheduling conflict between vaccination and heat cycle
   const hasSchedulingConflict = useMemo(() => {
-    if (!nextVaccinationDate || !nextHeatDate || isPregnant || gender !== DogGender.Female) return false;
+    if (!nextVaccinationDate || !nextHeatDate || isPregnant || gender !== 'Female') return false;
     
     // Check if vaccination is due within 30 days before or after the next heat
     const heatWindow = {
@@ -48,7 +47,7 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
     <Tabs defaultValue="basic">
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="basic">Basic Information</TabsTrigger>
-        {gender === DogGender.Female && (
+        {gender === 'Female' && (
           <TabsTrigger value="breeding" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 data-[state=active]:bg-purple-200 dark:data-[state=active]:bg-purple-800">
             Breeding
           </TabsTrigger>
@@ -66,7 +65,7 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
       </TabsContent>
       
       <TabsContent value="breeding">
-        {gender === DogGender.Female && (
+        {gender === 'Female' && (
           <BreedingTab 
             form={form}
             lastHeatDate={lastHeatDate}

@@ -14,8 +14,6 @@ import DogCareHistory from '@/components/dogs/components/profile/DogCareHistory'
 import EditDogDialog from '@/components/dogs/components/details/EditDogDialog';
 import { DogProfile } from '@/types/dog';
 import { Button } from '@/components/ui/button';
-import GeneticsTab from '@/components/dogs/components/tabs/GeneticsTab';
-import PedigreeTab from '@/components/dogs/components/tabs/PedigreeTab';
 
 // Import standardized components
 import {
@@ -148,8 +146,6 @@ const DogProfilePage = () => {
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="health">Health Records</TabsTrigger>
               <TabsTrigger value="care">Care History</TabsTrigger>
-              <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
-              <TabsTrigger value="genetics">Genetics</TabsTrigger>
             </TabsList>
             
             <TabsContent value="details" className="mt-4">
@@ -162,14 +158,6 @@ const DogProfilePage = () => {
             
             <TabsContent value="care" className="mt-4">
               <DogCareHistory dogId={dog.id} />
-            </TabsContent>
-
-            <TabsContent value="pedigree" className="mt-4">
-              <PedigreeTab dogId={dog.id} currentDog={dog} />
-            </TabsContent>
-            
-            <TabsContent value="genetics" className="mt-4">
-              <GeneticsTab dogId={dog.id} dogName={dog.name} />
             </TabsContent>
           </Tabs>
           

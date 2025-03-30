@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ObservationType } from '../../hooks/pottyBreakHooks/observationTypes';
+import { ObservationType } from './ObservationDialog';
 import ObservationTypeSelector from './ObservationTypeSelector';
 import DateTimeSelector from './form/DateTimeSelector';
 import ObservationNote from './form/ObservationNote';

@@ -1,92 +1,95 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { CalendarDays, Edit, PawPrint, Dog } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Edit, Calendar, Dog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Litter, Dog as DogType, SimpleDog } from '@/types/litter'; // Import SimpleDog type
+import DogCard from '@/components/dogs/DogDetails';
+import { Link } from 'react-router-dom';
 
 interface LitterHeaderProps {
-  litter: Litter;
-  sire?: DogType | SimpleDog | null;
-  dam?: DogType | SimpleDog | null;
-  onEditClick: () => void;
+  litter: {
+    id: string;
+    litter_name?: string | null;
+    birth_date?: string | null;
+  };
+  sire?: {
+    id: string;
+    name: string;
+    breed?: string | null;
+    photo_url?: string | null;
+  } | null;
+  dam?: {
+    id: string;
+    name: string;
+    breed?: string | null;
+    photo_url?: string | null;
+  } | null;
+  onEditClick?: () => void;
 }
 
-const LitterHeader: React.FC<LitterHeaderProps> = ({ 
-  litter, 
-  sire, 
-  dam, 
-  onEditClick 
-}) => {
-  const navigate = useNavigate();
-  const birthDate = litter.birth_date ? new Date(litter.birth_date) : null;
-  
-  const handleWelpingClick = () => {
-    navigate(`/welping/${litter.id}`);
-  };
-  
+const LitterHeader: React.FC<LitterHeaderProps> = ({ litter, sire, dam, onEditClick }) => {
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div className="space-y-2 mb-4 md:mb-0">
-            <div className="flex items-center gap-2">
-              <PawPrint className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">
-                {litter.litter_name || "Unnamed Litter"}
-              </h2>
-              <Badge variant="outline" className="ml-2">
-                {litter.status || 'active'}
-              </Badge>
-            </div>
-            
-            <div className="text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <CalendarDays className="h-4 w-4" />
-                <span>
-                  {birthDate ? format(birthDate, 'MMMM d, yyyy') : 'Birth date not set'}
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div>
-                <span className="font-medium">Dam:</span> {dam?.name || 'Unknown'}
-              </div>
-              <span>•</span>
-              <div>
-                <span className="font-medium">Sire:</span> {sire?.name || 'Unknown'}
-              </div>
-            </div>
+    <div className="bg-card shadow-sm rounded-lg p-6 border">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">
+            {litter.litter_name || `Litter ${litter.id.substring(0, 6)}`}
+          </h1>
+          <div className="flex items-center mt-1 text-muted-foreground">
+            <Calendar className="h-4 w-4 mr-1" />
+            <span>
+              Birth Date: {litter.birth_date 
+                ? format(new Date(litter.birth_date), 'MMMM d, yyyy') 
+                : 'Not recorded'}
+            </span>
           </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-1"
-              onClick={handleWelpingClick}
-            >
+        </div>
+        
+        <div className="flex gap-2 mt-3 lg:mt-0">
+          {/* Add Welping Page Link */}
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="gap-1"
+          >
+            <Link to={`/welping/${litter.id}`}>
               <Dog className="h-4 w-4" />
               Welping Session
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-1"
+            </Link>
+          </Button>
+          
+          {/* Edit Button (if provided) */}
+          {onEditClick && (
+            <Button
+              variant="outline"
+              size="sm"
               onClick={onEditClick}
+              className="gap-1"
             >
               <Edit className="h-4 w-4" />
               Edit Litter
             </Button>
-          </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {dam && (
+          <div>
+            <p className="text-sm font-medium mb-2">Dam:</p>
+            <DogCard dog={dam} />
+          </div>
+        )}
+        
+        {sire && (
+          <div>
+            <p className="text-sm font-medium mb-2">Sire:</p>
+            <DogCard dog={sire} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -1,44 +1,70 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldAlert } from 'lucide-react';
+import { Shield, AlertCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
-export interface UnauthorizedStateProps {
+interface UnauthorizedStateProps {
   title?: string;
   description?: string;
-  backPath?: string; // Make sure this property exists
-  backLink?: string; // Alternative naming
+  showBackButton?: boolean;
+  showHomeButton?: boolean;
   showAdminSetupLink?: boolean;
+  backPath?: string;
 }
 
+/**
+ * UnauthorizedState - Display a message when a user lacks permissions
+ * Can be used for both 401 (unauthenticated) and 403 (unauthorized) scenarios
+ */
 const UnauthorizedState: React.FC<UnauthorizedStateProps> = ({
-  title = "Access Denied",
-  description = "You don't have permission to access this resource",
+  title = 'Access Restricted',
+  description = 'You do not have permission to access this resource. Please contact your administrator if you believe this is an error.',
+  showBackButton = true,
+  showHomeButton = true,
+  showAdminSetupLink = false,
   backPath,
-  backLink,
-  showAdminSetupLink = false
 }) => {
-  // Use either backPath or backLink (for backward compatibility)
-  const navigateLink = backPath || backLink || "/dashboard";
-  
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    if (backPath) {
+      navigate(backPath);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleGoHome = () => {
+    navigate('/dashboard');
+  };
+
+  const handleGoToAdminSetup = () => {
+    navigate('/admin-setup');
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6">
-      <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-full mb-6">
-        <ShieldAlert className="h-12 w-12 text-red-500 dark:text-red-400" />
+    <div className="flex flex-col items-center justify-center text-center p-8 min-h-[50vh]">
+      <div className="rounded-full bg-destructive/10 p-3 mb-4">
+        <Shield className="h-8 w-8 text-destructive" />
       </div>
-      
-      <h2 className="text-2xl font-bold mb-2">{title}</h2>
-      <p className="text-muted-foreground max-w-md mb-6">{description}</p>
-      
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button asChild variant="outline">
-          <Link to={navigateLink}>Go Back</Link>
-        </Button>
-        
+      <h2 className="text-xl font-semibold mb-2">{title}</h2>
+      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      <div className="flex flex-wrap gap-4 justify-center">
+        {showBackButton && (
+          <Button variant="outline" onClick={handleGoBack}>
+            Go Back
+          </Button>
+        )}
+        {showHomeButton && (
+          <Button onClick={handleGoHome}>
+            Go to Dashboard
+          </Button>
+        )}
         {showAdminSetupLink && (
-          <Button asChild>
-            <Link to="/admin/setup">Set Up Permissions</Link>
+          <Button onClick={handleGoToAdminSetup} variant="secondary" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Go to Admin Setup
           </Button>
         )}
       </div>

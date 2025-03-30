@@ -1,7 +1,7 @@
-
 // Export all daily care related services
 export * from './careLogsService';
 export * from './pottyBreakIntegrationService';
+export * from './pottyBreak';
 export * from './careTaskPresetsService';
 export * from './dogCareStatusService';
 

@@ -36,33 +36,6 @@ export type Database = {
         }
         Relationships: []
       }
-      breed_colors: {
-        Row: {
-          breed: string
-          color_code: string | null
-          color_name: string
-          created_at: string
-          id: string
-          is_akc_recognized: boolean
-        }
-        Insert: {
-          breed: string
-          color_code?: string | null
-          color_name: string
-          created_at?: string
-          id?: string
-          is_akc_recognized?: boolean
-        }
-        Update: {
-          breed?: string
-          color_code?: string | null
-          color_name?: string
-          created_at?: string
-          id?: string
-          is_akc_recognized?: boolean
-        }
-        Relationships: []
-      }
       breeder_profiles: {
         Row: {
           breeding_experience: string | null
@@ -173,212 +146,6 @@ export type Database = {
           id?: string
           is_default?: boolean
           task_name?: string
-        }
-        Relationships: []
-      }
-      checklist_completions: {
-        Row: {
-          completed_by: string | null
-          completed_date: string
-          created_at: string
-          id: string
-          item_id: string
-          litter_checklist_id: string
-          notes: string | null
-          value: string | null
-        }
-        Insert: {
-          completed_by?: string | null
-          completed_date?: string
-          created_at?: string
-          id?: string
-          item_id: string
-          litter_checklist_id: string
-          notes?: string | null
-          value?: string | null
-        }
-        Update: {
-          completed_by?: string | null
-          completed_date?: string
-          created_at?: string
-          id?: string
-          item_id?: string
-          litter_checklist_id?: string
-          notes?: string | null
-          value?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checklist_completions_completed_by_fkey"
-            columns: ["completed_by"]
-            isOneToOne: false
-            referencedRelation: "breeder_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checklist_completions_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "checklist_items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checklist_completions_litter_checklist_id_fkey"
-            columns: ["litter_checklist_id"]
-            isOneToOne: false
-            referencedRelation: "litter_checklists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      checklist_items: {
-        Row: {
-          category: string | null
-          completion_type: string | null
-          created_at: string
-          description: string | null
-          frequency: string | null
-          id: string
-          order_index: number
-          priority: string | null
-          reminder_offset: number | null
-          task: string
-          template_id: string
-          value_unit: string | null
-        }
-        Insert: {
-          category?: string | null
-          completion_type?: string | null
-          created_at?: string
-          description?: string | null
-          frequency?: string | null
-          id?: string
-          order_index: number
-          priority?: string | null
-          reminder_offset?: number | null
-          task: string
-          template_id: string
-          value_unit?: string | null
-        }
-        Update: {
-          category?: string | null
-          completion_type?: string | null
-          created_at?: string
-          description?: string | null
-          frequency?: string | null
-          id?: string
-          order_index?: number
-          priority?: string | null
-          reminder_offset?: number | null
-          task?: string
-          template_id?: string
-          value_unit?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checklist_items_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "checklist_templates"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      checklist_templates: {
-        Row: {
-          applicable_end_day: number | null
-          applicable_start_day: number | null
-          category: string
-          created_at: string
-          description: string | null
-          id: string
-          title: string
-        }
-        Insert: {
-          applicable_end_day?: number | null
-          applicable_start_day?: number | null
-          category: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          title: string
-        }
-        Update: {
-          applicable_end_day?: number | null
-          applicable_start_day?: number | null
-          category?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          title?: string
-        }
-        Relationships: []
-      }
-      color_genetics: {
-        Row: {
-          breed: string
-          color_name: string
-          created_at: string
-          genotype: string
-          id: string
-          inheritance_pattern: string
-          is_dominant: boolean
-        }
-        Insert: {
-          breed: string
-          color_name: string
-          created_at?: string
-          genotype: string
-          id?: string
-          inheritance_pattern: string
-          is_dominant?: boolean
-        }
-        Update: {
-          breed?: string
-          color_name?: string
-          created_at?: string
-          genotype?: string
-          id?: string
-          inheritance_pattern?: string
-          is_dominant?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "color_genetics_breed_color_name_fkey"
-            columns: ["breed", "color_name"]
-            isOneToOne: false
-            referencedRelation: "breed_colors"
-            referencedColumns: ["breed", "color_name"]
-          },
-        ]
-      }
-      color_inheritance_rules: {
-        Row: {
-          breed: string
-          created_at: string
-          id: string
-          offspring_genotype: string
-          parent1_genotype: string
-          parent2_genotype: string
-          probability: number
-        }
-        Insert: {
-          breed: string
-          created_at?: string
-          id?: string
-          offspring_genotype: string
-          parent1_genotype: string
-          parent2_genotype: string
-          probability: number
-        }
-        Update: {
-          breed?: string
-          created_at?: string
-          id?: string
-          offspring_genotype?: string
-          parent1_genotype?: string
-          parent2_genotype?: string
-          probability?: number
         }
         Relationships: []
       }
@@ -624,91 +391,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "dog_documents_dog_id_fkey"
-            columns: ["dog_id"]
-            isOneToOne: false
-            referencedRelation: "dogs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      dog_genetic_calculations: {
-        Row: {
-          calculation_date: string | null
-          calculation_type: string
-          dog_id: string
-          id: string
-          value: number
-        }
-        Insert: {
-          calculation_date?: string | null
-          calculation_type: string
-          dog_id: string
-          id?: string
-          value: number
-        }
-        Update: {
-          calculation_date?: string | null
-          calculation_type?: string
-          dog_id?: string
-          id?: string
-          value?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dog_genetic_calculations_dog_id_fkey"
-            columns: ["dog_id"]
-            isOneToOne: false
-            referencedRelation: "dogs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      dog_genetic_tests: {
-        Row: {
-          certificate_url: string | null
-          created_at: string | null
-          created_by: string | null
-          dog_id: string
-          id: string
-          lab_name: string
-          result: string
-          test_date: string
-          test_type: string
-          updated_at: string | null
-          verified: boolean | null
-          verified_by: string | null
-        }
-        Insert: {
-          certificate_url?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          dog_id: string
-          id?: string
-          lab_name: string
-          result: string
-          test_date: string
-          test_type: string
-          updated_at?: string | null
-          verified?: boolean | null
-          verified_by?: string | null
-        }
-        Update: {
-          certificate_url?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          dog_id?: string
-          id?: string
-          lab_name?: string
-          result?: string
-          test_date?: string
-          test_type?: string
-          updated_at?: string | null
-          verified?: boolean | null
-          verified_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dog_genetic_tests_dog_id_fkey"
             columns: ["dog_id"]
             isOneToOne: false
             referencedRelation: "dogs"
@@ -1347,88 +1029,6 @@ export type Database = {
           },
         ]
       }
-      genetic_audit_logs: {
-        Row: {
-          action: string
-          created_at: string | null
-          details: Json
-          dog_id: string
-          id: string
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string | null
-          details: Json
-          dog_id: string
-          id?: string
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string | null
-          details?: Json
-          dog_id?: string
-          id?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "genetic_audit_logs_dog_id_fkey"
-            columns: ["dog_id"]
-            isOneToOne: false
-            referencedRelation: "dogs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      health_protocols: {
-        Row: {
-          completed_date: string | null
-          created_at: string
-          id: string
-          litter_id: string
-          lot_number: string | null
-          manufacturer: string | null
-          notes: string | null
-          product: string | null
-          protocol_type: string
-          scheduled_date: string
-        }
-        Insert: {
-          completed_date?: string | null
-          created_at?: string
-          id?: string
-          litter_id: string
-          lot_number?: string | null
-          manufacturer?: string | null
-          notes?: string | null
-          product?: string | null
-          protocol_type: string
-          scheduled_date: string
-        }
-        Update: {
-          completed_date?: string | null
-          created_at?: string
-          id?: string
-          litter_id?: string
-          lot_number?: string | null
-          manufacturer?: string | null
-          notes?: string | null
-          product?: string | null
-          protocol_type?: string
-          scheduled_date?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "health_protocols_litter_id_fkey"
-            columns: ["litter_id"]
-            isOneToOne: false
-            referencedRelation: "litters"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       health_records: {
         Row: {
           administration_route: string | null
@@ -1587,48 +1187,6 @@ export type Database = {
         }
         Relationships: []
       }
-      litter_checklists: {
-        Row: {
-          created_at: string
-          end_date: string | null
-          id: string
-          litter_id: string
-          start_date: string
-          template_id: string
-        }
-        Insert: {
-          created_at?: string
-          end_date?: string | null
-          id?: string
-          litter_id: string
-          start_date: string
-          template_id: string
-        }
-        Update: {
-          created_at?: string
-          end_date?: string | null
-          id?: string
-          litter_id?: string
-          start_date?: string
-          template_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "litter_checklists_litter_id_fkey"
-            columns: ["litter_id"]
-            isOneToOne: false
-            referencedRelation: "litters"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "litter_checklists_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "checklist_templates"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       litters: {
         Row: {
           akc_litter_color: string | null
@@ -1783,20 +1341,13 @@ export type Database = {
         Row: {
           akc_litter_number: string | null
           akc_registration_number: string | null
-          assistance_notes: string | null
-          assistance_required: boolean | null
           birth_date: string | null
-          birth_order: number | null
           birth_time: string | null
           birth_weight: string | null
           color: string | null
           created_at: string | null
           current_weight: string | null
           deworming_dates: string | null
-          ears_open_date: string | null
-          eyes_open_date: string | null
-          first_walk_date: string | null
-          fully_mobile_date: string | null
           gender: string | null
           id: string
           litter_id: string | null
@@ -1804,7 +1355,6 @@ export type Database = {
           name: string | null
           notes: string | null
           photo_url: string | null
-          presentation: string | null
           reservation_date: string | null
           sale_price: number | null
           status: string | null
@@ -1814,20 +1364,13 @@ export type Database = {
         Insert: {
           akc_litter_number?: string | null
           akc_registration_number?: string | null
-          assistance_notes?: string | null
-          assistance_required?: boolean | null
           birth_date?: string | null
-          birth_order?: number | null
           birth_time?: string | null
           birth_weight?: string | null
           color?: string | null
           created_at?: string | null
           current_weight?: string | null
           deworming_dates?: string | null
-          ears_open_date?: string | null
-          eyes_open_date?: string | null
-          first_walk_date?: string | null
-          fully_mobile_date?: string | null
           gender?: string | null
           id?: string
           litter_id?: string | null
@@ -1835,7 +1378,6 @@ export type Database = {
           name?: string | null
           notes?: string | null
           photo_url?: string | null
-          presentation?: string | null
           reservation_date?: string | null
           sale_price?: number | null
           status?: string | null
@@ -1845,20 +1387,13 @@ export type Database = {
         Update: {
           akc_litter_number?: string | null
           akc_registration_number?: string | null
-          assistance_notes?: string | null
-          assistance_required?: boolean | null
           birth_date?: string | null
-          birth_order?: number | null
           birth_time?: string | null
           birth_weight?: string | null
           color?: string | null
           created_at?: string | null
           current_weight?: string | null
           deworming_dates?: string | null
-          ears_open_date?: string | null
-          eyes_open_date?: string | null
-          first_walk_date?: string | null
-          fully_mobile_date?: string | null
           gender?: string | null
           id?: string
           litter_id?: string | null
@@ -1866,7 +1401,6 @@ export type Database = {
           name?: string | null
           notes?: string | null
           photo_url?: string | null
-          presentation?: string | null
           reservation_date?: string | null
           sale_price?: number | null
           status?: string | null
@@ -1879,86 +1413,6 @@ export type Database = {
             columns: ["litter_id"]
             isOneToOne: false
             referencedRelation: "litters"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      puppy_milestones: {
-        Row: {
-          created_at: string
-          id: string
-          milestone_date: string
-          milestone_type: string
-          notes: string | null
-          puppy_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          milestone_date: string
-          milestone_type: string
-          notes?: string | null
-          puppy_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          milestone_date?: string
-          milestone_type?: string
-          notes?: string | null
-          puppy_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "puppy_milestones_puppy_id_fkey"
-            columns: ["puppy_id"]
-            isOneToOne: false
-            referencedRelation: "puppies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      puppy_protocols: {
-        Row: {
-          completed: boolean | null
-          created_at: string
-          dose: string | null
-          id: string
-          notes: string | null
-          protocol_id: string
-          puppy_id: string
-        }
-        Insert: {
-          completed?: boolean | null
-          created_at?: string
-          dose?: string | null
-          id?: string
-          notes?: string | null
-          protocol_id: string
-          puppy_id: string
-        }
-        Update: {
-          completed?: boolean | null
-          created_at?: string
-          dose?: string | null
-          id?: string
-          notes?: string | null
-          protocol_id?: string
-          puppy_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "puppy_protocols_protocol_id_fkey"
-            columns: ["protocol_id"]
-            isOneToOne: false
-            referencedRelation: "health_protocols"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "puppy_protocols_puppy_id_fkey"
-            columns: ["puppy_id"]
-            isOneToOne: false
-            referencedRelation: "puppies"
             referencedColumns: ["id"]
           },
         ]
@@ -2004,47 +1458,6 @@ export type Database = {
           },
           {
             foreignKeyName: "reservations_puppy_id_fkey"
-            columns: ["puppy_id"]
-            isOneToOne: false
-            referencedRelation: "puppies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      socialization_records: {
-        Row: {
-          category: string
-          created_at: string
-          experience: string
-          experience_date: string
-          id: string
-          notes: string | null
-          puppy_id: string
-          reaction: string | null
-        }
-        Insert: {
-          category: string
-          created_at?: string
-          experience: string
-          experience_date: string
-          id?: string
-          notes?: string | null
-          puppy_id: string
-          reaction?: string | null
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          experience?: string
-          experience_date?: string
-          id?: string
-          notes?: string | null
-          puppy_id?: string
-          reaction?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "socialization_records_puppy_id_fkey"
             columns: ["puppy_id"]
             isOneToOne: false
             referencedRelation: "puppies"
@@ -2167,8 +1580,6 @@ export type Database = {
           dog_id: string
           id: string
           notes: string | null
-          percent_change: number | null
-          puppy_id: string | null
           weight: number
           weight_unit: string
         }
@@ -2178,8 +1589,6 @@ export type Database = {
           dog_id: string
           id?: string
           notes?: string | null
-          percent_change?: number | null
-          puppy_id?: string | null
           weight: number
           weight_unit: string
         }
@@ -2189,8 +1598,6 @@ export type Database = {
           dog_id?: string
           id?: string
           notes?: string | null
-          percent_change?: number | null
-          puppy_id?: string | null
           weight?: number
           weight_unit?: string
         }
@@ -2200,13 +1607,6 @@ export type Database = {
             columns: ["dog_id"]
             isOneToOne: false
             referencedRelation: "dogs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "weight_records_puppy_id_fkey"
-            columns: ["puppy_id"]
-            isOneToOne: false
-            referencedRelation: "puppies"
             referencedColumns: ["id"]
           },
         ]

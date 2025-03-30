@@ -1,5 +1,5 @@
-
-export enum HealthRecordTypeEnum {
+// Health record types for the dog health management system
+export enum HealthRecordType {
   Vaccination = 'vaccination',
   Examination = 'examination',
   Medication = 'medication',
@@ -7,135 +7,133 @@ export enum HealthRecordTypeEnum {
   Observation = 'observation',
   Deworming = 'deworming',
   Grooming = 'grooming',
-  Dental = 'dental',
-  Allergy = 'allergy',
-  Test = 'test',
   Other = 'other'
 }
 
-// Define HealthRecordType as an alias to HealthRecordTypeEnum for backwards compatibility
-export type HealthRecordType = HealthRecordTypeEnum;
-
-export enum WeightUnitEnum {
-  Pounds = 'lbs',
-  Kilograms = 'kg',
-  Ounces = 'oz',
-  Grams = 'g'
-}
-
+// Base health record interface
 export interface HealthRecord {
   id: string;
   dog_id: string;
-  record_type: HealthRecordTypeEnum;
-  title: string;
+  visit_date: string; // Database field name
+  date?: string;      // Alias for visit_date for UI components
+  record_type: HealthRecordType;
+  title?: string;
   description?: string;
-  date: string; // ISO date format
-  visit_date?: string; // For compatibility with the database format
   performed_by?: string;
-  location?: string;
   next_due_date?: string;
-  files?: string[];
-  created_at: string;
-  tags?: string[];
-  // Additional fields from the database schema
-  document_url?: string;
-  vet_name?: string;
-  vet_clinic?: string;
-  record_notes?: string;
   attachments?: string[];
-}
-
-export interface VaccinationRecord extends HealthRecord {
-  vaccine_type: string;
+  created_at: string;
+  updated_at?: string;
+  
+  // Extended fields for specific record types
   vaccine_name?: string;
   manufacturer?: string;
   lot_number?: string;
-  expiration_date?: string;
-  administered_by?: string;
-  route?: string;
   administration_route?: string;
-  site?: string;
-  dose?: string;
-  next_dose_due?: string;
+  expiration_date?: string;
   reminder_sent?: boolean;
-}
-
-export interface MedicationRecord extends HealthRecord {
-  medication_name: string;
-  dosage?: number | string;
+  
+  medication_name?: string;
+  dosage?: number;
   dosage_unit?: string;
   frequency?: string;
-  duration?: number | string;
+  duration?: number;
   duration_unit?: string;
   start_date?: string;
   end_date?: string;
-  prescribed_by?: string;
-  pharmacy?: string;
   prescription_number?: string;
-  refills_remaining?: number;
-}
-
-export interface ExaminationRecord extends HealthRecord {
-  exam_type?: string;
+  
   examination_type?: string;
   findings?: string;
   recommendations?: string;
-  follow_up_date?: string;
-  examiner?: string;
-  facility?: string;
-}
-
-export interface SurgeryRecord extends HealthRecord {
+  vet_name?: string;
+  vet_clinic?: string;
+  
   procedure_name?: string;
   surgeon?: string;
   anesthesia_used?: string;
   recovery_notes?: string;
+  follow_up_date?: string;
+  
+  // Also include original database field names
+  record_notes?: string;
+  document_url?: string;
 }
 
+export interface VaccinationRecord extends HealthRecord {
+  record_type: HealthRecordType.Vaccination;
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  administration_route?: 'oral' | 'subcutaneous' | 'intramuscular' | 'intranasal' | 'other';
+  expiration_date?: string;
+  reminder_sent?: boolean;
+}
+
+export interface MedicationRecord extends HealthRecord {
+  record_type: HealthRecordType.Medication;
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  duration?: number;
+  duration_unit?: 'days' | 'weeks' | 'months';
+  administration_route?: string;
+  start_date?: string;
+  end_date?: string;
+  prescription_number?: string;
+}
+
+export interface ExaminationRecord extends HealthRecord {
+  record_type: HealthRecordType.Examination;
+  examination_type?: 'routine' | 'sick' | 'pre-breeding' | 'specialized' | 'follow-up';
+  findings?: string;
+  recommendations?: string;
+  vet_name?: string;
+  vet_clinic?: string;
+}
+
+export interface SurgeryRecord extends HealthRecord {
+  record_type: HealthRecordType.Surgery;
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
+  follow_up_date?: string;
+}
+
+// Health Status tracking
+export interface HealthStatus {
+  dog_id: string;
+  last_vaccination_date?: string;
+  next_vaccination_due?: string;
+  last_examination_date?: string;
+  next_examination_due?: string;
+  current_medications?: MedicationRecord[];
+  health_alerts?: HealthAlert[];
+  vaccination_status: 'current' | 'due_soon' | 'overdue' | 'incomplete';
+}
+
+export interface HealthAlert {
+  id: string;
+  dog_id: string;
+  alert_type: 'vaccination_due' | 'medication_reminder' | 'examination_due' | 'abnormal_finding';
+  title: string;
+  description: string;
+  due_date?: string;
+  severity: 'low' | 'medium' | 'high';
+  resolved: boolean;
+  resolved_date?: string;
+  created_at: string;
+}
+
+// Weight tracking
 export interface WeightRecord {
   id: string;
   dog_id: string;
-  weight: number;
-  unit: WeightUnitEnum; // The interface property - main property to use
-  weight_unit?: string; // For database compatibility - kept for backward compatibility
   date: string;
+  weight: number;
+  weight_unit: 'lbs' | 'kg' | 'g' | 'oz';
   notes?: string;
   created_at: string;
-  puppy_id?: string;
-  percent_change?: number;
 }
-
-// Helper function to map database records to our interface
-export const adaptHealthRecord = (record: any): HealthRecord => {
-  return {
-    id: record.id,
-    dog_id: record.dog_id,
-    record_type: record.record_type,
-    title: record.title || '',
-    description: record.description || record.record_notes || '',
-    date: record.visit_date || record.date || new Date().toISOString(),
-    visit_date: record.visit_date,
-    performed_by: record.performed_by || record.vet_name || '',
-    next_due_date: record.next_due_date,
-    created_at: record.created_at,
-    document_url: record.document_url,
-    // Include any other fields that might be present
-    ...record
-  };
-};
-
-// Helper function to map database weight records to our interface
-export const adaptWeightRecord = (record: any): WeightRecord => {
-  return {
-    id: record.id,
-    dog_id: record.dog_id,
-    weight: record.weight,
-    unit: (record.unit || record.weight_unit) as WeightUnitEnum,
-    weight_unit: record.weight_unit, // Keep the original property
-    date: record.date,
-    notes: record.notes,
-    created_at: record.created_at,
-    puppy_id: record.puppy_id,
-    percent_change: record.percent_change
-  };
-};

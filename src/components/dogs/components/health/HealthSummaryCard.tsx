@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pill, Stethoscope, AlertTriangle, Scale } from 'lucide-react';
@@ -128,7 +129,7 @@ const HealthSummaryCard: React.FC<HealthSummaryCardProps> = ({
                 {latestWeight ? (
                   <div className="text-sm text-amber-700 mt-1">
                     <p>
-                      Current: {latestWeight.weight} {latestWeight.unit || latestWeight.weight_unit}
+                      Current: {latestWeight.weight} {latestWeight.weight_unit}
                       {' '}({formatDistanceToNow(new Date(latestWeight.date), { addSuffix: true })})
                     </p>
                     {growthStats && (

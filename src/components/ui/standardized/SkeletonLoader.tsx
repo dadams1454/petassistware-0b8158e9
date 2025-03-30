@@ -1,57 +1,51 @@
 
 import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 
 export interface SkeletonLoaderProps {
   count?: number;
-  height?: number | string;
-  width?: number | string;
   className?: string;
-  circle?: boolean;
-  variant?: 'default' | 'text' | 'banner' | 'card' | 'table';
+  height?: string;
+  width?: string;
+  rounded?: string;
+  variant?: 'default' | 'card' | 'table' | 'text' | 'banner';
 }
 
+/**
+ * A standardized skeleton loader component for consistent loading states
+ */
 const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   count = 1,
-  height = '1rem',
-  width = '100%',
   className = '',
-  circle = false,
+  height = 'h-12',
+  width = 'w-full',
+  rounded = 'rounded-md',
   variant = 'default'
 }) => {
-  const items = Array(count).fill(null);
-  
-  const getVariantClasses = () => {
+  // Different variants for different use cases
+  const getVariantClasses = (): string => {
     switch (variant) {
-      case 'text':
-        return 'h-4 w-full max-w-sm';
-      case 'banner':
-        return 'h-24 w-full';
       case 'card':
-        return 'h-40 w-full';
+        return 'h-[180px] w-full rounded-lg';
       case 'table':
-        return 'h-10 w-full';
+        return 'h-8 w-full rounded';
+      case 'text':
+        return 'h-4 w-3/4 rounded';
+      case 'banner':
+        return 'h-24 w-full rounded-lg';
       default:
-        return '';
+        return `${height} ${width} ${rounded}`;
     }
   };
 
+  const baseClasses = variant === 'default' 
+    ? `${height} ${width} ${rounded} ${className}`
+    : `${getVariantClasses()} ${className}`;
+
   return (
     <div className="space-y-2">
-      {items.map((_, index) => (
-        <Skeleton
-          key={index}
-          className={cn(
-            getVariantClasses(),
-            className,
-            circle && 'rounded-full'
-          )}
-          style={{
-            height: variant === 'default' ? height : undefined,
-            width: variant === 'default' ? width : undefined
-          }}
-        />
+      {Array.from({ length: count }).map((_, index) => (
+        <Skeleton key={index} className={baseClasses} />
       ))}
     </div>
   );

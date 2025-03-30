@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import AddGroupDialog from './components/AddGroupDialog';
@@ -8,7 +9,6 @@ import DebugInfoPanel from './components/DebugInfoPanel';
 import TableContentManager from './components/TableContentManager';
 import ObservationDialogManager from './components/ObservationDialogManager';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ObservationRecord, ObservationType } from './hooks/pottyBreakHooks/observationTypes';
 
 interface DogTimeTableProps {
   dogsStatus: DogCareStatus[];
@@ -64,14 +64,9 @@ const DogTimeTable: React.FC<DogTimeTableProps> = ({
     ? dogsStatus.find(dog => dog.dog_id === selectedDogId) 
     : undefined;
     
-  // Extract the observations for the selected dog as an array, with proper type conversion
+  // Extract the observations for the selected dog as an array
   const selectedDogObservations = selectedDog && observations && selectedDogId 
-    ? (observations[selectedDogId] || []).map(obs => ({
-        observation: obs.observation,
-        observation_type: obs.observation_type as ObservationType,
-        created_at: obs.created_at,
-        category: obs.category
-      }))
+    ? observations[selectedDogId] || [] 
     : [];
 
   return (

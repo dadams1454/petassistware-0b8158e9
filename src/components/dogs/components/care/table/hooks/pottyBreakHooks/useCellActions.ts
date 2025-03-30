@@ -1,6 +1,8 @@
 
 import { useCallback, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { useOperationQueue } from './queueHooks/useOperationQueue';
+import { useClickProtection } from './queueHooks/useClickProtection';
 
 /**
  * Hook to manage cell actions in the care time table
@@ -14,6 +16,8 @@ export const useCellActions = (
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { queueOperation } = useOperationQueue();
+  const { trackClick } = useClickProtection();
   
   // Handle cell click with protection against double clicks
   const handleCellClick = useCallback((
@@ -22,6 +26,11 @@ export const useCellActions = (
     timeSlot: string, 
     category: string
   ) => {
+    // Use trackClick to prevent rapid clicking
+    if (!trackClick(dogName, timeSlot)) {
+      return; // Don't proceed if click is blocked
+    }
+    
     // We've removed potty break handling
     console.log(`Cell clicked: ${dogId}, ${dogName}, ${timeSlot}, ${category}`);
     
@@ -36,7 +45,7 @@ export const useCellActions = (
     if (onRefresh) {
       onRefresh();
     }
-  }, [toast, onRefresh]);
+  }, [toast, onRefresh, trackClick]);
   
   return {
     isLoading,

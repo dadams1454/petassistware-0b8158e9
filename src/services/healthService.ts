@@ -1,154 +1,227 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  HealthRecord, 
-  HealthRecordTypeEnum, 
-  HealthRecordType,
-  WeightRecord,
-  WeightUnitEnum,
-  adaptHealthRecord,
-  adaptWeightRecord
-} from '@/types/health';
+import { HealthRecord, HealthRecordType, WeightRecord } from '@/types/health';
+import { formatDateForDatabase } from '@/utils/dateUtils';
 
-// Health Records
+// Get all health records for a dog
 export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> => {
   const { data, error } = await supabase
     .from('health_records')
     .select('*')
     .eq('dog_id', dogId)
     .order('visit_date', { ascending: false });
-
-  if (error) throw error;
+    
+  if (error) {
+    console.error('Error fetching health records:', error);
+    throw error;
+  }
   
-  // Map the database records to our interface
-  return (data || []).map(record => adaptHealthRecord(record));
+  // Map database fields to our interface and add date alias for UI components
+  return (data || []).map(record => ({
+    ...record,
+    record_type: record.record_type as HealthRecordType,
+    date: record.visit_date, // Add date alias for UI components
+  }));
 };
 
-export const getHealthRecordsByType = async (dogId: string, type: HealthRecordType): Promise<HealthRecord[]> => {
+// Get health records by type
+export const getHealthRecordsByType = async (
+  dogId: string, 
+  recordType: HealthRecordType
+): Promise<HealthRecord[]> => {
   const { data, error } = await supabase
     .from('health_records')
     .select('*')
     .eq('dog_id', dogId)
-    .eq('record_type', type)
+    .eq('record_type', recordType)
     .order('visit_date', { ascending: false });
-
-  if (error) throw error;
+    
+  if (error) {
+    console.error(`Error fetching ${recordType} records:`, error);
+    throw error;
+  }
   
-  return (data || []).map(record => adaptHealthRecord(record));
+  return (data || []).map(record => ({
+    ...record,
+    record_type: record.record_type as HealthRecordType,
+    date: record.visit_date, // Add date alias for UI components
+  }));
 };
 
+// Add a new health record
 export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>): Promise<HealthRecord> => {
-  // Prepare database record from our interface
+  // Transform from our interface to database fields, handle both date and visit_date
   const dbRecord = {
     dog_id: record.dog_id,
+    visit_date: record.visit_date || record.date, // Support both properties
     record_type: record.record_type,
     title: record.title,
-    description: record.description,
-    visit_date: record.date || record.visit_date,
+    record_notes: record.description || record.record_notes,
     performed_by: record.performed_by,
     next_due_date: record.next_due_date,
-    vet_name: record.performed_by || '',  // Ensure vet_name is provided
-    record_notes: record.description || '', // Map description to record_notes
-    // Include any other relevant fields
-    ...record
+    // Include all the specific fields
+    vaccine_name: record.vaccine_name,
+    manufacturer: record.manufacturer,
+    lot_number: record.lot_number,
+    administration_route: record.administration_route,
+    expiration_date: record.expiration_date,
+    reminder_sent: record.reminder_sent,
+    medication_name: record.medication_name,
+    dosage: record.dosage,
+    dosage_unit: record.dosage_unit,
+    frequency: record.frequency,
+    duration: record.duration,
+    duration_unit: record.duration_unit,
+    start_date: record.start_date,
+    end_date: record.end_date,
+    prescription_number: record.prescription_number,
+    examination_type: record.examination_type,
+    findings: record.findings,
+    recommendations: record.recommendations,
+    vet_name: record.vet_name,
+    vet_clinic: record.vet_clinic,
+    procedure_name: record.procedure_name,
+    surgeon: record.surgeon,
+    anesthesia_used: record.anesthesia_used,
+    recovery_notes: record.recovery_notes,
+    follow_up_date: record.follow_up_date,
+    document_url: record.document_url,
   };
-
+    
   const { data, error } = await supabase
     .from('health_records')
-    .insert([dbRecord])
-    .select()
-    .single();
-
-  if (error) throw error;
+    .insert(dbRecord)
+    .select();
+    
+  if (error) {
+    console.error('Error adding health record:', error);
+    throw error;
+  }
   
-  return adaptHealthRecord(data);
+  // Map back to our interface
+  return {
+    ...data![0],
+    record_type: data![0].record_type as HealthRecordType,
+    date: data![0].visit_date, // Add date alias for UI components
+  };
 };
 
-export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>): Promise<HealthRecord> => {
-  const dbUpdates = {
-    record_type: updates.record_type,
-    title: updates.title,
-    description: updates.description,
-    visit_date: updates.date || updates.visit_date,
-    performed_by: updates.performed_by,
-    next_due_date: updates.next_due_date,
-    vet_name: updates.performed_by || undefined,
-    record_notes: updates.description || undefined,
-    // Include any other relevant fields
+// Update a health record
+export const updateHealthRecord = async (id: string, updates: Partial<Omit<HealthRecord, 'id' | 'created_at'>>): Promise<HealthRecord> => {
+  // Handle date/visit_date mapping
+  const dbUpdates = { 
     ...updates
   };
-
+  
+  // If updates include date but not visit_date, map it
+  if (updates.date && !updates.visit_date) {
+    dbUpdates.visit_date = updates.date;
+    delete dbUpdates.date; // Remove date as it's not in the database schema
+  }
+  
   const { data, error } = await supabase
     .from('health_records')
     .update(dbUpdates)
     .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
+    .select();
+    
+  if (error) {
+    console.error('Error updating health record:', error);
+    throw error;
+  }
   
-  return adaptHealthRecord(data);
+  return {
+    ...data![0],
+    record_type: data![0].record_type as HealthRecordType,
+    date: data![0].visit_date, // Add date alias for UI components
+  };
 };
 
-export const deleteHealthRecord = async (id: string): Promise<void> => {
+// Delete a health record
+export const deleteHealthRecord = async (id: string): Promise<string> => {
   const { error } = await supabase
     .from('health_records')
     .delete()
     .eq('id', id);
-
-  if (error) throw error;
+    
+  if (error) {
+    console.error('Error deleting health record:', error);
+    throw error;
+  }
+  
+  return id;
 };
 
+// Get upcoming due vaccinations
 export const getUpcomingVaccinations = async (dogId: string, daysAhead = 30): Promise<HealthRecord[]> => {
-  const today = new Date();
   const futureDate = new Date();
-  futureDate.setDate(today.getDate() + daysAhead);
+  futureDate.setDate(futureDate.getDate() + daysAhead);
   
   const { data, error } = await supabase
     .from('health_records')
     .select('*')
     .eq('dog_id', dogId)
-    .eq('record_type', HealthRecordTypeEnum.Vaccination)
-    .gte('next_due_date', today.toISOString().split('T')[0])
+    .eq('record_type', HealthRecordType.Vaccination)
     .lte('next_due_date', futureDate.toISOString().split('T')[0])
+    .gte('next_due_date', new Date().toISOString().split('T')[0])
     .order('next_due_date', { ascending: true });
-
-  if (error) throw error;
+    
+  if (error) {
+    console.error('Error fetching upcoming vaccinations:', error);
+    throw error;
+  }
   
-  return (data || []).map(record => adaptHealthRecord(record));
+  return (data || []).map(record => ({
+    ...record,
+    record_type: record.record_type as HealthRecordType,
+  }));
 };
 
-// Weight Records
+// Weight record functions
 export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> => {
   const { data, error } = await supabase
     .from('weight_records')
     .select('*')
     .eq('dog_id', dogId)
     .order('date', { ascending: false });
-
-  if (error) throw error;
+    
+  if (error) {
+    console.error('Error fetching weight history:', error);
+    throw error;
+  }
   
-  return (data || []).map(record => adaptWeightRecord(record));
+  // Ensure weight_unit is a valid enum value
+  return (data || []).map(record => ({
+    ...record,
+    weight_unit: (record.weight_unit as 'lbs' | 'kg' | 'g' | 'oz') || 'lbs'
+  }));
 };
 
-export const addWeightRecord = async (record: Omit<WeightRecord, 'id' | 'created_at'>): Promise<WeightRecord> => {
+export const addWeightRecord = async (
+  record: Omit<WeightRecord, 'id' | 'created_at'>
+): Promise<WeightRecord> => {
+  // Ensure date is in the correct format
+  const formattedRecord = {
+    dog_id: record.dog_id,
+    date: formatDateForDatabase(record.date) || new Date().toISOString().split('T')[0],
+    weight: record.weight,
+    weight_unit: record.weight_unit,
+    notes: record.notes
+  };
+    
   const { data, error } = await supabase
     .from('weight_records')
-    .insert([
-      {
-        dog_id: record.dog_id,
-        weight: record.weight,
-        weight_unit: record.unit || record.weight_unit, // Use unit if provided, otherwise use weight_unit
-        date: record.date,
-        notes: record.notes
-      }
-    ])
-    .select()
-    .single();
-
-  if (error) throw error;
+    .insert(formattedRecord)
+    .select();
+    
+  if (error) {
+    console.error('Error adding weight record:', error);
+    throw error;
+  }
   
-  return adaptWeightRecord(data);
+  return {
+    ...data![0],
+    weight_unit: (data![0].weight_unit as 'lbs' | 'kg' | 'g' | 'oz')
+  };
 };
 
 export const deleteWeightRecord = async (id: string): Promise<void> => {
@@ -156,6 +229,9 @@ export const deleteWeightRecord = async (id: string): Promise<void> => {
     .from('weight_records')
     .delete()
     .eq('id', id);
-
-  if (error) throw error;
+    
+  if (error) {
+    console.error('Error deleting weight record:', error);
+    throw error;
+  }
 };

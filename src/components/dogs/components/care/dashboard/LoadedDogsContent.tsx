@@ -1,12 +1,12 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import CareTabsContent from '../CareTabsContent';
 import { DogCareStatus } from '@/types/dailyCare';
-import { Card } from '@/components/ui/card';
-import PuppiesTab from '../puppies/PuppiesTab';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface LoadedDogsContentProps {
   dogStatuses: DogCareStatus[];
-  activeView: 'grid' | 'table' | 'list';
+  activeView: string;
   selectedCategory: string;
   selectedDogId: string | null;
   dialogOpen: boolean;
@@ -25,23 +25,41 @@ const LoadedDogsContent: React.FC<LoadedDogsContentProps> = ({
   onLogCare,
   onCareLogSuccess
 }) => {
-  // If Puppies tab is selected, show the PuppiesTab component
-  if (selectedCategory === 'puppies') {
-    return <PuppiesTab onRefresh={onCareLogSuccess} />;
-  }
-  
-  // For now, show a simple card with the view info until we implement the other views
+  useEffect(() => {
+    console.log(`🐕 LoadedDogsContent received ${dogStatuses.length} dogs`);
+    if (dogStatuses.length > 0) {
+      console.log('🐕 Dog names:', dogStatuses.map(d => d.dog_name).join(', '));
+    }
+  }, [dogStatuses]);
+
   return (
-    <Card className="p-6">
-      <p className="text-center text-muted-foreground">
-        {activeView === 'grid' && 'Grid view will be implemented here'}
-        {activeView === 'table' && 'Table view will be implemented here'}
-        {activeView === 'list' && 'List view will be implemented here'}
-      </p>
-      <p className="text-center mt-4">
-        Showing {dogStatuses.length} dogs for category: {selectedCategory}
-      </p>
-    </Card>
+    <>
+      <Alert className="mb-4 border-green-500 bg-green-50 dark:bg-green-900/20">
+        <AlertTitle className="font-semibold text-green-700 dark:text-green-300">
+          Dogs Loaded: {dogStatuses.length}
+        </AlertTitle>
+        <AlertDescription className="text-green-600 dark:text-green-400">
+          {dogStatuses.length > 0 ? (
+            <>
+              <span className="font-medium">Available dogs:</span> {dogStatuses.map(d => d.dog_name).join(', ')}
+            </>
+          ) : (
+            "No dogs available. Try refreshing the page or adding dogs to the system."
+          )}
+        </AlertDescription>
+      </Alert>
+      
+      <CareTabsContent
+        activeTab={activeView}
+        dogsStatus={dogStatuses}
+        onLogCare={onLogCare}
+        selectedDogId={selectedDogId}
+        dialogOpen={dialogOpen}
+        setDialogOpen={setDialogOpen}
+        onCareLogSuccess={onCareLogSuccess}
+        selectedCategory={selectedCategory}
+      />
+    </>
   );
 };
 

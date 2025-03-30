@@ -2,7 +2,6 @@
 import { useCallback } from 'react';
 import { useObservations } from '../pottyBreakHooks/useObservations';
 import { DogCareStatus } from '@/types/dailyCare';
-import { ObservationType } from '../pottyBreakHooks/observationTypes';
 
 /**
  * Hook to manage observation functionality
@@ -19,7 +18,7 @@ export const useObservationHandling = (
   const handleObservationSubmit = useCallback(async (
     dogId: string, 
     observationText: string, 
-    observationType: ObservationType,
+    observationType: 'accident' | 'heat' | 'behavior' | 'other',
     timestamp?: Date
   ): Promise<void> => {
     // Always use 'observation' category now that we only have potty breaks
