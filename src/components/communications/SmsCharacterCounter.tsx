@@ -1,40 +1,25 @@
 
 import React from 'react';
-import { Progress } from '@/components/ui/progress';
-
-const SMS_CHAR_LIMIT = 160;
 
 interface SmsCharacterCounterProps {
   text: string;
 }
 
 const SmsCharacterCounter: React.FC<SmsCharacterCounterProps> = ({ text }) => {
-  const charCount = text.length;
-  const messagesCount = Math.ceil(charCount / SMS_CHAR_LIMIT);
-  const percentageFilled = Math.min((charCount % SMS_CHAR_LIMIT || SMS_CHAR_LIMIT) / SMS_CHAR_LIMIT * 100, 100);
+  const characterCount = text.length;
+  const smsCount = Math.ceil(characterCount / 160);
   
-  const getStatusColor = () => {
-    if (messagesCount === 1 && charCount <= SMS_CHAR_LIMIT * 0.8) {
-      return 'text-green-500';
-    } else if (messagesCount === 1) {
-      return 'text-yellow-500';
-    } else {
-      return 'text-yellow-500';
-    }
+  // Determine color based on count
+  const getCountColor = () => {
+    if (characterCount > 400) return 'text-red-500';
+    if (characterCount > 300) return 'text-amber-500';
+    return 'text-muted-foreground';
   };
 
   return (
-    <div className="text-xs space-y-1">
-      <div className="flex justify-between">
-        <span>Characters: <span className={getStatusColor()}>{charCount}</span></span>
-        <span>
-          {messagesCount > 1 ? 
-            `Will send as ${messagesCount} messages` : 
-            `${SMS_CHAR_LIMIT - charCount} characters remaining`
-          }
-        </span>
-      </div>
-      <Progress value={percentageFilled} className="h-1" />
+    <div className={`text-xs flex justify-between ${getCountColor()}`}>
+      <span>{characterCount} characters</span>
+      <span>{smsCount} SMS message{smsCount !== 1 ? 's' : ''}</span>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { LitterFormData } from './useLitterForm';
+import { LitterFormData } from './types/litterFormTypes';
 
 interface UsePuppyCounterProps {
   form: UseFormReturn<LitterFormData>;
@@ -14,14 +14,14 @@ export const usePuppyCounter = ({
   maleCount,
   femaleCount
 }: UsePuppyCounterProps) => {
-  // Update total puppy count whenever male or female count changes
+  // Effect to auto-calculate total puppy count
   useEffect(() => {
-    const male = parseInt(String(maleCount)) || 0;
-    const female = parseInt(String(femaleCount)) || 0;
-    
-    if (male > 0 || female > 0) {
-      const total = male + female;
-      form.setValue('puppy_count', total);
+    // Only calculate if at least one value exists
+    if (maleCount !== null || femaleCount !== null) {
+      const totalPuppies = (maleCount || 0) + (femaleCount || 0);
+      
+      // Set the total puppy count
+      form.setValue('puppy_count', totalPuppies > 0 ? totalPuppies : null);
     }
-  }, [maleCount, femaleCount, form]);
+  }, [form, maleCount, femaleCount]);
 };

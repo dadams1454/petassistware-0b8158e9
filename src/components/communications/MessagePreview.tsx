@@ -1,57 +1,47 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Mail, MessageSquare } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface MessagePreviewProps {
-  messageType: 'email' | 'sms';
+  messageType: "email" | "sms";
   subject?: string;
   content: string;
-  className?: string;
 }
 
-const MessagePreview: React.FC<MessagePreviewProps> = ({
-  messageType,
-  subject,
-  content,
-  className = '',
-}) => {
-  if (messageType === 'email') {
+const MessagePreview: React.FC<MessagePreviewProps> = ({ messageType, subject, content }) => {
+  if (messageType === "email") {
     return (
-      <Card className={`overflow-hidden ${className}`}>
-        <div className="bg-secondary p-3 flex items-center gap-2 border-b">
-          <Mail className="h-4 w-4" />
-          <span className="font-medium text-sm">Email Preview</span>
-        </div>
-        <CardContent className="p-0">
-          {subject && (
-            <div className="p-3 border-b">
-              <div className="text-sm font-medium">Subject: {subject}</div>
-            </div>
-          )}
-          <div className="p-4 text-sm whitespace-pre-wrap">
-            {content}
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-primary/5 py-3">
+          <CardTitle className="text-sm font-medium">
+            {subject || "No Subject"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 min-h-[300px] max-h-[300px] overflow-y-auto">
+          <div className="prose prose-sm max-w-none">
+            {content.split('\n').map((line, i) => (
+              <p key={i}>{line || <br />}</p>
+            ))}
           </div>
         </CardContent>
       </Card>
     );
   }
-
+  
+  // SMS Preview
   return (
-    <Card className={`overflow-hidden ${className}`}>
-      <div className="bg-secondary p-3 flex items-center gap-2 border-b">
-        <MessageSquare className="h-4 w-4" />
-        <span className="font-medium text-sm">SMS Preview</span>
+    <div className="min-h-[300px] max-h-[300px] overflow-hidden flex items-stretch">
+      <div className="w-full bg-muted rounded-lg p-4 flex flex-col">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-[80%] ml-auto bg-primary text-primary-foreground rounded-lg p-3 mb-2">
+            {content}
+          </div>
+        </div>
+        <div className="h-6 border-t pt-1 text-xs text-center text-muted-foreground">
+          SMS Preview
+        </div>
       </div>
-      <CardContent className="p-4 text-sm">
-        <div className="max-w-[320px] mx-auto bg-background border rounded-lg p-3 shadow whitespace-pre-wrap">
-          {content}
-        </div>
-        <div className="text-xs text-muted-foreground text-center mt-2">
-          Messages longer than 160 characters may be split into multiple messages
-        </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 };
 

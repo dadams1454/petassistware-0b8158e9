@@ -1,34 +1,12 @@
 
 export interface WeightRecord {
   id: string;
-  puppy_id: string;
+  puppy_id?: string;
+  dog_id?: string | null;
   date: string | Date;
   weight: number;
-  weight_unit: 'oz' | 'g' | 'lbs' | 'kg';
+  weight_unit: string;
+  notes?: string;
   percent_change?: number | null;
-  notes?: string | null;
-  created_at: string;
-}
-
-export interface WeightChartData {
-  date: string;
-  weight: number;
-  percentChange?: number;
-}
-
-export interface WeightUnitOption {
-  label: string;
-  value: 'oz' | 'g' | 'lbs' | 'kg';
-  conversion: {
-    oz: number;
-    g: number;
-    lbs: number;
-    kg: number;
-  };
-}
-
-export interface WeightTrackerProps {
-  puppyId: string;
-  initialData?: WeightRecord[];
-  onAddSuccess?: () => void;
+  created_at?: string;
 }

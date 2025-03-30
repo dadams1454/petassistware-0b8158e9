@@ -1,110 +1,78 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
-import { PuppyFormData, Puppy } from '@/components/litters/puppies/types';
 import { toast } from '@/components/ui/use-toast';
+import { Puppy } from '@/types/litter';
 
-export interface UsePuppyFormProps {
+const puppySchema = z.object({
+  name: z.string().optional(),
+  gender: z.string().min(1, 'Gender is required'),
+  color: z.string().min(1, 'Color is required'),
+  birth_weight: z.string().optional(),
+  current_weight: z.string().optional(),
+  microchip_number: z.string().optional(),
+  status: z.string().default('Available'),
+  birth_date: z.date().optional(),
+  birth_time: z.string().optional(),
+  birth_order: z.number().int().optional(),
+  presentation: z.string().optional(),
+  assistance_required: z.boolean().default(false),
+  assistance_notes: z.string().optional(),
+  sale_price: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+export type PuppyFormValues = z.infer<typeof puppySchema>;
+
+interface UsePuppyFormProps {
   litterId: string;
-  initialData?: Puppy;
+  initialData?: Puppy | null;
   onSuccess: () => void;
 }
 
 export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<PuppyFormData>({
-    defaultValues: {
-      name: initialData?.name || '',
-      gender: initialData?.gender || '',
-      status: (initialData?.status as 'Available' | 'Reserved' | 'Sold' | 'Kept' | 'Deceased') || 'Available',
-      color: initialData?.color || '',
-      birth_date: initialData?.birth_date ? new Date(initialData.birth_date) : null,
-      birth_weight: initialData?.birth_weight || '',
-      current_weight: initialData?.current_weight || '',
-      weight_notes: initialData?.weight_notes || '',
-      microchip_number: initialData?.microchip_number || '',
-      sale_price: initialData?.sale_price || null,
-      deworming_dates: initialData?.deworming_dates || '',
-      vaccination_dates: initialData?.vaccination_dates || '',
-      vet_check_dates: initialData?.vet_check_dates || '',
-      notes: initialData?.notes || '',
-      photo_url: initialData?.photo_url || '',
-      birth_time: initialData?.birth_time || '',
-      akc_litter_number: initialData?.akc_litter_number || '',
-      akc_registration_number: initialData?.akc_registration_number || ''
-    }
+  // Parse initialData to match form schema
+  const defaultValues: Partial<PuppyFormValues> = {
+    name: initialData?.name || '',
+    gender: initialData?.gender || '',
+    color: initialData?.color || '',
+    birth_weight: initialData?.birth_weight || '',
+    current_weight: initialData?.current_weight || '',
+    microchip_number: initialData?.microchip_number || '',
+    status: initialData?.status || 'Available',
+    birth_time: initialData?.birth_time || '',
+    birth_order: initialData?.birth_order || undefined,
+    presentation: initialData?.presentation || '',
+    assistance_required: initialData?.assistance_required || false,
+    assistance_notes: initialData?.assistance_notes || '',
+    sale_price: initialData?.sale_price || undefined,
+    notes: initialData?.notes || '',
+  };
+
+  // Add birth_date if it exists
+  if (initialData?.birth_date) {
+    defaultValues.birth_date = new Date(initialData.birth_date);
+  }
+
+  const form = useForm<PuppyFormValues>({
+    resolver: zodResolver(puppySchema),
+    defaultValues
   });
 
-  const handleSubmit = async (data: PuppyFormData) => {
+  const handleSubmit = async (values: PuppyFormValues) => {
     setIsSubmitting(true);
     try {
-      console.log('Submitting puppy data:', data);
-      
-      // Format gender properly (capitalize first letter)
-      const formattedGender = data.gender ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1).toLowerCase() : null;
-      
-      // Parse sale price to number or null - fixing the type error
-      let salePrice = null;
-      if (data.sale_price !== null && data.sale_price !== undefined) {
-        // Convert to string first to safely check for empty string
-        const priceStr = String(data.sale_price);
-        if (priceStr.trim() !== '') {
-          const price = Number(priceStr);
-          if (!isNaN(price)) {
-            salePrice = price;
-          }
-        }
-      }
-
-      // Parse weight to number or null
-      let birthWeight = null;
-      if (data.birth_weight !== null && data.birth_weight !== undefined) {
-        const weightStr = String(data.birth_weight);
-        if (weightStr.trim() !== '') {
-          const weight = Number(weightStr);
-          if (!isNaN(weight)) {
-            birthWeight = weight;
-          }
-        }
-      }
-
-      let currentWeight = null;
-      if (data.current_weight !== null && data.current_weight !== undefined) {
-        const weightStr = String(data.current_weight);
-        if (weightStr.trim() !== '') {
-          const weight = Number(weightStr);
-          if (!isNaN(weight)) {
-            currentWeight = weight;
-          }
-        }
-      }
-      
-      // Clean up the data to remove any fields that don't exist in the database schema
       const puppyData = {
-        name: data.name || null,
-        gender: formattedGender as 'Male' | 'Female' | null,
-        status: data.status,
-        color: data.color || null,
-        birth_date: data.birth_date ? data.birth_date.toISOString().split('T')[0] : null,
-        birth_weight: birthWeight,
-        current_weight: currentWeight,
-        weight_notes: data.weight_notes || null,
-        microchip_number: data.microchip_number || null,
-        sale_price: salePrice,
-        deworming_dates: data.deworming_dates || null,
-        vaccination_dates: data.vaccination_dates || null,
-        vet_check_dates: data.vet_check_dates || null,
-        notes: data.notes || null,
-        photo_url: data.photo_url || null,
+        ...values,
         litter_id: litterId,
-        birth_time: data.birth_time || null,
-        akc_litter_number: data.akc_litter_number || null,
-        akc_registration_number: data.akc_registration_number || null
+        // Format birth_date as ISO string if it exists
+        birth_date: values.birth_date ? values.birth_date.toISOString().split('T')[0] : null
       };
-
-      console.log('Cleaned puppy data for submission:', puppyData);
 
       if (initialData) {
         // Update existing puppy
@@ -114,6 +82,11 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
           .eq('id', initialData.id);
 
         if (error) throw error;
+
+        toast({
+          title: 'Puppy updated',
+          description: 'The puppy information has been updated successfully.'
+        });
       } else {
         // Create new puppy
         const { error } = await supabase
@@ -121,22 +94,20 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
           .insert(puppyData);
 
         if (error) throw error;
+
+        toast({
+          title: 'Puppy added',
+          description: 'The puppy has been added to the litter successfully.'
+        });
       }
 
-      toast({
-        title: initialData ? "Puppy Updated" : "Puppy Added",
-        description: initialData 
-          ? "The puppy information has been successfully updated." 
-          : "A new puppy has been successfully added to this litter.",
-      });
-      
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving puppy:', error);
       toast({
-        title: "Error",
-        description: "There was a problem saving the puppy information. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'There was a problem saving the puppy information.',
+        variant: 'destructive'
       });
     } finally {
       setIsSubmitting(false);
@@ -146,6 +117,6 @@ export const usePuppyForm = ({ litterId, initialData, onSuccess }: UsePuppyFormP
   return {
     form,
     isSubmitting,
-    handleSubmit: form.handleSubmit(handleSubmit),
+    handleSubmit: form.handleSubmit(handleSubmit)
   };
 };
