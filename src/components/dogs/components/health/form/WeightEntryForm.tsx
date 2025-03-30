@@ -5,7 +5,7 @@ import { useWeightEntryForm } from '../hooks/useWeightEntryForm';
 import WeightDatePicker from './WeightDatePicker';
 import WeightValueInput from './WeightValueInput';
 import WeightUnitSelect from './WeightUnitSelect';
-import DialogFooterButtons from '../../../profile/records/form-fields/DialogFooterButtons';
+import DialogFooterButtons from '@/components/dogs/components/profile/records/form-fields/DialogFooterButtons';
 
 interface WeightEntryFormProps {
   dogId: string;
