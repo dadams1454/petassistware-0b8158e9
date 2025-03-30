@@ -1,45 +1,85 @@
 
 import React from 'react';
-import { EmptyState } from '@/components/ui/standardized';
-import VaccinationSection from '../../health/VaccinationSection';
+import { EmptyState, LoadingState } from '@/components/ui/standardized';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { format } from 'date-fns';
 import { useHealthTabContext } from './HealthTabContext';
+import { HealthRecordTypeEnum } from '@/types/health';
 
 const VaccinationsTabContent: React.FC = () => {
-  const {
-    getRecordsByType,
-    getUpcomingVaccinations,
-    getOverdueVaccinations,
+  const { 
+    isLoading, 
+    getRecordsByType, 
     handleAddRecord,
-    handleEditRecord,
-    deleteHealthRecord,
-    isLoading
+    handleEditRecord 
   } = useHealthTabContext();
-
-  const vaccinations = getRecordsByType('vaccination');
-
+  
+  const vaccinations = getRecordsByType(HealthRecordTypeEnum.Vaccination);
+  
+  if (isLoading) {
+    return <LoadingState message="Loading vaccination records..." />;
+  }
+  
   if (vaccinations.length === 0) {
     return (
       <EmptyState
         title="No vaccination records"
-        description="Start tracking this dog's vaccinations to ensure they stay up-to-date on important shots."
+        description="Add your first vaccination record to keep track of your dog's vaccinations."
         action={{
           label: "Add Vaccination",
-          onClick: () => handleAddRecord('vaccination')
+          onClick: () => handleAddRecord(HealthRecordTypeEnum.Vaccination)
         }}
       />
     );
   }
-
+  
+  // Sort vaccinations by date (newest first)
+  const sortedVaccinations = [...vaccinations].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  
   return (
-    <VaccinationSection 
-      vaccinations={vaccinations}
-      upcomingVaccinations={getUpcomingVaccinations()}
-      overdueVaccinations={getOverdueVaccinations()}
-      onAdd={() => handleAddRecord('vaccination')}
-      onEdit={handleEditRecord}
-      onDelete={deleteHealthRecord}
-      isLoading={isLoading}
-    />
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button 
+          onClick={() => handleAddRecord(HealthRecordTypeEnum.Vaccination)}
+          size="sm"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Vaccination
+        </Button>
+      </div>
+      
+      <div className="grid gap-4 md:grid-cols-2">
+        {sortedVaccinations.map(vax => (
+          <Card key={vax.id} className="overflow-hidden">
+            <CardContent className="p-0">
+              <div 
+                className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleEditRecord(vax.id)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-medium">{vax.title}</h3>
+                  <span className="text-sm text-muted-foreground">
+                    {format(new Date(vax.date), 'MMM d, yyyy')}
+                  </span>
+                </div>
+                {vax.next_due_date && (
+                  <p className="text-sm text-muted-foreground">
+                    Next due: {format(new Date(vax.next_due_date), 'MMM d, yyyy')}
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                  {vax.description || 'No details provided'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
   );
 };
 

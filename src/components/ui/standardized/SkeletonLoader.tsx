@@ -1,117 +1,42 @@
 
 import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface SkeletonLoaderProps {
   count?: number;
-  height?: number;
+  height?: number | string;
+  width?: number | string;
   className?: string;
-  width?: string;
-  variant?: 'default' | 'card' | 'list' | 'table' | 'text' | 'banner';
+  circle?: boolean;
 }
 
 const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
-  count = 3,
-  height = 20,
+  count = 1,
+  height = '1rem',
+  width = '100%',
   className = '',
-  width = 'w-full',
-  variant = 'default'
+  circle = false
 }) => {
-  const renderDefaultSkeletons = () => {
-    return Array(count)
-      .fill(0)
-      .map((_, i) => (
-        <Skeleton 
-          key={`skeleton-${i}`} 
-          className={`h-${height} ${width} mb-2 ${className}`} 
+  const items = Array(count).fill(null);
+
+  return (
+    <div className="space-y-2">
+      {items.map((_, index) => (
+        <Skeleton
+          key={index}
+          className={cn(
+            className,
+            circle && 'rounded-full'
+          )}
+          style={{
+            height,
+            width
+          }}
         />
-      ));
-  };
-
-  const renderCardSkeletons = () => {
-    return Array(count)
-      .fill(0)
-      .map((_, i) => (
-        <div key={`card-skeleton-${i}`} className="rounded-lg border p-4 shadow-sm">
-          <Skeleton className="h-6 w-3/4 mb-4" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-5/6 mb-2" />
-          <Skeleton className="h-10 w-1/3 mt-4" />
-        </div>
-      ));
-  };
-
-  const renderListSkeletons = () => {
-    return Array(count)
-      .fill(0)
-      .map((_, i) => (
-        <div key={`list-skeleton-${i}`} className="flex items-center py-2 border-b">
-          <Skeleton className="h-10 w-10 rounded-full mr-3" />
-          <div className="flex-1">
-            <Skeleton className="h-4 w-3/4 mb-2" />
-            <Skeleton className="h-3 w-1/2" />
-          </div>
-        </div>
-      ));
-  };
-
-  const renderTableSkeletons = () => {
-    return (
-      <div className="w-full">
-        <div className="flex border-b py-3">
-          {Array(4).fill(0).map((_, i) => (
-            <Skeleton key={`header-${i}`} className="h-6 flex-1 mr-2" />
-          ))}
-        </div>
-        {Array(count).fill(0).map((_, i) => (
-          <div key={`row-${i}`} className="flex border-b py-3">
-            {Array(4).fill(0).map((_, j) => (
-              <Skeleton key={`cell-${i}-${j}`} className="h-4 flex-1 mr-2" />
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderTextSkeletons = () => {
-    return Array(count)
-      .fill(0)
-      .map((_, i) => (
-        <Skeleton 
-          key={`text-skeleton-${i}`} 
-          className={`h-${height} ${width} mb-2 ${className}`} 
-        />
-      ));
-  };
-
-  const renderBannerSkeletons = () => {
-    return (
-      <div className="w-full rounded-lg overflow-hidden">
-        <Skeleton className="h-40 w-full" />
-        <div className="p-4">
-          <Skeleton className="h-6 w-3/4 mb-4" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-5/6" />
-        </div>
-      </div>
-    );
-  };
-
-  switch (variant) {
-    case 'card':
-      return <div className="space-y-3">{renderCardSkeletons()}</div>;
-    case 'list':
-      return <div>{renderListSkeletons()}</div>;
-    case 'table':
-      return <div>{renderTableSkeletons()}</div>;
-    case 'text':
-      return <div>{renderTextSkeletons()}</div>;
-    case 'banner':
-      return <div>{renderBannerSkeletons()}</div>;
-    default:
-      return <div>{renderDefaultSkeletons()}</div>;
-  }
+      ))}
+    </div>
+  );
 };
 
 export default SkeletonLoader;

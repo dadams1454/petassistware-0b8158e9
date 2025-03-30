@@ -3,6 +3,7 @@ import React from 'react';
 import { Plus, Activity } from 'lucide-react';
 import { ActionButton } from '@/components/ui/standardized';
 import { useHealthTabContext } from './HealthTabContext';
+import { HealthRecordTypeEnum } from '@/types/health';
 
 const HealthTabActions: React.FC = () => {
   const {
@@ -20,7 +21,7 @@ const HealthTabActions: React.FC = () => {
         Add Weight
       </ActionButton>
       
-      <ActionButton onClick={() => handleAddRecord('examination')}>
+      <ActionButton onClick={() => handleAddRecord(HealthRecordTypeEnum.Examination)}>
         <Plus className="h-4 w-4 mr-2" />
         Add Record
       </ActionButton>
