@@ -31,7 +31,10 @@ export const useLitterActions = (onRefresh: () => Promise<void>) => {
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been deleted.`,
         variant: 'default',
         action: (
-          <ToastAction altText="View litters" onClick={() => navigate('/litters')}>
+          <ToastAction 
+            altText="View litters" 
+            onClick={() => navigate('/litters')}
+          >
             View Litters
           </ToastAction>
         )
@@ -71,7 +74,10 @@ export const useLitterActions = (onRefresh: () => Promise<void>) => {
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been archived.`,
         variant: 'default',
         action: (
-          <ToastAction altText="View litters" onClick={() => navigate('/litters')}>
+          <ToastAction 
+            altText="View litters" 
+            onClick={() => navigate('/litters')}
+          >
             View Litters
           </ToastAction>
         )
@@ -111,7 +117,10 @@ export const useLitterActions = (onRefresh: () => Promise<void>) => {
         description: `Litter "${litter.litter_name || 'Unnamed'}" has been unarchived.`,
         variant: 'default',
         action: (
-          <ToastAction altText="View litters" onClick={() => navigate('/litters')}>
+          <ToastAction 
+            altText="View litters" 
+            onClick={() => navigate('/litters')}
+          >
             View Litters
           </ToastAction>
         )
