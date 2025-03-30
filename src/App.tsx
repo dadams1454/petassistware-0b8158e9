@@ -1,12 +1,16 @@
 
+import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/contexts/AuthProvider';
+import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
+import { RefreshProvider } from '@/contexts/RefreshContext';
+import { DailyCareProvider } from '@/contexts/dailyCare';
 import Router from './Router';
-import './index.css';
+import './App.css';
 
-// Create a query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -18,14 +22,22 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="ui-theme">
-        <BrowserRouter>
-          <Router />
-          <Toaster />
-        </BrowserRouter>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+          <AuthProvider>
+            <UserPreferencesProvider>
+              <RefreshProvider>
+                <DailyCareProvider>
+                  <Router />
+                  <Toaster />
+                </DailyCareProvider>
+              </RefreshProvider>
+            </UserPreferencesProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 }
 
