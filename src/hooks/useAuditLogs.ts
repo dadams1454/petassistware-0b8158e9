@@ -129,15 +129,17 @@ export const useAuditLogTypes = () => {
     try {
       if (!tenantId) return [];
       
+      // Use a select query with a GROUP BY instead of distinct
       const { data, error } = await supabase
         .from('audit_logs')
         .select('entity_type')
-        .eq('tenant_id', tenantId)
-        .distinct();
+        .eq('tenant_id', tenantId);
         
       if (error) throw error;
       
-      return data.map(item => item.entity_type).sort();
+      // Manual deduplication
+      const uniqueTypes = [...new Set(data.map(item => item.entity_type))];
+      return uniqueTypes.sort();
     } catch (error) {
       console.error('Error fetching entity types:', error);
       return [];

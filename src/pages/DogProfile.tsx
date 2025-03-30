@@ -12,7 +12,7 @@ import DogProfileDetails from '@/components/dogs/components/profile/DogProfileDe
 import DogHealthRecords from '@/components/dogs/components/profile/DogHealthRecords';
 import DogCareHistory from '@/components/dogs/components/profile/DogCareHistory';
 import EditDogDialog from '@/components/dogs/components/details/EditDogDialog';
-import { DogProfile } from '@/types/dog';
+import { DogProfile, DogGender, DogStatus, WeightUnit } from '@/types/dog';
 import { Button } from '@/components/ui/button';
 import GeneticsTab from '@/components/dogs/components/tabs/GeneticsTab';
 import PedigreeTab from '@/components/dogs/components/tabs/PedigreeTab';
@@ -54,7 +54,42 @@ const DogProfilePage = () => {
         throw new Error(error.message);
       }
       
-      return data as DogProfile;
+      // Ensure all required properties from DogProfile are set with defaults if missing
+      const dogWithDefaults: DogProfile = {
+        id: data.id,
+        name: data.name,
+        breed: data.breed,
+        gender: (data.gender || 'male') as DogGender,
+        birthdate: data.birthdate || '',
+        color: data.color || '',
+        weight: data.weight || 0,
+        weight_unit: data.weight_unit || 'lbs' as WeightUnit,
+        status: data.status || 'active' as DogStatus,
+        photo_url: data.photo_url,
+        microchip_number: data.microchip_number,
+        registration_number: data.registration_number,
+        notes: data.notes,
+        is_pregnant: data.is_pregnant || false,
+        last_heat_date: data.last_heat_date,
+        tie_date: data.tie_date,
+        litter_number: data.litter_number || 0,
+        created_at: data.created_at || new Date().toISOString(),
+        pedigree: data.pedigree || false,
+        requires_special_handling: data.requires_special_handling || false,
+        potty_alert_threshold: data.potty_alert_threshold,
+        max_time_between_breaks: data.max_time_between_breaks,
+        vaccination_type: data.vaccination_type,
+        vaccination_notes: data.vaccination_notes,
+        last_vaccination_date: data.last_vaccination_date,
+        owner_id: data.owner_id,
+        sire_id: data.sire_id,
+        dam_id: data.dam_id,
+        registration_organization: data.registration_organization,
+        microchip_location: data.microchip_location,
+        group_ids: data.group_ids,
+      };
+      
+      return dogWithDefaults;
     },
   });
 
