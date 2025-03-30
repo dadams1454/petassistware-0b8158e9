@@ -92,12 +92,12 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({ form }) => {
         </SelectContent>
       </Select>
 
-      {isDialogOpen && (
-        <CustomerDialog
-          trigger={<></>} // We don't need a trigger as we're controlling open state manually
-          onSuccess={handleCustomerAdded}
-        />
-      )}
+      <CustomerDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        customer={null}
+        onSuccess={handleCustomerAdded}
+      />
     </div>
   );
 };

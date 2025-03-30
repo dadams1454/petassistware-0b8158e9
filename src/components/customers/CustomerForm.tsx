@@ -22,7 +22,7 @@ type Customer = Tables<'customers'> & {
 };
 
 interface CustomerFormProps {
-  customer?: Customer;
+  customer?: Customer | null;
   onSubmit: () => void;
   onCancel: () => void;
 }
