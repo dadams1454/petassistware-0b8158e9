@@ -27,9 +27,7 @@ export const useLitterActions = (
         toast({
           title: "Litter deleted",
           description: "The litter has been removed successfully",
-          action: (
-            <ToastAction altText="Close">Close</ToastAction>
-          )
+          action: <ToastAction altText="Close">Close</ToastAction>
         });
         
         await onRefresh();
@@ -61,9 +59,7 @@ export const useLitterActions = (
         toast({
           title: "Litter archived",
           description: "The litter has been archived successfully",
-          action: (
-            <ToastAction altText="Close">Close</ToastAction>
-          )
+          action: <ToastAction altText="Close">Close</ToastAction>
         });
         
         await onRefresh();
@@ -94,9 +90,7 @@ export const useLitterActions = (
         toast({
           title: "Litter activated",
           description: "The litter has been reactivated successfully",
-          action: (
-            <ToastAction altText="Close">Close</ToastAction>
-          )
+          action: <ToastAction altText="Close">Close</ToastAction>
         });
         
         await onRefresh();
