@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -29,7 +30,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,10 +93,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
       if (error) throw error;
       
-      setUserRole(data.role);
+      // Validate and set the user role
+      const role = data.role as string;
+      setUserRole(
+        role === 'user' || role === 'staff' || role === 'manager' || 
+        role === 'admin' || role === 'owner' ? (role as UserRole) : 'user'
+      );
       setTenantId(data.tenant_id);
     } catch (err) {
       console.error('Error fetching user profile:', err);
+      setUserRole('user'); // Default to user role if there's an error
     }
   };
 

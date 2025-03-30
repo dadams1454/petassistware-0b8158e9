@@ -6,13 +6,13 @@ import EmptyLitterState from './components/EmptyLitterState';
 import DeleteLitterDialog from './components/DeleteLitterDialog';
 import LitterTableView from './components/LitterTableView';
 import LitterCardView from './views/LitterCardView';
-import { Litter } from '@/types/litter'; // Import from our types file
+import { Litter } from '@/types/litter'; 
 import { useLitterActions } from './hooks/useLitterActions';
 
 interface LittersListProps {
   litters: Litter[];
   onEditLitter: (litter: Litter) => void;
-  onRefresh: () => Promise<any>;
+  onRefresh: () => Promise<void>;
 }
 
 // Define OrganizedLitters interface using the imported Litter type
@@ -33,9 +33,10 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
     handleUnarchiveLitter
   } = useLitterActions(onRefresh);
 
-  const confirmDeleteLitter = () => {
+  const confirmDeleteLitter = async () => {
     if (litterToDelete) {
-      handleDeleteLitter(litterToDelete);
+      await handleDeleteLitter(litterToDelete);
+      setLitterToDelete(null);
     }
   };
 

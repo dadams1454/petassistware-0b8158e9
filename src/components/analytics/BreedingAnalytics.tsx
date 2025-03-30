@@ -52,10 +52,15 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
   const selectedLitter = litters?.find(litter => litter.id === selectedLitterId);
   
   // Make sure we properly handle the gender typing when processing puppies
-  const puppies: Puppy[] = (selectedLitter?.puppies || []).map(puppy => ({
-    ...puppy,
-    gender: (puppy.gender === 'Male' || puppy.gender === 'Female') ? puppy.gender : 'Male' as 'Male' // Default to 'Male' if invalid
-  }));
+  const puppies: Puppy[] = selectedLitter?.puppies 
+    ? selectedLitter.puppies.map(puppy => ({
+        ...puppy,
+        gender: (puppy.gender === 'Male' || puppy.gender === 'Female') ? puppy.gender : 'Male',
+        status: (puppy.status === 'Available' || puppy.status === 'Reserved' || 
+                puppy.status === 'Sold' || puppy.status === 'Unavailable') 
+                ? puppy.status : 'Available'
+      }))
+    : [];
 
   if (littersError) {
     return (

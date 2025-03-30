@@ -1,116 +1,144 @@
-import React from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CalendarClock, Users, MapPin, Dog, BadgeInfo } from 'lucide-react';
-import { formatDistanceToNow, format } from 'date-fns';
-import { Litter } from '@/types/litter';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 
-interface LitterCardProps {
+import React from 'react';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Litter } from '@/types/litter';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, Archive, Trash, Edit, RotateCcw } from 'lucide-react';
+
+export interface LitterCardProps {
   litter: Litter;
   onEditLitter: (litter: Litter) => void;
-  onViewLitter: (litter: Litter) => void;
+  onDeleteLitter: (litter: Litter) => void;
+  onArchiveLitter: (litter: Litter) => void;
+  onUnarchiveLitter?: (litter: Litter) => void;
 }
 
-const LitterCard: React.FC<LitterCardProps> = ({ litter, onEditLitter, onViewLitter }) => {
-  const getStatusColor = (status: string | undefined) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'planned':
-        return 'bg-blue-100 text-blue-800';
-      case 'archived':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+const LitterCard: React.FC<LitterCardProps> = ({ 
+  litter, 
+  onEditLitter, 
+  onDeleteLitter, 
+  onArchiveLitter, 
+  onUnarchiveLitter 
+}) => {
+  const isArchived = litter.status === 'archived';
+  const litterName = litter.litter_name || `${litter.dam?.name || 'Unknown'} × ${litter.sire?.name || 'Unknown'}`;
+  
+  // Format dates
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Not set';
+    return new Date(dateString).toLocaleDateString();
   };
-
-  const getInitials = () => {
-    if (!litter.litter_name) return 'LT';
-    return litter.litter_name.substring(0, 2).toUpperCase();
-  };
-
+  
+  const birthDate = formatDate(litter.birth_date);
+  const expectedGoHome = formatDate(litter.expected_go_home_date);
+  
+  // Puppy counts
+  const maleCount = litter.male_count || 0;
+  const femaleCount = litter.female_count || 0;
+  const totalPuppies = litter.puppy_count || (maleCount + femaleCount) || (litter.puppies?.length || 0);
+  
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
-      <div className="flex items-center border-b p-4 bg-muted/30">
-        <Avatar className="h-10 w-10 mr-3">
-          <AvatarImage src={litter.documents_url || undefined} alt={litter.litter_name || 'Litter'} />
-          <AvatarFallback className="bg-primary/10 text-primary">
-            {getInitials()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <h3 className="font-medium line-clamp-1">
-            {litter.litter_name || 'Unnamed Litter'}
-          </h3>
-          <div className="flex gap-1 items-center text-xs text-muted-foreground">
-            <CalendarClock className="h-3.5 w-3.5" />
-            <span>
-              Born{' '}
-              {litter.birth_date
-                ? formatDistanceToNow(new Date(litter.birth_date), {
-                    addSuffix: true,
-                  })
-                : 'Unknown'}
-            </span>
+    <Card className={isArchived ? "opacity-70" : ""}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">{litterName}</CardTitle>
+            <CardDescription>
+              Born: {birthDate}
+            </CardDescription>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Actions</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEditLitter(litter)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Litter
+              </DropdownMenuItem>
+              
+              {isArchived ? (
+                onUnarchiveLitter && (
+                  <DropdownMenuItem onClick={() => onUnarchiveLitter(litter)}>
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Unarchive Litter
+                  </DropdownMenuItem>
+                )
+              ) : (
+                <DropdownMenuItem onClick={() => onArchiveLitter(litter)}>
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive Litter
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuItem 
+                className="text-destructive focus:text-destructive"
+                onClick={() => onDeleteLitter(litter)}
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Delete Litter
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+          <div>
+            <p className="text-muted-foreground">Dam:</p>
+            <p>{litter.dam?.name || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Sire:</p>
+            <p>{litter.sire?.name || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Go Home:</p>
+            <p>{expectedGoHome}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Total Puppies:</p>
+            <p>{totalPuppies}</p>
           </div>
         </div>
-        <Badge variant="outline" className={getStatusColor(litter.status)}>
-          {litter.status || 'Planned'}
-        </Badge>
-      </div>
-      <CardContent className="p-4 grid gap-2">
-        <div className="flex items-center gap-1 text-sm">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">
-            {litter.puppy_count || 0} Puppies
-          </span>
-        </div>
-        <div className="flex items-center gap-1 text-sm">
-          <Dog className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">
-            Dam:{' '}
-            {litter.dam?.name ? (
-              litter.dam.name
-            ) : (
-              <span className="italic text-muted-foreground">Unknown</span>
+        
+        {totalPuppies > 0 && (
+          <div className="flex gap-3 text-xs mt-2">
+            {maleCount > 0 && (
+              <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                {maleCount} Male{maleCount !== 1 && 's'}
+              </div>
             )}
-          </span>
-        </div>
-        <div className="flex items-center gap-1 text-sm">
-          <Dog className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">
-            Sire:{' '}
-            {litter.sire?.name ? (
-              litter.sire.name
-            ) : (
-              <span className="italic text-muted-foreground">Unknown</span>
+            {femaleCount > 0 && (
+              <div className="bg-pink-100 text-pink-800 px-2 py-1 rounded">
+                {femaleCount} Female{femaleCount !== 1 && 's'}
+              </div>
             )}
-          </span>
-        </div>
-        {litter.kennel_name && (
-          <div className="flex items-center gap-1 text-sm">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">{litter.kennel_name}</span>
-          </div>
-        )}
-        {litter.akc_registration_number && (
-          <div className="flex items-center gap-1 text-sm">
-            <BadgeInfo className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">
-              AKC: {litter.akc_registration_number}
-            </span>
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-end p-4 pt-0">
-        <Button variant="outline" size="sm" onClick={() => onEditLitter(litter)}>
-          Edit
-        </Button>
-        <Button variant="secondary" size="sm" onClick={() => onViewLitter(litter)}>
-          View
+      
+      <CardFooter className="pt-0">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full"
+          onClick={() => onEditLitter(litter)}
+        >
+          View Details
         </Button>
       </CardFooter>
     </Card>

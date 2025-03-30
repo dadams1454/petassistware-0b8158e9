@@ -1,13 +1,7 @@
 import React from 'react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Archive, CirclePlus, Folder } from 'lucide-react';
 import { Litter } from '@/types/litter';
-import LitterSection from '@/components/litters/components/LitterSection';
-import { Badge } from '@/components/ui/badge';
+import LitterSection from '../components/LitterSection';
 
 interface OrganizedLitters {
   active: Litter[];
@@ -30,122 +24,61 @@ const LitterCardView: React.FC<LitterCardViewProps> = ({
   onArchiveLitter,
   onUnarchiveLitter
 }) => {
-  // Get badge props based on litter status
-  const getStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'active':
-        return {
-          variant: 'default' as const,
-          label: 'Active'
-        };
-      case 'complete':
-        return {
-          variant: 'default' as const,
-          label: 'Complete'
-        };
-      case 'planned':
-        return {
-          variant: 'outline' as const,
-          label: 'Planned'
-        };
-      case 'archived':
-        return {
-          variant: 'secondary' as const,
-          label: 'Archived'
-        };
-      default:
-        return {
-          variant: 'outline' as const,
-          label: status || 'Unknown'
-        };
-    }
-  };
+  // Destructure our organized litters
+  const { active, other, archived } = organizedLitters;
   
-  // Show the total count of all litters
-  const totalLittersCount = 
-    organizedLitters.active.length + 
-    organizedLitters.other.length + 
-    organizedLitters.archived.length;
+  // Calculate if we have any litters to display
+  const hasActive = active.length > 0;
+  const hasOther = other.length > 0;
+  const hasArchived = archived.length > 0;
+  
+  if (!hasActive && !hasOther && !hasArchived) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">No litters found.</p>
+      </div>
+    );
+  }
   
   return (
-    <Accordion 
-      type="multiple" 
-      defaultValue={organizedLitters.active.length > 0 ? ['active-litters'] : []}
-      className="w-full"
-    >
-      {/* Active Litters Section */}
-      <AccordionItem value="active-litters" className="border-b">
-        <AccordionTrigger className="hover:no-underline py-4">
-          <div className="flex justify-between w-full items-center pr-4">
-            <h3 className="text-lg font-semibold">Active Litters</h3>
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="rounded-full">
-                {organizedLitters.active.length}
-              </Badge>
-            </div>
-          </div>
-        </AccordionTrigger>
-        <AccordionContent>
-          <LitterSection 
-            litters={organizedLitters.active}
-            onEdit={onEditLitter}
-            onDelete={onDeleteLitter}
-            onArchive={onArchiveLitter}
-            onUnarchive={onUnarchiveLitter}
-          />
-        </AccordionContent>
-      </AccordionItem>
-      
-      {/* Other Litters Section (if any) */}
-      {organizedLitters.other.length > 0 && (
-        <AccordionItem value="other-litters" className="border-b">
-          <AccordionTrigger className="hover:no-underline py-4">
-            <div className="flex justify-between w-full items-center pr-4">
-              <h3 className="text-lg font-semibold">Other Active Litters</h3>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="rounded-full">
-                  {organizedLitters.other.length}
-                </Badge>
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <LitterSection 
-              litters={organizedLitters.other}
-              onEdit={onEditLitter}
-              onDelete={onDeleteLitter}
-              onArchive={onArchiveLitter}
-              onUnarchive={onUnarchiveLitter}
-            />
-          </AccordionContent>
-        </AccordionItem>
+    <div className="space-y-12">
+      {/* Active Dam Litters Section */}
+      {hasActive && (
+        <LitterSection
+          title="Active Dam Litters"
+          icon={<CirclePlus className="h-5 w-5 text-green-500" />}
+          litters={active}
+          onEditLitter={onEditLitter}
+          onDeleteLitter={onDeleteLitter}
+          onArchiveLitter={onArchiveLitter}
+        />
       )}
       
-      {/* Archived Litters Section (if any) */}
-      {organizedLitters.archived.length > 0 && (
-        <AccordionItem value="archived-litters">
-          <AccordionTrigger className="hover:no-underline py-4">
-            <div className="flex justify-between w-full items-center pr-4">
-              <h3 className="text-lg font-semibold">Archived Litters</h3>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="rounded-full">
-                  {organizedLitters.archived.length}
-                </Badge>
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <LitterSection 
-              litters={organizedLitters.archived}
-              onEdit={onEditLitter}
-              onDelete={onDeleteLitter}
-              onArchive={onArchiveLitter}
-              onUnarchive={onUnarchiveLitter}
-            />
-          </AccordionContent>
-        </AccordionItem>
+      {/* Other Litters Section */}
+      {hasOther && (
+        <LitterSection
+          title="Other Active Litters"
+          icon={<Folder className="h-5 w-5 text-blue-500" />}
+          litters={other}
+          onEditLitter={onEditLitter}
+          onDeleteLitter={onDeleteLitter}
+          onArchiveLitter={onArchiveLitter}
+        />
       )}
-    </Accordion>
+      
+      {/* Archived Litters Section */}
+      {hasArchived && (
+        <LitterSection
+          title="Archived Litters"
+          icon={<Archive className="h-5 w-5 text-gray-500" />}
+          litters={archived}
+          onEditLitter={onEditLitter}
+          onDeleteLitter={onDeleteLitter}
+          onArchiveLitter={onArchiveLitter}
+          onUnarchiveLitter={onUnarchiveLitter}
+        />
+      )}
+    </div>
   );
 };
 

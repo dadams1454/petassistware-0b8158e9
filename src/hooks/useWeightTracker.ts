@@ -47,10 +47,10 @@ export const useWeightTracker = (puppyId: string) => {
         }
       }
       
-      // Convert Date to string if it's a Date object
+      // Format date to string if it's a Date object
       const dateString = typeof record.date === 'string' 
         ? record.date 
-        : record.date.toISOString().split('T')[0];
+        : (record.date instanceof Date) ? record.date.toISOString().split('T')[0] : '';
       
       // Insert new weight record - use dog_id: null when we're tracking a puppy
       // This accommodates the dual-purpose table that tracks both dogs and puppies

@@ -41,10 +41,10 @@ const LitterSection: React.FC<LitterSectionProps> = ({
           <LitterCard 
             key={litter.id}
             litter={litter}
-            onEdit={onEditLitter}
-            onDelete={onDeleteLitter}
-            onArchive={onArchiveLitter}
-            onUnarchive={onUnarchiveLitter}
+            onEditLitter={onEditLitter}
+            onDeleteLitter={onDeleteLitter}
+            onArchiveLitter={onArchiveLitter}
+            onUnarchiveLitter={onUnarchiveLitter}
           />
         ))}
       </div>
