@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { LogOut } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,43 +11,41 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface LogoutDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
 export const LogoutDialog: React.FC<LogoutDialogProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  isLoading = false,
+  isLoading
 }) => {
   return (
-    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Sign Out</AlertDialogTitle>
+          <AlertDialogTitle>Sign out</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to sign out? You will need to sign in again to access your account.
+            Are you sure you want to sign out of your account?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={(e) => {
-              e.preventDefault();
-              onConfirm();
-            }}
+          <Button 
+            variant="destructive" 
+            onClick={onConfirm} 
             disabled={isLoading}
+            className="flex items-center gap-2"
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign Out
-          </AlertDialogAction>
+            <LogOut className="h-4 w-4" />
+            {isLoading ? 'Signing out...' : 'Sign out'}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,7 +1,10 @@
 
 import React, { useState } from 'react';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { DialogFooter } from '@/components/ui/dialog';
 
 interface InviteLinkDisplayProps {
   inviteLink: string;
@@ -14,34 +17,45 @@ export const InviteLinkDisplay: React.FC<InviteLinkDisplayProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(inviteLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
   };
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md bg-muted p-4">
-        <div className="text-sm font-medium mb-2">Invitation Link:</div>
-        <div className="text-xs break-all bg-background p-2 rounded border">
-          {inviteLink}
-        </div>
-      </div>
-      
-      <p className="text-sm text-muted-foreground">
-        Share this link with the user. In a real application, an email would be sent automatically.
-      </p>
+      <Alert className="bg-blue-50 border-blue-200 text-blue-800">
+        <AlertDescription>
+          Share this invitation link with the user. This link will expire in 24 hours.
+        </AlertDescription>
+      </Alert>
 
-      <div className="flex justify-between">
+      <div className="flex items-center gap-2">
+        <Input
+          value={inviteLink}
+          readOnly
+          className="font-mono text-sm"
+        />
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={handleCopy}
+          className="flex-shrink-0"
+        >
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        </Button>
+      </div>
+
+      <DialogFooter className="pt-4">
         <Button variant="outline" onClick={onClose}>
           Close
         </Button>
-        <Button variant="default" onClick={handleCopyLink} className="gap-2">
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          {copied ? 'Copied' : 'Copy Link'}
-        </Button>
-      </div>
+      </DialogFooter>
     </div>
   );
 };

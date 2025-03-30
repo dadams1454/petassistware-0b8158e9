@@ -1,47 +1,40 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
-import { Customer, Puppy } from '../types/customer';
+import { Puppy } from '@/components/litters/puppies/types';
 
-export const usePuppyData = (customers: Customer[]) => {
-  const [puppiesData, setPuppiesData] = useState<Record<string, Puppy & { litterName?: string }>>({});
+export const usePuppyData = (litterId?: string) => {
+  const [puppies, setPuppies] = useState<Puppy[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!litterId) return;
+    
     const fetchPuppies = async () => {
-      const puppyIds = customers
-        .map(customer => customer.metadata?.interested_puppy_id)
-        .filter(id => id) as string[];
+      setLoading(true);
+      setError(null);
       
-      if (puppyIds.length === 0) return;
-      
-      const { data, error } = await supabase
-        .from('puppies')
-        .select('*, litters(id, litter_name)')
-        .in('id', puppyIds);
-      
-      if (error) {
-        toast({
-          title: "Error fetching puppies",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
+      try {
+        const { data, error } = await supabase
+          .from('puppies')
+          .select('*')
+          .eq('litter_id', litterId)
+          .eq('status', 'Available');
+          
+        if (error) throw error;
+        
+        setPuppies(data as Puppy[]);
+      } catch (err: any) {
+        console.error('Error fetching available puppies:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-      
-      const puppiesRecord: Record<string, Puppy & { litterName?: string }> = {};
-      data?.forEach(puppy => {
-        puppiesRecord[puppy.id] = {
-          ...puppy,
-          litterName: (puppy.litters as any)?.litter_name || null
-        };
-      });
-      
-      setPuppiesData(puppiesRecord);
     };
     
     fetchPuppies();
-  }, [customers]);
+  }, [litterId]);
 
-  return puppiesData;
+  return { puppies, loading, error };
 };
