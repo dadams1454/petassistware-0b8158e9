@@ -15,6 +15,7 @@ import Communications from '@/pages/Communications';
 import AdminSetup from '@/pages/AdminSetup';
 import Users from '@/pages/Users';
 import AuditLogs from '@/pages/AuditLogs';
+import Reservations from '@/pages/Reservations';
 
 const Router = () => {
   return (
@@ -43,6 +44,18 @@ const Router = () => {
       <Route path="/litters" element={
         <ProtectedRoute>
           <Litters />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/reservations" element={
+        <ProtectedRoute>
+          <Reservations />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/reservations/:id" element={
+        <ProtectedRoute>
+          <Reservations />
         </ProtectedRoute>
       } />
       

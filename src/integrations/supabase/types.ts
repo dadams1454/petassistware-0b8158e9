@@ -641,6 +641,76 @@ export type Database = {
           },
         ]
       }
+      deposits: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          payment_status: string
+          puppy_id: string | null
+          receipt_url: string | null
+          reservation_id: string | null
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method: string
+          payment_status?: string
+          puppy_id?: string | null
+          receipt_url?: string | null
+          reservation_id?: string | null
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          payment_status?: string
+          puppy_id?: string | null
+          receipt_url?: string | null
+          reservation_id?: string | null
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposits_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposits_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposits_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dog_documents: {
         Row: {
           created_at: string | null
@@ -2020,36 +2090,92 @@ export type Database = {
           },
         ]
       }
+      reservation_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_status: string
+          notes: string | null
+          previous_status: string | null
+          reservation_id: string | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_status: string
+          notes?: string | null
+          previous_status?: string | null
+          reservation_id?: string | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_status?: string
+          notes?: string | null
+          previous_status?: string | null
+          reservation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_status_history_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
+          contract_date: string | null
+          contract_signed: boolean | null
           created_at: string | null
           customer_id: string | null
           deposit_amount: number | null
+          deposit_date: string | null
+          deposit_paid: boolean | null
           id: string
           notes: string | null
+          pickup_date: string | null
           puppy_id: string | null
           reservation_date: string
           status: string | null
+          status_updated_at: string | null
         }
         Insert: {
+          contract_date?: string | null
+          contract_signed?: boolean | null
           created_at?: string | null
           customer_id?: string | null
           deposit_amount?: number | null
+          deposit_date?: string | null
+          deposit_paid?: boolean | null
           id?: string
           notes?: string | null
+          pickup_date?: string | null
           puppy_id?: string | null
           reservation_date: string
           status?: string | null
+          status_updated_at?: string | null
         }
         Update: {
+          contract_date?: string | null
+          contract_signed?: boolean | null
           created_at?: string | null
           customer_id?: string | null
           deposit_amount?: number | null
+          deposit_date?: string | null
+          deposit_paid?: boolean | null
           id?: string
           notes?: string | null
+          pickup_date?: string | null
           puppy_id?: string | null
           reservation_date?: string
           status?: string | null
+          status_updated_at?: string | null
         }
         Relationships: [
           {

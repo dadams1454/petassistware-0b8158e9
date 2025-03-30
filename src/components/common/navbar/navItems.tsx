@@ -1,90 +1,98 @@
 
-import React from 'react';
-import {
-  Home,
-  Dog,
-  Calendar,
+import { 
+  LayoutDashboard, 
+  Dog, 
+  CalendarDays, 
+  FileClock, 
+  Mail, 
   Users,
-  MessageSquare,
-  Shield,
   Settings,
+  FileText,
+  ClipboardList,
+  Bookmark,
+  Clock,
+  CreditCard,
+  Building,
+  Coins
 } from 'lucide-react';
-import { PERMISSIONS, hasPermission } from '@/utils/permissions';
-import { UserRole } from '@/contexts/AuthProvider';
 
-export interface NavItem {
-  name: string;
-  to: string;
-  icon: React.ReactNode;
-  resource: keyof typeof PERMISSIONS;
-  action?: 'view' | 'add' | 'edit' | 'delete';
-}
-
-export const getNavItems = (): NavItem[] => [
+export const navItems = [
   {
-    name: 'Dashboard',
-    to: '/dashboard',
-    icon: <Home className="h-5 w-5" />,
-    resource: 'dogs', // Using dogs as a proxy for dashboard
+    title: 'Dashboard',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+    description: 'Overview of all your kennel activities'
   },
   {
-    name: 'Dogs',
-    to: '/dogs',
-    icon: <Dog className="h-5 w-5" />,
-    resource: 'dogs',
+    title: 'Dogs',
+    href: '/dogs',
+    icon: Dog,
+    description: 'Manage your dogs and puppies'
   },
   {
-    name: 'Customers',
-    to: '/customers',
-    icon: <Users className="h-5 w-5" />,
-    resource: 'customers',
+    title: 'Litters',
+    href: '/litters',
+    icon: ClipboardList,
+    description: 'Manage your litters and puppies'
   },
   {
-    name: 'Litters',
-    to: '/litters',
-    icon: <Dog className="h-5 w-5" />,
-    resource: 'litters',
+    title: 'Reservations',
+    href: '/reservations',
+    icon: Bookmark,
+    description: 'Manage puppy reservations and deposits'
   },
   {
-    name: 'Calendar',
-    to: '/calendar',
-    icon: <Calendar className="h-5 w-5" />,
-    resource: 'calendar',
+    title: 'Customers',
+    href: '/customers',
+    icon: Users,
+    description: 'Manage your customer database'
   },
   {
-    name: 'Communications',
-    to: '/communications',
-    icon: <MessageSquare className="h-5 w-5" />,
-    resource: 'communications',
+    title: 'Calendar',
+    href: '/calendar',
+    icon: CalendarDays,
+    description: 'Schedule appointments and events'
   },
   {
-    name: 'Users',
-    to: '/users',
-    icon: <Shield className="h-5 w-5" />,
-    resource: 'users',
+    title: 'Communications',
+    href: '/communications',
+    icon: Mail,
+    description: 'Email and message your customers'
   },
   {
-    name: 'Admin Setup',
-    to: '/admin-setup',
-    icon: <Settings className="h-5 w-5" />,
-    resource: 'adminSetup',
+    title: 'Contracts',
+    href: '/contracts',
+    icon: FileText,
+    description: 'Create and manage contracts'
   },
-];
-
-export const filterNavItemsByRole = (items: NavItem[], userRole: string | null): NavItem[] => {
-  if (!userRole) {
-    // If no role is provided, only show items that are accessible to everyone
-    return items.filter(item => 
-      PERMISSIONS[item.resource]?.view.includes('user') || 
-      false
-    );
+  {
+    title: 'Finances',
+    href: '/finances',
+    icon: Coins,
+    description: 'Track expenses and income'
+  },
+  {
+    title: 'Facility',
+    href: '/facility',
+    icon: Building,
+    description: 'Manage facility tasks and maintenance'
+  },
+  {
+    title: 'Users',
+    href: '/users',
+    icon: Users,
+    description: 'Manage user accounts and permissions'
+  },
+  {
+    title: 'Audit Log',
+    href: '/audit-logs',
+    icon: FileClock,
+    description: 'View system activity logs'
+  },
+  {
+    title: 'Settings',
+    href: '/admin-setup',
+    icon: Settings,
+    description: 'Configure your kennel settings'
   }
-  
-  // Convert role to lowercase to handle case variations
-  const normalizedRole = userRole.toLowerCase() as UserRole;
-  
-  // Filter based on permissions
-  return items.filter(item => 
-    hasPermission(normalizedRole, item.resource, item.action || 'view')
-  );
-};
+];
