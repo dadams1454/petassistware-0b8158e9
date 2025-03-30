@@ -2,7 +2,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { getNavItems, filterNavItemsByRole } from './navItems';
-import { LayoutDashboard, Dog, Users, Calendar, MessageSquare } from 'lucide-react';
 
 interface NavLinksProps {
   currentPath: string;
@@ -21,7 +20,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ currentPath, userRole }) => {
         <Link
           key={item.to}
           to={item.to}
-          className={`flex items-center px-4 py-3 text-sm font-medium ${
+          className={`flex items-center px-4 py-3 text-sm font-medium rounded-md ${
             currentPath === item.to
               ? 'text-blue-600 bg-blue-50'
               : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
