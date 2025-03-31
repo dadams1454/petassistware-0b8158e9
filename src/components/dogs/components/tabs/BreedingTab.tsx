@@ -3,9 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DogProfile, DogGender } from '@/types/dog';
-import { Edit, Calendar, Calculator } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { Edit, Calendar, Calculator, Heart } from 'lucide-react';
+import { format } from 'date-fns';
 import { UseFormReturn } from 'react-hook-form';
+import { useDogStatus } from '../../hooks/useDogStatus';
+import BreedingCycleCard from '../breeding/BreedingCycleCard';
 
 // Define separate props interfaces for different usage contexts
 export interface BreedingTabViewProps {
@@ -34,13 +36,24 @@ const BreedingTab: React.FC<BreedingTabProps> = (props) => {
     // Standalone view mode with a dog object
     const { dog, onEdit } = props;
     
-    // Calculate breeding-related dates
-    const lastHeatDate = dog.last_heat_date ? new Date(dog.last_heat_date) : null;
-    const tieDate = dog.tie_date ? new Date(dog.tie_date) : null;
+    // Use our enhanced status hook
+    const { 
+      isPregnant, 
+      heatCycle,
+      tieDate,
+      estimatedDueDate,
+      gestationProgressDays,
+      hasVaccinationHeatConflict
+    } = useDogStatus(dog);
     
-    // Calculate projected dates
-    const nextHeatDate = lastHeatDate ? addDays(lastHeatDate, 180) : null;
-    const dueDate = tieDate ? addDays(tieDate, 63) : null; // 63 days gestation
+    const { 
+      lastHeatDate,
+      nextHeatDate,
+      daysUntilNextHeat,
+      daysIntoCurrentHeat,
+      isInHeat,
+      currentStage
+    } = heatCycle;
 
     return (
       <div className="space-y-6">
@@ -71,26 +84,57 @@ const BreedingTab: React.FC<BreedingTabProps> = (props) => {
                   </div>
                 </div>
                 
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Projected Next Heat</div>
-                  <div className="font-medium">
-                    {nextHeatDate ? format(nextHeatDate, 'PPP') : 'Unknown'}
+                {!isPregnant && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Current Status</div>
+                    <div className="font-medium">
+                      {isInHeat && currentStage ? (
+                        <span className="text-red-600">In Heat - {currentStage.name} Stage</span>
+                      ) : daysUntilNextHeat && daysUntilNextHeat <= 14 ? (
+                        <span className="text-purple-600">Heat Approaching (in {daysUntilNextHeat} days)</span>
+                      ) : (
+                        <span>Not in Heat</span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Breeding Date</div>
-                  <div className="font-medium">
-                    {tieDate ? format(tieDate, 'PPP') : 'Not recorded'}
+                {!isPregnant && nextHeatDate && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Projected Next Heat</div>
+                    <div className="font-medium flex items-center">
+                      {format(nextHeatDate, 'PPP')}
+                      {hasVaccinationHeatConflict && (
+                        <span className="inline-flex ml-2 items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                          Vaccination Conflict
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Due Date</div>
-                  <div className="font-medium">
-                    {dueDate ? format(dueDate, 'PPP') : 'Unknown'}
+                {tieDate && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Breeding Date</div>
+                    <div className="font-medium">
+                      {format(new Date(tieDate), 'PPP')}
+                    </div>
                   </div>
-                </div>
+                )}
+                
+                {isPregnant && estimatedDueDate && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Due Date</div>
+                    <div className="font-medium text-pink-600">
+                      {format(estimatedDueDate, 'PPP')}
+                      {gestationProgressDays !== null && (
+                        <span className="text-sm ml-2 text-muted-foreground">
+                          (Day {gestationProgressDays} of gestation)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -107,10 +151,12 @@ const BreedingTab: React.FC<BreedingTabProps> = (props) => {
                 <div>
                   <div className="text-sm font-medium text-muted-foreground mb-1">Current Status</div>
                   <div className="font-medium">
-                    {dog.is_pregnant ? (
-                      <span className="text-amber-600 font-semibold">Pregnant</span>
+                    {isPregnant ? (
+                      <span className="text-pink-600 font-semibold">Pregnant</span>
+                    ) : isInHeat ? (
+                      <span className="text-red-600 font-semibold">In Heat</span>
                     ) : (
-                      <span>Not Pregnant</span>
+                      <span>Not Breeding</span>
                     )}
                   </div>
                 </div>
@@ -128,9 +174,32 @@ const BreedingTab: React.FC<BreedingTabProps> = (props) => {
                     {dog.gender === DogGender.Female ? 'Intact Female' : 'Intact Male'}
                   </div>
                 </div>
+                
+                {dog.gender === DogGender.Female && isPregnant && gestationProgressDays !== null && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Pregnancy Progress</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                      <div 
+                        className="bg-pink-600 h-2.5 rounded-full" 
+                        style={{ width: `${(gestationProgressDays / 63) * 100}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-xs mt-1">
+                      <span>Day {gestationProgressDays}</span>
+                      <span>Day 63</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
+          
+          {/* Conditional display of cycle information only for females */}
+          {dog.gender === DogGender.Female && !isPregnant && (
+            <div className="md:col-span-2">
+              <BreedingCycleCard dog={dog} />
+            </div>
+          )}
         </div>
       </div>
     );
