@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth, UserRole } from '@/contexts/AuthProvider';
 import { UnauthorizedState } from '@/components/ui/standardized';
@@ -41,6 +40,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [user, userRole]);
 
+  // Keep track of mount status
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   // Explicitly check if we're on the auth page to prevent circular redirects
   const isAuthPage = location.pathname === '/auth';
 
@@ -71,9 +78,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   useEffect(() => {
     if (loading) {
       const timer = setTimeout(() => {
-        setAuthTimeout(true);
-        console.log('[ProtectedRoute] Auth timeout occurred, will use last known auth state');
-      }, 300); // Reduced timeout for better UX
+        if (isMounted.current) {
+          setAuthTimeout(true);
+          console.log('[ProtectedRoute] Auth timeout occurred, will use last known auth state');
+        }
+      }, 150); // Reduced timeout for better UX
       
       return () => clearTimeout(timer);
     } else {

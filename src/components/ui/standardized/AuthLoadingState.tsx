@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { PawPrint, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,12 +31,12 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
     const shortTimer = setTimeout(() => {
       setTimeoutOccurred(true);
       console.log('AuthLoadingState: Short timeout triggered');
-    }, 300); // Reduced to 300ms
+    }, 150); // Reduced to 150ms
     
     const longTimer = setTimeout(() => {
       setExtendedTimeout(true);
       console.log('AuthLoadingState: Extended timeout triggered, showing refresh option');
-    }, 800); // Reduced to 800ms
+    }, 300); // Reduced to 300ms
     
     return () => {
       clearTimeout(shortTimer);

@@ -69,10 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userRole, setUserRole] = useState<UserRole>(loadInitialState().userRole);
   const [loading, setLoading] = useState(loadInitialState().loading);
   const [tenantId, setTenantId] = useState<string | null>('tenant-123'); // Mock tenant ID
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   // Save auth state to localStorage whenever it changes
   useEffect(() => {
-    if (!loading) {
+    if (!loading && authInitialized) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, userRole }));
         console.log('Saved auth to storage:', { user, userRole });
@@ -80,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error saving auth to storage:', error);
       }
     }
-  }, [user, userRole, loading]);
+  }, [user, userRole, loading, authInitialized]);
 
   useEffect(() => {
     // Create a mock user for development purposes
@@ -100,13 +101,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(mockUser);
         setUserRole('admin');
         setLoading(false);
+        setAuthInitialized(true);
         console.log('Auth loaded with mock user');
-      }, 300);
+      }, 100); // Reduced to 100ms for faster initialization
       
       return () => clearTimeout(timer);
     } else {
       // If we have a user from storage, just make sure loading is false
       setLoading(false);
+      setAuthInitialized(true);
     }
   }, [user]);
 
@@ -124,11 +127,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       setUser(mockUser);
       setUserRole('admin');
+      
+      // Immediately save to localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
+        user: mockUser, 
+        userRole: 'admin' 
+      }));
+      
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
     } finally {
       setLoading(false);
+      setAuthInitialized(true);
     }
   };
 
