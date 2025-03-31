@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats } from '@/types/puppyTracking';
@@ -137,6 +138,8 @@ export const usePuppyTracking = () => {
             }
           })) || [];
         });
+        
+        const puppiesArrays = await Promise.all(puppiesPromises);
         
         // Flatten and process the puppies
         const allPuppies = puppiesArrays.flat().map(puppy => {

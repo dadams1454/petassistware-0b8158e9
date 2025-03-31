@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Weight, Ruler, Calendar, Syringe, FileEdit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/hooks/usePuppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface PuppyCardProps {

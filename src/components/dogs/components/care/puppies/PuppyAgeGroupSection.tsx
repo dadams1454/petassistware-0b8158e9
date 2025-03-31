@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp, ListChecks, Baby } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/hooks/usePuppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 import PuppyCard from './PuppyCard';
 
 interface PuppyAgeGroupSectionProps {
