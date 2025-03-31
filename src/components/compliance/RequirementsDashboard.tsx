@@ -1,27 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CircleDashed, CheckCircle2, AlertTriangle, Info, FileCheck2, ShieldAlert, Calendar } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
+import { customSupabase, ComplianceRequirementRow } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { format, isAfter, isBefore, addDays } from 'date-fns';
 import RequirementDialog from './dialogs/RequirementDialog';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthProvider';
 
-interface Requirement {
-  id: string;
-  title: string;
-  description: string;
-  due_date: string;
-  status: 'completed' | 'overdue' | 'due-soon' | 'pending';
-  category: string;
-  created_at?: string;
-  completed_at?: string;
-  priority: 'high' | 'medium' | 'low';
-}
+interface Requirement extends ComplianceRequirementRow {}
 
 const RequirementsDashboard: React.FC = () => {
   const { toast } = useToast();
@@ -41,8 +30,8 @@ const RequirementsDashboard: React.FC = () => {
   const fetchRequirements = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('compliance_requirements')
+      const { data, error } = await customSupabase
+        .from<ComplianceRequirementRow>('compliance_requirements')
         .select('*');
       
       if (error) throw error;
@@ -136,8 +125,8 @@ const RequirementsDashboard: React.FC = () => {
       
       if (selectedRequirement) {
         // Update existing requirement
-        const { error } = await supabase
-          .from('compliance_requirements')
+        const { error } = await customSupabase
+          .from<ComplianceRequirementRow>('compliance_requirements')
           .update(updatedData)
           .eq('id', selectedRequirement.id);
 
@@ -149,8 +138,8 @@ const RequirementsDashboard: React.FC = () => {
         });
       } else {
         // Insert new requirement
-        const { error } = await supabase
-          .from('compliance_requirements')
+        const { error } = await customSupabase
+          .from<ComplianceRequirementRow>('compliance_requirements')
           .insert(updatedData);
 
         if (error) throw error;

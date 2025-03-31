@@ -1,22 +1,21 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, FileCheck, BadgeCheck, AlertTriangle, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { customSupabase, LicenseRow } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/standardized';
 import LicenseDialog from './dialogs/LicenseDialog';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthProvider';
 
 const LicenseManagement: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [licenses, setLicenses] = useState<any[]>([]);
+  const [licenses, setLicenses] = useState<LicenseRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedLicense, setSelectedLicense] = useState<any>(null);
+  const [selectedLicense, setSelectedLicense] = useState<LicenseRow | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -27,8 +26,8 @@ const LicenseManagement: React.FC = () => {
   const fetchLicenses = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('licenses')
+      const { data, error } = await customSupabase
+        .from<LicenseRow>('licenses')
         .select('*')
         .order('expiry_date', { ascending: true });
 
@@ -71,8 +70,8 @@ const LicenseManagement: React.FC = () => {
 
       if (selectedLicense) {
         // Update existing license
-        const { error } = await supabase
-          .from('licenses')
+        const { error } = await customSupabase
+          .from<LicenseRow>('licenses')
           .update({
             ...licenseData,
             breeder_id: userId
@@ -87,8 +86,8 @@ const LicenseManagement: React.FC = () => {
         });
       } else {
         // Insert new license
-        const { error } = await supabase
-          .from('licenses')
+        const { error } = await customSupabase
+          .from<LicenseRow>('licenses')
           .insert({
             ...licenseData,
             breeder_id: userId

@@ -65,6 +65,46 @@ export type GeneticAuditLogRow = {
   created_at: string;
 };
 
+// Add types for our new compliance tables
+export type InspectionRow = {
+  id: string;
+  title: string;
+  inspector?: string;
+  inspection_date: string;
+  next_date?: string;
+  status: 'scheduled' | 'passed' | 'failed';
+  follow_up?: string;
+  notes?: string;
+  breeder_id?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ComplianceRequirementRow = {
+  id: string;
+  title: string;
+  description?: string;
+  due_date: string;
+  status: 'completed' | 'overdue' | 'due-soon' | 'pending';
+  category: string;
+  priority: 'high' | 'medium' | 'low';
+  created_at: string;
+  completed_at?: string;
+  breeder_id?: string;
+  reminder_sent: boolean;
+};
+
+export type LicenseRow = {
+  id: string;
+  license_type: string;
+  license_number?: string;
+  issued_date?: string;
+  expiry_date?: string;
+  document_url?: string;
+  breeder_id?: string;
+  created_at: string;
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Extend the Supabase client to work with custom tables not in the schema

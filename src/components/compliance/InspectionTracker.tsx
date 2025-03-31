@@ -4,19 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, ClipboardCheck, Calendar, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, customSupabase, InspectionRow } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/standardized';
 import InspectionDialog from './dialogs/InspectionDialog';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthProvider';
 
 const InspectionTracker: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [inspections, setInspections] = useState<any[]>([]);
+  const [inspections, setInspections] = useState<InspectionRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedInspection, setSelectedInspection] = useState<any>(null);
+  const [selectedInspection, setSelectedInspection] = useState<InspectionRow | null>(null);
   
   useEffect(() => {
     if (user) {
@@ -27,8 +27,8 @@ const InspectionTracker: React.FC = () => {
   const fetchInspections = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('inspections')
+      const { data, error } = await customSupabase
+        .from<InspectionRow>('inspections')
         .select('*')
         .order('inspection_date', { ascending: false });
 
@@ -52,7 +52,7 @@ const InspectionTracker: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleEditInspection = (inspection: any) => {
+  const handleEditInspection = (inspection: InspectionRow) => {
     setSelectedInspection(inspection);
     setIsDialogOpen(true);
   };
@@ -71,8 +71,8 @@ const InspectionTracker: React.FC = () => {
 
       if (selectedInspection) {
         // Update existing inspection
-        const { error } = await supabase
-          .from('inspections')
+        const { error } = await customSupabase
+          .from<InspectionRow>('inspections')
           .update({
             ...inspectionData,
             breeder_id: userId,
@@ -88,8 +88,8 @@ const InspectionTracker: React.FC = () => {
         });
       } else {
         // Create new inspection
-        const { error } = await supabase
-          .from('inspections')
+        const { error } = await customSupabase
+          .from<InspectionRow>('inspections')
           .insert({
             ...inspectionData,
             breeder_id: userId
@@ -170,7 +170,7 @@ const InspectionTracker: React.FC = () => {
 };
 
 interface InspectionCardProps {
-  inspection: any;
+  inspection: InspectionRow;
   formatDate: (date: string) => string;
   onEdit: () => void;
 }
