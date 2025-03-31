@@ -46,6 +46,8 @@ const AdminSetup: React.FC = () => {
     return <AdminUnauthorizedState type="unauthorized" />;
   }
 
+  const isUuidFormatError = error?.includes('invalid input syntax for type uuid');
+
   return (
     <PageContainer>
       <div className="space-y-6 w-full">
@@ -55,17 +57,19 @@ const AdminSetup: React.FC = () => {
         />
         
         {error && (
-          <Alert variant="warning" className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <Alert variant={isUuidFormatError ? "destructive" : "warning"} className={`${isUuidFormatError ? 'bg-red-50 border-l-4 border-red-400' : 'bg-yellow-50 border-l-4 border-yellow-400'} p-4 mb-4`}>
             <div className="flex">
               <div className="flex-shrink-0">
-                <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                <AlertTriangle className={`h-5 w-5 ${isUuidFormatError ? 'text-red-400' : 'text-yellow-400'}`} />
               </div>
               <div className="ml-3">
-                <AlertTitle className="text-sm text-yellow-700">
-                  Backend Connection Issue
+                <AlertTitle className={`text-sm ${isUuidFormatError ? 'text-red-700' : 'text-yellow-700'}`}>
+                  {isUuidFormatError ? 'UUID Format Error' : 'Backend Connection Issue'}
                 </AlertTitle>
-                <AlertDescription className="text-sm text-yellow-700">
-                  {error}
+                <AlertDescription className={`text-sm ${isUuidFormatError ? 'text-red-700' : 'text-yellow-700'}`}>
+                  {isUuidFormatError 
+                    ? "Your tenant ID is not in a valid UUID format. Please use the 'Generate New ID' button in the Organization tab below."
+                    : error}
                 </AlertDescription>
                 <div className="mt-2">
                   <Button 
