@@ -6,7 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import ExpenseForm, { ExpenseFormValues } from './ExpenseForm';
+import ExpenseForm from './ExpenseForm';
+import { ExpenseFormValues } from '@/types/financial';
 
 interface ExpenseDialogProps {
   open: boolean;
@@ -31,7 +32,6 @@ const ExpenseDialog: React.FC<ExpenseDialogProps> = ({
 }) => {
   const handleSubmit = async (values: ExpenseFormValues) => {
     await onSave(values);
-    onOpenChange(false);
   };
 
   return (
