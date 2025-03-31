@@ -172,8 +172,11 @@ const ExerciseTab: React.FC<ExerciseTabProps> = ({ dogStatuses, onRefreshDogs })
                         <Badge>Latest</Badge>
                       </div>
                       
-                      {/* Check if last_care has notes before accessing it */}
-                      {selectedDog.last_care && 'notes' in selectedDog.last_care && selectedDog.last_care.notes && (
+                      {/* Check if last_care has notes before accessing it and ensure it's a string */}
+                      {selectedDog.last_care && 
+                       'notes' in selectedDog.last_care && 
+                       selectedDog.last_care.notes && 
+                       typeof selectedDog.last_care.notes === 'string' && (
                         <div className="mt-2 text-sm">
                           <p className="text-muted-foreground font-medium">Notes:</p>
                           <p>{selectedDog.last_care.notes}</p>
