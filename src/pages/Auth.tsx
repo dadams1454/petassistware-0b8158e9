@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BlurBackground from '@/components/ui/blur-background';
@@ -12,6 +11,8 @@ const Auth: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  console.log('Auth page rendered, user:', !!user);
+  
   // If user is already authenticated, redirect to dashboard
   useEffect(() => {
     if (user) {
@@ -20,6 +21,7 @@ const Auth: React.FC = () => {
     }
   }, [user, navigate]);
 
+  // The rest of the component remains unchanged
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary/5 to-slate-50 dark:from-slate-900 dark:to-slate-900/80 px-4">
       <Link to="/" className="absolute top-8 left-8">
