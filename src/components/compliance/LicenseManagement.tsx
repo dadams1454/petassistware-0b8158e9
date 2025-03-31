@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { customSupabase, LicenseRow } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/standardized';
 import LicenseDialog from './dialogs/LicenseDialog';
-import { useAuth } from '@/contexts/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 
 const LicenseManagement: React.FC = () => {
   const { toast } = useToast();
@@ -40,6 +41,7 @@ const LicenseManagement: React.FC = () => {
         description: error.message || 'Failed to load licenses',
         variant: 'destructive',
       });
+      // Set an empty array instead of the error
       setLicenses([]);
     } finally {
       setIsLoading(false);
@@ -51,7 +53,7 @@ const LicenseManagement: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleEditLicense = (license: any) => {
+  const handleEditLicense = (license: LicenseRow) => {
     setSelectedLicense(license);
     setIsDialogOpen(true);
   };
@@ -165,7 +167,7 @@ const LicenseManagement: React.FC = () => {
             <LicenseCard 
               key={license.id}
               license={license}
-              status={getLicenseStatus(license.expiry_date)}
+              status={getLicenseStatus(license.expiry_date || '')}
               formatDate={formatDate}
               onEdit={() => handleEditLicense(license)}
             />
@@ -184,7 +186,7 @@ const LicenseManagement: React.FC = () => {
 };
 
 interface LicenseCardProps {
-  license: any;
+  license: LicenseRow;
   status: 'active' | 'expiring' | 'expired';
   formatDate: (date: string) => string;
   onEdit: () => void;
@@ -234,11 +236,11 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Issued</span>
-            <span className="text-sm font-medium">{formatDate(license.issued_date)}</span>
+            <span className="text-sm font-medium">{license.issued_date ? formatDate(license.issued_date) : 'N/A'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Expiry Date</span>
-            <span className="text-sm font-medium">{formatDate(license.expiry_date)}</span>
+            <span className="text-sm font-medium">{license.expiry_date ? formatDate(license.expiry_date) : 'N/A'}</span>
           </div>
           <div className="pt-2">
             <Button variant="outline" size="sm" className="w-full" onClick={onEdit}>View & Edit</Button>

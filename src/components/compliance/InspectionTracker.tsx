@@ -8,7 +8,7 @@ import { supabase, customSupabase, InspectionRow } from '@/integrations/supabase
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/standardized';
 import InspectionDialog from './dialogs/InspectionDialog';
-import { useAuth } from '@/contexts/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 
 const InspectionTracker: React.FC = () => {
   const { toast } = useToast();
@@ -41,6 +41,7 @@ const InspectionTracker: React.FC = () => {
         description: 'Failed to load inspections data. Please try again later.',
         variant: 'destructive',
       });
+      // Set an empty array instead of the error
       setInspections([]);
     } finally {
       setIsLoading(false);

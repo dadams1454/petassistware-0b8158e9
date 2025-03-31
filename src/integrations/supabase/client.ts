@@ -103,6 +103,7 @@ export type LicenseRow = {
   document_url?: string;
   breeder_id?: string;
   created_at: string;
+  notes?: string;
 };
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
