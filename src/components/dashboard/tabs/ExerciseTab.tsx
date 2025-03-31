@@ -11,13 +11,14 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ExerciseForm from '@/components/dogs/components/exercise/ExerciseForm';
 import { useExerciseTracking, ExerciseFormData } from '@/hooks/useExerciseTracking';
+import { DailyCareProvider } from '@/contexts/dailyCare';
 
 interface ExerciseTabProps {
   dogStatuses: DogCareStatus[] | null;
   onRefreshDogs: () => void;
 }
 
-const ExerciseTab: React.FC<ExerciseTabProps> = ({ dogStatuses, onRefreshDogs }) => {
+const ExerciseTabContent: React.FC<ExerciseTabProps> = ({ dogStatuses, onRefreshDogs }) => {
   const [selectedDog, setSelectedDog] = useState<DogCareStatus | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activityModalOpen, setActivityModalOpen] = useState(false);
@@ -219,6 +220,15 @@ const ExerciseTab: React.FC<ExerciseTabProps> = ({ dogStatuses, onRefreshDogs })
   );
 };
 
+// Wrapper component that provides DailyCareProvider context
+const ExerciseTab: React.FC<ExerciseTabProps> = (props) => {
+  return (
+    <DailyCareProvider>
+      <ExerciseTabContent {...props} />
+    </DailyCareProvider>
+  );
+};
+
 // Exercise Card Component
 const ExerciseCard: React.FC<{ 
   dog: DogCareStatus; 
@@ -255,7 +265,7 @@ const ExerciseCard: React.FC<{
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Exercise Status:</span>
               <Badge 
-                variant="secondary"
+                variant={hasExercisedToday ? "secondary" : "secondary"}
                 className={hasExercisedToday ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}
               >
                 {hasExercisedToday ? "Completed Today" : "Needs Exercise"}
