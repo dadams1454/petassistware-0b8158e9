@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { DogGenotype } from '@/types/genetics';
+import { batchImportGeneticTests } from './batchGeneticTests';
 
 export async function fetchDogGeneticData(dogId: string) {
   try {
@@ -31,3 +32,6 @@ export async function fetchDogGeneticData(dogId: string) {
     throw error;
   }
 }
+
+// Export the batchImportGeneticTests function
+export { batchImportGeneticTests };

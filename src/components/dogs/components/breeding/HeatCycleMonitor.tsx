@@ -1,49 +1,54 @@
+
 import React, { useState, useEffect } from 'react';
-import { Calendar } from 'lucide-react';
-import { format, addDays, isWithinInterval } from 'date-fns';
-import { DateRange } from 'react-day-picker';
-
-import { Button } from '@/components/ui/button';
-import { Calendar as CalendarUI } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { format, parseISO, addDays, differenceInDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import RecordBreedingDialog from './RecordBreedingDialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Calendar, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
 
-interface HeatCycle {
+// Define the HeatCycle type
+export interface HeatCycle {
   id: string;
+  dog_id: string;
   start_date: string;
-  end_date: string;
-  notes: string;
+  end_date?: string;
+  notes?: string;
+  created_at: string;
 }
 
-interface HeatCycleMonitorProps {
+export interface HeatCycleMonitorProps {
   dogId: string;
+  onAddCycle?: () => void;
 }
 
-const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId }) => {
-  const { toast } = useToast();
-  const [date, setDate] = useState<DateRange | undefined>(undefined);
-  const [notes, setNotes] = useState<string>('');
-  const [heatCycles, setHeatCycles] = useState<HeatCycle[]>([]);
-  const [showBreedingDialog, setShowBreedingDialog] = useState<boolean>(false);
+const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }) => {
+  const [cycles, setCycles] = useState<HeatCycle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [nextEstimatedDate, setNextEstimatedDate] = useState<string | null>(null);
   
-  // Fetch heat cycles on component mount
   useEffect(() => {
-    refetchHeatCycles();
+    fetchHeatCycles();
   }, [dogId]);
   
-  // Function to refetch heat cycles
-  const refetchHeatCycles = async () => {
+  const fetchHeatCycles = async () => {
     try {
+      setLoading(true);
+      
+      // Check if the heat_cycles table exists
+      const { data: tablesData } = await supabase
+        .from('pg_tables')
+        .select('tablename')
+        .eq('schemaname', 'public')
+        .eq('tablename', 'heat_cycles');
+      
+      if (!tablesData || tablesData.length === 0) {
+        // Table doesn't exist - create it first
+        await createHeatCyclesTable();
+      }
+      
+      // Now fetch the data
       const { data, error } = await supabase
         .from('heat_cycles')
         .select('*')
@@ -51,223 +56,158 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId }) => {
         .order('start_date', { ascending: false });
       
       if (error) throw error;
-      setHeatCycles(data || []);
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message || 'Failed to fetch heat cycles.'
-      });
+      
+      setCycles(data as HeatCycle[]);
+      calculateNextHeatDate(data as HeatCycle[]);
+    } catch (error) {
+      console.error('Error fetching heat cycles:', error);
+      toast.error('Failed to load heat cycle data');
+    } finally {
+      setLoading(false);
     }
   };
   
-  // Function to save heat cycle
-  const saveHeatCycle = async () => {
-    if (!date?.from || !date?.to) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please select a date range.'
-      });
+  // Create heat_cycles table if it doesn't exist
+  const createHeatCyclesTable = async () => {
+    try {
+      // Execute SQL to create the table
+      const { error } = await supabase.rpc('create_heat_cycles_table');
+      
+      if (error) {
+        // If RPC doesn't exist, we'll need to create the table using raw SQL
+        // For now, we'll just show a message that the table needs to be created
+        console.error('Heat cycles table needs to be created');
+        toast.error('Database setup required for heat cycle tracking');
+      }
+    } catch (err) {
+      console.error('Error creating heat cycles table:', err);
+    }
+  };
+  
+  const calculateNextHeatDate = (heatCycles: HeatCycle[]) => {
+    if (!heatCycles || heatCycles.length < 1) {
+      setNextEstimatedDate(null);
       return;
     }
     
-    try {
-      const { data, error } = await supabase
-        .from('heat_cycles')
-        .insert({
-          dog_id: dogId,
-          start_date: format(date.from, 'yyyy-MM-dd'),
-          end_date: format(date.to, 'yyyy-MM-dd'),
-          notes: notes
-        })
-        .select()
-        .single();
+    // Get the most recent heat cycle
+    const latestCycle = heatCycles[0];
+    
+    // If we have at least 2 cycles, calculate the average cycle length
+    if (heatCycles.length >= 2) {
+      let totalDays = 0;
+      let intervals = 0;
       
-      if (error) throw error;
+      for (let i = 0; i < heatCycles.length - 1; i++) {
+        const currentCycleStart = parseISO(heatCycles[i].start_date);
+        const prevCycleStart = parseISO(heatCycles[i + 1].start_date);
+        
+        const daysBetween = differenceInDays(currentCycleStart, prevCycleStart);
+        
+        if (daysBetween > 0) {
+          totalDays += daysBetween;
+          intervals++;
+        }
+      }
       
-      toast({
-        title: 'Heat Cycle Saved',
-        description: 'The heat cycle has been successfully saved.'
-      });
+      if (intervals > 0) {
+        const averageDays = Math.round(totalDays / intervals);
+        const lastStartDate = parseISO(latestCycle.start_date);
+        const nextDate = addDays(lastStartDate, averageDays);
+        
+        setNextEstimatedDate(format(nextDate, 'yyyy-MM-dd'));
+      }
+    } else {
+      // With only one cycle, estimate based on typical canine heat cycle (6 months)
+      const lastStartDate = parseISO(latestCycle.start_date);
+      const nextDate = addDays(lastStartDate, 180); // Approx 6 months
       
-      // Clear form and refetch data
-      setDate(undefined);
-      setNotes('');
-      refetchHeatCycles();
-      
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message || 'Failed to save heat cycle.'
-      });
+      setNextEstimatedDate(format(nextDate, 'yyyy-MM-dd'));
     }
   };
   
-  // Function to delete heat cycle
-  const deleteHeatCycle = async (heatCycleId: string) => {
-    try {
-      const { error } = await supabase
-        .from('heat_cycles')
-        .delete()
-        .eq('id', heatCycleId);
-      
-      if (error) throw error;
-      
-      toast({
-        title: 'Heat Cycle Deleted',
-        description: 'The heat cycle has been successfully deleted.'
-      });
-      
-      // Refetch data
-      refetchHeatCycles();
-      
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message || 'Failed to delete heat cycle.'
-      });
-    }
+  const formatDate = (dateString: string) => {
+    return format(parseISO(dateString), 'MMM d, yyyy');
   };
   
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Heat Cycle Monitor</CardTitle>
-          <CardDescription>Track and manage heat cycles for your dog.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="dates">Select Date Range</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={format(date?.from || new Date(), 'PPP')}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {date?.from ? (
-                      date.to ? (
-                        `${format(date.from, "PPP")} - ${format(date.to, "PPP")}`
-                      ) : (
-                        format(date.from, "PPP")
-                      )
-                    ) : (
-                      <span>Pick dates</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarUI
-                    mode="range"
-                    defaultMonth={date?.from}
-                    selected={date}
-                    onSelect={setDate}
-                    numberOfMonths={2}
-                    pagedNavigation
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            
-            <div>
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea 
-                id="notes" 
-                placeholder="Enter any notes about this heat cycle..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <Button onClick={saveHeatCycle}>Save Heat Cycle</Button>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Past Heat Cycles</CardTitle>
-          <CardDescription>View and manage previously recorded heat cycles.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Start Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    End Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Notes
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {heatCycles.map((cycle) => (
-                  <tr key={cycle.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {format(new Date(cycle.start_date), 'PPP')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {format(new Date(cycle.end_date), 'PPP')}
-                    </td>
-                    <td className="px-6 py-4">
-                      {cycle.notes}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <Button 
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => deleteHeatCycle(cycle.id)}
-                      >
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-                {heatCycles.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="text-center py-4">No heat cycles recorded.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Breeding Actions</CardTitle>
-          <CardDescription>Quick actions to record breedings.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button onClick={() => setShowBreedingDialog(true)}>
-            Record Breeding
-          </Button>
-          
-          {showBreedingDialog && (
-            <RecordBreedingDialog
-              open={showBreedingDialog}
-              onOpenChange={(open) => setShowBreedingDialog(open)}
-              damId={dogId}
-              onSuccess={refetchHeatCycles}
-            />
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xl flex justify-between items-center">
+          <span>Heat Cycle History</span>
+          {onAddCycle && (
+            <Button onClick={onAddCycle} size="sm" className="h-8">
+              <Plus className="h-4 w-4 mr-1" /> Record Heat
+            </Button>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : cycles.length === 0 ? (
+          <div className="text-center py-6">
+            <Calendar className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">No heat cycles recorded yet</p>
+            {onAddCycle && (
+              <Button 
+                onClick={onAddCycle} 
+                variant="outline" 
+                className="mt-4"
+              >
+                Record First Heat Cycle
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {nextEstimatedDate && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md border border-yellow-200 dark:border-yellow-800">
+                <div className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                  Next estimated heat: {formatDate(nextEstimatedDate)}
+                </div>
+              </div>
+            )}
+            
+            <div className="space-y-3">
+              {cycles.map((cycle, index) => (
+                <div key={cycle.id} className="border rounded-md p-3">
+                  <div className="flex justify-between items-start mb-1">
+                    <Badge variant={index === 0 ? "default" : "outline"}>
+                      {index === 0 ? "Latest Heat" : `Heat Cycle ${cycles.length - index}`}
+                    </Badge>
+                    {cycle.end_date && (
+                      <div className="text-xs text-muted-foreground">
+                        {differenceInDays(parseISO(cycle.end_date), parseISO(cycle.start_date))} days
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center text-sm mt-2">
+                    <span>{formatDate(cycle.start_date)}</span>
+                    {cycle.end_date && (
+                      <>
+                        <ArrowRight className="h-3 w-3 mx-2 text-muted-foreground" />
+                        <span>{formatDate(cycle.end_date)}</span>
+                      </>
+                    )}
+                  </div>
+                  
+                  {cycle.notes && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      {cycle.notes}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
