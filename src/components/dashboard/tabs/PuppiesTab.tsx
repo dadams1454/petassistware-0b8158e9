@@ -10,6 +10,13 @@ interface PuppiesTabProps {
   onRefresh: () => void;
 }
 
+interface Dog {
+  id: string;
+  name: string;
+  gender: string;
+  // Add other dog properties as needed
+}
+
 const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   // Fetch all female dogs for heat cycle monitoring
   const { data: femaleDogs, isLoading } = useQuery({
@@ -50,7 +57,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
         <CardContent>
           {femaleDogs && femaleDogs.length > 0 ? (
             <div className="space-y-8">
-              {femaleDogs.map(dog => (
+              {femaleDogs.map((dog: Dog) => (
                 <div key={dog.id} className="border-b pb-6 last:border-0">
                   <h3 className="text-lg font-medium mb-4">{dog.name}</h3>
                   <HeatCycleManagement dog={dog} onRefresh={onRefresh} />

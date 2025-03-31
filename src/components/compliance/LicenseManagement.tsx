@@ -10,7 +10,19 @@ import { format, isAfter, isBefore, addDays } from 'date-fns';
 import LicenseDialog from './dialogs/LicenseDialog';
 import { useAuth } from '@/contexts/AuthProvider';
 
-interface License extends LicenseRow {}
+interface License {
+  id: string;
+  license_type: string;
+  license_number?: string;
+  license_name?: string; // Add this property
+  description?: string; // Add this property
+  issued_date?: string;
+  expiry_date: string;
+  document_url?: string;
+  created_at: string;
+  breeder_id?: string;
+  status: string; // Add this property
+}
 
 const LicenseManagement: React.FC = () => {
   const { toast } = useToast();
@@ -60,7 +72,7 @@ const LicenseManagement: React.FC = () => {
       
       setLicenses(processedData);
     } catch (error) {
-      setLicenses([]);  // Set to empty array of the correct type instead of error
+      setLicenses([]);  // Set to empty array of the correct type
       console.error("Error fetching licenses:", error);
     } finally {
       setIsLoading(false);
@@ -331,16 +343,16 @@ const LicenseItem: React.FC<LicenseItemProps> = ({
   return (
     <li className="flex items-start gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors">
       <div className="mt-0.5">
-        {statusIcons[license.status]}
+        {statusIcons[license.status as keyof typeof statusIcons]}
       </div>
       <div className="flex-1">
         <div className="flex justify-between">
-          <h4 className="font-medium">{license.license_name}</h4>
+          <h4 className="font-medium">{license.license_name || license.license_type}</h4>
           <span className="text-sm text-muted-foreground">
             Expires: {formatDate(license.expiry_date)}
           </span>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">{license.description}</p>
+        <p className="text-sm text-muted-foreground mt-1">{license.description || 'No description'}</p>
         <div className="flex justify-between mt-2">
           <span className="text-xs text-muted-foreground">License Number: {license.license_number}</span>
           <Button variant="ghost" size="sm" className="h-7 px-2" onClick={onEdit}>
