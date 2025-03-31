@@ -25,9 +25,9 @@ import {
   FileText,
   Coins,
   Building,
-  FileClock,
+  Shield,
   Settings,
-  Clock
+  ClipboardCheck
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 
@@ -49,12 +49,12 @@ export const AppSidebar = () => {
     { title: 'Contracts', href: '/contracts', icon: FileText },
     { title: 'Finances', href: '/finances', icon: Coins },
     { title: 'Facility', href: '/facility', icon: Building },
-    { title: 'Daily Care', href: '/daily-care', icon: Clock },
+    { title: 'Care Management', href: '/daily-care', icon: ClipboardCheck },
   ];
   
   const adminMenuItems = [
     { title: 'Users', href: '/users', icon: Users },
-    { title: 'Audit Logs', href: '/audit-logs', icon: FileClock },
+    { title: 'Audit Logs', href: '/audit-logs', icon: Shield },
     { title: 'Settings', href: '/admin-setup', icon: Settings },
   ];
   

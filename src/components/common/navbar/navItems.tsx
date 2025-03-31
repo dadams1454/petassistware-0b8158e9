@@ -3,17 +3,16 @@ import {
   LayoutDashboard, 
   Dog, 
   CalendarDays, 
-  FileClock, 
+  Shield, 
   Mail, 
   Users,
   Settings,
   FileText,
   ClipboardList,
   Bookmark,
-  Clock,
-  CreditCard,
   Building,
-  Coins
+  Coins,
+  ClipboardCheck
 } from 'lucide-react';
 
 export const navItems = [
@@ -78,6 +77,12 @@ export const navItems = [
     description: 'Manage facility tasks and maintenance'
   },
   {
+    title: 'Care Management',
+    href: '/daily-care',
+    icon: ClipboardCheck,
+    description: 'Manage and assign care tasks'
+  },
+  {
     title: 'Users',
     href: '/users',
     icon: Users,
@@ -86,7 +91,7 @@ export const navItems = [
   {
     title: 'Audit Log',
     href: '/audit-logs',
-    icon: FileClock,
+    icon: Shield,
     description: 'View system activity logs'
   },
   {
