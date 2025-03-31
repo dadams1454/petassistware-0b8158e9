@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ExerciseRecord {
@@ -49,14 +50,18 @@ export async function recordExercise(exercise: Omit<ExerciseRecord, 'id' | 'crea
     if (error) throw error;
     
     // Transform the care log into an exercise record
+    const metadataObj = typeof data.medication_metadata === 'string' 
+      ? JSON.parse(data.medication_metadata) 
+      : data.medication_metadata;
+    
     return {
       id: data.id,
       dog_id: data.dog_id,
       exercise_type: data.task_name,
-      duration: data.medication_metadata?.duration || 0,
-      intensity: data.medication_metadata?.intensity || 'moderate',
-      location: data.medication_metadata?.location || '',
-      weather_conditions: data.medication_metadata?.weather_conditions,
+      duration: metadataObj?.duration || 0,
+      intensity: metadataObj?.intensity || 'moderate',
+      location: metadataObj?.location || '',
+      weather_conditions: metadataObj?.weather_conditions,
       notes: data.notes,
       performed_by: data.created_by,
       timestamp: data.timestamp,
@@ -87,19 +92,25 @@ export async function getDogExerciseHistory(dogId: string, days: number = 30): P
     if (error) throw error;
     
     // Transform care logs to exercise records
-    return (data || []).map(log => ({
-      id: log.id,
-      dog_id: log.dog_id,
-      exercise_type: log.task_name,
-      duration: log.medication_metadata?.duration || 0,
-      intensity: log.medication_metadata?.intensity || 'moderate',
-      location: log.medication_metadata?.location || '',
-      weather_conditions: log.medication_metadata?.weather_conditions,
-      notes: log.notes,
-      performed_by: log.created_by,
-      timestamp: log.timestamp,
-      created_at: log.created_at
-    })) as ExerciseRecord[];
+    return (data || []).map(log => {
+      const metadataObj = typeof log.medication_metadata === 'string' 
+        ? JSON.parse(log.medication_metadata) 
+        : log.medication_metadata;
+        
+      return {
+        id: log.id,
+        dog_id: log.dog_id,
+        exercise_type: log.task_name,
+        duration: metadataObj?.duration || 0,
+        intensity: metadataObj?.intensity || 'moderate',
+        location: metadataObj?.location || '',
+        weather_conditions: metadataObj?.weather_conditions,
+        notes: log.notes,
+        performed_by: log.created_by,
+        timestamp: log.timestamp,
+        created_at: log.created_at
+      } as ExerciseRecord;
+    });
   } catch (error) {
     console.error('Error fetching exercise history:', error);
     return [];
