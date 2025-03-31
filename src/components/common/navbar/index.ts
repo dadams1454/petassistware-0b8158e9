@@ -1,6 +1,6 @@
 
-import Navbar from './Navbar';
-import UserMenu from './UserMenu';
+import React from 'react';
+import AppSidebar from '@/components/layout/AppSidebar';
 
-export { UserMenu };
-export default Navbar;
+// This file is now just redirecting to our new sidebar implementation
+export default AppSidebar;
