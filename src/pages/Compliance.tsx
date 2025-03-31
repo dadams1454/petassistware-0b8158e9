@@ -16,7 +16,7 @@ const Compliance: React.FC = () => {
       <PageHeader 
         title="Compliance Management"
         description="Track licenses, inspections, and regulatory requirements"
-        icon={<Shield className="h-6 w-6 text-primary" />}
+        action={<Shield className="h-6 w-6 text-primary" />}
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
