@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { format, isAfter, isBefore, addDays } from 'date-fns';
 import RequirementDialog from './dialogs/RequirementDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Requirement {
   id: string;
@@ -24,6 +25,7 @@ interface Requirement {
 
 const RequirementsDashboard: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('upcoming');
   const [isLoading, setIsLoading] = useState(true);
   const [requirements, setRequirements] = useState<Requirement[]>([]);
@@ -31,101 +33,53 @@ const RequirementsDashboard: React.FC = () => {
   const [selectedRequirement, setSelectedRequirement] = useState<Requirement | null>(null);
 
   useEffect(() => {
-    fetchRequirements();
-  }, []);
+    if (user) {
+      fetchRequirements();
+    }
+  }, [user]);
 
   const fetchRequirements = async () => {
     setIsLoading(true);
     try {
-      // Try to fetch from the database, but use static data if the table doesn't exist yet
       const { data, error } = await supabase
         .from('compliance_requirements')
         .select('*');
       
-      if (error) {
-        console.warn('Compliance requirements table not found:', error);
-        // Use static data for now
-        setRequirements([
-          {
-            id: '1',
-            title: 'State License Renewal',
-            description: 'Annual state breeding license expires soon',
-            due_date: addDays(new Date(), 15).toISOString(),
-            status: 'due-soon',
-            category: 'Licensing',
-            priority: 'high'
-          },
-          {
-            id: '2',
-            title: 'AKC Inspection',
-            description: 'Scheduled AKC inspection for facility verification',
-            due_date: addDays(new Date(), 45).toISOString(),
-            status: 'pending',
-            category: 'Inspection',
-            priority: 'medium'
-          },
-          {
-            id: '3',
-            title: 'Health Department Follow-up',
-            description: 'Required facility improvements documentation',
-            due_date: addDays(new Date(), -5).toISOString(),
-            status: 'overdue',
-            category: 'Health & Safety',
-            priority: 'high'
-          },
-          {
-            id: '4',
-            title: 'Annual Vaccination Records Update',
-            description: 'Update vaccination records for all breeding dogs',
-            due_date: addDays(new Date(), 30).toISOString(),
-            status: 'pending',
-            category: 'Record Keeping',
-            priority: 'medium'
-          },
-          {
-            id: '5',
-            title: 'Kennel License Renewal',
-            description: 'County kennel license renewal',
-            due_date: addDays(new Date(), 60).toISOString(),
-            status: 'pending',
-            category: 'Licensing',
-            priority: 'medium'
-          }
-        ]);
-      } else {
-        // Process the data to determine status based on due date
-        const processedData = (data || []).map((req: any) => {
-          const dueDate = new Date(req.due_date);
-          const today = new Date();
-          let status = req.status;
-          
-          if (!status) {
-            if (req.completed_at) {
-              status = 'completed';
-            } else if (isBefore(dueDate, today)) {
-              status = 'overdue';
-            } else if (isBefore(dueDate, addDays(today, 14))) {
-              status = 'due-soon';
-            } else {
-              status = 'pending';
-            }
-          }
-          
-          return {
-            ...req,
-            status
-          };
-        });
+      if (error) throw error;
+      
+      // Process the data to determine status based on due date
+      const processedData = (data || []).map((req: any) => {
+        const dueDate = new Date(req.due_date);
+        const today = new Date();
+        let status = req.status;
         
-        setRequirements(processedData);
-      }
+        if (!status || status === 'pending') {
+          if (req.completed_at) {
+            status = 'completed';
+          } else if (isBefore(dueDate, today)) {
+            status = 'overdue';
+          } else if (isBefore(dueDate, addDays(today, 14))) {
+            status = 'due-soon';
+          } else {
+            status = 'pending';
+          }
+        }
+        
+        return {
+          ...req,
+          status
+        };
+      });
+      
+      setRequirements(processedData);
     } catch (error: any) {
       console.error('Error fetching requirements:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load compliance requirements',
+        description: 'Failed to load compliance requirements. Please try again later.',
         variant: 'destructive',
       });
+      setRequirements([]);
     } finally {
       setIsLoading(false);
     }
@@ -143,13 +97,25 @@ const RequirementsDashboard: React.FC = () => {
 
   const handleSaveRequirement = async (requirementData: any) => {
     try {
+      const userId = user?.id;
+      if (!userId) {
+        toast({
+          title: 'Authentication Required',
+          description: 'You must be logged in to save requirement data.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       // Determine the correct status based on dates
       const dueDate = new Date(requirementData.due_date);
       const today = new Date();
       let status;
+      let completedAt = null;
       
       if (requirementData.completed) {
         status = 'completed';
+        completedAt = new Date().toISOString();
       } else if (isBefore(dueDate, today)) {
         status = 'overdue';
       } else if (isBefore(dueDate, addDays(today, 14))) {
@@ -160,25 +126,34 @@ const RequirementsDashboard: React.FC = () => {
       
       const updatedData = {
         ...requirementData,
-        status
+        status,
+        completed_at: completedAt,
+        breeder_id: userId
       };
       
+      // Remove 'completed' field as it's not in the database schema
+      delete updatedData.completed;
+      
       if (selectedRequirement) {
-        // Update existing requirement in the UI
-        setRequirements(prev => 
-          prev.map(item => item.id === selectedRequirement.id ? 
-            {...updatedData, id: item.id} : item
-          )
-        );
+        // Update existing requirement
+        const { error } = await supabase
+          .from('compliance_requirements')
+          .update(updatedData)
+          .eq('id', selectedRequirement.id);
+
+        if (error) throw error;
         
         toast({
           title: 'Requirement Updated',
           description: 'The compliance requirement has been updated successfully.',
         });
       } else {
-        // Add new requirement to the UI
-        const newId = `temp-${Date.now()}`;
-        setRequirements(prev => [...prev, {...updatedData, id: newId}]);
+        // Insert new requirement
+        const { error } = await supabase
+          .from('compliance_requirements')
+          .insert(updatedData);
+
+        if (error) throw error;
         
         toast({
           title: 'Requirement Added',
@@ -187,6 +162,7 @@ const RequirementsDashboard: React.FC = () => {
       }
       
       setIsDialogOpen(false);
+      fetchRequirements();
     } catch (error: any) {
       console.error('Error saving requirement:', error);
       toast({

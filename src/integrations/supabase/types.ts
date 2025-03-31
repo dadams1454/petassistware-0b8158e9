@@ -460,6 +460,56 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_requirements: {
+        Row: {
+          breeder_id: string | null
+          category: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          priority: string
+          reminder_sent: boolean
+          status: string
+          title: string
+        }
+        Insert: {
+          breeder_id?: string | null
+          category: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          priority?: string
+          reminder_sent?: boolean
+          status?: string
+          title: string
+        }
+        Update: {
+          breeder_id?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          priority?: string
+          reminder_sent?: boolean
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_requirements_breeder_id_fkey"
+            columns: ["breeder_id"]
+            isOneToOne: false
+            referencedRelation: "breeder_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           breeder_id: string | null
@@ -1677,6 +1727,56 @@ export type Database = {
             columns: ["dog_id"]
             isOneToOne: false
             referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inspections: {
+        Row: {
+          breeder_id: string | null
+          created_at: string
+          follow_up: string | null
+          id: string
+          inspection_date: string
+          inspector: string | null
+          next_date: string | null
+          notes: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          breeder_id?: string | null
+          created_at?: string
+          follow_up?: string | null
+          id?: string
+          inspection_date: string
+          inspector?: string | null
+          next_date?: string | null
+          notes?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          breeder_id?: string | null
+          created_at?: string
+          follow_up?: string | null
+          id?: string
+          inspection_date?: string
+          inspector?: string | null
+          next_date?: string | null
+          notes?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspections_breeder_id_fkey"
+            columns: ["breeder_id"]
+            isOneToOne: false
+            referencedRelation: "breeder_profiles"
             referencedColumns: ["id"]
           },
         ]

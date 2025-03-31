@@ -8,67 +8,40 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/standardized';
 import InspectionDialog from './dialogs/InspectionDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 const InspectionTracker: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [inspections, setInspections] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedInspection, setSelectedInspection] = useState<any>(null);
   
   useEffect(() => {
-    fetchInspections();
-  }, []);
+    if (user) {
+      fetchInspections();
+    }
+  }, [user]);
 
   const fetchInspections = async () => {
     setIsLoading(true);
     try {
-      // Inspect the database schema to see if the inspections table exists
       const { data, error } = await supabase
         .from('inspections')
         .select('*')
         .order('inspection_date', { ascending: false });
 
-      if (error) {
-        // If the table doesn't exist, use placeholder data for now
-        console.warn('Inspections table not found:', error);
-        setInspections([
-          { 
-            id: 'demo-1',
-            title: 'Annual AKC Inspection', 
-            status: 'passed',
-            inspector: 'John Smith',
-            inspection_date: '2023-11-15',
-            next_date: '2024-11-15',
-          },
-          { 
-            id: 'demo-2',
-            title: 'State Health Department', 
-            status: 'scheduled',
-            inspector: 'Pending',
-            inspection_date: '2023-08-30',
-            next_date: '2024-08-30',
-          },
-          { 
-            id: 'demo-3',
-            title: 'County Animal Control', 
-            status: 'failed',
-            inspector: 'Maria Johnson',
-            inspection_date: '2023-05-12',
-            next_date: '2023-06-20',
-            follow_up: 'Required facility upgrades by June 20',
-          }
-        ]);
-      } else {
-        setInspections(data || []);
-      }
+      if (error) throw error;
+      setInspections(data || []);
     } catch (error: any) {
       console.error('Error fetching inspections:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load inspections data',
+        description: 'Failed to load inspections data. Please try again later.',
         variant: 'destructive',
       });
+      setInspections([]);
     } finally {
       setIsLoading(false);
     }
@@ -85,22 +58,61 @@ const InspectionTracker: React.FC = () => {
   };
 
   const handleSaveInspection = async (inspectionData: any) => {
-    // Here we would save to the database if the table existed
-    // For now, just update the UI
-    if (selectedInspection) {
-      setInspections(prev => 
-        prev.map(item => item.id === selectedInspection.id ? {...inspectionData, id: item.id} : item)
-      );
-    } else {
-      setInspections(prev => [...prev, {...inspectionData, id: `temp-${Date.now()}`}]);
+    try {
+      const userId = user?.id;
+      if (!userId) {
+        toast({
+          title: 'Authentication Required',
+          description: 'You must be logged in to save inspection data.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (selectedInspection) {
+        // Update existing inspection
+        const { error } = await supabase
+          .from('inspections')
+          .update({
+            ...inspectionData,
+            breeder_id: userId,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', selectedInspection.id);
+
+        if (error) throw error;
+        
+        toast({
+          title: 'Inspection Updated',
+          description: 'The inspection has been successfully updated.',
+        });
+      } else {
+        // Create new inspection
+        const { error } = await supabase
+          .from('inspections')
+          .insert({
+            ...inspectionData,
+            breeder_id: userId
+          });
+
+        if (error) throw error;
+        
+        toast({
+          title: 'Inspection Added',
+          description: 'The new inspection has been successfully added.',
+        });
+      }
+      
+      setIsDialogOpen(false);
+      fetchInspections();
+    } catch (error: any) {
+      console.error('Error saving inspection:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save inspection',
+        variant: 'destructive',
+      });
     }
-    
-    toast({
-      title: selectedInspection ? 'Inspection Updated' : 'Inspection Added',
-      description: `The inspection has been successfully ${selectedInspection ? 'updated' : 'added'}.`,
-    });
-    
-    setIsDialogOpen(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -210,7 +222,7 @@ const InspectionCard: React.FC<InspectionCardProps> = ({
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Next Inspection</span>
-            <span className="text-sm font-medium">{formatDate(inspection.next_date)}</span>
+            <span className="text-sm font-medium">{inspection.next_date ? formatDate(inspection.next_date) : 'Not scheduled'}</span>
           </div>
           
           {inspection.follow_up && (

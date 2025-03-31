@@ -8,17 +8,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/ui/standardized';
 import LicenseDialog from './dialogs/LicenseDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 const LicenseManagement: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [licenses, setLicenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedLicense, setSelectedLicense] = useState<any>(null);
 
   useEffect(() => {
-    fetchLicenses();
-  }, []);
+    if (user) {
+      fetchLicenses();
+    }
+  }, [user]);
 
   const fetchLicenses = async () => {
     setIsLoading(true);
@@ -37,6 +41,7 @@ const LicenseManagement: React.FC = () => {
         description: error.message || 'Failed to load licenses',
         variant: 'destructive',
       });
+      setLicenses([]);
     } finally {
       setIsLoading(false);
     }
@@ -54,11 +59,24 @@ const LicenseManagement: React.FC = () => {
 
   const handleSaveLicense = async (licenseData: any) => {
     try {
+      const userId = user?.id;
+      if (!userId) {
+        toast({
+          title: 'Authentication Required',
+          description: 'You must be logged in to save license data.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       if (selectedLicense) {
         // Update existing license
         const { error } = await supabase
           .from('licenses')
-          .update(licenseData)
+          .update({
+            ...licenseData,
+            breeder_id: userId
+          })
           .eq('id', selectedLicense.id);
 
         if (error) throw error;
@@ -71,7 +89,10 @@ const LicenseManagement: React.FC = () => {
         // Insert new license
         const { error } = await supabase
           .from('licenses')
-          .insert(licenseData);
+          .insert({
+            ...licenseData,
+            breeder_id: userId
+          });
 
         if (error) throw error;
         
