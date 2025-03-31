@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ interface OrganizationFormProps {
 const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData, onSubmit }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<OrganizationFormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors }, trigger } = useForm<OrganizationFormData>({
     defaultValues: {
       name: initialData?.name || '',
       description: initialData?.description || '',
@@ -36,6 +36,13 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData, onSubm
   
   // Watch the tenant ID field
   const tenantId = watch('tenantId');
+  
+  // Validate tenantId when it changes
+  useEffect(() => {
+    if (tenantId) {
+      trigger('tenantId');
+    }
+  }, [tenantId, trigger]);
   
   const handleFormSubmit = async (data: OrganizationFormData) => {
     // Final UUID validation before submission
@@ -58,7 +65,10 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ initialData, onSubm
   };
   
   const handleTenantIdChange = (value: string) => {
-    setValue('tenantId', value);
+    setValue('tenantId', value, { 
+      shouldValidate: true,
+      shouldDirty: true
+    });
   };
   
   return (

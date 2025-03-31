@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,14 @@ const UuidField: React.FC<UuidFieldProps> = ({
     handlePaste
   } = useUuidValidation(value);
 
+  // Force validation to update when value changes external to this component
+  useEffect(() => {
+    if (value) {
+      // This ensures the validation state updates when the value is set externally
+      handleUuidChange(value);
+    }
+  }, [value]);
+
   // Handle input change
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleUuidChange(e.target.value);
@@ -47,13 +55,18 @@ const UuidField: React.FC<UuidFieldProps> = ({
     }
   };
 
-  // Generate new UUID - fixed implementation
+  // Generate new UUID - improved implementation
   const onGenerateClick = () => {
     setIsGenerating(true);
     try {
-      // Use the direct utility function instead of the hook method
+      // Generate a valid UUID
       const newUuid = generateUUID();
+      
+      // Update the input field with the new UUID
       onChange(newUuid);
+      
+      // Manually trigger validation for immediate UI update
+      handleUuidChange(newUuid);
       
       toast({
         title: "UUID Generated",
@@ -106,7 +119,7 @@ const UuidField: React.FC<UuidFieldProps> = ({
           value={value}
           onChange={onInputChange}
           onPaste={onPaste}
-          className={`${!validation.valid ? 'border-destructive' : ''} pr-10`}
+          className={`${!validation.valid ? 'border-destructive' : value ? 'border-green-500' : ''} pr-10`}
         />
         {value && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

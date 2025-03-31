@@ -10,7 +10,10 @@ export interface UuidValidationResult {
 
 export function useUuidValidation(initialValue?: string) {
   const [uuidValue, setUuidValue] = useState<string>(initialValue || '');
-  const [validation, setValidation] = useState<UuidValidationResult>({ valid: false, error: "UUID is required" });
+  const [validation, setValidation] = useState<UuidValidationResult>({ 
+    valid: initialValue ? isValidUUID(initialValue) : false, 
+    error: initialValue ? null : "UUID is required" 
+  });
   const { toast } = useToast();
 
   // Validate UUID whenever it changes
