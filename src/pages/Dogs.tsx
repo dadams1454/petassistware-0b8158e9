@@ -3,13 +3,13 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import MainLayout from '@/layouts/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthProvider';
 import DogsList from '@/components/dogs/DogsList';
 import DogFormDialog from '@/components/dogs/components/dialogs/DogFormDialog';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import PageContainer from '@/components/common/PageContainer';
 
 const DogsPage = () => {
   const { user } = useAuth();
@@ -70,33 +70,31 @@ const DogsPage = () => {
   };
 
   return (
-    <ProtectedRoute>
-      <MainLayout>
-        <div className="container mx-auto py-6">
-          {/* DogsList component now handles its own header and Add Dog button */}
-          <DogsList />
+    <PageContainer>
+      <div className="container mx-auto py-6">
+        {/* DogsList component now handles its own header and Add Dog button */}
+        <DogsList />
 
-          {/* Add Dog Dialog */}
-          <DogFormDialog
-            isOpen={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
-            onSuccess={handleFormSuccess}
-            onCancel={() => setIsAddDialogOpen(false)}
-            title="Add New Dog"
-          />
+        {/* Add Dog Dialog */}
+        <DogFormDialog
+          isOpen={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          onSuccess={handleFormSuccess}
+          onCancel={() => setIsAddDialogOpen(false)}
+          title="Add New Dog"
+        />
 
-          {/* Edit Dog Dialog */}
-          <DogFormDialog
-            isOpen={isEditDialogOpen}
-            onOpenChange={setIsEditDialogOpen}
-            onSuccess={handleFormSuccess}
-            onCancel={() => setIsEditDialogOpen(false)}
-            dog={selectedDog}
-            title="Edit Dog"
-          />
-        </div>
-      </MainLayout>
-    </ProtectedRoute>
+        {/* Edit Dog Dialog */}
+        <DogFormDialog
+          isOpen={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onSuccess={handleFormSuccess}
+          onCancel={() => setIsEditDialogOpen(false)}
+          dog={selectedDog}
+          title="Edit Dog"
+        />
+      </div>
+    </PageContainer>
   );
 };
 

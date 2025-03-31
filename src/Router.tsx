@@ -28,120 +28,94 @@ const Router = () => {
       {/* Authentication route - direct path without protection */}
       <Route path="/auth" element={<Auth />} />
       
-      {/* Protected routes */}
+      {/* Protected routes - all within MainLayout */}
       <Route element={<AuthLayout />}>
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <MainLayout>
+        <Route element={<MainLayout />}>
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
               <Dashboard />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/dogs" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/dogs" element={
+            <ProtectedRoute>
               <Dogs />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/customers" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/customers" element={
+            <ProtectedRoute>
               <Customers />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/litters" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/litters" element={
+            <ProtectedRoute>
               <Litters />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/reservations" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/reservations" element={
+            <ProtectedRoute>
               <Reservations />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/reservations/:id" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/reservations/:id" element={
+            <ProtectedRoute>
               <Reservations />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/calendar" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/calendar" element={
+            <ProtectedRoute>
               <Calendar />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/communications" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/communications" element={
+            <ProtectedRoute>
               <Communications />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/finances" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/finances" element={
+            <ProtectedRoute>
               <Finances />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/users" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/users" element={
+            <ProtectedRoute>
               <Users />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/admin-setup" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin-setup" element={
+            <ProtectedRoute>
               <AdminSetup />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/audit-logs" element={
-          <ProtectedRoute requiredRoles={['admin', 'owner']}>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/audit-logs" element={
+            <ProtectedRoute requiredRoles={['admin', 'owner']}>
               <AuditLogs />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        {/* Dog routes */}
-        <Route path="/dogs/:id" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          {/* Dog routes */}
+          <Route path="/dogs/:id" element={
+            <ProtectedRoute>
               <DogProfilePage />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/dogs/:id/weight" element={
-          <ProtectedRoute>
-            <MainLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/dogs/:id/weight" element={
+            <ProtectedRoute>
               <WeightTracking />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+            </ProtectedRoute>
+          } />
+        </Route>
       </Route>
       
       {/* Fallback route */}
