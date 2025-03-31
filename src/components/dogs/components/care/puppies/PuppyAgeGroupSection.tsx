@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
-import { Badge } from '@/components/ui/badge';
-import { Grid } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, ChevronUp, ListChecks, Baby } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/hooks/usePuppyTracking';
 import PuppyCard from './PuppyCard';
 
 interface PuppyAgeGroupSectionProps {
@@ -17,46 +18,55 @@ const PuppyAgeGroupSection: React.FC<PuppyAgeGroupSectionProps> = ({
   puppies,
   onRefresh
 }) => {
+  const [isOpen, setIsOpen] = React.useState(true);
+  
+  if (puppies.length === 0) return null;
+  
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg flex items-center">
-              {ageGroup.name}
-              <Badge variant="outline" className="ml-2 bg-primary/10">
-                {puppies.length} {puppies.length === 1 ? 'puppy' : 'puppies'}
-              </Badge>
-            </CardTitle>
-            <CardDescription>
-              {ageGroup.description}
-            </CardDescription>
-          </div>
-          <Badge variant="outline" className="text-xs px-2 py-0 h-5">
-            {ageGroup.startDay}-{ageGroup.endDay} days
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <h4 className="text-sm font-medium flex items-center text-muted-foreground">
-            <Grid className="h-3 w-3 mr-1" />
-            Development Milestones
-          </h4>
-          <p className="text-sm mt-1">{ageGroup.milestones}</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {puppies.map((puppy) => (
-            <PuppyCard 
-              key={puppy.id} 
-              puppy={puppy} 
-              ageGroup={ageGroup}
-              onRefresh={onRefresh}
-            />
-          ))}
-        </div>
-      </CardContent>
+    <Card className="overflow-hidden">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CardHeader className="pb-0">
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center justify-between cursor-pointer py-2">
+              <CardTitle className="flex items-center">
+                <Baby className="h-5 w-5 mr-2 text-primary" />
+                {ageGroup.name} ({puppies.length})
+              </CardTitle>
+              <Button variant="ghost" size="sm">
+                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </div>
+          </CollapsibleTrigger>
+          <p className="text-sm text-muted-foreground mt-1">{ageGroup.description}</p>
+        </CardHeader>
+        
+        <CollapsibleContent>
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {puppies.map((puppy) => (
+                <PuppyCard 
+                  key={puppy.id} 
+                  puppy={puppy} 
+                  ageGroup={ageGroup}
+                  onRefresh={onRefresh} 
+                />
+              ))}
+            </div>
+            
+            <div className="mt-4 pt-3 border-t">
+              <h4 className="text-sm font-medium mb-2 flex items-center">
+                <ListChecks className="h-4 w-4 mr-1 text-muted-foreground" />
+                Care Checklist
+              </h4>
+              <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                {ageGroup.careChecks.map((check, index) => (
+                  <li key={index}>{check}</li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 };

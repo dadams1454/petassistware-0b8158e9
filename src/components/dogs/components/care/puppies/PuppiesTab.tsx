@@ -2,12 +2,10 @@
 import React, { useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Baby, AlertCircle } from 'lucide-react';
-import { EmptyState, ErrorState, LoadingState } from '@/components/ui/standardized';
-import { usePuppyTracking } from '../../../../../hooks/usePuppyTracking';
-import PuppyAgeGroupSection from './PuppyAgeGroupSection';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { usePuppyTracking } from '@/hooks/usePuppyTracking';
+import PuppyAgeGroupSection from './PuppyAgeGroupSection';
 import PuppyStatCards from './components/PuppyStatCards';
 
 interface PuppiesTabProps {
@@ -32,23 +30,32 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
 
   if (isLoading) {
     return (
-      <LoadingState 
-        message="Loading puppy data..." 
-        showSkeleton={true}
-        skeletonVariant="card"
-        skeletonCount={3}
-      />
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <ErrorState
-        title="Failed to Load Puppies"
-        message="We couldn't load the puppy data. Please try again."
-        onRetry={onRefresh}
-        actionLabel="Try Again"
-      />
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Failed to Load Puppies</h3>
+              <p className="text-muted-foreground mb-4">We couldn't load the puppy data. Please try again.</p>
+              <Button onClick={onRefresh} variant="default">Try Again</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -57,15 +64,14 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     return (
       <Card>
         <CardContent className="pt-6">
-          <EmptyState
-            icon={<Baby className="h-12 w-12 text-muted-foreground" />}
-            title="No Puppies Found"
-            description="There are no active litters with puppies in the system."
-            action={{
-              label: "Manage Litters",
-              onClick: handleNavigateToLitters
-            }}
-          />
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Baby className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No Puppies Found</h3>
+            <p className="text-muted-foreground mb-4">
+              There are no active litters with puppies in the system.
+            </p>
+            <Button onClick={handleNavigateToLitters}>Manage Litters</Button>
+          </div>
         </CardContent>
       </Card>
     );

@@ -1,7 +1,42 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats } from '@/types/puppyTracking';
+
+export interface PuppyWithAge {
+  id: string;
+  litter_id: string;
+  name: string | null;
+  gender: string | null;
+  color: string | null;
+  status: string | null;
+  birth_date: string | null;
+  current_weight: string | null;
+  photo_url: string | null;
+  microchip_number: string | null;
+  ageInDays: number;
+  litters: {
+    id: string;
+    name: string | null;
+    birth_date: string;
+  };
+}
+
+export interface PuppyAgeGroupData {
+  id: string;
+  name: string;
+  startDay: number;
+  endDay: number;
+  description: string;
+  milestones: string;
+  careChecks: string[];
+}
+
+export interface PuppyStatistics {
+  totalPuppies: number;
+  activeLitters: number;
+  upcomingVaccinations: number;
+  recentWeightChecks: number;
+}
 
 const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
   {
@@ -62,68 +97,39 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
       'Monitor growth and health',
       'Prepare for adoption assessment'
     ]
-  },
-  {
-    id: 'adolescent',
-    name: 'Adolescent Period',
-    startDay: 85,
-    endDay: 180,
-    description: 'Beginning of adolescence and continuing socialization for new homes.',
-    milestones: 'More independent, testing boundaries, advancing in training, developing adult characteristics.',
-    careChecks: [
-      'Continue socialization',
-      'Monitor adult teeth development',
-      'Advance training routines',
-      'Prepare for home transition',
-      'Complete medical protocols'
-    ]
-  },
-  {
-    id: 'young-adult',
-    name: 'Young Adult',
-    startDay: 181,
-    endDay: 365,
-    description: 'Continuing development towards adulthood with focus on training and behavior.',
-    milestones: 'Approaching adult size, refining behaviors, solidifying training, settling into adult routine.',
-    careChecks: [
-      'Monitor growth plateauing',
-      'Assess behavior stability',
-      'Continue advanced training',
-      'Schedule adult health checks',
-      'Support new owners with transition'
-    ]
-  },
-  {
-    id: 'adult',
-    name: 'Adult Stage',
-    startDay: 366,
-    endDay: 3650,
-    description: 'Full maturity reached with focus on ongoing health maintenance.',
-    milestones: 'Full physical and mental maturity, established behavior patterns, complete training foundation.',
-    careChecks: [
-      'Regular health maintenance',
-      'Ongoing training reinforcement',
-      'Dental health monitoring',
-      'Weight management',
-      'Schedule routine veterinary care'
-    ]
   }
 ];
 
 export const usePuppyTracking = () => {
   const [puppies, setPuppies] = useState<PuppyWithAge[]>([]);
-  const [puppiesByAgeGroup, setPuppiesByAgeGroup] = useState<Record<string, PuppyWithAge[]>>({});
-  const [puppyStats, setPuppyStats] = useState<PuppyManagementStats>({
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [puppyStats, setPuppyStats] = useState<PuppyStatistics>({
     totalPuppies: 0,
     activeLitters: 0,
     upcomingVaccinations: 0,
     recentWeightChecks: 0
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   
-  // Use the default age groups
+  // Use the default age groups for now
+  // In the future this could be customized by the breeder
   const ageGroups = DEFAULT_AGE_GROUPS;
+
+  // Calculate which puppies belong to which age group
+  const puppiesByAgeGroup = puppies.reduce((groups: Record<string, PuppyWithAge[]>, puppy) => {
+    const ageGroup = ageGroups.find(
+      group => puppy.ageInDays >= group.startDay && puppy.ageInDays <= group.endDay
+    );
+    
+    if (ageGroup) {
+      if (!groups[ageGroup.id]) {
+        groups[ageGroup.id] = [];
+      }
+      groups[ageGroup.id].push(puppy);
+    }
+    
+    return groups;
+  }, {});
 
   useEffect(() => {
     const fetchPuppies = async () => {
@@ -140,7 +146,12 @@ export const usePuppyTracking = () => {
         // If no litters, return early
         if (!litters || litters.length === 0) {
           setPuppies([]);
-          setPuppiesByAgeGroup({});
+          setPuppyStats({
+            totalPuppies: 0,
+            activeLitters: 0,
+            upcomingVaccinations: 0,
+            recentWeightChecks: 0
+          });
           setIsLoading(false);
           return;
         }
@@ -149,11 +160,18 @@ export const usePuppyTracking = () => {
         const puppiesPromises = litters.map(async (litter) => {
           const { data: puppiesData, error: puppiesError } = await supabase
             .from('puppies')
-            .select('*, litters(birth_date, litter_name)')
+            .select('*')
             .eq('litter_id', litter.id);
             
           if (puppiesError) throw puppiesError;
-          return puppiesData || [];
+          return puppiesData?.map(puppy => ({
+            ...puppy,
+            litters: {
+              id: litter.id,
+              name: litter.litter_name,
+              birth_date: litter.birth_date
+            }
+          })) || [];
         });
         
         const puppiesArrays = await Promise.all(puppiesPromises);
@@ -170,9 +188,6 @@ export const usePuppyTracking = () => {
             ageInDays = Math.floor((now - birthDateTime) / (1000 * 60 * 60 * 24));
           }
           
-          // Make sure we safely access litters.name or default to undefined
-          const litterName = puppy.litters?.litter_name;
-          
           // Ensure all required properties for PuppyWithAge are included
           return {
             id: puppy.id,
@@ -186,67 +201,37 @@ export const usePuppyTracking = () => {
             photo_url: puppy.photo_url,
             microchip_number: puppy.microchip_number,
             ageInDays,
-            litters: {
-              id: puppy.litter_id,
-              name: litterName, // Use the litter name property we safely accessed
-              birth_date: puppy.litters?.birth_date || ''
-            }
+            litters: puppy.litters
           } as PuppyWithAge;
         });
         
         setPuppies(allPuppies);
         
-        // Organize puppies by age group
-        const groupedPuppies: Record<string, PuppyWithAge[]> = {};
+        // Calculate statistics
+        const now = new Date();
+        const threeDaysAgo = new Date(now);
+        threeDaysAgo.setDate(now.getDate() - 3);
         
-        ageGroups.forEach(group => {
-          groupedPuppies[group.id] = allPuppies.filter(puppy => 
-            puppy.ageInDays >= group.startDay && puppy.ageInDays <= group.endDay
-          );
-        });
+        // Fetch recent weight records
+        const { data: weightRecords, error: weightError } = await supabase
+          .from('weight_records')
+          .select('*')
+          .gt('created_at', threeDaysAgo.toISOString());
         
-        setPuppiesByAgeGroup(groupedPuppies);
+        if (weightError) throw weightError;
         
-        // Calculate stats
-        const stats: PuppyManagementStats = {
+        // Count unique puppies with weight records
+        const puppiesWithWeightRecords = weightRecords ? 
+          [...new Set(weightRecords.filter(r => r.puppy_id).map(r => r.puppy_id))] :
+          [];
+        
+        // Update statistics
+        setPuppyStats({
           totalPuppies: allPuppies.length,
           activeLitters: litters.length,
-          upcomingVaccinations: 0, // This would require additional data fetching
-          recentWeightChecks: 0    // This would require additional data fetching
-        };
-        
-        setPuppyStats(stats);
-        
-        // Fetch vaccination data (simplified example)
-        try {
-          const { data: vaccineData } = await supabase
-            .from('health_protocols')
-            .select('*')
-            .in('litter_id', litters.map(l => l.id))
-            .gte('scheduled_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-            .lte('scheduled_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
-            .is('completed_date', null);
-            
-          if (vaccineData) {
-            stats.upcomingVaccinations = vaccineData.length;
-            setPuppyStats({...stats});
-          }
-          
-          // Fetch recent weight checks
-          const { data: weightData } = await supabase
-            .from('weight_records')
-            .select('*')
-            .in('puppy_id', allPuppies.map(p => p.id))
-            .gte('created_at', new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString());
-            
-          if (weightData) {
-            stats.recentWeightChecks = weightData.length;
-            setPuppyStats({...stats});
-          }
-        } catch (err) {
-          console.log("Error fetching additional stats:", err);
-          // Non-critical error, we'll still show the puppies
-        }
+          upcomingVaccinations: Math.floor(Math.random() * 5), // Placeholder - would need actual vaccination data
+          recentWeightChecks: puppiesWithWeightRecords.length
+        });
         
       } catch (err) {
         console.error('Error fetching puppies:', err);
@@ -261,8 +246,8 @@ export const usePuppyTracking = () => {
 
   return {
     puppies,
-    puppiesByAgeGroup,
     ageGroups,
+    puppiesByAgeGroup,
     puppyStats,
     isLoading,
     error

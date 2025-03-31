@@ -1,14 +1,13 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CheckCircle2, AlertCircle, Clipboard, Weight } from 'lucide-react';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
-import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useDailyCare } from '@/contexts/dailyCare';
+import { format } from 'date-fns';
+import { Weight, Ruler, Calendar, Syringe, FileEdit } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/hooks/usePuppyTracking';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface PuppyCardProps {
   puppy: PuppyWithAge;
@@ -17,137 +16,87 @@ interface PuppyCardProps {
 }
 
 const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => {
-  const { toast } = useToast();
-  const { addCareLog } = useDailyCare();
-  const [isLoading, setIsLoading] = useState(false);
-  const [careDialogOpen, setCareDialogOpen] = useState(false);
-
-  const handleLogCare = async () => {
-    setIsLoading(true);
-    try {
-      // Create care log for puppy (assuming puppy.id works as dog_id)
-      await addCareLog({
-        dog_id: puppy.id,
-        category: 'puppy_care',
-        task_name: `${ageGroup.name} Check`,
-        timestamp: new Date(),
-        notes: `Routine care check for ${puppy.name || 'puppy'} (${puppy.ageInDays} days old)`
-      });
-      
-      toast({
-        title: "Care logged",
-        description: `Recorded care for ${puppy.name || 'puppy'}`,
-      });
-      
-      onRefresh();
-    } catch (error) {
-      console.error("Error logging puppy care:", error);
-      toast({
-        title: "Error",
-        description: "Failed to log puppy care",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-      setCareDialogOpen(false);
-    }
+  const navigate = useNavigate();
+  
+  const handleViewDetails = () => {
+    navigate(`/litters/${puppy.litter_id}/puppies/${puppy.id}`);
   };
-
-  const getCareStatus = () => {
-    // This is a placeholder - in a full implementation, we would check
-    // if the puppy has had care logged today
-    const hasCareLogs = false;
-    return hasCareLogs;
-  };
-
-  const hasWellnessCheck = getCareStatus();
-
+  
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base flex justify-between items-center">
-          <span>{puppy.name || 'Unnamed Puppy'}</span>
-          <Badge variant="outline" className="text-xs font-normal bg-primary/10 px-2 py-1 rounded-full">
-            {puppy.ageInDays} days
+    <Card className="overflow-hidden">
+      <div className="h-40 overflow-hidden relative bg-muted">
+        {puppy.photo_url ? (
+          <img 
+            src={puppy.photo_url} 
+            alt={puppy.name || 'Puppy'} 
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-muted-foreground text-sm">No image available</p>
+          </div>
+        )}
+        <div className="absolute top-2 right-2">
+          <Badge variant="secondary" className="font-medium">
+            {puppy.gender || 'Unknown'}
           </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-2">
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium">Color:</span> {puppy.color || 'Not specified'}
+        </div>
+      </div>
+      
+      <CardContent className="pt-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8 mr-2">
+              <AvatarImage src={puppy.photo_url || ''} alt={puppy.name || 'Puppy'} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {(puppy.name?.[0] || 'P').toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-semibold">{puppy.name || 'Unnamed Puppy'}</h3>
+              <p className="text-xs text-muted-foreground">
+                {puppy.litters?.name || 'Unknown Litter'}
+              </p>
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium">Gender:</span> {puppy.gender || 'Not specified'}
+          <Badge variant={puppy.status === 'Reserved' ? 'destructive' : 'default'}>
+            {puppy.status || 'Available'}
+          </Badge>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1 mt-3">
+          <div className="flex items-center text-sm">
+            <Calendar className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+            <span className="text-muted-foreground">Age:</span>
+          </div>
+          <div className="text-sm font-medium text-right">
+            {puppy.ageInDays} days
           </div>
           
-          {/* Status indicators */}
-          <div className="flex flex-col gap-1 mt-3">
-            {hasWellnessCheck ? (
-              <div className="flex items-center text-xs text-green-600">
-                <CheckCircle2 className="h-3 w-3 mr-1" /> Care tracked today
-              </div>
-            ) : (
-              <div className="flex items-center text-xs text-amber-600">
-                <AlertCircle className="h-3 w-3 mr-1" /> Needs daily check
-              </div>
-            )}
-            
-            {puppy.current_weight && (
-              <div className="flex items-center text-xs text-blue-600">
-                <Weight className="h-3 w-3 mr-1" /> {puppy.current_weight} oz
-              </div>
-            )}
+          <div className="flex items-center text-sm">
+            <Weight className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+            <span className="text-muted-foreground">Weight:</span>
+          </div>
+          <div className="text-sm font-medium text-right">
+            {puppy.current_weight || 'Not recorded'}
           </div>
           
-          <Button 
-            size="sm" 
-            className="w-full mt-3"
-            variant="outline"
-            onClick={() => setCareDialogOpen(true)}
-            disabled={isLoading}
-          >
-            <Clipboard className="h-3 w-3 mr-1" />
-            Log Care
-          </Button>
+          <div className="flex items-center text-sm">
+            <Syringe className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+            <span className="text-muted-foreground">Status:</span>
+          </div>
+          <div className="text-sm font-medium text-right">
+            {ageGroup.name}
+          </div>
         </div>
       </CardContent>
-
-      <Dialog open={careDialogOpen} onOpenChange={setCareDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Log Care for {puppy.name || 'Puppy'}</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="text-sm">
-              <p><strong>Age:</strong> {puppy.ageInDays} days</p>
-              <p><strong>Development Stage:</strong> {ageGroup.name}</p>
-            </div>
-            
-            <div className="border rounded p-3 bg-muted/20">
-              <h3 className="font-medium mb-2">Recommended Checks:</h3>
-              <ul className="text-sm space-y-1">
-                {ageGroup.careChecks?.map((check, index) => (
-                  <li key={index} className="flex items-start">
-                    <CheckCircle2 className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
-                    <span>{check}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setCareDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleLogCare} disabled={isLoading}>
-              {isLoading ? 'Recording...' : 'Record Care'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      
+      <CardFooter className="flex justify-between pt-0">
+        <Button variant="outline" size="sm" onClick={handleViewDetails}>
+          <FileEdit className="h-3.5 w-3.5 mr-1" />
+          View Details
+        </Button>
+      </CardFooter>
     </Card>
   );
 };
