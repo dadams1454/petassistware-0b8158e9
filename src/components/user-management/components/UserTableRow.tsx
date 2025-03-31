@@ -1,119 +1,133 @@
 
-import React from 'react';
-import { TableCell, TableRow } from '@/components/ui/table';
+import React, { useState } from 'react';
+import { TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Edit, Trash2 } from 'lucide-react';
 import { UserWithProfile } from '@/types/user';
+import { DeleteUserDialog } from './DeleteUserDialog';
+import { formatDate } from '@/utils/dateUtils';
 
 interface UserTableRowProps {
   user: UserWithProfile;
-  currentUserId: string;
-  onEditUser: (user: UserWithProfile) => void;
-  onDeleteUser: (user: UserWithProfile) => void;
+  isCurrentUser: boolean;
+  onEdit: (user: UserWithProfile) => void;
+  onDelete: (userId: string) => void;
 }
 
 export function UserTableRow({
   user,
-  currentUserId,
-  onEditUser,
-  onDeleteUser,
+  isCurrentUser,
+  onEdit,
+  onDelete,
 }: UserTableRowProps) {
-  const isCurrentUser = user.id === currentUserId;
-  
-  const getInitials = (firstName?: string | null, lastName?: string | null) => {
-    const first = firstName ? firstName.charAt(0) : '';
-    const last = lastName ? lastName.charAt(0) : '';
-    return (first + last).toUpperCase() || 'U';
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const handleEdit = () => {
+    onEdit(user);
   };
-  
-  const getFullName = (firstName?: string | null, lastName?: string | null) => {
-    if (firstName && lastName) return `${firstName} ${lastName}`;
-    if (firstName) return firstName;
-    if (lastName) return lastName;
-    return 'Unnamed User';
+
+  const handleOpenDeleteDialog = () => {
+    setIsDeleteDialogOpen(true);
   };
-  
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleDeleteConfirm = (userId: string) => {
+    onDelete(userId);
+    setIsDeleteDialogOpen(false);
+  };
+
+  // Format dates for display
+  const formattedCreatedAt = formatDate(user.created_at);
+  const formattedLastSignIn = user.last_sign_in_at 
+    ? formatDate(user.last_sign_in_at) 
+    : 'Never';
+
+  // Get full name or fallback to email
+  const fullName = 
+    user.first_name && user.last_name
+      ? `${user.first_name} ${user.last_name}`
+      : user.email;
+
+  // Return variant based on user role
   const getRoleBadgeVariant = (role: string | null) => {
-    if (!role) return 'secondary';
-    
     switch (role) {
-      case 'owner':
-        return 'destructive';
       case 'admin':
         return 'default';
-      case 'manager':
-        return 'purple';
+      case 'owner':
+        return 'destructive';
       case 'staff':
-        return 'blue';
+        return 'secondary';
       case 'veterinarian':
-        return 'green';
+        return 'outline';
+      case 'groomer':
+        return 'secondary';
       case 'assistant':
-        return 'yellow';
+        return 'secondary';
+      case 'caretaker':
+        return 'secondary';
       default:
         return 'secondary';
     }
   };
 
-  const getLastSignIn = (lastSignIn: string | null) => {
-    if (!lastSignIn) return 'Never';
-    
-    try {
-      return new Date(lastSignIn).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch (e) {
-      return 'Invalid date';
-    }
-  };
-
   return (
-    <TableRow>
-      <TableCell>
-        <div className="flex items-center space-x-3">
-          <Avatar>
-            <AvatarImage src={user.profile_image_url || ''} alt={getFullName(user.first_name, user.last_name)} />
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {getInitials(user.first_name, user.last_name)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="font-medium">{getFullName(user.first_name, user.last_name)}</div>
-            {isCurrentUser && <span className="text-xs text-muted-foreground">(You)</span>}
+    <>
+      <TableRow>
+        <TableCell>
+          {fullName}
+          {isCurrentUser && (
+            <Badge variant="outline" className="ml-2">
+              You
+            </Badge>
+          )}
+        </TableCell>
+        <TableCell>{user.email}</TableCell>
+        <TableCell>
+          <Badge
+            variant={getRoleBadgeVariant(user.role)}
+          >
+            {user.role || 'user'}
+          </Badge>
+        </TableCell>
+        <TableCell className="hidden md:table-cell">
+          {formattedCreatedAt}
+        </TableCell>
+        <TableCell className="hidden lg:table-cell">
+          {formattedLastSignIn}
+        </TableCell>
+        <TableCell>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleEdit}
+              title="Edit user"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            {!isCurrentUser && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleOpenDeleteDialog}
+                title="Delete user"
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            )}
           </div>
-        </div>
-      </TableCell>
-      <TableCell>
-        <Badge variant={getRoleBadgeVariant(user.role)}>
-          {user.role || 'User'}
-        </Badge>
-      </TableCell>
-      <TableCell>{user.email}</TableCell>
-      <TableCell>
-        {new Date(user.created_at).toLocaleDateString()}
-      </TableCell>
-      <TableCell className="text-right">
-        <div className="flex justify-end space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onEditUser(user)}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onDeleteUser(user)}
-            disabled={isCurrentUser}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
+        </TableCell>
+      </TableRow>
+
+      <DeleteUserDialog
+        user={isDeleteDialogOpen ? user : null}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteConfirm}
+      />
+    </>
   );
 }
