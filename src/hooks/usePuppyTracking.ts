@@ -154,6 +154,7 @@ export const usePuppyTracking = () => {
           }
           
           // Ensure gender is properly typed according to PuppyWithAge interface
+          // This is important because PuppyWithAge expects gender to be either "Male" or "Female"
           const gender = puppy.gender === 'Male' || puppy.gender === 'Female' 
             ? puppy.gender 
             : null;
