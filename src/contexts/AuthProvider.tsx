@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 // Define UserRole type and export it
 export type UserRole = 'user' | 'staff' | 'manager' | 'admin' | 'owner';
@@ -70,7 +71,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(initialState.user);
   const [userRole, setUserRole] = useState<UserRole>(initialState.userRole);
   const [loading, setLoading] = useState(initialState.loading);
-  const [tenantId, setTenantId] = useState<string | null>('tenant-123'); // Mock tenant ID
+  
+  // Generate a valid UUID for the tenant ID instead of using a string
+  const [tenantId, setTenantId] = useState<string | null>(uuidv4());
 
   // Create a mock user and store it in localStorage immediately
   useEffect(() => {

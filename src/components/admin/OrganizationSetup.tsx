@@ -1,170 +1,124 @@
 
-import React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import { v4 as uuidv4 } from 'uuid';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-
-// Define the organization schema
-const organizationSchema = z.object({
-  name: z.string().min(2, { message: "Organization name must be at least 2 characters." }),
-  contactEmail: z.string().email({ message: "Please enter a valid email address." }).optional().or(z.literal('')),
-  phone: z.string().optional().or(z.literal('')),
-  address: z.string().optional().or(z.literal('')),
-  description: z.string().optional().or(z.literal('')),
-  website: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
-});
-
-type OrganizationFormValues = z.infer<typeof organizationSchema>;
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OrganizationSetupProps {
-  initialData?: {
-    id: string;
-    name: string;
-    contactEmail?: string;
-    phone?: string;
-    address?: string;
-    description?: string;
-    website?: string;
-  } | null;
-  onSubmit: (data: OrganizationFormValues) => Promise<void>;
+  initialData: any;
+  onSubmit: (data: any) => Promise<void>;
 }
 
 const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSubmit }) => {
-  const defaultValues: Partial<OrganizationFormValues> = {
-    name: initialData?.name || '',
-    contactEmail: initialData?.contactEmail || '',
-    phone: initialData?.phone || '',
-    address: initialData?.address || '',
-    description: initialData?.description || '',
-    website: initialData?.website || '',
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Generate a valid UUID if one doesn't exist
+  const generateTenantId = () => {
+    const newTenantId = uuidv4();
+    setValue('tenantId', newTenantId);
+    toast({
+      title: "Tenant ID Generated",
+      description: "A new valid tenant ID has been generated.",
+      variant: "default"
+    });
   };
-
-  const form = useForm<OrganizationFormValues>({
-    resolver: zodResolver(organizationSchema),
-    defaultValues,
+  
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+    defaultValues: {
+      name: initialData?.name || '',
+      description: initialData?.description || '',
+      tenantId: initialData?.id || ''
+    }
   });
-
-  const handleSubmit = async (data: OrganizationFormValues) => {
+  
+  const handleFormSubmit = async (data: any) => {
+    setIsSubmitting(true);
     try {
       await onSubmit(data);
-      form.reset(data); // Reset form with new values to prevent unsaved changes warnings
-    } catch (error) {
-      console.error('Error submitting organization data:', error);
+      toast({
+        title: "Organization Updated",
+        description: "Your organization settings have been saved successfully.",
+        variant: "default"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update organization settings.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Organization Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter organization name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="contactEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contact Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="contact@organization.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="(555) 123-4567" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://www.organization.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="123 Main St, City, State, Zip" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Brief description of your kennel or breeding organization"
-                        className="min-h-[100px]"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end">
-          <Button 
-            type="submit"
-            disabled={form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
-          </Button>
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="name">Organization Name</Label>
+          <Input
+            id="name"
+            placeholder="Your Organization Name"
+            {...register('name', { required: "Organization name is required" })}
+          />
+          {errors.name && (
+            <p className="text-sm text-destructive">{errors.name.message}</p>
+          )}
         </div>
-      </form>
-    </Form>
+        
+        <div className="space-y-2">
+          <Label htmlFor="description">Organization Description</Label>
+          <Textarea
+            id="description"
+            placeholder="Describe your organization"
+            className="min-h-[100px]"
+            {...register('description')}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label htmlFor="tenantId">Tenant ID (UUID format required)</Label>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={generateTenantId}
+            >
+              Generate New ID
+            </Button>
+          </div>
+          <Input
+            id="tenantId"
+            placeholder="UUID format tenant ID"
+            {...register('tenantId', { 
+              required: "Tenant ID is required",
+              pattern: {
+                value: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+                message: "Must be a valid UUID format"
+              }
+            })}
+          />
+          {errors.tenantId && (
+            <p className="text-sm text-destructive">{errors.tenantId.message}</p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            A unique identifier for your organization. Must be in UUID format.
+          </p>
+        </div>
+        
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : "Save Organization Settings"}
+        </Button>
+      </div>
+    </form>
   );
 };
 

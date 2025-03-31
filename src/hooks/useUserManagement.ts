@@ -32,6 +32,7 @@ export const useUserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       
       if (!tenantId) {
         throw new Error("Missing tenant ID");
