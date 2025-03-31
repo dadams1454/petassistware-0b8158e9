@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -38,16 +37,10 @@ export const useAuditLogs = (filters: AuditLogFilters = {}, limit = 50) => {
         throw new Error('No tenant ID available');
       }
 
+      // Simple query without join - we'll handle the user name separately
       let query = supabase
         .from('audit_logs')
-        .select(`
-          *,
-          breeder_profiles:user_id (
-            first_name,
-            last_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('tenant_id', tenantId)
         .order('timestamp', { ascending: false })
         .range((page - 1) * limit, page * limit - 1);
@@ -85,16 +78,47 @@ export const useAuditLogs = (filters: AuditLogFilters = {}, limit = 50) => {
 
       if (error) throw error;
 
-      // Format the audit logs for display
-      return data.map((log: any) => {
-        const userData = log.breeder_profiles || {};
-        return {
-          ...log,
-          user_name: userData.first_name && userData.last_name 
-            ? `${userData.first_name} ${userData.last_name}`
-            : userData.email || 'Unknown User',
-        };
-      });
+      // If we have data, fetch user profiles separately for each user_id
+      if (data && data.length > 0) {
+        const userIds = [...new Set(data.map(log => log.user_id))].filter(Boolean);
+        
+        // Only fetch user profiles if we have valid user IDs
+        if (userIds.length > 0) {
+          const { data: profiles, error: profilesError } = await supabase
+            .from('breeder_profiles')
+            .select('id, first_name, last_name, email')
+            .in('id', userIds);
+          
+          if (profilesError) {
+            console.error('Error fetching user profiles:', profilesError);
+          } else if (profiles) {
+            // Create a map of user_id to user details
+            const userMap = profiles.reduce((acc, profile) => {
+              acc[profile.id] = profile;
+              return acc;
+            }, {});
+            
+            // Add user name to each log entry
+            return data.map((log: any) => {
+              const userData = log.user_id ? userMap[log.user_id] : null;
+              return {
+                ...log,
+                user_name: userData ? 
+                  (userData.first_name && userData.last_name ? 
+                    `${userData.first_name} ${userData.last_name}` : 
+                    userData.email) : 
+                  'Unknown User',
+              };
+            });
+          }
+        }
+      }
+
+      // Return the basic log data if we can't add user names
+      return data.map((log: any) => ({
+        ...log,
+        user_name: 'Unknown User'
+      }));
     } catch (error: any) {
       console.error('Error fetching audit logs:', error);
       toast({
