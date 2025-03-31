@@ -1,74 +1,43 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { NewEvent } from '@/pages/Calendar';
-import { EventFormData, formatEventData } from './form/types';
-import EventDatePicker from './form/EventDatePicker';
+import { EVENT_TYPES, NewEvent, Event } from '@/pages/Calendar';
+import { format } from 'date-fns';
 import EventTypeSelector from './form/EventTypeSelector';
+import EventDatePicker from './form/EventDatePicker';
 import StatusSelector from './form/StatusSelector';
 import RecurrenceOptions from './form/RecurrenceOptions';
 
 interface EventFormProps {
   onSubmit: (data: NewEvent) => void;
-  initialData?: NewEvent;
+  initialData?: Event;
   defaultDate?: Date;
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDate }) => {
-  const [showRecurrenceOptions, setShowRecurrenceOptions] = useState(
-    initialData?.is_recurring || false
-  );
-  
-  // Convert string dates from initialData to Date objects for the form
-  const form = useForm<EventFormData>({
-    defaultValues: {
-      title: initialData?.title || '',
-      description: initialData?.description || '',
-      event_date: initialData?.event_date 
-        ? new Date(initialData.event_date) 
-        : defaultDate || new Date(),
-      status: initialData?.status || 'planned',
-      event_type: initialData?.event_type || 'Other',
-      is_recurring: initialData?.is_recurring || false,
-      recurrence_pattern: initialData?.recurrence_pattern || 'none',
-      recurrence_end_date: initialData?.recurrence_end_date 
-        ? new Date(initialData.recurrence_end_date) 
-        : null
+const EventForm: React.FC<EventFormProps> = ({ 
+  onSubmit, 
+  initialData, 
+  defaultDate 
+}) => {
+  const form = useForm<NewEvent>({
+    defaultValues: initialData || {
+      title: '',
+      description: '',
+      event_date: defaultDate ? format(defaultDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+      status: 'planned',
+      event_type: EVENT_TYPES[0],
+      is_recurring: false,
+      recurrence_pattern: null,
+      recurrence_end_date: null
     }
   });
 
-  const handleSubmit = (data: EventFormData) => {
-    // If not recurring, make sure recurrence fields are cleared
-    if (!data.is_recurring) {
-      data.recurrence_pattern = 'none';
-      data.recurrence_end_date = null;
-    }
-
-    // Format dates as strings for the database
-    const formattedData = formatEventData(data);
-    onSubmit(formattedData);
-  };
-
-  const toggleRecurrence = (checked: boolean) => {
-    setShowRecurrenceOptions(checked);
-    form.setValue('is_recurring', checked);
-    if (!checked) {
-      form.setValue('recurrence_pattern', 'none');
-      form.setValue('recurrence_end_date', null);
-    }
+  const handleSubmit = (data: NewEvent) => {
+    onSubmit(data);
   };
 
   return (
@@ -79,7 +48,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>Event Title</FormLabel>
               <FormControl>
                 <Input placeholder="Enter event title" {...field} />
               </FormControl>
@@ -93,10 +62,11 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (optional)</FormLabel>
+              <FormLabel>Description (Optional)</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Enter event description" 
+                  className="resize-none" 
                   {...field} 
                   value={field.value || ''}
                 />
@@ -112,24 +82,10 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, initialData, defaultDat
         </div>
 
         <StatusSelector form={form} />
+        
+        <RecurrenceOptions form={form} />
 
-        {/* Recurring event options */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="is_recurring" 
-              checked={showRecurrenceOptions}
-              onCheckedChange={(checked) => toggleRecurrence(!!checked)}
-            />
-            <Label htmlFor="is_recurring">This is a recurring event</Label>
-          </div>
-
-          {showRecurrenceOptions && (
-            <RecurrenceOptions form={form} />
-          )}
-        </div>
-
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="flex justify-end space-x-2 pt-4">
           <Button type="submit">
             {initialData ? 'Update Event' : 'Create Event'}
           </Button>

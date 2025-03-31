@@ -1,97 +1,104 @@
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
-import { EventFormData } from './types';
-
-const recurrenceOptions = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Every two weeks' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Every three months' },
-  { value: 'yearly', label: 'Yearly' }
-];
+import { NewEvent } from '@/pages/Calendar';
 
 interface RecurrenceOptionsProps {
-  form: UseFormReturn<EventFormData>;
+  form: UseFormReturn<NewEvent>;
 }
 
 const RecurrenceOptions: React.FC<RecurrenceOptionsProps> = ({ form }) => {
+  const recurrencePatterns = [
+    { value: 'daily', label: 'Daily' },
+    { value: 'weekly', label: 'Weekly' },
+    { value: 'biweekly', label: 'Every two weeks' },
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'quarterly', label: 'Every three months' },
+    { value: 'yearly', label: 'Yearly' }
+  ];
+
+  // Get is_recurring value from form
+  const isRecurring = form.watch('is_recurring');
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6 border-l-2 border-slate-200">
+    <div className="space-y-4">
       <FormField
         control={form.control}
-        name="recurrence_pattern"
+        name="is_recurring"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Recurrence Pattern</FormLabel>
-            <Select 
-              onValueChange={field.onChange} 
-              defaultValue={field.value}
-              value={field.value || 'none'}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select pattern" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {recurrenceOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <FormLabel>Recurring Event</FormLabel>
+              <FormDescription>
+                Does this event repeat on a schedule?
+              </FormDescription>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
           </FormItem>
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="recurrence_end_date"
-        render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel>End Date (optional)</FormLabel>
-            <Popover>
-              <PopoverTrigger asChild>
+      {isRecurring && (
+        <div className="space-y-4 border rounded-lg p-3">
+          <FormField
+            control={form.control}
+            name="recurrence_pattern"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Recurrence Pattern</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value || ''}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select pattern" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {recurrencePatterns.map(pattern => (
+                      <SelectItem key={pattern.value} value={pattern.value}>
+                        {pattern.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="recurrence_end_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>End Date (Optional)</FormLabel>
                 <FormControl>
-                  <Button
-                    variant="outline"
-                    className="w-full pl-3 text-left font-normal"
-                  >
-                    {field.value ? (
-                      format(field.value, 'PPP')
-                    ) : (
-                      <span>No end date</span>
-                    )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
+                  <Input 
+                    type="date" 
+                    {...field} 
+                    value={field.value || ''} 
+                  />
                 </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={field.value || undefined}
-                  onSelect={field.onChange}
-                  initialFocus
-                  fromDate={new Date()} // Can't select dates in the past
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+                <FormDescription>
+                  Leave blank if the event recurs indefinitely
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 };
