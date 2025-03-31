@@ -110,7 +110,6 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
       
       // For real users, this is where we'd integrate with auth system
       // For now, generate a mock invitation link
-      // Using let instead of const to allow modification
       let inviteUrl = `${window.location.origin}/auth?email=${encodeURIComponent(values.email)}&token=${token}&role=${values.role}&tenant=${tenantId}`;
       
       if (values.generateRandomPassword) {

@@ -64,9 +64,10 @@ export const UserTable: React.FC<UserTableProps> = ({
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead className="hidden md:table-cell">Created</TableHead>
+              <TableHead className="hidden lg:table-cell">Last Sign In</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -78,21 +79,15 @@ export const UserTable: React.FC<UserTableProps> = ({
                 <UserTableRow
                   key={user.id}
                   user={user}
-                  currentUserId={currentUserId}
-                  onEditUser={onEditUser}
-                  onDeleteUser={setUserToDelete}
+                  isCurrentUser={user.id === currentUserId}
+                  onEdit={onEditUser}
+                  onDelete={handleDeleteUser}
                 />
               ))
             )}
           </TableBody>
         </Table>
       </div>
-
-      <DeleteUserDialog
-        user={userToDelete}
-        onClose={() => setUserToDelete(null)}
-        onConfirm={handleDeleteUser}
-      />
     </>
   );
-};
+}

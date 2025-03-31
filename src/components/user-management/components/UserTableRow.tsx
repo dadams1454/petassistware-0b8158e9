@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { UserWithProfile } from '@/types/user';
 import { DeleteUserDialog } from './DeleteUserDialog';
-import { formatDate } from '@/utils/dateUtils';
+import { formatDateForDisplay } from '@/utils/dateUtils';
 
 interface UserTableRowProps {
   user: UserWithProfile;
@@ -41,9 +41,9 @@ export function UserTableRow({
   };
 
   // Format dates for display
-  const formattedCreatedAt = formatDate(user.created_at);
+  const formattedCreatedAt = formatDateForDisplay(user.created_at);
   const formattedLastSignIn = user.last_sign_in_at 
-    ? formatDate(user.last_sign_in_at) 
+    ? formatDateForDisplay(user.last_sign_in_at) 
     : 'Never';
 
   // Get full name or fallback to email
