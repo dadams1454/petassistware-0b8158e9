@@ -43,12 +43,7 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
       {/* Only show breeding section for females first and more prominently */}
       <HealthSectionHeader
         gender={dog.gender}
-        isPregnant={isPregnant}
-        lastHeatDate={lastHeatDate}
-        tieDate={tieDate}
-        litterNumber={litterNumber}
-        nextHeatDate={nextHeatDate}
-        hasVaccinationConflict={hasVaccinationConflict}
+        dog={dog}
       />
       
       {dog.gender === 'Female' && <Separator className="my-2" />}

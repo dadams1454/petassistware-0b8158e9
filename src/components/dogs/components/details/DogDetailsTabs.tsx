@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DogProfile } from '@/types/dog';
-import { ArrowRight, Calendar, Heart, BabyBottle, Stethoscope, ActivitySquare } from 'lucide-react';
+import { ArrowRight, Calendar, Heart, Baby, Stethoscope, ActivitySquare } from 'lucide-react';
 import DailyCareLogs from '../../components/care/DailyCareLogs';
 import DogHealthSection from '../../DogHealthSection';
 import BreedingDashboard from '../breeding/BreedingDashboard';
