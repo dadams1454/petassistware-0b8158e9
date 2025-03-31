@@ -1,24 +1,21 @@
 
 import React, { useState, useEffect } from 'react';
-import { format, parseISO, addDays, differenceInDays } from 'date-fns';
-import { customSupabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { customSupabase } from '@/integrations/supabase/client';
+import { format, parseISO, differenceInDays } from 'date-fns';
+import { Plus, ArrowDown, ArrowUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, ArrowRight } from 'lucide-react';
-import { toast } from 'sonner';
 
-// Define the HeatCycle type
 export interface HeatCycle {
   id: string;
   dog_id: string;
   start_date: string;
-  end_date?: string;
-  notes?: string;
+  end_date?: string | null;
+  notes?: string | null;
   created_at: string;
 }
 
-export interface HeatCycleMonitorProps {
+interface HeatCycleMonitorProps {
   dogId: string;
   onAddCycle?: () => void;
 }
@@ -26,7 +23,8 @@ export interface HeatCycleMonitorProps {
 const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }) => {
   const [cycles, setCycles] = useState<HeatCycle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [nextEstimatedDate, setNextEstimatedDate] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     fetchHeatCycles();
@@ -36,152 +34,115 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
     try {
       setLoading(true);
       
-      // Use customSupabase for tables not in the schema
+      // Use the custom supabase client for the heat_cycles table
       const { data, error } = await customSupabase
-        .from<HeatCycle>('heat_cycles')
+        .from('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
         .order('start_date', { ascending: false });
       
-      if (!error) {
-        // If successful, process the data
-        setCycles(data as HeatCycle[]);
-        calculateNextHeatDate(data as HeatCycle[]);
-      } else {
-        console.error('Error fetching heat cycles:', error);
-        toast.error('Failed to load heat cycle data');
-        setCycles([]);
+      if (error) {
+        throw error;
       }
-    } catch (error) {
-      console.error('Error in heat cycle fetch operation:', error);
-      toast.error('An error occurred while loading heat cycle data');
+      
+      // Safely cast data to HeatCycle[] since we're selecting all fields
+      const heatCycles: HeatCycle[] = (data as HeatCycle[]) || [];
+      setCycles(heatCycles);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching heat cycles:', err);
+      setError('Failed to load heat cycle data');
       setCycles([]);
     } finally {
       setLoading(false);
     }
   };
   
-  const calculateNextHeatDate = (heatCycles: HeatCycle[]) => {
-    if (!heatCycles || heatCycles.length < 1) {
-      setNextEstimatedDate(null);
-      return;
-    }
-    
-    // Get the most recent heat cycle
-    const latestCycle = heatCycles[0];
-    
-    // If we have at least 2 cycles, calculate the average cycle length
-    if (heatCycles.length >= 2) {
-      let totalDays = 0;
-      let intervals = 0;
-      
-      for (let i = 0; i < heatCycles.length - 1; i++) {
-        const currentCycleStart = parseISO(heatCycles[i].start_date);
-        const prevCycleStart = parseISO(heatCycles[i + 1].start_date);
-        
-        const daysBetween = differenceInDays(currentCycleStart, prevCycleStart);
-        
-        if (daysBetween > 0) {
-          totalDays += daysBetween;
-          intervals++;
-        }
-      }
-      
-      if (intervals > 0) {
-        const averageDays = Math.round(totalDays / intervals);
-        const lastStartDate = parseISO(latestCycle.start_date);
-        const nextDate = addDays(lastStartDate, averageDays);
-        
-        setNextEstimatedDate(format(nextDate, 'yyyy-MM-dd'));
-      }
-    } else {
-      // With only one cycle, estimate based on typical canine heat cycle (6 months)
-      const lastStartDate = parseISO(latestCycle.start_date);
-      const nextDate = addDays(lastStartDate, 180); // Approx 6 months
-      
-      setNextEstimatedDate(format(nextDate, 'yyyy-MM-dd'));
-    }
-  };
-  
-  const formatDate = (dateString: string) => {
-    return format(parseISO(dateString), 'MMM d, yyyy');
-  };
+  const displayedCycles = showAll ? cycles : cycles.slice(0, 3);
   
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl flex justify-between items-center">
-          <span>Heat Cycle History</span>
-          {onAddCycle && (
-            <Button onClick={onAddCycle} size="sm" className="h-8">
-              <Plus className="h-4 w-4 mr-1" /> Record Heat
-            </Button>
-          )}
-        </CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-lg">Heat Cycle History</CardTitle>
+        {onAddCycle && (
+          <Button onClick={onAddCycle} variant="outline" size="sm">
+            <Plus className="h-4 w-4 mr-1" /> Record Heat
+          </Button>
+        )}
       </CardHeader>
-      
       <CardContent>
         {loading ? (
-          <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="py-4 text-center text-muted-foreground">
+            <p>Loading heat cycle data...</p>
+          </div>
+        ) : error ? (
+          <div className="py-4 text-center text-destructive">
+            <p>{error}</p>
           </div>
         ) : cycles.length === 0 ? (
-          <div className="text-center py-6">
-            <Calendar className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">No heat cycles recorded yet</p>
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground">No heat cycles recorded yet.</p>
             {onAddCycle && (
-              <Button 
-                onClick={onAddCycle} 
-                variant="outline" 
-                className="mt-4"
-              >
+              <Button onClick={onAddCycle} className="mt-4" variant="default" size="sm">
                 Record First Heat Cycle
               </Button>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {nextEstimatedDate && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md border border-yellow-200 dark:border-yellow-800">
-                <div className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                  Next estimated heat: {formatDate(nextEstimatedDate)}
-                </div>
-              </div>
-            )}
-            
-            <div className="space-y-3">
-              {cycles.map((cycle, index) => (
-                <div key={cycle.id} className="border rounded-md p-3">
-                  <div className="flex justify-between items-start mb-1">
-                    <Badge variant={index === 0 ? "default" : "outline"}>
-                      {index === 0 ? "Latest Heat" : `Heat Cycle ${cycles.length - index}`}
-                    </Badge>
-                    {cycle.end_date && (
-                      <div className="text-xs text-muted-foreground">
-                        {differenceInDays(parseISO(cycle.end_date), parseISO(cycle.start_date))} days
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center text-sm mt-2">
-                    <span>{formatDate(cycle.start_date)}</span>
-                    {cycle.end_date && (
-                      <>
-                        <ArrowRight className="h-3 w-3 mx-2 text-muted-foreground" />
-                        <span>{formatDate(cycle.end_date)}</span>
-                      </>
-                    )}
-                  </div>
-                  
-                  {cycle.notes && (
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {cycle.notes}
+          <>
+            <div className="space-y-4">
+              {displayedCycles.map((cycle) => (
+                <div
+                  key={cycle.id}
+                  className="border-b pb-3 last:border-b-0 last:pb-0"
+                >
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="font-medium">
+                        {format(parseISO(cycle.start_date), 'MMM d, yyyy')}
+                      </p>
+                      {cycle.end_date && (
+                        <p className="text-sm text-muted-foreground">
+                          Ended: {format(parseISO(cycle.end_date), 'MMM d, yyyy')}
+                          <span className="ml-2">
+                            ({differenceInDays(parseISO(cycle.end_date), parseISO(cycle.start_date))} days)
+                          </span>
+                        </p>
+                      )}
                     </div>
+                    <div className="text-right">
+                      <div className="text-sm text-muted-foreground">
+                        {!cycle.end_date && 'Ongoing'}
+                      </div>
+                    </div>
+                  </div>
+                  {cycle.notes && (
+                    <p className="text-sm mt-1 text-muted-foreground">{cycle.notes}</p>
                   )}
                 </div>
               ))}
             </div>
-          </div>
+
+            {cycles.length > 3 && (
+              <div className="mt-4 text-center">
+                <Button
+                  variant="link"
+                  onClick={() => setShowAll(!showAll)}
+                  className="text-sm"
+                >
+                  {showAll ? (
+                    <>
+                      Show Less <ArrowUp className="h-3 w-3 ml-1" />
+                    </>
+                  ) : (
+                    <>
+                      Show All ({cycles.length}) <ArrowDown className="h-3 w-3 ml-1" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Syringe, Stethoscope, Pill, Activity, AlertCircle, FileText, Scissors } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
@@ -60,15 +61,14 @@ export function getStatusColor(status: GeneticHealthStatus | string): string {
  * Get the display text for a dog's genotype
  */
 export function getGenotypeDisplayText(genotype: DogGenotype): string {
-  switch (genotype) {
-    case DogGenotype.Clear:
-      return 'Clear';
-    case DogGenotype.Carrier:
-      return 'Carrier';
-    case DogGenotype.Affected:
-      return 'Affected';
-    default:
-      return 'Unknown';
+  if (genotype === 'clear') {
+    return 'Clear';
+  } else if (genotype === 'carrier') {
+    return 'Carrier';
+  } else if (genotype === 'affected') {
+    return 'Affected';
+  } else {
+    return 'Unknown';
   }
 }
 
@@ -76,14 +76,126 @@ export function getGenotypeDisplayText(genotype: DogGenotype): string {
  * Get the status text for a genetic health marker
  */
 export function getStatusText(status: GeneticHealthStatus): string {
-  switch (status) {
-    case GeneticHealthStatus.Clear:
-      return 'Clear';
-    case GeneticHealthStatus.Carrier:
-      return 'Carrier';
-    case GeneticHealthStatus.Affected:
-      return 'Affected';
-    default:
-      return 'Unknown';
+  if (status === 'clear') {
+    return 'Clear';
+  } else if (status === 'carrier') {
+    return 'Carrier';
+  } else if (status === 'affected') {
+    return 'Affected';
+  } else {
+    return 'Unknown';
   }
+}
+
+/**
+ * Format a date string for display
+ */
+export function formatDate(dateString?: string): string {
+  if (!dateString) return 'Unknown date';
+  
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  } catch (err) {
+    return 'Invalid date';
+  }
+}
+
+/**
+ * Get result with color properties for UI display
+ */
+export function getResultWithColorProps(status: string) {
+  const statusMap: Record<string, { color: string, bgColor: string, label: string }> = {
+    'clear': { 
+      color: 'text-green-700', 
+      bgColor: 'bg-green-100', 
+      label: 'Clear' 
+    },
+    'carrier': { 
+      color: 'text-yellow-700', 
+      bgColor: 'bg-yellow-100', 
+      label: 'Carrier' 
+    },
+    'affected': { 
+      color: 'text-red-700', 
+      bgColor: 'bg-red-100', 
+      label: 'Affected' 
+    },
+    'unknown': { 
+      color: 'text-gray-700', 
+      bgColor: 'bg-gray-100', 
+      label: 'Unknown' 
+    }
+  };
+  
+  return statusMap[status.toLowerCase()] || statusMap.unknown;
+}
+
+/**
+ * Helper function to format condition names for display
+ */
+export function formatConditionName(condition: string): string {
+  const abbreviations: Record<string, string> = {
+    'DM': 'Degenerative Myelopathy',
+    'DCM': 'Dilated Cardiomyopathy',
+    'vWD': 'von Willebrand Disease',
+    'PRA': 'Progressive Retinal Atrophy',
+    'Hip Dysplasia': 'Hip Dysplasia (HD)',
+    'Elbow Dysplasia': 'Elbow Dysplasia (ED)'
+  };
+  
+  if (abbreviations[condition]) {
+    return abbreviations[condition];
+  }
+  
+  return condition
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Helper function to extract health test summary from genetic data
+ */
+export function getHealthSummaryData(healthMarkers: Record<string, any> = {}) {
+  const clear: string[] = [];
+  const carriers: string[] = [];
+  const affected: string[] = [];
+  const hasTests = Object.keys(healthMarkers).length > 0;
+  
+  // Categorize each health marker
+  for (const [condition, marker] of Object.entries(healthMarkers)) {
+    const displayName = formatConditionName(condition);
+    
+    if (marker.status === 'clear') {
+      clear.push(displayName);
+    } else if (marker.status === 'carrier') {
+      carriers.push(displayName);
+    } else if (marker.status === 'affected') {
+      affected.push(displayName);
+    }
+  }
+  
+  return { 
+    clear, 
+    carriers, 
+    affected,
+    hasTests
+  };
+}
+
+/**
+ * Helper function to calculate risk level based on test status
+ */
+export function calculateRiskLevel(test: any): 'high' | 'medium' | 'low' {
+  if (test.status === 'affected') {
+    return 'high';
+  } else if (test.status === 'carrier') {
+    return 'medium';
+  }
+  return 'low';
 }

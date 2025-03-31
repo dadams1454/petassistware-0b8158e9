@@ -17,8 +17,12 @@ const Dashboard: React.FC = () => {
   const { alerts, hasAlerts } = useHeatCycleStatus();
   const navigate = useNavigate();
   
-  const handleGoToLitters = () => {
-    navigate('/litters');
+  const handleGoToBreeding = (dogId?: string) => {
+    if (dogId) {
+      navigate(`/breeding/prepare?dogId=${dogId}`);
+    } else {
+      navigate('/litters');
+    }
   };
   
   return (
@@ -39,12 +43,23 @@ const Dashboard: React.FC = () => {
                   <AlertDescription className="flex flex-col gap-2">
                     <div>
                       {alerts.map((alert) => (
-                        <div key={alert.dogId} className="mb-1">
-                          {alert.alertType === 'upcoming' ? (
-                            <span><strong>{alert.dogName}</strong> heat cycle approaching in {alert.daysUntil} days</span>
-                          ) : (
-                            <span><strong>{alert.dogName}</strong> is currently in heat (day {alert.daysPast})</span>
-                          )}
+                        <div key={alert.dogId} className="mb-1 flex justify-between items-center">
+                          <span>
+                            <strong>{alert.dogName}</strong> 
+                            {alert.alertType === 'upcoming' ? (
+                              <span> heat cycle approaching in {alert.daysUntil} days</span>
+                            ) : (
+                              <span> is currently in heat (day {alert.daysPast})</span>
+                            )}
+                          </span>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="ml-4"
+                            onClick={() => handleGoToBreeding(alert.dogId)}
+                          >
+                            Manage Breeding
+                          </Button>
                         </div>
                       ))}
                     </div>
@@ -52,10 +67,10 @@ const Dashboard: React.FC = () => {
                       variant="outline" 
                       size="sm" 
                       className="w-fit mt-1"
-                      onClick={handleGoToLitters}
+                      onClick={() => handleGoToBreeding()}
                     >
                       <Calendar className="h-4 w-4 mr-2" />
-                      Manage Breeding
+                      View All Breeding
                     </Button>
                   </AlertDescription>
                 </Alert>

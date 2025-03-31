@@ -12,6 +12,9 @@ import DogProfilePage from '@/pages/DogProfile';
 import WeightTracking from '@/pages/WeightTracking';
 import Customers from '@/pages/Customers';
 import Litters from '@/pages/Litters';
+import AddLitter from '@/pages/AddLitter';
+import LitterDetail from '@/pages/LitterDetail';
+import BreedingPrepPage from '@/pages/BreedingPrepPage';
 import Calendar from '@/pages/Calendar';
 import Communications from '@/pages/Communications';
 import AdminSetup from '@/pages/AdminSetup';
@@ -39,6 +42,9 @@ const Router = () => {
           <Route path="/dogs/:id/weight" element={<WeightTracking />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/litters" element={<Litters />} />
+          <Route path="/litters/new" element={<AddLitter />} />
+          <Route path="/litters/:id" element={<LitterDetail />} />
+          <Route path="/breeding/prepare" element={<BreedingPrepPage />} />
           <Route path="/reservations" element={<Reservations />} />
           <Route path="/reservations/:id" element={<Reservations />} />
           <Route path="/calendar" element={<Calendar />} />
