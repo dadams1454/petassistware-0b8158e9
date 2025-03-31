@@ -1,14 +1,13 @@
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
 import {
@@ -19,60 +18,48 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { PaymentMethod } from '@/types/reservation';
+import { format } from 'date-fns';
 
-// Define form schema
-const depositSchema = z.object({
+const paymentMethods: { value: PaymentMethod; label: string }[] = [
+  { value: 'cash', label: 'Cash' },
+  { value: 'credit_card', label: 'Credit Card' },
+  { value: 'bank_transfer', label: 'Bank Transfer' },
+  { value: 'paypal', label: 'PayPal' },
+  { value: 'venmo', label: 'Venmo' },
+  { value: 'zelle', label: 'Zelle' },
+  { value: 'check', label: 'Check' },
+  { value: 'other', label: 'Other' }
+];
+
+const formSchema = z.object({
   amount: z.preprocess(
-    (value) => (value === '' ? undefined : Number(value)),
-    z.number({ required_error: "Amount is required" })
-      .positive("Amount must be positive")
+    (val) => (val === '' ? undefined : Number(val)),
+    z.number({ invalid_type_error: 'Amount must be a number' })
+      .positive('Amount must be positive')
+      .min(1, 'Amount must be at least 1')
   ),
-  payment_method: z.string({ required_error: "Payment method is required" }),
-  payment_status: z.enum(['pending', 'completed', 'failed', 'refunded'], {
-    required_error: "Payment status is required"
-  }),
+  payment_method: z.enum(['cash', 'credit_card', 'bank_transfer', 'paypal', 'venmo', 'zelle', 'check', 'other']),
+  payment_date: z.string().min(1, 'Payment date is required'),
   notes: z.string().optional()
 });
 
-type DepositFormValues = z.infer<typeof depositSchema>;
-
-// Payment method options
-const paymentMethods = [
-  { label: 'Cash', value: 'cash' },
-  { label: 'Credit Card', value: 'credit_card' },
-  { label: 'Bank Transfer', value: 'bank_transfer' },
-  { label: 'PayPal', value: 'paypal' },
-  { label: 'Venmo', value: 'venmo' },
-  { label: 'Zelle', value: 'zelle' },
-  { label: 'Check', value: 'check' },
-  { label: 'Other', value: 'other' }
-];
-
-// Payment status options
-const paymentStatuses = [
-  { label: 'Pending', value: 'pending' },
-  { label: 'Completed', value: 'completed' },
-  { label: 'Failed', value: 'failed' },
-  { label: 'Refunded', value: 'refunded' }
-];
+type FormValues = z.infer<typeof formSchema>;
 
 interface DepositDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: DepositFormValues) => void;
+  onSubmit: (data: FormValues) => Promise<void>;
   isSubmitting: boolean;
   defaultAmount?: number;
 }
@@ -82,117 +69,116 @@ export const DepositDialog: React.FC<DepositDialogProps> = ({
   onOpenChange,
   onSubmit,
   isSubmitting,
-  defaultAmount = 0
+  defaultAmount
 }) => {
-  const form = useForm<DepositFormValues>({
-    resolver: zodResolver(depositSchema),
+  const today = format(new Date(), 'yyyy-MM-dd');
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: defaultAmount || undefined,
+      amount: defaultAmount || 0,
       payment_method: 'cash',
-      payment_status: 'completed',
+      payment_date: today,
       notes: ''
     }
   });
 
-  const handleSubmit = (values: DepositFormValues) => {
-    onSubmit(values);
+  const handleSubmit = async (data: FormValues) => {
+    await onSubmit(data);
+    form.reset({
+      amount: defaultAmount || 0,
+      payment_method: 'cash',
+      payment_date: today,
+      notes: ''
+    });
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Record Deposit Payment</DialogTitle>
-          <DialogDescription>
-            Enter the deposit payment details below
-          </DialogDescription>
+          <DialogTitle>Record Deposit</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount ($)</FormLabel>
+                  <FormLabel>Amount</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      value={field.value || ''}
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="pl-7"
+                        step="0.01"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={e => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="payment_method"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Payment Method</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select payment method" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {paymentMethods.map((method) => (
-                          <SelectItem key={method.value} value={method.value}>
-                            {method.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="payment_method"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Method</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select payment method" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {paymentMethods.map((method) => (
+                        <SelectItem key={method.value} value={method.value}>
+                          {method.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="payment_status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Payment Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {paymentStatuses.map((status) => (
-                          <SelectItem key={status.value} value={status.value}>
-                            {status.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="payment_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>Notes (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Add any additional notes about this payment"
-                      className="min-h-[100px]"
+                      placeholder="Add notes about this deposit"
+                      rows={3}
                       {...field}
                     />
                   </FormControl>
@@ -201,15 +187,16 @@ export const DepositDialog: React.FC<DepositDialogProps> = ({
               )}
             />
 
-            <Separator />
-
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Record Payment
+                {isSubmitting ? 'Recording...' : 'Record Deposit'}
               </Button>
             </DialogFooter>
           </form>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Reservation, ReservationStatusHistory, Deposit } from '@/types/reservation';
 import { DepositDialog } from './DepositDialog';
@@ -8,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { CreditCard, FileEdit, Plus, RefreshCcw } from 'lucide-react';
+import { CreditCard, FileEdit, FileText, Plus, RefreshCcw } from 'lucide-react';
 import StatusBadge from '@/components/ui/standardized/StatusBadge';
 import { useReservationManagement } from '@/hooks/useReservationManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import GenerateContractButton from '@/components/contracts/GenerateContractButton';
 
 interface ReservationDetailsProps {
   reservationId: string;
@@ -115,6 +115,9 @@ export const ReservationDetails: React.FC<ReservationDetailsProps> = ({ reservat
     if (!dateString) return 'N/A';
     return format(new Date(dateString), 'MMM dd, yyyy h:mm a');
   };
+
+  // Check if both puppy_id and customer_id are available for contract generation
+  const canGenerateContract = reservation.puppy_id && reservation.customer_id;
 
   return (
     <div className="space-y-4">
@@ -230,10 +233,19 @@ export const ReservationDetails: React.FC<ReservationDetailsProps> = ({ reservat
             <RefreshCcw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button onClick={handleOpenDepositDialog}>
-            <CreditCard className="h-4 w-4 mr-2" />
-            Record Deposit
-          </Button>
+          <div className="flex space-x-2">
+            <Button onClick={handleOpenDepositDialog}>
+              <CreditCard className="h-4 w-4 mr-2" />
+              Record Deposit
+            </Button>
+            
+            {canGenerateContract && (
+              <GenerateContractButton
+                puppyId={reservation.puppy_id!}  
+                customerId={reservation.customer_id!}
+              />
+            )}
+          </div>
         </CardFooter>
       </Card>
 

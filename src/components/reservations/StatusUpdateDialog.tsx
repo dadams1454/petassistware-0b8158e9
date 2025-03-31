@@ -1,60 +1,64 @@
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage
 } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { ReservationStatus } from '@/types/reservation';
 
-// Define form schema
-const statusUpdateSchema = z.object({
-  status: z.string({ required_error: "Status is required" }),
+const statusOptions: ReservationStatus[] = [
+  'Pending',
+  'Approved',
+  'Deposit Paid',
+  'Contract Signed',
+  'Ready for Pickup',
+  'Completed',
+  'Cancelled'
+];
+
+const formSchema = z.object({
+  status: z.enum([
+    'Pending',
+    'Approved',
+    'Deposit Paid',
+    'Contract Signed',
+    'Ready for Pickup',
+    'Completed',
+    'Cancelled'
+  ]),
   notes: z.string().optional()
 });
 
-type StatusUpdateFormValues = z.infer<typeof statusUpdateSchema>;
-
-// Status options
-const statusOptions = [
-  { label: 'Pending', value: 'Pending' },
-  { label: 'Approved', value: 'Approved' },
-  { label: 'Deposit Paid', value: 'Deposit Paid' },
-  { label: 'Contract Signed', value: 'Contract Signed' },
-  { label: 'Ready for Pickup', value: 'Ready for Pickup' },
-  { label: 'Completed', value: 'Completed' },
-  { label: 'Cancelled', value: 'Cancelled' }
-];
+type FormValues = z.infer<typeof formSchema>;
 
 interface StatusUpdateDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: { newStatus: ReservationStatus; notes?: string }) => void;
+  onSubmit: (data: FormValues) => Promise<void>;
   isSubmitting: boolean;
   currentStatus: ReservationStatus;
 }
@@ -66,24 +70,17 @@ export const StatusUpdateDialog: React.FC<StatusUpdateDialogProps> = ({
   isSubmitting,
   currentStatus
 }) => {
-  const form = useForm<StatusUpdateFormValues>({
-    resolver: zodResolver(statusUpdateSchema),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       status: currentStatus,
       notes: ''
     }
   });
 
-  // Update the default value when currentStatus changes
-  React.useEffect(() => {
-    form.reset({ status: currentStatus, notes: '' });
-  }, [currentStatus, form]);
-
-  const handleSubmit = (values: StatusUpdateFormValues) => {
-    onSubmit({
-      newStatus: values.status as ReservationStatus,
-      notes: values.notes
-    });
+  const handleSubmit = async (data: FormValues) => {
+    await onSubmit(data);
+    form.reset();
   };
 
   return (
@@ -91,33 +88,36 @@ export const StatusUpdateDialog: React.FC<StatusUpdateDialogProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Update Reservation Status</DialogTitle>
-          <DialogDescription>
-            Change the status of this reservation
-          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="status"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder="Select a status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {statusOptions.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
+                        <SelectItem key={status} value={status}>
+                          {status}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    Current status: {currentStatus}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -128,11 +128,11 @@ export const StatusUpdateDialog: React.FC<StatusUpdateDialogProps> = ({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>Notes (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Add any additional notes about this status change"
-                      className="min-h-[100px]"
+                      placeholder="Add notes about this status change"
+                      rows={3}
                       {...field}
                     />
                   </FormControl>
@@ -141,15 +141,16 @@ export const StatusUpdateDialog: React.FC<StatusUpdateDialogProps> = ({
               )}
             />
 
-            <Separator />
-
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Update Status
+                {isSubmitting ? 'Updating...' : 'Update Status'}
               </Button>
             </DialogFooter>
           </form>

@@ -1,143 +1,245 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Reservation, ReservationStatus, Deposit, PaymentMethod } from '@/types/reservation';
+import { supabase } from '@/integrations/supabase/client';
+import { Reservation, ReservationStatus, ReservationStatusHistory, Deposit, PaymentMethod } from '@/types/reservation';
 import { useToast } from '@/hooks/use-toast';
-import * as reservationService from '@/services/reservationService';
 
-export const useReservationManagement = (reservationId?: string) => {
-  const { toast } = useToast();
+interface CreateDepositData {
+  amount: number;
+  payment_method: PaymentMethod;
+  payment_date: string;
+  notes?: string;
+}
+
+interface UpdateStatusData {
+  status: ReservationStatus;
+  notes?: string;
+}
+
+export const useReservationManagement = (reservationId: string) => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
   const [isDepositDialogOpen, setIsDepositDialogOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 
-  // Fetch reservation details if reservationId is provided
-  const {
+  // Fetch reservation details
+  const { 
     data: reservation,
     isLoading: isReservationLoading,
-    error: reservationError,
+    isError: isReservationError,
     refetch: refetchReservation
   } = useQuery({
     queryKey: ['reservation', reservationId],
-    queryFn: () => reservationId ? reservationService.getReservationById(reservationId) : null,
-    enabled: !!reservationId
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select(`
+          *,
+          customer:customers(*),
+          puppy:puppies(*)
+        `)
+        .eq('id', reservationId)
+        .single();
+      
+      if (error) throw error;
+      return data as Reservation;
+    }
   });
 
-  // Fetch deposit history if reservationId is provided
-  const {
+  // Fetch deposit history
+  const { 
     data: deposits,
     isLoading: isDepositsLoading,
-    error: depositsError,
+    isError: isDepositsError,
     refetch: refetchDeposits
   } = useQuery({
     queryKey: ['deposits', reservationId],
-    queryFn: () => reservationId ? reservationService.getDepositsByReservation(reservationId) : [],
-    enabled: !!reservationId
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('deposits')
+        .select('*')
+        .eq('reservation_id', reservationId)
+        .order('payment_date', { ascending: false });
+      
+      if (error) throw error;
+      return data as Deposit[];
+    }
   });
 
-  // Fetch status history if reservationId is provided
-  const {
+  // Fetch status history
+  const { 
     data: statusHistory,
     isLoading: isStatusHistoryLoading,
-    error: statusHistoryError,
+    isError: isStatusHistoryError,
     refetch: refetchStatusHistory
   } = useQuery({
     queryKey: ['statusHistory', reservationId],
-    queryFn: () => reservationId ? reservationService.getStatusHistory(reservationId) : [],
-    enabled: !!reservationId
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reservation_status_history')
+        .select('*')
+        .eq('reservation_id', reservationId)
+        .order('changed_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as ReservationStatusHistory[];
+    }
   });
 
-  // Mutation to create a deposit
-  const { mutate: createDeposit, isPending: isCreatingDeposit } = useMutation({
-    mutationFn: (depositData: {
-      amount: number;
-      payment_method: PaymentMethod;
-      notes?: string;
-      payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
-    }) => {
-      if (!reservationId) throw new Error('Reservation ID is required');
+  // Create deposit mutation
+  const depositMutation = useMutation({
+    mutationFn: async (depositData: CreateDepositData) => {
+      if (!reservation) throw new Error('Reservation not found');
       
-      const deposit: Omit<Deposit, 'id' | 'created_at'> = {
-        reservation_id: reservationId,
-        customer_id: reservation?.customer_id,
-        puppy_id: reservation?.puppy_id,
-        amount: depositData.amount,
-        payment_date: new Date().toISOString(),
-        payment_method: depositData.payment_method,
-        payment_status: depositData.payment_status,
-        notes: depositData.notes,
-        created_by: undefined // This will be set by RLS
-      };
+      // Create deposit record
+      const { data: deposit, error: depositError } = await supabase
+        .from('deposits')
+        .insert({
+          reservation_id: reservationId,
+          customer_id: reservation.customer_id,
+          puppy_id: reservation.puppy_id,
+          amount: depositData.amount,
+          payment_date: depositData.payment_date,
+          payment_method: depositData.payment_method,
+          payment_status: 'completed',
+          notes: depositData.notes,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
       
-      return reservationService.createDeposit(deposit);
+      if (depositError) throw depositError;
+      
+      // If this is the first deposit, update the reservation
+      if (!reservation.deposit_paid) {
+        const { error: updateError } = await supabase
+          .from('reservations')
+          .update({
+            deposit_paid: true,
+            deposit_amount: depositData.amount,
+            deposit_date: depositData.payment_date,
+            status: 'Deposit Paid',
+            status_updated_at: new Date().toISOString()
+          })
+          .eq('id', reservationId);
+        
+        if (updateError) throw updateError;
+        
+        // Add status history record
+        await supabase
+          .from('reservation_status_history')
+          .insert({
+            reservation_id: reservationId,
+            previous_status: reservation.status,
+            new_status: 'Deposit Paid',
+            changed_at: new Date().toISOString(),
+            notes: 'Deposit recorded: ' + depositData.amount
+          });
+      }
+      
+      return deposit;
     },
     onSuccess: () => {
-      toast({
-        title: 'Deposit recorded successfully',
-        description: 'The deposit has been added to this reservation',
-      });
-      queryClient.invalidateQueries({ queryKey: ['deposits', reservationId] });
       queryClient.invalidateQueries({ queryKey: ['reservation', reservationId] });
+      queryClient.invalidateQueries({ queryKey: ['deposits', reservationId] });
+      queryClient.invalidateQueries({ queryKey: ['statusHistory', reservationId] });
+      
+      toast({
+        title: 'Deposit Recorded',
+        description: 'Deposit has been successfully recorded'
+      });
+      
       setIsDepositDialogOpen(false);
     },
-    onError: (error) => {
-      console.error('Error creating deposit:', error);
+    onError: (error: any) => {
       toast({
-        title: 'Error recording deposit',
-        description: error instanceof Error ? error.message : 'An unknown error occurred',
-        variant: 'destructive',
+        title: 'Error Recording Deposit',
+        description: error.message,
+        variant: 'destructive'
       });
     }
   });
 
-  // Mutation to update reservation status
-  const { mutate: updateStatus, isPending: isUpdatingStatus } = useMutation({
-    mutationFn: (data: {
-      newStatus: ReservationStatus;
-      notes?: string;
-    }) => {
-      if (!reservationId) throw new Error('Reservation ID is required');
+  // Update status mutation
+  const statusMutation = useMutation({
+    mutationFn: async (statusData: UpdateStatusData) => {
+      if (!reservation) throw new Error('Reservation not found');
       
-      return reservationService.updateReservation(reservationId, {
-        status: data.newStatus,
-        notes: data.notes
-      });
+      // Update reservation status
+      const { error: updateError } = await supabase
+        .from('reservations')
+        .update({
+          status: statusData.status,
+          status_updated_at: new Date().toISOString()
+        })
+        .eq('id', reservationId);
+      
+      if (updateError) throw updateError;
+      
+      // Add status history record
+      const { data: statusRecord, error: historyError } = await supabase
+        .from('reservation_status_history')
+        .insert({
+          reservation_id: reservationId,
+          previous_status: reservation.status,
+          new_status: statusData.status,
+          changed_at: new Date().toISOString(),
+          notes: statusData.notes
+        })
+        .select()
+        .single();
+      
+      if (historyError) throw historyError;
+      
+      return statusRecord;
     },
     onSuccess: () => {
-      toast({
-        title: 'Status updated successfully',
-        description: 'The reservation status has been updated',
-      });
       queryClient.invalidateQueries({ queryKey: ['reservation', reservationId] });
       queryClient.invalidateQueries({ queryKey: ['statusHistory', reservationId] });
+      
+      toast({
+        title: 'Status Updated',
+        description: 'Reservation status has been successfully updated'
+      });
+      
       setIsStatusDialogOpen(false);
     },
-    onError: (error) => {
-      console.error('Error updating status:', error);
+    onError: (error: any) => {
       toast({
-        title: 'Error updating status',
-        description: error instanceof Error ? error.message : 'An unknown error occurred',
-        variant: 'destructive',
+        title: 'Error Updating Status',
+        description: error.message,
+        variant: 'destructive'
       });
     }
   });
 
+  // Create a deposit
+  const createDeposit = async (data: CreateDepositData) => {
+    await depositMutation.mutateAsync(data);
+  };
+
+  // Update reservation status
+  const updateStatus = async (data: UpdateStatusData) => {
+    await statusMutation.mutateAsync(data);
+  };
+
+  // Handle opening deposit dialog
   const handleOpenDepositDialog = () => {
     setIsDepositDialogOpen(true);
   };
 
+  // Handle opening status dialog
   const handleOpenStatusDialog = () => {
     setIsStatusDialogOpen(true);
   };
 
-  const handleRefreshAll = async () => {
-    if (reservationId) {
-      await Promise.all([
-        refetchReservation(),
-        refetchDeposits(),
-        refetchStatusHistory()
-      ]);
-    }
+  // Refresh all data
+  const handleRefreshAll = () => {
+    refetchReservation();
+    refetchDeposits();
+    refetchStatusHistory();
   };
 
   return {
@@ -147,13 +249,13 @@ export const useReservationManagement = (reservationId?: string) => {
     isReservationLoading,
     isDepositsLoading,
     isStatusHistoryLoading,
-    reservationError,
-    depositsError,
-    statusHistoryError,
+    isReservationError,
+    isDepositsError,
+    isStatusHistoryError,
     createDeposit,
     updateStatus,
-    isCreatingDeposit,
-    isUpdatingStatus,
+    isCreatingDeposit: depositMutation.isPending,
+    isUpdatingStatus: statusMutation.isPending,
     isDepositDialogOpen,
     setIsDepositDialogOpen,
     isStatusDialogOpen,
