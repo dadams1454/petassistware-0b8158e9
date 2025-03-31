@@ -17,26 +17,7 @@ export const fetchExpenses = async () => {
     throw error;
   }
   
-  // Map the database records to our Expense interface
-  const mappedExpenses: Expense[] = data.map(record => ({
-    id: record.id,
-    description: record.notes || '', 
-    amount: record.amount,
-    date: new Date(record.transaction_date),
-    category: record.category,
-    receipt: null,
-    created_at: record.created_at,
-    notes: record.notes,
-    dog_id: record.dog_id,
-    puppy_id: record.puppy_id,
-    breeder_id: record.breeder_id,
-    transaction_type: record.transaction_type,
-    transaction_date: record.transaction_date,
-    receipt_url: record.receipt_url,
-    payment_method: record.payment_method
-  }));
-  
-  return mappedExpenses;
+  return data;
 };
 
 /**

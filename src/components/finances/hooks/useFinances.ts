@@ -24,7 +24,8 @@ export function useFinances() {
     setError(null);
     
     try {
-      const mappedExpenses = await fetchExpensesService();
+      const data = await fetchExpensesService();
+      const mappedExpenses = data.map(mapTransactionToExpense);
       setExpenses(mappedExpenses);
     } catch (err: any) {
       console.error('Error fetching expenses:', err);
