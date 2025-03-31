@@ -12,21 +12,25 @@ import { DatePicker } from '@/components/ui/date-picker';
 import ExpenseDialog from './ExpenseDialog';
 import ExpenseTable from './ExpenseTable';
 import { expenseCategories } from './constants';
+import { Expense } from '@/types/financial';
 
 const ExpenseTracker = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
   
-  // Mock expenses data for now
-  const [expenses, setExpenses] = useState([
+  // Mock expenses data that conforms to the Expense type
+  const [expenses, setExpenses] = useState<Expense[]>([
     { 
       id: '1', 
       description: 'Dog Food', 
       amount: 120.50, 
       date: new Date(), 
       category: 'Food', 
-      receipt: null 
+      transaction_type: 'expense',
+      transaction_date: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      breeder_id: '1'
     },
     { 
       id: '2', 
@@ -34,12 +38,31 @@ const ExpenseTracker = () => {
       amount: 250.00, 
       date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), 
       category: 'Medical',
-      receipt: null 
+      transaction_type: 'expense',
+      transaction_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      breeder_id: '1'
     }
   ]);
   
   const addExpense = (newExpense: any) => {
-    setExpenses([...expenses, { id: Date.now().toString(), ...newExpense }]);
+    const expense: Expense = { 
+      id: Date.now().toString(),
+      description: newExpense.description,
+      amount: newExpense.amount,
+      date: newExpense.date,
+      category: newExpense.category,
+      transaction_type: 'expense',
+      transaction_date: newExpense.date.toISOString(),
+      created_at: new Date().toISOString(),
+      breeder_id: '1',
+      notes: newExpense.notes,
+      dog_id: newExpense.dog_id,
+      puppy_id: newExpense.puppy_id,
+      receipt: newExpense.receipt
+    };
+    
+    setExpenses([...expenses, expense]);
     setIsDialogOpen(false);
   };
   

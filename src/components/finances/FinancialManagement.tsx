@@ -90,12 +90,11 @@ const FinancialManagement: React.FC = () => {
       <SectionHeader
         title="Financial Management"
         description="Track and manage kennel expenses"
-        action={
-          <Button onClick={() => setIsExpenseDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Expense
-          </Button>
-        }
+        action={{
+          label: "Add Expense",
+          onClick: () => setIsExpenseDialogOpen(true),
+          icon: <Plus className="h-4 w-4" />,
+        }}
       />
 
       <ExpenseFilters

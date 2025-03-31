@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -30,7 +29,6 @@ import {
 import { format } from 'date-fns';
 import { CalendarIcon, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ExpenseFormValues } from '@/types/financial';
 import { expenseCategories } from './constants';
 
 const formSchema = z.object({
@@ -42,6 +40,18 @@ const formSchema = z.object({
   dog_id: z.string().optional(),
   puppy_id: z.string().optional(),
 });
+
+// Export this interface so it can be imported by other components
+export interface ExpenseFormValues {
+  description: string;
+  amount: number;
+  date: Date;
+  category: string;
+  notes?: string;
+  dog_id?: string;
+  puppy_id?: string;
+  receipt?: File | null;
+}
 
 interface ExpenseFormProps {
   onSubmit: (data: ExpenseFormValues) => void;
@@ -80,8 +90,15 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
   };
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    // Create a complete ExpenseFormValues object
     const formData: ExpenseFormValues = {
-      ...values,
+      description: values.description,
+      amount: values.amount,
+      date: values.date,
+      category: values.category,
+      notes: values.notes,
+      dog_id: values.dog_id,
+      puppy_id: values.puppy_id,
       receipt: receiptFile,
     };
     onSubmit(formData);
