@@ -20,6 +20,7 @@ import AuditLogs from '@/pages/AuditLogs';
 import Reservations from '@/pages/Reservations';
 import Finances from '@/pages/Finances';
 import Facility from '@/pages/Facility';
+import Compliance from '@/pages/Compliance';
 
 const Router = () => {
   return (
@@ -45,6 +46,7 @@ const Router = () => {
           <Route path="/contracts" element={<Calendar />} /> {/* Temporarily mapping to Calendar until Contracts page is implemented */}
           <Route path="/finances" element={<Finances />} />
           <Route path="/facility" element={<Facility />} />
+          <Route path="/compliance" element={<Compliance />} />
           <Route path="/users" element={<Users />} />
           <Route path="/admin-setup" element={<AdminSetup />} />
           <Route path="/audit-logs" element={<AuditLogs />} />
