@@ -42,6 +42,7 @@ export const useUserManagement = () => {
       if (!uuidRegex.test(tenantId)) {
         console.log(`Invalid UUID format for tenant ID: ${tenantId}`);
         // Handle the case where tenantId is not a valid UUID
+        setError(`Invalid UUID format for tenant ID: ${tenantId}`);
         setUsers([]);
         setLoading(false);
         return;
@@ -126,6 +127,7 @@ export const useUserManagement = () => {
     error,
     fetchUsers,
     userRole,
-    signOutAllUsers
+    signOutAllUsers,
+    tenantId // Expose tenantId for error messages
   };
 };

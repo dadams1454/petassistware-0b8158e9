@@ -12,13 +12,14 @@ import { UserManagementHeader } from '@/components/user-management/UserManagemen
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { UserWithProfile } from '@/types/user';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Users: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { users, loading, error, fetchUsers, userRole, signOutAllUsers } = useUserManagement();
+  const { users, loading, error, fetchUsers, userRole, signOutAllUsers, tenantId } = useUserManagement();
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithProfile | null>(null);
   
@@ -39,6 +40,10 @@ const Users: React.FC = () => {
 
   const handleCloseEdit = () => {
     setSelectedUser(null);
+  };
+
+  const handleNavigateToAdmin = () => {
+    navigate('/admin-setup');
   };
 
   // Show unauthorized state if not admin
@@ -77,8 +82,23 @@ const Users: React.FC = () => {
           <Alert variant="destructive" className="mb-6">
             <AlertTriangle className="h-4 w-4 mr-2" />
             <AlertTitle>Configuration Issue</AlertTitle>
-            <AlertDescription>
-              There is a configuration issue with your tenant ID. Please contact support or ensure your account is properly set up.
+            <AlertDescription className="space-y-4">
+              <p>
+                There is a configuration issue with your tenant ID. The current value
+                {tenantId && <span className="font-mono mx-1 px-1 py-0.5 bg-gray-100 rounded">{tenantId}</span>}
+                is not a valid UUID format required by the database.
+              </p>
+              <p>
+                Please go to the Admin Setup page to configure your organization settings properly.
+              </p>
+              <Button 
+                onClick={handleNavigateToAdmin}
+                className="mt-2 flex items-center gap-2"
+                variant="outline"
+              >
+                <Settings className="h-4 w-4" />
+                Go to Admin Setup
+              </Button>
             </AlertDescription>
           </Alert>
           <div className="mt-6">
