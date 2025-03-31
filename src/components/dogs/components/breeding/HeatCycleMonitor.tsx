@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Calendar, AlertCircle, Bell, Clock } from 'lucide-react';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useDogStatus } from '../../hooks/useDogStatus';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
+import RecordBreedingDialog from './RecordBreedingDialog';
 
 interface HeatCycleMonitorProps {
   dog: any;
@@ -16,6 +16,7 @@ interface HeatCycleMonitorProps {
 
 const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dog }) => {
   const { toast } = useToast();
+  const [isRecordBreedingOpen, setIsRecordBreedingOpen] = useState(false);
   
   // Only applicable for female dogs
   if (dog.gender !== 'Female') {
@@ -78,6 +79,14 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dog }) => {
       variant: "destructive",
     });
   };
+  
+  const handleRefresh = () => {
+    // In a real app, this would refresh the data
+    toast({
+      title: "Breeding Recorded",
+      description: "The breeding has been successfully recorded."
+    });
+  };
 
   return (
     <Card className="border-2 border-purple-200 dark:border-purple-800">
@@ -118,15 +127,23 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dog }) => {
               </p>
               <p className="text-sm mt-1">{currentStage?.description}</p>
               
-              {/* Separation Alert Button */}
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                className="w-full mt-2"
-                onClick={handleSeparationAlert}
-              >
-                Activate Separation Alert
-              </Button>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={handleSeparationAlert}
+                >
+                  Separation Alert
+                </Button>
+                
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => setIsRecordBreedingOpen(true)}
+                >
+                  Record Breeding
+                </Button>
+              </div>
             </div>
           ) : isPreHeat && nextHeatDate ? (
             <div className="p-3 bg-purple-50 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded-md border border-purple-200 dark:border-purple-800">
@@ -218,6 +235,14 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dog }) => {
           </div>
         )}
       </CardContent>
+      
+      {/* Add RecordBreedingDialog */}
+      <RecordBreedingDialog
+        isOpen={isRecordBreedingOpen}
+        onClose={() => setIsRecordBreedingOpen(false)}
+        dog={dog}
+        onSuccess={handleRefresh}
+      />
     </Card>
   );
 };

@@ -1,34 +1,20 @@
 
-export type GeneticHealthStatus = 'clear' | 'carrier' | 'affected' | 'unknown';
-
-export interface GeneticHealthMarker {
-  status: GeneticHealthStatus;
-  genotype: string;
-  testDate?: string;
-  labName?: string;
-  certificateUrl?: string;
-}
-
-export interface GeneticTest {
-  testId: string;
-  testType: string;
-  testDate: string;
-  result: string;
-  labName: string;
-  certificateUrl?: string;
-  verified?: boolean;
-}
-
 export interface DogGenotype {
-  dogId: string;
-  updatedAt: string;
-  baseColor: string;
-  brownDilution: string;
-  dilution: string;
-  agouti: string;
-  patterns: string[];
-  healthMarkers: Record<string, GeneticHealthMarker>;
-  testResults: GeneticTest[];
+  id: string;
+  name: string;
+  color: {
+    genotype: string;
+    phenotype: string;
+  };
+  healthMarkers: Record<string, unknown>;
+  healthResults: Array<GeneticTestResult>;
+}
+
+export interface GeneticTestResult {
+  condition: string;
+  result: 'clear' | 'carrier' | 'affected' | 'unknown';
+  date?: string;
+  lab?: string;
 }
 
 export interface GeneticCompatibility {
@@ -44,56 +30,9 @@ export interface GeneticCompatibility {
   };
 }
 
-export interface MultiTraitMatrixProps {
-  dogId: string;
-  dogData?: DogGenotype;
-  dogGenetics?: DogGenotype;
-}
-
-export interface HealthMarkersPanelProps {
-  dogData?: DogGenotype;
-  geneticData?: DogGenotype;
-}
-
-export interface CompactGenotypeViewProps {
-  dogData?: DogGenotype;
-  geneticData?: DogGenotype;
-  showColorTraits?: boolean;
-  showHealthTests?: boolean;
-}
-
-export interface GeneticReportGeneratorProps {
-  dogId: string;
-  dogName?: string;
-  dogGenetics?: DogGenotype;
-}
-
-export interface InteractivePedigreeProps {
-  dogId: string;
-  currentDog?: any;
-  generations?: number;
-}
-
-export interface HistoricalCOIChartProps {
-  dogId: string;
-}
-
 export interface HealthWarning {
   condition: string;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  riskLevel: 'critical' | 'high' | 'medium' | 'low';
   description: string;
   affectedPercentage?: number;
-}
-
-export interface PairingAnalysis {
-  coi: number;
-  healthWarnings: HealthWarning[];
-  compatibleTests: string[];
-  incompatibleTests: string[];
-  traitPredictions?: any;
-}
-
-export interface ColorProbability {
-  color: string;
-  percentage: number;
 }
