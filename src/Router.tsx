@@ -16,6 +16,7 @@ import AdminSetup from '@/pages/AdminSetup';
 import Users from '@/pages/Users';
 import AuditLogs from '@/pages/AuditLogs';
 import Reservations from '@/pages/Reservations';
+import Finances from '@/pages/Finances';
 
 const Router = () => {
   return (
@@ -83,6 +84,14 @@ const Router = () => {
         <ProtectedRoute>
           <MainLayout>
             <Communications />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/finances" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Finances />
           </MainLayout>
         </ProtectedRoute>
       } />
