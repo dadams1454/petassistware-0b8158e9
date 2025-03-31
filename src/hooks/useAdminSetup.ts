@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { isValidUUID } from '@/utils/uuidUtils';
 
 export const useAdminSetup = () => {
   const { user, userRole, tenantId } = useAuth();
@@ -51,6 +52,19 @@ export const useAdminSetup = () => {
         console.log('No tenant ID found, organization needs setup');
         setTenantSettings({
           ...defaultSettings,
+          needsSetup: true
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Check if the tenant ID is a valid UUID
+      if (tenantId && !isValidUUID(tenantId)) {
+        console.warn('Invalid UUID format for tenant ID:', tenantId);
+        setError(`Invalid UUID format for tenant ID: ${tenantId}`);
+        setTenantSettings({
+          ...defaultSettings,
+          id: tenantId,
           needsSetup: true
         });
         setLoading(false);

@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthProvider';
 import { UserWithProfile } from '@/types/user';
+import { isValidUUID } from '@/utils/uuidUtils';
 
 // Define a simpler type for breeder profiles to prevent TS2589 error
 type BreederProfile = {
@@ -39,10 +39,8 @@ export const useUserManagement = () => {
       }
       
       // Check if tenantId is a valid UUID
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(tenantId)) {
+      if (!isValidUUID(tenantId)) {
         console.log(`Invalid UUID format for tenant ID: ${tenantId}`);
-        // Handle the case where tenantId is not a valid UUID
         setError(`Invalid UUID format for tenant ID: ${tenantId}`);
         setUsers([]);
         setLoading(false);

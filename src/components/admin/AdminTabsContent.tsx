@@ -8,6 +8,7 @@ import PermissionsSetup from '@/components/admin/PermissionsSetup';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthProvider';
+import { isValidUUID } from '@/utils/uuidUtils';
 
 interface AdminTabsContentProps {
   tenantSettings: any;
@@ -19,6 +20,11 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
   
   const handleOrganizationSubmit = async (data: any) => {
     try {
+      // Ensure we have a valid UUID
+      if (!isValidUUID(data.tenantId)) {
+        throw new Error("A valid UUID is required for tenant ID");
+      }
+      
       // Make an actual update to the breeder_profiles table
       if (data.tenantId) {
         // Get the current user's email to ensure we have all required fields
@@ -44,6 +50,11 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
         title: 'Organization updated',
         description: 'Your organization settings have been saved.'
       });
+      
+      // Force page reload to reflect the new tenant ID
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
       
       return Promise.resolve(data);
     } catch (error) {

@@ -12,8 +12,9 @@ import { UserManagementHeader } from '@/components/user-management/UserManagemen
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { UserWithProfile } from '@/types/user';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Settings } from 'lucide-react';
+import { AlertTriangle, Settings, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { isValidUUID } from '@/utils/uuidUtils';
 
 const Users: React.FC = () => {
   const { user } = useAuth();
@@ -46,6 +47,14 @@ const Users: React.FC = () => {
     navigate('/admin-setup');
   };
 
+  const handleRefreshUsers = () => {
+    fetchUsers();
+    toast({
+      title: "Refreshing data",
+      description: "Attempting to reload user data",
+    });
+  };
+
   // Show unauthorized state if not admin
   if (!isAdmin) {
     return (
@@ -68,10 +77,11 @@ const Users: React.FC = () => {
     );
   }
 
-  const errorIsUuidFormat = error?.includes('invalid input syntax for type uuid');
+  const isUuidFormatError = error?.includes('invalid input syntax for type uuid') || 
+                          (tenantId && !isValidUUID(tenantId));
 
   // If there's an error and it's related to UUID format
-  if (error && errorIsUuidFormat) {
+  if (error && isUuidFormatError) {
     return (
       <PageContainer>
         <div className="space-y-6">
@@ -79,27 +89,47 @@ const Users: React.FC = () => {
             title="User Management" 
             description="Manage users and permissions for your organization"
           />
-          <Alert variant="destructive" className="mb-6">
-            <AlertTriangle className="h-4 w-4 mr-2" />
-            <AlertTitle>Configuration Issue</AlertTitle>
-            <AlertDescription className="space-y-4">
-              <p>
-                There is a configuration issue with your tenant ID. The current value
-                {tenantId && <span className="font-mono mx-1 px-1 py-0.5 bg-gray-100 rounded">{tenantId}</span>}
-                is not a valid UUID format required by the database.
-              </p>
-              <p>
-                Please go to the Admin Setup page to configure your organization settings properly.
-              </p>
-              <Button 
-                onClick={handleNavigateToAdmin}
-                className="mt-2 flex items-center gap-2"
-                variant="outline"
-              >
-                <Settings className="h-4 w-4" />
-                Go to Admin Setup
-              </Button>
-            </AlertDescription>
+          <Alert variant="destructive" className="mb-6 border-l-4 border-red-500 bg-red-50">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+              </div>
+              <div className="ml-3">
+                <AlertTitle className="text-red-800 font-medium">UUID Format Error</AlertTitle>
+                <AlertDescription className="text-red-700 mt-2 space-y-4">
+                  <p>
+                    There is a configuration issue with your tenant ID. 
+                    {tenantId && (
+                      <span> The current value <code className="mx-1 px-2 py-0.5 bg-red-100 font-mono rounded">{tenantId}</code> is not a valid UUID format.</span>
+                    )}
+                  </p>
+                  <p>
+                    A valid UUID should follow this format: <code className="px-2 py-0.5 bg-red-100 font-mono rounded">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>
+                  </p>
+                  <p>
+                    Please go to the Admin Setup page to generate a proper UUID for your organization.
+                  </p>
+                  <div className="flex gap-3 mt-4">
+                    <Button 
+                      onClick={handleNavigateToAdmin}
+                      className="flex items-center gap-2"
+                      variant="default"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Go to Admin Setup
+                    </Button>
+                    <Button 
+                      onClick={handleRefreshUsers}
+                      className="flex items-center gap-2"
+                      variant="outline"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Refresh Data
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </div>
+            </div>
           </Alert>
           <div className="mt-6">
             <UserTable 
@@ -115,7 +145,7 @@ const Users: React.FC = () => {
   }
 
   // Show generic error state
-  if (error && !errorIsUuidFormat) {
+  if (error && !isUuidFormatError) {
     return (
       <PageContainer>
         <ErrorState 
