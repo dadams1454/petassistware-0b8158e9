@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { PawPrint, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -22,28 +22,6 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
   withIcon = true,
   onRetry
 }) => {
-  const [timeoutOccurred, setTimeoutOccurred] = useState(false);
-  const [extendedTimeout, setExtendedTimeout] = useState(false);
-  const initialTimeRef = useRef(Date.now());
-  
-  // Add a timeout to show additional message if loading takes too long
-  useEffect(() => {
-    const shortTimer = setTimeout(() => {
-      setTimeoutOccurred(true);
-      console.log('AuthLoadingState: Short timeout triggered');
-    }, 150); // Reduced to 150ms
-    
-    const longTimer = setTimeout(() => {
-      setExtendedTimeout(true);
-      console.log('AuthLoadingState: Extended timeout triggered, showing refresh option');
-    }, 300); // Reduced to 300ms
-    
-    return () => {
-      clearTimeout(shortTimer);
-      clearTimeout(longTimer);
-    };
-  }, []);
-  
   const handleRefresh = () => {
     console.log('Auth refresh requested, reloading page');
     if (onRetry) {
@@ -67,11 +45,6 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
             <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
           </div>
           <p className="text-muted-foreground">{message}</p>
-          {timeoutOccurred && (
-            <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-4">
-              Refresh Page
-            </Button>
-          )}
         </div>
       </div>
     );
@@ -80,8 +53,6 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
   const container = fullPage 
     ? 'fixed inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-50'
     : 'flex flex-col items-center justify-center py-8';
-
-  const elapsedSeconds = Math.floor((Date.now() - initialTimeRef.current) / 1000);
   
   return (
     <div className={container}>
@@ -95,57 +66,15 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
           <p className="text-center text-muted-foreground mt-4 font-medium">{message}</p>
         )}
         
-        {/* Add progress indication */}
-        {elapsedSeconds > 0 && (
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            ({elapsedSeconds}s)
-          </p>
-        )}
-        
-        {extendedTimeout ? (
-          <div className="mt-6 max-w-md space-y-4 text-center px-4">
-            <p className="text-amber-600 dark:text-amber-400 font-medium">
-              Authentication is taking longer than expected.
-            </p>
-            
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-4 text-sm">
-              <p className="text-muted-foreground mb-4">This could be due to:</p>
-              <ul className="text-muted-foreground/80 list-disc list-inside space-y-2 text-left">
-                <li>Server connection issues</li>
-                <li>Expired or invalid authentication token</li>
-                <li>Browser storage limitations</li>
-              </ul>
-            </div>
-            
-            <Button 
-              onClick={handleRefresh} 
-              variant="default" 
-              className="mt-2"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh Page
-            </Button>
-          </div>
-        ) : timeoutOccurred ? (
-          <div className="mt-4 max-w-md space-y-2 px-4">
-            <p className="text-center text-muted-foreground/80 text-sm">
-              Still verifying your authentication. You can try:
-            </p>
-            <Button 
-              onClick={handleRefresh} 
-              variant="outline" 
-              size="sm" 
-              className="mt-2"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh Page
-            </Button>
-          </div>
-        ) : (
-          <p className="text-center text-muted-foreground/70 text-sm mt-2">
-            Please wait while we verify your credentials...
-          </p>
-        )}
+        <Button 
+          onClick={handleRefresh} 
+          variant="outline" 
+          size="sm" 
+          className="mt-4"
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Refresh Page
+        </Button>
       </div>
     </div>
   );

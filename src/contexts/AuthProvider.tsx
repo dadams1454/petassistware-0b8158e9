@@ -65,53 +65,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   };
   
-  const [user, setUser] = useState<User | null>(loadInitialState().user);
-  const [userRole, setUserRole] = useState<UserRole>(loadInitialState().userRole);
-  const [loading, setLoading] = useState(loadInitialState().loading);
+  const initialState = loadInitialState();
+  const [user, setUser] = useState<User | null>(initialState.user);
+  const [userRole, setUserRole] = useState<UserRole>(initialState.userRole);
+  const [loading, setLoading] = useState(initialState.loading);
   const [tenantId, setTenantId] = useState<string | null>('tenant-123'); // Mock tenant ID
-  const [authInitialized, setAuthInitialized] = useState(false);
 
-  // Save auth state to localStorage whenever it changes
   useEffect(() => {
-    if (!loading && authInitialized) {
+    // If we already loaded from localStorage and have a user, skip the loading phase
+    if (user) {
+      setLoading(false);
+      return;
+    }
+
+    // Create a mock user only if none was found in localStorage
+    if (!user) {
+      console.log('No user in storage, creating mock user');
+      const mockUser = {
+        id: '123',
+        email: 'test@example.com',
+        name: 'Test User',
+        user_metadata: {
+          avatarUrl: ''
+        }
+      };
+      
+      setUser(mockUser);
+      setUserRole('admin');
+      
+      // Save to localStorage
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, userRole }));
-        console.log('Saved auth to storage:', { user, userRole });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
+          user: mockUser, 
+          userRole: 'admin' 
+        }));
+        console.log('Saved auth to storage after initialization');
       } catch (error) {
         console.error('Error saving auth to storage:', error);
       }
     }
-  }, [user, userRole, loading, authInitialized]);
-
-  useEffect(() => {
-    // Create a mock user for development purposes
-    const mockUser = {
-      id: '123',
-      email: 'test@example.com',
-      name: 'Test User',
-      user_metadata: {
-        avatarUrl: ''
-      }
-    };
     
-    // Check if we already have a user loaded from storage
-    if (!user) {
-      // Simulate loading delay only if no user is in storage
-      const timer = setTimeout(() => {
-        setUser(mockUser);
-        setUserRole('admin');
-        setLoading(false);
-        setAuthInitialized(true);
-        console.log('Auth loaded with mock user');
-      }, 100); // Reduced to 100ms for faster initialization
-      
-      return () => clearTimeout(timer);
-    } else {
-      // If we have a user from storage, just make sure loading is false
-      setLoading(false);
-      setAuthInitialized(true);
+    // Always make sure loading is set to false after initialization
+    setLoading(false);
+  }, []); // Empty dependency array ensures this only runs once on mount
+
+  // Save auth state to localStorage whenever it changes
+  useEffect(() => {
+    if (!loading && user) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, userRole }));
+        console.log('Saved auth to storage after update:', { user, userRole });
+      } catch (error) {
+        console.error('Error saving auth to storage:', error);
+      }
     }
-  }, [user]);
+  }, [user, userRole, loading]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -139,7 +147,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     } finally {
       setLoading(false);
-      setAuthInitialized(true);
     }
   };
 

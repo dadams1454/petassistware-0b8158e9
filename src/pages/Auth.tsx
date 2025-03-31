@@ -1,12 +1,11 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BlurBackground from '@/components/ui/blur-background';
 import Logo from '@/components/common/Logo';
 import AuthForm from '@/components/auth/AuthForm';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { useAuth } from '@/contexts/AuthProvider';
-import { useEffect } from 'react';
 
 const Auth: React.FC = () => {
   const auth = useAuthForm();
