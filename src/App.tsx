@@ -1,20 +1,11 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import Dashboard from '@/pages/Dashboard';
-import DogsPage from '@/pages/Dogs';
-import DogDetailPage from '@/pages/DogDetail';
-import LittersPage from '@/pages/Litters';
-import LitterDetailPage from '@/pages/LitterDetail';
-import CustomersPage from '@/pages/Customers';
-import CustomerDetailPage from '@/pages/CustomerDetail';
-import ReservationsPage from '@/pages/Reservations';
-import ReservationDetailPage from '@/pages/ReservationDetail';
-import FinancesPage from '@/pages/Finances';
-import MainLayout from '@/components/layout/MainLayout';
-import DailyCare from '@/pages/DailyCare';
+import { AuthProvider } from '@/contexts/AuthProvider';
+import { RefreshProvider } from '@/contexts/RefreshContext';
+import RouterConfig from '@/Router';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -28,24 +19,14 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="dogs" element={<DogsPage />} />
-            <Route path="dogs/:id" element={<DogDetailPage />} />
-            <Route path="litters" element={<LittersPage />} />
-            <Route path="litters/:id" element={<LitterDetailPage />} />
-            <Route path="customers" element={<CustomersPage />} />
-            <Route path="customers/:id" element={<CustomerDetailPage />} />
-            <Route path="reservations" element={<ReservationsPage />} />
-            <Route path="reservations/:id" element={<ReservationDetailPage />} />
-            <Route path="finances" element={<FinancesPage />} />
-            <Route path="daily-care" element={<DailyCare />} />
-          </Route>
-        </Routes>
-      </Router>
-      <Toaster />
+      <AuthProvider>
+        <RefreshProvider>
+          <Router>
+            <RouterConfig />
+          </Router>
+          <Toaster />
+        </RefreshProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
