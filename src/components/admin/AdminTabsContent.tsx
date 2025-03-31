@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import OrganizationSetup from '@/components/admin/OrganizationSetup';
+import OrganizationSetup from '@/components/admin/organization/OrganizationSetup';
 import UserManagement from '@/components/admin/UserManagement';
 import PermissionsSetup from '@/components/admin/PermissionsSetup';
 import { useToast } from '@/hooks/use-toast';
