@@ -19,7 +19,7 @@ import Users from '@/pages/Users';
 import AuditLogs from '@/pages/AuditLogs';
 import Reservations from '@/pages/Reservations';
 import Finances from '@/pages/Finances';
-import DailyCare from '@/pages/DailyCare';
+import Facility from '@/pages/Facility';
 
 const Router = () => {
   return (
@@ -44,11 +44,12 @@ const Router = () => {
           <Route path="/communications" element={<Communications />} />
           <Route path="/contracts" element={<Calendar />} /> {/* Temporarily mapping to Calendar until Contracts page is implemented */}
           <Route path="/finances" element={<Finances />} />
-          <Route path="/facility" element={<Dashboard />} /> {/* Temporarily mapping to Dashboard until Facility page is implemented */}
+          <Route path="/facility" element={<Facility />} />
           <Route path="/users" element={<Users />} />
           <Route path="/admin-setup" element={<AdminSetup />} />
           <Route path="/audit-logs" element={<AuditLogs />} />
-          <Route path="/daily-care" element={<DailyCare />} />
+          {/* Redirect daily-care to facility */}
+          <Route path="/daily-care" element={<Navigate to="/facility" replace />} />
         </Route>
       </Route>
       

@@ -12,7 +12,9 @@ import {
   Bookmark,
   Building,
   Coins,
-  UserCog
+  UserCog,
+  ClipboardCheck,
+  Scale
 } from 'lucide-react';
 
 export const navItems = [
@@ -74,13 +76,13 @@ export const navItems = [
     title: 'Facility',
     href: '/facility',
     icon: Building,
-    description: 'Manage facility tasks and maintenance'
+    description: 'Manage facility, staff, and maintenance'
   },
   {
-    title: 'Team Management',
-    href: '/daily-care',
-    icon: UserCog,
-    description: 'Manage staff, assign tasks and track care'
+    title: 'Compliance',
+    href: '/compliance',
+    icon: Scale,
+    description: 'Manage licenses and regulatory requirements'
   },
   {
     title: 'Users',
