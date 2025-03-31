@@ -17,6 +17,13 @@ interface HealthTabContextType {
   isLoading: boolean;
   handleSaveRecord: () => void;
   handleSaveWeight: (data: any) => void;
+  // Add missing properties
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  healthRecords: any[];
+  getRecordsByType: (type: HealthRecordTypeEnum) => any[];
+  handleAddRecord: (type: HealthRecordTypeEnum) => void;
+  handleEditRecord: (recordId: string) => void;
 }
 
 const HealthTabContext = createContext<HealthTabContextType | undefined>(undefined);
@@ -35,6 +42,7 @@ interface HealthTabProviderProps {
 }
 
 export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, children }) => {
+  const [activeTab, setActiveTab] = useState('summary');
   const [recordDialogOpen, setRecordDialogOpen] = useState(false);
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
   const [selectedRecordType, setSelectedRecordType] = useState<HealthRecordTypeEnum>();
@@ -44,7 +52,8 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
     healthRecords, 
     isLoading: isHealthLoading,
     addHealthRecord,
-    updateHealthRecord
+    updateHealthRecord,
+    getRecordsByType
   } = useHealthRecords(dogId);
   
   const {
@@ -55,6 +64,17 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
   } = useWeightTracking(dogId);
   
   const isLoading = isHealthLoading || isWeightLoading;
+  
+  const handleAddRecord = (type: HealthRecordTypeEnum) => {
+    setSelectedRecordType(type);
+    setSelectedRecord(undefined);
+    setRecordDialogOpen(true);
+  };
+  
+  const handleEditRecord = (recordId: string) => {
+    setSelectedRecord(recordId);
+    setRecordDialogOpen(true);
+  };
   
   const handleSaveRecord = () => {
     setRecordDialogOpen(false);
@@ -77,7 +97,14 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
     growthStats,
     isLoading,
     handleSaveRecord,
-    handleSaveWeight
+    handleSaveWeight,
+    // Add the missing properties to the context value
+    activeTab,
+    setActiveTab,
+    healthRecords: healthRecords || [],
+    getRecordsByType,
+    handleAddRecord,
+    handleEditRecord
   };
   
   return (
