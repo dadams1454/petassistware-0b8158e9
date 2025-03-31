@@ -27,9 +27,9 @@ const TabsList: React.FC<TabsListProps> = ({
   isRefreshing = false
 }) => {
   return (
-    <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
-      <Tabs value={activeTab} onValueChange={onTabChange} className="w-auto">
-        <ShadcnTabsList className="h-auto bg-transparent p-0 overflow-x-auto flex-wrap">
+    <div className="flex justify-between items-center mb-6 flex-wrap gap-3 w-full">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
+        <ShadcnTabsList className="h-auto bg-transparent p-0 overflow-x-auto flex-wrap w-full">
           <TabsTrigger 
             value="overview" 
             className={`transition-all ${activeTab === 'overview' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
@@ -96,16 +96,18 @@ const TabsList: React.FC<TabsListProps> = ({
         </ShadcnTabsList>
       </Tabs>
       
-      <Button 
-        onClick={onRefreshDogs} 
-        variant="outline" 
-        size="sm" 
-        className="gap-2"
-        disabled={isRefreshing}
-      >
-        <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-        <span>Refresh</span>
-      </Button>
+      <div className="flex-shrink-0 ml-auto">
+        <Button 
+          onClick={onRefreshDogs} 
+          variant="outline" 
+          size="sm" 
+          className="gap-2"
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          <span>Refresh</span>
+        </Button>
+      </div>
     </div>
   );
 };

@@ -16,7 +16,7 @@ const Compliance: React.FC = () => {
 
   return (
     <PageContainer>
-      <div className="space-y-6">
+      <div className="space-y-6 w-full">
         <PageHeader 
           title="Compliance Management"
           description="Track licenses, inspections, and regulatory requirements"
@@ -24,7 +24,7 @@ const Compliance: React.FC = () => {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-4'} mb-6`}>
+          <TabsList className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-4'} mb-6 w-full`}>
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
               <span>Requirements</span>

@@ -16,7 +16,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, hideNavbar = false })
   return (
     <UserPreferencesProvider>
       <SidebarProvider>
-        <div className="flex h-screen overflow-hidden bg-background">
+        <div className="flex h-screen overflow-hidden bg-background w-full">
           {!hideNavbar && <AppSidebar />}
           <SidebarRail />
           <SidebarInset className="flex flex-col w-full">
@@ -27,10 +27,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, hideNavbar = false })
               </div>
               <UserMenu />
             </header>
-            <main className="flex-1 overflow-auto">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full py-6">
-                {children || <Outlet />}
-              </div>
+            <main className="flex-1 overflow-auto w-full">
+              {children || <Outlet />}
             </main>
           </SidebarInset>
           <Toaster />

@@ -26,7 +26,7 @@ const Facility: React.FC = () => {
 
   return (
     <PageContainer>
-      <div className="space-y-6">
+      <div className="space-y-6 w-full">
         <PageHeader 
           title="Facility Management"
           description="Manage staff, tasks, maintenance, facility expenses, and inventory"
@@ -34,7 +34,7 @@ const Facility: React.FC = () => {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-6'} mb-6`}>
+          <TabsList className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-6'} mb-6 w-full`}>
             <TabsTrigger value="staff" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span>Staff Management</span>
