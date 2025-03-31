@@ -96,7 +96,7 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
     setIsDialogOpen(true);
   };
   
-  const handleSignContract = async (signatureData: string) => {
+  const handleSignContract = async (signatureData: string): Promise<void> => {
     try {
       // Record the contract signing in the database
       const { error } = await supabase
@@ -132,8 +132,6 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
           })
           .eq('id', reservations[0].id);
       }
-      
-      return true;
     } catch (error) {
       console.error('Error saving contract signature:', error);
       throw error;
