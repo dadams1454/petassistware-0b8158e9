@@ -37,6 +37,16 @@ export const useUserManagement = () => {
         throw new Error("Missing tenant ID");
       }
       
+      // Check if tenantId is a valid UUID
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(tenantId)) {
+        console.log(`Invalid UUID format for tenant ID: ${tenantId}`);
+        // Handle the case where tenantId is not a valid UUID
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
+      
       const { data, error: profilesError } = await supabase
         .from('breeder_profiles')
         .select('*')

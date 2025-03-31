@@ -11,6 +11,8 @@ import { EditUserDialog } from '@/components/user-management/EditUserDialog';
 import { UserManagementHeader } from '@/components/user-management/UserManagementHeader';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { UserWithProfile } from '@/types/user';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 const Users: React.FC = () => {
   const { user } = useAuth();
@@ -52,7 +54,7 @@ const Users: React.FC = () => {
     );
   }
 
-  // Show loading or error states
+  // Show loading state
   if (loading) {
     return (
       <PageContainer>
@@ -61,10 +63,46 @@ const Users: React.FC = () => {
     );
   }
 
-  if (error) {
+  const errorIsUuidFormat = error?.includes('invalid input syntax for type uuid');
+
+  // If there's an error and it's related to UUID format
+  if (error && errorIsUuidFormat) {
     return (
       <PageContainer>
-        <ErrorState title="Could not load users" message={error} />
+        <div className="space-y-6">
+          <PageHeader 
+            title="User Management" 
+            description="Manage users and permissions for your organization"
+          />
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            <AlertTitle>Configuration Issue</AlertTitle>
+            <AlertDescription>
+              There is a configuration issue with your tenant ID. Please contact support or ensure your account is properly set up.
+            </AlertDescription>
+          </Alert>
+          <div className="mt-6">
+            <UserTable 
+              users={[]} 
+              currentUserId={user?.id || ''}
+              onEditUser={() => {}}
+              onUserUpdated={() => {}}
+            />
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Show generic error state
+  if (error && !errorIsUuidFormat) {
+    return (
+      <PageContainer>
+        <ErrorState 
+          title="Could not load users" 
+          message={error}
+          onRetry={fetchUsers}
+        />
       </PageContainer>
     );
   }
