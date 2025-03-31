@@ -9,7 +9,7 @@ import AdminTabsContent from '@/components/admin/AdminTabsContent';
 import PageContainer from '@/components/common/PageContainer';
 import { ErrorState } from '@/components/ui/standardized';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Settings, AlertTriangle } from 'lucide-react';
+import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AdminSetup: React.FC = () => {
@@ -45,13 +45,13 @@ const AdminSetup: React.FC = () => {
     return <AdminUnauthorizedState type="unauthorized" />;
   }
 
-  if (error && !tenantSettings) {
-    // Critical error with no fallback data
+  // Always check for settings first, not just error
+  if (!tenantSettings) {
     return (
       <PageContainer>
         <ErrorState 
           title="Error Loading Settings" 
-          message={error} 
+          message={error || "Unable to load organization settings"} 
           onRetry={handleRetry}
         />
       </PageContainer>
@@ -66,7 +66,7 @@ const AdminSetup: React.FC = () => {
           onBackToDashboard={handleBackToDashboard}
         />
         
-        {error && tenantSettings && (
+        {error && (
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
             <div className="flex">
               <div className="flex-shrink-0">

@@ -43,52 +43,13 @@ export const useAdminSetup = () => {
         return;
       }
 
-      // If admin, get tenant settings from tenant_settings table or create if not exists
+      // If admin, try to get tenant settings
       if (isAdmin) {
         try {
-          // Try to fetch existing tenant settings
-          const { data: tenantData, error: tenantError } = await supabase
-            .from('tenant_settings')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .single();
-
-          if (tenantError && tenantError.code !== 'PGRST116') { // Not-found error code
-            console.error('Error fetching tenant settings:', tenantError);
-            throw new Error('Unable to fetch organization settings');
-          }
-
-          if (tenantData) {
-            // Use existing tenant settings
-            setTenantSettings({
-              id: tenantId,
-              ...tenantData
-            });
-          } else {
-            // Create default tenant settings
-            const defaultSettings = {
-              tenant_id: tenantId,
-              name: 'Bear Paw Newfoundlands',
-              description: 'Kennel Management System',
-              contact_email: user.email,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            };
-
-            // For now, just use the default settings without inserting into db
-            // to prevent errors if the table doesn't exist yet
-            setTenantSettings({
-              id: tenantId,
-              name: defaultSettings.name,
-              description: defaultSettings.description,
-              contactEmail: defaultSettings.contact_email,
-              createdAt: defaultSettings.created_at
-            });
-          }
-        } catch (settingsError: any) {
-          console.error('Error loading tenant settings:', settingsError);
+          // Check if tenant_settings table exists by querying the database schema
+          // We'll use a different approach that doesn't rely on the tenant_settings table
           
-          // Use default settings even if there was an error
+          // For now, just use default settings
           setTenantSettings({
             id: tenantId,
             name: 'Bear Paw Newfoundlands',
@@ -97,8 +58,31 @@ export const useAdminSetup = () => {
             createdAt: new Date().toISOString()
           });
           
-          // Still set the error so the user knows something went wrong
-          setError('Could not load organization settings, using defaults instead');
+          // We can optionally check for a tenant record in breeder_profiles
+          const { data: tenantData, error: tenantError } = await supabase
+            .from('breeder_profiles')
+            .select('*')
+            .eq('tenant_id', tenantId)
+            .maybeSingle();
+
+          if (tenantError && tenantError.code !== 'PGRST116') { // Not-found error code
+            console.error('Error fetching tenant profile:', tenantError);
+            // Don't throw, we'll use the default settings
+          }
+
+          if (tenantData) {
+            // Enhance settings with data from breeder_profiles if available
+            setTenantSettings(prev => ({
+              ...prev,
+              businessName: tenantData.business_name,
+              contactEmail: tenantData.email || prev.contactEmail,
+            }));
+          }
+        } catch (settingsError: any) {
+          console.error('Error loading tenant settings:', settingsError);
+          
+          // Continue using the default settings we already set
+          setError('Could not load complete organization settings, using defaults instead');
         }
       } else {
         setTenantSettings(null);
