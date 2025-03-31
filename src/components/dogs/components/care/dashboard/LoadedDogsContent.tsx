@@ -2,11 +2,11 @@
 import React from 'react';
 import { DogCareStatus } from '@/types/dailyCare';
 import { Card } from '@/components/ui/card';
-import PuppiesTab from '../puppies/PuppiesTab';
+import PuppiesTab from '@/components/dashboard/tabs/PuppiesTab';
 
 interface LoadedDogsContentProps {
   dogStatuses: DogCareStatus[];
-  activeView: 'grid' | 'table' | 'list';
+  activeView: string;
   selectedCategory: string;
   selectedDogId: string | null;
   dialogOpen: boolean;
