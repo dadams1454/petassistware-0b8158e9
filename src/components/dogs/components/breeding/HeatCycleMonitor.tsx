@@ -35,14 +35,14 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
       setLoading(true);
       
       // Use the custom supabase client for the heat_cycles table
-      const { data, error } = await customSupabase
+      const { data, error: supabaseError } = await customSupabase
         .from('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
         .order('start_date', { ascending: false });
       
-      if (error) {
-        throw error;
+      if (supabaseError) {
+        throw supabaseError;
       }
       
       // First check if we have data and it's an array
@@ -60,12 +60,14 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
         const validHeatCycles = data.filter(isValidHeatCycle);
         setCycles(validHeatCycles);
       } else {
+        // If data is not an array, set cycles to empty array
         setCycles([]);
       }
       setError(null);
     } catch (err) {
       console.error('Error fetching heat cycles:', err);
       setError('Failed to load heat cycle data');
+      // Important: In case of error, we set cycles to empty array instead of error objects
       setCycles([]);
     } finally {
       setLoading(false);
