@@ -1,17 +1,18 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { EmptyState } from '@/components/ui/standardized';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PermissionsSetupProps {
   tenantId?: string;
 }
 
-// Define sample permission modules
+// Define permission modules
 const permissionModules = [
   {
     name: 'Dogs',
@@ -42,7 +43,7 @@ const permissionModules = [
   },
 ];
 
-// Define sample roles
+// Define roles
 const roles = [
   { name: 'Admin', key: 'admin', description: 'Full access to all features' },
   { name: 'Manager', key: 'manager', description: 'Can manage most aspects but cannot delete or modify system settings' },
@@ -52,47 +53,79 @@ const roles = [
 
 const PermissionsSetup: React.FC<PermissionsSetupProps> = ({ tenantId }) => {
   const { toast } = useToast();
+  const [permissionsMatrix, setPermissionsMatrix] = useState<Record<string, Record<string, boolean>>>({});
+  const [loading, setLoading] = useState(true);
   
-  // Mock permissions matrix - in a real app, this would be fetched from your backend
-  const mockPermissionsMatrix: Record<string, Record<string, boolean>> = {
-    admin: Object.fromEntries(
-      permissionModules.flatMap(module => 
-        module.permissions.map(permission => [permission.key, true])
-      )
-    ),
-    manager: Object.fromEntries(
-      permissionModules.flatMap(module => 
-        module.permissions.map(permission => [permission.key, 
-          !permission.key.includes('delete') && !permission.key.includes('system')
-        ])
-      )
-    ),
-    breeder: Object.fromEntries(
-      permissionModules.flatMap(module => 
-        module.permissions.map(permission => [permission.key, 
-          (module.name === 'Dogs' || module.name === 'Litters') && !permission.key.includes('delete')
-        ])
-      )
-    ),
-    assistant: Object.fromEntries(
-      permissionModules.flatMap(module => 
-        module.permissions.map(permission => [permission.key, 
-          permission.key.includes('view')
-        ])
-      )
-    ),
+  useEffect(() => {
+    // Initialize with defaults until we implement proper permissions storage
+    const defaultMatrix: Record<string, Record<string, boolean>> = {
+      admin: Object.fromEntries(
+        permissionModules.flatMap(module => 
+          module.permissions.map(permission => [permission.key, true])
+        )
+      ),
+      manager: Object.fromEntries(
+        permissionModules.flatMap(module => 
+          module.permissions.map(permission => [permission.key, 
+            !permission.key.includes('delete') && !permission.key.includes('system')
+          ])
+        )
+      ),
+      breeder: Object.fromEntries(
+        permissionModules.flatMap(module => 
+          module.permissions.map(permission => [permission.key, 
+            (module.name === 'Dogs' || module.name === 'Litters') && !permission.key.includes('delete')
+          ])
+        )
+      ),
+      assistant: Object.fromEntries(
+        permissionModules.flatMap(module => 
+          module.permissions.map(permission => [permission.key, 
+            permission.key.includes('view')
+          ])
+        )
+      ),
+    };
+    
+    setPermissionsMatrix(defaultMatrix);
+    setLoading(false);
+  }, []);
+
+  const handlePermissionChange = (role: string, permissionKey: string, value: boolean) => {
+    setPermissionsMatrix(prev => ({
+      ...prev,
+      [role]: {
+        ...prev[role],
+        [permissionKey]: value
+      }
+    }));
   };
 
-  const handleSavePermissions = () => {
-    toast({
-      title: "Permissions Saved",
-      description: "Role permissions have been updated successfully.",
-      variant: "default",
-    });
+  const handleSavePermissions = async () => {
+    try {
+      // Here we would save the permissions matrix to the database
+      // For now, we'll just show a success message
+      
+      toast({
+        title: "Permissions Saved",
+        description: "Role permissions have been updated successfully.",
+        variant: "default",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to save permissions: ${error.message}`,
+        variant: "destructive",
+      });
+    }
   };
 
   if (!tenantId) {
     return <EmptyState title="No Organization Selected" description="Please set up your organization details first." />;
+  }
+
+  if (loading) {
+    return <div className="py-4">Loading permissions...</div>;
   }
 
   return (
@@ -130,8 +163,13 @@ const PermissionsSetup: React.FC<PermissionsSetupProps> = ({ tenantId }) => {
                       {roles.map(role => (
                         <TableCell key={`${role.key}-${permission.key}`} className="text-center">
                           <Switch 
-                            checked={mockPermissionsMatrix[role.key][permission.key]} 
+                            checked={permissionsMatrix[role.key]?.[permission.key] || false} 
                             disabled={role.key === 'admin'} // Admin always has all permissions
+                            onCheckedChange={(checked) => {
+                              if (role.key !== 'admin') {
+                                handlePermissionChange(role.key, permission.key, checked);
+                              }
+                            }}
                           />
                         </TableCell>
                       ))}

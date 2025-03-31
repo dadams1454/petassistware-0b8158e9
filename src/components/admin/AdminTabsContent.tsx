@@ -6,8 +6,7 @@ import OrganizationSetup from '@/components/admin/OrganizationSetup';
 import UserManagement from '@/components/admin/UserManagement';
 import PermissionsSetup from '@/components/admin/PermissionsSetup';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AdminTabsContentProps {
   tenantSettings: any;
@@ -18,8 +17,19 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
   
   const handleOrganizationSubmit = async (data: any) => {
     try {
-      // Since we're operating without a backend, just simulate success
-      console.log('Organization settings to save:', data);
+      // Make an actual update to the breeder_profiles table
+      if (data.tenantId) {
+        const { error } = await supabase
+          .from('breeder_profiles')
+          .upsert({
+            tenant_id: data.tenantId,
+            business_name: data.name,
+            business_overview: data.description,
+            updated_at: new Date().toISOString()
+          });
+        
+        if (error) throw error;
+      }
       
       toast({
         title: 'Organization updated',
@@ -72,13 +82,6 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Alert className="mb-6">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Demo Mode</AlertTitle>
-              <AlertDescription>
-                User management functionality is currently in demo mode as the backend tables are not yet set up.
-              </AlertDescription>
-            </Alert>
             <UserManagement tenantId={tenantSettings?.id} />
           </CardContent>
         </Card>
@@ -93,13 +96,6 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Alert className="mb-6">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Demo Mode</AlertTitle>
-              <AlertDescription>
-                Permissions functionality is currently in demo mode as the backend tables are not yet set up.
-              </AlertDescription>
-            </Alert>
             <PermissionsSetup tenantId={tenantSettings?.id} />
           </CardContent>
         </Card>

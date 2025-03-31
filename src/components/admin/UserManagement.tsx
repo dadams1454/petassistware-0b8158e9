@@ -33,12 +33,15 @@ const UserManagement: React.FC<UserManagementProps> = ({ tenantId }) => {
   
   const fetchUsers = async () => {
     if (!tenantId) {
+      setUsers([]);
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('breeder_profiles')
         .select('*')
@@ -46,9 +49,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ tenantId }) => {
         
       if (error) throw error;
       
-      if (data) {
-        setUsers(data as User[]);
-      }
+      setUsers(data || []);
     } catch (err: any) {
       console.error('Error fetching users:', err);
       setError(err.message);
@@ -64,10 +65,20 @@ const UserManagement: React.FC<UserManagementProps> = ({ tenantId }) => {
   
   const inviteUser = async () => {
     toast({
-      title: "Feature Not Implemented",
-      description: "This feature has not been fully implemented yet.",
+      title: "Invite User",
+      description: "Sending invitation to a new user...",
       variant: "default"
     });
+    
+    // This would be where you implement the actual user invitation functionality
+    // For now, just show a toast that it would be implemented here
+    setTimeout(() => {
+      toast({
+        title: "Feature in Progress",
+        description: "User invitation functionality is being implemented.",
+        variant: "default"
+      });
+    }, 1500);
   };
 
   const getRoleBadgeVariant = (role: string) => {

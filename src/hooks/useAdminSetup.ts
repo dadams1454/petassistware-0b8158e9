@@ -29,7 +29,7 @@ export const useAdminSetup = () => {
       const isAdmin = userRole === 'admin' || userRole === 'owner';
       setIsTenantAdmin(isAdmin);
       
-      // Create default settings that will always work
+      // Default settings as fallback
       const defaultSettings = {
         id: tenantId || null,
         name: 'Bear Paw Newfoundlands',
@@ -46,56 +46,58 @@ export const useAdminSetup = () => {
         return;
       }
       
-      // If there's no tenant ID, use default settings
+      // If there's no tenant ID, use default settings but mark as not setup
       if (!tenantId) {
-        console.log('No tenant ID found, using default settings');
-        setTenantSettings(defaultSettings);
+        console.log('No tenant ID found, organization needs setup');
+        setTenantSettings({
+          ...defaultSettings,
+          needsSetup: true
+        });
         setLoading(false);
         return;
       }
 
       // Try to get tenant settings from breeder_profiles table
-      try {
-        const { data: tenantData, error: tenantError } = await supabase
-          .from('breeder_profiles')
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .maybeSingle();
+      const { data: tenantData, error: tenantError } = await supabase
+        .from('breeder_profiles')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
 
-        if (tenantError) {
-          console.warn('Could not fetch from breeder_profiles:', tenantError);
-          // Don't throw, we'll use the default settings
-        }
+      if (tenantError) {
+        console.warn('Could not fetch from breeder_profiles:', tenantError);
+        throw tenantError;
+      }
 
-        if (tenantData) {
-          // Enhance default settings with data from breeder_profiles if available
-          setTenantSettings({
-            ...defaultSettings,
-            businessName: tenantData.business_name || defaultSettings.businessName,
-            contactEmail: tenantData.email || defaultSettings.contactEmail,
-            name: tenantData.business_name || defaultSettings.name,
-          });
-        } else {
-          // Just use the default settings
-          setTenantSettings(defaultSettings);
-        }
-      } catch (settingsError: any) {
-        console.warn('Error loading tenant settings:', settingsError);
-        // Still set the default settings to ensure UI works
-        setTenantSettings(defaultSettings);
-        setError('Could not connect to database. Using default settings instead.');
+      if (tenantData) {
+        // Use the data from breeder_profiles
+        setTenantSettings({
+          id: tenantId,
+          name: tenantData.business_name || defaultSettings.name,
+          description: tenantData.business_overview || defaultSettings.description,
+          contactEmail: tenantData.email || defaultSettings.contactEmail,
+          createdAt: tenantData.created_at || defaultSettings.createdAt
+        });
+      } else {
+        // No existing profile found, use default settings but mark as needing setup
+        setTenantSettings({
+          ...defaultSettings,
+          needsSetup: true
+        });
       }
     } catch (error: any) {
       console.error('Error in admin setup:', error);
-      // Set default settings even on error to ensure the UI renders
+      setError(`Failed to load organization settings: ${error.message}`);
+      
+      // Still set default settings to ensure UI works
       setTenantSettings({
         id: tenantId || null,
         name: 'Bear Paw Newfoundlands',
         description: 'Kennel Management System',
         contactEmail: user?.email || 'admin@example.com',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        needsSetup: true
       });
-      setError('Encountered an error, using default settings.');
     } finally {
       setLoading(false);
     }
@@ -107,5 +109,6 @@ export const useAdminSetup = () => {
     isTenantAdmin,
     tenantSettings,
     error,
+    reloadSettings: checkUserPermissions
   };
 };

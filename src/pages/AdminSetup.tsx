@@ -16,7 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 const AdminSetup: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, loading, isTenantAdmin, tenantSettings, error } = useAdminSetup();
+  const { user, loading, isTenantAdmin, tenantSettings, error, reloadSettings } = useAdminSetup();
 
   const handleBackToDashboard = () => {
     navigate('/dashboard');
@@ -27,7 +27,7 @@ const AdminSetup: React.FC = () => {
   };
 
   const handleRetry = () => {
-    window.location.reload();
+    reloadSettings();
     toast({
       title: 'Refreshing...',
       description: 'Attempting to reload admin settings'
@@ -46,7 +46,6 @@ const AdminSetup: React.FC = () => {
     return <AdminUnauthorizedState type="unauthorized" />;
   }
 
-  // We now always have tenantSettings due to our improved fallback in useAdminSetup
   return (
     <PageContainer>
       <div className="space-y-6 w-full">
@@ -81,6 +80,16 @@ const AdminSetup: React.FC = () => {
                 </div>
               </div>
             </div>
+          </Alert>
+        )}
+        
+        {tenantSettings?.needsSetup && !error && (
+          <Alert className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Organization Setup Required</AlertTitle>
+            <AlertDescription>
+              Your organization needs to be set up. Please complete the organization settings below.
+            </AlertDescription>
           </Alert>
         )}
         
