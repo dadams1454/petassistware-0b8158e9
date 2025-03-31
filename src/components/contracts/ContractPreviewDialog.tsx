@@ -9,11 +9,11 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Download, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { ContractData, generatePdfContract, downloadPdf } from '@/utils/pdfGenerator';
-import ESignatureCanvas from './ESignatureCanvas';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
+import PreviewTab from './tabs/PreviewTab';
+import SignatureTab from './tabs/SignatureTab';
 
 interface ContractPreviewDialogProps {
   isOpen: boolean;
@@ -133,52 +133,19 @@ const ContractPreviewDialog: React.FC<ContractPreviewDialogProps> = ({
           </TabsList>
 
           <TabsContent value="preview" className="flex-1 overflow-hidden flex flex-col">
-            {isGeneratingPdf ? (
-              <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-                <Skeleton className="h-[60vh] w-full" />
-              </div>
-            ) : !pdfUrl ? (
-              <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-                <FileText className="h-16 w-16 text-muted-foreground" />
-                <p className="text-muted-foreground">Failed to generate preview</p>
-              </div>
-            ) : (
-              <iframe 
-                src={pdfUrl} 
-                className="w-full h-[60vh] border border-gray-200 rounded-md"
-                title="Contract Preview"
-              />
-            )}
-            
-            <div className="mt-4">
-              <Button onClick={handleDownload} disabled={!pdfBytes}>
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
-            </div>
+            <PreviewTab
+              isGeneratingPdf={isGeneratingPdf}
+              pdfUrl={pdfUrl}
+              pdfBytes={pdfBytes}
+              onDownload={handleDownload}
+            />
           </TabsContent>
 
           <TabsContent value="sign" className="flex-1 overflow-auto space-y-4">
-            <div className="space-y-4">
-              <p>Please sign below to indicate your agreement to the terms of this contract:</p>
-              
-              <div className="border rounded-md p-4 bg-gray-50">
-                <p className="text-sm font-medium">Signing as: {contractData.customerName}</p>
-                <p className="text-sm text-muted-foreground">
-                  Date: {new Date().toLocaleDateString()}
-                </p>
-              </div>
-              
-              <ESignatureCanvas 
-                onChange={setSignature}
-                width={600}
-                height={200}
-              />
-              
-              <p className="text-sm text-muted-foreground">
-                By signing, you acknowledge that you have read and agree to all terms and conditions outlined in this contract.
-              </p>
-            </div>
+            <SignatureTab
+              customerName={contractData.customerName}
+              onSignatureChange={setSignature}
+            />
           </TabsContent>
         </Tabs>
         
