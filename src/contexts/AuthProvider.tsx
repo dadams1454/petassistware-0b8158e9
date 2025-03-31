@@ -40,18 +40,33 @@ export const useAuth = () => useContext(AuthContext);
 
 // Store auth in localStorage to persist across page reloads
 const STORAGE_KEY = 'breed_elite_auth';
+const TENANT_ID_KEY = 'breed_elite_tenant_id';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Try to load initial state from localStorage
   const loadInitialState = () => {
     try {
       const savedAuth = localStorage.getItem(STORAGE_KEY);
+      const savedTenantId = localStorage.getItem(TENANT_ID_KEY);
+      
+      let validTenantId = savedTenantId;
+      
+      // Check if tenantId is a valid UUID
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!savedTenantId || !uuidRegex.test(savedTenantId)) {
+        // Generate a new valid UUID if none exists or it's invalid
+        validTenantId = uuidv4();
+        localStorage.setItem(TENANT_ID_KEY, validTenantId);
+        console.log('Generated new tenant ID:', validTenantId);
+      }
+      
       if (savedAuth) {
         const parsedAuth = JSON.parse(savedAuth);
         console.log('Loaded auth from storage:', parsedAuth);
         return {
           user: parsedAuth.user,
           userRole: parsedAuth.userRole || 'user',
+          tenantId: validTenantId,
           loading: false
         };
       }
@@ -60,9 +75,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem(STORAGE_KEY);
     }
     
+    // Generate a valid UUID for tenant ID
+    const newTenantId = uuidv4();
+    localStorage.setItem(TENANT_ID_KEY, newTenantId);
+    console.log('Created new tenant ID:', newTenantId);
+    
     return {
       user: null,
       userRole: 'user' as UserRole,
+      tenantId: newTenantId,
       loading: false // Changed to false to prevent initial loading state
     };
   };
@@ -72,8 +93,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userRole, setUserRole] = useState<UserRole>(initialState.userRole);
   const [loading, setLoading] = useState(initialState.loading);
   
-  // Generate a valid UUID for the tenant ID instead of using a string
-  const [tenantId, setTenantId] = useState<string | null>(uuidv4());
+  // Use the valid UUID from initialState for the tenant ID
+  const [tenantId, setTenantId] = useState<string | null>(initialState.tenantId);
 
   // Create a mock user and store it in localStorage immediately
   useEffect(() => {
