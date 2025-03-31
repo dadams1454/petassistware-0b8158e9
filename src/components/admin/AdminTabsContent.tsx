@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
@@ -31,6 +32,8 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
       if (!user || !user.email) {
         throw new Error("User email is required but not available");
       }
+      
+      console.log("Saving organization with UUID:", sanitizedUUID, "Valid:", isValidUUID(sanitizedUUID));
       
       // Update the tenant profile with the sanitized UUID
       const { error } = await supabase

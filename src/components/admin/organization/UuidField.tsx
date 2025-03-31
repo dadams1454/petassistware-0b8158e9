@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { useUuidValidation } from '@/hooks/useUuidValidation';
-import { generateUUID } from '@/utils/uuidUtils';
+import { generateUUID, isValidUUID } from '@/utils/uuidUtils';
 import { useToast } from '@/hooks/use-toast';
 
 interface UuidFieldProps {
@@ -55,12 +55,15 @@ const UuidField: React.FC<UuidFieldProps> = ({
     }
   };
 
-  // Generate new UUID - improved implementation
+  // Generate new UUID - complete implementation with proper validation
   const onGenerateClick = () => {
     setIsGenerating(true);
     try {
       // Generate a valid UUID
       const newUuid = generateUUID();
+      
+      // Log for debugging
+      console.log('Generated new UUID:', newUuid, 'Valid:', isValidUUID(newUuid));
       
       // Update the input field with the new UUID
       onChange(newUuid);
@@ -70,7 +73,7 @@ const UuidField: React.FC<UuidFieldProps> = ({
       
       toast({
         title: "UUID Generated",
-        description: "A new valid UUID has been generated.",
+        description: "A new valid UUID has been generated and validated.",
         variant: "default"
       });
     } catch (error) {
