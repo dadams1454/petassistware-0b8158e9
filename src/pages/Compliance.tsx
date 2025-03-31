@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/ui/standardized';
 import { Shield, FileCheck, Calendar, AlertTriangle } from 'lucide-react';
 import LicenseManagement from '@/components/compliance/LicenseManagement';
-import InspectionTracker from '@/components/compliance/InspectionTracker';
+import InspectionTracker from '@/components/compliance/inspections/InspectionTracker';
 import RequirementsDashboard from '@/components/compliance/RequirementsDashboard';
 import ComplianceCalendar from '@/components/compliance/ComplianceCalendar';
 import { useIsMobile } from '@/hooks/use-mobile';
