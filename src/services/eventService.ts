@@ -10,6 +10,15 @@ const validateEventStatus = (status: string): 'upcoming' | 'planned' | 'complete
     : 'planned'; // Default to 'planned' if invalid status
 };
 
+// Helper function to validate recurrence pattern
+const validateRecurrencePattern = (pattern?: string | null): 'daily' | 'weekly' | 'monthly' | 'none' | null => {
+  if (!pattern) return null;
+  const validPatterns = ['daily', 'weekly', 'monthly', 'none'];
+  return validPatterns.includes(pattern) 
+    ? pattern as 'daily' | 'weekly' | 'monthly' | 'none'
+    : 'none'; // Default to 'none' if invalid pattern
+};
+
 // Function to fetch all events
 export const fetchEvents = async (): Promise<Event[]> => {
   try {
@@ -29,7 +38,7 @@ export const fetchEvents = async (): Promise<Event[]> => {
       status: validateEventStatus(event.status),
       event_type: event.event_type,
       is_recurring: event.is_recurring || false,
-      recurrence_pattern: event.recurrence_pattern || 'none',
+      recurrence_pattern: validateRecurrencePattern(event.recurrence_pattern),
       recurrence_end_date: event.recurrence_end_date || null
     }));
     
@@ -53,7 +62,7 @@ export const createEvent = async (eventData: NewEvent): Promise<Event> => {
           status: eventData.status,
           event_type: eventData.event_type,
           is_recurring: eventData.is_recurring || false,
-          recurrence_pattern: eventData.recurrence_pattern || 'none',
+          recurrence_pattern: eventData.recurrence_pattern || null,
           recurrence_end_date: eventData.recurrence_end_date || null,
           breeder_id: (await supabase.auth.getUser()).data.user?.id
         }
@@ -76,7 +85,7 @@ export const createEvent = async (eventData: NewEvent): Promise<Event> => {
       status: validateEventStatus(data.status),
       event_type: data.event_type,
       is_recurring: data.is_recurring || false,
-      recurrence_pattern: data.recurrence_pattern || 'none',
+      recurrence_pattern: validateRecurrencePattern(data.recurrence_pattern),
       recurrence_end_date: data.recurrence_end_date || null
     };
     
@@ -99,7 +108,7 @@ export const updateEvent = async (eventData: Event): Promise<Event> => {
         status: eventData.status,
         event_type: eventData.event_type,
         is_recurring: eventData.is_recurring || false,
-        recurrence_pattern: eventData.recurrence_pattern || 'none',
+        recurrence_pattern: eventData.recurrence_pattern || null,
         recurrence_end_date: eventData.recurrence_end_date || null
       })
       .eq('id', eventData.id)
@@ -121,7 +130,7 @@ export const updateEvent = async (eventData: Event): Promise<Event> => {
       status: validateEventStatus(data.status),
       event_type: data.event_type,
       is_recurring: data.is_recurring || false,
-      recurrence_pattern: data.recurrence_pattern || 'none',
+      recurrence_pattern: validateRecurrencePattern(data.recurrence_pattern),
       recurrence_end_date: data.recurrence_end_date || null
     };
     
