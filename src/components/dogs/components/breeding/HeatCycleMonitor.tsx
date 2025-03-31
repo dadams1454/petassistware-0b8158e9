@@ -45,9 +45,20 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
         throw error;
       }
       
-      // Properly cast the data to HeatCycle[]
-      if (data) {
-        setCycles(data as HeatCycle[]);
+      // First check if we have data and it's an array
+      if (data && Array.isArray(data)) {
+        // Then validate that each item has the required fields to be a HeatCycle
+        const isValidHeatCycle = (item: any): item is HeatCycle => {
+          return item && 
+                 typeof item.id === 'string' && 
+                 typeof item.dog_id === 'string' && 
+                 typeof item.start_date === 'string' &&
+                 typeof item.created_at === 'string';
+        };
+        
+        // Filter only valid heat cycles
+        const validHeatCycles = data.filter(isValidHeatCycle);
+        setCycles(validHeatCycles);
       } else {
         setCycles([]);
       }

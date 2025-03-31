@@ -60,7 +60,7 @@ export function getStatusColor(status: GeneticHealthStatus | string): string {
 /**
  * Get the display text for a dog's genotype
  */
-export function getGenotypeDisplayText(genotype: DogGenotype): string {
+export function getGenotypeDisplayText(genotype: string): string {
   if (genotype === 'clear') {
     return 'Clear';
   } else if (genotype === 'carrier') {
