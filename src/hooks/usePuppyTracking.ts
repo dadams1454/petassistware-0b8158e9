@@ -1,42 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-export interface PuppyWithAge {
-  id: string;
-  litter_id: string;
-  name: string | null;
-  gender: string | null;
-  color: string | null;
-  status: string | null;
-  birth_date: string | null;
-  current_weight: string | null;
-  photo_url: string | null;
-  microchip_number: string | null;
-  ageInDays: number;
-  litters: {
-    id: string;
-    name: string | null;
-    birth_date: string;
-  };
-}
-
-export interface PuppyAgeGroupData {
-  id: string;
-  name: string;
-  startDay: number;
-  endDay: number;
-  description: string;
-  milestones: string;
-  careChecks: string[];
-}
-
-export interface PuppyStatistics {
-  totalPuppies: number;
-  activeLitters: number;
-  upcomingVaccinations: number;
-  recentWeightChecks: number;
-}
+import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats } from '@/types/puppyTracking';
 
 const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
   {
@@ -104,7 +68,7 @@ export const usePuppyTracking = () => {
   const [puppies, setPuppies] = useState<PuppyWithAge[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [puppyStats, setPuppyStats] = useState<PuppyStatistics>({
+  const [puppyStats, setPuppyStats] = useState<PuppyManagementStats>({
     totalPuppies: 0,
     activeLitters: 0,
     upcomingVaccinations: 0,
@@ -174,8 +138,6 @@ export const usePuppyTracking = () => {
           })) || [];
         });
         
-        const puppiesArrays = await Promise.all(puppiesPromises);
-        
         // Flatten and process the puppies
         const allPuppies = puppiesArrays.flat().map(puppy => {
           // Calculate age in days
@@ -188,12 +150,17 @@ export const usePuppyTracking = () => {
             ageInDays = Math.floor((now - birthDateTime) / (1000 * 60 * 60 * 24));
           }
           
+          // Ensure gender is properly typed according to PuppyWithAge interface
+          const gender = puppy.gender === 'Male' || puppy.gender === 'Female' 
+            ? puppy.gender 
+            : null;
+          
           // Ensure all required properties for PuppyWithAge are included
           return {
             id: puppy.id,
             litter_id: puppy.litter_id,
             name: puppy.name,
-            gender: puppy.gender,
+            gender: gender,
             color: puppy.color,
             status: puppy.status,
             birth_date: puppy.birth_date,

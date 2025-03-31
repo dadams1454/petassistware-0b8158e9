@@ -26,3 +26,6 @@ export interface PuppyManagementStats {
   upcomingVaccinations: number;
   recentWeightChecks: number;
 }
+
+// Add an alias for backward compatibility
+export type PuppyStatistics = PuppyManagementStats;
