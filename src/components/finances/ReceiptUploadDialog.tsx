@@ -76,7 +76,7 @@ const ReceiptUploadDialog = ({ open, onOpenChange, onUpload }: ReceiptUploadDial
             <FormField
               control={form.control}
               name="file"
-              render={({ field: { onChange, ...rest } }) => (
+              render={({ field: { onChange, value, ...rest } }) => (
                 <FormItem>
                   <FormLabel>Receipt Image or PDF</FormLabel>
                   <FormControl>
