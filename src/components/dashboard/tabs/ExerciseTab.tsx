@@ -172,6 +172,7 @@ const ExerciseTab: React.FC<ExerciseTabProps> = ({ dogStatuses, onRefreshDogs })
                         <Badge>Latest</Badge>
                       </div>
                       
+                      {/* Check if last_care has notes before accessing it */}
                       {selectedDog.last_care.notes && (
                         <div className="mt-2 text-sm">
                           <p className="text-muted-foreground font-medium">Notes:</p>
@@ -250,7 +251,8 @@ const ExerciseCard: React.FC<{
           <div className="mt-4">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Exercise Status:</span>
-              <Badge variant={hasExercisedToday ? "success" : "secondary"}>
+              <Badge variant={hasExercisedToday ? "secondary" : "secondary"} 
+                className={hasExercisedToday ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}>
                 {hasExercisedToday ? "Completed Today" : "Needs Exercise"}
               </Badge>
             </div>
@@ -312,7 +314,8 @@ const ExerciseListItem: React.FC<{
         <div>
           <div className="flex items-center">
             <h3 className="font-medium">{dog.dog_name}</h3>
-            <Badge className="ml-2" variant={hasExercisedToday ? "success" : "secondary"}>
+            <Badge className="ml-2" variant="secondary"
+                  className={hasExercisedToday ? "ml-2 bg-green-100 text-green-800 hover:bg-green-200" : "ml-2"}>
               {hasExercisedToday ? "Exercised" : "Needs Exercise"}
             </Badge>
           </div>

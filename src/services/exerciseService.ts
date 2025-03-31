@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ExerciseRecord {
@@ -37,7 +36,7 @@ export async function recordExercise(exercise: Omit<ExerciseRecord, 'id' | 'crea
         timestamp: exercise.timestamp,
         notes: exercise.notes,
         created_by: exercise.performed_by,
-        metadata: {
+        medication_metadata: {
           duration: exercise.duration,
           intensity: exercise.intensity,
           location: exercise.location,
@@ -54,10 +53,10 @@ export async function recordExercise(exercise: Omit<ExerciseRecord, 'id' | 'crea
       id: data.id,
       dog_id: data.dog_id,
       exercise_type: data.task_name,
-      duration: data.metadata?.duration || 0,
-      intensity: data.metadata?.intensity || 'moderate',
-      location: data.metadata?.location || '',
-      weather_conditions: data.metadata?.weather_conditions,
+      duration: data.medication_metadata?.duration || 0,
+      intensity: data.medication_metadata?.intensity || 'moderate',
+      location: data.medication_metadata?.location || '',
+      weather_conditions: data.medication_metadata?.weather_conditions,
       notes: data.notes,
       performed_by: data.created_by,
       timestamp: data.timestamp,
@@ -92,10 +91,10 @@ export async function getDogExerciseHistory(dogId: string, days: number = 30): P
       id: log.id,
       dog_id: log.dog_id,
       exercise_type: log.task_name,
-      duration: log.metadata?.duration || 0,
-      intensity: log.metadata?.intensity || 'moderate',
-      location: log.metadata?.location || '',
-      weather_conditions: log.metadata?.weather_conditions,
+      duration: log.medication_metadata?.duration || 0,
+      intensity: log.medication_metadata?.intensity || 'moderate',
+      location: log.medication_metadata?.location || '',
+      weather_conditions: log.medication_metadata?.weather_conditions,
       notes: log.notes,
       performed_by: log.created_by,
       timestamp: log.timestamp,
