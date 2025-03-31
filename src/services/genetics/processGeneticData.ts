@@ -7,14 +7,20 @@ import { DogGenotype } from '@/types/genetics';
 export function processGeneticData(rawData: any): DogGenotype {
   // Initialize the processed data structure
   const processedData: DogGenotype = {
-    dogId: rawData.dogId,
-    updatedAt: new Date().toISOString(),
+    id: rawData.dogId || '',
+    name: rawData.name || 'Unknown',
+    color: {
+      genotype: '',
+      phenotype: ''
+    },
     baseColor: 'E/e', // Default values
     brownDilution: 'B/b',
     dilution: 'D/d',
     agouti: 'a/a',
     patterns: [],
     healthMarkers: {},
+    healthResults: [],
+    updatedAt: new Date().toISOString(),
     testResults: []
   };
   
@@ -22,15 +28,17 @@ export function processGeneticData(rawData: any): DogGenotype {
   if (rawData.tests && Array.isArray(rawData.tests)) {
     rawData.tests.forEach((test: any) => {
       // Add to test results array
-      processedData.testResults.push({
-        testId: test.id || `test-${Math.random().toString(36).substring(2, 9)}`,
-        testType: test.test_type || 'Unknown',
-        testDate: test.test_date || new Date().toISOString().split('T')[0],
-        result: test.result || 'Unknown',
-        labName: test.lab_name || 'Unknown Lab',
-        certificateUrl: test.certificate_url,
-        verified: test.verified
-      });
+      if (processedData.testResults) {
+        processedData.testResults.push({
+          testId: test.id || `test-${Math.random().toString(36).substring(2, 9)}`,
+          testType: test.test_type || 'Unknown',
+          testDate: test.test_date || new Date().toISOString().split('T')[0],
+          result: test.result || 'Unknown',
+          labName: test.lab_name || 'Unknown Lab',
+          certificateUrl: test.certificate_url,
+          verified: test.verified
+        });
+      }
       
       // Process color panel results
       if (test.test_type === 'Color Panel') {

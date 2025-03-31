@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { useDogGenetics } from './useDogGenetics';
-import { PairingAnalysis, HealthWarning, DogGenotype } from '@/types/genetics';
+import { PairingAnalysis, HealthWarning, DogGenotype, HealthMarker } from '@/types/genetics';
 
 interface UseGeneticPairingReturn {
   analysis: PairingAnalysis | null;
@@ -85,18 +86,18 @@ function analyzeGenetics(sireGenetics: DogGenotype, damGenetics: DogGenotype): P
   const coi = calculateCOI(sireGenetics, damGenetics);
   
   // Check for health condition carrier status
-  for (const [condition, sireStatus] of Object.entries(sireGenetics.healthMarkers)) {
+  for (const [condition, sireMarker] of Object.entries(sireGenetics.healthMarkers)) {
     // Check if both dogs have data for this condition
     if (damGenetics.healthMarkers[condition]) {
-      const damStatus = damGenetics.healthMarkers[condition];
+      const damMarker = damGenetics.healthMarkers[condition];
       
       // Add to compatible tests list if both are clear
-      if (sireStatus.status === 'clear' && damStatus.status === 'clear') {
+      if (sireMarker.status === 'clear' && damMarker.status === 'clear') {
         compatibleTests.push(condition);
       }
       
       // Check for carrier × carrier scenarios
-      if (sireStatus.status === 'carrier' && damStatus.status === 'carrier') {
+      if (sireMarker.status === 'carrier' && damMarker.status === 'carrier') {
         healthWarnings.push({
           condition: formatConditionName(condition),
           riskLevel: 'critical',
@@ -107,8 +108,8 @@ function analyzeGenetics(sireGenetics: DogGenotype, damGenetics: DogGenotype): P
       }
       
       // Check for affected × carrier scenarios
-      if ((sireStatus.status === 'affected' && damStatus.status === 'carrier') ||
-          (sireStatus.status === 'carrier' && damStatus.status === 'affected')) {
+      if ((sireMarker.status === 'affected' && damMarker.status === 'carrier') ||
+          (sireMarker.status === 'carrier' && damMarker.status === 'affected')) {
         healthWarnings.push({
           condition: formatConditionName(condition),
           riskLevel: 'high',
@@ -119,7 +120,7 @@ function analyzeGenetics(sireGenetics: DogGenotype, damGenetics: DogGenotype): P
       }
       
       // Check for affected × affected scenarios
-      if (sireStatus.status === 'affected' && damStatus.status === 'affected') {
+      if (sireMarker.status === 'affected' && damMarker.status === 'affected') {
         healthWarnings.push({
           condition: formatConditionName(condition),
           riskLevel: 'critical',
