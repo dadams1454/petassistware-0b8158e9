@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { addDays, isWithinDays, format } from 'date-fns';
+import { addDays, format } from 'date-fns';
 import { customSupabase } from '@/integrations/supabase/client';
 
 export const useHeatCycleAlerts = (dogs: any[] = []) => {

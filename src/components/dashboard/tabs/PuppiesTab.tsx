@@ -1,120 +1,69 @@
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Baby, PlusCircle, RefreshCw, Filter } from 'lucide-react';
-import { usePuppyTracking } from '@/hooks/usePuppyTracking';
-import { useNavigate } from 'react-router-dom';
-import { EmptyState, LoadingState, ErrorState, SectionHeader } from '@/components/ui/standardized';
-import PuppyAgeGroupList from './puppies/PuppyAgeGroupList';
-import { PuppyManagementStats } from '@/types/puppyTracking';
-import PuppyStatCards from './puppies/PuppyStatCards';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+
+import React from 'react';
+import HeatCycleManagement from '../../dogs/components/HeatCycleManagement';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { customSupabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PuppiesTabProps {
-  onRefresh?: () => void;
+  onRefresh: () => void;
 }
 
 const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
-  const navigate = useNavigate();
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Fetch all female dogs for heat cycle monitoring
+  const { data: femaleDogs, isLoading } = useQuery({
+    queryKey: ['femaleDogs'],
+    queryFn: async () => {
+      const { data, error } = await customSupabase
+        .from('dogs')
+        .select('*')
+        .eq('gender', 'Female')
+        .order('name');
+        
+      if (error) throw error;
+      return data || [];
+    }
+  });
   
-  const { 
-    puppiesByAgeGroup, 
-    ageGroups, 
-    isLoading, 
-    error,
-    puppyStats
-  } = usePuppyTracking();
-
-  const hasAnyPuppies = Object.values(puppiesByAgeGroup).some(group => group.length > 0);
-  const totalPuppies = Object.values(puppiesByAgeGroup).reduce(
-    (sum, group) => sum + group.length, 0
-  );
-
-  const handleNavigateToLitters = () => {
-    navigate('/litters');
-  };
-
   if (isLoading) {
-    return <LoadingState message="Loading puppy information..." />;
-  }
-
-  if (error) {
     return (
-      <ErrorState 
-        title="Error Loading Puppies" 
-        message={error} 
-        onRetry={onRefresh}
-      />
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Puppy & Breeding Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-48 w-full" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
-
-  if (!hasAnyPuppies) {
-    return (
+  
+  return (
+    <div className="space-y-6">
       <Card>
-        <CardContent className="pt-6">
-          <EmptyState
-            icon={<Baby className="h-12 w-12 text-muted-foreground" />}
-            title="No Puppies Found"
-            description="There are no active litters with puppies in the system. Add a litter first, then you can add puppies to it."
-            action={{
-              label: "Manage Litters",
-              onClick: handleNavigateToLitters
-            }}
-          />
+        <CardHeader>
+          <CardTitle className="text-lg">Puppy & Breeding Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {femaleDogs && femaleDogs.length > 0 ? (
+            <div className="space-y-8">
+              {femaleDogs.map(dog => (
+                <div key={dog.id} className="border-b pb-6 last:border-0">
+                  <h3 className="text-lg font-medium mb-4">{dog.name}</h3>
+                  <HeatCycleManagement dog={dog} onRefresh={onRefresh} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">
+              No female dogs found. Add female dogs to manage heat cycles.
+            </p>
+          )}
         </CardContent>
       </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-        <div>
-          <SectionHeader
-            title="Puppy Management"
-            description={`Tracking ${totalPuppies} ${totalPuppies === 1 ? 'puppy' : 'puppies'} across different developmental stages`}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Filter className="h-4 w-4" /> Filters
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Filter Puppies</SheetTitle>
-                <SheetDescription>
-                  Filter puppies by various criteria
-                </SheetDescription>
-              </SheetHeader>
-              <div className="py-4">
-                {/* Filter options would go here */}
-                <p className="text-sm text-muted-foreground">Filter options coming soon</p>
-              </div>
-            </SheetContent>
-          </Sheet>
-          
-          <Button variant="outline" size="sm" onClick={onRefresh} className="gap-2">
-            <RefreshCw className="h-4 w-4" /> Refresh
-          </Button>
-          
-          <Button onClick={handleNavigateToLitters} size="sm" className="gap-2">
-            <PlusCircle className="h-4 w-4" /> Add Litter
-          </Button>
-        </div>
-      </div>
-
-      {puppyStats && (
-        <PuppyStatCards stats={puppyStats} />
-      )}
-
-      <PuppyAgeGroupList 
-        puppiesByAgeGroup={puppiesByAgeGroup} 
-        ageGroups={ageGroups} 
-      />
     </div>
   );
 };

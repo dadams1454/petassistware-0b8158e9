@@ -1,86 +1,69 @@
-
 import { useState, useEffect } from 'react';
+import { customSupabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { customSupabase, InspectionRow } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 export const useInspections = () => {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const [inspections, setInspections] = useState<InspectionRow[]>([]);
+  const [inspections, setInspections] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedInspection, setSelectedInspection] = useState<InspectionRow | null>(null);
-  
+  const [selectedInspection, setSelectedInspection] = useState<any | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchInspections();
+  }, []);
+
   const fetchInspections = async () => {
     setIsLoading(true);
     try {
       const { data, error } = await customSupabase
-        .from<InspectionRow>('inspections')
+        .from('compliance_inspections')
         .select('*')
         .order('inspection_date', { ascending: false });
 
       if (error) throw error;
       setInspections(data || []);
     } catch (error: any) {
-      console.error('Error fetching inspections:', error);
+      setInspections([]);
+      console.error("Error fetching inspections:", error);
       toast({
         title: 'Error',
-        description: 'Failed to load inspections data. Please try again later.',
+        description: 'Failed to load inspections. Please try again later.',
         variant: 'destructive',
       });
-      // Fix: Set an empty array of the correct type, not the error itself
-      setInspections([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const saveInspection = async (inspectionData: any): Promise<boolean> => {
+  const saveInspection = async (inspectionData: any) => {
     try {
-      const userId = user?.id;
-      if (!userId) {
-        toast({
-          title: 'Authentication Required',
-          description: 'You must be logged in to save inspection data.',
-          variant: 'destructive',
-        });
-        return false;
-      }
-
-      if (selectedInspection) {
+      if (inspectionData.id) {
         // Update existing inspection
         const { error } = await customSupabase
-          .from<InspectionRow>('inspections')
-          .update({
-            ...inspectionData,
-            breeder_id: userId,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', selectedInspection.id);
+          .from('compliance_inspections')
+          .update(inspectionData)
+          .eq('id', inspectionData.id);
 
         if (error) throw error;
-        
+
         toast({
           title: 'Inspection Updated',
-          description: 'The inspection has been successfully updated.',
+          description: 'The inspection has been updated successfully.',
         });
       } else {
-        // Create new inspection
+        // Insert new inspection
         const { error } = await customSupabase
-          .from<InspectionRow>('inspections')
-          .insert({
-            ...inspectionData,
-            breeder_id: userId
-          });
+          .from('compliance_inspections')
+          .insert(inspectionData);
 
         if (error) throw error;
-        
+
         toast({
           title: 'Inspection Added',
-          description: 'The new inspection has been successfully added.',
+          description: 'The new inspection has been added successfully.',
         });
       }
-      
+
       fetchInspections();
       return true;
     } catch (error: any) {
@@ -94,18 +77,11 @@ export const useInspections = () => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      fetchInspections();
-    }
-  }, [user]);
-
   return {
     inspections,
     isLoading,
     selectedInspection,
     setSelectedInspection,
-    fetchInspections,
     saveInspection
   };
 };
