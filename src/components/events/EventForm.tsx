@@ -14,7 +14,7 @@ import RecurrenceOptions from './form/RecurrenceOptions';
 
 interface EventFormProps {
   onSubmit: (data: NewEvent) => void;
-  initialData?: Event;
+  initialData?: Event | Partial<NewEvent>;
   defaultDate?: Date;
 }
 
@@ -87,7 +87,7 @@ const EventForm: React.FC<EventFormProps> = ({
 
         <div className="flex justify-end space-x-2 pt-4">
           <Button type="submit">
-            {initialData ? 'Update Event' : 'Create Event'}
+            {initialData && 'id' in initialData ? 'Update Event' : 'Create Event'}
           </Button>
         </div>
       </form>

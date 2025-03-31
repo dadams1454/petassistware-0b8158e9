@@ -1,28 +1,26 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
-import { UseFormReturn } from 'react-hook-form';
-import { NewEvent } from '@/pages/Calendar';
+import { FormComponentProps } from './types';
 
-interface RecurrenceOptionsProps {
-  form: UseFormReturn<NewEvent>;
-}
+interface RecurrenceOptionsProps extends FormComponentProps {}
 
 const RecurrenceOptions: React.FC<RecurrenceOptionsProps> = ({ form }) => {
-  const recurrencePatterns = [
-    { value: 'daily', label: 'Daily' },
-    { value: 'weekly', label: 'Weekly' },
-    { value: 'biweekly', label: 'Every two weeks' },
-    { value: 'monthly', label: 'Monthly' },
-    { value: 'quarterly', label: 'Every three months' },
-    { value: 'yearly', label: 'Yearly' }
-  ];
-
-  // Get is_recurring value from form
-  const isRecurring = form.watch('is_recurring');
+  const [isRecurring, setIsRecurring] = useState(form.getValues('is_recurring') || false);
+  
+  // Enable/disable recurrence fields based on switch value
+  useEffect(() => {
+    if (!isRecurring) {
+      form.setValue('recurrence_pattern', null);
+      form.setValue('recurrence_end_date', null);
+    } else if (!form.getValues('recurrence_pattern')) {
+      form.setValue('recurrence_pattern', 'weekly');
+    }
+  }, [isRecurring, form]);
 
   return (
     <div className="space-y-4">
@@ -30,17 +28,20 @@ const RecurrenceOptions: React.FC<RecurrenceOptionsProps> = ({ form }) => {
         control={form.control}
         name="is_recurring"
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
             <div className="space-y-0.5">
               <FormLabel>Recurring Event</FormLabel>
               <FormDescription>
-                Does this event repeat on a schedule?
+                Set this event to repeat on a schedule
               </FormDescription>
             </div>
             <FormControl>
               <Switch
                 checked={field.value}
-                onCheckedChange={field.onChange}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked);
+                  setIsRecurring(checked);
+                }}
               />
             </FormControl>
           </FormItem>
@@ -48,7 +49,7 @@ const RecurrenceOptions: React.FC<RecurrenceOptionsProps> = ({ form }) => {
       />
 
       {isRecurring && (
-        <div className="space-y-4 border rounded-lg p-3">
+        <div className="border rounded-md p-4 space-y-4">
           <FormField
             control={form.control}
             name="recurrence_pattern"
@@ -57,7 +58,7 @@ const RecurrenceOptions: React.FC<RecurrenceOptionsProps> = ({ form }) => {
                 <FormLabel>Recurrence Pattern</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value || ''}
+                  defaultValue={field.value || 'weekly'}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -65,11 +66,9 @@ const RecurrenceOptions: React.FC<RecurrenceOptionsProps> = ({ form }) => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {recurrencePatterns.map(pattern => (
-                      <SelectItem key={pattern.value} value={pattern.value}>
-                        {pattern.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -84,14 +83,15 @@ const RecurrenceOptions: React.FC<RecurrenceOptionsProps> = ({ form }) => {
               <FormItem>
                 <FormLabel>End Date (Optional)</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="date" 
-                    {...field} 
-                    value={field.value || ''} 
+                  <Input
+                    type="date"
+                    {...field}
+                    value={field.value || ''}
+                    min={form.getValues('event_date')}
                   />
                 </FormControl>
                 <FormDescription>
-                  Leave blank if the event recurs indefinitely
+                  Leave blank for indefinite recurrence
                 </FormDescription>
                 <FormMessage />
               </FormItem>

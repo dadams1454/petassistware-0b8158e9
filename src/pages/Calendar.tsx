@@ -1,222 +1,183 @@
 
 import React, { useState, useEffect } from 'react';
-import PageContainer from '@/components/common/PageContainer';
-import { PageHeader } from '@/components/ui/standardized';
-import { Button } from '@/components/ui/button';
-import { Plus, Calendar as CalendarIcon } from 'lucide-react';
-import { format, isAfter, isBefore, isSameDay, parseISO } from 'date-fns';
-import { useToast } from '@/components/ui/use-toast';
-import CalendarSidebar from '@/components/calendar/CalendarSidebar';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent } from '@/components/ui/card';
+import EventForm from '@/components/events/EventForm';
 import EventList from '@/components/calendar/EventList';
-import EventTypeFilters from '@/components/calendar/EventTypeFilters';
 import EventDialog from '@/components/calendar/EventDialog';
+import EventTypeFilters from '@/components/calendar/EventTypeFilters';
 import { fetchEvents, createEvent, updateEvent, deleteEvent } from '@/services/eventService';
+import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LoadingState, ErrorState } from '@/components/ui/standardized';
 
-// Event type definitions
-export interface Event {
-  id: string;
-  title: string;
-  description: string | null;
-  event_date: string;
-  status: 'upcoming' | 'planned' | 'completed' | 'cancelled';
-  event_type: string;
-  is_recurring: boolean;
-  recurrence_pattern: string | null;
-  recurrence_end_date: string | null;
-  associated_dog_id?: string | null;
-  associated_litter_id?: string | null;
-}
-
-export type NewEvent = Omit<Event, 'id'>;
-
-// Event type and color constants
+// Event types for breeding, vet, etc.
 export const EVENT_TYPES = [
-  'Heat Cycle',
-  'Breeding Date',
-  'Pregnancy Confirmation',
-  'Whelping Due Date',
-  'Whelping Day',
-  'Puppy Checkup',
+  'Vet Appointment',
+  'Breeding',
+  'Whelping',
   'Vaccination',
-  'Deworming',
-  'Microchipping',
-  'AKC Registration',
-  'Puppy Selection',
-  'Puppy Go Home Day',
-  'Health Testing',
   'Grooming',
-  'Show/Competition',
-  'Veterinary Appointment',
-  'Training Session',
+  'Training',
+  'Show',
   'Other'
 ];
 
-export const EVENT_COLORS: Record<string, { bg: string; text: string }> = {
-  'Heat Cycle': { bg: 'bg-red-100', text: 'text-red-800' },
-  'Breeding Date': { bg: 'bg-pink-100', text: 'text-pink-800' },
-  'Pregnancy Confirmation': { bg: 'bg-purple-100', text: 'text-purple-800' },
-  'Whelping Due Date': { bg: 'bg-indigo-100', text: 'text-indigo-800' },
-  'Whelping Day': { bg: 'bg-blue-100', text: 'text-blue-800' },
-  'Puppy Checkup': { bg: 'bg-sky-100', text: 'text-sky-800' },
-  'Vaccination': { bg: 'bg-cyan-100', text: 'text-cyan-800' },
-  'Deworming': { bg: 'bg-teal-100', text: 'text-teal-800' },
-  'Microchipping': { bg: 'bg-emerald-100', text: 'text-emerald-800' },
-  'AKC Registration': { bg: 'bg-green-100', text: 'text-green-800' },
-  'Puppy Selection': { bg: 'bg-lime-100', text: 'text-lime-800' },
-  'Puppy Go Home Day': { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-  'Health Testing': { bg: 'bg-amber-100', text: 'text-amber-800' },
-  'Grooming': { bg: 'bg-orange-100', text: 'text-orange-800' },
-  'Show/Competition': { bg: 'bg-rose-100', text: 'text-rose-800' },
-  'Veterinary Appointment': { bg: 'bg-red-100', text: 'text-red-800' },
-  'Training Session': { bg: 'bg-blue-100', text: 'text-blue-800' },
-  'Other': { bg: 'bg-gray-100', text: 'text-gray-800' }
-};
+// Type for a new event being created
+export interface NewEvent {
+  title: string;
+  description?: string;
+  event_date: string;
+  status: 'planned' | 'upcoming' | 'completed' | 'cancelled';
+  event_type: string;
+  is_recurring?: boolean;
+  recurrence_pattern?: 'daily' | 'weekly' | 'monthly' | 'none' | null;
+  recurrence_end_date?: string | null;
+}
 
-const Calendar: React.FC = () => {
-  const { toast } = useToast();
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+// Type for an existing event with ID
+export interface Event extends NewEvent {
+  id: string;
+}
+
+const CalendarPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(true);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [activeFilters, setActiveFilters] = useState<string[]>(EVENT_TYPES);
-  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [openEventId, setOpenEventId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState('calendar');
+  
+  const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Load events
+  // Load events on mount and when selectedDate changes
   useEffect(() => {
-    const loadEvents = async () => {
-      setIsLoading(true);
-      try {
-        const eventData = await fetchEvents();
-        setEvents(eventData);
-      } catch (error) {
-        console.error('Failed to load events:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load events. Please try again later.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
     loadEvents();
-  }, [toast]);
+  }, []);
 
-  // Filter events for the selected date
-  const eventsOnSelectedDate = selectedDate
-    ? events.filter(event => 
-        activeFilters.includes(event.event_type) &&
-        isSameDay(parseISO(event.event_date), selectedDate)
-      )
-    : [];
-
-  // Get all dates that have events for the calendar
-  const eventDates = events
-    .filter(event => activeFilters.includes(event.event_type))
-    .map(event => parseISO(event.event_date));
-
-  // Handle event dialog opening
-  const handleCreateEvent = () => {
-    setSelectedEvent(null);
-    setIsCreating(true);
-    setDialogOpen(true);
-  };
-
-  const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    setIsCreating(false);
-    setDialogOpen(true);
-  };
-
-  const handleEditEvent = () => {
-    setIsCreating(true);
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-    setSelectedEvent(null);
-    setIsCreating(true);
-  };
-
-  // Handle filter changes
-  const toggleFilter = (eventType: string) => {
-    setActiveFilters(prev =>
-      prev.includes(eventType)
-        ? prev.filter(type => type !== eventType)
-        : [...prev, eventType]
-    );
-  };
-
-  const selectAllFilters = () => {
-    setActiveFilters(EVENT_TYPES);
-  };
-
-  const clearAllFilters = () => {
-    setActiveFilters([]);
-  };
-
-  // Event CRUD operations
-  const handleSaveEvent = async (eventData: NewEvent) => {
-    try {
-      if (selectedEvent?.id) {
-        // Update existing event
-        const updatedEvent = await updateEvent({
-          ...eventData,
-          id: selectedEvent.id
-        });
-        
-        setEvents(prev => 
-          prev.map(event => 
-            event.id === selectedEvent.id ? updatedEvent : event
-          )
-        );
-        
-        toast({
-          title: 'Success',
-          description: 'Event updated successfully',
-        });
-      } else {
-        // Create new event
-        const newEvent = await createEvent(eventData);
-        setEvents(prev => [...prev, newEvent]);
-        
-        toast({
-          title: 'Success',
-          description: 'Event created successfully',
-        });
+  // Check for state passed via router navigation
+  useEffect(() => {
+    if (location.state) {
+      // If a specific event was selected, open it
+      if (location.state.selectedEventId) {
+        setOpenEventId(location.state.selectedEventId);
+        setIsDialogOpen(true);
       }
       
-      setDialogOpen(false);
-      setSelectedEvent(null);
-    } catch (error) {
-      console.error('Failed to save event:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save event. Please try again.',
-        variant: 'destructive',
-      });
+      // If initial event data was provided, open the form dialog
+      if (location.state.initialEventData) {
+        setIsDialogOpen(true);
+      }
+      
+      // Clean up the location state after handling
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate]);
+
+  // Filter events when filters or events change
+  useEffect(() => {
+    if (events.length === 0) {
+      setFilteredEvents([]);
+      return;
+    }
+
+    let filtered = [...events];
+    
+    // Apply type filters if any are active
+    if (activeFilters.length > 0) {
+      filtered = filtered.filter(event => 
+        activeFilters.includes(event.event_type)
+      );
+    }
+    
+    // Apply date filter if a date is selected
+    if (selectedDate) {
+      const formattedSelectedDate = format(selectedDate, 'yyyy-MM-dd');
+      filtered = filtered.filter(event => 
+        event.event_date === formattedSelectedDate
+      );
+    }
+    
+    setFilteredEvents(filtered);
+  }, [events, activeFilters, selectedDate]);
+
+  const loadEvents = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchEvents();
+      setEvents(data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load events. Please try again.');
+      console.error('Error loading events:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteEvent = async () => {
-    if (!selectedEvent) return;
-    
+  const handleAddEvent = async (eventData: NewEvent) => {
     try {
-      await deleteEvent(selectedEvent.id);
-      setEvents(prev => prev.filter(event => event.id !== selectedEvent.id));
-      
+      const newEvent = await createEvent(eventData);
+      setEvents(prev => [...prev, newEvent]);
       toast({
-        title: 'Success',
-        description: 'Event deleted successfully',
+        title: 'Event created',
+        description: 'Your event has been successfully created.',
       });
-      
-      setDialogOpen(false);
-      setSelectedEvent(null);
-    } catch (error) {
-      console.error('Failed to delete event:', error);
+      return true;
+    } catch (err) {
+      console.error('Error creating event:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to create event. Please try again.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
+  const handleUpdateEvent = async (eventData: Event) => {
+    try {
+      const updatedEvent = await updateEvent(eventData);
+      setEvents(prev => prev.map(event => 
+        event.id === updatedEvent.id ? updatedEvent : event
+      ));
+      toast({
+        title: 'Event updated',
+        description: 'Your event has been successfully updated.',
+      });
+      return true;
+    } catch (err) {
+      console.error('Error updating event:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to update event. Please try again.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      await deleteEvent(eventId);
+      setEvents(prev => prev.filter(event => event.id !== eventId));
+      setOpenEventId(null);
+      setIsDialogOpen(false);
+      toast({
+        title: 'Event deleted',
+        description: 'Your event has been successfully deleted.',
+      });
+    } catch (err) {
+      console.error('Error deleting event:', err);
       toast({
         title: 'Error',
         description: 'Failed to delete event. Please try again.',
@@ -225,66 +186,157 @@ const Calendar: React.FC = () => {
     }
   };
 
+  const handleFilterChange = (eventType: string) => {
+    setActiveFilters(prev => {
+      if (prev.includes(eventType)) {
+        return prev.filter(type => type !== eventType);
+      } else {
+        return [...prev, eventType];
+      }
+    });
+  };
+
+  const clearFilters = () => {
+    setActiveFilters([]);
+  };
+
+  if (loading) {
+    return <LoadingState message="Loading calendar events..." />;
+  }
+
+  if (error) {
+    return <ErrorState title="Error" message={error} onRetry={loadEvents} />;
+  }
+
+  // Get selected event if there is one
+  const selectedEvent = openEventId 
+    ? events.find(event => event.id === openEventId) 
+    : undefined;
+
+  // Get initial data from location state
+  const initialEventData = location.state?.initialEventData;
+
   return (
-    <PageContainer>
-      <div className="container mx-auto py-6 px-4">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-          <PageHeader 
-            title="Calendar"
-            subtitle="Manage your appointments and events"
-            className="mb-4 md:mb-0"
-          />
-          
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <EventTypeFilters 
-              activeFilters={activeFilters}
-              toggleFilter={toggleFilter}
-              selectAllFilters={selectAllFilters}
-              clearAllFilters={clearAllFilters}
-              filterMenuOpen={filterMenuOpen}
-              setFilterMenuOpen={setFilterMenuOpen}
-            />
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-semibold mb-6">Calendar &amp; Events</h1>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+          <TabsTrigger value="list">List View</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="calendar" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="md:col-span-1">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium">Select Date</h3>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSelectedDate(new Date())}
+                  >
+                    Today
+                  </Button>
+                </div>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  className="border rounded-md p-3"
+                />
+                
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-2">Event Types</h3>
+                  <EventTypeFilters 
+                    eventTypes={EVENT_TYPES}
+                    activeFilters={activeFilters}
+                    onFilterChange={handleFilterChange}
+                    onClearFilters={clearFilters}
+                  />
+                </div>
+                
+                <Button 
+                  className="w-full mt-6" 
+                  onClick={() => {
+                    setOpenEventId(null);
+                    setIsDialogOpen(true);
+                  }}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  Add New Event
+                </Button>
+              </CardContent>
+            </Card>
             
-            <Button 
-              onClick={handleCreateEvent}
-              className="ml-auto md:ml-2"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Event
-            </Button>
+            <Card className="md:col-span-2">
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-medium mb-4">
+                  {selectedDate ? (
+                    <>Events for {format(selectedDate, 'MMMM d, yyyy')}</>
+                  ) : (
+                    <>All Events</>
+                  )}
+                </h3>
+                
+                <EventList 
+                  events={filteredEvents} 
+                  onEventClick={(eventId) => {
+                    setOpenEventId(eventId);
+                    setIsDialogOpen(true);
+                  }}
+                  selectedDate={selectedDate}
+                />
+              </CardContent>
+            </Card>
           </div>
-        </div>
+        </TabsContent>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <CalendarSidebar 
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            eventDates={eventDates}
-          />
-          
-          <EventList 
-            selectedDate={selectedDate}
-            eventsOnSelectedDate={eventsOnSelectedDate}
-            activeFilters={activeFilters}
-            isLoading={isLoading}
-            onEventClick={handleEventClick}
-          />
-        </div>
-        
-        <EventDialog 
-          dialogOpen={dialogOpen}
-          setDialogOpen={setDialogOpen}
-          isCreating={isCreating}
-          selectedEvent={selectedEvent}
-          selectedDate={selectedDate}
-          onSave={handleSaveEvent}
-          onEdit={handleEditEvent}
-          onDelete={handleDeleteEvent}
-          onClose={handleCloseDialog}
-        />
-      </div>
-    </PageContainer>
+        <TabsContent value="list" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">All Events</h3>
+                <Button 
+                  onClick={() => {
+                    setOpenEventId(null);
+                    setIsDialogOpen(true);
+                  }}
+                  size="sm"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  Add Event
+                </Button>
+              </div>
+              
+              <EventList 
+                events={events} 
+                onEventClick={(eventId) => {
+                  setOpenEventId(eventId);
+                  setIsDialogOpen(true);
+                }}
+                showDateHeaders={true}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
+      <EventDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        event={selectedEvent}
+        initialData={initialEventData}
+        onSave={selectedEvent ? handleUpdateEvent : handleAddEvent}
+        onDelete={selectedEvent ? handleDeleteEvent : undefined}
+        onClose={() => {
+          setOpenEventId(null);
+          setIsDialogOpen(false);
+        }}
+      />
+    </div>
   );
 };
 
-export default Calendar;
+export default CalendarPage;

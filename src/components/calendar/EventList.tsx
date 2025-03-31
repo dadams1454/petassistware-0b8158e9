@@ -1,109 +1,105 @@
 
 import React from 'react';
-import DashboardCard from '@/components/dashboard/DashboardCard';
-import { CalendarIcon, Repeat } from 'lucide-react';
-import { format } from 'date-fns';
-import { Event, EVENT_COLORS } from '@/pages/Calendar';
+import { format, parseISO, isSameDay } from 'date-fns';
+import { Event } from '@/pages/Calendar';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Calendar, Clock, Tag } from 'lucide-react';
 
 interface EventListProps {
-  selectedDate: Date | undefined;
-  eventsOnSelectedDate: Event[];
-  activeFilters: string[];
-  isLoading: boolean;
-  onEventClick: (event: Event) => void;
+  events: Event[];
+  onEventClick: (eventId: string) => void;
+  selectedDate?: Date;
+  showDateHeaders?: boolean;
 }
 
-const EventList: React.FC<EventListProps> = ({
-  selectedDate,
-  eventsOnSelectedDate,
-  activeFilters,
-  isLoading,
-  onEventClick
-}) => {
-  // Function to get color styling for an event type
-  const getEventTypeStyle = (eventType: string) => {
-    return EVENT_COLORS[eventType] || EVENT_COLORS['Other'];
-  };
+const StatusColors = {
+  planned: "bg-blue-100 text-blue-800 border-blue-200",
+  upcoming: "bg-orange-100 text-orange-800 border-orange-200",
+  completed: "bg-green-100 text-green-800 border-green-200",
+  cancelled: "bg-red-100 text-red-800 border-red-200"
+};
 
-  // Format recurrence pattern for display
-  const formatRecurrencePattern = (pattern: string) => {
-    const patterns: Record<string, string> = {
-      'daily': 'Daily',
-      'weekly': 'Weekly',
-      'biweekly': 'Every two weeks',
-      'monthly': 'Monthly',
-      'quarterly': 'Every three months',
-      'yearly': 'Yearly'
-    };
-    return patterns[pattern] || pattern;
-  };
+const EventList: React.FC<EventListProps> = ({ 
+  events, 
+  onEventClick, 
+  selectedDate,
+  showDateHeaders = false 
+}) => {
+  if (events.length === 0) {
+    return (
+      <div className="text-center py-8 border border-dashed rounded-md">
+        <p className="text-muted-foreground">No events found</p>
+        {selectedDate && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Try selecting another date or clearing filters
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // Sort events by date
+  const sortedEvents = [...events].sort((a, b) => {
+    return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
+  });
+
+  // Group events by date if showing date headers
+  const groupedEvents = showDateHeaders
+    ? sortedEvents.reduce((groups, event) => {
+        const date = event.event_date;
+        if (!groups[date]) {
+          groups[date] = [];
+        }
+        groups[date].push(event);
+        return groups;
+      }, {} as Record<string, Event[]>)
+    : { '': sortedEvents };
 
   return (
-    <DashboardCard 
-      className="md:col-span-2"
-      title={selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'No date selected'}
-      icon={<CalendarIcon size={18} />}
-    >
-      {activeFilters.length === 0 ? (
-        <div className="py-8 text-center text-slate-500">
-          No event types selected. Use the filter to display events.
-        </div>
-      ) : isLoading ? (
-        <div className="py-4 text-center">Loading events...</div>
-      ) : eventsOnSelectedDate.length > 0 ? (
-        <div className="space-y-3">
-          {eventsOnSelectedDate.map(event => {
-            const { bg, text } = getEventTypeStyle(event.event_type);
-            return (
-              <div 
-                key={event.id}
-                className="p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
-                onClick={() => onEventClick(event)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{event.title}</h3>
-                      {event.is_recurring && (
-                        <Repeat size={16} className="text-slate-400" aria-label="Recurring Event" />
-                      )}
+    <div className="space-y-4">
+      {Object.entries(groupedEvents).map(([date, dateEvents]) => (
+        <div key={date} className="space-y-2">
+          {showDateHeaders && date && (
+            <h3 className="text-sm font-medium text-muted-foreground pt-2 pb-1">
+              {format(parseISO(date), 'EEEE, MMMM d, yyyy')}
+            </h3>
+          )}
+          
+          {dateEvents.map(event => (
+            <Card 
+              key={event.id}
+              className={`cursor-pointer hover:bg-accent/50 transition-colors border-l-4 ${StatusColors[event.status]}`}
+              onClick={() => onEventClick(event.id)}
+            >
+              <CardContent className="p-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-medium">{event.title}</h4>
+                    
+                    <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
+                      <div className="flex items-center">
+                        <Calendar className="mr-1 h-4 w-4" />
+                        {format(parseISO(event.event_date), 'MMM d, yyyy')}
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <Tag className="mr-1 h-4 w-4" />
+                        {event.event_type}
+                      </div>
                     </div>
-                    {event.description && (
-                      <p className="text-sm text-slate-600 mt-1">{event.description}</p>
-                    )}
-                    {event.is_recurring && (
-                      <p className="text-xs text-slate-500 mt-1">
-                        Recurs: {formatRecurrencePattern(event.recurrence_pattern || 'none')}
-                      </p>
-                    )}
                   </div>
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                    event.status === 'upcoming' 
-                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' 
-                      : event.status === 'completed'
-                        ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : event.status === 'cancelled'
-                          ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                          : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                  }`}>
-                    {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                  </span>
+                  
+                  <Badge variant="outline" className={StatusColors[event.status].replace("border-", "")}>
+                    {event.status}
+                  </Badge>
                 </div>
-                <div className="mt-2 flex items-center">
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${bg} ${text}`}>
-                    {event.event_type}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      ) : (
-        <div className="py-8 text-center text-slate-500">
-          No events scheduled for this day
-        </div>
-      )}
-    </DashboardCard>
+      ))}
+    </div>
   );
 };
 

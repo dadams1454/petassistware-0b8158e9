@@ -2,14 +2,10 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UseFormReturn } from 'react-hook-form';
-import { NewEvent, EVENT_TYPES } from '@/pages/Calendar';
+import { EVENT_TYPES } from '@/pages/Calendar';
+import { FormComponentProps } from './types';
 
-interface EventTypeSelectorProps {
-  form: UseFormReturn<NewEvent>;
-}
-
-const EventTypeSelector: React.FC<EventTypeSelectorProps> = ({ form }) => {
+const EventTypeSelector: React.FC<FormComponentProps> = ({ form }) => {
   return (
     <FormField
       control={form.control}

@@ -2,14 +2,9 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UseFormReturn } from 'react-hook-form';
-import { NewEvent } from '@/pages/Calendar';
+import { FormComponentProps } from './types';
 
-interface StatusSelectorProps {
-  form: UseFormReturn<NewEvent>;
-}
-
-const StatusSelector: React.FC<StatusSelectorProps> = ({ form }) => {
+const StatusSelector: React.FC<FormComponentProps> = ({ form }) => {
   const statuses = [
     { value: 'planned', label: 'Planned' },
     { value: 'upcoming', label: 'Upcoming' },
