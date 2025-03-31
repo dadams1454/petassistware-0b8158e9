@@ -1,13 +1,25 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import BlurBackground from '@/components/ui/blur-background';
 import Logo from '@/components/common/Logo';
 import AuthForm from '@/components/auth/AuthForm';
 import { useAuthForm } from '@/hooks/useAuthForm';
+import { useAuth } from '@/contexts/AuthProvider';
+import { useEffect } from 'react';
 
 const Auth: React.FC = () => {
   const auth = useAuthForm();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  // If user is already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (user) {
+      console.log('Auth page: User already authenticated, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary/5 to-slate-50 dark:from-slate-900 dark:to-slate-900/80 px-4">

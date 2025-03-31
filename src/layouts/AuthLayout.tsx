@@ -20,7 +20,7 @@ const AuthLayout: React.FC = () => {
         setAuthCheckComplete(true);
         console.log('AuthLayout: forcing auth check completion after timeout');
       }
-    }, 1000); // Reduced timeout for quicker response
+    }, 500); // Even shorter timeout for quicker response
     
     return () => {
       clearTimeout(timer);
@@ -47,7 +47,13 @@ const AuthLayout: React.FC = () => {
     });
   }, [loading, authCheckComplete, user, location, isAuthPage]);
   
-  // If on auth page, render it without checking auth state
+  // If on auth page and user is already authenticated, redirect to dashboard
+  if (isAuthPage && user) {
+    console.log('AuthLayout: User already authenticated, redirecting to dashboard');
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // If on auth page and not authenticated, render it without further checks
   if (isAuthPage) {
     console.log('AuthLayout: On auth page, bypassing authentication check');
     return <Outlet />;
@@ -59,7 +65,7 @@ const AuthLayout: React.FC = () => {
     return <AuthLoadingState fullPage={true} message="Verifying authentication..." />;
   }
   
-  // Redirect to login if not authenticated and not already on the auth page
+  // For any protected route: redirect to login if not authenticated
   if (!user) {
     console.log('AuthLayout: no user found, redirecting to auth page');
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
