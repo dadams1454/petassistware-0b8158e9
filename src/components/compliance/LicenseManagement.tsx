@@ -41,7 +41,7 @@ const LicenseManagement: React.FC = () => {
         description: error.message || 'Failed to load licenses',
         variant: 'destructive',
       });
-      // Set an empty array instead of the error
+      // Set an empty array instead of the error array
       setLicenses([]);
     } finally {
       setIsLoading(false);
