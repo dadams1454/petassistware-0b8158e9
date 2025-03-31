@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { useHealthTabContext } from './HealthTabContext';
-import HealthRecordDialog from '../../../components/health/HealthRecordDialog';
-import WeightEntryDialog from '../../../components/health/WeightEntryDialog';
+import HealthRecordDialog from '../../health/HealthRecordDialog';
+import WeightEntryDialog from '../../health/WeightEntryDialog';
 
 const HealthTabDialogs: React.FC = () => {
   const {
