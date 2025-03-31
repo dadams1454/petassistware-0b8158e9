@@ -69,7 +69,7 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
             {...register('name', { required: "Organization name is required" })}
           />
           {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
+            <p className="text-sm text-destructive">{errors.name.message?.toString()}</p>
           )}
         </div>
         
@@ -107,7 +107,7 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
             })}
           />
           {errors.tenantId && (
-            <p className="text-sm text-destructive">{errors.tenantId.message}</p>
+            <p className="text-sm text-destructive">{errors.tenantId.message?.toString()}</p>
           )}
           <p className="text-xs text-muted-foreground">
             A unique identifier for your organization. Must be in UUID format.
