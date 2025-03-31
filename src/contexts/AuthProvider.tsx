@@ -37,11 +37,50 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+// Store auth in localStorage to persist across page reloads
+const STORAGE_KEY = 'breed_elite_auth';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<UserRole>('user');
-  const [loading, setLoading] = useState(true);
+  // Try to load initial state from localStorage
+  const loadInitialState = () => {
+    try {
+      const savedAuth = localStorage.getItem(STORAGE_KEY);
+      if (savedAuth) {
+        const parsedAuth = JSON.parse(savedAuth);
+        console.log('Loaded auth from storage:', parsedAuth);
+        return {
+          user: parsedAuth.user,
+          userRole: parsedAuth.userRole || 'user',
+          loading: false
+        };
+      }
+    } catch (error) {
+      console.error('Error loading auth from storage:', error);
+    }
+    
+    return {
+      user: null,
+      userRole: 'user' as UserRole,
+      loading: true
+    };
+  };
+  
+  const [user, setUser] = useState<User | null>(loadInitialState().user);
+  const [userRole, setUserRole] = useState<UserRole>(loadInitialState().userRole);
+  const [loading, setLoading] = useState(loadInitialState().loading);
   const [tenantId, setTenantId] = useState<string | null>('tenant-123'); // Mock tenant ID
+
+  // Save auth state to localStorage whenever it changes
+  useEffect(() => {
+    if (!loading) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, userRole }));
+        console.log('Saved auth to storage:', { user, userRole });
+      } catch (error) {
+        console.error('Error saving auth to storage:', error);
+      }
+    }
+  }, [user, userRole, loading]);
 
   useEffect(() => {
     // Create a mock user for development purposes
@@ -54,29 +93,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
     
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      setUser(mockUser);
-      setUserRole('admin');
+    // Check if we already have a user loaded from storage
+    if (!user) {
+      // Simulate loading delay only if no user is in storage
+      const timer = setTimeout(() => {
+        setUser(mockUser);
+        setUserRole('admin');
+        setLoading(false);
+        console.log('Auth loaded with mock user');
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    } else {
+      // If we have a user from storage, just make sure loading is false
       setLoading(false);
-      console.log('Auth loaded with mock user');
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [user]);
 
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
       // Simulate successful login
-      setUser({
+      const mockUser = {
         id: '123',
         email,
         name: 'User Name',
         user_metadata: {
           avatarUrl: ''
         }
-      });
+      };
+      setUser(mockUser);
       setUserRole('admin');
     } catch (error) {
       console.error('Login failed:', error);
@@ -92,6 +138,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Simulate logout
       setUser(null);
       setUserRole('user');
+      // Clear from localStorage
+      localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {

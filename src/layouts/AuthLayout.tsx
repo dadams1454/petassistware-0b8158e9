@@ -20,7 +20,7 @@ const AuthLayout: React.FC = () => {
         setAuthCheckComplete(true);
         console.log('AuthLayout: forcing auth check completion after timeout');
       }
-    }, 500); // Even shorter timeout for quicker response
+    }, 300); // Even shorter timeout for quicker response
     
     return () => {
       clearTimeout(timer);

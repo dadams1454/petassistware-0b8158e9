@@ -73,7 +73,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       const timer = setTimeout(() => {
         setAuthTimeout(true);
         console.log('[ProtectedRoute] Auth timeout occurred, will use last known auth state');
-      }, 500); // Reduced timeout for better UX
+      }, 300); // Reduced timeout for better UX
       
       return () => clearTimeout(timer);
     } else {
