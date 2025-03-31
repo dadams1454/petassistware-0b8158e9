@@ -21,8 +21,7 @@ export async function batchImportGeneticTests(dogId: string, tests: any[]) {
     // Insert into dog_genetic_tests table
     const { data, error } = await supabase
       .from('dog_genetic_tests')
-      .insert(formattedTests)
-      .select();
+      .insert(formattedTests);
     
     if (error) throw error;
     

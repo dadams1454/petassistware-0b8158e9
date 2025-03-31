@@ -1,90 +1,71 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useQuery } from '@tanstack/react-query';
-import { customSupabase } from '@/integrations/supabase/client';
-import { Skeleton } from '@/components/ui/skeleton';
-import HeatCycleManagement from '../../dogs/components/HeatCycleManagement';
-import { Heart } from 'lucide-react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import HeatCycleManagement from '@/components/dogs/components/HeatCycleManagement';
+import { Dog } from '@/types/dog';
 
 interface BreedingManagementProps {
+  dog: Dog;
   onRefresh?: () => void;
 }
 
-interface Dog {
-  id: string;
-  name: string;
-  gender: string;
-  // Add other dog properties as needed
-}
-
-const BreedingManagement: React.FC<BreedingManagementProps> = ({ onRefresh }) => {
-  // Fetch all female dogs for heat cycle monitoring
-  const { data: femaleDogs, isLoading } = useQuery({
-    queryKey: ['breeding-female-dogs'],
-    queryFn: async () => {
-      const { data, error } = await customSupabase
-        .from('dogs')
-        .select('*')
-        .eq('gender', 'Female')
-        .order('name');
-        
-      if (error) throw error;
-      return (data || []) as unknown as Dog[];
-    }
-  });
+const BreedingManagement: React.FC<BreedingManagementProps> = ({ dog, onRefresh }) => {
+  const [activeTab, setActiveTab] = useState('heat-cycles');
   
   const handleRefresh = () => {
-    if (onRefresh) {
-      onRefresh();
-    }
+    if (onRefresh) onRefresh();
   };
   
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Heart className="h-5 w-5 text-pink-500" />
-              Heat Cycle & Breeding Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-48 w-full" />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Only show heat cycle management for female dogs
+  const showHeatCycles = dog.gender === 'female';
   
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Heart className="h-5 w-5 text-pink-500" />
-            Heat Cycle & Breeding Management
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {femaleDogs && femaleDogs.length > 0 ? (
-            <div className="space-y-8">
-              {femaleDogs.map((dog) => (
-                <div key={dog.id} className="border-b pb-6 last:border-0">
-                  <h3 className="text-lg font-medium mb-4">{dog.name}</h3>
-                  <HeatCycleManagement dog={dog} onRefresh={handleRefresh} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-8">
-              No female dogs found. Add female dogs to manage heat cycles.
-            </p>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle>Breeding Management</CardTitle>
+        <CardDescription>
+          Track breeding history, heat cycles, and manage breeding plans
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent>
+        <Tabs 
+          defaultValue={showHeatCycles ? 'heat-cycles' : 'breeding-history'} 
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-4"
+        >
+          <TabsList className="grid grid-cols-2">
+            {showHeatCycles && (
+              <TabsTrigger value="heat-cycles">Heat Cycles</TabsTrigger>
+            )}
+            <TabsTrigger value="breeding-history">Breeding History</TabsTrigger>
+            <TabsTrigger value="sire-analysis">Genetic Analysis</TabsTrigger>
+          </TabsList>
+          
+          {showHeatCycles && (
+            <TabsContent value="heat-cycles">
+              <HeatCycleManagement
+                dogId={dog.id}
+              />
+            </TabsContent>
           )}
-        </CardContent>
-      </Card>
-    </div>
+          
+          <TabsContent value="breeding-history">
+            <div className="py-8 text-center text-muted-foreground">
+              <p>No breeding history recorded for this dog.</p>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="sire-analysis">
+            <div className="py-8 text-center text-muted-foreground">
+              <p>Genetic compatibility analysis coming soon.</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 

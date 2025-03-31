@@ -1,208 +1,123 @@
 
-import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Calendar as CalendarIcon, Plus } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
 import HeatCycleMonitor from './breeding/HeatCycleMonitor';
+import { format } from 'date-fns';
 
-// Form schema
-const heatFormSchema = z.object({
-  start_date: z.date(),
-  end_date: z.date().optional(),
-  notes: z.string().optional(),
-});
-
-type HeatFormValues = z.infer<typeof heatFormSchema>;
-
-interface HeatCycleManagementProps {
-  dog: any;
+export interface HeatCycleManagementProps {
+  dogId: string;
 }
 
-const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dog }) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const form = useForm<HeatFormValues>({
-    resolver: zodResolver(heatFormSchema),
-    defaultValues: {
-      start_date: new Date(),
-      notes: '',
-    },
-  });
+const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
+  const [showDialog, setShowDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [refreshCounter, setRefreshCounter] = useState(0);
   
   const handleAddCycle = () => {
-    setIsDialogOpen(true);
+    setShowDialog(true);
   };
   
-  const onSubmit = async (values: HeatFormValues) => {
+  const handleRecordHeatCycle = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    
+    const formData = new FormData(event.currentTarget);
+    const startDate = formData.get('start_date') as string;
+    const endDate = formData.get('end_date') as string || null;
+    const notes = formData.get('notes') as string || null;
+    
     try {
-      setIsSubmitting(true);
+      setLoading(true);
       
-      // Format dates for DB
-      const formattedStartDate = format(values.start_date, 'yyyy-MM-dd');
-      const formattedEndDate = values.end_date ? format(values.end_date, 'yyyy-MM-dd') : null;
-      
-      const { error } = await supabase
+      // Insert the heat cycle record
+      const { data, error } = await supabase
         .from('heat_cycles')
-        .insert({
-          dog_id: dog.id,
-          start_date: formattedStartDate,
-          end_date: formattedEndDate,
-          notes: values.notes,
-        });
+        .insert([{
+          dog_id: dogId,
+          start_date: startDate,
+          end_date: endDate,
+          notes: notes,
+          created_at: new Date().toISOString()
+        }]);
       
       if (error) throw error;
       
       toast.success('Heat cycle recorded successfully');
-      setIsDialogOpen(false);
-      form.reset();
+      setShowDialog(false);
+      setRefreshCounter(prev => prev + 1);
     } catch (error) {
       console.error('Error recording heat cycle:', error);
       toast.error('Failed to record heat cycle');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
   
   return (
     <div>
-      <HeatCycleMonitor dogId={dog.id} onAddCycle={handleAddCycle} />
+      <HeatCycleMonitor 
+        dogId={dogId} 
+        onAddCycle={handleAddCycle} 
+      />
       
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Record Heat Cycle</DialogTitle>
-            <DialogDescription>
-              Record the start and end dates of a heat cycle for {dog.name}.
-            </DialogDescription>
           </DialogHeader>
           
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="start_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Start Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="end_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>End Date (Optional)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormDescription>
-                      Leave blank if the cycle is still ongoing
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Any observations or notes about this cycle"
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <div className="flex justify-end space-x-2 pt-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : 'Save Heat Cycle'}
-                </Button>
+          <form onSubmit={handleRecordHeatCycle} className="space-y-4">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <label htmlFor="start_date" className="text-sm font-medium">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  id="start_date"
+                  name="start_date"
+                  defaultValue={format(new Date(), 'yyyy-MM-dd')}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
               </div>
-            </form>
-          </Form>
+              
+              <div className="space-y-2">
+                <label htmlFor="end_date" className="text-sm font-medium">
+                  End Date (Optional)
+                </label>
+                <input
+                  type="date"
+                  id="end_date"
+                  name="end_date"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="notes" className="text-sm font-medium">
+                  Notes (Optional)
+                </label>
+                <textarea
+                  id="notes"
+                  name="notes"
+                  rows={3}
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

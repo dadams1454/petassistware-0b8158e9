@@ -36,51 +36,29 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
     try {
       setLoading(true);
       
-      // Check if the heat_cycles table exists
-      const { data: tablesData } = await supabase
-        .from('pg_tables')
-        .select('tablename')
-        .eq('schemaname', 'public')
-        .eq('tablename', 'heat_cycles');
-      
-      if (!tablesData || tablesData.length === 0) {
-        // Table doesn't exist - create it first
-        await createHeatCyclesTable();
-      }
-      
-      // Now fetch the data
+      // Attempt to directly fetch heat cycle data
+      // If the table doesn't exist, this will fail gracefully
       const { data, error } = await supabase
         .from('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
         .order('start_date', { ascending: false });
       
-      if (error) throw error;
-      
-      setCycles(data as HeatCycle[]);
-      calculateNextHeatDate(data as HeatCycle[]);
+      if (!error) {
+        // If successful, process the data
+        setCycles(data as HeatCycle[]);
+        calculateNextHeatDate(data as HeatCycle[]);
+      } else {
+        console.error('Error fetching heat cycles:', error);
+        toast.error('Failed to load heat cycle data');
+        setCycles([]);
+      }
     } catch (error) {
-      console.error('Error fetching heat cycles:', error);
-      toast.error('Failed to load heat cycle data');
+      console.error('Error in heat cycle fetch operation:', error);
+      toast.error('An error occurred while loading heat cycle data');
+      setCycles([]);
     } finally {
       setLoading(false);
-    }
-  };
-  
-  // Create heat_cycles table if it doesn't exist
-  const createHeatCyclesTable = async () => {
-    try {
-      // Execute SQL to create the table
-      const { error } = await supabase.rpc('create_heat_cycles_table');
-      
-      if (error) {
-        // If RPC doesn't exist, we'll need to create the table using raw SQL
-        // For now, we'll just show a message that the table needs to be created
-        console.error('Heat cycles table needs to be created');
-        toast.error('Database setup required for heat cycle tracking');
-      }
-    } catch (err) {
-      console.error('Error creating heat cycles table:', err);
     }
   };
   
