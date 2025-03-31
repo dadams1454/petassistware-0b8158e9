@@ -30,6 +30,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const isDevelopment = process.env.NODE_ENV === 'development';
   const [authTimeout, setAuthTimeout] = useState(false);
 
+  // Explicitly check if we're on the auth page to prevent circular redirects
+  const isAuthPage = location.pathname === '/auth';
+
+  // If we're on the auth page, skip all checks and just render
+  if (isAuthPage) {
+    console.log('[ProtectedRoute] On auth page, bypassing protection');
+    return <>{children}</>;
+  }
+
   // Debug logging in development environment
   useEffect(() => {
     if (isDevelopment) {
@@ -40,16 +49,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         requiredRoles, 
         resource, 
         action,
-        path: location.pathname
+        path: location.pathname,
+        isAuthPage
       });
     }
-  }, [loading, user, userRole, requiredRoles, resource, action, location.pathname]);
-
-  // If we're on the auth page, skip all checks and just render
-  if (location.pathname === '/auth') {
-    console.log('[ProtectedRoute] On auth page, bypassing protection');
-    return <>{children}</>;
-  }
+  }, [loading, user, userRole, requiredRoles, resource, action, location.pathname, isAuthPage]);
 
   // Set a timeout to prevent getting stuck in authentication loading state
   useEffect(() => {
@@ -57,7 +61,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       const timer = setTimeout(() => {
         setAuthTimeout(true);
         console.log('[ProtectedRoute] Auth timeout occurred, will attempt to proceed');
-      }, 2000); // Reduced timeout for better UX
+      }, 1000); // Reduced timeout for better UX
       
       return () => clearTimeout(timer);
     } else {
@@ -70,8 +74,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (isDevelopment && loading) {
       const forceAuthTimer = setTimeout(() => {
         console.log('[ProtectedRoute] Force completing auth check in development mode');
-        // No action needed - just logging for debugging
-      }, 1500); // Reduced from 2000 to 1500ms
+      }, 1000); // Reduced timeout
       
       return () => clearTimeout(forceAuthTimer);
     }
@@ -87,7 +90,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // If no valid user (after timeout or loading completes), redirect to login
-  // In development mode with mock auth, this should never happen for long
   if (!user) {
     if (isDevelopment) {
       console.log(`[ProtectedRoute] Redirecting to auth page: ${fallbackPath}`);
@@ -138,6 +140,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (isDevelopment) {
     console.log('[ProtectedRoute] User authorized, rendering protected content');
   }
+  
   // If user is authenticated and has required role (if any), render the protected content
   return <>{children}</>;
 };

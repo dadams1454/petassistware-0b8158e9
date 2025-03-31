@@ -1,50 +1,13 @@
 
-import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import BlurBackground from '@/components/ui/blur-background';
 import Logo from '@/components/common/Logo';
 import AuthForm from '@/components/auth/AuthForm';
 import { useAuthForm } from '@/hooks/useAuthForm';
 
 const Auth: React.FC = () => {
-  const navigate = useNavigate();
   const auth = useAuthForm();
-
-  useEffect(() => {
-    // Check if user is already signed in
-    const checkUser = async () => {
-      try {
-        console.log('Auth page: Checking session');
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          console.log('Auth page: Found existing session, redirecting to dashboard');
-          navigate('/dashboard');
-        } else {
-          console.log('Auth page: No session found, staying on auth page');
-        }
-      } catch (error) {
-        console.error('Auth page: Error checking session:', error);
-      }
-    };
-    
-    checkUser();
-    
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event);
-        if (session) {
-          console.log('Auth page: New session detected, redirecting to dashboard');
-          navigate('/dashboard');
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary/5 to-slate-50 dark:from-slate-900 dark:to-slate-900/80 px-4">

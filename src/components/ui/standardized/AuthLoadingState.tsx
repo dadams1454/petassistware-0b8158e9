@@ -31,12 +31,12 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
     const shortTimer = setTimeout(() => {
       setTimeoutOccurred(true);
       console.log('AuthLoadingState: Short timeout triggered');
-    }, 1500); // Reduced from 2000 to 1500ms
+    }, 1000); // Reduced to 1 second
     
     const longTimer = setTimeout(() => {
       setExtendedTimeout(true);
       console.log('AuthLoadingState: Extended timeout triggered, showing refresh option');
-    }, 3000); // Reduced from 5000 to 3000ms
+    }, 2000); // Reduced to 2 seconds
     
     return () => {
       clearTimeout(shortTimer);

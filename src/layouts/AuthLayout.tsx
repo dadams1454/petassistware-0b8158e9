@@ -9,6 +9,9 @@ const AuthLayout: React.FC = () => {
   const location = useLocation();
   const [authCheckComplete, setAuthCheckComplete] = useState(false);
   
+  // Explicitly check if we're on the auth page
+  const isAuthPage = location.pathname === '/auth';
+  
   // Set a shorter timeout to ensure we don't get stuck in loading state
   useEffect(() => {
     let mounted = true;
@@ -17,7 +20,7 @@ const AuthLayout: React.FC = () => {
         setAuthCheckComplete(true);
         console.log('AuthLayout: forcing auth check completion after timeout');
       }
-    }, 1500); // Reduced from 2000 to 1500ms for quicker response
+    }, 1000); // Reduced timeout for quicker response
     
     return () => {
       clearTimeout(timer);
@@ -33,18 +36,19 @@ const AuthLayout: React.FC = () => {
     }
   }, [loading]);
   
-  // Add more detailed logging
+  // Add detailed logging
   useEffect(() => {
     console.log('AuthLayout state:', { 
       loading, 
       authCheckComplete, 
       userExists: !!user,
-      path: location.pathname 
+      path: location.pathname,
+      isAuthPage 
     });
-  }, [loading, authCheckComplete, user, location]);
+  }, [loading, authCheckComplete, user, location, isAuthPage]);
   
-  // Don't show loading state if the user is on the auth page
-  if (location.pathname === '/auth') {
+  // If on auth page, render it without checking auth state
+  if (isAuthPage) {
     console.log('AuthLayout: On auth page, bypassing authentication check');
     return <Outlet />;
   }
@@ -55,7 +59,7 @@ const AuthLayout: React.FC = () => {
     return <AuthLoadingState fullPage={true} message="Verifying authentication..." />;
   }
   
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated and not already on the auth page
   if (!user) {
     console.log('AuthLayout: no user found, redirecting to auth page');
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
