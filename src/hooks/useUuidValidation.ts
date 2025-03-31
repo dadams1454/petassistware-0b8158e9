@@ -70,39 +70,12 @@ export function useUuidValidation(initialValue?: string) {
     return cleaned;
   };
 
-  // Generate a new UUID
-  const generateNewUuid = (): string => {
-    const newUuid = require('uuid').v4();
-    setUuidValue(newUuid);
-    
-    // Validate immediately after generation to ensure it's valid
-    const validation = validateUUID(newUuid);
-    if (!validation.valid) {
-      console.error('Generated UUID failed validation:', validation.error);
-      toast({
-        title: "UUID Generation Error",
-        description: "Failed to generate a valid UUID. Please try again.",
-        variant: "destructive"
-      });
-      return '';
-    }
-    
-    toast({
-      title: "UUID Generated",
-      description: "A new valid UUID has been generated.",
-      variant: "default"
-    });
-    
-    return newUuid;
-  };
-
   return {
     uuidValue,
     setUuidValue,
     validation,
     handleUuidChange,
     handlePaste,
-    generateNewUuid,
     isValid: validation.valid
   };
 }

@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { useUuidValidation } from '@/hooks/useUuidValidation';
+import { generateUUID } from '@/utils/uuidUtils';
+import { useToast } from '@/hooks/use-toast';
 
 interface UuidFieldProps {
   value: string;
@@ -19,11 +21,13 @@ const UuidField: React.FC<UuidFieldProps> = ({
   error,
   showGuide = true
 }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
+  
   const {
     validation,
     handleUuidChange,
-    handlePaste,
-    generateNewUuid
+    handlePaste
   } = useUuidValidation(value);
 
   // Handle input change
@@ -43,11 +47,28 @@ const UuidField: React.FC<UuidFieldProps> = ({
     }
   };
 
-  // Generate new UUID
+  // Generate new UUID - fixed implementation
   const onGenerateClick = () => {
-    const newUuid = generateNewUuid();
-    if (newUuid) {
+    setIsGenerating(true);
+    try {
+      // Use the direct utility function instead of the hook method
+      const newUuid = generateUUID();
       onChange(newUuid);
+      
+      toast({
+        title: "UUID Generated",
+        description: "A new valid UUID has been generated.",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error generating UUID:', error);
+      toast({
+        title: "UUID Generation Error",
+        description: "Failed to generate a valid UUID. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -62,10 +83,20 @@ const UuidField: React.FC<UuidFieldProps> = ({
           variant="outline" 
           size="sm"
           onClick={onGenerateClick}
+          disabled={isGenerating}
           className="flex items-center gap-2"
         >
-          <RefreshCw className="h-4 w-4" />
-          Generate New ID
+          {isGenerating ? (
+            <>
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-4 w-4" />
+              Generate New ID
+            </>
+          )}
         </Button>
       </div>
       <div className="relative">
