@@ -8,9 +8,13 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import AdminTabsContent from '@/components/admin/AdminTabsContent';
 import PageContainer from '@/components/common/PageContainer';
 import { ErrorState } from '@/components/ui/standardized';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, Settings, AlertTriangle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const AdminSetup: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { user, loading, isTenantAdmin, tenantSettings, error } = useAdminSetup();
 
   const handleBackToDashboard = () => {
@@ -21,20 +25,16 @@ const AdminSetup: React.FC = () => {
     navigate('/audit-logs');
   };
 
+  const handleRetry = () => {
+    window.location.reload();
+    toast({
+      title: 'Refreshing...',
+      description: 'Attempting to reload admin settings'
+    });
+  };
+
   if (loading) {
     return <AdminLoadingState />;
-  }
-
-  if (error) {
-    return (
-      <PageContainer>
-        <ErrorState 
-          title="Error Loading Settings" 
-          message={error} 
-          onRetry={() => window.location.reload()}
-        />
-      </PageContainer>
-    );
   }
 
   if (!user) {
@@ -45,6 +45,19 @@ const AdminSetup: React.FC = () => {
     return <AdminUnauthorizedState type="unauthorized" />;
   }
 
+  if (error && !tenantSettings) {
+    // Critical error with no fallback data
+    return (
+      <PageContainer>
+        <ErrorState 
+          title="Error Loading Settings" 
+          message={error} 
+          onRetry={handleRetry}
+        />
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer>
       <div className="space-y-6 w-full">
@@ -52,6 +65,32 @@ const AdminSetup: React.FC = () => {
           onViewAuditLogs={handleViewAuditLogs}
           onBackToDashboard={handleBackToDashboard}
         />
+        
+        {error && tenantSettings && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-yellow-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">
+                  {error}
+                </p>
+                <div className="mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleRetry}
+                    className="flex items-center text-xs"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Retry Loading Settings
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <AdminTabsContent tenantSettings={tenantSettings} />
       </div>
