@@ -22,7 +22,7 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
     try {
       // Ensure we have a valid UUID
       if (!isValidUUID(data.tenantId)) {
-        throw new Error("A valid UUID is required for tenant ID");
+        throw new Error("A valid UUID is required for tenant ID. Please generate a new one using the 'Generate New ID' button.");
       }
       
       // Make an actual update to the breeder_profiles table
@@ -43,7 +43,13 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
             updated_at: new Date().toISOString()
           });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error during organization update:', error);
+          if (error.code === '22P02') {
+            throw new Error("UUID format error. Please generate a new UUID using the 'Generate New ID' button.");
+          }
+          throw error;
+        }
       }
       
       toast({
@@ -57,11 +63,11 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
       }, 1500);
       
       return Promise.resolve(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving organization settings:', error);
       toast({
         title: 'Error saving settings',
-        description: 'There was a problem saving your organization settings.',
+        description: error.message || 'There was a problem saving your organization settings.',
         variant: 'destructive'
       });
       return Promise.reject(error);

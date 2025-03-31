@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { isValidUUID, validateUUID, attemptUUIDRepair } from '@/utils/uuidUtils';
-import { AlertTriangle, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 
 interface OrganizationSetupProps {
   initialData: any;
@@ -46,6 +46,14 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
   // Watch the tenant ID field for validation
   const tenantId = watch('tenantId');
   
+  // Always force generate a new UUID if the current one is invalid
+  useEffect(() => {
+    if (!initialData?.id || !isValidUUID(initialData?.id)) {
+      // Automatically generate a valid UUID if none exists or current is invalid
+      generateTenantId();
+    }
+  }, [initialData]);
+  
   useEffect(() => {
     if (tenantId) {
       const result = validateUUID(tenantId);
@@ -61,6 +69,8 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
           });
         }
       }
+    } else {
+      setUuidValidation({ valid: false, error: "Tenant ID is required" });
     }
   }, [tenantId]);
   
@@ -147,7 +157,9 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
               variant="outline" 
               size="sm"
               onClick={generateTenantId}
+              className="flex items-center gap-2"
             >
+              <RefreshCw className="h-4 w-4" />
               Generate New ID
             </Button>
           </div>
@@ -184,21 +196,23 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
             </div>
           )}
           
-          {(showUuidGuide || errors.tenantId) && (
-            <div className="border border-gray-200 rounded-md p-3 mt-2 bg-gray-50 text-xs">
-              <p className="font-medium mb-1">UUID format guide:</p>
-              <p className="font-mono">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</p>
-              <p className="mt-1">Example: 123e4567-e89b-12d3-a456-426614174000</p>
-              <p className="mt-1 text-muted-foreground">Click "Generate New ID" for a valid UUID.</p>
-            </div>
-          )}
+          <div className="border border-gray-200 rounded-md p-3 mt-2 bg-gray-50 text-xs">
+            <p className="font-medium mb-1">UUID format guide:</p>
+            <p className="font-mono">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</p>
+            <p className="mt-1">Example: 123e4567-e89b-12d3-a456-426614174000</p>
+            <p className="mt-1 text-muted-foreground">Click "Generate New ID" for a valid UUID.</p>
+          </div>
           
           {errors.tenantId && (
             <p className="text-sm text-destructive">{errors.tenantId.message?.toString()}</p>
           )}
         </div>
         
-        <Button type="submit" className="w-full" disabled={isSubmitting || !uuidValidation.valid}>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isSubmitting || !uuidValidation.valid}
+        >
           {isSubmitting ? "Saving..." : "Save Organization Settings"}
         </Button>
       </div>

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { isValidUUID } from '@/utils/uuidUtils';
+import { isValidUUID, attemptUUIDRepair } from '@/utils/uuidUtils';
 
 export const useAdminSetup = () => {
   const { user, userRole, tenantId } = useAuth();
@@ -32,12 +32,13 @@ export const useAdminSetup = () => {
       
       // Default settings as fallback
       const defaultSettings = {
-        id: tenantId || null,
+        id: null, // Don't use invalid tenantId
         name: 'Bear Paw Newfoundlands',
         description: 'Kennel Management System',
         contactEmail: user.email,
         businessName: 'Bear Paw Newfoundlands',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        needsSetup: true
       };
       
       // If not admin, don't try to load settings
@@ -51,8 +52,7 @@ export const useAdminSetup = () => {
       if (!tenantId) {
         console.log('No tenant ID found, organization needs setup');
         setTenantSettings({
-          ...defaultSettings,
-          needsSetup: true
+          ...defaultSettings
         });
         setLoading(false);
         return;
@@ -60,11 +60,21 @@ export const useAdminSetup = () => {
 
       // Check if the tenant ID is a valid UUID
       if (tenantId && !isValidUUID(tenantId)) {
+        // Try to repair the UUID
+        const repairedUuid = attemptUUIDRepair(tenantId);
+        let errorMessage = `Invalid UUID format for tenant ID: ${tenantId}`;
+        
+        if (repairedUuid) {
+          errorMessage += `. Did you mean: ${repairedUuid}?`;
+        } else {
+          errorMessage += `. Please generate a new UUID in the Organization settings.`;
+        }
+        
         console.warn('Invalid UUID format for tenant ID:', tenantId);
-        setError(`Invalid UUID format for tenant ID: ${tenantId}`);
+        setError(errorMessage);
         setTenantSettings({
           ...defaultSettings,
-          id: tenantId,
+          id: null, // Don't use invalid tenantId
           needsSetup: true
         });
         setLoading(false);
@@ -96,7 +106,7 @@ export const useAdminSetup = () => {
         // No existing profile found, use default settings but mark as needing setup
         setTenantSettings({
           ...defaultSettings,
-          needsSetup: true
+          id: isValidUUID(tenantId) ? tenantId : null
         });
       }
     } catch (error: any) {
@@ -105,7 +115,7 @@ export const useAdminSetup = () => {
       
       // Still set default settings to ensure UI works
       setTenantSettings({
-        id: tenantId || null,
+        id: null, // Don't use invalid tenantId
         name: 'Bear Paw Newfoundlands',
         description: 'Kennel Management System',
         contactEmail: user?.email || 'admin@example.com',
