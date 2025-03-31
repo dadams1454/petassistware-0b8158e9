@@ -10,13 +10,15 @@ import {
   Clock, 
   RefreshCw, 
   Banknote, 
-  Wrench 
+  Wrench,
+  Package
 } from 'lucide-react';
 import TasksView from '@/components/facility/TasksView';
 import StaffManagement from '@/components/facility/StaffManagement';
 import MaintenanceSchedule from '@/components/facility/MaintenanceSchedule';
 import StaffSchedule from '@/components/facility/StaffSchedule';
 import ExpenseTracking from '@/components/facility/ExpenseTracking';
+import InventoryManagement from '@/components/facility/InventoryManagement';
 
 const Facility: React.FC = () => {
   const [activeTab, setActiveTab] = useState('staff');
@@ -29,13 +31,13 @@ const Facility: React.FC = () => {
             Facility Management
           </h1>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Manage staff, tasks, maintenance, and facility expenses
+            Manage staff, tasks, maintenance, facility expenses, and inventory
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 mb-6">
+        <TabsList className="grid grid-cols-6 mb-6">
           <TabsTrigger value="staff" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span>Staff Management</span>
@@ -51,6 +53,10 @@ const Facility: React.FC = () => {
           <TabsTrigger value="maintenance" className="flex items-center gap-2">
             <Wrench className="h-4 w-4" />
             <span>Maintenance</span>
+          </TabsTrigger>
+          <TabsTrigger value="inventory" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            <span>Inventory</span>
           </TabsTrigger>
           <TabsTrigger value="expenses" className="flex items-center gap-2">
             <Banknote className="h-4 w-4" />
@@ -82,6 +88,10 @@ const Facility: React.FC = () => {
 
         <TabsContent value="maintenance" className="mt-0">
           <MaintenanceSchedule />
+        </TabsContent>
+
+        <TabsContent value="inventory" className="mt-0">
+          <InventoryManagement />
         </TabsContent>
 
         <TabsContent value="expenses" className="mt-0">
