@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { UserWithProfile } from '@/types/user';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { UserWithProfile } from '@/types/user';
 
 interface DeleteUserDialogProps {
   user: UserWithProfile | null;
@@ -18,34 +18,33 @@ interface DeleteUserDialogProps {
   onConfirm: (userId: string) => void;
 }
 
-export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
-  user,
-  onClose,
-  onConfirm,
-}) => {
+export function DeleteUserDialog({ user, onClose, onConfirm }: DeleteUserDialogProps) {
   if (!user) return null;
 
+  const handleConfirm = () => {
+    onConfirm(user.id);
+  };
+
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email;
+
   return (
-    <AlertDialog open={!!user} onOpenChange={(open) => !open && onClose()}>
+    <AlertDialog open={!!user} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will deactivate the user account for {user.first_name}{' '}
-            {user.last_name} ({user.email}). They will no longer be able to
-            access the system.
+            This will deactivate the user <strong>{fullName}</strong> from your organization.
+            <br /><br />
+            They will no longer have access to your organization's data.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            onClick={() => onConfirm(user.id)}
-          >
-            Deactivate
+          <AlertDialogAction onClick={handleConfirm} className="bg-destructive text-destructive-foreground">
+            Deactivate User
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
-};
+}

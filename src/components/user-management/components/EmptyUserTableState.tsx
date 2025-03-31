@@ -1,22 +1,30 @@
 
 import React from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { Users2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { UserPlus } from 'lucide-react';
 
-export const EmptyUserTableState: React.FC = () => {
+export function EmptyUserTableState() {
   return (
     <TableRow>
-      <TableCell colSpan={5} className="h-48 text-center">
-        <div className="flex flex-col items-center justify-center h-full">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
-            <Users2 className="h-6 w-6 text-muted-foreground" />
+      <TableCell colSpan={5} className="h-[200px] text-center">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="rounded-full bg-muted p-3">
+            <UserPlus className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-medium">No users found</h3>
-          <p className="text-sm text-muted-foreground max-w-md mt-2">
-            There are no users in the system yet. Use the invite button to add your first user.
-          </p>
+          <div className="space-y-1">
+            <h3 className="text-lg font-medium">No users yet</h3>
+            <p className="text-sm text-muted-foreground">
+              Start by creating your first user to test different roles
+            </p>
+          </div>
+          <div className="py-2">
+            <p className="text-sm text-muted-foreground">
+              You'll need to create users with different roles to test out your permissions system.
+            </p>
+          </div>
         </div>
       </TableCell>
     </TableRow>
   );
-};
+}

@@ -30,6 +30,16 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
+  // Generate a random password
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
   const handleInvite = async (values: InviteFormValues) => {
     if (!tenantId) {
       toast({
@@ -42,10 +52,6 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
 
     setIsSubmitting(true);
     try {
-      // In a real implementation, we would send an email invitation
-      // For now, we'll create a breeder_profile entry for the user
-      // and generate an invite link they can use to sign up
-
       // First, check if the user already exists
       const { data: existingUser, error: checkError } = await supabase
         .from('breeder_profiles')
@@ -68,9 +74,47 @@ export const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
       // Generate a unique token for the invitation
       const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       
-      // This is mock functionality since we don't have a proper invitation system
-      // In a real app, we'd store this in a table and send an email
+      // Generate a password if needed
+      const password = values.generateRandomPassword ? generatePassword() : '';
+      
+      // Create a mock user (since this is for testing)
+      if (values.isTestUser) {
+        const mockUserId = crypto.randomUUID();
+        
+        // Create a profile for the test user
+        const { error: profileError } = await supabase
+          .from('breeder_profiles')
+          .insert({
+            id: mockUserId,
+            email: values.email,
+            first_name: values.firstName,
+            last_name: values.lastName,
+            role: values.role,
+            tenant_id: tenantId,
+            created_at: new Date().toISOString(),
+          });
+          
+        if (profileError) throw profileError;
+        
+        toast({
+          title: 'Test User Created',
+          description: `${values.firstName} ${values.lastName} has been added as a ${values.role}`,
+          variant: 'default',
+        });
+        
+        onUserInvited();
+        setInviteLink(null);
+        onClose();
+        return;
+      }
+      
+      // For real users, this is where we'd integrate with auth system
+      // For now, generate a mock invitation link
       const inviteUrl = `${window.location.origin}/auth?email=${encodeURIComponent(values.email)}&token=${token}&role=${values.role}&tenant=${tenantId}`;
+      
+      if (values.generateRandomPassword) {
+        inviteUrl += `&password=${encodeURIComponent(password)}`;
+      }
       
       setInviteLink(inviteUrl);
       onUserInvited();

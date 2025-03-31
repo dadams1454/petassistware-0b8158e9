@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -11,49 +13,85 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
+import { RoleSelector } from '@/components/user-management/RoleSelector';
+import { Checkbox } from '@/components/ui/checkbox';
 
-export const inviteFormSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  role: z.string({ required_error: 'Please select a role' }),
-  message: z.string().optional(),
+// Form schema
+const inviteFormSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  role: z.string().min(1, 'Please select a role'),
+  isTestUser: z.boolean().default(false),
+  generateRandomPassword: z.boolean().default(true),
 });
 
 export type InviteFormValues = z.infer<typeof inviteFormSchema>;
 
 interface InviteFormProps {
-  onSubmit: (values: InviteFormValues) => Promise<void>;
+  onSubmit: (values: InviteFormValues) => void;
   isSubmitting: boolean;
   onCancel: () => void;
 }
 
-export const InviteForm: React.FC<InviteFormProps> = ({
-  onSubmit,
-  isSubmitting,
-  onCancel,
-}) => {
+export function InviteForm({ onSubmit, isSubmitting, onCancel }: InviteFormProps) {
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
     defaultValues: {
       email: '',
-      role: 'viewer',
-      message: '',
+      firstName: '',
+      lastName: '',
+      role: 'staff',
+      isTestUser: true,
+      generateRandomPassword: true,
     },
   });
 
+  // Add suffix for test users
+  const handleFormSubmit = (values: InviteFormValues) => {
+    // For test users, add a suffix to ensure unique emails
+    if (values.isTestUser) {
+      const timestamp = new Date().getTime().toString().slice(-4);
+      const emailParts = values.email.split('@');
+      if (emailParts.length === 2) {
+        values.email = `${emailParts[0]}+test${timestamp}@${emailParts[1]}`;
+      }
+    }
+    onSubmit(values);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>First Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="First name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Last name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <FormField
           control={form.control}
           name="email"
@@ -61,7 +99,7 @@ export const InviteForm: React.FC<InviteFormProps> = ({
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="user@example.com" {...field} />
+                <Input type="email" placeholder="Email address" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -74,37 +112,10 @@ export const InviteForm: React.FC<InviteFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Role</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="admin">Administrator</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
-                  <SelectItem value="veterinarian">Veterinarian</SelectItem>
-                  <SelectItem value="buyer">Buyer/Client</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="message"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Optional Message</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Enter a personal message (optional)"
-                  className="resize-none"
-                  {...field}
+                <RoleSelector
+                  value={field.value}
+                  onChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
@@ -112,15 +123,63 @@ export const InviteForm: React.FC<InviteFormProps> = ({
           )}
         />
 
-        <DialogFooter className="pt-4">
-          <Button variant="outline" type="button" onClick={onCancel}>
+        <div className="space-y-2">
+          <FormField
+            control={form.control}
+            name="isTestUser"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    This is a test user
+                  </FormLabel>
+                  <p className="text-sm text-muted-foreground">
+                    Adds a suffix to the email to ensure uniqueness
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="generateRandomPassword"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    Generate random password
+                  </FormLabel>
+                  <p className="text-sm text-muted-foreground">
+                    Creates a secure password automatically
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Sending...' : 'Send Invitation'}
+            {isSubmitting ? "Inviting..." : "Send Invitation"}
           </Button>
-        </DialogFooter>
+        </div>
       </form>
     </Form>
   );
-};
+}
