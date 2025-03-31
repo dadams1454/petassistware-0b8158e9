@@ -63,7 +63,7 @@ export function useRefreshData<T>({
   };
 }
 
-// Add the useRefreshTrigger hook
+// Add the useRefreshTrigger hook with the correct implementation
 export function useRefreshTrigger() {
   const { triggerRefresh } = useRefresh();
   return triggerRefresh;

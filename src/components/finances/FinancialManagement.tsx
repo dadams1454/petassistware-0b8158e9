@@ -37,6 +37,8 @@ const FinancialManagement: React.FC = () => {
 
   // Apply filters when expenses or filter criteria change
   useEffect(() => {
+    if (!expenses) return;
+    
     let filtered = [...expenses];
 
     // Apply date range filter

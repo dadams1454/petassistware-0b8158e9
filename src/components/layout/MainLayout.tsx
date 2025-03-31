@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { Navbar } from '@/components/common/navbar/index';
+import Navbar from '@/components/common/navbar/Navbar';
 
 const MainLayout: React.FC = () => {
   return (

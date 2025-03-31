@@ -24,7 +24,7 @@ const GenerateTestDataButton: React.FC = () => {
         });
         
         // Refresh all data to show the new records
-        refreshData(true);
+        refreshData();
       } else {
         toast({
           title: 'Error',
