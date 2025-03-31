@@ -1,46 +1,57 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DogProfile } from '@/types/dog';
-import DogProfileDetails from '@/components/dogs/components/profile/DogProfileDetails';
-import DogHealthRecords from '@/components/dogs/components/profile/DogHealthRecords';
-import DogCareHistory from '@/components/dogs/components/profile/DogCareHistory';
-import GeneticsTab from '@/components/dogs/components/tabs/GeneticsTab';
-import PedigreeTab from '@/components/dogs/components/tabs/PedigreeTab';
+import { Dog } from 'lucide-react';
+import DogBasicInfo from './DogBasicInfo';
+import DogHealthRecords from './DogHealthRecords';
+import DogBreedingInfo from './DogBreedingInfo';
+import DogDocuments from './DogDocuments';
+import GeneticAnalysisTab from '../tabs/GeneticAnalysisTab';
+import MedicalExpenses from '@/components/finances/MedicalExpenses';
 
 interface DogProfileTabsProps {
-  dog: DogProfile;
+  dog: any;
 }
 
 const DogProfileTabs: React.FC<DogProfileTabsProps> = ({ dog }) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  
   return (
-    <Tabs defaultValue="details" className="mt-6">
-      <TabsList>
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="health">Health Records</TabsTrigger>
-        <TabsTrigger value="care">Care History</TabsTrigger>
-        <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
+    <Tabs 
+      value={activeTab} 
+      onValueChange={setActiveTab}
+      className="mt-6"
+    >
+      <TabsList className="grid w-full grid-cols-5">
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="health">Health</TabsTrigger>
         <TabsTrigger value="genetics">Genetics</TabsTrigger>
+        <TabsTrigger value="breeding">Breeding</TabsTrigger>
+        <TabsTrigger value="documents">Documents</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="details" className="mt-4">
-        <DogProfileDetails dog={dog} />
+      <TabsContent value="overview" className="mt-6">
+        <DogBasicInfo dog={dog} />
       </TabsContent>
       
-      <TabsContent value="health" className="mt-4">
+      <TabsContent value="health" className="mt-6 space-y-8">
         <DogHealthRecords dogId={dog.id} />
+        
+        <div className="pt-4">
+          <MedicalExpenses dogId={dog.id} />
+        </div>
       </TabsContent>
       
-      <TabsContent value="care" className="mt-4">
-        <DogCareHistory dogId={dog.id} />
-      </TabsContent>
-
-      <TabsContent value="pedigree" className="mt-4">
-        <PedigreeTab dogId={dog.id} currentDog={dog} />
+      <TabsContent value="genetics" className="mt-6">
+        <GeneticAnalysisTab dogId={dog.id} currentDog={dog} />
       </TabsContent>
       
-      <TabsContent value="genetics" className="mt-4">
-        <GeneticsTab dogId={dog.id} dogName={dog.name} />
+      <TabsContent value="breeding" className="mt-6">
+        <DogBreedingInfo dog={dog} />
+      </TabsContent>
+      
+      <TabsContent value="documents" className="mt-6">
+        <DogDocuments dogId={dog.id} />
       </TabsContent>
     </Tabs>
   );

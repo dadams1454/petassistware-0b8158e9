@@ -1,8 +1,8 @@
 
 import React from 'react';
-import HealthRecordDialog from '../../profile/records/HealthRecordDialog';
-import WeightEntryDialog from '../../health/WeightEntryDialog';
 import { useHealthTabContext } from './HealthTabContext';
+import HealthRecordDialog from '../../../components/health/HealthRecordDialog';
+import WeightEntryDialog from '../../../components/health/WeightEntryDialog';
 
 const HealthTabDialogs: React.FC = () => {
   const {
@@ -11,31 +11,29 @@ const HealthTabDialogs: React.FC = () => {
     setRecordDialogOpen,
     weightDialogOpen,
     setWeightDialogOpen,
+    selectedRecordType,
     selectedRecord,
-    healthRecords,
     handleSaveRecord,
     handleSaveWeight
   } = useHealthTabContext();
 
   return (
     <>
-      {recordDialogOpen && (
-        <HealthRecordDialog
-          open={recordDialogOpen}
-          onOpenChange={setRecordDialogOpen}
-          dogId={dogId}
-          record={selectedRecord ? healthRecords.find(r => r.id === selectedRecord) || null : null}
-          onSave={handleSaveRecord}
-        />
-      )}
+      <HealthRecordDialog
+        open={recordDialogOpen}
+        onOpenChange={setRecordDialogOpen}
+        dogId={dogId}
+        recordType={selectedRecordType}
+        recordId={selectedRecord}
+        onSave={handleSaveRecord}
+      />
       
-      {weightDialogOpen && (
-        <WeightEntryDialog
-          dogId={dogId}
-          onClose={() => setWeightDialogOpen(false)}
-          onSave={handleSaveWeight}
-        />
-      )}
+      <WeightEntryDialog
+        open={weightDialogOpen}
+        onOpenChange={setWeightDialogOpen}
+        dogId={dogId}
+        onSave={handleSaveWeight}
+      />
     </>
   );
 };
