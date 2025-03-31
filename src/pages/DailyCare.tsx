@@ -10,8 +10,9 @@ import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
 import { EmptyState } from '@/components/ui/standardized';
 import { useNavigate } from 'react-router-dom';
+import { DailyCareProvider } from '@/contexts/dailyCare';
 
-const DailyCare: React.FC = () => {
+const DailyCareContent: React.FC = () => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
   const { currentDate } = useRefresh();
   const navigate = useNavigate();
@@ -87,6 +88,15 @@ const DailyCare: React.FC = () => {
   );
 
   return <MainLayout>{content}</MainLayout>;
+};
+
+// Wrap the component with the DailyCareProvider
+const DailyCare: React.FC = () => {
+  return (
+    <DailyCareProvider>
+      <DailyCareContent />
+    </DailyCareProvider>
+  );
 };
 
 export default DailyCare;
