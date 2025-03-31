@@ -8,7 +8,7 @@ import PermissionsSetup from '@/components/admin/PermissionsSetup';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthProvider';
-import { isValidUUID } from '@/utils/uuidUtils';
+import { isValidUUID, sanitizeUUID } from '@/utils/uuidUtils';
 
 interface AdminTabsContentProps {
   tenantSettings: any;
@@ -20,36 +20,37 @@ const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) =
   
   const handleOrganizationSubmit = async (data: any) => {
     try {
+      // Validate and sanitize the UUID
+      const sanitizedUUID = sanitizeUUID(data.tenantId);
+      
       // Ensure we have a valid UUID
-      if (!isValidUUID(data.tenantId)) {
+      if (!sanitizedUUID || !isValidUUID(sanitizedUUID)) {
         throw new Error("A valid UUID is required for tenant ID. Please generate a new one using the 'Generate New ID' button.");
       }
       
-      // Make an actual update to the breeder_profiles table
-      if (data.tenantId) {
-        // Get the current user's email to ensure we have all required fields
-        if (!user || !user.email) {
-          throw new Error("User email is required but not available");
+      // Get the current user's email to ensure we have all required fields
+      if (!user || !user.email) {
+        throw new Error("User email is required but not available");
+      }
+      
+      // Update the tenant profile with the sanitized UUID
+      const { error } = await supabase
+        .from('breeder_profiles')
+        .upsert({
+          id: user.id, // Required field: id
+          email: user.email, // Required field: email
+          tenant_id: sanitizedUUID,
+          business_name: data.name,
+          business_overview: data.description,
+          updated_at: new Date().toISOString()
+        });
+      
+      if (error) {
+        console.error('Supabase error during organization update:', error);
+        if (error.code === '22P02') {
+          throw new Error("UUID format error. Please generate a new UUID using the 'Generate New ID' button.");
         }
-        
-        const { error } = await supabase
-          .from('breeder_profiles')
-          .upsert({
-            id: user.id, // Required field: id
-            email: user.email, // Required field: email
-            tenant_id: data.tenantId,
-            business_name: data.name,
-            business_overview: data.description,
-            updated_at: new Date().toISOString()
-          });
-        
-        if (error) {
-          console.error('Supabase error during organization update:', error);
-          if (error.code === '22P02') {
-            throw new Error("UUID format error. Please generate a new UUID using the 'Generate New ID' button.");
-          }
-          throw error;
-        }
+        throw error;
       }
       
       toast({

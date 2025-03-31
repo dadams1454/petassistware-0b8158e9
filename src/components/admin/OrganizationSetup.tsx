@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { v4 as uuidv4 } from 'uuid';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { isValidUUID, validateUUID, attemptUUIDRepair } from '@/utils/uuidUtils';
+import { isValidUUID, validateUUID, attemptUUIDRepair, generateUUID } from '@/utils/uuidUtils';
 import { AlertTriangle, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 
 interface OrganizationSetupProps {
@@ -25,9 +24,22 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
   
   // Generate a valid UUID if one doesn't exist
   const generateTenantId = () => {
-    const newTenantId = uuidv4();
+    const newTenantId = generateUUID();
     setValue('tenantId', newTenantId);
     setUuidValidation({ valid: true, error: null });
+    
+    // Validate immediately after generation to ensure it's valid
+    const validation = validateUUID(newTenantId);
+    if (!validation.valid) {
+      console.error('Generated UUID failed validation:', validation.error);
+      toast({
+        title: "UUID Generation Error",
+        description: "Failed to generate a valid UUID. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     toast({
       title: "Tenant ID Generated",
       description: "A new valid UUID has been generated.",
@@ -56,6 +68,7 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
   
   useEffect(() => {
     if (tenantId) {
+      // Clean and validate the UUID
       const result = validateUUID(tenantId);
       setUuidValidation(result);
       
@@ -75,21 +88,35 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
   }, [tenantId]);
   
   const handleTenantIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue('tenantId', e.target.value);
+    // First try to clean up the input
+    const rawValue = e.target.value;
+    const cleanedValue = rawValue.trim().replace(/\s+/g, '');
+    
+    setValue('tenantId', cleanedValue);
   };
   
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = e.clipboardData.getData('text');
-    if (pastedText && !isValidUUID(pastedText)) {
-      const repaired = attemptUUIDRepair(pastedText);
-      if (repaired) {
-        e.preventDefault();
-        setValue('tenantId', repaired);
-        toast({
-          title: "UUID Format Corrected",
-          description: "The pasted UUID had formatting issues and was automatically fixed.",
-          variant: "default"
-        });
+    if (pastedText) {
+      const cleaned = pastedText.trim().replace(/\s+/g, '');
+      
+      if (!isValidUUID(cleaned)) {
+        const repaired = attemptUUIDRepair(cleaned);
+        if (repaired) {
+          e.preventDefault();
+          setValue('tenantId', repaired);
+          toast({
+            title: "UUID Format Corrected",
+            description: "The pasted UUID had formatting issues and was automatically fixed.",
+            variant: "default"
+          });
+        } else {
+          toast({
+            title: "Invalid UUID Format",
+            description: "The pasted value is not a valid UUID and cannot be repaired. Please generate a new UUID.",
+            variant: "destructive"
+          });
+        }
       }
     }
   };
@@ -107,18 +134,32 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
     
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      await onSubmit({
+        ...data,
+        // Ensure tenantId is clean and valid
+        tenantId: data.tenantId.trim()
+      });
       toast({
         title: "Organization Updated",
         description: "Your organization settings have been saved successfully.",
         variant: "default"
       });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update organization settings.",
-        variant: "destructive"
-      });
+      // If there's a UUID error, force regenerate
+      if (error.message?.includes('UUID') || error.message?.includes('uuid')) {
+        generateTenantId();
+        toast({
+          title: "UUID Error",
+          description: "A new UUID has been generated. Please try saving again.",
+          variant: "warning"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update organization settings.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -200,7 +241,9 @@ const OrganizationSetup: React.FC<OrganizationSetupProps> = ({ initialData, onSu
             <p className="font-medium mb-1">UUID format guide:</p>
             <p className="font-mono">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</p>
             <p className="mt-1">Example: 123e4567-e89b-12d3-a456-426614174000</p>
-            <p className="mt-1 text-muted-foreground">Click "Generate New ID" for a valid UUID.</p>
+            <p className="mt-1 text-muted-foreground">
+              <span className="font-medium">Important:</span> Click "Generate New ID" to create a valid UUID - this is the safest approach.
+            </p>
           </div>
           
           {errors.tenantId && (

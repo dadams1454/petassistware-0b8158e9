@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { isValidUUID } from '@/utils/uuidUtils';
 
 const AdminSetup: React.FC = () => {
   const navigate = useNavigate();
@@ -46,7 +47,9 @@ const AdminSetup: React.FC = () => {
     return <AdminUnauthorizedState type="unauthorized" />;
   }
 
-  const isUuidFormatError = error?.includes('Invalid UUID format') || error?.includes('invalid input syntax for type uuid');
+  const isUuidFormatError = error?.includes('Invalid UUID format') || 
+                          error?.includes('invalid input syntax for type uuid') || 
+                          (tenantSettings?.id && !isValidUUID(tenantSettings.id));
 
   return (
     <PageContainer>

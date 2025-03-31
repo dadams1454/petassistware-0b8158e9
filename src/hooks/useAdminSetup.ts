@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { isValidUUID, attemptUUIDRepair } from '@/utils/uuidUtils';
+import { isValidUUID, attemptUUIDRepair, generateUUID } from '@/utils/uuidUtils';
 
 export const useAdminSetup = () => {
   const { user, userRole, tenantId } = useAuth();
@@ -72,9 +72,12 @@ export const useAdminSetup = () => {
         
         console.warn('Invalid UUID format for tenant ID:', tenantId);
         setError(errorMessage);
+        
+        // Generate a new valid UUID for the settings
+        const newUuid = generateUUID();
         setTenantSettings({
           ...defaultSettings,
-          id: null, // Don't use invalid tenantId
+          id: newUuid, // Use a newly generated UUID
           needsSetup: true
         });
         setLoading(false);
@@ -106,7 +109,7 @@ export const useAdminSetup = () => {
         // No existing profile found, use default settings but mark as needing setup
         setTenantSettings({
           ...defaultSettings,
-          id: isValidUUID(tenantId) ? tenantId : null
+          id: isValidUUID(tenantId) ? tenantId : generateUUID()
         });
       }
     } catch (error: any) {
@@ -115,7 +118,7 @@ export const useAdminSetup = () => {
       
       // Still set default settings to ensure UI works
       setTenantSettings({
-        id: null, // Don't use invalid tenantId
+        id: generateUUID(), // Use a new UUID that's guaranteed to be valid
         name: 'Bear Paw Newfoundlands',
         description: 'Kennel Management System',
         contactEmail: user?.email || 'admin@example.com',
