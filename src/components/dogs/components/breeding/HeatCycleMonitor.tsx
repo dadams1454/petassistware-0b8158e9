@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { format, parseISO, addDays, differenceInDays } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { customSupabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,10 +36,9 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
     try {
       setLoading(true);
       
-      // Attempt to directly fetch heat cycle data
-      // If the table doesn't exist, this will fail gracefully
-      const { data, error } = await supabase
-        .from('heat_cycles')
+      // Use customSupabase for tables not in the schema
+      const { data, error } = await customSupabase
+        .from<HeatCycle>('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
         .order('start_date', { ascending: false });

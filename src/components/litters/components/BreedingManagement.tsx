@@ -6,7 +6,7 @@ import HeatCycleManagement from '@/components/dogs/components/HeatCycleManagemen
 import { Dog } from '@/types/dog';
 
 interface BreedingManagementProps {
-  dog: Dog;
+  dog?: Dog;
   onRefresh?: () => void;
 }
 
@@ -17,8 +17,11 @@ const BreedingManagement: React.FC<BreedingManagementProps> = ({ dog, onRefresh 
     if (onRefresh) onRefresh();
   };
   
-  // Only show heat cycle management for female dogs
-  const showHeatCycles = dog.gender === 'female';
+  // Only show heat cycle management for female dogs or when dog isn't provided
+  const showHeatCycles = !dog || dog.gender?.toLowerCase() === 'female';
+  
+  // If dog isn't provided, we'll show placeholder content
+  const dogId = dog?.id;
   
   return (
     <Card>
@@ -30,40 +33,46 @@ const BreedingManagement: React.FC<BreedingManagementProps> = ({ dog, onRefresh 
       </CardHeader>
       
       <CardContent>
-        <Tabs 
-          defaultValue={showHeatCycles ? 'heat-cycles' : 'breeding-history'} 
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-4"
-        >
-          <TabsList className="grid grid-cols-2">
+        {!dogId ? (
+          <div className="py-8 text-center text-muted-foreground">
+            <p>Select a dog to view breeding information.</p>
+          </div>
+        ) : (
+          <Tabs 
+            defaultValue={showHeatCycles ? 'heat-cycles' : 'breeding-history'} 
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-4"
+          >
+            <TabsList className="grid grid-cols-2">
+              {showHeatCycles && (
+                <TabsTrigger value="heat-cycles">Heat Cycles</TabsTrigger>
+              )}
+              <TabsTrigger value="breeding-history">Breeding History</TabsTrigger>
+              <TabsTrigger value="sire-analysis">Genetic Analysis</TabsTrigger>
+            </TabsList>
+            
             {showHeatCycles && (
-              <TabsTrigger value="heat-cycles">Heat Cycles</TabsTrigger>
+              <TabsContent value="heat-cycles">
+                <HeatCycleManagement
+                  dogId={dogId}
+                />
+              </TabsContent>
             )}
-            <TabsTrigger value="breeding-history">Breeding History</TabsTrigger>
-            <TabsTrigger value="sire-analysis">Genetic Analysis</TabsTrigger>
-          </TabsList>
-          
-          {showHeatCycles && (
-            <TabsContent value="heat-cycles">
-              <HeatCycleManagement
-                dogId={dog.id}
-              />
+            
+            <TabsContent value="breeding-history">
+              <div className="py-8 text-center text-muted-foreground">
+                <p>No breeding history recorded for this dog.</p>
+              </div>
             </TabsContent>
-          )}
-          
-          <TabsContent value="breeding-history">
-            <div className="py-8 text-center text-muted-foreground">
-              <p>No breeding history recorded for this dog.</p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="sire-analysis">
-            <div className="py-8 text-center text-muted-foreground">
-              <p>Genetic compatibility analysis coming soon.</p>
-            </div>
-          </TabsContent>
-        </Tabs>
+            
+            <TabsContent value="sire-analysis">
+              <div className="py-8 text-center text-muted-foreground">
+                <p>Genetic compatibility analysis coming soon.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
       </CardContent>
     </Card>
   );

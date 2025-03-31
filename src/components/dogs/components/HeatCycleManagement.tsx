@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
+import { supabase, customSupabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import HeatCycleMonitor from './breeding/HeatCycleMonitor';
+import HeatCycleMonitor, { HeatCycle } from './breeding/HeatCycleMonitor';
 import { format } from 'date-fns';
 
 export interface HeatCycleManagementProps {
@@ -31,16 +31,16 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
     try {
       setLoading(true);
       
-      // Insert the heat cycle record
-      const { data, error } = await supabase
-        .from('heat_cycles')
+      // Insert the heat cycle record using customSupabase
+      const { data, error } = await customSupabase
+        .from<HeatCycle>('heat_cycles')
         .insert([{
           dog_id: dogId,
           start_date: startDate,
           end_date: endDate,
           notes: notes,
           created_at: new Date().toISOString()
-        }]);
+        } as HeatCycle]);
       
       if (error) throw error;
       

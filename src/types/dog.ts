@@ -96,6 +96,30 @@ export interface DogProfile {
   last_vaccination_date?: string;
 }
 
+// Define simplified Dog type for compatibility with existing code
+export interface Dog {
+  id: string;
+  name: string;
+  breed: string;
+  gender?: string;
+  birthdate?: string;
+  color?: string;
+  microchip_number?: string;
+  registration_number?: string;
+  photo_url?: string;
+  notes?: string;
+  pedigree?: boolean;
+  weight?: number;
+  is_pregnant?: boolean;
+  last_heat_date?: string;
+  tie_date?: string;
+  litter_number?: number;
+  vaccination_type?: string;
+  last_vaccination_date?: string;
+  vaccination_notes?: string;
+  owner_id?: string;
+}
+
 // Re-export for backward compatibility
 // Using 'export type' instead of 'export' because of 'isolatedModules'
 export type { 
