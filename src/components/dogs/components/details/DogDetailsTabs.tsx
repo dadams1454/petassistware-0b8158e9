@@ -2,10 +2,11 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DogProfile } from '@/types/dog';
-import { ArrowRight, Calendar, Heart, Baby, Stethoscope, ActivitySquare } from 'lucide-react';
+import { ArrowRight, Calendar, Heart, Baby, Stethoscope, ActivitySquare, Dumbbell } from 'lucide-react';
 import DailyCareLogs from '../../components/care/DailyCareLogs';
 import DogHealthSection from '../../DogHealthSection';
 import BreedingDashboard from '../breeding/BreedingDashboard';
+import ExerciseTab from '../tabs/ExerciseTab';
 
 interface DogDetailsTabsProps {
   dog: DogProfile;
@@ -26,7 +27,7 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="health" className="w-full">
-      <TabsList className="grid grid-cols-4 mb-8">
+      <TabsList className="grid grid-cols-5 mb-8">
         <TabsTrigger value="health">
           <Stethoscope className="h-4 w-4 mr-2" />
           Health
@@ -34,6 +35,10 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
         <TabsTrigger value="care">
           <ActivitySquare className="h-4 w-4 mr-2" />
           Daily Care
+        </TabsTrigger>
+        <TabsTrigger value="exercise">
+          <Dumbbell className="h-4 w-4 mr-2" />
+          Exercise
         </TabsTrigger>
         <TabsTrigger value="breeding">
           <Heart className="h-4 w-4 mr-2" />
@@ -51,6 +56,10 @@ const DogDetailsTabs: React.FC<DogDetailsTabsProps> = ({
       
       <TabsContent value="care">
         <DailyCareLogs dogId={dog.id} />
+      </TabsContent>
+      
+      <TabsContent value="exercise">
+        <ExerciseTab dog={dog} />
       </TabsContent>
       
       <TabsContent value="breeding">
