@@ -11,6 +11,7 @@ import { ErrorState } from '@/components/ui/standardized';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const AdminSetup: React.FC = () => {
   const navigate = useNavigate();
@@ -45,19 +46,7 @@ const AdminSetup: React.FC = () => {
     return <AdminUnauthorizedState type="unauthorized" />;
   }
 
-  // Always check for settings first, not just error
-  if (!tenantSettings) {
-    return (
-      <PageContainer>
-        <ErrorState 
-          title="Error Loading Settings" 
-          message={error || "Unable to load organization settings"} 
-          onRetry={handleRetry}
-        />
-      </PageContainer>
-    );
-  }
-
+  // We now always have tenantSettings due to our improved fallback in useAdminSetup
   return (
     <PageContainer>
       <div className="space-y-6 w-full">
@@ -67,15 +56,18 @@ const AdminSetup: React.FC = () => {
         />
         
         {error && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <Alert variant="warning" className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
             <div className="flex">
               <div className="flex-shrink-0">
                 <AlertTriangle className="h-5 w-5 text-yellow-400" />
               </div>
               <div className="ml-3">
-                <p className="text-sm text-yellow-700">
+                <AlertTitle className="text-sm text-yellow-700">
+                  Backend Connection Issue
+                </AlertTitle>
+                <AlertDescription className="text-sm text-yellow-700">
                   {error}
-                </p>
+                </AlertDescription>
                 <div className="mt-2">
                   <Button 
                     variant="outline" 
@@ -89,7 +81,7 @@ const AdminSetup: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </Alert>
         )}
         
         <AdminTabsContent tenantSettings={tenantSettings} />

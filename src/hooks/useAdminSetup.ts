@@ -29,72 +29,73 @@ export const useAdminSetup = () => {
       const isAdmin = userRole === 'admin' || userRole === 'owner';
       setIsTenantAdmin(isAdmin);
       
-      // If there's no tenant ID, create default settings
+      // Create default settings that will always work
+      const defaultSettings = {
+        id: tenantId || null,
+        name: 'Bear Paw Newfoundlands',
+        description: 'Kennel Management System',
+        contactEmail: user.email,
+        businessName: 'Bear Paw Newfoundlands',
+        createdAt: new Date().toISOString()
+      };
+      
+      // If not admin, don't try to load settings
+      if (!isAdmin) {
+        setTenantSettings(null);
+        setLoading(false);
+        return;
+      }
+      
+      // If there's no tenant ID, use default settings
       if (!tenantId) {
         console.log('No tenant ID found, using default settings');
-        setTenantSettings({
-          id: null,
-          name: 'Bear Paw Newfoundlands',
-          description: 'Kennel Management System',
-          contactEmail: user.email,
-          createdAt: new Date().toISOString()
-        });
+        setTenantSettings(defaultSettings);
         setLoading(false);
         return;
       }
 
-      // If admin, try to get tenant settings
-      if (isAdmin) {
-        try {
-          // Check if tenant_settings table exists by querying the database schema
-          // We'll use a different approach that doesn't rely on the tenant_settings table
-          
-          // For now, just use default settings
-          setTenantSettings({
-            id: tenantId,
-            name: 'Bear Paw Newfoundlands',
-            description: 'Kennel Management System',
-            contactEmail: user.email,
-            createdAt: new Date().toISOString()
-          });
-          
-          // We can optionally check for a tenant record in breeder_profiles
-          const { data: tenantData, error: tenantError } = await supabase
-            .from('breeder_profiles')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .maybeSingle();
+      // Try to get tenant settings from breeder_profiles table
+      try {
+        const { data: tenantData, error: tenantError } = await supabase
+          .from('breeder_profiles')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .maybeSingle();
 
-          if (tenantError && tenantError.code !== 'PGRST116') { // Not-found error code
-            console.error('Error fetching tenant profile:', tenantError);
-            // Don't throw, we'll use the default settings
-          }
-
-          if (tenantData) {
-            // Enhance settings with data from breeder_profiles if available
-            setTenantSettings(prev => ({
-              ...prev,
-              businessName: tenantData.business_name,
-              contactEmail: tenantData.email || prev.contactEmail,
-            }));
-          }
-        } catch (settingsError: any) {
-          console.error('Error loading tenant settings:', settingsError);
-          
-          // Continue using the default settings we already set
-          setError('Could not load complete organization settings, using defaults instead');
+        if (tenantError) {
+          console.warn('Could not fetch from breeder_profiles:', tenantError);
+          // Don't throw, we'll use the default settings
         }
-      } else {
-        setTenantSettings(null);
+
+        if (tenantData) {
+          // Enhance default settings with data from breeder_profiles if available
+          setTenantSettings({
+            ...defaultSettings,
+            businessName: tenantData.business_name || defaultSettings.businessName,
+            contactEmail: tenantData.email || defaultSettings.contactEmail,
+            name: tenantData.business_name || defaultSettings.name,
+          });
+        } else {
+          // Just use the default settings
+          setTenantSettings(defaultSettings);
+        }
+      } catch (settingsError: any) {
+        console.warn('Error loading tenant settings:', settingsError);
+        // Still set the default settings to ensure UI works
+        setTenantSettings(defaultSettings);
+        setError('Could not connect to database. Using default settings instead.');
       }
     } catch (error: any) {
       console.error('Error in admin setup:', error);
-      setError(error.message || 'An error occurred while loading admin settings');
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to load admin settings',
-        variant: 'destructive',
+      // Set default settings even on error to ensure the UI renders
+      setTenantSettings({
+        id: tenantId || null,
+        name: 'Bear Paw Newfoundlands',
+        description: 'Kennel Management System',
+        contactEmail: user?.email || 'admin@example.com',
+        createdAt: new Date().toISOString()
       });
+      setError('Encountered an error, using default settings.');
     } finally {
       setLoading(false);
     }
