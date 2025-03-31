@@ -6,22 +6,13 @@ import { useDailyCare } from '@/contexts/dailyCare';
 import { useToast } from '@/components/ui/use-toast';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { useRefreshData } from '@/hooks/useRefreshData';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Dog, 
-  Baby, 
-  GraduationCap, 
-  Building2, 
-  FileBarChart,
-  RefreshCw 
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import TabsList from './tabs/TabsList';
 import DailyCareTab from './tabs/DailyCareTab';
 import DogLetOutTab from './tabs/DogLetOutTab';
 import PuppiesTab from './tabs/PuppiesTab';
 import TrainingTab from './tabs/TrainingTab';
 import FacilityTab from './tabs/FacilityTab';
-import { Button } from '@/components/ui/button';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -68,52 +59,15 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     handleRefreshDogs(true);
   };
 
-  // Define tabs
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="h-5 w-5" /> },
-    { id: 'dailycare', label: 'Daily Care', icon: <Calendar className="h-5 w-5" /> },
-    { id: 'dogletout', label: 'Dog Let Out', icon: <Dog className="h-5 w-5" /> },
-    { id: 'puppies', label: 'Puppies', icon: <Baby className="h-5 w-5" /> },
-    { id: 'training', label: 'Training', icon: <GraduationCap className="h-5 w-5" /> },
-    { id: 'facility', label: 'Facility', icon: <Building2 className="h-5 w-5" /> },
-    { id: 'events', label: 'Events', icon: <Calendar className="h-5 w-5" /> },
-    { id: 'reports', label: 'Reports', icon: <FileBarChart className="h-5 w-5" /> }
-  ];
-
   return (
-    <div>
-      {/* Horizontal Tabs */}
-      <div className="mb-6 border-b">
-        <div className="flex overflow-x-auto pb-2">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center px-4 py-2 text-sm font-medium mr-2 ${
-                activeTab === tab.id
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.icon}
-              <span className="ml-2">{tab.label}</span>
-            </button>
-          ))}
-          
-          <div className="ml-auto">
-            <Button 
-              onClick={handleManualRefresh} 
-              variant="outline" 
-              size="sm" 
-              className="gap-2"
-              disabled={isRefreshing}
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-              <span>Refresh</span>
-            </Button>
-          </div>
-        </div>
-      </div>
+    <div className="w-full">
+      {/* Use the TabsList component for consistent tab styling */}
+      <TabsList 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+        onRefreshDogs={handleManualRefresh}
+        isRefreshing={isRefreshing}
+      />
 
       {/* Tab Content */}
       <div className="mt-6">
