@@ -4,10 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import MainLayout from '@/layouts/MainLayout';
 import DogDetails from '@/components/dogs/DogDetails';
 import BackButton from '@/components/common/BackButton';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import PageContainer from '@/components/common/PageContainer';
 
 const DogDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,43 +41,37 @@ const DogDetailPage = () => {
 
   if (isLoading) {
     return (
-      <ProtectedRoute>
-        <MainLayout>
-          <div className="container mx-auto py-8">
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
+      <PageContainer>
+        <div className="container mx-auto py-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
-        </MainLayout>
-      </ProtectedRoute>
+        </div>
+      </PageContainer>
     );
   }
 
   if (error || !dog) {
     return (
-      <ProtectedRoute>
-        <MainLayout>
-          <div className="container mx-auto py-8">
-            <BackButton fallbackPath="/dogs" />
-            <div className="p-8 bg-muted rounded-lg text-center mt-6">
-              <h2 className="text-xl font-semibold mb-2">Dog not found</h2>
-              <p className="text-muted-foreground">The requested dog could not be found or you don't have permission to view it.</p>
-            </div>
+      <PageContainer>
+        <div className="container mx-auto py-8">
+          <BackButton fallbackPath="/dogs" />
+          <div className="p-8 bg-muted rounded-lg text-center mt-6">
+            <h2 className="text-xl font-semibold mb-2">Dog not found</h2>
+            <p className="text-muted-foreground">The requested dog could not be found or you don't have permission to view it.</p>
           </div>
-        </MainLayout>
-      </ProtectedRoute>
+        </div>
+      </PageContainer>
     );
   }
 
   return (
-    <ProtectedRoute>
-      <MainLayout>
-        <div className="container mx-auto py-8">
-          <BackButton fallbackPath="/dogs" className="mb-6" />
-          <DogDetails dog={dog} isFullPage={true} />
-        </div>
-      </MainLayout>
-    </ProtectedRoute>
+    <PageContainer>
+      <div className="container mx-auto py-8">
+        <BackButton fallbackPath="/dogs" className="mb-6" />
+        <DogDetails dog={dog} isFullPage={true} />
+      </div>
+    </PageContainer>
   );
 };
 

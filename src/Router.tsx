@@ -28,93 +28,23 @@ const Router = () => {
       {/* Authentication route - direct path without protection */}
       <Route path="/auth" element={<Auth />} />
       
-      {/* Protected routes - all within MainLayout */}
+      {/* All protected routes are inside MainLayout */}
       <Route element={<AuthLayout />}>
         <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/dogs" element={
-            <ProtectedRoute>
-              <Dogs />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/customers" element={
-            <ProtectedRoute>
-              <Customers />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/litters" element={
-            <ProtectedRoute>
-              <Litters />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/reservations" element={
-            <ProtectedRoute>
-              <Reservations />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/reservations/:id" element={
-            <ProtectedRoute>
-              <Reservations />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/calendar" element={
-            <ProtectedRoute>
-              <Calendar />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/communications" element={
-            <ProtectedRoute>
-              <Communications />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/finances" element={
-            <ProtectedRoute>
-              <Finances />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/users" element={
-            <ProtectedRoute>
-              <Users />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/admin-setup" element={
-            <ProtectedRoute>
-              <AdminSetup />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/audit-logs" element={
-            <ProtectedRoute requiredRoles={['admin', 'owner']}>
-              <AuditLogs />
-            </ProtectedRoute>
-          } />
-          
-          {/* Dog routes */}
-          <Route path="/dogs/:id" element={
-            <ProtectedRoute>
-              <DogProfilePage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/dogs/:id/weight" element={
-            <ProtectedRoute>
-              <WeightTracking />
-            </ProtectedRoute>
-          } />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dogs" element={<Dogs />} />
+          <Route path="/dogs/:id" element={<DogProfilePage />} />
+          <Route path="/dogs/:id/weight" element={<WeightTracking />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/litters" element={<Litters />} />
+          <Route path="/reservations" element={<Reservations />} />
+          <Route path="/reservations/:id" element={<Reservations />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/communications" element={<Communications />} />
+          <Route path="/finances" element={<Finances />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/admin-setup" element={<AdminSetup />} />
+          <Route path="/audit-logs" element={<AuditLogs />} />
         </Route>
       </Route>
       
