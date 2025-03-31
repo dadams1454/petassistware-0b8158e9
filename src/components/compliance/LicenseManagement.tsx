@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,7 +40,7 @@ const LicenseManagement: React.FC = () => {
         description: error.message || 'Failed to load licenses',
         variant: 'destructive',
       });
-      // Set an empty array instead of error data
+      // Fix: Set an empty array of the correct type, not the error itself
       setLicenses([]);
     } finally {
       setIsLoading(false);

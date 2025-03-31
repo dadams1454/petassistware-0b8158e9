@@ -28,7 +28,7 @@ export const useInspections = () => {
         description: 'Failed to load inspections data. Please try again later.',
         variant: 'destructive',
       });
-      // Set an empty array instead of error data
+      // Fix: Set an empty array of the correct type, not the error itself
       setInspections([]);
     } finally {
       setIsLoading(false);
