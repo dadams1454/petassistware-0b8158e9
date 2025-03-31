@@ -139,10 +139,10 @@ export const usePuppyTracking = () => {
           })) || [];
         });
         
-        const puppiesArrays = await Promise.all(puppiesPromises);
+        const allPuppiesArrays = await Promise.all(puppiesPromises);
         
         // Flatten and process the puppies
-        const allPuppies = puppiesArrays.flat().map(puppy => {
+        const allPuppies = allPuppiesArrays.flat().map(puppy => {
           // Calculate age in days
           const birthDate = puppy.birth_date || puppy.litters?.birth_date;
           let ageInDays = 0;

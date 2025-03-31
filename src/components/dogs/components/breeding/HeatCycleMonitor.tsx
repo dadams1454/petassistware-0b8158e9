@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { customSupabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Plus, ArrowDown, ArrowUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,8 +34,8 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
     try {
       setLoading(true);
       
-      // Use the custom supabase client for the heat_cycles table
-      const { data, error: supabaseError } = await customSupabase
+      // Use the supabase client for the heat_cycles table
+      const { data, error: supabaseError } = await supabase
         .from('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
