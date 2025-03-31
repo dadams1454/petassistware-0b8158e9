@@ -8,7 +8,7 @@ import { UserTable } from '@/components/user-management/UserTable';
 import { InviteUserDialog } from '@/components/user-management/InviteUserDialog';
 import { EditUserDialog } from '@/components/user-management/EditUserDialog';
 import { UserManagementHeader } from '@/components/user-management/UserManagementHeader';
-import { useUserManagement } from '@/hooks/useUserManagement';
+import { useUserManagement } from '@/hooks/user-management';
 import { UserWithProfile } from '@/types/user';
 
 const UserManagement = () => {

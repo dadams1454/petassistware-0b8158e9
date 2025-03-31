@@ -9,7 +9,7 @@ import { UserTable } from '@/components/user-management/UserTable';
 import { InviteUserDialog } from '@/components/user-management/InviteUserDialog';
 import { EditUserDialog } from '@/components/user-management/EditUserDialog';
 import { UserManagementHeader } from '@/components/user-management/UserManagementHeader';
-import { useUserManagement } from '@/hooks/useUserManagement';
+import { useUserManagement } from '@/hooks/user-management';
 import { UserWithProfile } from '@/types/user';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Settings, RefreshCw } from 'lucide-react';
