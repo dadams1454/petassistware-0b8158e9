@@ -127,6 +127,7 @@ const FinancialManagement: React.FC = () => {
             <ExpenseTable
               expenses={filteredExpenses}
               onDelete={handleDeleteExpense}
+              onEdit={() => {}}
             />
           )}
         </div>

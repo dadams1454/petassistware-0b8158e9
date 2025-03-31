@@ -3,7 +3,7 @@ export interface Expense {
   id: string;
   description: string;
   amount: number;
-  date: Date;
+  date: Date | string;  // Allow both Date and string types
   category: string;
   receipt?: any;
   created_at: string;
@@ -14,6 +14,7 @@ export interface Expense {
   transaction_type: string;
   transaction_date: string;
   receipt_url?: string;
+  payment_method?: string;
 }
 
 export interface ExpenseFormValues {

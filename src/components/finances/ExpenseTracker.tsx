@@ -12,7 +12,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import ExpenseDialog from './ExpenseDialog';
 import ExpenseTable from './ExpenseTable';
 import { expenseCategories } from './constants';
-import { Expense } from '@/types/financial';
+import { Expense, ExpenseFormValues } from '@/types/financial';
 
 const ExpenseTracker = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -45,7 +45,7 @@ const ExpenseTracker = () => {
     }
   ]);
   
-  const addExpense = (newExpense: any) => {
+  const addExpense = (newExpense: ExpenseFormValues) => {
     const expense: Expense = { 
       id: Date.now().toString(),
       description: newExpense.description,
@@ -109,7 +109,11 @@ const ExpenseTracker = () => {
         </Select>
       </div>
       
-      <ExpenseTable expenses={filteredExpenses} />
+      <ExpenseTable 
+        expenses={filteredExpenses} 
+        onEdit={() => {}} 
+        onDelete={() => {}}
+      />
       
       <ExpenseDialog 
         open={isDialogOpen} 

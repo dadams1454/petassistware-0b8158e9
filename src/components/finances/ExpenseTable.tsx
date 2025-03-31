@@ -25,32 +25,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-
-interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  date: string;
-  category: string;
-  payment_method?: string;
-  receipt_url?: string;
-  notes?: string;
-  dog_id?: string;
-  puppy_id?: string;
-  created_at: string;
-}
+import { Expense } from '@/types/financial';
 
 interface ExpenseTableProps {
   expenses: Expense[];
-  isLoading: boolean;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  isLoading?: boolean;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
   onViewReceipt?: (url: string) => void;
 }
 
 const ExpenseTable: React.FC<ExpenseTableProps> = ({
   expenses,
-  isLoading,
+  isLoading = false,
   onEdit,
   onDelete,
   onViewReceipt,
@@ -70,6 +57,14 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({
       style: 'currency',
       currency: 'USD',
     }).format(amount);
+  };
+
+  // Function to format date that can handle both string and Date objects
+  const formatDate = (date: Date | string) => {
+    if (typeof date === 'string') {
+      return format(new Date(date), 'MMM d, yyyy');
+    }
+    return format(date, 'MMM d, yyyy');
   };
 
   if (isLoading) {
@@ -107,7 +102,7 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({
               expenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell>
-                    {format(new Date(expense.date), 'MMM d, yyyy')}
+                    {formatDate(expense.date)}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{expense.description}</div>
@@ -139,23 +134,27 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(expense.id)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
+                        {onEdit && (
+                          <DropdownMenuItem onClick={() => onEdit(expense.id)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                        )}
                         {expense.receipt_url && (
                           <DropdownMenuItem onClick={() => handleViewReceipt(expense.receipt_url!)}>
                             <Receipt className="mr-2 h-4 w-4" />
                             View Receipt
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem
-                          onClick={() => onDelete(expense.id)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
+                        {onDelete && (
+                          <DropdownMenuItem
+                            onClick={() => onDelete(expense.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
