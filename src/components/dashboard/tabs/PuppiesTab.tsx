@@ -1,44 +1,42 @@
 
 import React from 'react';
-import HeatCycleManagement from '../../dogs/components/HeatCycleManagement';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { customSupabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface PuppiesTabProps {
   onRefresh: () => void;
 }
 
-interface Dog {
-  id: string;
-  name: string;
-  gender: string;
-  // Add other dog properties as needed
-}
-
 const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
-  // Fetch all female dogs for heat cycle monitoring
-  const { data: femaleDogs, isLoading } = useQuery({
-    queryKey: ['femaleDogs'],
+  const navigate = useNavigate();
+  const { data: puppiesData, isLoading } = useQuery({
+    queryKey: ['dashboard-puppies'],
     queryFn: async () => {
       const { data, error } = await customSupabase
-        .from('dogs')
-        .select('*')
-        .eq('gender', 'Female')
+        .from('puppies')
+        .select('id, name, gender, status, litter_id')
         .order('name');
         
       if (error) throw error;
-      return (data || []) as Dog[];
+      return (data || []) as unknown as any[];
     }
   });
+  
+  const handleGoToLitters = () => {
+    navigate('/litters');
+  };
   
   if (isLoading) {
     return (
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Puppy & Breeding Management</CardTitle>
+            <CardTitle className="text-lg">Puppy Management</CardTitle>
           </CardHeader>
           <CardContent>
             <Skeleton className="h-48 w-full" />
@@ -48,26 +46,53 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     );
   }
   
+  const puppyCount = puppiesData?.length || 0;
+  
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Puppy & Breeding Management</CardTitle>
+        <CardHeader className="flex flex-row items-start justify-between pb-2">
+          <div>
+            <CardTitle className="text-lg">Puppy Management</CardTitle>
+            <CardDescription>
+              Manage puppies and litters
+            </CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-0"
+            onClick={handleGoToLitters}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Breeding Management
+          </Button>
         </CardHeader>
         <CardContent>
-          {femaleDogs && femaleDogs.length > 0 ? (
-            <div className="space-y-8">
-              {femaleDogs.map((dog) => (
-                <div key={dog.id} className="border-b pb-6 last:border-0">
-                  <h3 className="text-lg font-medium mb-4">{dog.name}</h3>
-                  <HeatCycleManagement dog={dog} onRefresh={onRefresh} />
-                </div>
-              ))}
+          {puppyCount > 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Active Puppies</span>
+                <span className="font-semibold">{puppyCount}</span>
+              </div>
+              
+              <p className="text-sm text-muted-foreground">
+                Visit the Litters page to manage breeding cycles, heat monitoring, and puppy tracking.
+              </p>
+              
+              <Button onClick={handleGoToLitters} className="w-full">
+                Go to Litters & Breeding
+              </Button>
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-8">
-              No female dogs found. Add female dogs to manage heat cycles.
-            </p>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                No active puppies found. Visit the Litters page to manage breeding cycles and add new litters.
+              </p>
+              <Button onClick={handleGoToLitters}>
+                Go to Litters & Breeding
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
