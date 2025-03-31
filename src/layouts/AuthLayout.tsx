@@ -17,7 +17,7 @@ const AuthLayout: React.FC = () => {
         setAuthCheckComplete(true);
         console.log('AuthLayout: forcing auth check completion after timeout');
       }
-    }, 2000); // Reduced from 3000 to 2000ms
+    }, 1500); // Reduced from 2000 to 1500ms for quicker response
     
     return () => {
       clearTimeout(timer);
@@ -35,8 +35,19 @@ const AuthLayout: React.FC = () => {
   
   // Add more detailed logging
   useEffect(() => {
-    console.log('AuthLayout state:', { loading, authCheckComplete, userExists: !!user });
-  }, [loading, authCheckComplete, user]);
+    console.log('AuthLayout state:', { 
+      loading, 
+      authCheckComplete, 
+      userExists: !!user,
+      path: location.pathname 
+    });
+  }, [loading, authCheckComplete, user, location]);
+  
+  // Don't show loading state if the user is on the auth page
+  if (location.pathname === '/auth') {
+    console.log('AuthLayout: On auth page, bypassing authentication check');
+    return <Outlet />;
+  }
   
   // Show loading state only if still authenticating and timeout hasn't elapsed
   if (loading && !authCheckComplete) {

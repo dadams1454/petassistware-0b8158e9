@@ -30,11 +30,13 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
   useEffect(() => {
     const shortTimer = setTimeout(() => {
       setTimeoutOccurred(true);
-    }, 2000); // Reduced from 3000 to 2000ms
+      console.log('AuthLoadingState: Short timeout triggered');
+    }, 1500); // Reduced from 2000 to 1500ms
     
     const longTimer = setTimeout(() => {
       setExtendedTimeout(true);
-    }, 5000); // Reduced from 8000 to 5000ms
+      console.log('AuthLoadingState: Extended timeout triggered, showing refresh option');
+    }, 3000); // Reduced from 5000 to 3000ms
     
     return () => {
       clearTimeout(shortTimer);
@@ -44,7 +46,11 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
   
   const handleRefresh = () => {
     console.log('Auth refresh requested, reloading page');
-    window.location.reload();
+    if (onRetry) {
+      onRetry();
+    } else {
+      window.location.reload();
+    }
   };
   
   const sizeMap = {
@@ -125,16 +131,11 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
             <p className="text-center text-muted-foreground/80 text-sm">
               Still verifying your authentication. You can try:
             </p>
-            <ul className="text-sm text-muted-foreground/70 list-disc list-inside space-y-1">
-              <li>Waiting a few more seconds</li>
-              <li>Refreshing the page</li>
-              <li>Checking your internet connection</li>
-            </ul>
             <Button 
               onClick={handleRefresh} 
               variant="outline" 
               size="sm" 
-              className="mt-2 w-full"
+              className="mt-2"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh Page

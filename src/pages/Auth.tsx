@@ -15,12 +15,16 @@ const Auth: React.FC = () => {
     // Check if user is already signed in
     const checkUser = async () => {
       try {
+        console.log('Auth page: Checking session');
         const { data } = await supabase.auth.getSession();
         if (data.session) {
+          console.log('Auth page: Found existing session, redirecting to dashboard');
           navigate('/dashboard');
+        } else {
+          console.log('Auth page: No session found, staying on auth page');
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('Auth page: Error checking session:', error);
       }
     };
     
@@ -29,8 +33,9 @@ const Auth: React.FC = () => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session);
+        console.log('Auth state changed:', event);
         if (session) {
+          console.log('Auth page: New session detected, redirecting to dashboard');
           navigate('/dashboard');
         }
       }

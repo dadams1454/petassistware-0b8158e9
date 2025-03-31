@@ -45,13 +45,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [loading, user, userRole, requiredRoles, resource, action, location.pathname]);
 
+  // If we're on the auth page, skip all checks and just render
+  if (location.pathname === '/auth') {
+    console.log('[ProtectedRoute] On auth page, bypassing protection');
+    return <>{children}</>;
+  }
+
   // Set a timeout to prevent getting stuck in authentication loading state
   useEffect(() => {
     if (loading) {
       const timer = setTimeout(() => {
         setAuthTimeout(true);
         console.log('[ProtectedRoute] Auth timeout occurred, will attempt to proceed');
-      }, 3000); // Timeout after 3 seconds
+      }, 2000); // Reduced timeout for better UX
       
       return () => clearTimeout(timer);
     } else {
@@ -65,7 +71,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       const forceAuthTimer = setTimeout(() => {
         console.log('[ProtectedRoute] Force completing auth check in development mode');
         // No action needed - just logging for debugging
-      }, 2000);
+      }, 1500); // Reduced from 2000 to 1500ms
       
       return () => clearTimeout(forceAuthTimer);
     }
@@ -87,6 +93,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       console.log(`[ProtectedRoute] Redirecting to auth page: ${fallbackPath}`);
     }
     return <Navigate to={fallbackPath} state={{ from: location.pathname }} replace />;
+  }
+
+  // For the admin user, bypass resource checks if they have the admin role
+  if (userRole === 'admin' || userRole === 'owner') {
+    console.log('[ProtectedRoute] User has admin or owner role, bypassing detailed permission checks');
+    return <>{children}</>;
   }
 
   // Check permissions using the resource and action (if provided)
