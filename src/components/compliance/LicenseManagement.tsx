@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -232,7 +231,7 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
         <div className="space-y-2">
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">License #</span>
-            <span className="text-sm font-medium">{license.license_number}</span>
+            <span className="text-sm font-medium">{license.license_number || 'N/A'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Issued</span>
