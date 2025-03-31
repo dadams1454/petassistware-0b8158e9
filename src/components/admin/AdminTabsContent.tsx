@@ -7,6 +7,7 @@ import UserManagement from '@/components/admin/UserManagement';
 import PermissionsSetup from '@/components/admin/PermissionsSetup';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthProvider';
 
 interface AdminTabsContentProps {
   tenantSettings: any;
@@ -14,14 +15,22 @@ interface AdminTabsContentProps {
 
 const AdminTabsContent: React.FC<AdminTabsContentProps> = ({ tenantSettings }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const handleOrganizationSubmit = async (data: any) => {
     try {
       // Make an actual update to the breeder_profiles table
       if (data.tenantId) {
+        // Get the current user's email to ensure we have all required fields
+        if (!user || !user.email) {
+          throw new Error("User email is required but not available");
+        }
+        
         const { error } = await supabase
           .from('breeder_profiles')
           .upsert({
+            id: user.id, // Required field: id
+            email: user.email, // Required field: email
             tenant_id: data.tenantId,
             business_name: data.name,
             business_overview: data.description,
