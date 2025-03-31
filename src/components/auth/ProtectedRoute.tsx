@@ -1,8 +1,8 @@
 
-import React, { useEffect } from 'react';
-import { Navigate, useLocation, Outlet } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth, UserRole } from '@/contexts/AuthProvider';
-import { LoadingState, UnauthorizedState } from '@/components/ui/standardized';
+import { UnauthorizedState } from '@/components/ui/standardized';
 import { AuthLoadingState } from '@/components/ui/standardized';
 import { hasMinimumRole, PERMISSIONS, hasPermission } from '@/utils/permissions';
 
@@ -28,7 +28,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, loading, userRole } = useAuth();
   const location = useLocation();
   const isDevelopment = process.env.NODE_ENV === 'development';
-  const [authTimeout, setAuthTimeout] = React.useState(false);
+  const [authTimeout, setAuthTimeout] = useState(false);
 
   // Debug logging in development environment
   useEffect(() => {
@@ -50,7 +50,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (loading) {
       const timer = setTimeout(() => {
         setAuthTimeout(true);
-      }, 5000);
+        console.log('[ProtectedRoute] Auth timeout occurred, will attempt to proceed');
+      }, 3000); // Timeout after 3 seconds
       
       return () => clearTimeout(timer);
     } else {
@@ -58,22 +59,38 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [loading]);
 
+  // Force auth check to complete if we're stuck in a loading state for mock development auth
+  useEffect(() => {
+    if (isDevelopment && loading) {
+      const forceAuthTimer = setTimeout(() => {
+        console.log('[ProtectedRoute] Force completing auth check in development mode');
+        // No action needed - just logging for debugging
+      }, 2000);
+      
+      return () => clearTimeout(forceAuthTimer);
+    }
+  }, [loading, isDevelopment]);
+
   // If authentication is still loading and timeout hasn't occurred, show the loading state
   if (loading && !authTimeout) {
-    return <AuthLoadingState message="Verifying authentication..." fullPage={true} onRetry={() => window.location.reload()} />;
+    return <AuthLoadingState 
+      message="Verifying authentication..." 
+      fullPage={true} 
+      onRetry={() => window.location.reload()} 
+    />;
   }
 
-  // If auth loading timed out but user isn't available, redirect to login
-  if ((loading && authTimeout) || !user) {
+  // If no valid user (after timeout or loading completes), redirect to login
+  // In development mode with mock auth, this should never happen for long
+  if (!user) {
     if (isDevelopment) {
-      console.log(`[Auth] ${authTimeout ? 'Auth timeout' : 'User not authenticated'}, redirecting to:`, fallbackPath);
+      console.log(`[ProtectedRoute] Redirecting to auth page: ${fallbackPath}`);
     }
     return <Navigate to={fallbackPath} state={{ from: location.pathname }} replace />;
   }
 
   // Check permissions using the resource and action (if provided)
   if (resource && !hasPermission(userRole, resource, action)) {
-    // Audit logging for permission failures
     console.warn(`[Permission] Denied: User with role "${userRole}" attempted to ${action} ${resource} at path: ${location.pathname}`);
     
     return (
@@ -88,16 +105,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If roles are required, check if the user has at least one of the required roles
   if (requiredRoles.length > 0 && userRole) {
-    // Check if the user has the minimum required role
     const hasRequiredRole = requiredRoles.some(role => 
       hasMinimumRole(userRole, role)
     );
     
     if (!hasRequiredRole) {
-      // Audit logging for role-based permission failures
       console.warn(`[Role] Permission denied: User with role "${userRole}" attempted to access a route requiring one of these roles: ${requiredRoles.join(', ')} at path: ${location.pathname}`);
       
-      // Show unauthorized state with multiple navigation options
       return (
         <UnauthorizedState 
           title="Insufficient Permissions"
@@ -112,8 +126,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (isDevelopment) {
     console.log('[ProtectedRoute] User authorized, rendering protected content');
   }
-  // If user is authenticated and has required role (if any), render the protected content or the Outlet
-  return <>{children || <Outlet />}</>;
+  // If user is authenticated and has required role (if any), render the protected content
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

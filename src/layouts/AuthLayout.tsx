@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthProvider';
-import { LoadingState } from '@/components/ui/standardized';
 import { AuthLoadingState } from '@/components/ui/standardized';
 
 const AuthLayout: React.FC = () => {
@@ -10,7 +9,7 @@ const AuthLayout: React.FC = () => {
   const location = useLocation();
   const [authCheckComplete, setAuthCheckComplete] = useState(false);
   
-  // Set a timeout to ensure we don't get stuck in loading state
+  // Set a shorter timeout to ensure we don't get stuck in loading state
   useEffect(() => {
     let mounted = true;
     const timer = setTimeout(() => {
@@ -18,7 +17,7 @@ const AuthLayout: React.FC = () => {
         setAuthCheckComplete(true);
         console.log('AuthLayout: forcing auth check completion after timeout');
       }
-    }, 3000);
+    }, 2000); // Reduced from 3000 to 2000ms
     
     return () => {
       clearTimeout(timer);
@@ -33,6 +32,11 @@ const AuthLayout: React.FC = () => {
       console.log('AuthLayout: auth check complete, loading state ended');
     }
   }, [loading]);
+  
+  // Add more detailed logging
+  useEffect(() => {
+    console.log('AuthLayout state:', { loading, authCheckComplete, userExists: !!user });
+  }, [loading, authCheckComplete, user]);
   
   // Show loading state only if still authenticating and timeout hasn't elapsed
   if (loading && !authCheckComplete) {

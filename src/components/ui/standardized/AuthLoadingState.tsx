@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { PawPrint, Loader2, RefreshCw } from 'lucide-react';
-import { LoadingState } from '@/components/ui/standardized';
 import { Button } from '@/components/ui/button';
 
 interface AuthLoadingStateProps {
@@ -31,11 +30,11 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
   useEffect(() => {
     const shortTimer = setTimeout(() => {
       setTimeoutOccurred(true);
-    }, 3000); // Show first message after 3 seconds
+    }, 2000); // Reduced from 3000 to 2000ms
     
     const longTimer = setTimeout(() => {
       setExtendedTimeout(true);
-    }, 8000); // Show extended message after 8 seconds
+    }, 5000); // Reduced from 8000 to 5000ms
     
     return () => {
       clearTimeout(shortTimer);
@@ -44,18 +43,8 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
   }, []);
   
   const handleRefresh = () => {
-    // Reset the timeout states when manually retrying
-    setTimeoutOccurred(false);
-    setExtendedTimeout(false);
-    initialTimeRef.current = Date.now();
-    
-    // Call the retry callback if provided
-    if (onRetry) {
-      onRetry();
-    } else {
-      // If no callback provided, just refresh the page
-      window.location.reload();
-    }
+    console.log('Auth refresh requested, reloading page');
+    window.location.reload();
   };
   
   const sizeMap = {
@@ -65,7 +54,21 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
   };
 
   if (!withIcon) {
-    return <LoadingState message={message} size={size} fullPage={fullPage} />;
+    return (
+      <div className={fullPage ? 'fixed inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-50' : 'flex flex-col items-center justify-center py-8'}>
+        <div className="text-center">
+          <div className="mb-4">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+          </div>
+          <p className="text-muted-foreground">{message}</p>
+          {timeoutOccurred && (
+            <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-4">
+              Refresh Page
+            </Button>
+          )}
+        </div>
+      </div>
+    );
   }
 
   const container = fullPage 
@@ -114,7 +117,7 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
               className="mt-2"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Retry Authentication
+              Refresh Page
             </Button>
           </div>
         ) : timeoutOccurred ? (
@@ -127,6 +130,15 @@ const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({
               <li>Refreshing the page</li>
               <li>Checking your internet connection</li>
             </ul>
+            <Button 
+              onClick={handleRefresh} 
+              variant="outline" 
+              size="sm" 
+              className="mt-2 w-full"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh Page
+            </Button>
           </div>
         ) : (
           <p className="text-center text-muted-foreground/70 text-sm mt-2">
