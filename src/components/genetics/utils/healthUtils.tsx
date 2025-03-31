@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Syringe, Stethoscope, Pill, Activity, AlertCircle, FileText, Scissors } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
@@ -42,7 +41,7 @@ export const getHealthRecordColor = (recordType: string) => {
  * Get the status color for a genetic health marker
  */
 export function getStatusColor(status: GeneticHealthStatus | string): string {
-  switch (status) {
+  switch (typeof status === 'string' ? status : status.status) {
     case 'clear':
       return 'bg-green-500';
     case 'carrier':
