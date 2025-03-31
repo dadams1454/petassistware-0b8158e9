@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Calendar, ClipboardList, Users } from 'lucide-react';
+import { RefreshCw, Calendar, ClipboardList, Users, Clock, ListChecks } from 'lucide-react';
 import { EmptyState } from '@/components/ui/standardized';
 import { useRefresh } from '@/contexts/RefreshContext';
 import { DailyCareProvider } from '@/contexts/dailyCare';
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import DogLetOutTab from '@/components/facility/DogLetOutTab';
 import CareAssignmentTab from '@/components/dogs/components/care/admin/CareAssignmentTab';
 import CareTaskScheduler from '@/components/dogs/components/care/admin/CareTaskScheduler';
+import StaffHoursTracker from '@/components/dogs/components/care/admin/StaffHoursTracker';
 
 const DailyCareContent: React.FC = () => {
   const { fetchAllDogsWithCareStatus } = useDailyCare();
@@ -44,10 +45,10 @@ const DailyCareContent: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            Care Management Center
+            Team Management Center
           </h1>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Manage, assign and schedule care tasks for all your dogs
+            Manage staff assignments, track hours, and schedule care tasks
           </p>
         </div>
         <Button onClick={() => handleRefresh(true)} className="gap-2" disabled={isLoading}>
@@ -57,21 +58,25 @@ const DailyCareContent: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-6">
+        <TabsList className="grid grid-cols-5 mb-6">
           <TabsTrigger value="timetable" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             <span>Time Table</span>
+          </TabsTrigger>
+          <TabsTrigger value="staff-hours" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span>Staff Hours</span>
           </TabsTrigger>
           <TabsTrigger value="assignments" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span>Staff Assignments</span>
           </TabsTrigger>
           <TabsTrigger value="scheduler" className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4" />
+            <ListChecks className="h-4 w-4" />
             <span>Task Scheduler</span>
           </TabsTrigger>
           <TabsTrigger value="dogletout" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
+            <ClipboardList className="h-4 w-4" />
             <span>Dog Let Out</span>
           </TabsTrigger>
         </TabsList>
@@ -105,6 +110,10 @@ const DailyCareContent: React.FC = () => {
               />
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="staff-hours" className="mt-0">
+          <StaffHoursTracker />
         </TabsContent>
 
         <TabsContent value="assignments" className="mt-0">

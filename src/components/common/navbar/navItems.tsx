@@ -12,7 +12,7 @@ import {
   Bookmark,
   Building,
   Coins,
-  ClipboardCheck
+  UserCog
 } from 'lucide-react';
 
 export const navItems = [
@@ -77,10 +77,10 @@ export const navItems = [
     description: 'Manage facility tasks and maintenance'
   },
   {
-    title: 'Care Management',
+    title: 'Team Management',
     href: '/daily-care',
-    icon: ClipboardCheck,
-    description: 'Manage and assign care tasks'
+    icon: UserCog,
+    description: 'Manage staff, assign tasks and track care'
   },
   {
     title: 'Users',

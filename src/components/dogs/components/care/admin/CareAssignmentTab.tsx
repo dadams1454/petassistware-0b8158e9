@@ -172,15 +172,6 @@ const CareAssignmentTab: React.FC<CareAssignmentTabProps> = ({
                         </div>
                         <div>
                           {dog.dog_name}
-                          {dog.group_names && dog.group_names.length > 0 && (
-                            <div className="flex gap-1 mt-1 flex-wrap">
-                              {dog.group_names.map((group, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs" style={{ fontSize: '10px' }}>
-                                  {group}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </TableCell>

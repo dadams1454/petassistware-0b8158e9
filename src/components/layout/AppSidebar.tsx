@@ -27,7 +27,7 @@ import {
   Building,
   Shield,
   Settings,
-  ClipboardCheck
+  UserCog
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 
@@ -49,7 +49,7 @@ export const AppSidebar = () => {
     { title: 'Contracts', href: '/contracts', icon: FileText },
     { title: 'Finances', href: '/finances', icon: Coins },
     { title: 'Facility', href: '/facility', icon: Building },
-    { title: 'Care Management', href: '/daily-care', icon: ClipboardCheck },
+    { title: 'Team Management', href: '/daily-care', icon: UserCog },
   ];
   
   const adminMenuItems = [
