@@ -7,7 +7,6 @@ import TaskSelection from './form/TaskSelection';
 import DateTimeSelector from './form/DateTimeSelector';
 import NotesField from './form/NotesField';
 import FlagSelection from './form/FlagSelection';
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useCareLogForm } from './form/useCareLogForm';
 
 interface CareLogFormProps {
@@ -55,9 +54,9 @@ const CareLogForm: React.FC<CareLogFormProps> = ({ dogId, onSuccess, initialCate
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>Log Care Activity</DialogTitle>
-      </DialogHeader>
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold">Log Care Activity</h2>
+      </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">

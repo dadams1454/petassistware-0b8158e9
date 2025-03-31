@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CareLogForm from '../CareLogForm';
 
 interface LogCareButtonProps {
@@ -65,6 +65,9 @@ const LogCareButton: React.FC<LogCareButtonProps> = ({
         {hasLastCare ? "Update" : "Log Care"}
       </Button>
       <DialogContent className="max-w-md z-50">
+        <DialogHeader>
+          <DialogTitle>Log Care Activity</DialogTitle>
+        </DialogHeader>
         {isSelected && (
           <CareLogForm 
             dogId={dogId} 
