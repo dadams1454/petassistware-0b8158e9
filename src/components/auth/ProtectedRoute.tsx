@@ -29,7 +29,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const location = useLocation();
   const isDevelopment = process.env.NODE_ENV === 'development';
   const [authTimeout, setAuthTimeout] = useState(false);
-  const [lastAuthState, setLastAuthState] = useState<{user: boolean, role: string | null}>({ 
+  const [lastAuthState, setLastAuthState] = useState<{user: boolean, role: UserRole | null}>({ 
     user: !!user, 
     role: userRole 
   });
@@ -109,7 +109,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check permissions using the resource and action (if provided)
-  if (resource && !hasPermission(effectiveRole, resource, action)) {
+  if (resource && effectiveRole && !hasPermission(effectiveRole, resource, action)) {
     console.warn(`[Permission] Denied: User with role "${effectiveRole}" attempted to ${action} ${resource} at path: ${location.pathname}`);
     
     return (
