@@ -25,13 +25,79 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   action = 'view',
   fallbackPath = "/auth" 
 }) => {
-  const { user } = useAuth();
+  const { user, userRole, loading } = useAuth();
   const location = useLocation();
   
-  console.log('[ProtectedRoute] User check:', !!user, 'Path:', location.pathname);
-  
-  // For development and testing, bypass all checks and render the children
-  // This ensures that no unnecessary redirects occur when accessing pages
+  console.log('[ProtectedRoute] Checking permissions:', { 
+    userRole, 
+    resource, 
+    action, 
+    path: location.pathname 
+  });
+
+  // Show loading state briefly while auth state is loading
+  if (loading) {
+    return <AuthLoadingState message="Checking permissions..." />;
+  }
+
+  // If user is not authenticated
+  if (!user) {
+    console.log('[ProtectedRoute] Not authenticated, redirecting to:', fallbackPath);
+    return <Navigate to={fallbackPath} state={{ from: location }} replace />;
+  }
+
+  // If specific permissions check is required
+  if (resource) {
+    try {
+      const hasAccess = hasPermission(userRole, resource, action);
+      console.log('[ProtectedRoute] Resource permission check:', { resource, action, hasAccess });
+      
+      if (!hasAccess) {
+        return (
+          <UnauthorizedState 
+            title="Permission Denied" 
+            description={`You don't have permission to ${action} ${resource}`}
+            backPath="/dashboard" 
+            showAdminSetupLink={true}
+          />
+        );
+      }
+    } catch (error) {
+      console.error('[ProtectedRoute] Error checking permissions:', error);
+      return (
+        <UnauthorizedState 
+          title="Permission Error" 
+          description="Failed to check your permissions. Please try again later."
+          backPath="/dashboard"
+        />
+      );
+    }
+  }
+
+  // If role-based access check is required
+  if (requiredRoles.length > 0) {
+    const hasRole = requiredRoles.some(role => userRole === role || 
+      hasMinimumRole(userRole, role));
+    
+    console.log('[ProtectedRoute] Role check:', { 
+      userRole, 
+      requiredRoles, 
+      hasRole 
+    });
+    
+    if (!hasRole) {
+      return (
+        <UnauthorizedState 
+          title="Access Restricted" 
+          description="You don't have the required role to access this page"
+          backPath="/dashboard"
+          showAdminSetupLink={true}
+        />
+      );
+    }
+  }
+
+  // If all checks pass, render the protected content
   return <>{children}</>;
 };
 

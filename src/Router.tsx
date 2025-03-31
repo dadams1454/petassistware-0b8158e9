@@ -47,9 +47,21 @@ const Router = () => {
           <Route path="/finances" element={<Finances />} />
           <Route path="/facility" element={<Facility />} />
           <Route path="/compliance" element={<Compliance />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/admin-setup" element={<AdminSetup />} />
-          <Route path="/audit-logs" element={<AuditLogs />} />
+          <Route path="/users" element={
+            <ProtectedRoute resource="users" action="view">
+              <Users />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin-setup" element={
+            <ProtectedRoute resource="adminSetup" action="edit">
+              <AdminSetup />
+            </ProtectedRoute>
+          } />
+          <Route path="/audit-logs" element={
+            <ProtectedRoute resource="adminSetup" action="view">
+              <AuditLogs />
+            </ProtectedRoute>
+          } />
           {/* Redirect daily-care to facility */}
           <Route path="/daily-care" element={<Navigate to="/facility" replace />} />
         </Route>

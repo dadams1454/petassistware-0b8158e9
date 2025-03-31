@@ -7,10 +7,11 @@ import AdminUnauthorizedState from '@/components/admin/AdminUnauthorizedState';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminTabsContent from '@/components/admin/AdminTabsContent';
 import PageContainer from '@/components/common/PageContainer';
+import { ErrorState } from '@/components/ui/standardized';
 
 const AdminSetup: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading, isTenantAdmin, tenantSettings } = useAdminSetup();
+  const { user, loading, isTenantAdmin, tenantSettings, error } = useAdminSetup();
 
   const handleBackToDashboard = () => {
     navigate('/dashboard');
@@ -22,6 +23,18 @@ const AdminSetup: React.FC = () => {
 
   if (loading) {
     return <AdminLoadingState />;
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <ErrorState 
+          title="Error Loading Settings" 
+          message={error} 
+          onRetry={() => window.location.reload()}
+        />
+      </PageContainer>
+    );
   }
 
   if (!user) {
