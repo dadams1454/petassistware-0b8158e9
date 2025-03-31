@@ -83,12 +83,8 @@ export interface ColorProbability {
   percentage: number; // Added percentage property
 }
 
-export interface GeneticHealthStatus {
-  condition: string;
-  status: 'clear' | 'carrier' | 'affected' | 'unknown';
-  riskLevel?: 'high' | 'medium' | 'low';
-  description?: string;
-}
+// Define GeneticHealthStatus as a string type with allowed values
+export type GeneticHealthStatus = 'clear' | 'carrier' | 'affected' | 'unknown';
 
 export interface HistoricalCOIChartProps {
   dogId: string;

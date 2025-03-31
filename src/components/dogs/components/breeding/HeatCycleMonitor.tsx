@@ -45,9 +45,12 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
         throw error;
       }
       
-      // Safely cast data to HeatCycle[] since we're selecting all fields
-      const heatCycles: HeatCycle[] = (data as HeatCycle[]) || [];
-      setCycles(heatCycles);
+      // Properly cast the data to HeatCycle[]
+      if (data) {
+        setCycles(data as HeatCycle[]);
+      } else {
+        setCycles([]);
+      }
       setError(null);
     } catch (err) {
       console.error('Error fetching heat cycles:', err);
