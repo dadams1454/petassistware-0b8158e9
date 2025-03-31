@@ -1,318 +1,154 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { AlertCircle, Grid2X2 } from 'lucide-react';
-import { MultiTraitMatrixProps, DogGenotype } from '@/types/genetics';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
-import { supabase } from '@/integrations/supabase/client';
+import { DogGenotype, MultiTraitMatrixProps } from '@/types/genetics';
+import { Dna, AlertCircle } from 'lucide-react';
 
-export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({ dogId, dogGenetics }) => {
+export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({
+  dogId,
+  dogGenetics
+}) => {
+  const [activeTab, setActiveTab] = useState('color');
   const { geneticData, loading, error } = useDogGenetics(dogId);
-  const [selectedTrait1, setSelectedTrait1] = useState('baseColor');
-  const [selectedTrait2, setSelectedTrait2] = useState('dilution');
-  const [otherDogs, setOtherDogs] = useState<any[]>([]);
-  const [isLoadingOtherDogs, setIsLoadingOtherDogs] = useState(false);
-  const [breedFilter, setBreedFilter] = useState('');
   
-  const data = dogGenetics || geneticData;
+  // Use the passed genetics data or the fetched data
+  const dogData = dogGenetics || geneticData;
   
-  // Fetch test data for other dogs of the same breed
-  useEffect(() => {
-    async function fetchOtherDogs() {
-      setIsLoadingOtherDogs(true);
-      try {
-        // First get dog details to know the breed
-        const { data: dogDetails } = await supabase
-          .from('dogs')
-          .select('*')
-          .eq('id', dogId)
-          .single();
-          
-        if (dogDetails) {
-          setBreedFilter(dogDetails.breed);
-          
-          // Get other dogs of same breed
-          const { data: otherDogsOfBreed } = await supabase
-            .from('dogs')
-            .select('*')
-            .eq('breed', dogDetails.breed)
-            .neq('id', dogId)
-            .limit(20);
-            
-          if (otherDogsOfBreed) {
-            // Get genetic test data
-            const dogGeneticPromises = otherDogsOfBreed.map(dog => 
-              supabase
-                .from('dog_genetic_tests')
-                .select('*')
-                .eq('dog_id', dog.id)
-            );
-            
-            const results = await Promise.all(dogGeneticPromises);
-            
-            // Process results
-            const dogsWithGenetics = otherDogsOfBreed
-              .filter((dog, index) => results[index].data && results[index].data.length > 0)
-              .map((dog, index) => ({
-                ...dog,
-                tests: results[index].data
-              }));
-              
-            setOtherDogs(dogsWithGenetics);
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching other dogs:', err);
-      } finally {
-        setIsLoadingOtherDogs(false);
-      }
-    }
-    
-    fetchOtherDogs();
-  }, [dogId]);
-  
-  if (loading || isLoadingOtherDogs) {
+  if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-gray-200 rounded"></div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="h-64 bg-gray-200 rounded-md col-span-3"></div>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Genetic Trait Analysis</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded-md w-1/3"></div>
+            <div className="h-40 bg-gray-200 rounded-md"></div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
   
-  if (error || !data) {
+  if (error || !dogData) {
     return (
-      <div className="text-center p-8">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-        <h3 className="text-lg font-medium mb-2">Error Loading Genetic Data</h3>
-        <p className="text-sm text-gray-600">
-          There was a problem loading the genetic data for trait analysis.
-        </p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Genetic Trait Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error ? error.message : "Could not load genetic data."}
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
     );
   }
-  
-  const getTraitValue = (dog: any, trait: string) => {
-    if (!dog) return 'Unknown';
-    
-    if (trait === 'baseColor') return dog.baseColor || 'Unknown';
-    if (trait === 'brownDilution') return dog.brownDilution || 'Unknown';
-    if (trait === 'dilution') return dog.dilution || 'Unknown';
-    if (trait === 'agouti') return dog.agouti || 'Unknown';
-    
-    // For health markers
-    if (dog.healthMarkers && dog.healthMarkers[trait]) {
-      return dog.healthMarkers[trait].status;
-    }
-    
-    return 'Unknown';
-  };
-  
-  // Get available traits for selection
-  const availableTraits = [
-    { id: 'baseColor', name: 'Base Color (E Locus)' },
-    { id: 'brownDilution', name: 'Brown Dilution (B Locus)' },
-    { id: 'dilution', name: 'Dilution (D Locus)' },
-    { id: 'agouti', name: 'Agouti (A Locus)' },
-    ...Object.keys(data.healthMarkers || {}).map(marker => ({
-      id: marker,
-      name: marker
-    }))
-  ];
-  
-  const getColorForHealthStatus = (status: string) => {
-    switch (status) {
-      case 'clear': return 'bg-green-100 border-green-300';
-      case 'carrier': return 'bg-yellow-100 border-yellow-300';
-      case 'affected': return 'bg-red-100 border-red-300';
-      default: return 'bg-gray-100 border-gray-300';
-    }
-  };
-  
-  const renderColor = (trait: string, value: string) => {
-    // For health markers
-    if (['clear', 'carrier', 'affected'].includes(value)) {
-      return getColorForHealthStatus(value);
-    }
-    
-    // For color loci, basic colors for now
-    if (trait === 'baseColor') {
-      if (value.includes('E/E')) return 'bg-amber-900 border-amber-950 text-white';
-      if (value.includes('E/e')) return 'bg-amber-700 border-amber-800 text-white';
-      if (value.includes('e/e')) return 'bg-amber-300 border-amber-400';
-    }
-    
-    if (trait === 'brownDilution') {
-      if (value.includes('B/B')) return 'bg-brown-900 border-brown-950 text-white';
-      if (value.includes('B/b')) return 'bg-brown-700 border-brown-800 text-white';
-      if (value.includes('b/b')) return 'bg-brown-300 border-brown-400';
-    }
-    
-    if (trait === 'dilution') {
-      if (value.includes('D/D')) return 'bg-slate-900 border-slate-950 text-white';
-      if (value.includes('D/d')) return 'bg-slate-700 border-slate-800 text-white';
-      if (value.includes('d/d')) return 'bg-slate-300 border-slate-400';
-    }
-    
-    if (trait === 'agouti') {
-      if (value.includes('a/a')) return 'bg-gray-900 border-gray-950 text-white';
-      if (value.includes('A/a')) return 'bg-gray-700 border-gray-800 text-white';
-      if (value.includes('A/A')) return 'bg-gray-300 border-gray-400';
-    }
-    
-    return 'bg-white border-gray-200';
-  };
   
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center text-lg font-medium">
-          <Grid2X2 className="h-5 w-5 mr-2" /> Multi-Trait Analysis
-        </CardTitle>
+      <CardHeader>
+        <CardTitle>Genetic Trait Analysis</CardTitle>
       </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <Tabs defaultValue="matrix">
-          <TabsList>
-            <TabsTrigger value="matrix">Matrix View</TabsTrigger>
-            <TabsTrigger value="punnett">Punnett Squares</TabsTrigger>
+      <CardContent className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-3 mb-4">
+            <TabsTrigger value="color">Color Genetics</TabsTrigger>
+            <TabsTrigger value="health">Health Markers</TabsTrigger>
+            <TabsTrigger value="physical">Physical Traits</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="matrix" className="pt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="trait1">Primary Trait</Label>
-                <Select
-                  value={selectedTrait1}
-                  onValueChange={setSelectedTrait1}
-                >
-                  <SelectTrigger id="trait1">
-                    <SelectValue placeholder="Select trait" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableTraits.map(trait => (
-                      <SelectItem key={trait.id} value={trait.id}>
-                        {trait.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <TabsContent value="color" className="space-y-4">
+            <Alert>
+              <Dna className="h-4 w-4 mr-2" />
+              <AlertDescription>
+                {dogData.name}'s color is influenced by multiple genetic factors.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TraitCard 
+                  title="Base Color (E Locus)" 
+                  genotype={dogData.baseColor} 
+                  description={getBaseColorDescription(dogData.baseColor)}
+                />
+                
+                <TraitCard 
+                  title="Brown Dilution (B Locus)" 
+                  genotype={dogData.brownDilution}
+                  description={getBrownDescription(dogData.brownDilution)}
+                />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="trait2">Secondary Trait</Label>
-                <Select
-                  value={selectedTrait2}
-                  onValueChange={setSelectedTrait2}
-                >
-                  <SelectTrigger id="trait2">
-                    <SelectValue placeholder="Select trait" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableTraits.map(trait => (
-                      <SelectItem key={trait.id} value={trait.id}>
-                        {trait.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="breedFilter">Breed Filter</Label>
-              <Input
-                id="breedFilter"
-                value={breedFilter}
-                onChange={(e) => setBreedFilter(e.target.value)}
-                placeholder="Filter by breed"
-              />
-            </div>
-            
-            <div className="mt-4 overflow-x-auto">
-              <div className="trait-matrix border rounded-md p-4">
-                {/* Current dog */}
-                <div className={`p-3 border rounded-md text-center ${renderColor(selectedTrait1, getTraitValue(data, selectedTrait1))}`}>
-                  <div className="font-bold">{data ? data.dogId.substring(0, 8) : 'Unknown'}</div>
-                  <div className="text-xs">
-                    {getTraitValue(data, selectedTrait1)} / {getTraitValue(data, selectedTrait2)}
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TraitCard 
+                  title="Dilution (D Locus)" 
+                  genotype={dogData.dilution}
+                  description={getDilutionDescription(dogData.dilution)}
+                />
                 
-                {/* Other dogs */}
-                {otherDogs.filter(dog => !breedFilter || dog.breed.toLowerCase().includes(breedFilter.toLowerCase())).map(dog => {
-                  const processedDog = {
-                    dogId: dog.id,
-                    baseColor: 'Unknown',
-                    brownDilution: 'Unknown',
-                    dilution: 'Unknown',
-                    agouti: 'Unknown',
-                    healthMarkers: {}
-                  };
-                  
-                  // Process color traits from tests
-                  if (dog.tests) {
-                    const colorTest = dog.tests.find((t: any) => t.test_type === 'Color Panel');
-                    if (colorTest) {
-                      const colorResults = colorTest.result.split(', ');
-                      colorResults.forEach((result: string) => {
-                        if (result.startsWith('E')) processedDog.baseColor = result;
-                        if (result.startsWith('B')) processedDog.brownDilution = result;
-                        if (result.startsWith('D')) processedDog.dilution = result;
-                        if (result.startsWith('a')) processedDog.agouti = result;
-                      });
-                    }
-                    
-                    // Process health markers
-                    dog.tests.forEach((test: any) => {
-                      if (test.test_type !== 'Color Panel') {
-                        const resultMatch = test.result.match(/^(\w+)\s*\(([^)]+)\)$/);
-                        if (resultMatch) {
-                          const [, status, genotype] = resultMatch;
-                          
-                          let standardStatus: 'clear' | 'carrier' | 'affected' | 'unknown' = 'unknown';
-                          if (status.toLowerCase() === 'clear' || status.toLowerCase() === 'normal') {
-                            standardStatus = 'clear';
-                          } else if (status.toLowerCase() === 'carrier') {
-                            standardStatus = 'carrier';
-                          } else if (status.toLowerCase() === 'affected' || status.toLowerCase() === 'positive') {
-                            standardStatus = 'affected';
-                          }
-                          
-                          // @ts-ignore - Dynamic property
-                          processedDog.healthMarkers[test.test_type] = {
-                            status: standardStatus,
-                            genotype
-                          };
-                        }
-                      }
-                    });
-                  }
-                  
-                  return (
-                    <div 
-                      key={dog.id}
-                      className={`p-3 border rounded-md text-center ${renderColor(selectedTrait1, getTraitValue(processedDog, selectedTrait1))}`}
-                    >
-                      <div className="font-bold">{dog.name}</div>
-                      <div className="text-xs">
-                        {getTraitValue(processedDog, selectedTrait1)} / {getTraitValue(processedDog, selectedTrait2)}
-                      </div>
-                    </div>
-                  );
-                })}
+                <TraitCard 
+                  title="Agouti (A Locus)" 
+                  genotype={dogData.agouti}
+                  description={getAgoutiDescription(dogData.agouti)}
+                />
               </div>
             </div>
           </TabsContent>
           
-          <TabsContent value="punnett" className="pt-4">
-            <div className="text-center p-8 text-muted-foreground">
-              Punnett square analysis coming soon
+          <TabsContent value="health" className="space-y-4">
+            <Alert>
+              <AlertDescription>
+                Health genetic markers are important factors in breeding decisions.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="space-y-4">
+              {Object.keys(dogData.healthMarkers).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(dogData.healthMarkers).map(([condition, marker]) => (
+                    <HealthMarkerCard
+                      key={condition}
+                      title={condition}
+                      status={(marker as any).status}
+                      genotype={(marker as any).genotype}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-4 border rounded-md">
+                  <p className="text-muted-foreground">No health markers recorded.</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="physical" className="space-y-4">
+            <Alert>
+              <AlertDescription>
+                Physical traits are influenced by both genetics and environment.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <TraitCard 
+                title="Size" 
+                genotype="Polygenic" 
+                description="Size in Newfoundlands is determined by multiple genes and is polygenic."
+              />
+              
+              <TraitCard 
+                title="Coat Type" 
+                genotype="Standard" 
+                description="Newfoundlands typically have a water-resistant double coat."
+              />
             </div>
           </TabsContent>
         </Tabs>
@@ -320,5 +156,86 @@ export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({ dogId, dogGe
     </Card>
   );
 };
+
+interface TraitCardProps {
+  title: string;
+  genotype: string;
+  description: string;
+}
+
+const TraitCard: React.FC<TraitCardProps> = ({ title, genotype, description }) => {
+  return (
+    <div className="border rounded-md p-4 bg-gray-50">
+      <h3 className="font-medium text-sm">{title}</h3>
+      <div className="mt-1 font-bold text-lg">{genotype}</div>
+      <p className="text-sm text-gray-600 mt-2">{description}</p>
+    </div>
+  );
+};
+
+interface HealthMarkerCardProps {
+  title: string;
+  status: 'clear' | 'carrier' | 'affected' | 'unknown';
+  genotype: string;
+}
+
+const HealthMarkerCard: React.FC<HealthMarkerCardProps> = ({ title, status, genotype }) => {
+  const getStatusBg = () => {
+    switch (status) {
+      case 'clear': return 'bg-green-100 text-green-800';
+      case 'carrier': return 'bg-yellow-100 text-yellow-800';
+      case 'affected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+  
+  return (
+    <div className="border rounded-md p-4 bg-gray-50">
+      <h3 className="font-medium text-sm">{title}</h3>
+      <div className="mt-1">
+        <span className={`${getStatusBg()} text-xs font-medium px-2 py-1 rounded-full`}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </span>
+      </div>
+      <div className="mt-2 font-mono text-sm">{genotype}</div>
+    </div>
+  );
+};
+
+// Helper functions for trait descriptions
+
+function getBaseColorDescription(genotype: string): string {
+  if (genotype.includes('E')) {
+    return "E/E or E/e allows expression of black pigment. This dog can produce black-based colors.";
+  } else {
+    return "e/e prevents expression of black pigment. This dog will only show red-based colors.";
+  }
+}
+
+function getBrownDescription(genotype: string): string {
+  if (genotype === 'B/B' || genotype === 'B/b') {
+    return "B/B or B/b allows normal black pigment. No dilution to brown.";
+  } else {
+    return "b/b causes dilution of black pigment to brown/liver.";
+  }
+}
+
+function getDilutionDescription(genotype: string): string {
+  if (genotype === 'D/D' || genotype === 'D/d') {
+    return "D/D or D/d allows full expression of color. No dilution effect.";
+  } else {
+    return "d/d causes dilution of black to blue/gray and red to cream.";
+  }
+}
+
+function getAgoutiDescription(genotype: string): string {
+  if (genotype === 'a/a') {
+    return "a/a produces a solid color without banding on individual hairs.";
+  } else if (genotype.includes('w')) {
+    return "Contains the 'ay' allele which can produce sable/fawn patterns.";
+  } else {
+    return "Various agouti patterns that determine distribution of black and red pigment.";
+  }
+}
 
 export default MultiTraitMatrix;

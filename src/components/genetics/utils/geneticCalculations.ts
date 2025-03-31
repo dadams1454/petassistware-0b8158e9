@@ -2,46 +2,64 @@
 import { DogGenotype, ColorProbability } from '@/types/genetics';
 
 /**
- * Calculates color probabilities between two dogs
+ * Generate color probability data for charts
  */
-export function calculateColorProbabilities(sire: DogGenotype, dam: DogGenotype): ColorProbability[] {
-  // In a real app, this would use actual genetic algorithms
-  // For now we'll return sample data
-  return [
-    { color: 'Black', percentage: 50 },
-    { color: 'Brown', percentage: 25 },
-    { color: 'Grey', percentage: 15 },
-    { color: 'Cream', percentage: 10 }
-  ];
+export function generateColorProbabilityData(colorProbabilities: Record<string, number>): ColorProbability[] {
+  const colorMap: Record<string, string> = {
+    'Black': '#111827',
+    'Brown': '#92400E',
+    'Grey': '#6B7280',
+    'Light Brown': '#B45309',
+    'Red': '#B91C1C',
+    'Cream': '#FCD34D'
+  };
+  
+  return Object.entries(colorProbabilities).map(([name, value]) => ({
+    name,
+    value,
+    color: colorMap[name] || '#64748B',
+    percentage: value  // Add percentage property
+  }));
 }
 
 /**
- * Calculate Coefficient of Inbreeding (COI)
+ * Parse genotype string into alleles
  */
-export function calculateCOI(dogId: string, generations: number = 5): number {
-  // In a real app, this would analyze pedigree data
-  // For now return a placeholder
-  return 4.2;
+export function parseGenotype(genotype: string): string[] {
+  // Parses a genotype like "B/b" into ["B", "b"]
+  return genotype.split('/');
 }
 
 /**
- * Parses genotype string into alleles
+ * Get the phenotype (visual color) from color genes
  */
-export function parseGenotype(genotypeStr: string): string[] {
-  return genotypeStr.split('/');
+export function getPhenotypeFromGenes(
+  baseColor: string,
+  brownDilution: string,
+  dilution: string
+): string {
+  const isBlackBased = baseColor.includes('E');
+  const hasBrownDilution = brownDilution === 'b/b';
+  const hasDilution = dilution === 'd/d';
+  
+  if (!isBlackBased) {
+    return hasDilution ? 'Cream' : 'Red';
+  } else if (hasBrownDilution) {
+    return hasDilution ? 'Light Brown' : 'Brown';
+  } else {
+    return hasDilution ? 'Grey' : 'Black';
+  }
 }
 
 /**
- * Determine if a trait is dominant based on alleles
+ * Calculate coefficient of inbreeding (COI)
+ * Note: This is a simplified placeholder. Real COI calculations require extensive pedigree analysis.
  */
-export function isDominant(allele1: string, allele2: string): boolean {
-  return allele1 === allele1.toUpperCase() || allele2 === allele2.toUpperCase();
-}
-
-/**
- * Check if a dog is homozygous for a trait
- */
-export function isHomozygous(genotypeStr: string): boolean {
-  const alleles = parseGenotype(genotypeStr);
-  return alleles[0] === alleles[1];
+export function calculateCOI(
+  sireGenotype: DogGenotype,
+  damGenotype: DogGenotype
+): number {
+  // This is a placeholder. Real COI calculations require examining the pedigree
+  // to find common ancestors and calculate inbreeding coefficient.
+  return 4.5; // Returning a placeholder value
 }

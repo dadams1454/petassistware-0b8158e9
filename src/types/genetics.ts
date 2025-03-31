@@ -8,7 +8,7 @@ export interface DogGenotype {
   };
   healthMarkers: Record<string, HealthMarker>;
   healthResults: Array<GeneticTestResult>;
-  // Added properties that were missing and causing type errors
+  // Color traits
   baseColor: string;
   brownDilution: string;
   dilution: string;
@@ -16,6 +16,8 @@ export interface DogGenotype {
   patterns?: string[];
   updatedAt?: string;
   testResults?: Array<TestResult>;
+  // Optional field for referencing the dog
+  dogId?: string; 
 }
 
 export interface HealthMarker {
@@ -63,7 +65,7 @@ export interface HealthWarning {
   affectedPercentage?: number;
 }
 
-// Add missing interfaces
+// Interface definitions that were missing
 export interface CompactGenotypeViewProps {
   dogData: DogGenotype | null;
   showColorTraits?: boolean;
@@ -78,6 +80,7 @@ export interface ColorProbability {
   name: string;
   value: number;
   color: string;
+  percentage: number; // Added percentage property
 }
 
 export interface GeneticHealthStatus {
