@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useExerciseTracking } from '@/hooks/useExerciseTracking';
 import { getExerciseRecommendations } from '@/services/exerciseService';
@@ -357,43 +356,43 @@ const ExerciseTracker: React.FC<ExerciseTrackerProps> = ({
 // Helper function to get activity descriptions
 function getActivityDescription(activity: string, breed: string): string {
   const descriptions: Record<string, string> = {
-    'Walk': 'Regular leashed walks provide mental stimulation and moderate physical exercise.',
-    'Run': 'Running provides high-intensity exercise, great for high-energy dogs.',
-    'Play Fetch': 'Great for mental stimulation and physical exercise without requiring too much space.',
-    'Swimming': 'Low-impact exercise that's excellent for joint health and full-body conditioning.',
-    'Agility Training': 'Combines mental and physical exercise while building confidence and coordination.',
-    'Treadmill': 'Controlled exercise environment, especially useful during extreme weather.',
-    'Frisbee': 'High-energy activity that develops coordination and provides intense exercise.',
-    'Hiking': 'Combines exercise with new scents and environments for mental stimulation.',
-    'Play with Other Dogs': 'Social interaction combined with natural play-based exercise.',
-    'Training Session': 'Mental stimulation that can include physical components.',
-    'Tug of War': 'Builds strength and provides an outlet for natural instincts.',
-    'Backyard Play': 'Free play in a controlled environment, can be adjusted to energy levels.',
-    'Short Walk': 'Brief, gentle walks appropriate for puppies or senior dogs.',
-    'Gentle Play': 'Low-intensity play appropriate for puppies or dogs with health restrictions.',
-    'Mental Stimulation': 'Puzzle toys and training that provide mental exercise with minimal physical exertion.',
-    'Other': 'Custom exercise activities tailored to your dog\'s specific needs.'
+    "Walk": "Regular leashed walks provide mental stimulation and moderate physical exercise.",
+    "Run": "Running provides high-intensity exercise, great for high-energy dogs.",
+    "Play Fetch": "Great for mental stimulation and physical exercise without requiring too much space.",
+    "Swimming": "Low-impact exercise that's excellent for joint health and full-body conditioning.",
+    "Agility Training": "Combines mental and physical exercise while building confidence and coordination.",
+    "Treadmill": "Controlled exercise environment, especially useful during extreme weather.",
+    "Frisbee": "High-energy activity that develops coordination and provides intense exercise.",
+    "Hiking": "Combines exercise with new scents and environments for mental stimulation.",
+    "Play with Other Dogs": "Social interaction combined with natural play-based exercise.",
+    "Training Session": "Mental stimulation that can include physical components.",
+    "Tug of War": "Builds strength and provides an outlet for natural instincts.",
+    "Backyard Play": "Free play in a controlled environment, can be adjusted to energy levels.",
+    "Short Walk": "Brief, gentle walks appropriate for puppies or senior dogs.",
+    "Gentle Play": "Low-intensity play appropriate for puppies or dogs with health restrictions.",
+    "Mental Stimulation": "Puzzle toys and training that provide mental exercise with minimal physical exertion.",
+    "Other": "Custom exercise activities tailored to your dog's specific needs."
   };
   
-  return descriptions[activity] || 'Custom exercise activity.';
+  return descriptions[activity] || "Custom exercise activity.";
 }
 
 // Helper function to get breed-specific notes
 function getBreedNotes(breed: string): string {
   const breedNotes: Record<string, string> = {
-    'Newfoundland': 'Newfoundlands have a natural affinity for water and swimming is an excellent exercise for them. They're prone to joint issues, so moderate exercise that doesn't put too much strain on their joints is ideal. Despite their size, they don't require extensive exercise and are relatively low-energy indoors.',
-    'Labrador Retriever': 'Labs are high-energy dogs that thrive with plenty of exercise. They excel at fetch, swimming, and running. Without adequate exercise, they may develop destructive behaviors.',
-    'Border Collie': 'Extremely high energy and intelligence require both physical and mental stimulation. They excel at agility, frisbee, and complex training exercises.',
-    'Bulldog': 'Prone to overheating and respiratory issues. Short, low-intensity walks and play sessions are best, especially in cool weather.',
-    'Greyhound': 'Despite their racing background, greyhounds are often "couch potatoes" who enjoy short bursts of high-intensity exercise followed by long rest periods.',
-    'German Shepherd': 'Intelligent, active dogs that benefit from structured exercise with mental components. They excel at training exercises and jobs.',
-    'Chihuahua': 'Small but energetic, they get sufficient exercise from indoor play and short walks. Care should be taken in extreme temperatures.',
-    'Great Dane': 'Despite their size, they typically have moderate energy levels. Gentle exercise is important during growth phases to protect developing joints.',
-    'Poodle': 'Intelligent and athletic, they enjoy varied exercises including swimming, fetch, and training activities.',
-    'Beagle': 'Scent hounds with high energy that benefit from regular opportunities to explore and follow scents in secure areas.',
-    'Golden Retriever': 'Athletic and enthusiastic exercise partners who especially enjoy water activities and retrieving games.',
-    'Saint Bernard': 'Giant breeds with moderate energy that benefit from regular short walks and play sessions. Avoid strenuous exercise in hot weather.',
-    'Dachshund': 'Small but spirited dogs that need regular exercise, but care should be taken to protect their backs by avoiding jumping and stairs.'
+    "Newfoundland": "Newfoundlands have a natural affinity for water and swimming is an excellent exercise for them. They're prone to joint issues, so moderate exercise that doesn't put too much strain on their joints is ideal. Despite their size, they don't require extensive exercise and are relatively low-energy indoors.",
+    "Labrador Retriever": "Labs are high-energy dogs that thrive with plenty of exercise. They excel at fetch, swimming, and running. Without adequate exercise, they may develop destructive behaviors.",
+    "Border Collie": "Extremely high energy and intelligence require both physical and mental stimulation. They excel at agility, frisbee, and complex training exercises.",
+    "Bulldog": "Prone to overheating and respiratory issues. Short, low-intensity walks and play sessions are best, especially in cool weather.",
+    "Greyhound": "Despite their racing background, greyhounds are often \"couch potatoes\" who enjoy short bursts of high-intensity exercise followed by long rest periods.",
+    "German Shepherd": "Intelligent, active dogs that benefit from structured exercise with mental components. They excel at training exercises and jobs.",
+    "Chihuahua": "Small but energetic, they get sufficient exercise from indoor play and short walks. Care should be taken in extreme temperatures.",
+    "Great Dane": "Despite their size, they typically have moderate energy levels. Gentle exercise is important during growth phases to protect developing joints.",
+    "Poodle": "Intelligent and athletic, they enjoy varied exercises including swimming, fetch, and training activities.",
+    "Beagle": "Scent hounds with high energy that benefit from regular opportunities to explore and follow scents in secure areas.",
+    "Golden Retriever": "Athletic and enthusiastic exercise partners who especially enjoy water activities and retrieving games.",
+    "Saint Bernard": "Giant breeds with moderate energy that benefit from regular short walks and play sessions. Avoid strenuous exercise in hot weather.",
+    "Dachshund": "Small but spirited dogs that need regular exercise, but care should be taken to protect their backs by avoiding jumping and stairs."
   };
   
   return breedNotes[breed] || 
