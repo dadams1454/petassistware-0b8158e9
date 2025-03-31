@@ -29,7 +29,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
         .order('name');
         
       if (error) throw error;
-      return data || [];
+      return (data || []) as Dog[];
     }
   });
   
@@ -57,7 +57,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
         <CardContent>
           {femaleDogs && femaleDogs.length > 0 ? (
             <div className="space-y-8">
-              {femaleDogs.map((dog: Dog) => (
+              {femaleDogs.map((dog) => (
                 <div key={dog.id} className="border-b pb-6 last:border-0">
                   <h3 className="text-lg font-medium mb-4">{dog.name}</h3>
                   <HeatCycleManagement dog={dog} onRefresh={onRefresh} />
