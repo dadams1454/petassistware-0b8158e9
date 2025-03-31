@@ -1,202 +1,148 @@
 
-import React, { useState } from 'react';
-import { Plus, Download } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SectionHeader } from '@/components/ui/standardized';
+import React, { useState, useEffect } from 'react';
 import { DateRange } from 'react-day-picker';
+import { SectionHeader } from '@/components/ui/standardized';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useFinances } from './hooks/useFinances';
 import ExpenseDialog from './ExpenseDialog';
 import ExpenseTable from './ExpenseTable';
 import ExpenseFilters from './ExpenseFilters';
 import ExpenseCategories from './ExpenseCategories';
-import FinancialOverview from './FinancialOverview';
-import ReceiptManager from './ReceiptManager';
-import { useFinances } from './hooks/useFinances';
-import { ExpenseFormValues } from './ExpenseForm';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Expense } from '@/types/financial';
 
 const FinancialManagement: React.FC = () => {
   const {
     expenses,
     isLoading,
-    filters,
-    setFilters,
+    error,
+    fetchExpenses,
     addExpense,
     deleteExpense,
-    updateExpense,
-    isAdding,
-    isUpdating,
   } = useFinances();
 
-  const [activeTab, setActiveTab] = useState('expenses');
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleAddExpense = () => {
-    setSelectedExpense(null);
-    setIsExpenseDialogOpen(true);
-  };
+  // Load expenses on component mount
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
 
-  const handleEditExpense = (id: string) => {
-    const expense = expenses.find(e => e.id === id);
-    if (expense) {
-      setSelectedExpense({
-        ...expense,
-        date: new Date(expense.date),
-        category: expense.category || '',
-        paymentMethod: expense.payment_method || '',
+  // Apply filters when expenses or filter criteria change
+  useEffect(() => {
+    let filtered = [...expenses];
+
+    // Apply date range filter
+    if (dateRange?.from) {
+      filtered = filtered.filter(expense => {
+        const expenseDate = new Date(expense.date);
+        return (
+          expenseDate >= dateRange.from! &&
+          (!dateRange.to || expenseDate <= dateRange.to)
+        );
       });
-      setIsExpenseDialogOpen(true);
     }
-  };
 
-  const handleSaveExpense = async (data: ExpenseFormValues) => {
-    if (selectedExpense) {
-      await updateExpense(selectedExpense.id, data);
-    } else {
-      await addExpense(data);
+    // Apply category filter
+    if (selectedCategory) {
+      filtered = filtered.filter(expense => expense.category === selectedCategory);
     }
+
+    // Apply search query filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(expense =>
+        expense.description.toLowerCase().includes(query) ||
+        expense.notes?.toLowerCase().includes(query) ||
+        expense.category.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredExpenses(filtered);
+  }, [expenses, dateRange, selectedCategory, searchQuery]);
+
+  const handleAddExpense = async (formData: any) => {
+    setIsSubmitting(true);
+    await addExpense(formData);
+    setIsSubmitting(false);
     setIsExpenseDialogOpen(false);
   };
 
   const handleDeleteExpense = async (id: string) => {
-    if (confirm('Are you sure you want to delete this expense?')) {
-      await deleteExpense(id);
-    }
-  };
-
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    setFilters(prev => ({ ...prev, dateRange: range ? [range.from, range.to] : [null, null] }));
-  };
-
-  const handleCategoryChange = (category: string | undefined) => {
-    setFilters(prev => ({ ...prev, category }));
-  };
-
-  const handleSearchQueryChange = (searchQuery: string) => {
-    setFilters(prev => ({ ...prev, searchQuery }));
+    await deleteExpense(id);
   };
 
   const handleResetFilters = () => {
-    setFilters({
-      dateRange: [null, null],
-      category: undefined,
-      searchQuery: '',
-    });
-  };
-
-  const handleExportCSV = () => {
-    if (expenses.length === 0) return;
-
-    // Create CSV content
-    const headers = ['Date', 'Description', 'Category', 'Amount', 'Payment Method', 'Notes'];
-    const csvContent = [
-      headers.join(','),
-      ...expenses.map(expense => [
-        expense.date,
-        `"${expense.description.replace(/"/g, '""')}"`,
-        expense.category,
-        expense.amount,
-        expense.payment_method || '',
-        `"${(expense.notes || '').replace(/"/g, '""')}"`
-      ].join(','))
-    ].join('\n');
-
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `expenses_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setDateRange(undefined);
+    setSelectedCategory(undefined);
+    setSearchQuery('');
   };
 
   return (
     <div className="space-y-6">
       <SectionHeader
         title="Financial Management"
-        description="Track and manage your kennel's finances"
-        action={{
-          label: activeTab === 'expenses' ? "Add Expense" : undefined,
-          onClick: activeTab === 'expenses' ? handleAddExpense : undefined,
-          icon: activeTab === 'expenses' ? <Plus size={16} /> : undefined,
-        }}
+        description="Track and manage kennel expenses"
+        action={
+          <Button onClick={() => setIsExpenseDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Expense
+          </Button>
+        }
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
-          <TabsTrigger value="receipts">Receipts</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
-        </TabsList>
+      <ExpenseFilters
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        category={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onResetFilters={handleResetFilters}
+      />
 
-        <TabsContent value="expenses">
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <ExpenseFilters
-                dateRange={
-                  filters.dateRange && filters.dateRange[0] && filters.dateRange[1]
-                    ? { from: filters.dateRange[0], to: filters.dateRange[1] }
-                    : undefined
-                }
-                onDateRangeChange={handleDateRangeChange}
-                category={filters.category}
-                onCategoryChange={handleCategoryChange}
-                searchQuery={filters.searchQuery || ''}
-                onSearchQueryChange={handleSearchQueryChange}
-                onResetFilters={handleResetFilters}
-              />
-              
-              <Button 
-                variant="outline" 
-                onClick={handleExportCSV}
-                disabled={expenses.length === 0}
-                className="hidden md:flex"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export CSV
-              </Button>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          {isLoading ? (
+            <Card>
+              <CardContent className="p-6">
+                <Skeleton className="h-[400px] w-full" />
+              </CardContent>
+            </Card>
+          ) : error ? (
+            <Card>
+              <CardContent className="p-6 text-center text-red-500">
+                {error}
+              </CardContent>
+            </Card>
+          ) : (
+            <ExpenseTable
+              expenses={filteredExpenses}
+              onDelete={handleDeleteExpense}
+            />
+          )}
+        </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <ExpenseTable
-                  expenses={expenses}
-                  isLoading={isLoading}
-                  onEdit={handleEditExpense}
-                  onDelete={handleDeleteExpense}
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <ExpenseCategories
-                  expenses={expenses}
-                  isLoading={isLoading}
-                />
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="receipts">
-          <ReceiptManager />
-        </TabsContent>
-
-        <TabsContent value="reports">
-          <FinancialOverview
-            expenses={expenses}
+        <div>
+          <ExpenseCategories
+            expenses={filteredExpenses}
             isLoading={isLoading}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
 
       <ExpenseDialog
         open={isExpenseDialogOpen}
         onOpenChange={setIsExpenseDialogOpen}
-        onSave={handleSaveExpense}
-        defaultValues={selectedExpense}
-        isSubmitting={isAdding || isUpdating}
-        title={selectedExpense ? 'Edit Expense' : 'Add Expense'}
+        onSave={handleAddExpense}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

@@ -1,217 +1,231 @@
 
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { ExpenseFormValues } from '../ExpenseForm';
+import { v4 as uuidv4 } from 'uuid';
+import { useToast } from '@/components/ui/use-toast';
+import { Expense, ExpenseFormValues } from '@/types/financial';
+import { useAuth } from '@/contexts/AuthProvider';
 
-interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  date: string;
-  category: string;
-  payment_method?: string;
-  receipt_url?: string;
-  notes?: string;
-  dog_id?: string;
-  puppy_id?: string;
-  created_at: string;
-  breeder_id: string;
-}
-
-interface FinancesFilter {
-  dateRange?: [Date | null, Date | null];
-  category?: string;
-  searchQuery?: string;
-  dogId?: string;
-  puppyId?: string;
-}
-
-export const useFinances = () => {
+export function useFinances() {
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [filters, setFilters] = useState<FinancesFilter>({
-    dateRange: [null, null],
-    category: undefined,
-    searchQuery: '',
-    dogId: undefined,
-    puppyId: undefined,
-  });
-  
-  // Get expenses with filtering
-  const { data: expenses, isLoading, refetch } = useQuery({
-    queryKey: ['expenses', filters],
-    queryFn: async () => {
-      let query = supabase
-        .from('transactions')
-        .select('*')
-        .eq('transaction_type', 'expense');
-      
-      // Apply date range filter if provided
-      if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
-        const startDate = filters.dateRange[0].toISOString().split('T')[0];
-        const endDate = filters.dateRange[1].toISOString().split('T')[0];
-        query = query.gte('transaction_date', startDate).lte('transaction_date', endDate);
-      }
-      
-      // Apply category filter if provided
-      if (filters.category) {
-        query = query.eq('category', filters.category);
-      }
-      
-      // Apply search filter if provided
-      if (filters.searchQuery) {
-        query = query.ilike('notes', `%${filters.searchQuery}%`);
-      }
-      
-      // Apply dog filter if provided
-      if (filters.dogId) {
-        query = query.eq('dog_id', filters.dogId);
-      }
-      
-      // Apply puppy filter if provided
-      if (filters.puppyId) {
-        query = query.eq('puppy_id', filters.puppyId);
-      }
-      
-      // Order by date, most recent first
-      query = query.order('transaction_date', { ascending: false });
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      
-      return data as Expense[];
-    }
-  });
-  
-  // Add expense mutation
-  const addExpenseMutation = useMutation({
-    mutationFn: async (newExpense: ExpenseFormValues) => {
+  const { user } = useAuth();
+
+  // Fetch expenses from Supabase
+  const fetchExpenses = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
       const { data, error } = await supabase
         .from('transactions')
-        .insert({
-          description: newExpense.description,
-          amount: newExpense.amount,
-          transaction_date: newExpense.date.toISOString().split('T')[0],
-          category: newExpense.category,
-          transaction_type: 'expense',
-          payment_method: newExpense.paymentMethod,
-          notes: newExpense.notes,
-          dog_id: newExpense.dogId || null,
-          puppy_id: newExpense.puppyId || null,
-          receipt_url: newExpense.receiptUrl || null,
-        })
-        .select();
+        .select('*')
+        .eq('transaction_type', 'expense')
+        .order('transaction_date', { ascending: false });
       
-      if (error) throw error;
-      return data[0] as Expense;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      if (error) {
+        throw error;
+      }
+      
+      // Map the database records to our Expense interface
+      const mappedExpenses: Expense[] = data.map(record => ({
+        id: record.id,
+        description: record.notes || '', // Using notes as description
+        amount: record.amount,
+        date: new Date(record.transaction_date),
+        category: record.category,
+        receipt: null,
+        created_at: record.created_at,
+        notes: record.notes,
+        dog_id: record.dog_id,
+        puppy_id: record.puppy_id,
+        breeder_id: record.breeder_id,
+        transaction_type: record.transaction_type,
+        transaction_date: record.transaction_date,
+        receipt_url: record.receipt_url
+      }));
+      
+      setExpenses(mappedExpenses);
+    } catch (err: any) {
+      console.error('Error fetching expenses:', err);
+      setError(err.message || 'Failed to fetch expenses');
       toast({
-        title: 'Expense added',
-        description: 'Your expense has been successfully recorded',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error adding expense',
-        description: error.message,
+        title: 'Error',
+        description: 'Failed to fetch expenses',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
-  });
-  
-  // Delete expense mutation
-  const deleteExpenseMutation = useMutation({
-    mutationFn: async (expenseId: string) => {
+  }, [toast]);
+
+  // Add expense to Supabase
+  const addExpense = useCallback(async (formData: ExpenseFormValues) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Create transaction record
+      const newTransaction = {
+        id: uuidv4(),
+        transaction_type: 'expense',
+        amount: formData.amount,
+        transaction_date: formData.date.toISOString().split('T')[0],
+        category: formData.category,
+        notes: formData.description,
+        dog_id: formData.dog_id || null,
+        puppy_id: formData.puppy_id || null,
+        breeder_id: user?.id || null,
+      };
+      
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert([newTransaction])
+        .select()
+        .single();
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Handle receipt upload if provided
+      let receipt_url = null;
+      if (formData.receipt) {
+        const fileExt = formData.receipt.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const filePath = `receipts/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('expenses')
+          .upload(filePath, formData.receipt);
+        
+        if (uploadError) {
+          console.error('Error uploading receipt:', uploadError);
+          // Continue with transaction creation even if receipt upload fails
+        } else {
+          receipt_url = filePath;
+          
+          // Update transaction with receipt URL
+          const { error: updateError } = await supabase
+            .from('transactions')
+            .update({ receipt_url: filePath })
+            .eq('id', data.id);
+          
+          if (updateError) {
+            console.error('Error updating transaction with receipt URL:', updateError);
+          }
+        }
+      }
+      
+      // Map the response to our Expense interface for state update
+      const newExpense: Expense = {
+        id: data.id,
+        description: data.notes || '',
+        amount: data.amount,
+        date: new Date(data.transaction_date),
+        category: data.category,
+        receipt: null,
+        created_at: data.created_at,
+        notes: data.notes,
+        dog_id: data.dog_id,
+        puppy_id: data.puppy_id,
+        breeder_id: data.breeder_id,
+        transaction_type: data.transaction_type,
+        transaction_date: data.transaction_date,
+        receipt_url: receipt_url
+      };
+      
+      setExpenses(prev => [newExpense, ...prev]);
+      
+      toast({
+        title: 'Success',
+        description: 'Expense added successfully',
+      });
+      
+      return newExpense;
+    } catch (err: any) {
+      console.error('Error adding expense:', err);
+      setError(err.message || 'Failed to add expense');
+      toast({
+        title: 'Error',
+        description: 'Failed to add expense',
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast, user]);
+
+  // Delete expense from Supabase
+  const deleteExpense = useCallback(async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // First, check if there's a receipt to delete
+      const { data: transaction, error: fetchError } = await supabase
+        .from('transactions')
+        .select('receipt_url')
+        .eq('id', id)
+        .single();
+      
+      if (fetchError) {
+        throw fetchError;
+      }
+      
+      // Delete receipt if it exists
+      if (transaction.receipt_url) {
+        const { error: storageError } = await supabase.storage
+          .from('expenses')
+          .remove([transaction.receipt_url]);
+        
+        if (storageError) {
+          console.error('Error deleting receipt:', storageError);
+          // Continue with transaction deletion even if receipt deletion fails
+        }
+      }
+      
+      // Delete transaction
       const { error } = await supabase
         .from('transactions')
         .delete()
-        .eq('id', expenseId);
+        .eq('id', id);
       
-      if (error) throw error;
-      return expenseId;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      if (error) {
+        throw error;
+      }
+      
+      setExpenses(prev => prev.filter(expense => expense.id !== id));
+      
       toast({
-        title: 'Expense deleted',
-        description: 'The expense has been removed from your records',
+        title: 'Success',
+        description: 'Expense deleted successfully',
       });
-    },
-    onError: (error: any) => {
+      
+      return true;
+    } catch (err: any) {
+      console.error('Error deleting expense:', err);
+      setError(err.message || 'Failed to delete expense');
       toast({
-        title: 'Error deleting expense',
-        description: error.message,
+        title: 'Error',
+        description: 'Failed to delete expense',
         variant: 'destructive',
       });
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  });
-  
-  // Update expense mutation
-  const updateExpenseMutation = useMutation({
-    mutationFn: async ({ id, expense }: { id: string; expense: ExpenseFormValues }) => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .update({
-          description: expense.description,
-          amount: expense.amount,
-          transaction_date: expense.date.toISOString().split('T')[0],
-          category: expense.category,
-          payment_method: expense.paymentMethod,
-          notes: expense.notes,
-          dog_id: expense.dogId || null,
-          puppy_id: expense.puppyId || null,
-          receipt_url: expense.receiptUrl || null,
-        })
-        .eq('id', id)
-        .select();
-      
-      if (error) throw error;
-      return data[0] as Expense;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      toast({
-        title: 'Expense updated',
-        description: 'Your expense has been successfully updated',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error updating expense',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-  
-  const addExpense = (expense: ExpenseFormValues) => {
-    return addExpenseMutation.mutateAsync(expense);
-  };
-  
-  const deleteExpense = (id: string) => {
-    return deleteExpenseMutation.mutateAsync(id);
-  };
-  
-  const updateExpense = (id: string, expense: ExpenseFormValues) => {
-    return updateExpenseMutation.mutateAsync({ id, expense });
-  };
-  
+  }, [toast]);
+
   return {
-    expenses: expenses || [],
+    expenses,
     isLoading,
-    filters,
-    setFilters,
+    error,
+    fetchExpenses,
     addExpense,
     deleteExpense,
-    updateExpense,
-    isAdding: addExpenseMutation.isPending,
-    isDeleting: deleteExpenseMutation.isPending,
-    isUpdating: updateExpenseMutation.isPending,
-    refetch,
   };
-};
+}

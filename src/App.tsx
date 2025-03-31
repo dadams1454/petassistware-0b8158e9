@@ -14,6 +14,7 @@ import ReservationsPage from '@/pages/Reservations';
 import ReservationDetailPage from '@/pages/ReservationDetail';
 import FinancesPage from '@/pages/Finances';
 import MainLayout from '@/components/layout/MainLayout';
+import DailyCare from '@/pages/DailyCare';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ function App() {
             <Route path="reservations" element={<ReservationsPage />} />
             <Route path="reservations/:id" element={<ReservationDetailPage />} />
             <Route path="finances" element={<FinancesPage />} />
+            <Route path="daily-care" element={<DailyCare />} />
           </Route>
         </Routes>
       </Router>
