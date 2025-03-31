@@ -1,14 +1,12 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/standardized';
 import { 
   Building2, 
   Users, 
   ClipboardList, 
   Clock, 
-  RefreshCw, 
   Banknote, 
   Wrench,
   Package
@@ -19,45 +17,47 @@ import MaintenanceSchedule from '@/components/facility/MaintenanceSchedule';
 import StaffSchedule from '@/components/facility/StaffSchedule';
 import ExpenseTracking from '@/components/facility/ExpenseTracking';
 import InventoryManagement from '@/components/facility/InventoryManagement';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Facility: React.FC = () => {
   const [activeTab, setActiveTab] = useState('staff');
+  const isMobile = useIsMobile();
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            Facility Management
-          </h1>
-          <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Manage staff, tasks, maintenance, facility expenses, and inventory
-          </p>
-        </div>
-      </div>
+      <PageHeader 
+        title="Facility Management"
+        description="Manage staff, tasks, maintenance, facility expenses, and inventory"
+        action={<Building2 className="h-6 w-6 text-primary" />}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-6 mb-6">
+        <TabsList className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-6'} mb-6`}>
           <TabsTrigger value="staff" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span>Staff Management</span>
           </TabsTrigger>
+          
           <TabsTrigger value="staff-schedule" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             <span>Staff Schedule</span>
           </TabsTrigger>
+          
           <TabsTrigger value="tasks" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" />
             <span>Tasks</span>
           </TabsTrigger>
+          
           <TabsTrigger value="maintenance" className="flex items-center gap-2">
             <Wrench className="h-4 w-4" />
             <span>Maintenance</span>
           </TabsTrigger>
+          
           <TabsTrigger value="inventory" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
             <span>Inventory</span>
           </TabsTrigger>
+          
           <TabsTrigger value="expenses" className="flex items-center gap-2">
             <Banknote className="h-4 w-4" />
             <span>Expenses</span>

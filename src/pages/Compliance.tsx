@@ -2,14 +2,16 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/ui/standardized';
-import { Shield, FileCheck, Calendar, AlertTriangle, Info } from 'lucide-react';
+import { Shield, FileCheck, Calendar, AlertTriangle } from 'lucide-react';
 import LicenseManagement from '@/components/compliance/LicenseManagement';
 import InspectionTracker from '@/components/compliance/InspectionTracker';
 import RequirementsDashboard from '@/components/compliance/RequirementsDashboard';
 import ComplianceCalendar from '@/components/compliance/ComplianceCalendar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Compliance: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const isMobile = useIsMobile();
 
   return (
     <div className="space-y-6">
@@ -20,19 +22,22 @@ const Compliance: React.FC = () => {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-6">
+        <TabsList className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-4'} mb-6`}>
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             <span>Requirements</span>
           </TabsTrigger>
+          
           <TabsTrigger value="licenses" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
             <span>Licenses</span>
           </TabsTrigger>
+          
           <TabsTrigger value="inspections" className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
             <span>Inspections</span>
           </TabsTrigger>
+          
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             <span>Calendar</span>
