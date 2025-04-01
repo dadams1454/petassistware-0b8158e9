@@ -1,171 +1,153 @@
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { addDays } from 'date-fns';
+import { differenceInDays, isBefore, isAfter, parseISO, addDays } from 'date-fns';
 
 export const usePuppyMilestones = (puppyId: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  // Common milestones for puppies
-  const defaultMilestones = [
-    {
-      title: 'Eyes Open',
-      description: 'Puppies typically open their eyes between 10-14 days of age',
-      category: 'physical',
-      expected_age_days: 14
-    },
-    {
-      title: 'Ears Open',
-      description: 'Puppies begin to hear sounds around 14-18 days of age',
-      category: 'physical',
-      expected_age_days: 18
-    },
-    {
-      title: 'First Steps',
-      description: 'Puppies begin to stand and take first steps',
-      category: 'physical',
-      expected_age_days: 21
-    },
-    {
-      title: 'First Vaccination',
-      description: 'First core vaccination typically given at 6-8 weeks',
-      category: 'health',
-      expected_age_days: 42
-    },
-    {
-      title: 'Deworming',
-      description: 'First deworming treatment',
-      category: 'health',
-      expected_age_days: 14
-    },
-    {
-      title: 'Microchipping',
-      description: 'Permanent identification with microchip',
-      category: 'health',
-      expected_age_days: 56
-    },
-    {
-      title: 'First Bark',
-      description: 'Puppy makes first bark sounds',
-      category: 'behavioral',
-      expected_age_days: 21
-    },
-    {
-      title: 'Begin Socialization',
-      description: 'Start introducing puppy to new experiences',
-      category: 'behavioral',
-      expected_age_days: 28
-    },
-    {
-      title: 'Begin Weaning',
-      description: 'Start the transition from nursing to solid food',
-      category: 'physical',
-      expected_age_days: 28
-    }
-  ];
-  
-  // Fetch puppy milestones
+
+  const fetchPuppyAge = async () => {
+    if (!puppyId) return 0;
+    
+    const { data, error } = await supabase
+      .from('puppies')
+      .select('birth_date, litter:litter_id(birth_date)')
+      .eq('id', puppyId)
+      .single();
+    
+    if (error) throw error;
+    
+    const birthDate = data.birth_date || data.litter?.birth_date;
+    if (!birthDate) return 0;
+    
+    return differenceInDays(new Date(), new Date(birthDate));
+  };
+
+  // Fetch milestone data
   const { 
-    data: milestones, 
+    data: milestones = [], 
     isLoading, 
     error 
   } = useQuery({
-    queryKey: ['puppyMilestones', puppyId],
+    queryKey: ['puppy-milestones', puppyId],
     queryFn: async () => {
       if (!puppyId) return [];
       
-      // First fetch the puppy to get birth date
-      const { data: puppy, error: puppyError } = await supabase
-        .from('puppies')
-        .select(`
-          id, birth_date, 
-          litter:litter_id(birth_date)
-        `)
-        .eq('id', puppyId)
-        .single();
-      
-      if (puppyError) throw puppyError;
-      
-      const birthDate = puppy.birth_date || puppy.litter?.birth_date;
-      
-      // Then fetch existing milestones
-      const { data: existingMilestones, error } = await supabase
+      const { data, error } = await supabase
         .from('puppy_milestones')
         .select('*')
-        .eq('puppy_id', puppyId);
+        .eq('puppy_id', puppyId)
+        .order('target_date', { ascending: true });
       
       if (error) throw error;
       
-      // If no milestones exist yet and we have a birth date, create default ones
-      if (existingMilestones.length === 0 && birthDate) {
-        const milestoneRecords = defaultMilestones.map(milestone => {
-          // Calculate target date from birth date and expected age
-          const targetDate = addDays(new Date(birthDate), milestone.expected_age_days);
-          
-          return {
-            puppy_id: puppyId,
-            title: milestone.title,
-            description: milestone.description,
-            category: milestone.category,
-            expected_age_days: milestone.expected_age_days,
-            target_date: targetDate.toISOString().split('T')[0],
-          };
-        });
+      // If no milestones exist, create default ones
+      if (data.length === 0) {
+        const ageInDays = await fetchPuppyAge();
+        await createDefaultMilestones(puppyId, ageInDays);
         
-        // Insert default milestones
-        const { data: insertedMilestones, error: insertError } = await supabase
+        const { data: newData, error: newError } = await supabase
           .from('puppy_milestones')
-          .insert(milestoneRecords)
-          .select();
+          .select('*')
+          .eq('puppy_id', puppyId)
+          .order('target_date', { ascending: true });
         
-        if (insertError) throw insertError;
-        
-        return insertedMilestones || [];
+        if (newError) throw newError;
+        return newData;
       }
       
-      return existingMilestones || [];
+      return data;
     },
     enabled: !!puppyId
   });
   
-  // Add milestone
-  const addMilestone = useMutation({
-    mutationFn: async (milestone: any) => {
-      const { data, error } = await supabase
-        .from('puppy_milestones')
-        .insert(milestone)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['puppyMilestones', puppyId] });
-      toast({
-        title: 'Milestone added',
-        description: 'The milestone has been added successfully',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error adding milestone',
-        description: error.message,
-        variant: 'destructive',
-      });
+  // Create default milestones for a puppy
+  const createDefaultMilestones = async (puppyId: string, currentAge: number) => {
+    const today = new Date();
+    const defaultMilestones = [
+      // Physical milestones
+      {
+        puppy_id: puppyId,
+        title: 'Eyes Open',
+        description: 'Puppy\'s eyes should be open and beginning to see',
+        category: 'physical',
+        expected_age_days: 14,
+        target_date: addDays(today, Math.max(14 - currentAge, 0)).toISOString().split('T')[0],
+      },
+      {
+        puppy_id: puppyId,
+        title: 'Ears Open',
+        description: 'Puppy\'s ear canals should be open and beginning to hear',
+        category: 'physical',
+        expected_age_days: 21,
+        target_date: addDays(today, Math.max(21 - currentAge, 0)).toISOString().split('T')[0],
+      },
+      {
+        puppy_id: puppyId,
+        title: 'First Solid Food',
+        description: 'Introduction to solid food and beginning to wean',
+        category: 'physical',
+        expected_age_days: 28,
+        target_date: addDays(today, Math.max(28 - currentAge, 0)).toISOString().split('T')[0],
+      },
+      // Health milestones
+      {
+        puppy_id: puppyId,
+        title: 'First Deworming',
+        description: 'First deworming treatment',
+        category: 'health',
+        expected_age_days: 14,
+        target_date: addDays(today, Math.max(14 - currentAge, 0)).toISOString().split('T')[0],
+      },
+      {
+        puppy_id: puppyId,
+        title: 'First Vet Check',
+        description: 'Initial veterinary examination',
+        category: 'health',
+        expected_age_days: 42,
+        target_date: addDays(today, Math.max(42 - currentAge, 0)).toISOString().split('T')[0],
+      },
+      // Behavioral milestones
+      {
+        puppy_id: puppyId,
+        title: 'First Walk Outside',
+        description: 'First supervised exploration of outdoor environment',
+        category: 'behavioral',
+        expected_age_days: 49,
+        target_date: addDays(today, Math.max(49 - currentAge, 0)).toISOString().split('T')[0],
+      },
+      {
+        puppy_id: puppyId,
+        title: 'Introduction to Collar/Leash',
+        description: 'First time wearing collar and being introduced to leash',
+        category: 'behavioral',
+        expected_age_days: 56,
+        target_date: addDays(today, Math.max(56 - currentAge, 0)).toISOString().split('T')[0],
+      }
+    ];
+
+    // Insert default milestones
+    const { error } = await supabase
+      .from('puppy_milestones')
+      .insert(defaultMilestones);
+    
+    if (error) {
+      console.error("Error creating default milestones:", error);
+      throw error;
     }
-  });
-  
-  // Mark milestone as complete
-  const markComplete = useMutation({
+  };
+
+  // Mark a milestone as complete
+  const markMilestoneComplete = useMutation({
     mutationFn: async (milestoneId: string) => {
+      const today = new Date().toISOString().split('T')[0];
+      
       const { data, error } = await supabase
         .from('puppy_milestones')
-        .update({ 
-          completion_date: new Date().toISOString().split('T')[0]
-        })
+        .update({ completion_date: today })
         .eq('id', milestoneId)
         .select()
         .single();
@@ -174,50 +156,79 @@ export const usePuppyMilestones = (puppyId: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['puppyMilestones', puppyId] });
+      queryClient.invalidateQueries({ queryKey: ['puppy-milestones', puppyId] });
       toast({
-        title: 'Milestone completed',
-        description: 'The milestone has been marked as complete',
+        title: 'Milestone Completed',
+        description: 'The milestone has been marked as completed.',
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'Error completing milestone',
-        description: error.message,
+        title: 'Error',
+        description: `Failed to complete milestone: ${error.message}`,
         variant: 'destructive',
       });
     }
   });
-  
-  // Filter milestones into different categories
-  const completedMilestones = milestones?.filter(m => m.completion_date) || [];
-  
-  const incompleteMilestones = milestones?.filter(m => !m.completion_date) || [];
-  
-  // Get the current date
-  const today = new Date();
-  
-  // Calculate upcoming and overdue milestones
-  const upcomingMilestones = incompleteMilestones.filter(m => {
-    if (!m.target_date) return false;
-    const targetDate = new Date(m.target_date);
-    return targetDate >= today;
+
+  // Add a custom milestone
+  const addMilestone = useMutation({
+    mutationFn: async (milestoneData: {
+      title: string;
+      description?: string;
+      category: 'physical' | 'health' | 'behavioral';
+      expected_age_days?: number;
+      target_date: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('puppy_milestones')
+        .insert({
+          puppy_id: puppyId,
+          ...milestoneData
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['puppy-milestones', puppyId] });
+      toast({
+        title: 'Milestone Added',
+        description: 'The new milestone has been added successfully.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: `Failed to add milestone: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
   });
+
+  // Process milestones into categories: completed, upcoming, overdue
+  const completedMilestones = milestones.filter(milestone => milestone.completion_date);
   
-  const overdueMilestones = incompleteMilestones.filter(m => {
-    if (!m.target_date) return false;
-    const targetDate = new Date(m.target_date);
-    return targetDate < today;
-  });
+  const pendingMilestones = milestones.filter(milestone => !milestone.completion_date);
   
+  const overdueMilestones = pendingMilestones.filter(milestone => 
+    milestone.target_date && isBefore(new Date(milestone.target_date), new Date())
+  );
+  
+  const upcomingMilestones = pendingMilestones.filter(milestone => 
+    milestone.target_date && !isBefore(new Date(milestone.target_date), new Date())
+  );
+
   return {
-    milestones: milestones || [],
+    milestones,
     completedMilestones,
     upcomingMilestones,
     overdueMilestones,
     isLoading,
     error,
-    addMilestone: addMilestone.mutate,
-    markComplete: markComplete.mutate
+    markComplete: markMilestoneComplete.mutate,
+    addMilestone: addMilestone.mutate
   };
 };

@@ -18,7 +18,8 @@ const PuppyDashboard: React.FC = () => {
   
   const puppyId = id || '';
   
-  const { puppy, isLoading, error } = usePuppyDetail(puppyId);
+  const puppyQuery = usePuppyDetail(puppyId);
+  const { isLoading, error, data: puppy } = puppyQuery;
   
   if (isLoading) {
     return (
@@ -34,10 +35,8 @@ const PuppyDashboard: React.FC = () => {
         <ErrorState 
           title="Error Loading Puppy Data" 
           message="Could not load the puppy information. Please try again."
-          action={{
-            label: "Back to Litter",
-            onClick: () => navigate(-1)
-          }}
+          onAction={() => navigate(-1)}
+          actionLabel="Back to Litter"
         />
       </PageContainer>
     );

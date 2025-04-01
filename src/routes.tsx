@@ -2,26 +2,28 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
-import HomePage from '@/pages/home';
 import Dashboard from '@/pages/Dashboard';
-import LittersPage from '@/pages/litters/LittersPage';
-import LitterDetail from '@/pages/litters/LitterDetail';
-import EditLitter from '@/pages/litters/EditLitter';
-import AddLitter from '@/pages/litters/AddLitter';
 import WelpingDashboard from '@/pages/WelpingDashboard';
-import AddDogsPage from '@/pages/AddDogsPage';
-import DogsPage from '@/pages/DogsPage';
 import DogDetail from '@/pages/DogDetail';
 import DogProfile from '@/pages/DogProfile';
-import AddDogPage from '@/pages/AddDogPage';
-import EditDogPage from '@/pages/EditDogPage';
 import WeightTracking from '@/pages/WeightTracking';
-import LoginPage from '@/pages/auth/LoginPage';
-import RegisterPage from '@/pages/auth/RegisterPage';
-import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
-import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import AuthLayout from '@/layouts/AuthLayout';
 import PuppyDashboard from '@/pages/puppies/PuppyDashboard';
+
+// Placeholder components for routes that aren't implemented yet
+const HomePage = () => <div>Home Page</div>;
+const LittersPage = () => <div>Litters Page</div>;
+const LitterDetail = () => <div>Litter Detail</div>;
+const EditLitter = () => <div>Edit Litter</div>;
+const AddLitter = () => <div>Add Litter</div>;
+const AddDogsPage = () => <div>Add Dogs Page</div>;
+const DogsPage = () => <div>Dogs Page</div>;
+const AddDogPage = () => <div>Add Dog Page</div>;
+const EditDogPage = () => <div>Edit Dog Page</div>;
+const LoginPage = () => <div>Login Page</div>;
+const RegisterPage = () => <div>Register Page</div>;
+const ForgotPasswordPage = () => <div>Forgot Password Page</div>;
+const ResetPasswordPage = () => <div>Reset Password Page</div>;
 
 export const appRoutes = (
   <Route>

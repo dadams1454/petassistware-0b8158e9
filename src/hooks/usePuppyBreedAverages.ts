@@ -18,6 +18,7 @@ export const usePuppyBreedAverages = (puppyId: string) => {
       
       if (puppyError) throw puppyError;
       
+      // Get breed
       const breed = puppy?.litter?.dam?.breed;
       
       if (!breed) {

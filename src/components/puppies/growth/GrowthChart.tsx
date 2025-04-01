@@ -1,204 +1,161 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LoadingState, EmptyState } from '@/components/ui/standardized';
-import { 
-  Line, 
-  LineChart, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  ReferenceLine,
-  Legend
-} from 'recharts';
-import { format } from 'date-fns';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { usePuppyWeightRecords } from '@/hooks/usePuppyWeightRecords';
 import { usePuppyBreedAverages } from '@/hooks/usePuppyBreedAverages';
+import { LoadingState } from '@/components/ui/standardized';
 
 interface GrowthChartProps {
   puppyId: string;
 }
 
 const GrowthChart: React.FC<GrowthChartProps> = ({ puppyId }) => {
-  const [timeframe, setTimeframe] = useState<'all' | '30days' | '7days'>('all');
-  const [showBreedAverage, setShowBreedAverage] = useState<boolean>(true);
-  
   const { 
-    weightRecords, 
-    isLoading 
+    weightRecords,
+    isLoading: isWeightLoading
   } = usePuppyWeightRecords(puppyId);
   
-  const { breedAverages, isLoading: isLoadingAverages } = usePuppyBreedAverages(puppyId);
+  const {
+    breedAverages,
+    isLoading: isAveragesLoading
+  } = usePuppyBreedAverages(puppyId);
+  
+  const isLoading = isWeightLoading || isAveragesLoading;
   
   if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-md">Growth Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <LoadingState message="Loading weight data..." />
-        </CardContent>
-      </Card>
-    );
+    return <LoadingState message="Loading growth data..." />;
   }
   
-  if (!weightRecords || weightRecords.length < 2) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-md">Growth Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <EmptyState 
-            title="Insufficient Data" 
-            description="Add at least two weight records to see a growth trend."
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // Process data for the chart
-  const chartData = weightRecords.map(record => {
+  // Prepare data for the chart
+  const chartData = weightRecords?.map(record => {
+    // Calculate age in days based on birth date
+    const birthDate = record.birth_date ? new Date(record.birth_date) : null;
     const recordDate = new Date(record.date);
-    const daysSinceBirth = record.birth_date ? 
-      Math.round((recordDate.getTime() - new Date(record.birth_date).getTime()) / (1000 * 60 * 60 * 24)) : 
-      0;
+    const ageInDays = birthDate 
+      ? Math.floor((recordDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24)) 
+      : 0;
     
-    // Find breed average for this age if available
-    const averageForAge = breedAverages && breedAverages.find(avg => avg.dayAge === daysSinceBirth);
+    // Convert weight to consistent unit (lbs)
+    let weightInLbs = record.weight;
+    
+    if (record.weight_unit === 'oz') {
+      weightInLbs = record.weight / 16;
+    } else if (record.weight_unit === 'g') {
+      weightInLbs = record.weight / 453.59;
+    } else if (record.weight_unit === 'kg') {
+      weightInLbs = record.weight * 2.20462;
+    }
     
     return {
-      date: format(recordDate, 'MMM d'),
-      weight: record.weight,
-      unit: record.weight_unit,
-      dayAge: daysSinceBirth,
-      breedAverage: averageForAge?.weight || null
+      age: ageInDays,
+      weight: parseFloat(weightInLbs.toFixed(2)),
+      date: record.date
     };
-  });
+  }) || [];
   
-  // Apply timeframe filter
-  const filteredData = applyTimeframeFilter(chartData, timeframe);
+  // Combine with breed averages
+  const combinedData = [];
+  
+  // First add all actual weight records
+  for (const record of chartData) {
+    // Find breed average for this age
+    const averageForAge = breedAverages?.find(avg => avg.dayAge === record.age);
+    
+    combinedData.push({
+      ...record,
+      breedAverage: averageForAge ? averageForAge.weight : null
+    });
+  }
+  
+  // Then add breed averages without corresponding weight records
+  for (const avg of breedAverages || []) {
+    // Check if this age is already in the data
+    const exists = combinedData.some(record => record.age === avg.dayAge);
+    
+    if (!exists) {
+      combinedData.push({
+        age: avg.dayAge,
+        weight: null,
+        breedAverage: avg.weight,
+        date: null
+      });
+    }
+  }
+  
+  // Sort by age
+  combinedData.sort((a, b) => a.age - b.age);
   
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-md">Growth Trend</CardTitle>
-          <div className="flex gap-2">
-            <Select
-              value={timeframe}
-              onValueChange={(value) => setTimeframe(value as 'all' | '30days' | '7days')}
-            >
-              <SelectTrigger className="w-[100px]">
-                <SelectValue placeholder="Timeframe" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All time</SelectItem>
-                <SelectItem value="30days">30 days</SelectItem>
-                <SelectItem value="7days">7 days</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setShowBreedAverage(!showBreedAverage)}
-              className={showBreedAverage ? "bg-primary/10" : ""}
-            >
-              Breed Avg
-            </Button>
-          </div>
-        </div>
+        <CardTitle className="text-lg">Growth Chart</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={filteredData}
-              margin={{
-                top: 5,
-                right: 20,
-                left: 10,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                tick={{ fontSize: 12 }}
-                label={{ 
-                  value: weightRecords[0]?.weight_unit || '', 
-                  angle: -90, 
-                  position: 'insideLeft',
-                  style: { textAnchor: 'middle', fontSize: 12 }
+          {combinedData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={combinedData}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
                 }}
-              />
-              <Tooltip />
-              <Legend />
-              <Line
-                name="Actual Weight"
-                type="monotone"
-                dataKey="weight"
-                stroke="#8884d8"
-                activeDot={{ r: 8 }}
-                strokeWidth={2}
-              />
-              {showBreedAverage && (
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="age" 
+                  label={{ 
+                    value: 'Age (days)', 
+                    position: 'bottom', 
+                    offset: 0 
+                  }} 
+                />
+                <YAxis 
+                  label={{ 
+                    value: 'Weight (lbs)', 
+                    angle: -90, 
+                    position: 'insideLeft' 
+                  }} 
+                />
+                <Tooltip 
+                  formatter={(value: any) => [`${value} lbs`, '']}
+                  labelFormatter={(label) => `Age: ${label} days`}
+                />
+                <Legend />
                 <Line
-                  name="Breed Average"
+                  type="monotone"
+                  dataKey="weight"
+                  name="Actual Weight"
+                  stroke="#8884d8"
+                  activeDot={{ r: 8 }}
+                  strokeWidth={2}
+                  connectNulls
+                />
+                <Line
                   type="monotone"
                   dataKey="breedAverage"
+                  name="Breed Average"
                   stroke="#82ca9d"
                   strokeDasharray="5 5"
-                  strokeWidth={1.5}
+                  strokeWidth={2}
+                  connectNulls
                 />
-              )}
-              {weightRecords.length > 0 && (
-                <ReferenceLine
-                  y={weightRecords[weightRecords.length - 1].weight}
-                  stroke="red"
-                  strokeDasharray="3 3"
-                  label={{ 
-                    value: 'Current', 
-                    position: 'insideBottomRight',
-                    style: { fill: 'red', fontSize: 10 }
-                  }}
-                />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <p className="text-muted-foreground">
+                No weight data available yet
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   );
-};
-
-// Helper function to apply timeframe filter
-const applyTimeframeFilter = (data: any[], timeframe: 'all' | '30days' | '7days') => {
-  if (timeframe === 'all' || data.length <= 2) {
-    return data;
-  }
-  
-  // Get the latest record's day age
-  const latestDayAge = data[data.length - 1]?.dayAge || 0;
-  
-  // Filter based on timeframe
-  if (timeframe === '30days') {
-    return data.filter(item => item.dayAge >= latestDayAge - 30);
-  } else if (timeframe === '7days') {
-    return data.filter(item => item.dayAge >= latestDayAge - 7);
-  }
-  
-  return data;
 };
 
 export default GrowthChart;

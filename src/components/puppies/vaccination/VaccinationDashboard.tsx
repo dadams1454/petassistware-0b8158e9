@@ -29,7 +29,7 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
   
-  const { puppy, isLoading: isPuppyLoading, error: puppyError } = usePuppyDetail(puppyId);
+  const puppyQuery = usePuppyDetail(puppyId);
   
   const { 
     vaccinations, 
@@ -41,8 +41,9 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
     addVaccination
   } = usePuppyVaccinations(puppyId);
   
-  const isLoading = isPuppyLoading || isVaxLoading;
-  const error = puppyError || vaxError;
+  const isLoading = puppyQuery.isLoading || isVaxLoading;
+  const error = puppyQuery.error || vaxError;
+  const puppy = puppyQuery.data;
 
   const handleAddVaccination = async (data: any) => {
     await addVaccination(data);
@@ -187,7 +188,7 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
                         <div className="flex justify-between">
                           <span className="font-medium">{vax.vaccination_type}</span>
                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            {new Date(vax.vaccination_date).toLocaleDateString()}
+                            {vax.vaccination_date && new Date(vax.vaccination_date).toLocaleDateString()}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{vax.notes || 'No notes'}</p>

@@ -2533,6 +2533,82 @@ export type Database = {
           },
         ]
       }
+      puppy_vaccination_schedule: {
+        Row: {
+          created_at: string | null
+          due_date: string
+          id: string
+          notes: string | null
+          puppy_id: string
+          vaccination_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          due_date: string
+          id?: string
+          notes?: string | null
+          puppy_id: string
+          vaccination_type: string
+        }
+        Update: {
+          created_at?: string | null
+          due_date?: string
+          id?: string
+          notes?: string | null
+          puppy_id?: string
+          vaccination_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "puppy_vaccination_schedule_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      puppy_vaccinations: {
+        Row: {
+          administered_by: string | null
+          created_at: string | null
+          id: string
+          lot_number: string | null
+          notes: string | null
+          puppy_id: string
+          vaccination_date: string
+          vaccination_type: string
+        }
+        Insert: {
+          administered_by?: string | null
+          created_at?: string | null
+          id?: string
+          lot_number?: string | null
+          notes?: string | null
+          puppy_id: string
+          vaccination_date: string
+          vaccination_type: string
+        }
+        Update: {
+          administered_by?: string | null
+          created_at?: string | null
+          id?: string
+          lot_number?: string | null
+          notes?: string | null
+          puppy_id?: string
+          vaccination_date?: string
+          vaccination_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "puppy_vaccinations_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservation_status_history: {
         Row: {
           changed_at: string

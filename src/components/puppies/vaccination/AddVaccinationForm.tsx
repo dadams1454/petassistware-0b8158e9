@@ -1,122 +1,83 @@
 
 import React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
+import { 
+  Form, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormControl, 
   FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Switch } from '@/components/ui/switch';
-import { DialogFooter } from '@/components/ui/dialog';
-
-// Form schema for adding a new vaccination
-const vaccinationSchema = z.object({
-  vaccination_type: z.string({
-    required_error: "Vaccination type is required",
-  }),
-  vaccination_date: z.date({
-    required_error: "Vaccination date is required",
-  }),
-  administered_by: z.string().optional(),
-  lot_number: z.string().optional(),
-  notes: z.string().optional(),
-  is_completed: z.boolean().default(true),
-  requires_followup: z.boolean().default(false),
-  followup_date: z.date().optional(),
-});
-
-type VaccinationFormValues = z.infer<typeof vaccinationSchema>;
+import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
 
 interface AddVaccinationFormProps {
   puppyId: string;
   onSubmit: (data: any) => void;
   onCancel: () => void;
+  existingData?: any;
 }
 
-const AddVaccinationForm: React.FC<AddVaccinationFormProps> = ({
+const AddVaccinationForm: React.FC<AddVaccinationFormProps> = ({ 
   puppyId,
   onSubmit,
   onCancel,
+  existingData
 }) => {
-  // Define default values for the form
-  const defaultValues: Partial<VaccinationFormValues> = {
-    vaccination_date: new Date(),
-    is_completed: true,
-    requires_followup: false,
-  };
-
-  const form = useForm<VaccinationFormValues>({
-    resolver: zodResolver(vaccinationSchema),
-    defaultValues,
+  const form = useForm({
+    defaultValues: existingData || {
+      vaccination_type: '',
+      vaccination_date: new Date().toISOString().split('T')[0],
+      administered_by: '',
+      lot_number: '',
+      notes: ''
+    }
   });
-
-  const handleSubmit = (data: VaccinationFormValues) => {
-    const formattedData = {
-      puppy_id: puppyId,
-      vaccination_type: data.vaccination_type,
-      vaccination_date: format(data.vaccination_date, 'yyyy-MM-dd'),
-      administered_by: data.administered_by,
-      lot_number: data.lot_number,
-      notes: data.notes,
-      is_completed: data.is_completed,
-      requires_followup: data.requires_followup,
-      followup_date: data.followup_date ? format(data.followup_date, 'yyyy-MM-dd') : undefined,
-    };
-    
-    onSubmit(formattedData);
+  
+  const handleSubmit = (data: any) => {
+    onSubmit({
+      ...data,
+      puppy_id: puppyId
+    });
   };
-
-  // Watch if follow-up is required to conditionally show the follow-up date field
-  const requiresFollowup = form.watch('requires_followup');
-
+  
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="vaccination_type"
+          rules={{ required: 'Vaccination type is required' }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Vaccination Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select vaccination type" />
+                    <SelectValue placeholder="Select a vaccination type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="DHPP">DHPP</SelectItem>
-                  <SelectItem value="Bordatella">Bordatella</SelectItem>
+                  <SelectItem value="DHPP (First)">DHPP (First Dose)</SelectItem>
+                  <SelectItem value="DHPP (Second)">DHPP (Second Dose)</SelectItem>
+                  <SelectItem value="DHPP (Third)">DHPP (Third Dose)</SelectItem>
+                  <SelectItem value="Bordetella">Bordetella (Kennel Cough)</SelectItem>
                   <SelectItem value="Rabies">Rabies</SelectItem>
                   <SelectItem value="Leptospirosis">Leptospirosis</SelectItem>
-                  <SelectItem value="Canine Influenza">Canine Influenza</SelectItem>
                   <SelectItem value="Lyme Disease">Lyme Disease</SelectItem>
-                  <SelectItem value="Deworming">Deworming</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -125,59 +86,37 @@ const AddVaccinationForm: React.FC<AddVaccinationFormProps> = ({
           )}
         />
         
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="vaccination_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Vaccination Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={`w-full pl-3 text-left font-normal ${
-                          !field.value && "text-muted-foreground"
-                        }`}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="administered_by"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Administered By</FormLabel>
-                <FormControl>
-                  <Input placeholder="Veterinarian or Technician" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="vaccination_date"
+          rules={{ required: 'Date is required' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Vaccination Date</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="administered_by"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Administered By</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Veterinarian or person who administered the vaccine"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <FormField
           control={form.control}
@@ -186,8 +125,14 @@ const AddVaccinationForm: React.FC<AddVaccinationFormProps> = ({
             <FormItem>
               <FormLabel>Lot Number</FormLabel>
               <FormControl>
-                <Input placeholder="Vaccination lot number" {...field} />
+                <Input 
+                  placeholder="Vaccine lot number for tracking"
+                  {...field}
+                />
               </FormControl>
+              <FormDescription>
+                Recording lot numbers helps for recall tracking
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -201,9 +146,8 @@ const AddVaccinationForm: React.FC<AddVaccinationFormProps> = ({
               <FormLabel>Notes</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Additional information" 
-                  className="resize-none" 
-                  {...field} 
+                  placeholder="Any additional information about the vaccination"
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -211,100 +155,18 @@ const AddVaccinationForm: React.FC<AddVaccinationFormProps> = ({
           )}
         />
         
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="is_completed"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                <div className="space-y-0.5">
-                  <FormLabel>Completed</FormLabel>
-                  <FormDescription>
-                    Mark as complete
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="requires_followup"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                <div className="space-y-0.5">
-                  <FormLabel>Follow-up</FormLabel>
-                  <FormDescription>
-                    Needs follow-up
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        {requiresFollowup && (
-          <FormField
-            control={form.control}
-            name="followup_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Follow-up Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={`w-full pl-3 text-left font-normal ${
-                          !field.value && "text-muted-foreground"
-                        }`}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      disabled={(date) => date < new Date()}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormDescription>
-                  When the next vaccination is due
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+          >
             Cancel
           </Button>
-          <Button type="submit">Save Vaccination</Button>
-        </DialogFooter>
+          <Button type="submit">
+            Save Vaccination
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -39,10 +39,8 @@ const GrowthMilestoneTracker: React.FC<GrowthMilestoneTrackerProps> = ({ puppyId
         <EmptyState 
           title={`No ${category} milestones`}
           description={`No ${category} milestones have been set for this puppy.`}
-          action={{
-            label: "Add Milestone",
-            onClick: () => setDialogOpen(true)
-          }}
+          onAction={() => setDialogOpen(true)}
+          actionLabel="Add Milestone"
         />
       );
     }
