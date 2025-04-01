@@ -48,10 +48,10 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
   if (!data) throw new Error('Failed to insert health indicator record');
   
   // If abnormal, create an alert
-  if (abnormal) {
+  if (abnormal && data) {  // Double-check that data is not null
     try {
       // Make sure we have a valid data object with an id property
-      if (data && typeof data === 'object' && 'id' in data) {
+      if (typeof data === 'object' && 'id' in data) {
         await createHealthAlert(data.id.toString(), record.dog_id);
       } else {
         console.error('Data object does not have an id property:', data);
