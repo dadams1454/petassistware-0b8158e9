@@ -3,6 +3,7 @@ import { ContractData, ContractTemplate, PdfDocumentContext } from '../types';
 import { renderStandardTemplate } from './standard';
 import { renderPremiumTemplate } from './premium';
 import { renderSimpleTemplate } from './simple';
+import { renderAkcRegistrationTemplate, AkcRegistrationData } from './akcRegistration';
 
 export function renderTemplate(
   data: ContractData,
@@ -22,3 +23,6 @@ export function renderTemplate(
       break;
   }
 }
+
+export { renderAkcRegistrationTemplate };
+export type { AkcRegistrationData };
