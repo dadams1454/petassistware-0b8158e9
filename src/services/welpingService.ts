@@ -64,6 +64,10 @@ export interface PostpartumCare {
   notes?: string;
   created_at: string;
   created_by?: string;
+  // Additional fields for PostpartumCareList component
+  care_type?: string;
+  care_time?: string;
+  performed_by?: string;
 }
 
 // For backwards compatibility
@@ -115,7 +119,15 @@ export const getWelpingRecordsForLitter = async (litterId: string): Promise<Welp
 };
 
 // For backward compatibility with WelpingTabContent
-export const getWelpingRecordForLitter = getWelpingRecordsForLitter;
+export const getWelpingRecordForLitter = async (litterId: string): Promise<WelpingRecord | null> => {
+  try {
+    const records = await getWelpingRecordsForLitter(litterId);
+    return records.length > 0 ? records[0] : null;
+  } catch (error) {
+    console.error('Error fetching welping record:', error);
+    return null;
+  }
+};
 
 // Update a welping record
 export const updateWelpingRecord = async (
@@ -246,12 +258,12 @@ export const updatePuppy = async (
       id: puppyId,
       litter_id: updates.litter_id || 'litter-id',
       name: updates.name || 'Puppy',
-      gender: updates.gender === 'male' ? 'Male' : 'Female',
+      gender: updates.gender === 'Male' ? 'Male' : 'Female',
       color: updates.color || 'black',
       birth_date: updates.birth_date || new Date().toISOString(),
       birth_weight: updates.birth_weight ? String(updates.birth_weight) : '0.5',
       birth_order: updates.birth_order || 1,
-      status: updates.status === 'available' ? 'Available' : (updates.status || 'Available'),
+      status: updates.status === 'Available' ? 'Available' : (updates.status || 'Available'),
       microchip_number: updates.microchip_number,
       akc_litter_number: updates.akc_litter_number,
       akc_registration_number: updates.akc_registration_number,

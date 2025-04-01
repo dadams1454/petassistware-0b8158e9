@@ -23,8 +23,10 @@ const PostpartumCareList: React.FC<PostpartumCareListProps> = ({ careRecords }) 
     );
   }
   
-  const getCareTypeIcon = (careType: string) => {
-    switch (careType) {
+  const getCareTypeIcon = (type?: string) => {
+    if (!type) return <BadgeInfo className="h-4 w-4 text-gray-500" />;
+    
+    switch (type) {
       case 'feeding':
         return <PawPrint className="h-4 w-4 text-green-500" />;
       case 'cleaning':
@@ -38,8 +40,10 @@ const PostpartumCareList: React.FC<PostpartumCareListProps> = ({ careRecords }) 
     }
   };
   
-  const getCareTypeBadgeStyles = (careType: string) => {
-    switch (careType) {
+  const getCareTypeBadgeStyles = (type?: string) => {
+    if (!type) return 'bg-gray-100 text-gray-800 border-gray-300';
+    
+    switch (type) {
       case 'feeding':
         return 'bg-green-100 text-green-800 border-green-300';
       case 'cleaning':
@@ -65,11 +69,11 @@ const PostpartumCareList: React.FC<PostpartumCareListProps> = ({ careRecords }) 
                   className={`mr-2 ${getCareTypeBadgeStyles(record.care_type)}`}>
                   <span className="flex items-center">
                     {getCareTypeIcon(record.care_type)}
-                    <span className="ml-1 capitalize">{record.care_type}</span>
+                    <span className="ml-1 capitalize">{record.care_type || 'General'}</span>
                   </span>
                 </Badge>
                 <div className="text-sm text-muted-foreground">
-                  {record.care_time}
+                  {record.care_time || format(new Date(record.date), 'h:mm a')}
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
