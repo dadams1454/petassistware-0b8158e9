@@ -1,4 +1,3 @@
-
 export interface DogGenotype {
   id: string;
   name: string;
@@ -141,7 +140,7 @@ export interface GeneticImportResult {
   importDate: string;
   provider: string;
   testsImported: number;
-  errors?: string[];
+  errors?: string[]; // Make sure this is called "errors" (plural) not "error"
 }
 
 export interface GeneticBreedStatistics {

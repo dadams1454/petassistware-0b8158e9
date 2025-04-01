@@ -124,7 +124,7 @@ export const GeneticTestsManager: React.FC<GeneticTestsManagerProps> = ({
           onDataChanged();
         }
       } else {
-        throw new Error(result.error?.message || 'Failed to import genetic tests');
+        throw new Error(result.errors?.[0] || 'Failed to import genetic tests');
       }
     } catch (error) {
       console.error('Error saving genetic tests:', error);
