@@ -46,7 +46,7 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
       }
       
       if (data && Array.isArray(data)) {
-        // Validate and transform the data to ensure it matches the HeatCycle interface
+        // Validate that each item has the required properties before adding to state
         const validHeatCycles: HeatCycle[] = data
           .filter(item => 
             item && 
@@ -66,7 +66,7 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
         
         setCycles(validHeatCycles);
       } else {
-        // If data is not an array, set cycles to empty array
+        // If data is not an array or is null, set cycles to empty array
         setCycles([]);
       }
       setError(null);
