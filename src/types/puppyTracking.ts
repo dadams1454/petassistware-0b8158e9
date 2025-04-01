@@ -21,7 +21,7 @@ export interface PuppyWithAge {
 
 export interface WeightRecord {
   id: string;
-  puppy_id: string;
+  dog_id: string;
   date: string;
   weight: number;
   weight_unit: string;
@@ -54,7 +54,6 @@ export interface VaccinationScheduleItem {
   notes?: string;
   created_at: string;
   is_completed?: boolean; // Derived field (true if there's a matching vaccination record)
-  vaccination_date?: string; // Added for display purposes when completed
 }
 
 export interface VaccinationRecord {
@@ -79,7 +78,7 @@ export interface PuppyManagementStats {
   averageWeight: number;
   puppiesByColor: Record<string, number>;
   puppiesByAge: Record<string, number>;
-  // Adding missing properties that are referenced in the code
+  // Adding properties that are referenced in the code
   activeLitters: number;
   upcomingVaccinations: number;
   recentWeightChecks: number;
@@ -94,7 +93,7 @@ export interface PuppyAgeGroupData {
   endDay: number;
   color: string;
   priority: number;
-  // Adding missing properties that are referenced in the code
+  // Adding properties that are referenced in the code
   milestones?: string;
   careChecks?: string[];
 }
@@ -139,4 +138,16 @@ export interface SocializationProgress {
 export interface WeightData {
   age: number;
   weight: number;
+}
+
+// For backward compatibility
+export interface SocializationRecord {
+  id: string;
+  puppy_id: string;
+  category: SocializationCategory;
+  experience: string;
+  experience_date: string;
+  reaction?: string;
+  notes?: string;
+  created_at: string;
 }

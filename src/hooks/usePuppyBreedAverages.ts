@@ -29,7 +29,8 @@ export const usePuppyBreedAverages = (puppyId: string) => {
         if (puppy?.litters) {
           // Check if breed is directly in litters object
           if (typeof puppy.litters === 'object' && puppy.litters !== null) {
-            if ('breed' in puppy.litters) {
+            // Fix: Use a type guard to check if 'breed' exists in puppy.litters
+            if ('breed' in puppy.litters && typeof puppy.litters.breed === 'string') {
               breed = puppy.litters.breed || 'Newfoundland';
             }
           }

@@ -18,16 +18,16 @@ export const usePuppyWeightRecord = (puppyId: string) => {
       setIsSubmitting(true);
       
       try {
-        // Add weight record - using dog_id field for puppy weight records
+        // Add weight record - use dog_id field for puppy weight records
         // The weight_records table uses dog_id field for both dogs and puppies
         const { data, error } = await supabase
           .from('weight_records')
           .insert({
-            dog_id: puppyId, // Using dog_id instead of puppy_id as per the schema
+            dog_id: puppyId, // Using dog_id instead of puppy_id
             weight: weightData.weight,
             weight_unit: weightData.weight_unit,
             date: weightData.date,
-            notes: weightData.notes
+            notes: weightData.notes || null
           })
           .select()
           .single();

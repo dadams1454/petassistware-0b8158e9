@@ -3,58 +3,17 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { 
-  SocializationCategory, 
-  SocializationExperience, 
-  SocializationProgress 
-} from '@/types/puppyTracking';
-import { 
-  SOCIALIZATION_CATEGORIES, 
-  getSocializationTargetsByAge 
-} from '@/data/socializationCategories';
+import { SocializationExperience } from '@/types/puppyTracking';
 
 export const usePuppySocialization = (puppyId: string) => {
   const queryClient = useQueryClient();
-  const [puppyAge, setPuppyAge] = useState<number>(0);
-  
-  // Get puppy data to determine age
-  const { data: puppy } = useQuery({
-    queryKey: ['puppy-basic', puppyId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('puppies')
-        .select(`
-          id, 
-          birth_date,
-          litter:litter_id (birth_date)
-        `)
-        .eq('id', puppyId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!puppyId
-  });
-  
-  // Calculate puppy age based on birth date
-  useEffect(() => {
-    if (puppy) {
-      const birthDate = puppy.birth_date || puppy.litter?.birth_date;
-      if (birthDate) {
-        const birthDateObj = new Date(birthDate);
-        const today = new Date();
-        const ageInDays = Math.floor((today.getTime() - birthDateObj.getTime()) / (1000 * 60 * 60 * 24));
-        setPuppyAge(ageInDays);
-      }
-    }
-  }, [puppy]);
   
   // Fetch socialization experiences
   const { 
     data: experiences = [], 
-    isLoading: isLoadingExperiences,
-    error: experiencesError 
+    isLoading,
+    error,
+    refetch: refreshExperiences
   } = useQuery({
     queryKey: ['puppy-socialization', puppyId],
     queryFn: async () => {
@@ -79,27 +38,6 @@ export const usePuppySocialization = (puppyId: string) => {
     },
     enabled: !!puppyId
   });
-  
-  // Calculate progress per category
-  const socializationProgress = SOCIALIZATION_CATEGORIES.map(category => {
-    const categoryExperiences = experiences.filter(exp => exp.category_id === category.id);
-    const targetCount = getSocializationTargetsByAge(puppyAge);
-    const count = categoryExperiences.length;
-    const completionPercentage = Math.min(Math.round((count / targetCount) * 100), 100);
-    
-    return {
-      categoryId: category.id,
-      categoryName: category.name,
-      count,
-      target: targetCount,
-      completionPercentage
-    } as SocializationProgress;
-  });
-  
-  // Overall progress
-  const totalExperiences = experiences.length;
-  const totalTarget = getSocializationTargetsByAge(puppyAge) * SOCIALIZATION_CATEGORIES.length;
-  const overallProgress = Math.min(Math.round((totalExperiences / totalTarget) * 100), 100);
   
   // Add new socialization experience
   const addExperienceMutation = useMutation({
@@ -173,12 +111,8 @@ export const usePuppySocialization = (puppyId: string) => {
   
   return {
     experiences,
-    categories: SOCIALIZATION_CATEGORIES,
-    isLoading: isLoadingExperiences,
-    error: experiencesError,
-    socializationProgress,
-    overallProgress,
-    puppyAge,
+    isLoading,
+    error,
     addExperience: (data: {
       category_id: string;
       experience: string;
@@ -187,7 +121,6 @@ export const usePuppySocialization = (puppyId: string) => {
       notes?: string;
     }) => addExperienceMutation.mutate(data),
     deleteExperience: (id: string) => deleteExperienceMutation.mutate(id),
-    isAddingExperience: addExperienceMutation.isPending,
-    isDeletingExperience: deleteExperienceMutation.isPending
+    refreshExperiences: () => refreshExperiences()
   };
 };

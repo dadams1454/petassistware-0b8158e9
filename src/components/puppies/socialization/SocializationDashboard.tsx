@@ -1,7 +1,4 @@
 
-// Import parts that handle the type issue related to experience_date
-// We'll update the component so that it handles Date objects properly
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,12 +12,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Plus, UserCircle, Sparkles, LineChart } from 'lucide-react';
 import { usePuppyDetail } from '@/hooks/usePuppyDetail';
-import { useSocializationTracker } from '@/hooks/useSocializationTracker';
+import { usePuppySocialization } from '@/hooks/usePuppySocialization';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
 import SocializationLogForm from './SocializationLogForm';
 import SocializationExperiencesList from './SocializationExperiencesList';
 import SocializationProgressChart from './SocializationProgressChart';
 import SocializationCategoryList from './SocializationCategoryList';
+import { SOCIALIZATION_CATEGORIES, SOCIALIZATION_REACTIONS } from '@/data/socializationCategories';
 
 interface SocializationDashboardProps {
   puppyId: string;
@@ -33,46 +31,53 @@ const SocializationDashboard: React.FC<SocializationDashboardProps> = ({ puppyId
   const puppyQuery = usePuppyDetail(puppyId);
   const { 
     experiences, 
-    categories, 
-    reactions,
-    isLoading: isExpLoading,
-    error: expError,
-    progress,
+    isLoading,
+    error,
     addExperience,
+    refreshExperiences,
     deleteExperience
-  } = useSocializationTracker(puppyId);
+  } = usePuppySocialization(puppyId);
   
-  const isLoading = puppyQuery.isLoading || isExpLoading;
-  const error = puppyQuery.error || expError;
   const puppy = puppyQuery.data;
+  
+  // For now, we'll use the predefined categories and reactions
+  const categories = SOCIALIZATION_CATEGORIES;
+  const reactions = SOCIALIZATION_REACTIONS;
+  
+  // Calculate progress
+  const progress = React.useMemo(() => {
+    return categories.map(category => {
+      const categoryExperiences = experiences.filter(exp => exp.category_id === category.id);
+      const targetCount = 10; // Default target, adjust based on age
+      const count = categoryExperiences.length;
+      const completionPercentage = Math.min(Math.round((count / targetCount) * 100), 100);
+      
+      return {
+        categoryId: category.id,
+        categoryName: category.name,
+        count,
+        target: targetCount,
+        completionPercentage
+      };
+    });
+  }, [categories, experiences]);
   
   const handleAddExperience = (data: {
     category_id: string;
     experience: string;
-    experience_date: Date | string; // Accept either Date or string
+    experience_date: string;
     reaction?: string;
     notes?: string;
   }) => {
-    // Convert Date to string if it's a Date object
-    const formattedData = {
-      category_id: data.category_id,
-      experience: data.experience,
-      experience_date: data.experience_date instanceof Date 
-        ? data.experience_date.toISOString().split('T')[0] 
-        : data.experience_date,
-      reaction: data.reaction,
-      notes: data.notes
-    };
-    
-    addExperience(formattedData);
+    addExperience(data);
     setIsDialogOpen(false);
   };
   
-  if (isLoading) {
+  if (puppyQuery.isLoading || isLoading) {
     return <LoadingState message="Loading socialization data..." />;
   }
   
-  if (error || !puppy) {
+  if (puppyQuery.error || error || !puppy) {
     return <ErrorState title="Error" message="Failed to load puppy information." />;
   }
   
