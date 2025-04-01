@@ -45,10 +45,16 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
     .single();
 
   if (error) throw error;
+  if (!data) throw new Error('Failed to insert health indicator record');
   
   // If abnormal, create an alert
-  if (abnormal && data) {
-    await createHealthAlert(data.id, record.dog_id);
+  if (abnormal) {
+    try {
+      await createHealthAlert(data.id, record.dog_id);
+    } catch (alertError) {
+      console.error('Failed to create health alert:', alertError);
+      // Continue without failing the whole operation
+    }
   }
   
   return adaptHealthIndicatorRecord(data);
@@ -64,6 +70,7 @@ export const updateHealthIndicator = async (id: string, updates: Partial<HealthI
     .single();
 
   if (error) throw error;
+  if (!data) throw new Error('Failed to update health indicator record');
   
   return adaptHealthIndicatorRecord(data);
 };
