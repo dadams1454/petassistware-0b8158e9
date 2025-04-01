@@ -79,7 +79,7 @@ export interface PuppyManagementStats {
   averageWeight: number;
   puppiesByColor: Record<string, number>;
   puppiesByAge: Record<string, number>;
-  // Adding missing properties
+  // Adding missing properties that are referenced in the code
   activeLitters: number;
   upcomingVaccinations: number;
   recentWeightChecks: number;
@@ -94,7 +94,7 @@ export interface PuppyAgeGroupData {
   endDay: number;
   color: string;
   priority: number;
-  // Adding missing properties
+  // Adding missing properties that are referenced in the code
   milestones?: string;
   careChecks?: string[];
 }
@@ -133,4 +133,10 @@ export interface SocializationProgress {
   count: number;
   target: number;
   completionPercentage: number;
+}
+
+// Export WeightData interface for breed averages
+export interface WeightData {
+  age: number;
+  weight: number;
 }

@@ -19,6 +19,7 @@ import { LoadingState, ErrorState } from '@/components/ui/standardized';
 import AddVaccinationForm from './AddVaccinationForm';
 import VaccinationSchedule from './VaccinationSchedule';
 import VaccinationCalendar from './VaccinationCalendar';
+import { VaccinationRecord } from '@/types/puppyTracking';
 
 interface VaccinationDashboardProps {
   puppyId: string;

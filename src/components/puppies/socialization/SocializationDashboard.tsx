@@ -1,12 +1,26 @@
 
+// Import parts that handle the type issue related to experience_date
+// We'll update the component so that it handles Date objects properly
+
 import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription 
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { usePuppySocialization } from '@/hooks/usePuppySocialization';
-import { LoadingState } from '@/components/ui/standardized';
-import SocializationForm from './SocializationForm';
+import { Plus, UserCircle, Sparkles, LineChart } from 'lucide-react';
+import { usePuppyDetail } from '@/hooks/usePuppyDetail';
+import { useSocializationTracker } from '@/hooks/useSocializationTracker';
+import { LoadingState, ErrorState } from '@/components/ui/standardized';
+import SocializationLogForm from './SocializationLogForm';
 import SocializationExperiencesList from './SocializationExperiencesList';
-import SocializationProgressTracker from './SocializationProgressTracker';
+import SocializationProgressChart from './SocializationProgressChart';
+import SocializationCategoryList from './SocializationCategoryList';
 
 interface SocializationDashboardProps {
   puppyId: string;
@@ -14,86 +28,140 @@ interface SocializationDashboardProps {
 
 const SocializationDashboard: React.FC<SocializationDashboardProps> = ({ puppyId }) => {
   const [activeTab, setActiveTab] = useState('experiences');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  const {
-    experiences,
-    isLoading,
-    error,
-    socializationProgress,
-    overallProgress,
-    puppyAge,
+  const puppyQuery = usePuppyDetail(puppyId);
+  const { 
+    experiences, 
+    categories, 
+    reactions,
+    isLoading: isExpLoading,
+    error: expError,
+    progress,
     addExperience,
-    deleteExperience,
-    isAddingExperience,
-    isDeletingExperience
-  } = usePuppySocialization(puppyId);
+    deleteExperience
+  } = useSocializationTracker(puppyId);
   
-  // Adapt the addExperience function to handle the different type signature
-  const handleAddExperience = (data: { 
-    notes?: string; 
-    experience?: string; 
-    experience_date?: Date; 
-    reaction?: string; 
-    category_id?: string; 
+  const isLoading = puppyQuery.isLoading || isExpLoading;
+  const error = puppyQuery.error || expError;
+  const puppy = puppyQuery.data;
+  
+  const handleAddExperience = (data: {
+    category_id: string;
+    experience: string;
+    experience_date: Date | string; // Accept either Date or string
+    reaction?: string;
+    notes?: string;
   }) => {
-    if (!data.experience || !data.experience_date || !data.category_id) {
-      console.error("Missing required fields for socialization experience");
-      return;
-    }
-    
-    // Convert the date to string format
-    const experience_date_str = data.experience_date.toISOString().split('T')[0];
-    
-    // Call the actual addExperience with the correct type
-    addExperience({
+    // Convert Date to string if it's a Date object
+    const formattedData = {
       category_id: data.category_id,
       experience: data.experience,
-      experience_date: experience_date_str,
+      experience_date: data.experience_date instanceof Date 
+        ? data.experience_date.toISOString().split('T')[0] 
+        : data.experience_date,
       reaction: data.reaction,
       notes: data.notes
-    });
+    };
+    
+    addExperience(formattedData);
+    setIsDialogOpen(false);
   };
   
   if (isLoading) {
     return <LoadingState message="Loading socialization data..." />;
   }
   
+  if (error || !puppy) {
+    return <ErrorState title="Error" message="Failed to load puppy information." />;
+  }
+  
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="experiences">Experiences</TabsTrigger>
-            <TabsTrigger value="progress">Progress</TabsTrigger>
-            <TabsTrigger value="add">Add New</TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold">{puppy.name || 'Puppy'} Socialization Tracking</h2>
+          <p className="text-muted-foreground">
+            Log and track important socialization experiences
+          </p>
+        </div>
+        
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Log Experience
+        </Button>
       </div>
       
-      <TabsContent value="experiences" className="mt-0">
-        <SocializationExperiencesList
-          experiences={experiences}
-          isLoading={isLoading}
-          error={error}
-          onDelete={deleteExperience}
-          isDeleting={isDeletingExperience}
-        />
-      </TabsContent>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsTrigger value="experiences" className="flex items-center gap-1">
+            <UserCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Experiences</span>
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="flex items-center gap-1">
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">Categories</span>
+          </TabsTrigger>
+          <TabsTrigger value="progress" className="flex items-center gap-1">
+            <LineChart className="h-4 w-4" />
+            <span className="hidden sm:inline">Progress</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="experiences">
+          <SocializationExperiencesList 
+            experiences={experiences}
+            categories={categories}
+            reactions={reactions}
+            onDelete={deleteExperience}
+            onAdd={() => setIsDialogOpen(true)}
+          />
+        </TabsContent>
+        
+        <TabsContent value="categories">
+          <SocializationCategoryList 
+            categories={categories}
+            progress={progress}
+            onAddExperience={() => setIsDialogOpen(true)}
+          />
+        </TabsContent>
+        
+        <TabsContent value="progress">
+          <Card>
+            <CardHeader>
+              <CardTitle>Socialization Progress</CardTitle>
+              <CardDescription>
+                Track progress across all socialization categories
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SocializationProgressChart 
+                progress={progress} 
+                categories={categories}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       
-      <TabsContent value="progress" className="mt-0">
-        <SocializationProgressTracker
-          progressData={socializationProgress}
-          overallProgress={overallProgress}
-        />
-      </TabsContent>
-      
-      <TabsContent value="add" className="mt-0">
-        <SocializationForm
-          onSubmit={handleAddExperience}
-          isSubmitting={isAddingExperience}
-          onCancel={() => setActiveTab('experiences')}
-        />
-      </TabsContent>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Log Socialization Experience</DialogTitle>
+            <DialogDescription>
+              Record a new socialization experience for {puppy.name || 'this puppy'}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <SocializationLogForm 
+            puppyId={puppyId}
+            categories={categories}
+            reactions={reactions}
+            onSubmit={handleAddExperience}
+            onCancel={() => setIsDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

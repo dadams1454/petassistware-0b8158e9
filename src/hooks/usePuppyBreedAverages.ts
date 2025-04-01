@@ -1,11 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-interface WeightData {
-  age: number;
-  weight: number;
-}
+import { WeightData } from '@/types/puppyTracking';
 
 export const usePuppyBreedAverages = (puppyId: string) => {
   const {
@@ -19,7 +15,7 @@ export const usePuppyBreedAverages = (puppyId: string) => {
         // First, get the puppy to determine its breed
         const { data: puppy, error: puppyError } = await supabase
           .from('puppies')
-          .select('*, litters:litter_id(*)')
+          .select('*, litters(*)')
           .eq('id', puppyId)
           .single();
         
@@ -27,7 +23,17 @@ export const usePuppyBreedAverages = (puppyId: string) => {
         
         // Need to check for breed in different locations
         // Use a default breed if we cannot determine the puppy's breed
-        const breed = puppy?.litters?.breed || 'Newfoundland';
+        let breed = 'Newfoundland';
+        
+        // Try to determine breed from litter data or set a default
+        if (puppy?.litters) {
+          // Check if breed is directly in litters object
+          if (typeof puppy.litters === 'object' && puppy.litters !== null) {
+            if ('breed' in puppy.litters) {
+              breed = puppy.litters.breed || 'Newfoundland';
+            }
+          }
+        }
 
         // For now, return hardcoded average growth data for the breed
         // In a real app, this would come from a database of breed growth charts

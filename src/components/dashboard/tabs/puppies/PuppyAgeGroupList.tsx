@@ -48,10 +48,12 @@ const PuppyAgeGroupList: React.FC<PuppyAgeGroupListProps> = ({
               <div className="p-4 pt-2">
                 <div className="text-sm mb-3 text-muted-foreground">
                   <p>{group.description}</p>
-                  <div className="mt-2 p-2 bg-muted/20 rounded-md">
-                    <p className="font-medium mb-1">Key Milestones:</p>
-                    <p>{group.milestones}</p>
-                  </div>
+                  {group.milestones && (
+                    <div className="mt-2 p-2 bg-muted/20 rounded-md">
+                      <p className="font-medium mb-1">Key Milestones:</p>
+                      <p>{group.milestones}</p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
