@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MinusCircle, PlusCircle, AlertCircle, Scale } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { WeightUnit } from '@/types/dog';
+import { WeightUnit } from '@/types/health';
 
 interface WeightInputProps {
   form: UseFormReturn<any>;
@@ -15,7 +15,7 @@ interface WeightInputProps {
   defaultUnit?: WeightUnit;
 }
 
-const WeightInput = ({ form, name, label, defaultUnit = 'lbs' }: WeightInputProps) => {
+const WeightInput = ({ form, name, label, defaultUnit = 'lbs' as WeightUnit }: WeightInputProps) => {
   const [inputError, setInputError] = useState<string | null>(null);
   const [unit, setUnit] = useState<WeightUnit>(defaultUnit);
   

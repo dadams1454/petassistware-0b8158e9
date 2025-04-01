@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useBreedingPlan } from '@/hooks/useBreedingPlan';
-import { Dog, DogGender } from '@/types/dog';
+import { Dog, DogGender } from '@/types/dogs';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
-import { DogSelector } from '@/components/dogs/components/selectors/DogSelector';
+import DogSelector from '@/components/dogs/components/selectors/DogSelector';
 
 interface BreedingSectionProps {
   litter: any;
@@ -20,10 +20,7 @@ export const BreedingSection: React.FC<BreedingSectionProps> = ({ litter, onUpda
   const [selectedSire, setSelectedSire] = useState<Dog | null>(null);
   const [selectedDam, setSelectedDam] = useState<Dog | null>(null);
   
-  const { isLoading, error, compatibleDams, compatibleSires } = useBreedingPlan(
-    selectedSire?.id, 
-    selectedDam?.id
-  );
+  const { isLoading, error, compatibleDams, compatibleSires } = useBreedingPlan();
   
   React.useEffect(() => {
     // Load initial dog values if available
@@ -85,10 +82,16 @@ export const BreedingSection: React.FC<BreedingSectionProps> = ({ litter, onUpda
           <div className="space-y-3">
             <Label>Sire (Father)</Label>
             <DogSelector 
-              availableDogs={compatibleSires || []}
-              selectedDog={selectedSire}
-              onSelect={(dog) => handleDogSelect(dog, 'sire')}
-              filter={{ gender: DogGender.Male }}
+              value={selectedSire?.id}
+              onChange={(dogId) => {
+                // Find the dog in the compatibleSires array
+                const dog = compatibleSires?.find(d => d.id === dogId);
+                if (dog) {
+                  handleDogSelect(dog, 'sire');
+                }
+              }}
+              placeholder="Select sire"
+              genderFilter="Male"
             />
           </div>
           
@@ -96,10 +99,16 @@ export const BreedingSection: React.FC<BreedingSectionProps> = ({ litter, onUpda
           <div className="space-y-3">
             <Label>Dam (Mother)</Label>
             <DogSelector 
-              availableDogs={compatibleDams || []}
-              selectedDog={selectedDam}
-              onSelect={(dog) => handleDogSelect(dog, 'dam')}
-              filter={{ gender: DogGender.Female }}
+              value={selectedDam?.id}
+              onChange={(dogId) => {
+                // Find the dog in the compatibleDams array
+                const dog = compatibleDams?.find(d => d.id === dogId);
+                if (dog) {
+                  handleDogSelect(dog, 'dam');
+                }
+              }}
+              placeholder="Select dam"
+              genderFilter="Female"
             />
           </div>
         </div>

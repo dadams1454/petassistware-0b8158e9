@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { GeneticImportResult } from '@/types/genetics';
+import { GeneticImportResult, TestResult } from '@/types/genetics';
 
 // Parse and import tests from a CSV file
 export const importGeneticTestsFromCSV = async (dogId: string, file: File): Promise<GeneticImportResult> => {
@@ -10,6 +10,7 @@ export const importGeneticTestsFromCSV = async (dogId: string, file: File): Prom
       success: true,
       provider: 'CSV Import',
       testsImported: 5,
+      count: 5,
       errors: []
     };
   } catch (error) {
@@ -23,13 +24,14 @@ export const importGeneticTestsFromCSV = async (dogId: string, file: File): Prom
   }
 };
 
-// This is where the error was - we need to make sure this function accepts a file parameter
+// Updated to accept a file parameter
 export const importEmbarkData = async (dogId: string, file?: File): Promise<GeneticImportResult> => {
   // Implementation code would be here
   return {
     success: true,
     provider: 'Embark',
     testsImported: 8,
+    count: 8,
     errors: []
   };
 };
@@ -40,11 +42,12 @@ export const importWisdomPanelData = async (dogId: string, file?: File): Promise
     success: true,
     provider: 'Wisdom Panel',
     testsImported: 6,
+    count: 6,
     errors: []
   };
 };
 
-// This is the function that was lacking a second parameter
+// Updated to accept a testData parameter
 export const batchImportGeneticTests = async (dogId: string, testData: any[] = []): Promise<GeneticImportResult> => {
   try {
     // Implementation code would be here
@@ -52,6 +55,7 @@ export const batchImportGeneticTests = async (dogId: string, testData: any[] = [
       success: true,
       provider: 'Batch Import',
       testsImported: testData.length || 0,
+      count: testData.length || 0,
       errors: []
     };
   } catch (error) {

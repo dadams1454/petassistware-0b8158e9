@@ -29,6 +29,11 @@ interface GeneticImportDialogProps {
   onImportComplete?: () => void;
 }
 
+// Need to extend TestResult interface for the UI fields
+interface ManualTestEntry extends Omit<TestResult, 'testId'> {
+  importSource: string;
+}
+
 export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({ 
   open, 
   onOpenChange, 
@@ -37,7 +42,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>('csv');
   const [csvData, setCsvData] = useState<string>('');
-  const [manualTests, setManualTests] = useState<Omit<TestResult, 'testId'>[]>([
+  const [manualTests, setManualTests] = useState<ManualTestEntry[]>([
     { testType: '', result: '', testDate: new Date().toISOString().split('T')[0], labName: '', importSource: 'manual' }
   ]);
   const [importResult, setImportResult] = useState<{success?: boolean; errors?: string[]}>({});
@@ -95,7 +100,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
     setManualTests(manualTests.filter((_, i) => i !== index));
   };
   
-  const handleTestChange = (index: number, field: keyof Omit<TestResult, 'testId'>, value: string) => {
+  const handleTestChange = (index: number, field: keyof ManualTestEntry, value: string) => {
     const updatedTests = [...manualTests];
     updatedTests[index] = {
       ...updatedTests[index],

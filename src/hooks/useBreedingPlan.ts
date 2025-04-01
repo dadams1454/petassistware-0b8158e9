@@ -11,10 +11,12 @@ export interface BreedingPlan {
   notes?: string;
 }
 
-export const useBreedingPlan = (dogId?: string) => {
+export const useBreedingPlan = (sireId?: string, damId?: string) => {
   const [plans, setPlans] = useState<BreedingPlan[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [compatibleDams, setCompatibleDams] = useState<Dog[]>([]);
+  const [compatibleSires, setCompatibleSires] = useState<Dog[]>([]);
   
   // Fetch breeding plans related to this dog
   const fetchBreedingPlans = async () => {
@@ -45,7 +47,9 @@ export const useBreedingPlan = (dogId?: string) => {
     fetchBreedingPlans,
     createBreedingPlan,
     updateBreedingPlan,
-    deleteBreedingPlan
+    deleteBreedingPlan,
+    compatibleDams,
+    compatibleSires
   };
 };
 

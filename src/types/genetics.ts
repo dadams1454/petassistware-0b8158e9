@@ -9,12 +9,15 @@ export interface DogGenotype {
   agouti?: string;
   healthMarkers: Record<string, HealthMarker>;
   healthResults?: HealthTestResult[];
+  testResults?: GeneticTestResult[];
+  dogId?: string;
 }
 
 export interface HealthMarker {
   status: GeneticHealthStatus;
   testDate?: string;
   genotype?: string;
+  labName?: string;
 }
 
 export type GeneticHealthStatus = 'clear' | 'carrier' | 'affected' | 'unknown';
@@ -23,6 +26,7 @@ export interface HealthTestResult {
   condition: string;
   result: GeneticHealthStatus;
   testDate?: string;
+  date?: string;
   labName?: string;
 }
 
@@ -46,6 +50,7 @@ export interface PairingAnalysis {
   healthWarnings: HealthWarning[];
   colorProbabilities: ColorProbability[];
   compatibilityScore: number;
+  compatibleTests?: boolean;
 }
 
 export interface MultiTraitMatrixProps {
@@ -66,10 +71,13 @@ export interface GeneticTestResult {
 }
 
 export interface TestResult {
-  id: string;
+  id?: string;
   testType: string;
   result: string;
   testDate: string;
+  labName?: string;
+  importSource?: string;
+  testId?: string;
 }
 
 export interface CompactGenotypeViewProps {
@@ -84,4 +92,9 @@ export interface GeneticImportResult {
   testsImported: number;
   count?: number;
   errors?: string[];
+}
+
+export interface GeneticReportGeneratorProps {
+  dogId: string;
+  dogData?: DogGenotype;
 }

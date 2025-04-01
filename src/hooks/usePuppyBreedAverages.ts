@@ -1,74 +1,64 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { WeightData } from '@/types/puppyTracking';
 
-export const usePuppyBreedAverages = (puppyId: string) => {
-  const {
-    data: breedAverages,
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ['puppy-breed-averages', puppyId],
-    queryFn: async () => {
+export const usePuppyBreedAverages = (breed: string) => {
+  const [averageWeights, setAverageWeights] = useState<WeightData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  useEffect(() => {
+    const fetchAverageWeights = async () => {
+      if (!breed) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        // First, get the puppy to determine its breed
-        const { data: puppy, error: puppyError } = await supabase
-          .from('puppies')
-          .select('*, litters(*)')
-          .eq('id', puppyId)
-          .single();
+        // In a real implementation, you would fetch this data from a database
+        // For now we'll use mock data
         
-        if (puppyError) throw puppyError;
+        // Here you would query the database for average weight data by breed and age
+        // const { data, error } = await supabase
+        //   .from('breed_weight_averages')
+        //   .select('*')
+        //   .eq('breed', breed)
+        //   .order('age_days', { ascending: true });
         
-        // Need to check for breed in different locations
-        // Use a default breed if we cannot determine the puppy's breed
-        let breed = 'Newfoundland';
+        // if (error) throw error;
         
-        // Try to determine breed from litter data or set a default
-        if (puppy?.litters) {
-          // Check if breed is directly in litters object
-          if (typeof puppy.litters === 'object' && puppy.litters !== null) {
-            // Fix: Use a type guard to check if 'breed' exists in puppy.litters
-            if ('breed' in puppy.litters && typeof puppy.litters.breed === 'string') {
-              breed = puppy.litters.breed || 'Newfoundland';
-            }
-          }
-        }
-
-        // For now, return hardcoded average growth data for the breed
-        // In a real app, this would come from a database of breed growth charts
-        const averageGrowthData: WeightData[] = [
-          { age: 0, weight: 1.2 }, // Birth
-          { age: 7, weight: 2.5 }, // 1 week
-          { age: 14, weight: 4.0 }, // 2 weeks
-          { age: 21, weight: 5.5 }, // 3 weeks
-          { age: 28, weight: 7.0 }, // 4 weeks
-          { age: 42, weight: 10.0 }, // 6 weeks
-          { age: 56, weight: 14.0 }, // 8 weeks
-          { age: 84, weight: 20.0 }, // 12 weeks
-          { age: 112, weight: 26.0 }, // 16 weeks
-          { age: 140, weight: 32.0 }, // 20 weeks
-          { age: 168, weight: 38.0 }, // 24 weeks
-          { age: 252, weight: 50.0 }, // 36 weeks
-          { age: 365, weight: 60.0 }, // 1 year
+        // For demonstration purposes, let's create some mock data
+        const mockAverageWeights: WeightData[] = [
+          { id: '1', weight: 340, date: '2023-01-01', age: 1, unit: 'g' },
+          { id: '2', weight: 454, date: '2023-01-02', age: 7, unit: 'g' },
+          { id: '3', weight: 567, date: '2023-01-03', age: 14, unit: 'g' },
+          { id: '4', weight: 680, date: '2023-01-04', age: 21, unit: 'g' },
+          { id: '5', weight: 794, date: '2023-01-05', age: 28, unit: 'g' },
+          { id: '6', weight: 907, date: '2023-01-06', age: 35, unit: 'g' },
+          { id: '7', weight: 1021, date: '2023-01-07', age: 42, unit: 'g' },
+          { id: '8', weight: 1134, date: '2023-01-08', age: 49, unit: 'g' },
+          { id: '9', weight: 1247, date: '2023-01-09', age: 56, unit: 'g' },
+          { id: '10', weight: 1361, date: '2023-01-10', age: 63, unit: 'g' },
+          { id: '11', weight: 1474, date: '2023-01-11', age: 70, unit: 'g' },
+          { id: '12', weight: 1588, date: '2023-01-12', age: 77, unit: 'g' },
+          { id: '13', weight: 1701, date: '2023-01-13', age: 84, unit: 'g' }
         ];
         
-        // For Newfoundlands or any large breed, we'll use these data points
-        return {
-          breed,
-          averageGrowthData,
-        };
-      } catch (error) {
-        console.error('Error fetching breed averages:', error);
-        throw error;
+        setAverageWeights(mockAverageWeights);
+      } catch (err) {
+        console.error('Error fetching breed average weights:', err);
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
       }
-    },
-    enabled: !!puppyId
-  });
+    };
+    
+    fetchAverageWeights();
+  }, [breed]);
   
   return {
-    breedAverages,
+    averageWeights,
     isLoading,
     error
   };

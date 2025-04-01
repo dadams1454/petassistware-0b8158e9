@@ -15,7 +15,7 @@ interface DogHealthRecordsProps {
 
 const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
   const [showAddRecordDialog, setShowAddRecordDialog] = useState(false);
-  const { healthRecords, isLoading, error, refresh, addHealthRecord } = useDogHealthRecords(dogId);
+  const { records, isLoading, error, refresh, addHealthRecord } = useDogHealthRecords(dogId);
 
   const handleAddRecord = async (recordData: any) => {
     try {
@@ -63,15 +63,16 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
         </CardHeader>
 
         <CardContent>
-          {healthRecords.length > 0 ? (
+          {records.length > 0 ? (
             <div className="space-y-4">
-              {healthRecords.map((record) => (
+              {records.map((record) => (
                 <div key={record.id} className="p-4 border rounded-md">
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-medium text-lg">{record.title || record.record_type}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(record.visit_date).toLocaleDateString()}
+                        {(record.visit_date && new Date(record.visit_date).toLocaleDateString()) || 
+                         (record.date && new Date(record.date).toLocaleDateString())}
                         {record.vet_name && ` • ${record.vet_name}`}
                       </p>
                     </div>

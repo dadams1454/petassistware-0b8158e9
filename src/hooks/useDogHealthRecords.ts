@@ -1,130 +1,115 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { HealthRecord } from '@/types/health';
 
-// Define a minimal health record type to match what's in the database
-interface HealthRecord {
-  id: string;
-  dog_id: string;
-  record_type: string;
-  visit_date: string;
-  vet_name?: string; // Made this optional to fix error
-  record_notes?: string;
-  title?: string;
-  description?: string;
-  next_due_date?: string;
-  document_url?: string;
-  created_at?: string;
-}
-
-export const useDogHealthRecords = (dogId?: string) => {
+export const useDogHealthRecords = (dogId: string) => {
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (dogId) {
-      fetchHealthRecords();
-    }
-  }, [dogId]);
-
   const fetchHealthRecords = async () => {
-    if (!dogId) return;
-    
     setIsLoading(true);
+    setError(null);
+    
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('health_records')
         .select('*')
         .eq('dog_id', dogId)
         .order('visit_date', { ascending: false });
       
-      if (error) throw new Error(error.message);
+      if (fetchError) throw fetchError;
       
       setRecords(data || []);
     } catch (err) {
       console.error('Error fetching health records:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setError(err as Error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const addHealthRecord = async (recordData: Partial<HealthRecord>) => {
-    if (!dogId) {
-      throw new Error('Dog ID is required');
-    }
-    
     try {
-      // Make sure vet_name is provided for the database
-      const dataWithDefaults = {
+      // Ensure dog_id is set
+      const dataWithDogId = {
         ...recordData,
         dog_id: dogId,
-        vet_name: recordData.vet_name || 'Unknown', // Set a default value
+        // Ensure visit_date is set if not provided
+        visit_date: recordData.visit_date || new Date().toISOString().split('T')[0]
       };
       
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('health_records')
-        .insert(dataWithDefaults);
+        .insert(dataWithDogId);
+        
+      if (insertError) throw insertError;
       
-      if (error) throw new Error(error.message);
-      
+      // Refresh records after adding
       await fetchHealthRecords();
-      return { success: true };
+      
+      return { success: true, data };
     } catch (err) {
       console.error('Error adding health record:', err);
-      return { 
-        success: false, 
-        error: err instanceof Error ? err.message : 'Unknown error'
-      };
+      throw err;
     }
   };
 
   const updateHealthRecord = async (id: string, recordData: Partial<HealthRecord>) => {
     try {
-      const { data, error } = await supabase
+      const { data, error: updateError } = await supabase
         .from('health_records')
         .update(recordData)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('dog_id', dogId);
+        
+      if (updateError) throw updateError;
       
-      if (error) throw new Error(error.message);
-      
+      // Refresh records after updating
       await fetchHealthRecords();
-      return { success: true };
+      
+      return { success: true, data };
     } catch (err) {
       console.error('Error updating health record:', err);
-      return { 
-        success: false, 
-        error: err instanceof Error ? err.message : 'Unknown error'
-      };
+      throw err;
     }
   };
 
   const deleteHealthRecord = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('health_records')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('dog_id', dogId);
+        
+      if (deleteError) throw deleteError;
       
-      if (error) throw new Error(error.message);
-      
+      // Refresh records after deleting
       await fetchHealthRecords();
+      
       return { success: true };
     } catch (err) {
       console.error('Error deleting health record:', err);
-      return { 
-        success: false, 
-        error: err instanceof Error ? err.message : 'Unknown error'
-      };
+      throw err;
     }
   };
 
+  // Fetch records when the hook is initialized
+  useState(() => {
+    if (dogId) {
+      fetchHealthRecords();
+    }
+  });
+
   return {
     records,
+    healthRecords: records, // Alias for compatibility
     isLoading,
     error,
     fetchHealthRecords,
+    refresh: fetchHealthRecords, // Alias for compatibility
     addHealthRecord,
     updateHealthRecord,
     deleteHealthRecord
