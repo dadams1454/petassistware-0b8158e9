@@ -28,8 +28,10 @@ export const usePuppyDetails = (puppyId: string) => {
 
       // Calculate age in days
       const birthDateString = data.birth_date || 
-        (data.litters && typeof data.litters === 'object' && 'birth_date' in data.litters ? 
-          data.litters.birth_date : null);
+        (data.litters && typeof data.litters === 'object' && 
+         'birth_date' in data.litters && data.litters.birth_date) 
+          ? data.litters.birth_date 
+          : null;
       
       let ageInDays = 0;
       if (birthDateString) {
@@ -41,7 +43,7 @@ export const usePuppyDetails = (puppyId: string) => {
       return {
         ...data,
         ageInDays
-      } as unknown as PuppyWithAge;
+      } as PuppyWithAge;
     },
     enabled: !!puppyId
   });

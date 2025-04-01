@@ -1,12 +1,12 @@
 
-// Import everything from htmlGenerator - note we're using type safety
+// Import only what's needed and handle potential missing exports
 import * as HtmlGeneratorImports from './htmlGenerator';
 
-// Create fallback implementations to avoid errors
+// Create a simplified HTML generator with fallbacks
 const htmlGenerator = {
-  generateHtml: HtmlGeneratorImports.generateHtml || (() => ''),
-  renderTemplate: HtmlGeneratorImports.renderTemplate || (() => ''),
-  applyCustomStyles: HtmlGeneratorImports.applyCustomStyles || (() => '')
+  generateHtml: HtmlGeneratorImports.generateHtml || ((template, data) => `<div>Template: ${template}, Data: ${JSON.stringify(data)}</div>`),
+  renderTemplate: HtmlGeneratorImports.renderTemplate || ((template, data) => `<div>Template: ${template}, Data: ${JSON.stringify(data)}</div>`),
+  applyCustomStyles: HtmlGeneratorImports.applyCustomStyles || ((html, styles) => html)
 };
 
 // Export functions from htmlGenerator with fallbacks

@@ -4,7 +4,13 @@ export enum HealthRecordTypeEnum {
   Examination = 'examination',
   Medication = 'medication',
   Surgery = 'surgery',
-  Other = 'other'
+  Other = 'other',
+  Observation = 'observation',
+  Deworming = 'deworming',
+  Grooming = 'grooming',
+  Dental = 'dental',
+  Allergy = 'allergy',
+  Test = 'test'
 }
 
 export interface HealthRecord {
@@ -24,17 +30,18 @@ export interface HealthRecord {
   dosage?: number;
   dosage_unit?: string;
   frequency?: string;
-  duration?: number; // Added to fix HealthDetailView errors
-  duration_unit?: string; // Added to fix HealthDetailView errors
+  duration?: number;
+  duration_unit?: string;
   start_date?: string;
   end_date?: string;
   prescription_number?: string;
+  expiration_date?: string; // Added for MedicationTracker component
   
   // Vaccination fields
   vaccine_name?: string;
   manufacturer?: string;
   lot_number?: string;
-  administration_route?: string; // Added to fix HealthDetailView errors
+  administration_route?: string;
   
   // Examination fields
   examination_type?: string;
@@ -49,7 +56,7 @@ export interface HealthRecord {
   recovery_notes?: string;
   
   // For database
-  vet_name?: string; // Make optional to fix useDogHealthRecords
+  vet_name?: string;
   created_at?: string;
 }
 
@@ -58,10 +65,12 @@ export interface WeightRecord {
   dog_id: string;
   weight: number;
   weight_unit: string;
+  unit?: string; // Alias for compatibility with existing components
   date: string;
   notes?: string;
   created_at: string;
   percent_change?: number;
+  birth_date?: string; // For puppy weight tracking
 }
 
 export interface HealthIndicator {
@@ -76,3 +85,41 @@ export interface HealthIndicator {
   created_at: string;
   created_by?: string;
 }
+
+// Add missing enums for health indicators
+export enum AppetiteLevelEnum {
+  Excellent = 'excellent',
+  Good = 'good',
+  Fair = 'fair',
+  Poor = 'poor',
+  None = 'none'
+}
+
+export enum EnergyLevelEnum {
+  Hyperactive = 'hyperactive',
+  High = 'high',
+  Normal = 'normal',
+  Low = 'low',
+  Lethargic = 'lethargic'
+}
+
+export enum StoolConsistencyEnum {
+  Normal = 'normal',
+  Soft = 'soft',
+  Loose = 'loose',
+  Watery = 'watery',
+  Hard = 'hard',
+  Mucousy = 'mucousy',
+  Bloody = 'bloody'
+}
+
+// Add weight unit enum
+export enum WeightUnitEnum {
+  Pounds = 'lbs',
+  Kilograms = 'kg',
+  Grams = 'g',
+  Ounces = 'oz'
+}
+
+// For backwards compatibility
+export type WeightUnit = string;
