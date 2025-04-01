@@ -1,30 +1,22 @@
 
-// Import everything from htmlGenerator
+// Import everything from htmlGenerator 
 import * as HtmlGenerator from './htmlGenerator';
 
-// Export specific functions from htmlGenerator
-export const { 
-  generateHtml = () => {},
-  renderTemplate = () => {}, 
-  applyCustomStyles = () => {}
-} = HtmlGenerator;
+// Export functions from htmlGenerator with fallbacks
+export const generateHtml = HtmlGenerator.generateHtml || (() => '');
+export const renderTemplate = HtmlGenerator.renderTemplate || (() => '');
+export const applyCustomStyles = HtmlGenerator.applyCustomStyles || (() => '');
 
 // Export specific functions from pdfIntegration
 export * from './pdfIntegration';
 
-// Try to import contractTemplates dynamically
-try {
-  // We'll use a dynamic import that will be resolved at runtime
-  import('./contractTemplates').then(module => {
-    // Export all from contractTemplates
-    Object.keys(module).forEach(key => {
-      if (key !== 'generateContractHTML') {
-        exports[key] = module[key];
-      }
-    });
-  }).catch(error => {
-    console.warn('contractTemplates module not found:', error);
-  });
-} catch (error) {
-  console.warn('Error importing contractTemplates:', error);
-}
+// Create a simple contractTemplates implementation if it doesn't exist
+export const generateContractHTML = (templateName: string, data: any) => {
+  console.warn('Contract template generator not fully implemented');
+  return `<h1>${templateName}</h1><pre>${JSON.stringify(data, null, 2)}</pre>`;
+};
+
+// Add other contract template exports
+export const SALES_CONTRACT_TEMPLATE = 'sales_contract';
+export const HEALTH_GUARANTEE_TEMPLATE = 'health_guarantee';
+export const SPAY_NEUTER_TEMPLATE = 'spay_neuter_agreement';

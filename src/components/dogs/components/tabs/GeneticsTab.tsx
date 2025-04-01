@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
@@ -19,7 +18,7 @@ import { GeneticTestsManager } from '@/components/genetics/components/GeneticTes
 import { InteractivePedigree } from '@/components/genetics/components/InteractivePedigree';
 import { HistoricalCOIChart } from '@/components/genetics/components/HistoricalCOIChart';
 import { MultiTraitMatrix } from '@/components/genetics/components/MultiTraitMatrix';
-import { GeneticReportGenerator } from '@/components/genetics/components/GeneticReportGenerator';
+import GeneticReportGenerator from '@/components/genetics/components/GeneticReportGenerator';
 import { GeneticImportDialog } from '@/components/genetics/components/GeneticImportDialog';
 import { generateRiskAssessment } from '@/components/genetics/utils/healthUtils';
 

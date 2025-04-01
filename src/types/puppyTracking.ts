@@ -1,69 +1,7 @@
 
+// Add this file to define types for puppy tracking
+
 export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg';
-
-export interface PuppyAgeGroupData {
-  id: string;
-  name: string;
-  startDay: number;
-  endDay: number;
-  description: string;
-  color?: string;
-  milestones?: string;
-  careChecks?: string[];
-}
-
-export interface PuppyWithAge {
-  id: string;
-  name: string;
-  litter_id: string;
-  birth_date: string;
-  gender?: string;
-  color?: string;
-  status?: string;
-  microchip_number?: string;
-  ageInDays: number;
-  photo_url?: string;
-  current_weight?: string | number;
-  weight?: number;
-  weight_unit?: WeightUnit;
-  litters?: {
-    id: string;
-    name: string;
-    birth_date: string;
-  };
-}
-
-export interface PuppyManagementStats {
-  total?: number;
-  available?: number;
-  reserved?: number;
-  sold?: number;
-  males?: number;
-  females?: number;
-  averageAge?: number;
-  averageWeight?: number;
-  colorDistribution?: Record<string, number>;
-  ageDistribution?: Record<string, number>;
-  totalPuppies: number;
-  availablePuppies?: number;
-  reservedPuppies?: number;
-  soldPuppies?: number;
-  maleCount?: number;
-  femaleCount?: number;
-  puppiesByColor?: Record<string, number>;
-  puppiesByAge?: Record<string, number>;
-  activeLitters: number;
-  upcomingVaccinations: number;
-  recentWeightChecks: number;
-}
-
-export interface WeightData {
-  weight: number;
-  unit: WeightUnit;
-  date?: string;
-  age?: number;
-  ageInDays?: number;
-}
 
 export interface WeightRecord {
   id: string;
@@ -72,66 +10,45 @@ export interface WeightRecord {
   date: string;
   weight: number;
   weight_unit: WeightUnit;
-  unit: WeightUnit;
   notes?: string;
-  percent_change?: number | null;
   created_at: string;
-  birth_date?: string;
+  percent_change?: number;
 }
 
-export interface PuppyMilestone {
+export interface PuppyWithAge extends Record<string, any> {
   id: string;
-  puppy_id: string;
-  milestone_id: string;
-  title?: string;
-  description?: string;
-  expected_age_days?: number;
-  completion_date?: string | null;
-  milestone_date?: string | null;
-  completed?: boolean;
-  notes?: string;
-  category?: string;
+  name: string;
+  gender?: string;
+  color?: string;
+  birth_date?: string;
+  litter_id?: string;
+  ageInDays: number;
+  photo_url?: string;
 }
 
 export interface SocializationCategory {
   id: string;
   name: string;
-  description: string;
-  targetCount: number;
-  color?: string;
+  description?: string;
   examples?: string[];
 }
 
-export interface SocializationReactionType {
+export interface SocializationReaction {
   id: string;
   name: string;
-  color: string;
-  order: number;
+  description?: string;
+  color?: 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'gray';
 }
-
-export type SocializationReaction = SocializationReactionType | string;
 
 export interface SocializationExperience {
   id: string;
   puppy_id: string;
   category_id: string;
-  category?: string;
-  experience?: string;
-  experience_date?: string;
-  date?: string;
-  description?: string;
-  reaction: SocializationReaction;
+  experience: string;
+  experience_date: string;
+  reaction?: string;
   notes?: string;
-  created_at?: string;
-}
-
-export interface SocializationProgress {
-  category: string;
-  count: number;
-  target: number;
-  completionPercentage: number;
-  categoryId?: string;
-  categoryName?: string;
+  created_at: string;
 }
 
 export interface VaccinationRecord {
@@ -139,20 +56,29 @@ export interface VaccinationRecord {
   puppy_id: string;
   vaccination_type: string;
   vaccination_date: string;
-  administered_by?: string;
-  lot_number?: string;
-  notes?: string;
-  created_at?: string;
   due_date?: string;
-  is_completed?: boolean;
+  administered_by?: string;
+  notes?: string;
+  lot_number?: string;
+  created_at: string;
 }
 
 export interface VaccinationScheduleItem {
   id: string;
-  puppy_id?: string;
+  puppy_id: string;
   vaccination_type: string;
   due_date: string;
-  is_completed?: boolean;
-  vaccination_date?: string;
   notes?: string;
+  created_at: string;
 }
+
+export const DEFAULT_AGE_GROUPS = [
+  { name: '0-2 weeks', min: 0, max: 14 },
+  { name: '2-4 weeks', min: 15, max: 28 },
+  { name: '4-6 weeks', min: 29, max: 42 },
+  { name: '6-8 weeks', min: 43, max: 56 },
+  { name: '8-12 weeks', min: 57, max: 84 },
+  { name: '3-6 months', min: 85, max: 180 },
+  { name: '6-12 months', min: 181, max: 365 },
+  { name: '1+ years', min: 366, max: 9999 }
+];

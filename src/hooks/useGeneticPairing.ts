@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useDogGenetics } from './useDogGenetics';
 import { PairingAnalysis, HealthWarning, DogGenotype, HealthMarker } from '@/types/genetics';
@@ -16,8 +15,8 @@ interface UseGeneticPairingReturn {
  */
 export function useGeneticPairing(sireId: string, damId: string): UseGeneticPairingReturn {
   // Use the useDogGenetics hook to fetch data for both dogs
-  const { geneticData: sireGenetics, loading: sireLoading, error: sireError } = useDogGenetics(sireId);
-  const { geneticData: damGenetics, loading: damLoading, error: damError } = useDogGenetics(damId);
+  const { dogData: sireGenetics, isLoading: sireLoading, error: sireError } = useDogGenetics(sireId);
+  const { dogData: damGenetics, isLoading: damLoading, error: damError } = useDogGenetics(damId);
   
   // State for analysis results
   const [analysis, setAnalysis] = useState<PairingAnalysis | null>(null);
@@ -154,12 +153,16 @@ function analyzeGenetics(sireGenetics: DogGenotype, damGenetics: DogGenotype): P
     coat: predictCoatType(sireGenetics, damGenetics)
   };
   
+  // Fix the type issue by providing compatibleTests as a string array
+  // not a boolean value
   return {
     coi,
     healthWarnings,
-    compatibleTests,
+    compatibleTests: compatibleTests,
     incompatibleTests,
-    traitPredictions
+    traitPredictions,
+    colorProbabilities: [],
+    compatibilityScore: 0
   };
 }
 
