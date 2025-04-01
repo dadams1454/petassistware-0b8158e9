@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -39,7 +40,7 @@ const LitterDetails: React.FC<LitterDetailsProps> = ({ litterId: propLitterId })
         .single();
 
       if (error) throw error;
-      return data as Litter;
+      return data as unknown as Litter;
     },
     enabled: !!litterId
   });

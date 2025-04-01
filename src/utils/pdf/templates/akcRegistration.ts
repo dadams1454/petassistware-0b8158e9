@@ -67,7 +67,7 @@ export function renderAkcRegistrationTemplate(
       width: width,
       height: 20,
       borderWidth: 1,
-      borderColor: rgb(0, 0, 0), // Changed format
+      borderColor: rgb(0, 0, 0),
       opacity: 0.1,
     });
 
@@ -159,8 +159,8 @@ export function renderAkcRegistrationTemplate(
       width: width - margin * 2,
       height: 20,
       borderWidth: 1,
-      borderColor: rgb(0, 0, 0), // Changed format
-      color: rgb(0.9, 0.9, 0.9), // Changed format
+      borderColor: rgb(0, 0, 0),
+      color: rgb(0.9, 0.9, 0.9),
     });
 
     let colX = tableX;
@@ -183,7 +183,7 @@ export function renderAkcRegistrationTemplate(
   data.puppies.forEach((puppy, index) => {
     // Check if we need a new page
     if (tableY < margin + 50) {
-      page = pdfDoc.addPage([612, 792]); // Now works since page is 'let'
+      page = pdfDoc.addPage([612, 792]);
       tableY = height - margin;
       drawTableHeader();
     }
@@ -196,8 +196,8 @@ export function renderAkcRegistrationTemplate(
         width: width - margin * 2,
         height: 20,
         borderWidth: 1,
-        borderColor: rgb(0, 0, 0), // Changed format
-        color: rgb(0.95, 0.95, 0.95), // Changed format
+        borderColor: rgb(0, 0, 0),
+        color: rgb(0.95, 0.95, 0.95),
       });
     }
 
@@ -254,7 +254,7 @@ export function renderAkcRegistrationTemplate(
   tableY -= lineHeight * 2;
   
   if (tableY < margin + 100) {
-    page = pdfDoc.addPage([612, 792]); // Now works since page is 'let'
+    page = pdfDoc.addPage([612, 792]);
     tableY = height - margin;
   }
 

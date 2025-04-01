@@ -43,9 +43,9 @@ export const getAkcRegistrationData = async (litterId: string): Promise<AkcRegis
     
     if (breederError) throw breederError;
 
-    // Use type assertion to help TypeScript understand the structure
-    const dam = litter.dam as SimpleDog | null;
-    const sire = litter.sire as SimpleDog | null;
+    // Type assertion with safe handling
+    const dam = litter.dam as unknown as SimpleDog;
+    const sire = litter.sire as unknown as SimpleDog;
 
     // Format the data for AKC registration
     return {

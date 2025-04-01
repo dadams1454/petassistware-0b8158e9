@@ -43,6 +43,8 @@ export interface SimpleDog {
   gender: string;
   photo_url?: string;
   breed?: string;
+  color?: string;
+  registration_number?: string;
 }
 
 export interface Litter {
