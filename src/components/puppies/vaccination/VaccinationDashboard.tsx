@@ -63,7 +63,7 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
   // These are completed vaccinations with known vaccination_date
   const vaccinationRecords: VaccinationRecord[] = completedVaccinations.map(vax => ({
     ...vax,
-    vaccination_date: vax.vaccination_date || vax.due_date
+    vaccination_date: vax.due_date // Use due_date since vaccination_date doesn't exist
   })) as VaccinationRecord[];
   
   // These are scheduled vaccinations
