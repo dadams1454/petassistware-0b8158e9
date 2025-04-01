@@ -1,28 +1,46 @@
 
+import { useEffect, useMemo } from 'react';
 import { usePuppyData } from './puppies/usePuppyData';
 import { usePuppyStats } from './puppies/usePuppyStats';
 import { usePuppyAgeGroups } from './puppies/usePuppyAgeGroups';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { DEFAULT_AGE_GROUPS } from '@/data/puppyAgeGroups';
 
 export const usePuppyTracking = () => {
-  // Fetch puppy data
-  const { puppies, isLoading: isLoadingPuppies, error: puppiesError } = usePuppyData();
+  const { puppies, isLoading: puppiesLoading, error: puppiesError } = usePuppyData();
+  const { puppyStats, isLoading: statsLoading, error: statsError } = usePuppyStats(puppies);
+  const { ageGroups } = usePuppyAgeGroups(puppies);
   
-  // Calculate puppy statistics
-  const { puppyStats, isLoading: isLoadingStats, error: statsError } = usePuppyStats(puppies);
+  // Organize puppies by age group
+  const puppiesByAgeGroup = useMemo(() => {
+    const result: Record<string, PuppyWithAge[]> = {};
+    
+    // Initialize groups with empty arrays
+    DEFAULT_AGE_GROUPS.forEach(group => {
+      result[group.id] = [];
+    });
+    
+    // Sort puppies into age groups
+    puppies.forEach(puppy => {
+      const age = puppy.ageInDays;
+      const ageGroup = DEFAULT_AGE_GROUPS.find(
+        group => age >= group.startDay && age <= group.endDay
+      );
+      
+      if (ageGroup) {
+        result[ageGroup.id].push(puppy);
+      }
+    });
+    
+    return result;
+  }, [puppies]);
   
-  // Group puppies by age
-  const { ageGroups, puppiesByAgeGroup } = usePuppyAgeGroups(puppies);
-
-  // Combine loading and error states
-  const isLoading = isLoadingPuppies || isLoadingStats;
-  const error = puppiesError || statsError;
-
   return {
     puppies,
-    ageGroups,
-    puppiesByAgeGroup,
     puppyStats,
-    isLoading,
-    error
+    ageGroups: DEFAULT_AGE_GROUPS as PuppyAgeGroupData[],
+    puppiesByAgeGroup,
+    isLoading: puppiesLoading || statsLoading,
+    error: puppiesError || statsError
   };
 };

@@ -4,20 +4,22 @@ import { Syringe, Stethoscope, Pill, Activity, AlertCircle, FileText, Scissors }
 import { HealthRecordTypeEnum } from '@/types/health';
 import { DogGenotype, HealthMarker, GeneticHealthStatus } from '@/types/genetics';
 
-export const getHealthRecordIcon = (recordType: string): ReactNode => {
+// This function returns an object describing the icon to use, not the icon itself
+// The component using this will need to render it like: const Icon = getHealthRecordIcon(type).type
+export const getHealthRecordIcon = (recordType: string) => {
   switch (recordType) {
     case HealthRecordTypeEnum.Vaccination:
-      return { type: Syringe, props: { className: "h-5 w-5" } };
+      return { type: Syringe, className: "h-5 w-5" };
     case HealthRecordTypeEnum.Examination:
-      return { type: Stethoscope, props: { className: "h-5 w-5" } };
+      return { type: Stethoscope, className: "h-5 w-5" };
     case HealthRecordTypeEnum.Medication:
-      return { type: Pill, props: { className: "h-5 w-5" } };
+      return { type: Pill, className: "h-5 w-5" };
     case HealthRecordTypeEnum.Surgery:
-      return { type: Scissors, props: { className: "h-5 w-5" } };
+      return { type: Scissors, className: "h-5 w-5" };
     case HealthRecordTypeEnum.Observation:
-      return { type: AlertCircle, props: { className: "h-5 w-5" } };
+      return { type: AlertCircle, className: "h-5 w-5" };
     default:
-      return { type: FileText, props: { className: "h-5 w-5" } };
+      return { type: FileText, className: "h-5 w-5" };
   }
 };
 

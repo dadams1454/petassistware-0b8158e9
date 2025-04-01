@@ -1,129 +1,151 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useMemo } from 'react';
-import { toast } from 'sonner';
 import { VaccinationRecord, VaccinationScheduleItem } from '@/types/puppyTracking';
+import { toast } from '@/hooks/use-toast';
 
 export const usePuppyVaccinations = (puppyId: string) => {
-  const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed' | 'overdue'>('all');
+  const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
+  const [scheduledVaccinations, setScheduledVaccinations] = useState<VaccinationScheduleItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Fetch vaccinations
-  const {
-    data = [],
-    isLoading,
-    error,
-    refetch
-  } = useQuery({
-    queryKey: ['puppy-vaccinations', puppyId],
-    queryFn: async () => {
-      if (!puppyId) return [];
+  useEffect(() => {
+    if (!puppyId) return;
+    fetchVaccinations();
+  }, [puppyId]);
 
-      // Get completed vaccinations
-      const { data: completedData, error: completedError } = await supabase
+  const fetchVaccinations = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch administered vaccinations
+      const { data: vaccinationsData, error: vaccinationsError } = await supabase
         .from('puppy_vaccinations')
         .select('*')
         .eq('puppy_id', puppyId);
 
-      if (completedError) throw completedError;
+      if (vaccinationsError) throw new Error(vaccinationsError.message);
 
-      // Get scheduled vaccinations
-      const { data: scheduledData, error: scheduledError } = await supabase
+      // Fetch scheduled vaccinations
+      const { data: scheduleData, error: scheduleError } = await supabase
         .from('puppy_vaccination_schedule')
         .select('*')
         .eq('puppy_id', puppyId);
 
-      if (scheduledError) throw scheduledError;
+      if (scheduleError) throw new Error(scheduleError.message);
 
-      // Process completed vaccinations to match schedule format
-      const processedCompletedData = completedData.map(record => ({
-        ...record,
-        due_date: record.vaccination_date,
-        is_completed: true
-      })) as VaccinationScheduleItem[];
+      // Convert to our application types
+      const formattedVaccinations: VaccinationRecord[] = vaccinationsData?.map(record => ({
+        id: record.id,
+        puppy_id: record.puppy_id,
+        vaccination_type: record.vaccination_type,
+        vaccination_date: record.vaccination_date,
+        administered_by: record.administered_by,
+        lot_number: record.lot_number,
+        notes: record.notes,
+        created_at: record.created_at,
+      })) || [];
 
-      // Mark scheduled as not completed
-      const processedScheduledData = scheduledData.map(record => ({
-        ...record,
-        is_completed: false
-      })) as VaccinationScheduleItem[];
+      const formattedSchedule: VaccinationScheduleItem[] = scheduleData?.map(record => ({
+        id: record.id,
+        puppy_id: record.puppy_id,
+        vaccination_type: record.vaccination_type,
+        due_date: record.due_date,
+        notes: record.notes,
+        created_at: record.created_at,
+        is_completed: false, // Default to false
+      })) || [];
 
-      // Return combined data
-      return [...processedCompletedData, ...processedScheduledData];
-    },
-    enabled: !!puppyId
-  });
+      // Mark scheduled items as completed if there's a matching vaccination
+      const updatedSchedule = formattedSchedule.map(item => {
+        const hasVaccination = formattedVaccinations.some(
+          v => v.vaccination_type === item.vaccination_type
+        );
+        return { ...item, is_completed: hasVaccination };
+      });
 
-  // Filtered data
-  const vaccinationsByStatus = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+      setVaccinations(formattedVaccinations);
+      setScheduledVaccinations(updatedSchedule);
+    } catch (err) {
+      console.error('Error fetching vaccinations:', err);
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const upcoming: VaccinationScheduleItem[] = [];
-    const completed: VaccinationScheduleItem[] = [];
-    const overdue: VaccinationScheduleItem[] = [];
-
-    data.forEach((vax) => {
-      if (vax.is_completed) {
-        completed.push(vax);
-      } else {
-        const dueDate = new Date(vax.due_date);
-        dueDate.setHours(0, 0, 0, 0);
-
-        if (dueDate < today) {
-          overdue.push(vax);
-        } else {
-          upcoming.push(vax);
-        }
-      }
-    });
-
-    return { upcoming, completed, overdue };
-  }, [data]);
-
-  // Add vaccination
-  const addVaccinationMutation = useMutation({
-    mutationFn: async (vaccination: Partial<VaccinationRecord>) => {
-      if (!vaccination.vaccination_type) {
-        throw new Error('Vaccination type is required');
+  const addVaccination = async (vaccinationData: Partial<VaccinationRecord>) => {
+    try {
+      // Ensure required fields are present
+      if (!vaccinationData.vaccination_date || !vaccinationData.vaccination_type) {
+        throw new Error('Vaccination date and type are required');
       }
 
-      if (!vaccination.vaccination_date) {
-        throw new Error('Vaccination date is required');
-      }
+      const newVaccination = {
+        puppy_id: puppyId,
+        ...vaccinationData,
+      };
 
+      // Insert the vaccination record
       const { data, error } = await supabase
         .from('puppy_vaccinations')
         .insert([
-          { ...vaccination, puppy_id: puppyId }
-        ])
-        .select()
-        .single();
+          {
+            puppy_id: puppyId,
+            vaccination_type: vaccinationData.vaccination_type,
+            vaccination_date: vaccinationData.vaccination_date,
+            administered_by: vaccinationData.administered_by,
+            lot_number: vaccinationData.lot_number,
+            notes: vaccinationData.notes,
+          }
+        ]);
 
       if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['puppy-vaccinations', puppyId] });
-      toast.success('Vaccination recorded successfully');
-    },
-    onError: (error: any) => {
-      toast.error(`Error recording vaccination: ${error.message}`);
+
+      // Update the scheduled vaccinations status if applicable
+      await updateScheduleStatus(vaccinationData.vaccination_type || '');
+      
+      // Refresh data
+      await fetchVaccinations();
+      
+      toast({
+        title: 'Vaccination recorded',
+        description: 'The vaccination has been successfully added.',
+      });
+      
+      return { success: true };
+    } catch (err) {
+      console.error('Error adding vaccination:', err);
+      toast({
+        title: 'Error adding vaccination',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+      return { success: false, error: err };
     }
-  });
+  };
+
+  const updateScheduleStatus = async (vaccinationType: string) => {
+    // Find matching scheduled vaccination
+    const scheduledItem = scheduledVaccinations.find(
+      item => item.vaccination_type === vaccinationType && !item.is_completed
+    );
+
+    if (scheduledItem) {
+      // Update the scheduled vaccination to mark it as completed
+      await supabase
+        .from('puppy_vaccination_schedule')
+        .update({ is_completed: true })
+        .eq('id', scheduledItem.id);
+    }
+  };
 
   return {
-    vaccinations: data,
-    upcomingVaccinations: vaccinationsByStatus.upcoming,
-    completedVaccinations: vaccinationsByStatus.completed,
-    overdueVaccinations: vaccinationsByStatus.overdue,
+    vaccinations,
+    scheduledVaccinations,
     isLoading,
     error,
-    addVaccination: addVaccinationMutation.mutateAsync,
-    isAdding: addVaccinationMutation.isPending,
-    filter,
-    setFilter,
-    refresh: refetch
+    fetchVaccinations,
+    addVaccination,
   };
 };

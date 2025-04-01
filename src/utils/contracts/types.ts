@@ -11,7 +11,7 @@ export interface ContractData {
   puppyBreed?: string;
   puppyColor?: string;
   puppyGender?: string;
-  microchipNumber?: string;
+  microchipNumber?: string; // Changed from required to optional
   salePrice: number;
   contractDate: string;
   contractType: 'pet' | 'breeding' | 'co-ownership' | 'other';

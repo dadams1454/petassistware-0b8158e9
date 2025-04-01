@@ -56,6 +56,22 @@ export interface SocializationCategory {
   id: string;
   name: string;
   description?: string;
+  examples?: string[];
+  color?: string;
+}
+
+export interface SocializationReaction {
+  id: string;
+  name: string;
+  color: string;
+  order: number;
+}
+
+export interface SocializationProgress {
+  category: SocializationCategory;
+  completedCount: number;
+  targetCount: number;
+  experiences: SocializationExperience[];
 }
 
 export interface PuppyMilestone {
@@ -71,6 +87,7 @@ export interface PuppyMilestone {
   target_date: string;
   completion_date?: string;
   description?: string;
+  expected_age_days?: number;
 }
 
 export interface BreedGrowthStandard {
@@ -80,4 +97,52 @@ export interface BreedGrowthStandard {
   median_weight: number;
   max_weight: number;
   weight_unit: 'oz' | 'g' | 'lbs' | 'kg';
+}
+
+export interface PuppyAgeGroupData {
+  id: string;
+  name: string;
+  description: string;
+  startDay: number;
+  endDay: number;
+  color: string;
+  priority: number;
+  milestones?: string;
+  careChecks?: string[];
+}
+
+export interface WeightRecord {
+  id: string;
+  puppy_id?: string;
+  dog_id?: string;
+  date: string;
+  weight: number;
+  weight_unit: 'oz' | 'g' | 'lbs' | 'kg';
+  notes?: string;
+  percent_change?: number | null;
+  created_at: string;
+}
+
+export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg';
+
+export interface WeightData {
+  date: string;
+  weight: number;
+  weightUnit: WeightUnit;
+  ageInDays?: number;
+}
+
+export interface PuppyManagementStats {
+  totalPuppies: number;
+  availablePuppies: number;
+  reservedPuppies: number;
+  soldPuppies: number;
+  maleCount: number;
+  femaleCount: number;
+  averageWeight: number;
+  puppiesByColor: Record<string, number>;
+  puppiesByAge: Record<string, number>;
+  activeLitters: number;
+  upcomingVaccinations: number;
+  recentWeightChecks: number;
 }
