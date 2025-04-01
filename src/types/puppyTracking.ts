@@ -16,6 +16,14 @@ export interface PuppyWithAge {
   customer_id?: string;
   collar_color?: string;
   markings?: string;
+  // Add missing properties
+  photo_url?: string;
+  current_weight?: string;
+  litters?: {
+    id: string;
+    name: string;
+    birth_date: string;
+  };
 }
 
 export interface PuppyAgeGroupData {
@@ -24,6 +32,10 @@ export interface PuppyAgeGroupData {
   startDay: number;
   endDay: number;
   description?: string;
+  // Add missing properties
+  milestones?: string;
+  color?: string;
+  careChecks?: string[];
 }
 
 export interface SocializationCategory {
@@ -31,16 +43,19 @@ export interface SocializationCategory {
   name: string;
   description: string;
   targetCount: number;
-  color: string;
   examples: string[];
+  // Add missing property
+  color?: string;
 }
 
 export interface SocializationProgress {
-  categoryId: string;
-  categoryName: string;
+  category: string;
   count: number;
   target: number;
   completionPercentage: number;
+  // Add missing properties
+  categoryId?: string;
+  categoryName?: string;
 }
 
 export interface SocializationExperience {
@@ -52,6 +67,18 @@ export interface SocializationExperience {
   location?: string;
   reaction: SocializationReaction;
   notes?: string;
+  // Add missing properties
+  experience?: string;
+  experience_date?: string;
+  created_at?: string;
+}
+
+// Update SocializationReaction to be an interface instead of a string union
+export interface SocializationReactionType {
+  id: string;
+  name: string;
+  color: string;
+  order: number;
 }
 
 export type SocializationReaction = 'positive' | 'neutral' | 'negative' | 'fearful' | 'excited';
@@ -65,6 +92,19 @@ export interface PuppyManagementStats {
   female: number;
   average_age: number;
   total_litters: number;
+  // Add missing properties
+  totalPuppies?: number;
+  availablePuppies?: number;
+  reservedPuppies?: number;
+  soldPuppies?: number;
+  maleCount?: number;
+  femaleCount?: number;
+  averageWeight?: number;
+  puppiesByColor?: Record<string, number>;
+  puppiesByAge?: Record<string, number>;
+  activeLitters?: number;
+  upcomingVaccinations?: number;
+  recentWeightChecks?: number;
 }
 
 export interface WeightRecord {
@@ -80,14 +120,13 @@ export interface WeightRecord {
   birth_date?: string;
 }
 
-export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg';
-
 export interface WeightData {
   id: string;
   weight: number;
   date: string;
-  age: number; // Age in days
   unit: WeightUnit;
+  // Add missing property
+  age?: number;
 }
 
 export interface PuppyMilestone {
@@ -97,6 +136,11 @@ export interface PuppyMilestone {
   description: string;
   is_required: boolean;
   category: string;
+  // Add missing properties
+  title?: string;
+  completion_date?: string;
+  milestone_date?: string;
+  notes?: string;
 }
 
 export interface VaccinationRecord {

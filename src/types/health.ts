@@ -20,6 +20,32 @@ export enum WeightUnitEnum {
   Grams = 'g'
 }
 
+export enum AppetiteLevelEnum {
+  Excellent = 'Excellent',
+  Good = 'Good',
+  Fair = 'Fair',
+  Poor = 'Poor',
+  None = 'None'
+}
+
+export enum EnergyLevelEnum {
+  VeryHigh = 'VeryHigh',
+  High = 'High',
+  Normal = 'Normal',
+  Low = 'Low',
+  VeryLow = 'VeryLow'
+}
+
+export enum StoolConsistencyEnum {
+  Solid = 'Solid',
+  SemiSolid = 'SemiSolid',
+  Soft = 'Soft',
+  Loose = 'Loose',
+  Watery = 'Watery',
+  Bloody = 'Bloody',
+  Mucousy = 'Mucousy'
+}
+
 export type WeightUnit = 'lbs' | 'kg' | 'oz' | 'g';
 
 export interface HealthRecord {
@@ -37,6 +63,41 @@ export interface HealthRecord {
   vet_name?: string;
   created_at?: string;
   updated_at?: string;
+
+  // Additional properties for medication records
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string;
+  prescribed_by?: string;
+  pharmacy?: string;
+  prescription_number?: string;
+  refills_remaining?: number;
+  
+  // Additional properties for vaccination records
+  vaccine_name?: string;
+  vaccine_type?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  expiration_date?: string;
+  
+  // Additional properties for examination records
+  examination_type?: string;
+  exam_type?: string;
+  findings?: string;
+  recommendations?: string;
+  vet_clinic?: string;
+  follow_up_date?: string;
+  examiner?: string;
+  facility?: string;
+  
+  // Additional properties for surgery records
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
 }
 
 export interface WeightRecord {
@@ -45,7 +106,8 @@ export interface WeightRecord {
   date: string;
   weight: number;
   unit: WeightUnit;
-  weight_unit?: WeightUnit;
+  weight_unit: WeightUnit;
   notes?: string;
   created_at: string;
+  percent_change?: number;
 }

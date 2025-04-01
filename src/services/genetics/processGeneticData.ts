@@ -1,118 +1,94 @@
-import { supabase } from '@/integrations/supabase/client';
-import { DogGenotype, GeneticHealthStatus, GeneticTestResult, TestResult, HealthMarker, HealthTestResult } from '@/types/genetics';
 
-export const generateDogGenotypeFromTests = async (dogId: string, tests: TestResult[]): Promise<DogGenotype> => {
-  // Create a base genotype object
-  const genotype: DogGenotype = {
-    id: 'generated', // For keeping track of generated data
+import { supabase } from '@/integrations/supabase/client';
+import { DogGenotype, HealthMarker, GeneticHealthStatus, HealthTestResult, GeneticTestResult, TestResult } from '@/types/genetics';
+
+export const processGeneticData = async (dogId: string) => {
+  // Get the genetic information for the dog
+  const { data, error } = await supabase
+    .from('genetic_data')
+    .select('*')
+    .eq('dog_id', dogId)
+    .single();
+  
+  if (error || !data) {
+    return null;
+  }
+  
+  // Process genetic data into a DogGenotype
+  const dogGenotype: DogGenotype = {
+    id: data.id,
     dogId: dogId,
-    name: '', // Will be filled from dog data
-    breed: '', // Will be filled from dog data
-    baseColor: 'Unknown',
-    brownDilution: 'Unknown',
-    dilution: 'Unknown',
-    agouti: 'Unknown',
-    healthMarkers: {},
+    baseColor: data.base_color || 'unknown',
+    brownDilution: data.brown_dilution || 'unknown',
+    dilution: data.dilution || 'unknown',
+    agouti: data.agouti || 'unknown',
+    healthMarkers: {}
   };
   
-  // Try to get dog basic info
-  try {
-    const { data } = await supabase
-      .from('dogs')
-      .select('name, breed')
-      .eq('id', dogId)
-      .single();
-      
-    if (data) {
-      genotype.name = data.name;
-      genotype.breed = data.breed;
-    }
-  } catch (error) {
-    console.error('Error fetching dog details for genotype:', error);
-  }
-  
-  // Process each test and update genotype
-  for (const test of tests) {
-    // Process color-related tests
-    if (test.testType.toLowerCase().includes('color') || 
-        test.testType.toLowerCase().includes('coat')) {
-      updateColorGenotype(genotype, test);
-    } 
-    // Process health markers
-    else {
-      const marker: HealthMarker = {
-        status: mapResultToStatus(test.result),
-        testDate: test.testDate,
-        genotype: test.result,
-        labName: test.labName
+  // Process health markers
+  if (data.health_results) {
+    for (const [condition, result] of Object.entries(data.health_results)) {
+      dogGenotype.healthMarkers[condition] = {
+        status: result.status as GeneticHealthStatus,
+        testDate: result.test_date,
+        genotype: result.genotype,
+        labName: result.lab_name
       };
-      
-      genotype.healthMarkers[test.testType] = marker;
     }
   }
   
-  // Generate health results from markers for easier processing
+  // Process health test results
   const healthResults: HealthTestResult[] = [];
-  for (const [condition, marker] of Object.entries(genotype.healthMarkers)) {
-    healthResults.push({
-      condition,
-      result: marker.status,
-      testDate: marker.testDate,
-      date: marker.testDate,
-      labName: marker.labName
-    });
+  if (data.health_results) {
+    for (const [condition, result] of Object.entries(data.health_results)) {
+      healthResults.push({
+        condition,
+        result: result.status as GeneticHealthStatus,
+        testDate: result.test_date,
+        date: result.test_date,
+        labName: result.lab_name
+      });
+    }
   }
-  genotype.healthResults = healthResults;
+  dogGenotype.healthResults = healthResults;
   
-  // Process any specific breed-related markers
-  processBreedSpecificTraits(genotype);
+  // Process color genetics
+  if (data.color_genetics) {
+    dogGenotype.baseColor = data.color_genetics.base_color || dogGenotype.baseColor;
+    dogGenotype.brownDilution = data.color_genetics.brown_dilution || dogGenotype.brownDilution;
+    dogGenotype.dilution = data.color_genetics.dilution || dogGenotype.dilution;
+    dogGenotype.agouti = data.color_genetics.agouti || dogGenotype.agouti;
+  }
   
-  return genotype;
+  // Get test results
+  const { data: testData, error: testError } = await supabase
+    .from('dog_genetic_tests')
+    .select('*')
+    .eq('dog_id', dogId);
+  
+  if (!testError && testData) {
+    const testResults: GeneticTestResult[] = testData.map(test => ({
+      testType: test.test_type,
+      testDate: test.test_date,
+      result: test.result,
+      labName: test.lab_name,
+      testId: test.id
+    }));
+    dogGenotype.testResults = testResults;
+  }
+  
+  return dogGenotype;
 };
 
-const updateColorGenotype = (genotype: DogGenotype, test: TestResult) => {
-  const testType = test.testType.toLowerCase();
-  const result = test.result.toLowerCase();
+export const getBreedHighRiskConditions = async (breed: string) => {
+  const { data, error } = await supabase
+    .from('breed_health_concerns')
+    .select('*')
+    .eq('breed', breed.toLowerCase());
   
-  if (testType.includes('base color')) {
-    genotype.baseColor = test.result;
-  } else if (testType.includes('brown') || testType.includes('chocolate')) {
-    genotype.brownDilution = test.result;
-  } else if (testType.includes('dilution')) {
-    genotype.dilution = test.result;
-  } else if (testType.includes('agouti')) {
-    genotype.agouti = test.result;
+  if (error || !data) {
+    return [];
   }
   
-  // Add the test to the array of test results for reference
-  if (!genotype.testResults) {
-    genotype.testResults = [];
-  }
-  
-  genotype.testResults.push({
-    testType: test.testType,
-    testDate: test.testDate,
-    result: test.result,
-    labName: test.labName || '',
-    testId: test.id
-  });
-};
-
-const mapResultToStatus = (result: string): GeneticHealthStatus => {
-  result = result.toLowerCase();
-  
-  if (result.includes('clear') || result.includes('normal') || result.includes('negative')) {
-    return 'clear';
-  } else if (result.includes('carrier') || result.includes('heterozygous')) {
-    return 'carrier';
-  } else if (result.includes('affected') || result.includes('at risk') || result.includes('positive')) {
-    return 'affected';
-  } else {
-    return 'unknown';
-  }
-};
-
-const processBreedSpecificTraits = (genotype: DogGenotype) => {
-  // Implementation would be breed-specific trait analysis
-  // This is a placeholder for breed-specific logic
+  return data;
 };

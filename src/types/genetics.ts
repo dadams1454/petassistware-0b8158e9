@@ -96,5 +96,6 @@ export interface GeneticImportResult {
 
 export interface GeneticReportGeneratorProps {
   dogId: string;
-  dogData?: DogGenotype;
+  dogName?: string;
+  dogGenetics?: DogGenotype;
 }

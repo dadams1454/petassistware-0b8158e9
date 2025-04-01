@@ -1,85 +1,78 @@
 
-import { SocializationCategory, SocializationReaction } from '@/types/puppyTracking';
+import { SocializationCategory, SocializationReactionType } from '@/types/puppyTracking';
 
-export const SOCIALIZATION_CATEGORIES: SocializationCategory[] = [
+export const socializationCategories: SocializationCategory[] = [
   {
-    id: 'people',
-    name: 'People Interactions',
-    description: 'Exposing puppies to different types of people',
-    color: 'blue',
-    examples: ['Adults', 'Children', 'Men with beards', 'People wearing hats', 'People with glasses']
+    id: "people",
+    name: "People",
+    description: "Different types of people and interactions",
+    color: "blue",
+    targetCount: 20,
+    examples: ["Children", "Men with beards", "People with hats", "Elderly people"]
   },
   {
-    id: 'animals',
-    name: 'Other Animals',
-    description: 'Introducing puppies to various animals',
-    color: 'green',
-    examples: ['Other dogs', 'Cats', 'Livestock', 'Small pets', 'Wildlife (from a distance)']
+    id: "animals",
+    name: "Animals",
+    description: "Exposure to various animals",
+    color: "green",
+    targetCount: 15,
+    examples: ["Other dogs", "Cats", "Farm animals", "Small pets"]
   },
   {
-    id: 'environments',
-    name: 'Environments',
-    description: 'Exposing puppies to different environments',
-    color: 'purple',
-    examples: ['Car rides', 'Parks', 'Streets', 'Stores', 'Outdoor settings']
+    id: "environments",
+    name: "Environments",
+    description: "Different places and settings",
+    color: "purple",
+    targetCount: 15,
+    examples: ["Urban areas", "Parks", "Car rides", "Veterinary clinic"]
   },
   {
-    id: 'sounds',
-    name: 'Sounds & Noises',
-    description: 'Introducing puppies to various sounds',
-    color: 'yellow',
-    examples: ['Thunderstorms', 'Fireworks', 'Appliances', 'Traffic', 'Music']
+    id: "sounds",
+    name: "Sounds",
+    description: "Various noises and sounds",
+    color: "orange",
+    targetCount: 12,
+    examples: ["Thunderstorms", "Vacuum cleaners", "Traffic", "Fireworks"]
   },
   {
-    id: 'surfaces',
-    name: 'Surface Types',
-    description: 'Walking on different surfaces',
-    color: 'orange',
-    examples: ['Grass', 'Tile', 'Carpet', 'Metal grates', 'Water/puddles']
+    id: "surfaces",
+    name: "Surfaces",
+    description: "Different walking surfaces",
+    color: "brown",
+    targetCount: 10,
+    examples: ["Grass", "Tile", "Carpet", "Metal grates"]
   },
   {
-    id: 'handling',
-    name: 'Handling & Grooming',
-    description: 'Getting puppies used to being handled',
-    color: 'pink',
-    examples: ['Nail trimming', 'Ear cleaning', 'Brushing', 'Teeth cleaning', 'Bathing']
+    id: "handling",
+    name: "Handling",
+    description: "Being touched and handled",
+    color: "pink",
+    targetCount: 10,
+    examples: ["Ear touching", "Paw handling", "Grooming", "Teeth examination"]
   },
   {
-    id: 'objects',
-    name: 'Objects & Toys',
-    description: 'Exposure to different objects',
-    color: 'cyan',
-    examples: ['Umbrellas', 'Bicycles', 'Strollers', 'Toys', 'Household items']
+    id: "objects",
+    name: "Objects",
+    description: "Exposure to various objects",
+    color: "teal",
+    targetCount: 12,
+    examples: ["Umbrellas", "Bicycles", "Stairs", "Toys"]
   },
   {
-    id: 'travel',
-    name: 'Travel Experiences',
-    description: 'Getting puppies comfortable with travel',
-    color: 'indigo',
-    examples: ['Car rides', 'Crate training', 'Short trips', 'Carriers', 'Public transport']
+    id: "training",
+    name: "Training",
+    description: "Basic training experiences",
+    color: "indigo",
+    targetCount: 8,
+    examples: ["Collar/leash", "Crate training", "Basic commands", "Name recognition"]
   }
 ];
 
-export const SOCIALIZATION_REACTIONS: SocializationReaction[] = [
-  { id: 'very_positive', name: 'Very Positive', color: 'green', order: 1 },
-  { id: 'positive', name: 'Positive', color: 'emerald', order: 2 },
-  { id: 'neutral', name: 'Neutral', color: 'blue', order: 3 },
-  { id: 'cautious', name: 'Cautious', color: 'amber', order: 4 },
-  { id: 'fearful', name: 'Fearful', color: 'orange', order: 5 },
-  { id: 'very_fearful', name: 'Very Fearful', color: 'red', order: 6 }
-];
-
-export const RECOMMENDED_EXPERIENCES_BY_AGE = [
-  { minAge: 0, maxAge: 21, targetCount: 5 }, // 0-3 weeks: Limited, mostly handling
-  { minAge: 22, maxAge: 49, targetCount: 15 }, // 3-7 weeks: Increasing exposure
-  { minAge: 50, maxAge: 84, targetCount: 30 }, // 7-12 weeks: Critical socialization period
-  { minAge: 85, maxAge: 112, targetCount: 40 }, // 12-16 weeks: Continuing socialization
-  { minAge: 113, maxAge: 365, targetCount: 50 } // Beyond 16 weeks: Maintenance
-];
-
-export const getSocializationTargetsByAge = (ageInDays: number): number => {
-  const ageGroup = RECOMMENDED_EXPERIENCES_BY_AGE.find(
-    group => ageInDays >= group.minAge && ageInDays <= group.maxAge
-  );
-  return ageGroup ? ageGroup.targetCount : 50; // Default to 50 if no age group found
+export const socializationReactionTypes: Record<string, SocializationReactionType> = {
+  positive: { id: 'positive', name: 'Positive', color: 'green', order: 1 },
+  neutral: { id: 'neutral', name: 'Neutral', color: 'gray', order: 2 },
+  fearful: { id: 'fearful', name: 'Fearful', color: 'yellow', order: 3 },
+  negative: { id: 'negative', name: 'Negative', color: 'red', order: 4 },
+  excited: { id: 'excited', name: 'Excited', color: 'blue', order: 5 },
+  curious: { id: 'curious', name: 'Curious', color: 'purple', order: 6 }
 };

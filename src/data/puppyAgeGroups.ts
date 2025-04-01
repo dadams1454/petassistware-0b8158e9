@@ -1,85 +1,85 @@
 
 import { PuppyAgeGroupData } from '@/types/puppyTracking';
 
-export const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
+export const puppyAgeGroups: PuppyAgeGroupData[] = [
   {
-    id: 'newborn',
-    name: 'Newborn',
-    description: 'Puppies less than 2 weeks old',
+    id: "neonatal",
+    name: "Neonatal",
     startDay: 0,
     endDay: 14,
-    color: 'bg-pink-100 text-pink-800',
-    priority: 1,
-    milestones: 'Eyes closed, ears closed, limited mobility, nursing frequently',
+    description: "Newborn puppies requiring intensive care",
+    color: "pink",
+    milestones: "Eyes open, ears open, first health check",
     careChecks: [
-      'Monitor temperature and humidity',
-      'Ensure nursing occurs regularly',
-      'Weigh daily to track growth',
-      'Check for any signs of distress'
+      "Monitor weight daily",
+      "Ensure proper nursing",
+      "Keep environment warm (85-90°F)",
+      "Stimulate elimination after feeding",
+      "Check for umbilical issues"
     ]
   },
   {
-    id: 'transitional',
-    name: 'Transitional',
-    description: 'Puppies 2-4 weeks old',
+    id: "transitional",
+    name: "Transitional",
     startDay: 15,
-    endDay: 28,
-    color: 'bg-purple-100 text-purple-800',
-    priority: 2,
-    milestones: 'Eyes opening, ears opening, beginning to crawl',
+    endDay: 21,
+    description: "Development of senses and mobility beginning",
+    color: "purple",
+    milestones: "Beginning to walk, playing with littermates, first teeth",
     careChecks: [
-      'Monitor weight gain',
-      'Begin environmental enrichment',
-      'Introduce to gentle handling',
-      'Monitor temperature regulation'
+      "Monitor weight every other day",
+      "Introduce shallow water dish",
+      "Begin very gentle handling",
+      "Introduce different surfaces",
+      "Maintain environment temperature (80-85°F)"
     ]
   },
   {
-    id: 'socialization',
-    name: 'Socialization',
-    description: 'Puppies 4-8 weeks old',
-    startDay: 29,
-    endDay: 56,
-    color: 'bg-blue-100 text-blue-800',
-    priority: 3,
-    milestones: 'Walking, playing, beginning of socialization period',
+    id: "socialization",
+    name: "Socialization",
+    startDay: 22,
+    endDay: 49,
+    description: "Critical period for socialization and learning",
+    color: "blue",
+    milestones: "Walking well, playing actively, first vaccination, weaning starts",
     careChecks: [
-      'Begin socialization activities',
-      'Introduce to various surfaces',
-      'Start weaning process',
-      'Begin potty training basics'
+      "Begin weaning process (puppy mush)",
+      "Introduce to new people",
+      "Start basic potty training",
+      "First deworming",
+      "Monitor socialization exposure"
     ]
   },
   {
-    id: 'juvenile',
-    name: 'Juvenile',
-    description: 'Puppies 8-12 weeks old',
-    startDay: 57,
+    id: "juvenile",
+    name: "Juvenile",
+    startDay: 50,
     endDay: 84,
-    color: 'bg-green-100 text-green-800',
-    priority: 4,
-    milestones: 'Fully weaned, increased socialization, beginning training',
+    description: "Growth and training development phase",
+    color: "green",
+    milestones: "Fully weaned, vaccination series, ready for new homes",
     careChecks: [
-      'Complete vaccination series',
-      'Monitor growth and development',
-      'Introduce to basic commands',
-      'Prepare for potential rehoming'
+      "Regular feeding schedule",
+      "Complete vaccination protocol",
+      "Microchipping",
+      "Pre-adoption health checks",
+      "Advanced socialization experiences"
     ]
   },
   {
-    id: 'adolescent',
-    name: 'Adolescent',
-    description: 'Puppies older than 12 weeks',
+    id: "adolescent",
+    name: "Adolescent",
     startDay: 85,
-    endDay: 730, // 2 years
-    color: 'bg-amber-100 text-amber-800',
-    priority: 5,
-    milestones: 'Continued training, socialization, and development',
+    endDay: 365,
+    description: "Teenage phase with growth spurts and training challenges",
+    color: "amber",
+    milestones: "Adult teeth coming in, sexual maturity beginning",
     careChecks: [
-      'Continue training reinforcement',
-      'Maintain socialization',
-      'Regular health checks',
-      'Prepare for potential rehoming'
+      "Monitor growth rate",
+      "Begin more structured training",
+      "Establish exercise routine",
+      "Watch for behavioral changes",
+      "Evaluate nutrition needs as growth continues"
     ]
   }
 ];
