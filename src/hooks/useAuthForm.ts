@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 export type AuthMode = 'login' | 'signup';
@@ -14,6 +14,7 @@ export const useAuthForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
   const { toast } = useToast();
 
   const toggleMode = () => setIsLogin(!isLogin);
@@ -29,33 +30,22 @@ export const useAuthForm = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) throw error;
+        await login(email, password);
         toast({
           title: "Welcome back!",
           description: "You've successfully signed in.",
         });
+        navigate('/dashboard');
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin
-          }
-        });
-
-        if (error) throw error;
+        // For the mock implementation, we'll just simulate a signup
         toast({
           title: "Account created!",
-          description: "Please check your email to confirm your account.",
+          description: "You can now sign in with your credentials.",
         });
+        setIsLogin(true);
       }
     } catch (error: any) {
-      setError(error.message);
+      setError(error.message || 'An error occurred during authentication');
       console.error('Authentication error:', error);
     } finally {
       setLoading(false);
@@ -67,17 +57,16 @@ export const useAuthForm = () => {
     setError(null);
     
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
+      // Simulate Google sign-in with a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast({
+        title: "Google Sign-In",
+        description: "Google authentication is not implemented in this demo.",
       });
-      
-      if (error) throw error;
     } catch (error: any) {
-      setError(error.message);
+      setError(error.message || 'An error occurred with Google sign-in');
       console.error('Google sign-in error:', error);
+    } finally {
       setLoading(false);
     }
   };
