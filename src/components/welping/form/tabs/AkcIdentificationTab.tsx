@@ -1,43 +1,61 @@
 
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import TextInput from '@/components/dogs/form/TextInput';
-import { WelpingPuppyFormData } from '../hooks/useWelpingPuppyForm';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
-interface AkcIdentificationTabProps {
-  form: UseFormReturn<WelpingPuppyFormData>;
-}
-
-const AkcIdentificationTab: React.FC<AkcIdentificationTabProps> = ({ form }) => {
+const AkcIdentificationTab = ({ form }: { form: any }) => {
   return (
     <>
-      <div className="rounded-md bg-purple-50 p-4 mb-4">
-        <h3 className="font-medium text-purple-800 mb-2">AKC Compliance Information</h3>
-        <p className="text-sm text-purple-700">Record identification numbers for AKC registration and compliance tracking.</p>
-      </div>
+      <FormField
+        control={form.control}
+        name="akc_litter_number"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>AKC Litter Number</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter AKC litter number" {...field} />
+            </FormControl>
+            <FormDescription>
+              The AKC assigned litter registration number
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       
-      <div className="grid grid-cols-1 gap-4">
-        <TextInput
-          form={form}
-          name="akc_litter_number"
-          label="AKC Litter Number"
-          placeholder="Enter AKC litter registration number"
-        />
-        
-        <TextInput
-          form={form}
-          name="akc_registration_number"
-          label="AKC Registration Number"
-          placeholder="Enter individual puppy registration number (if available)"
-        />
-        
-        <TextInput
-          form={form}
-          name="microchip_number"
-          label="Microchip ID Number"
-          placeholder="Enter microchip number (if microchipped)"
-        />
-      </div>
+      <FormField
+        control={form.control}
+        name="akc_registration_number"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>AKC Registration Number</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter AKC registration number if available" {...field} />
+            </FormControl>
+            <FormDescription>
+              Individual puppy AKC registration number (if already assigned)
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={form.control}
+        name="microchip_number"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Microchip Number</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter microchip number if available" {...field} />
+            </FormControl>
+            <FormDescription>
+              Unique microchip identification number (if already chipped)
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </>
   );
 };

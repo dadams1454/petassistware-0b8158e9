@@ -1,29 +1,23 @@
 
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
-import WeightInput from '@/components/dogs/form/WeightInput';
+import { FormDescription } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 
-interface BasicInfoTabProps {
-  form: UseFormReturn<any>;
-}
-
-const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
+const BasicInfoTab = ({ form }: { form: any }) => {
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Puppy Name/ID</FormLabel>
+              <FormLabel>Puppy Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter puppy name or ID" {...field} />
+                <Input placeholder="Puppy Name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -36,8 +30,8 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Gender</FormLabel>
-              <Select
-                onValueChange={field.onChange}
+              <Select 
+                onValueChange={field.onChange} 
                 defaultValue={field.value}
               >
                 <FormControl>
@@ -46,8 +40,8 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -56,15 +50,15 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="color"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Color/Pattern</FormLabel>
+              <FormLabel>Color</FormLabel>
               <FormControl>
-                <Input placeholder="Enter color description" {...field} />
+                <Input placeholder="Color" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -76,31 +70,37 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
           name="markings"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Markings (optional)</FormLabel>
+              <FormLabel>Markings (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="Distinctive markings" {...field} />
+                <Input placeholder="Markings" {...field} />
               </FormControl>
+              <FormDescription>
+                Any distinctive markings or patterns
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
 
-      <Card className="bg-blue-50 border-blue-200 dark:bg-blue-950/10 dark:border-blue-800 mt-2 mb-4">
-        <CardContent className="pt-4 pb-3">
-          <div className="flex items-center gap-2 text-blue-700">
-            <AlertCircle className="h-4 w-4" />
-            <span className="text-sm font-medium">Weight tracking is critical for monitoring puppy health</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <WeightInput
-          form={form}
+      <div className="grid grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
           name="birth_weight"
-          label="Birth Weight"
-          defaultUnit="oz"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Birth Weight (oz)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  step="0.1" 
+                  placeholder="0.0" 
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
 
         <FormField
@@ -110,7 +110,10 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
             <FormItem>
               <FormLabel>Birth Time</FormLabel>
               <FormControl>
-                <Input type="time" {...field} />
+                <Input 
+                  type="time" 
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -123,13 +126,17 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         name="notes"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Notes</FormLabel>
+            <FormLabel>Birth Notes</FormLabel>
             <FormControl>
-              <Input 
-                placeholder="Any observations about the puppy at birth" 
+              <Textarea 
+                placeholder="Enter any observations during birth..." 
+                className="resize-none h-20" 
                 {...field} 
               />
             </FormControl>
+            <FormDescription>
+              Record any observations from the birth such as presentation, assistance required, etc.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}

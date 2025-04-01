@@ -1,181 +1,122 @@
 
-import { supabase, customSupabase } from '@/integrations/supabase/client';
-import { 
-  HealthIndicatorRecord, 
-  AppetiteLevelEnum, 
-  EnergyLevelEnum, 
-  StoolConsistencyEnum,
-  adaptHealthIndicatorRecord
-} from '@/types/health';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
-// Fetch health indicators for a dog
-export const getHealthIndicators = async (dogId: string): Promise<HealthIndicatorRecord[]> => {
-  const { data, error } = await customSupabase
-    .from('health_indicators')
-    .select('*')
-    .eq('dog_id', dogId)
-    .order('date', { ascending: false });
+export interface HealthIndicator {
+  id: string;
+  dog_id: string;
+  date: string;
+  appetite: string | null;
+  energy: string | null;
+  stool_consistency: string | null;
+  abnormal: boolean;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+  alert_generated: boolean;
+}
 
-  if (error) throw error;
-  
-  return (data || []).map(record => adaptHealthIndicatorRecord(record));
+export interface HealthIndicatorFormValues {
+  dog_id: string;
+  date: string;
+  appetite: string | null;
+  energy: string | null;
+  stool_consistency: string | null;
+  abnormal: boolean;
+  notes: string | null;
+}
+
+// Get health indicators for a specific dog
+export const getHealthIndicatorsForDog = async (dogId: string): Promise<HealthIndicator[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('health_indicators')
+      .select('*')
+      .eq('dog_id', dogId)
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+    return data as HealthIndicator[];
+  } catch (error) {
+    console.error('Error fetching health indicators:', error);
+    return [];
+  }
 };
 
-// Add a health indicator record
-export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id' | 'created_at'>): Promise<HealthIndicatorRecord> => {
-  // Determine if the record is abnormal based on indicator values
-  const abnormal = isAbnormalHealthIndicator(record);
+// Add a new health indicator
+export const addHealthIndicator = async (
+  values: HealthIndicatorFormValues,
+  userId: string | undefined
+): Promise<{ success: boolean; data?: HealthIndicator; error?: string }> => {
+  try {
+    const { data, error } = await supabase
+      .from('health_indicators')
+      .insert({
+        ...values,
+        created_by: userId
+      })
+      .select();
 
-  const { data, error } = await customSupabase
-    .from('health_indicators')
-    .insert([
-      {
-        dog_id: record.dog_id,
-        date: record.date,
-        appetite: record.appetite,
-        energy: record.energy,
-        stool_consistency: record.stool_consistency,
-        notes: record.notes,
-        created_by: record.created_by,
-        abnormal,
-        alert_generated: abnormal // Auto-generate alert if abnormal
+    if (error) throw error;
+    
+    // Check if data exists and has at least one element
+    if (data && data.length > 0) {
+      const newIndicator = data[0] as HealthIndicator;
+      
+      // Check if the indicator is abnormal and create an alert if needed
+      if (values.abnormal) {
+        await createHealthAlert(newIndicator.id);
       }
-    ])
-    .select()
-    .single();
-
-  if (error) throw error;
-  if (!data) throw new Error('Failed to insert health indicator record');
-  
-  // If abnormal, create an alert
-  if (abnormal) {
-    try {
-      // Type assertion to ensure TypeScript knows this is not a Supabase error
-      const recordData = data as {id: string};
-      await createHealthAlert(recordData.id.toString(), record.dog_id);
-    } catch (alertError) {
-      console.error('Failed to create health alert:', alertError);
-      // Continue without failing the whole operation
+      
+      return { success: true, data: newIndicator };
+    } else {
+      throw new Error('No data returned after insertion');
     }
+  } catch (error) {
+    console.error('Error adding health indicator:', error);
+    let errorMessage = 'Failed to add health indicator';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    toast({
+      title: 'Error',
+      description: errorMessage,
+      variant: 'destructive',
+    });
+    
+    return { success: false, error: errorMessage };
   }
-  
-  return adaptHealthIndicatorRecord(data);
 };
 
-// Update a health indicator record
-export const updateHealthIndicator = async (id: string, updates: Partial<HealthIndicatorRecord>): Promise<HealthIndicatorRecord> => {
-  const { data, error } = await customSupabase
-    .from('health_indicators')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
+// Create a health alert for an abnormal indicator
+const createHealthAlert = async (indicatorId: string): Promise<void> => {
+  try {
+    const { data: indicator, error: indicatorError } = await supabase
+      .from('health_indicators')
+      .select('dog_id')
+      .eq('id', indicatorId)
+      .single();
 
-  if (error) throw error;
-  if (!data) throw new Error('Failed to update health indicator record');
-  
-  return adaptHealthIndicatorRecord(data);
-};
+    if (indicatorError) throw indicatorError;
+    if (!indicator) throw new Error('Indicator not found');
 
-// Delete a health indicator record
-export const deleteHealthIndicator = async (id: string): Promise<void> => {
-  const { error } = await customSupabase
-    .from('health_indicators')
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
-};
-
-// Get recent health indicators
-export const getRecentHealthIndicators = async (dogId: string, days = 7): Promise<HealthIndicatorRecord[]> => {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  
-  const { data, error } = await customSupabase
-    .from('health_indicators')
-    .select('*')
-    .eq('dog_id', dogId)
-    .gte('date', date.toISOString().split('T')[0])
-    .order('date', { ascending: false });
-
-  if (error) throw error;
-  
-  return (data || []).map(record => adaptHealthIndicatorRecord(record));
-};
-
-// Get abnormal health indicators
-export const getAbnormalHealthIndicators = async (dogId: string): Promise<HealthIndicatorRecord[]> => {
-  const { data, error } = await customSupabase
-    .from('health_indicators')
-    .select('*')
-    .eq('dog_id', dogId)
-    .eq('abnormal', true)
-    .order('date', { ascending: false });
-
-  if (error) throw error;
-  
-  return (data || []).map(record => adaptHealthIndicatorRecord(record));
-};
-
-// Create a health alert
-export const createHealthAlert = async (indicatorId: string, dogId: string): Promise<void> => {
-  const { error } = await customSupabase
-    .from('health_alerts')
-    .insert([
-      {
+    // Create the alert
+    await supabase
+      .from('health_alerts')
+      .insert({
+        dog_id: indicator.dog_id,
         indicator_id: indicatorId,
-        dog_id: dogId,
-        status: 'active',
-        resolved: false
-      }
-    ]);
+        status: 'active'
+      });
 
-  if (error) throw error;
-};
-
-// Check if health indicator is abnormal
-export const isAbnormalHealthIndicator = (record: Partial<HealthIndicatorRecord>): boolean => {
-  // Logic to determine if a health indicator is abnormal
-  const appetiteAbnormal = record.appetite && 
-    [AppetiteLevelEnum.Poor, AppetiteLevelEnum.None].includes(record.appetite);
-  
-  const energyAbnormal = record.energy && 
-    [EnergyLevelEnum.Low, EnergyLevelEnum.VeryLow].includes(record.energy);
-  
-  const stoolAbnormal = record.stool_consistency && 
-    [StoolConsistencyEnum.Loose, StoolConsistencyEnum.Watery, 
-     StoolConsistencyEnum.Bloody, StoolConsistencyEnum.Mucousy].includes(record.stool_consistency);
-  
-  return appetiteAbnormal || energyAbnormal || stoolAbnormal;
-};
-
-// Get all health alerts for a dog
-export const getHealthAlerts = async (dogId: string, includeResolved = false): Promise<any[]> => {
-  let query = customSupabase
-    .from('health_alerts')
-    .select('*, health_indicators(*)')
-    .eq('dog_id', dogId);
-  
-  if (!includeResolved) {
-    query = query.eq('resolved', false);
+    // Update the indicator to mark that an alert was generated
+    await supabase
+      .from('health_indicators')
+      .update({ alert_generated: true })
+      .eq('id', indicatorId);
+  } catch (error) {
+    console.error('Error creating health alert:', error);
   }
-  
-  query = query.order('created_at', { ascending: false });
-  
-  const { data, error } = await query;
-  
-  if (error) throw error;
-  
-  return data || [];
-};
-
-// Resolve a health alert
-export const resolveHealthAlert = async (alertId: string): Promise<void> => {
-  const { error } = await customSupabase
-    .from('health_alerts')
-    .update({ resolved: true, status: 'resolved', resolved_at: new Date().toISOString() })
-    .eq('id', alertId);
-
-  if (error) throw error;
 };

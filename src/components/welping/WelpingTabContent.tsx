@@ -1,70 +1,112 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clipboard, Stethoscope, Tag } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import WelpingPuppyForm from '@/components/welping/form/WelpingPuppyForm';
-import WelpingPuppyList from '@/components/welping/WelpingPuppyList';
-import { Puppy } from '@/components/litters/puppies/types';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import WelpingPuppyList from './WelpingPuppyList';
+import WelpingPuppyForm from './form/WelpingPuppyForm';
+import AddWelpingPuppyDialog from './AddWelpingPuppyDialog';
+import WelpingDetailsForm from './form/WelpingDetailsForm';
+import { Puppy } from '@/types/litter';
+import { useQuery } from '@tanstack/react-query';
+import { getWelpingRecordForLitter, WelpingRecord } from '@/services/welpingService';
 
 interface WelpingTabContentProps {
   litterId: string;
   puppies: Puppy[];
   onRefresh: () => Promise<void>;
   activeTab: string;
-  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  setActiveTab: (tab: string) => void;
 }
 
-const WelpingTabContent: React.FC<WelpingTabContentProps> = ({ 
-  litterId, 
-  puppies, 
+const WelpingTabContent: React.FC<WelpingTabContentProps> = ({
+  litterId,
+  puppies,
   onRefresh,
   activeTab,
-  setActiveTab
+  setActiveTab,
 }) => {
-  const handlePuppyAdded = async () => {
+  const [isAddPuppyOpen, setIsAddPuppyOpen] = useState(false);
+  
+  const { data: welpingRecord, isLoading: isLoadingRecord, refetch: refetchRecord } = useQuery({
+    queryKey: ['welping-record', litterId],
+    queryFn: async () => {
+      return getWelpingRecordForLitter(litterId);
+    },
+  });
+
+  const handleWelpingDetailsSuccess = async () => {
+    await refetchRecord();
+  };
+
+  const handleAddPuppySuccess = async () => {
+    setIsAddPuppyOpen(false);
     await onRefresh();
-    // Switch to the list tab after adding a puppy
-    setActiveTab('list');
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-2 mb-4">
-        <TabsTrigger value="record" className="flex items-center gap-1">
-          <Clipboard className="h-4 w-4" />
-          Record New Puppy
-        </TabsTrigger>
-        <TabsTrigger value="list" className="flex items-center gap-1">
-          <Tag className="h-4 w-4" />
-          Recorded Puppies ({puppies?.length || 0})
-        </TabsTrigger>
-      </TabsList>
-      
-      <TabsContent value="record">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Stethoscope className="h-5 w-5 text-green-600" />
-              Record New Puppy
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <WelpingPuppyForm 
-              litterId={litterId} 
-              onSuccess={onRefresh} 
-            />
-          </CardContent>
-        </Card>
-      </TabsContent>
-      
-      <TabsContent value="list">
-        <WelpingPuppyList 
-          puppies={puppies || []} 
-          onRefresh={onRefresh} 
-        />
-      </TabsContent>
-    </Tabs>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-xl">Whelping Management</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="details">Whelping Details</TabsTrigger>
+            <TabsTrigger value="record">Record Puppy</TabsTrigger>
+            <TabsTrigger value="puppies">Puppies ({puppies.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="pt-4">
+            <div className="space-y-4">
+              <WelpingDetailsForm 
+                litterId={litterId}
+                initialData={welpingRecord as WelpingRecord}
+                onSuccess={handleWelpingDetailsSuccess}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="record" className="pt-4">
+            <div className="space-y-4">
+              <WelpingPuppyForm 
+                litterId={litterId}
+                onSuccess={onRefresh}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="puppies" className="pt-4">
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => setIsAddPuppyOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Puppy</span>
+                </Button>
+              </div>
+
+              <WelpingPuppyList 
+                puppies={puppies}
+                onRefresh={onRefresh}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+
+      <AddWelpingPuppyDialog
+        litterId={litterId}
+        isOpen={isAddPuppyOpen}
+        onOpenChange={setIsAddPuppyOpen}
+        onSuccess={handleAddPuppySuccess}
+      />
+    </Card>
   );
 };
 

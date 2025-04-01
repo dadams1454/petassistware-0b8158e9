@@ -1,424 +1,388 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Dna, AlertTriangle, Check, X, ChevronRight, Star } from 'lucide-react';
-import { getBreedingCompatibility, getSuggestedBreedingPartners } from '@/services/breedingRecommendationService';
-import { HealthWarningCard } from './HealthWarningCard';
-import { PairingAnalysis } from '@/types/genetics';
+import React, { useEffect, useState } from 'react';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { 
+  getBreedingRecommendationsForDog,
+  getSpecificCompatibility,
+  BreedingRecommendation
+} from '@/services/breedingRecommendationService';
+import { useToast } from '@/components/ui/use-toast';
 import { useDogDetail } from '@/components/dogs/hooks/useDogDetail';
-import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { 
+  AlertTriangle, 
+  CheckCircle, 
+  ChevronRight, 
+  Dna, 
+  HeartPulse, 
+  Info
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { useNavigate } from 'react-router-dom';
 
 interface BreedingRecommendationsProps {
   dogId: string;
   selectedPartnerId?: string;
 }
 
-export const BreedingRecommendations: React.FC<BreedingRecommendationsProps> = ({ 
-  dogId, 
-  selectedPartnerId 
+const BreedingRecommendations: React.FC<BreedingRecommendationsProps> = ({
+  dogId,
+  selectedPartnerId
 }) => {
-  const navigate = useNavigate();
+  const [recommendations, setRecommendations] = useState<BreedingRecommendation[]>([]);
+  const [selectedMatch, setSelectedMatch] = useState<BreedingRecommendation | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { dog, isLoading: dogLoading } = useDogDetail(dogId);
-  const [loading, setLoading] = useState(true);
-  const [compatibility, setCompatibility] = useState<PairingAnalysis | null>(null);
-  const [suggestedPartners, setSuggestedPartners] = useState<any[]>([]);
-  const [selectedPartner, setSelectedPartner] = useState<any | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(!selectedPartnerId);
-  
-  // Fetch partner details if provided
-  const { dog: partnerDog, isLoading: partnerLoading } = useDogDetail(selectedPartnerId || '');
-  
-  // Load data
+  const { dog } = useDogDetail(dogId);
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const loadData = async () => {
-      if (!dog?.gender) return;
-      
-      setLoading(true);
-      
+    const fetchRecommendations = async () => {
+      setIsLoading(true);
       try {
-        // Load suggested partners if no specific partner is selected
-        if (!selectedPartnerId) {
-          const partners = await getSuggestedBreedingPartners(dogId, dog.gender, 5);
-          setSuggestedPartners(partners);
-        } 
-        // Load compatibility analysis for selected partner
-        else if (selectedPartnerId && dog) {
-          const sireId = dog.gender?.toLowerCase() === 'male' ? dogId : selectedPartnerId;
-          const damId = dog.gender?.toLowerCase() === 'male' ? selectedPartnerId : dogId;
-          
-          const analysis = await getBreedingCompatibility(sireId, damId);
-          setCompatibility(analysis);
-          setSelectedPartner(partnerDog);
+        if (selectedPartnerId) {
+          // Get specific compatibility if a partner is selected
+          const result = await getSpecificCompatibility(dogId, selectedPartnerId);
+          if (result) {
+            setRecommendations([result]);
+            setSelectedMatch(result);
+          } else {
+            setRecommendations([]);
+          }
+        } else {
+          // Get general recommendations
+          const results = await getBreedingRecommendationsForDog(dogId);
+          setRecommendations(results);
+          if (results.length > 0) {
+            setSelectedMatch(results[0]);
+          }
         }
       } catch (error) {
-        console.error('Error loading breeding recommendations:', error);
+        console.error('Error fetching breeding recommendations:', error);
         toast({
-          title: 'Failed to load breeding data',
-          description: 'There was an error loading the breeding recommendations.',
+          title: 'Error',
+          description: 'Failed to load breeding recommendations.',
           variant: 'destructive',
         });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    
-    if (!dogLoading && dog) {
-      loadData();
+
+    if (dogId) {
+      fetchRecommendations();
     }
-  }, [dogId, selectedPartnerId, dog, dogLoading, partnerDog]);
-  
-  // Handle partner selection
-  const handleSelectPartner = async (partnerId: string) => {
-    if (!dog?.gender) return;
-    
-    setLoading(true);
-    try {
-      const sireId = dog.gender?.toLowerCase() === 'male' ? dogId : partnerId;
-      const damId = dog.gender?.toLowerCase() === 'male' ? partnerId : dogId;
-      
-      const analysis = await getBreedingCompatibility(sireId, damId);
-      setCompatibility(analysis);
-      setSelectedPartner(suggestedPartners.find(p => p.dogId === partnerId));
-      setShowSuggestions(false);
-    } catch (error) {
-      console.error('Error loading compatibility:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to analyze compatibility',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  }, [dogId, selectedPartnerId, toast]);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!dog) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              Could not find dog information.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (recommendations.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-6">
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertTitle>No Recommendations Available</AlertTitle>
+            <AlertDescription>
+              {selectedPartnerId 
+                ? 'Unable to generate compatibility analysis for this specific pair.'
+                : 'No suitable breeding matches found. Try broadening your criteria.'}
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const handleSelectMatch = (match: BreedingRecommendation) => {
+    setSelectedMatch(match);
   };
-  
-  // Generate a compatibility score (0-100)
-  const getCompatibilityScore = (analysis: PairingAnalysis): number => {
-    if (!analysis) return 0;
-    
-    // Start with perfect score
-    let score = 100;
-    
-    // Deduct for health warnings
-    analysis.healthWarnings.forEach(warning => {
-      switch (warning.riskLevel) {
-        case 'critical': score -= 30; break;
-        case 'high': score -= 20; break;
-        case 'medium': score -= 10; break;
-        case 'low': score -= 5; break;
-      }
-    });
-    
-    // Deduct for high COI
-    if (analysis.coi > 12.5) score -= 20;
-    else if (analysis.coi > 6.25) score -= 10;
-    
-    return Math.max(0, Math.min(100, score));
-  };
-  
-  // Get color class based on score
-  const getScoreColorClass = (score: number): string => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 70) return 'text-emerald-600';
-    if (score >= 50) return 'text-amber-600';
-    if (score >= 30) return 'text-orange-600';
+
+  const getScoreColor = (score: number) => {
+    if (score >= 85) return 'text-green-600';
+    if (score >= 70) return 'text-amber-600';
     return 'text-red-600';
   };
-  
-  // Get badge for score
-  const getScoreBadge = (score: number) => {
-    let variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'success' = 'outline';
-    let label = 'Unknown';
-    
-    if (score >= 90) {
-      variant = 'success';
-      label = 'Excellent';
-    } else if (score >= 70) {
-      variant = 'secondary';
-      label = 'Good';
-    } else if (score >= 50) {
-      variant = 'outline';
-      label = 'Fair';
-    } else if (score >= 30) {
-      variant = 'outline';
-      label = 'Poor';
-    } else {
-      variant = 'destructive';
-      label = 'Not Recommended';
+
+  const getProgressColor = (score: number) => {
+    if (score >= 85) return 'bg-green-600';
+    if (score >= 70) return 'bg-amber-600';
+    return 'bg-red-600';
+  };
+
+  const getRiskVariant = (severity: 'low' | 'medium' | 'high') => {
+    switch (severity) {
+      case 'low': return 'outline';
+      case 'medium': return 'secondary';
+      case 'high': return 'destructive';
+      default: return 'outline';
     }
-    
-    return <Badge variant={variant}>{label}</Badge>;
   };
-  
-  // View full pairing analysis
-  const viewFullPairingAnalysis = () => {
-    if (!selectedPartner?.dogId) return;
-    
-    navigate(`/genetics/pairing?sireId=${dog?.gender?.toLowerCase() === 'male' ? dogId : selectedPartner.dogId}&damId=${dog?.gender?.toLowerCase() === 'male' ? selectedPartner.dogId : dogId}`);
-  };
-  
-  if (dogLoading || (selectedPartnerId && partnerLoading)) {
-    return <BreedingRecommendationsLoading />;
-  }
-  
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-        <div>
-          <h3 className="text-lg font-bold">Breeding Recommendations</h3>
-          <p className="text-sm text-muted-foreground">
-            {dog?.name}'s genetic compatibility analysis for breeding
-          </p>
-        </div>
-        
-        {!showSuggestions && selectedPartner && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowSuggestions(true)}
-          >
-            View Other Suggestions
-          </Button>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {recommendations.length > 1 && (
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="text-lg">Potential Matches</CardTitle>
+              <CardDescription>
+                Genetic compatibility ranked by score
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[400px]">
+                <div className="px-4 pb-4 space-y-2">
+                  {recommendations.map((rec) => (
+                    <div 
+                      key={rec.id}
+                      className={`p-3 rounded-md cursor-pointer transition-colors ${
+                        selectedMatch?.id === rec.id 
+                          ? 'bg-primary/10 border border-primary/30' 
+                          : 'hover:bg-muted'
+                      }`}
+                      onClick={() => handleSelectMatch(rec)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={rec.dam.photo_url || undefined} alt={rec.dam.name} />
+                          <AvatarFallback className="bg-primary/10">
+                            {rec.dam.name.substring(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-sm truncate">{rec.dam.name}</h4>
+                            <Badge variant="secondary" className="ml-2 shrink-0">
+                              {Math.round(rec.compatibility_score)}%
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {rec.dam.breed} • {rec.dam.color || 'Unknown color'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
         )}
-      </div>
-      
-      {loading ? (
-        <BreedingRecommendationsLoading />
-      ) : showSuggestions ? (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Suggested Breeding Partners</CardTitle>
-            <CardDescription>
-              Based on genetic compatibility and health screening
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            {suggestedPartners.length > 0 ? (
-              <div className="space-y-3">
-                {suggestedPartners.map((partner) => (
-                  <div 
-                    key={partner.dogId}
-                    className="flex items-center justify-between p-3 rounded-md border hover:bg-accent cursor-pointer"
-                    onClick={() => handleSelectPartner(partner.dogId)}
-                  >
-                    <div className="flex items-center gap-3">
-                      {partner.photoUrl ? (
-                        <img 
-                          src={partner.photoUrl} 
-                          alt={partner.name}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                          <Dna className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div>
-                        <div className="font-medium">{partner.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          COI: {partner.coi.toFixed(1)}% • {partner.majorHealthIssues === 0 ? 
-                            'No major health issues' : 
-                            `${partner.majorHealthIssues} health ${partner.majorHealthIssues === 1 ? 'issue' : 'issues'}`
-                          }
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`text-lg font-bold ${getScoreColorClass(partner.compatibility)}`}>
-                        {partner.compatibility}%
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <Alert>
-                <AlertTitle>No recommended partners found</AlertTitle>
-                <AlertDescription>
-                  No suitable breeding partners with genetic data were found. Add more dogs to your database or update their genetic profiles.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-      ) : compatibility && selectedPartner ? (
-        <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>Breeding Compatibility Analysis</CardTitle>
-                  <CardDescription>
-                    {dog?.name} × {selectedPartner.name || 'Selected Partner'}
-                  </CardDescription>
-                </div>
-                <div className="flex flex-col items-end">
-                  <div className="text-2xl font-bold">
-                    <span className={getScoreColorClass(getCompatibilityScore(compatibility))}>
-                      {getCompatibilityScore(compatibility)}%
-                    </span>
-                  </div>
-                  <div>
-                    {getScoreBadge(getCompatibilityScore(compatibility))}
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pb-3 space-y-4">
-              {/* COI Section */}
-              <div>
-                <h4 className="text-sm font-medium mb-2">Coefficient of Inbreeding (COI)</h4>
-                <div className="relative h-8 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className={`absolute top-0 left-0 h-full ${compatibility.coi < 6.25 ? 'bg-green-500' : compatibility.coi < 12.5 ? 'bg-amber-500' : 'bg-red-500'}`}
-                    style={{ width: `${Math.min(100, (compatibility.coi * 4))}%` }}
-                  ></div>
-                  <div className="absolute inset-0 flex items-center justify-center font-bold text-sm">
-                    {compatibility.coi.toFixed(1)}%
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {compatibility.coi < 6.25 
-                    ? 'Healthy level of genetic diversity' 
-                    : compatibility.coi < 12.5 
-                      ? 'Moderate inbreeding - some caution advised' 
-                      : 'High inbreeding - not recommended'}
-                </p>
-              </div>
-              
-              {/* Health Warning Summary */}
-              <div>
-                <h4 className="text-sm font-medium mb-2">Health Compatibility</h4>
-                
-                {compatibility.healthWarnings.length > 0 ? (
-                  <div className="space-y-2">
-                    {compatibility.healthWarnings
-                      .sort((a, b) => {
-                        const levels = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
-                        return levels[b.riskLevel] - levels[a.riskLevel];
-                      })
-                      .slice(0, 3) // Show only top 3 risks
-                      .map((warning, index) => (
-                        <HealthWarningCard key={index} warning={warning} />
-                      ))}
-                    
-                    {compatibility.healthWarnings.length > 3 && (
-                      <p className="text-xs text-muted-foreground">
-                        +{compatibility.healthWarnings.length - 3} more health considerations
+
+        <Card className={recommendations.length > 1 ? 'lg:col-span-2' : 'lg:col-span-3'}>
+          {selectedMatch && (
+            <>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Dna className="h-5 w-5 text-primary" />
+                  Genetic Compatibility Analysis
+                </CardTitle>
+                <CardDescription>
+                  Detailed compatibility assessment between {dog.name} and {selectedMatch.dam.id === dog.id ? selectedMatch.sire.name : selectedMatch.dam.name}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex gap-4 items-center">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src={dog.photo_url || undefined} alt={dog.name} />
+                      <AvatarFallback className="bg-primary/10 text-lg">
+                        {dog.name.substring(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-medium">{dog.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {dog.gender === 'male' ? 'Sire' : 'Dam'} • {dog.breed}
                       </p>
-                    )}
+                    </div>
                   </div>
-                ) : (
-                  <div className="p-3 bg-green-50 text-green-800 rounded-md flex items-center">
-                    <Check className="h-4 w-4 mr-2" />
-                    No genetic health concerns detected
-                  </div>
-                )}
-              </div>
-              
-              {/* Trait Summary */}
-              <div>
-                <h4 className="text-sm font-medium mb-2">Offspring Trait Predictions</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="p-3 bg-muted rounded-md">
-                    <span className="block text-xs text-muted-foreground mb-1">Coat Color</span>
-                    {Object.entries(compatibility.traitPredictions.color)
-                      .map(([color, percentage]) => (
-                        <div key={color} className="flex justify-between">
-                          <span>{color}</span>
-                          <span>{percentage}%</span>
-                        </div>
-                      ))}
-                  </div>
-                  <div className="p-3 bg-muted rounded-md">
-                    <span className="block text-xs text-muted-foreground mb-1">Size Range</span>
-                    <div>Males: {compatibility.traitPredictions.size.males}</div>
-                    <div>Females: {compatibility.traitPredictions.size.females}</div>
+
+                  <div className="flex gap-4 items-center">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage 
+                        src={selectedMatch.dam.id === dog.id 
+                          ? selectedMatch.sire.photo_url || undefined 
+                          : selectedMatch.dam.photo_url || undefined} 
+                        alt={selectedMatch.dam.id === dog.id 
+                          ? selectedMatch.sire.name 
+                          : selectedMatch.dam.name} 
+                      />
+                      <AvatarFallback className="bg-primary/10 text-lg">
+                        {(selectedMatch.dam.id === dog.id 
+                          ? selectedMatch.sire.name 
+                          : selectedMatch.dam.name).substring(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-medium">
+                        {selectedMatch.dam.id === dog.id 
+                          ? selectedMatch.sire.name 
+                          : selectedMatch.dam.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedMatch.dam.id === dog.id ? 'Sire' : 'Dam'} • {selectedMatch.dam.id === dog.id 
+                          ? selectedMatch.sire.breed 
+                          : selectedMatch.dam.breed}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Button 
-                className="w-full" 
-                onClick={viewFullPairingAnalysis}
-              >
-                View Full Genetic Analysis
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          {/* Recommendation Section */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-amber-500" />
-                Breeding Recommendation
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {getCompatibilityScore(compatibility) >= 70 ? (
-                <Alert className="bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
-                  <Check className="h-4 w-4 text-green-600" />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-muted/40 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-sm font-medium flex items-center gap-1">
+                        <Dna className="h-4 w-4 text-primary" />
+                        Overall Compatibility
+                      </h4>
+                      <span className={`text-lg font-bold ${getScoreColor(selectedMatch.compatibility_score)}`}>
+                        {Math.round(selectedMatch.compatibility_score)}%
+                      </span>
+                    </div>
+                    <Progress 
+                      value={selectedMatch.compatibility_score} 
+                      className={`h-2 ${getProgressColor(selectedMatch.compatibility_score)}`} 
+                    />
+                  </div>
+
+                  <div className="p-4 bg-muted/40 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-sm font-medium flex items-center gap-1">
+                        <HeartPulse className="h-4 w-4 text-primary" />
+                        Health Score
+                      </h4>
+                      <span className={`text-lg font-bold ${getScoreColor(selectedMatch.health_score)}`}>
+                        {Math.round(selectedMatch.health_score)}%
+                      </span>
+                    </div>
+                    <Progress 
+                      value={selectedMatch.health_score} 
+                      className={`h-2 ${getProgressColor(selectedMatch.health_score)}`} 
+                    />
+                  </div>
+
+                  <div className="p-4 bg-muted/40 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-sm font-medium flex items-center gap-1">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        Inbreeding Coefficient
+                      </h4>
+                      <span className="text-lg font-bold">
+                        {selectedMatch.coefficient_of_inbreeding.toFixed(1)}%
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedMatch.coefficient_of_inbreeding < 5 ? 'Safe range' : 
+                        selectedMatch.coefficient_of_inbreeding < 10 ? 'Moderate concern' : 'High risk'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Trait Predictions</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {selectedMatch.trait_predictions.map((trait) => (
+                        <div key={trait.trait} className="p-3 bg-muted/30 rounded-md">
+                          <h4 className="text-xs font-medium mb-1">{trait.trait}</h4>
+                          <p className="text-xs">{trait.description}</p>
+                          <div className="mt-1 text-xs flex items-center gap-1">
+                            <span className="font-medium">{trait.probability}%</span>
+                            <span className="text-muted-foreground">likelihood</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Health Risk Assessment</h3>
+                    <div className="space-y-2">
+                      {selectedMatch.health_risks.map((risk) => (
+                        <div key={risk.risk_type} className="flex items-start gap-2">
+                          <Badge variant={getRiskVariant(risk.severity)} className="mt-0.5">
+                            {risk.severity}
+                          </Badge>
+                          <div>
+                            <h4 className="text-sm font-medium">{risk.risk_type}</h4>
+                            <p className="text-xs text-muted-foreground">{risk.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <Alert className="bg-primary/10 border-primary/20">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <AlertTitle>Pairing Recommendation</AlertTitle>
                   <AlertDescription>
-                    <p className="font-medium">Recommended Pairing</p>
-                    <p className="text-sm">This breeding pair has good genetic compatibility with minimal health concerns.</p>
+                    {selectedMatch.compatibility_score >= 85 
+                      ? 'This pairing is highly recommended based on genetic compatibility and health scores.'
+                      : selectedMatch.compatibility_score >= 70
+                      ? 'This pairing is acceptable but monitor for potential health concerns.'
+                      : 'This pairing is not recommended due to genetic compatibility concerns.'}
                   </AlertDescription>
                 </Alert>
-              ) : getCompatibilityScore(compatibility) >= 50 ? (
-                <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription>
-                    <p className="font-medium">Proceed with Caution</p>
-                    <p className="text-sm">This breeding pair has moderate compatibility. Review health concerns before proceeding.</p>
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <Alert variant="destructive">
-                  <X className="h-4 w-4" />
-                  <AlertDescription>
-                    <p className="font-medium">Not Recommended</p>
-                    <p className="text-sm">This breeding pair has significant genetic health risks. Consider alternative pairings.</p>
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/welping/new?dam=${selectedMatch.dam.id}&sire=${selectedMatch.sire.id}`)}
+                    className="flex items-center gap-1"
+                  >
+                    <span>Plan Litter</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </>
+          )}
+        </Card>
+      </div>
     </div>
   );
 };
-
-// Loading state component
-const BreedingRecommendationsLoading: React.FC = () => (
-  <Card>
-    <CardHeader className="pb-2">
-      <Skeleton className="h-5 w-1/3 mb-2" />
-      <Skeleton className="h-4 w-1/2" />
-    </CardHeader>
-    <CardContent className="space-y-4">
-      <div>
-        <Skeleton className="h-4 w-1/4 mb-2" />
-        <Skeleton className="h-8 w-full mb-1" />
-        <Skeleton className="h-3 w-2/3" />
-      </div>
-      <div>
-        <Skeleton className="h-4 w-1/4 mb-2" />
-        <div className="space-y-2">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
 
 export default BreedingRecommendations;

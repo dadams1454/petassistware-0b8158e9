@@ -29,7 +29,10 @@ const BreedingSection: React.FC<BreedingSectionProps> = ({ onRefresh, selectedDo
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
-          <BreedingManagement onRefresh={onRefresh} dog={selectedDogId ? { id: selectedDogId } : undefined} />
+          <BreedingManagement 
+            onRefresh={onRefresh} 
+            dog={selectedDogId ? { id: selectedDogId, name: '', breed: '' } : undefined} 
+          />
         </div>
         
         <div className="space-y-4">
