@@ -65,6 +65,7 @@ export interface VaccinationRecord {
   administered_by?: string;
   notes?: string;
   created_at: string;
+  due_date?: string; // Added for compatibility when converting from VaccinationScheduleItem
 }
 
 // Puppy management and statistics
@@ -78,7 +79,6 @@ export interface PuppyManagementStats {
   averageWeight: number;
   puppiesByColor: Record<string, number>;
   puppiesByAge: Record<string, number>;
-  // Adding properties that are referenced in the code
   activeLitters: number;
   upcomingVaccinations: number;
   recentWeightChecks: number;
@@ -93,7 +93,6 @@ export interface PuppyAgeGroupData {
   endDay: number;
   color: string;
   priority: number;
-  // Adding properties that are referenced in the code
   milestones?: string;
   careChecks?: string[];
 }

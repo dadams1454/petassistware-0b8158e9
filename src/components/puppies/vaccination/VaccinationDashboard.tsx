@@ -60,8 +60,11 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
   }
   
   // Prepare vaccination records for the calendar
-  // These are completed vaccinations
-  const vaccinationRecords = completedVaccinations as VaccinationRecord[];
+  // These are completed vaccinations with known vaccination_date
+  const vaccinationRecords: VaccinationRecord[] = completedVaccinations.map(vax => ({
+    ...vax,
+    vaccination_date: vax.vaccination_date || vax.due_date
+  })) as VaccinationRecord[];
   
   // These are scheduled vaccinations
   // For display purposes, set is_completed to false for all scheduled items
@@ -200,7 +203,7 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
                         <div className="flex justify-between">
                           <span className="font-medium">{vax.vaccination_type}</span>
                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            {new Date(vax.vaccination_date).toLocaleDateString()}
+                            {new Date(vax.due_date).toLocaleDateString()}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{vax.notes || 'No notes'}</p>

@@ -158,7 +158,7 @@ const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
                       Complete
                     </Badge>
                   </TableCell>
-                  <TableCell>{vax.vaccination_date ? new Date(vax.vaccination_date).toLocaleDateString() : 'N/A'}</TableCell>
+                  <TableCell>{vax.due_date ? new Date(vax.due_date).toLocaleDateString() : 'N/A'}</TableCell>
                   <TableCell className="max-w-[200px] truncate">{vax.notes}</TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" variant="ghost" disabled>
