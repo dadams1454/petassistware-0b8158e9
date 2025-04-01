@@ -117,9 +117,11 @@ const VaccinationCalendar: React.FC<VaccinationCalendarProps> = ({
         components={{
           Day: ({ date, ...props }) => {
             const isSelected = selectedDate ? isSameDay(date, selectedDate) : false;
+            // Fix here - we need to spread props properly and not pass displayMonth directly
             return React.cloneElement(
-              <div {...props} />,
+              <div />,
               {
+                ...props,
                 className: cn(
                   "flex items-center justify-center",
                   isSelected && "bg-primary text-primary-foreground",
