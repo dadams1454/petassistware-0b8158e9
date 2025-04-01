@@ -2,7 +2,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, BarChart } from 'lucide-react';
+import { Plus, BarChart, Dog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -24,7 +24,7 @@ const WelpingDashboard = () => {
         .from('litters')
         .select(`
           *,
-          dam:dogs!litters_dam_id_fkey(id, name, breed, gender, photo_url, breeding_status),
+          dam:dogs!litters_dam_id_fkey(id, name, breed, gender, photo_url, is_pregnant),
           sire:dogs!litters_sire_id_fkey(id, name, breed, gender, photo_url),
           puppies:puppies!puppies_litter_id_fkey(count)
         `)
@@ -36,15 +36,15 @@ const WelpingDashboard = () => {
     }
   });
   
-  // Count of actively pregnant dogs (status = 'pregnant')
+  // Count of actively pregnant dogs (is_pregnant = true)
   const { data: pregnantDogs } = useQuery({
     queryKey: ['pregnant-dogs'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('dogs')
-        .select('id, name, photo_url, gender, breeding_status, last_heat_date, tie_date')
+        .select('id, name, photo_url, gender, is_pregnant, last_heat_date, tie_date')
         .eq('gender', 'Female')
-        .eq('breeding_status', 'pregnant');
+        .eq('is_pregnant', true);
         
       if (error) throw error;
       return data;
@@ -72,10 +72,13 @@ const WelpingDashboard = () => {
           <WelpingStatsCard 
             pregnantCount={pregnantDogs?.length || 0} 
             activeWelpingsCount={activeLitters?.filter(litter => 
-              litter.dam?.breeding_status === 'pregnant' || 
+              litter.dam?.is_pregnant || 
               (litter.birth_date && new Date(litter.birth_date) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
             ).length || 0}
-            totalPuppiesCount={activeLitters?.reduce((total, litter) => total + (litter.puppies?.count || 0), 0) || 0}
+            totalPuppiesCount={activeLitters?.reduce((total, litter) => {
+              const puppyCount = litter.puppies ? (Array.isArray(litter.puppies) ? litter.puppies.length : litter.puppies.count) : 0;
+              return total + puppyCount;
+            }, 0) || 0}
           />
           
           <WelpingPreparationGuide />

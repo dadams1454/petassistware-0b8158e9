@@ -107,7 +107,6 @@ const WelpingStepGuide: React.FC<WelpingStepGuideProps> = ({ currentStep, setCur
       await supabase
         .from('dogs')
         .update({ 
-          breeding_status: 'whelped', 
           is_pregnant: false
         })
         .eq('id', selectedDamId);
@@ -279,7 +278,7 @@ const WelpingStepGuide: React.FC<WelpingStepGuideProps> = ({ currentStep, setCur
                     <div className="mt-1">
                       <DatePicker
                         date={birthDate}
-                        setDate={setBirthDate}
+                        onSelect={setBirthDate}
                       />
                     </div>
                   </div>
