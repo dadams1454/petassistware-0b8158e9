@@ -10,7 +10,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Plus, Broom } from 'lucide-react';
+import { Plus, Brush } from 'lucide-react';
 import { KennelCleaning, KennelUnit } from '@/types/kennel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import KennelCleaningForm from './forms/KennelCleaningForm';
@@ -81,7 +81,7 @@ const KennelCleaningTab: React.FC<KennelCleaningTabProps> = ({
           <EmptyState 
             title="No Cleaning Records" 
             description="Add cleaning records to track kennel sanitation."
-            icon={<Broom className="h-12 w-12 text-muted-foreground" />}
+            icon={<Brush className="h-12 w-12 text-muted-foreground" />}
             action={
               <Button 
                 onClick={() => setIsAddDialogOpen(true)}

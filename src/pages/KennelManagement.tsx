@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SectionHeader } from '@/components/ui/standardized';
-import { Building2, Store, Broom, Wrench, Calendar } from 'lucide-react';
+import { Building2, Store, Brush, Wrench, Calendar } from 'lucide-react';
 import PageContainer from '@/components/common/PageContainer';
 import KennelUnitsTab from '@/components/kennel/KennelUnitsTab';
 import KennelAssignmentsTab from '@/components/kennel/KennelAssignmentsTab';
@@ -43,7 +43,7 @@ const KennelManagement: React.FC = () => {
             </TabsTrigger>
             
             <TabsTrigger value="cleaning" className="flex items-center gap-2">
-              <Broom className="h-4 w-4" />
+              <Brush className="h-4 w-4" />
               <span>Cleaning Records</span>
             </TabsTrigger>
             

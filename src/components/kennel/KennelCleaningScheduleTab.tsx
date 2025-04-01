@@ -10,7 +10,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Plus, Calendar, Trash, Edit, RepeatClock } from 'lucide-react';
+import { Plus, Trash, Edit, Clock } from 'lucide-react';
 import { KennelCleaningSchedule, KennelUnit } from '@/types/kennel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import KennelCleaningScheduleForm from './forms/KennelCleaningScheduleForm';
@@ -110,7 +110,7 @@ const KennelCleaningScheduleTab: React.FC<KennelCleaningScheduleTabProps> = ({
           <EmptyState 
             title="No Cleaning Schedules" 
             description="Set up cleaning schedules to maintain sanitation."
-            icon={<RepeatClock className="h-12 w-12 text-muted-foreground" />}
+            icon={<Clock className="h-12 w-12 text-muted-foreground" />}
             action={
               <Button 
                 onClick={() => setIsAddDialogOpen(true)}
