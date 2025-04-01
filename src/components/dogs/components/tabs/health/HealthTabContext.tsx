@@ -24,6 +24,11 @@ interface HealthTabContextType {
   getRecordsByType: (type: HealthRecordTypeEnum) => any[];
   handleAddRecord: (type: HealthRecordTypeEnum) => void;
   handleEditRecord: (recordId: string) => void;
+  // Add the action functions
+  openAddVaccinationDialog: () => void;
+  openAddExaminationDialog: () => void;
+  openAddMedicationDialog: () => void;
+  openAddWeightDialog: () => void;
 }
 
 const HealthTabContext = createContext<HealthTabContextType | undefined>(undefined);
@@ -85,6 +90,12 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
     setWeightDialogOpen(false);
   };
   
+  // Add these convenience functions for opening dialogs
+  const openAddVaccinationDialog = () => handleAddRecord(HealthRecordTypeEnum.Vaccination);
+  const openAddExaminationDialog = () => handleAddRecord(HealthRecordTypeEnum.Examination);
+  const openAddMedicationDialog = () => handleAddRecord(HealthRecordTypeEnum.Medication);
+  const openAddWeightDialog = () => setWeightDialogOpen(true);
+  
   const value = {
     dogId,
     recordDialogOpen,
@@ -104,7 +115,12 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
     healthRecords: healthRecords || [],
     getRecordsByType,
     handleAddRecord,
-    handleEditRecord
+    handleEditRecord,
+    // Add the new helper functions
+    openAddVaccinationDialog,
+    openAddExaminationDialog,
+    openAddMedicationDialog,
+    openAddWeightDialog
   };
   
   return (
