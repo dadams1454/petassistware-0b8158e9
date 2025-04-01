@@ -1,33 +1,40 @@
 
 import { useMemo } from 'react';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
-import { DEFAULT_AGE_GROUPS } from '@/data/puppyAgeGroups';
+import { PuppyWithAge } from '@/types/puppyTracking';
+
+interface AgeGroup {
+  label: string;
+  puppies: PuppyWithAge[];
+  minAge: number;
+  maxAge: number;
+}
 
 export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
-  // Use the default age groups for now
-  // In the future this could be customized by the breeder
-  const ageGroups = DEFAULT_AGE_GROUPS;
-
-  // Calculate which puppies belong to which age group
-  const puppiesByAgeGroup = useMemo(() => {
-    return puppies.reduce((groups: Record<string, PuppyWithAge[]>, puppy) => {
-      const ageGroup = ageGroups.find(
-        group => puppy.ageInDays >= group.startDay && puppy.ageInDays <= group.endDay
+  const ageGroups = useMemo(() => {
+    // Define age groups
+    const groups: AgeGroup[] = [
+      { label: 'Neonatal (0-2 weeks)', puppies: [], minAge: 0, maxAge: 14 },
+      { label: 'Transitional (2-3 weeks)', puppies: [], minAge: 15, maxAge: 21 },
+      { label: 'Socialization (3-12 weeks)', puppies: [], minAge: 22, maxAge: 84 },
+      { label: 'Juvenile (3-6 months)', puppies: [], minAge: 85, maxAge: 180 },
+      { label: 'Adolescent (6-18 months)', puppies: [], minAge: 181, maxAge: 540 },
+    ];
+    
+    // Sort puppies into groups
+    puppies.forEach(puppy => {
+      const ageInDays = puppy.ageInDays;
+      
+      const matchingGroup = groups.find(
+        group => ageInDays >= group.minAge && ageInDays <= group.maxAge
       );
       
-      if (ageGroup) {
-        if (!groups[ageGroup.id]) {
-          groups[ageGroup.id] = [];
-        }
-        groups[ageGroup.id].push(puppy);
+      if (matchingGroup) {
+        matchingGroup.puppies.push(puppy);
       }
-      
-      return groups;
-    }, {});
-  }, [puppies, ageGroups]);
-
-  return {
-    ageGroups,
-    puppiesByAgeGroup
-  };
+    });
+    
+    return groups;
+  }, [puppies]);
+  
+  return { ageGroups };
 };
