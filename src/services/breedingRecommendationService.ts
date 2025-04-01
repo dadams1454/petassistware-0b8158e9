@@ -42,6 +42,12 @@ export interface BreedingRecommendation {
     average: number;
   };
   created_at: string;
+  // Add health_risks property that maps to health_risk
+  health_risks?: {
+    risk_type: string;
+    severity: 'low' | 'medium' | 'high';
+    description: string;
+  }[];
 }
 
 export interface GeneticCompatibility {
@@ -100,6 +106,10 @@ export const getBreedingRecommendationsForDog = async (
           { condition: 'Hip Dysplasia', risk_level: 'low', probability: 0.15 },
           { condition: 'Heart Conditions', risk_level: 'medium', probability: 0.3 }
         ],
+        health_risks: [
+          { risk_type: 'Hip Dysplasia', severity: 'low', description: 'Low risk of hip dysplasia' },
+          { risk_type: 'Heart Conditions', severity: 'medium', description: 'Moderate risk of heart conditions' }
+        ],
         expected_litter_size: {
           min: 6,
           max: 10,
@@ -156,6 +166,10 @@ export const getSpecificCompatibility = async (
       health_risk: [
         { condition: 'Hip Dysplasia', risk_level: 'low', probability: 0.1 },
         { condition: 'Heart Conditions', risk_level: 'low', probability: 0.2 }
+      ],
+      health_risks: [
+        { risk_type: 'Hip Dysplasia', severity: 'low', description: 'Low risk of hip dysplasia' },
+        { risk_type: 'Heart Conditions', severity: 'low', description: 'Low risk of heart conditions' }
       ],
       expected_litter_size: {
         min: 7,

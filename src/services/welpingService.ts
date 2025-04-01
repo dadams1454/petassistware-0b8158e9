@@ -21,6 +21,14 @@ export interface WelpingRecord {
   notes?: string;
   created_at: string;
   created_by?: string;
+  // Fields needed for WelpingDetailsForm
+  birth_date?: string;
+  total_puppies?: number;
+  males?: number;
+  females?: number;
+  attended_by?: string;
+  complication_notes?: string;
+  status?: string;
 }
 
 export interface WelpingObservation {
@@ -58,19 +66,32 @@ export interface PostpartumCare {
   created_by?: string;
 }
 
+// For backwards compatibility
+export type WelpingPostpartumCare = PostpartumCare;
+
 // Mock data for testing
 const mockWelpingRecords: WelpingRecord[] = [];
 const mockWelpingObservations: WelpingObservation[] = [];
 const mockPostpartumCare: PostpartumCare[] = [];
 
 // Create a welping record
-export const createWelpingRecord = async (record: Omit<WelpingRecord, 'id' | 'created_at'>): Promise<WelpingRecord> => {
+export const createWelpingRecord = async (
+  litterId: string, 
+  record: Partial<WelpingRecord>
+): Promise<WelpingRecord> => {
   try {
     // In a real implementation, this would insert into the database
     // For now, just create a mock record
     const newRecord: WelpingRecord = {
       ...record,
       id: uuidv4(),
+      litter_id: litterId,
+      total_puppies_born: record.total_puppies || 0,
+      live_puppies_born: (record.total_puppies || 0) - 0, // Assuming all are live
+      stillborn_puppies: 0,
+      dam_condition: 'good',
+      assistance_required: false,
+      recording_date: record.birth_date || new Date().toISOString(),
       created_at: new Date().toISOString()
     };
     
@@ -92,6 +113,9 @@ export const getWelpingRecordsForLitter = async (litterId: string): Promise<Welp
     return [];
   }
 };
+
+// For backward compatibility with WelpingTabContent
+export const getWelpingRecordForLitter = getWelpingRecordsForLitter;
 
 // Update a welping record
 export const updateWelpingRecord = async (
@@ -188,6 +212,28 @@ export const getPuppyObservations = async (puppyId: string): Promise<WelpingObse
   }
 };
 
+// Add enhancedPuppyData function for PuppyDetail.tsx
+export const enhancedPuppyData = async (puppyId: string): Promise<any> => {
+  try {
+    // In a real implementation, this would query the database
+    return {
+      puppy: {
+        id: puppyId,
+        name: "Puppy Name",
+        gender: "Male",
+        birth_date: new Date().toISOString(),
+        color: "Black",
+        status: "Available"
+      },
+      observations: [],
+      weights: []
+    };
+  } catch (error) {
+    console.error('Error fetching enhanced puppy data:', error);
+    return null;
+  }
+};
+
 // Update puppy with AKC information or other details
 export const updatePuppy = async (
   puppyId: string,
@@ -200,15 +246,16 @@ export const updatePuppy = async (
       id: puppyId,
       litter_id: updates.litter_id || 'litter-id',
       name: updates.name || 'Puppy',
-      gender: updates.gender || 'male',
+      gender: updates.gender === 'male' ? 'Male' : 'Female',
       color: updates.color || 'black',
-      birth_weight: updates.birth_weight || 0.5,
+      birth_date: updates.birth_date || new Date().toISOString(),
+      birth_weight: updates.birth_weight ? String(updates.birth_weight) : '0.5',
       birth_order: updates.birth_order || 1,
-      status: updates.status || 'available',
-      microchip_id: updates.microchip_id,
-      akc_registration: updates.akc_registration,
-      notes: updates.notes,
-      collar_color: updates.collar_color
+      status: updates.status === 'available' ? 'Available' : (updates.status || 'Available'),
+      microchip_number: updates.microchip_number,
+      akc_litter_number: updates.akc_litter_number,
+      akc_registration_number: updates.akc_registration_number,
+      notes: updates.notes
     };
     
     return mockPuppy;

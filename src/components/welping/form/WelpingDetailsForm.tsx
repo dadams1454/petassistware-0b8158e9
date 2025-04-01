@@ -36,7 +36,7 @@ const WelpingDetailsForm: React.FC<WelpingDetailsFormProps> = ({
       females: initialData?.females || 0,
       attended_by: initialData?.attended_by || '',
       notes: initialData?.notes || '',
-      complications: initialData?.complications || false,
+      complications: initialData?.complications ? true : false,
       complication_notes: initialData?.complication_notes || '',
       status: initialData?.status || 'in-progress'
     }
@@ -52,7 +52,7 @@ const WelpingDetailsForm: React.FC<WelpingDetailsFormProps> = ({
       const data = {
         ...values,
         status: values.end_time ? 'completed' : 'in-progress',
-        litter_id: litterId
+        complications: !!values.complications // Convert to boolean
       };
       
       let result;
@@ -76,9 +76,9 @@ const WelpingDetailsForm: React.FC<WelpingDetailsFormProps> = ({
     } catch (error) {
       console.error('Error saving whelping details:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to save whelping details',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to save whelping details",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
@@ -227,7 +227,7 @@ const WelpingDetailsForm: React.FC<WelpingDetailsFormProps> = ({
                     </div>
                     <FormControl>
                       <Switch
-                        checked={field.value}
+                        checked={!!field.value}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
