@@ -1,10 +1,11 @@
+
 import React from 'react';
-import { format, addDays, isAfter } from 'date-fns';
-import { Heart, AlertTriangle, Flame, Calendar, Timer, AlertCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useDogStatus, isWithinDays } from '../hooks/useDogStatus';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useDogStatus } from '../hooks/useDogStatus';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Info, Calendar, AlertTriangle, Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 interface DogStatusCardProps {
@@ -13,233 +14,212 @@ interface DogStatusCardProps {
 
 const DogStatusCard: React.FC<DogStatusCardProps> = ({ dog }) => {
   const navigate = useNavigate();
-  
-  // Use our enhanced hook to get dog status
   const { 
     isPregnant, 
-    heatCycle,
-    vaccinationDueSoon,
-    lastVaccinationDate, 
-    nextVaccinationDate,
-    tieDate,
-    hasVaccinationHeatConflict,
-    shouldRestrictExercise,
-    gestationProgressDays,
-    estimatedDueDate
+    isInHeat, 
+    nextVaccinationDue,
+    lastHealthCheckup,
+    age, 
+    healthStatus,
+    breedingStatus,
+    nextHeatDate,
+    estimatedDueDate,
+    hasVaccinationHeatConflict
   } = useDogStatus(dog);
   
-  const { 
-    isInHeat, 
-    isPreHeat, 
-    nextHeatDate, 
-    currentStage, 
-    daysUntilNextHeat, 
-    fertileDays,
-    recommendedBreedingDays 
-  } = heatCycle;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'excellent':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'good':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'fair':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+      case 'poor':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'unknown':
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    }
+  };
   
-  const today = new Date();
-
-  // If no status to show, return null
-  if (!isPregnant && !isInHeat && !isPreHeat && !vaccinationDueSoon && !hasVaccinationHeatConflict) {
-    return null;
-  }
-
-  // Add a navigation action to the pregnancy status tooltip
-  if (isPregnant) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help">
-              <Heart className="h-4 w-4 fill-pink-600 dark:fill-pink-300" />
-              {gestationProgressDays !== null ? `Pregnant (Day ${gestationProgressDays})` : 'Pregnant'}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs p-3">
-            <div className="space-y-2">
-              <p className="text-sm font-semibold">Pregnancy Status</p>
-              {tieDate && (
-                <p className="text-xs">
-                  Breeding date: {format(new Date(tieDate), 'MMM d, yyyy')}
+  const getBreedingStatusColor = (status: string) => {
+    switch (status) {
+      case 'breeding':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'pregnant':
+        return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300';
+      case 'heat':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'resting':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'not breeding':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    }
+  };
+  
+  const handleVaccinationsClick = () => {
+    navigate(`/dogs/${dog.id}?tab=health&section=vaccinations`);
+  };
+  
+  const handleHealthClick = () => {
+    navigate(`/dogs/${dog.id}?tab=health`);
+  };
+  
+  const handleBreedingClick = () => {
+    navigate(`/dogs/${dog.id}?tab=breeding`);
+  };
+  
+  const handleReproductiveClick = () => {
+    navigate(`/dogs/${dog.id}/reproductive`);
+  };
+  
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg flex items-center justify-between">
+          Status & Alerts
+          <div className="flex space-x-1">
+            {healthStatus && (
+              <Badge variant="outline" className={`${getStatusColor(healthStatus)} text-xs`}>
+                Health: {healthStatus}
+              </Badge>
+            )}
+            {breedingStatus && dog.gender === 'Female' && (
+              <Badge variant="outline" className={`${getBreedingStatusColor(breedingStatus)} text-xs`}>
+                {breedingStatus}
+              </Badge>
+            )}
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-0">
+        {/* Health Alerts */}
+        <div className="space-y-2">
+          {nextVaccinationDue && (
+            <div className="flex items-start rounded-md bg-blue-50 dark:bg-blue-900/20 p-2 text-sm">
+              <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 mr-2" />
+              <div>
+                <p className="font-medium">Vaccination due</p>
+                <p className="text-muted-foreground text-xs">
+                  {format(new Date(nextVaccinationDue), 'MMM d, yyyy')} ({formatDistanceToNow(new Date(nextVaccinationDue), { addSuffix: true })})
                 </p>
-              )}
-              {estimatedDueDate && (
-                <p className="text-xs font-medium">
-                  Due date: {format(estimatedDueDate, 'MMM d, yyyy')}
-                  {gestationProgressDays !== null && (
-                    <> ({63 - gestationProgressDays} days remaining)</>
-                  )}
-                </p>
-              )}
-              <div className="text-xs px-2 py-1 bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded">
-                <AlertCircle className="h-3 w-3 inline-block mr-1" />
-                Monitor closely for any signs of distress or labor
               </div>
+            </div>
+          )}
+          
+          {lastHealthCheckup && (
+            <div className="flex items-start rounded-md bg-slate-50 dark:bg-slate-900/20 p-2 text-sm">
+              <Info className="h-4 w-4 text-slate-600 dark:text-slate-400 mt-0.5 mr-2" />
+              <div>
+                <p className="font-medium">Last checkup</p>
+                <p className="text-muted-foreground text-xs">
+                  {format(new Date(lastHealthCheckup), 'MMM d, yyyy')} ({formatDistanceToNow(new Date(lastHealthCheckup), { addSuffix: true })})
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Breeding Status for Female Dogs */}
+        {dog.gender === 'Female' && (
+          <div className="space-y-2">
+            {isPregnant && estimatedDueDate && (
+              <div className="flex items-start rounded-md bg-pink-50 dark:bg-pink-900/20 p-2 text-sm">
+                <Heart className="h-4 w-4 text-pink-600 dark:text-pink-400 mt-0.5 mr-2" />
+                <div>
+                  <p className="font-medium">Currently pregnant</p>
+                  <p className="text-muted-foreground text-xs">
+                    Due date: {format(new Date(estimatedDueDate), 'MMM d, yyyy')} ({formatDistanceToNow(new Date(estimatedDueDate), { addSuffix: true })})
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {isInHeat && (
+              <div className="flex items-start rounded-md bg-red-50 dark:bg-red-900/20 p-2 text-sm">
+                <Calendar className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 mr-2" />
+                <div>
+                  <p className="font-medium">Currently in heat</p>
+                  <p className="text-muted-foreground text-xs">
+                    Special care and monitoring required
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {!isInHeat && !isPregnant && nextHeatDate && (
+              <div className="flex items-start rounded-md bg-purple-50 dark:bg-purple-900/20 p-2 text-sm">
+                <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5 mr-2" />
+                <div>
+                  <p className="font-medium">Next heat cycle</p>
+                  <p className="text-muted-foreground text-xs">
+                    Expected: {format(new Date(nextHeatDate), 'MMM d, yyyy')} ({formatDistanceToNow(new Date(nextHeatDate), { addSuffix: true })})
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {hasVaccinationHeatConflict && (
+          <div className="flex items-start rounded-md bg-amber-50 dark:bg-amber-900/20 p-2 text-sm">
+            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 mr-2" />
+            <div>
+              <p className="font-medium">Scheduling conflict</p>
+              <p className="text-muted-foreground text-xs">
+                Vaccination scheduled during projected heat cycle
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-2 pt-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleVaccinationsClick}
+              className="text-xs"
+            >
+              Vaccinations
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleHealthClick}
+              className="text-xs"
+            >
+              Health Records
+            </Button>
+          </div>
+          
+          {dog.gender === 'Female' && (
+            <div className="grid grid-cols-2 gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full mt-1"
-                onClick={() => navigate(`/dogs/${dog.id}/reproductive`)}
+                onClick={handleBreedingClick}
+                className="text-xs"
               >
-                Manage Pregnancy
+                Breeding Status
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={handleReproductiveClick}
+                className="text-xs"
+              >
+                Reproductive Mgmt
               </Button>
             </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-  
-  // Active Heat Status
-  {isInHeat && !isPregnant && currentStage && (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className={cn(
-            "px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help",
-            currentStage.name === 'Proestrus' 
-              ? "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300"
-              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-          )}>
-            <Flame className="h-4 w-4" />
-            {currentStage.name} (In Heat)
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs p-3">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold">{currentStage.name} Stage</p>
-            <p className="text-xs">{currentStage.description}</p>
-            
-            {fertileDays.start && fertileDays.end && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium">Fertile Window:</p>
-                <p className="text-xs">
-                  {format(fertileDays.start, 'MMM d')} - {format(fertileDays.end, 'MMM d')}
-                </p>
-              </div>
-            )}
-            
-            {recommendedBreedingDays.start && recommendedBreedingDays.end && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium">Optimal Breeding Days:</p>
-                <p className="text-xs">
-                  {format(recommendedBreedingDays.start, 'MMM d')} - {format(recommendedBreedingDays.end, 'MMM d')}
-                </p>
-              </div>
-            )}
-            
-            {shouldRestrictExercise && (
-              <div className="text-xs px-2 py-1 bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 rounded">
-                <AlertCircle className="h-3 w-3 inline-block mr-1" />
-                Restrict intense exercise during this period
-              </div>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )}
-  
-  // Approaching Heat Status
-  {isPreHeat && !isPregnant && nextHeatDate && (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help">
-            <Calendar className="h-4 w-4" />
-            Heat Approaching
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs p-3">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold">Approaching Heat Cycle</p>
-            <p className="text-xs">
-              Expected to start in {daysUntilNextHeat} days
-            </p>
-            <p className="text-xs font-medium">
-              Predicted start: {format(nextHeatDate, 'MMM d, yyyy')}
-            </p>
-            <div className="text-xs px-2 py-1 bg-purple-50 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded">
-              <AlertCircle className="h-3 w-3 inline-block mr-1" />
-              Prepare for cycle management and potential behavior changes
-            </div>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )}
-  
-  // Vaccination Status
-  {vaccinationDueSoon && lastVaccinationDate && nextVaccinationDate && (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help">
-            <AlertTriangle className="h-4 w-4" />
-            {isAfter(today, nextVaccinationDate) ? 'Vaccination Overdue' : 'Vaccination Due Soon'}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs p-3">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold">
-              {isAfter(today, nextVaccinationDate) 
-                ? 'Vaccinations are overdue' 
-                : 'Vaccinations due within 30 days'}
-            </p>
-            <p className="text-xs">
-              Last vaccination: {format(lastVaccinationDate, 'MMM d, yyyy')}
-            </p>
-            <p className="text-xs font-medium">
-              Due date: {format(nextVaccinationDate, 'MMM d, yyyy')}
-            </p>
-            
-            {hasVaccinationHeatConflict && (
-              <div className="text-xs px-2 py-1 bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300 rounded">
-                <AlertTriangle className="h-3 w-3 inline-block mr-1" />
-                Warning: Vaccination conflicts with predicted heat cycle. Consider rescheduling.
-              </div>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )}
-  
-  // Vaccination and Heat Conflict Warning (shown separately for emphasis)
-  {hasVaccinationHeatConflict && nextHeatDate && !isInHeat && !isPreHeat && !vaccinationDueSoon && (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-medium text-sm shadow-md hover:shadow-lg transition-shadow cursor-help">
-            <AlertTriangle className="h-4 w-4" />
-            Vaccination-Heat Conflict
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs p-3">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold">Scheduling Conflict</p>
-            <p className="text-xs">
-              Upcoming vaccination may interfere with heat cycle.
-            </p>
-            <p className="text-xs">
-              Next heat: {format(nextHeatDate, 'MMM d, yyyy')}
-            </p>
-            {nextVaccinationDate && (
-              <p className="text-xs">
-                Next vaccination: {format(nextVaccinationDate, 'MMM d, yyyy')}
-              </p>
-            )}
-            <div className="text-xs px-2 py-1 bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300 rounded">
-              <AlertTriangle className="h-3 w-3 inline-block mr-1" />
-              Consider rescheduling vaccination to avoid interference with breeding
-            </div>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )}
-    </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
