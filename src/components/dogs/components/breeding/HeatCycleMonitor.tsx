@@ -56,7 +56,7 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
               'start_date' in item &&
               'created_at' in item;
           })
-          .map(item => ({
+          .map((item) => ({
             id: item.id,
             dog_id: item.dog_id,
             start_date: item.start_date,
