@@ -1,13 +1,74 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DogGenotype, CompactGenotypeViewProps, HealthMarkersPanelProps } from '@/types/genetics';
-import { getHealthSummaryData, formatConditionName } from './utils/healthUtils';
-import { Dna, FileBadge, ExternalLink } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Dna, AlertCircle } from 'lucide-react';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
+import { CompactGenotypeViewProps, DogGenotype, GeneticHealthStatus } from '@/types/genetics';
+import { LoadingState, ErrorState } from '@/components/ui/standardized';
+
+// Map for color-coding health statuses
+const statusColors: Record<GeneticHealthStatus, string> = {
+  clear: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  carrier: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+  affected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  unknown: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300'
+};
+
+export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({ 
+  dogData, 
+  showColorTraits = true,
+  showHealthTests = true
+}) => {
+  if (!dogData) return null;
+  
+  return (
+    <div className="space-y-4">
+      {showColorTraits && dogData.baseColor && (
+        <div>
+          <h3 className="text-sm font-semibold mb-2">Color Traits</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {dogData.baseColor && (
+              <ColorTraitItem label="Base Color" value={dogData.baseColor} />
+            )}
+            {dogData.agouti && (
+              <ColorTraitItem label="Agouti" value={dogData.agouti} />
+            )}
+            {dogData.dilution && (
+              <ColorTraitItem label="Dilution" value={dogData.dilution} />
+            )}
+            {dogData.brownDilution && (
+              <ColorTraitItem label="Brown" value={dogData.brownDilution} />
+            )}
+          </div>
+        </div>
+      )}
+      
+      {showHealthTests && dogData.healthResults && dogData.healthResults.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold mb-2">Health Tests</h3>
+          <div className="space-y-2">
+            {dogData.healthResults.map((test, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span className="text-sm">{test.condition}</span>
+                <Badge variant="outline" className={statusColors[test.result]}>
+                  {test.result}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ColorTraitItem = ({ label, value }: { label: string; value: string }) => (
+  <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+    <div className="text-xs text-muted-foreground">{label}</div>
+    <div className="text-sm font-medium">{value}</div>
+  </div>
+);
 
 interface DogGenotypeCardProps {
   dogId: string;
@@ -15,23 +76,56 @@ interface DogGenotypeCardProps {
   showColorTraits?: boolean;
 }
 
-export const DogGenotypeCard: React.FC<DogGenotypeCardProps> = ({
+export const DogGenotypeCard: React.FC<DogGenotypeCardProps> = ({ 
   dogId,
   showHealthTests = true,
   showColorTraits = true
 }) => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
-  const { geneticData, loading, error } = useDogGenetics(dogId);
+  const { geneticData, loading, error, refresh } = useDogGenetics(dogId);
   
   if (loading) {
     return (
-      <Card className="h-full">
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Genetic Profile</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LoadingState message="Loading genetic data..." />
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Genetic Profile</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ErrorState 
+            title="Error Loading Genetic Data" 
+            message="There was a problem retrieving genetic information."
+            onRetry={refresh}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (!geneticData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Dna className="h-5 w-5 mr-2" />
+            Genetic Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6">
+            <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">No genetic data available</p>
           </div>
         </CardContent>
       </Card>
@@ -39,182 +133,20 @@ export const DogGenotypeCard: React.FC<DogGenotypeCardProps> = ({
   }
   
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center text-lg font-medium">
-          <Dna className="h-5 w-5 mr-2" /> Genetic Profile
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Dna className="h-5 w-5 mr-2" />
+          Genetic Profile
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="overview" className="space-y-4">
-            <CompactGenotypeView 
-              dogData={geneticData} 
-              showColorTraits={showColorTraits} 
-              showHealthTests={showHealthTests} 
-            />
-            
-            <div className="flex justify-end">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate(`/genetics/detail/${dogId}`)}
-              >
-                Full Genetic Profile <ExternalLink className="h-3.5 w-3.5 ml-1" />
-              </Button>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="details" className="space-y-4">
-            <HealthMarkersPanel dogData={geneticData} />
-          </TabsContent>
-        </Tabs>
+      <CardContent>
+        <CompactGenotypeView 
+          dogData={geneticData} 
+          showColorTraits={showColorTraits} 
+          showHealthTests={showHealthTests} 
+        />
       </CardContent>
     </Card>
   );
 };
-
-const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({ 
-  dogData, 
-  showColorTraits = true,
-  showHealthTests = true
-}) => {
-  if (!dogData) {
-    return <div className="text-sm text-muted-foreground">No genetic data available</div>;
-  }
-  
-  const healthSummary = getHealthSummaryData(dogData.healthMarkers);
-  
-  return (
-    <div className="space-y-4">
-      {showColorTraits && (
-        <div>
-          <h4 className="text-sm font-medium mb-2">Coat Color Genotype</h4>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="rounded-md bg-muted p-2 flex justify-between">
-              <span className="text-muted-foreground">Base Color:</span>
-              <span className="font-medium">{dogData.baseColor}</span>
-            </div>
-            <div className="rounded-md bg-muted p-2 flex justify-between">
-              <span className="text-muted-foreground">Brown:</span>
-              <span className="font-medium">{dogData.brownDilution}</span>
-            </div>
-            <div className="rounded-md bg-muted p-2 flex justify-between">
-              <span className="text-muted-foreground">Dilution:</span>
-              <span className="font-medium">{dogData.dilution}</span>
-            </div>
-            <div className="rounded-md bg-muted p-2 flex justify-between">
-              <span className="text-muted-foreground">Agouti:</span>
-              <span className="font-medium">{dogData.agouti}</span>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {showHealthTests && healthSummary.hasTests && (
-        <div>
-          <h4 className="text-sm font-medium mb-2">Health Tests</h4>
-          
-          {healthSummary.affected.length > 0 && (
-            <div className="mb-2">
-              <div className="flex items-center mb-1">
-                <span className="health-marker-icon health-marker-affected"></span>
-                <span className="text-xs font-semibold">Affected by:</span>
-              </div>
-              <ul className="pl-5 text-sm list-disc">
-                {healthSummary.affected.map((condition, i) => (
-                  <li key={i} className="text-xs">{condition}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {healthSummary.carriers.length > 0 && (
-            <div className="mb-2">
-              <div className="flex items-center mb-1">
-                <span className="health-marker-icon health-marker-carrier"></span>
-                <span className="text-xs font-semibold">Carrier for:</span>
-              </div>
-              <ul className="pl-5 text-sm list-disc">
-                {healthSummary.carriers.map((condition, i) => (
-                  <li key={i} className="text-xs">{condition}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {healthSummary.clear.length > 0 && (
-            <div>
-              <div className="flex items-center mb-1">
-                <span className="health-marker-icon health-marker-clear"></span>
-                <span className="text-xs font-semibold">Clear for:</span>
-              </div>
-              <ul className="pl-5 text-sm list-disc">
-                {healthSummary.clear.map((condition, i) => (
-                  <li key={i} className="text-xs">{condition}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-      
-      {showHealthTests && !healthSummary.hasTests && (
-        <div className="text-sm text-muted-foreground">
-          No health test data available
-        </div>
-      )}
-    </div>
-  );
-};
-
-const HealthMarkersPanel: React.FC<HealthMarkersPanelProps> = ({ dogData }) => {
-  if (!dogData || Object.keys(dogData.healthMarkers).length === 0) {
-    return (
-      <div className="text-center p-4">
-        <FileBadge className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-        <p className="text-sm text-muted-foreground">No health markers found.</p>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="space-y-3">
-      {Object.entries(dogData.healthMarkers).map(([condition, marker]) => (
-        <div 
-          key={condition} 
-          className="border p-3 rounded-md bg-background flex flex-col"
-        >
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-medium text-sm">
-              {formatConditionName(condition)}
-            </span>
-            <div className="flex items-center">
-              <span className={`health-marker-icon health-marker-${marker.status}`}></span>
-              <span 
-                className={`text-xs font-medium ml-1 ${
-                  marker.status === 'clear' ? 'text-green-600' :
-                  marker.status === 'carrier' ? 'text-yellow-600' : 
-                  marker.status === 'affected' ? 'text-red-600' : 'text-gray-600'
-                }`}
-              >
-                {marker.status}
-              </span>
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground flex justify-between">
-            <span>Genotype: {marker.genotype}</span>
-            {marker.testDate && <span>Tested: {new Date(marker.testDate).toLocaleDateString()}</span>}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-export default DogGenotypeCard;

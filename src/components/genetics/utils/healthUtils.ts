@@ -1,167 +1,96 @@
 
 import { HealthMarker } from '@/types/genetics';
+import { getBreedHighRiskConditions } from '@/services/genetics/processGeneticData';
 
-/**
- * Formats a raw condition name for UI display
- */
-export function formatConditionName(condition: string): string {
-  // Handle special cases
-  if (condition.includes('PRA')) {
-    return 'Progressive Retinal Atrophy';
-  }
-  
-  if (condition.includes('vWD')) {
-    return 'von Willebrand Disease';
-  }
-  
-  if (condition.includes('DM')) {
-    return 'Degenerative Myelopathy';
-  }
-  
-  // Basic formatting: remove underscores, make title case
-  return condition
-    .replace(/_/g, ' ')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+export interface RiskAssessment {
+  hasIssues: boolean;
+  affectedConditions: string[];
+  carrierConditions: string[];
+  missingTests: string[];
+  breedHighRiskConditions: string[];
 }
 
-/**
- * Format date for UI display
- */
-export function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-}
-
-/**
- * Get a summary of health marker status counts
- */
-export function getHealthSummaryData(healthMarkers: Record<string, HealthMarker>) {
-  const summary = {
-    hasTests: Object.keys(healthMarkers).length > 0,
-    clear: [] as string[],
-    carriers: [] as string[],
-    affected: [] as string[],
-    unknown: [] as string[],
-    clearCount: 0,
-    carrierCount: 0,
-    affectedCount: 0,
-    unknownCount: 0
-  };
+export const generateRiskAssessment = (breed: string, healthMarkers: Record<string, HealthMarker>): RiskAssessment => {
+  const breedHighRiskConditions = getBreedHighRiskConditions(breed);
   
-  // Process all health markers
+  const affectedConditions: string[] = [];
+  const carrierConditions: string[] = [];
+  const missingTests: string[] = [];
+  
+  // Find affected and carrier conditions
   Object.entries(healthMarkers).forEach(([condition, marker]) => {
-    const formattedName = formatConditionName(condition);
-    
-    switch(marker.status) {
-      case 'clear':
-        summary.clear.push(formattedName);
-        summary.clearCount++;
-        break;
-      case 'carrier':
-        summary.carriers.push(formattedName);
-        summary.carrierCount++;
-        break;
-      case 'affected':
-        summary.affected.push(formattedName);
-        summary.affectedCount++;
-        break;
-      default:
-        summary.unknown.push(formattedName);
-        summary.unknownCount++;
+    if (marker.status === 'affected') {
+      affectedConditions.push(condition);
+    } else if (marker.status === 'carrier') {
+      carrierConditions.push(condition);
     }
   });
   
-  return summary;
-}
-
-/**
- * Get color-coded status text and colors for result display
- */
-export function getResultWithColorProps(status: string): { color: string; bgColor: string } {
-  switch(status.toLowerCase()) {
-    case 'clear':
-      return { color: 'text-green-700', bgColor: 'bg-green-100' };
-    case 'carrier':
-      return { color: 'text-amber-700', bgColor: 'bg-amber-100' };
-    case 'affected':
-      return { color: 'text-red-700', bgColor: 'bg-red-100' };
-    default:
-      return { color: 'text-gray-700', bgColor: 'bg-gray-100' };
-  }
-}
-
-/**
- * Get status color for visualization
- */
-export function getStatusColor(status: string): string {
-  switch(status.toLowerCase()) {
-    case 'clear':
-      return '#10b981'; // green-500
-    case 'carrier': 
-      return '#f59e0b'; // amber-500
-    case 'affected':
-      return '#ef4444'; // red-500
-    default:
-      return '#6b7280'; // gray-500
-  }
-}
-
-/**
- * Generates a genetic risk assessment for a dog based on its breed and test results
- */
-export function generateRiskAssessment(breed: string, healthMarkers: Record<string, HealthMarker>) {
-  // This would typically use a database of breed-specific conditions and risks
-  // For now, we'll hardcode some common conditions for Newfoundlands
-  
-  const breedRisks: Record<string, string[]> = {
-    'newfoundland': [
-      'Cystinuria', 
-      'Subvalvular Aortic Stenosis',
-      'Dilated Cardiomyopathy',
-      'Hip Dysplasia'
-    ],
-    'labrador_retriever': [
-      'Exercise-Induced Collapse',
-      'Progressive Retinal Atrophy',
-      'Hip Dysplasia'
-    ],
-    'golden_retriever': [
-      'Progressive Retinal Atrophy',
-      'Hip Dysplasia',
-      'Cancer Predisposition'
-    ]
-  };
-  
-  const normalizedBreed = breed.toLowerCase().replace(' ', '_');
-  const breedSpecificRisks = breedRisks[normalizedBreed] || [];
-  
-  // Check which tests have been performed for breed-specific conditions
-  const testedConditions = new Set(Object.keys(healthMarkers).map(c => c.toLowerCase()));
-  
-  const missingTests = breedSpecificRisks.filter(
-    risk => !Array.from(testedConditions).some(c => c.toLowerCase().includes(risk.toLowerCase()))
-  );
-  
-  // Find affected conditions
-  const affectedConditions = Object.entries(healthMarkers)
-    .filter(([_, marker]) => marker.status === 'affected')
-    .map(([condition, _]) => formatConditionName(condition));
-  
-  // Find carrier conditions
-  const carrierConditions = Object.entries(healthMarkers)
-    .filter(([_, marker]) => marker.status === 'carrier')
-    .map(([condition, _]) => formatConditionName(condition));
+  // Check for missing high-risk tests
+  breedHighRiskConditions.forEach(condition => {
+    const conditionNormalized = condition.toLowerCase().replace(/[()]/g, '');
+    const hasTest = Object.keys(healthMarkers).some(testName => 
+      testName.toLowerCase().includes(conditionNormalized)
+    );
+    
+    if (!hasTest) {
+      missingTests.push(condition);
+    }
+  });
   
   return {
-    breedSpecificRisks,
-    missingTests,
+    hasIssues: affectedConditions.length > 0 || carrierConditions.length > 0 || missingTests.length > 0,
     affectedConditions,
     carrierConditions,
-    hasIssues: affectedConditions.length > 0 || carrierConditions.length > 0 || missingTests.length > 0
+    missingTests,
+    breedHighRiskConditions
   };
-}
+};
+
+export const getHealthRiskLevel = (condition: string, status: string): 'high' | 'medium' | 'low' => {
+  if (status === 'affected') {
+    return 'high';
+  }
+  
+  if (status === 'carrier') {
+    // Some carrier conditions are more concerning than others
+    const highRiskCarriers = [
+      'degenerative myelopathy',
+      'von willebrand',
+      'dilated cardiomyopathy',
+      'exercise-induced collapse'
+    ];
+    
+    if (highRiskCarriers.some(c => condition.toLowerCase().includes(c))) {
+      return 'medium';
+    }
+    
+    return 'low';
+  }
+  
+  return 'low';
+};
+
+export const getHealthAlertMessage = (condition: string, status: string): string => {
+  if (status === 'affected') {
+    return `Dog is affected by ${condition}. Consult with veterinarian for management strategies.`;
+  }
+  
+  if (status === 'carrier') {
+    return `Dog is a carrier for ${condition}. Consider this in breeding decisions.`;
+  }
+  
+  return '';
+};
+
+export const getBreedingRecommendation = (dogCondition: string, dogStatus: string): string => {
+  if (dogStatus === 'affected') {
+    return `Do not breed with dogs that are carriers or affected by ${dogCondition}.`;
+  }
+  
+  if (dogStatus === 'carrier') {
+    return `Only breed with dogs that have tested clear for ${dogCondition} to avoid producing affected puppies.`;
+  }
+  
+  return '';
+};

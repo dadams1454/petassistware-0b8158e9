@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dog } from 'lucide-react';
 import DogBasicInfo from './DogBasicInfo';
 import DogHealthRecords from './DogHealthRecords';
 import DogBreedingInfo from './DogBreedingInfo';

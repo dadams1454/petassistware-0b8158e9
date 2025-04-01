@@ -1,171 +1,175 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { GeneticImportResult } from '@/types/genetics';
+import { TestResult } from '@/types/genetics';
+import { toast } from 'sonner';
 
-/**
- * Batch import genetic tests for a dog
- */
-export async function batchImportGeneticTests(dogId: string, testData: any[]): Promise<GeneticImportResult> {
+export interface GeneticTestBatch {
+  dogId: string;
+  tests: Omit<TestResult, 'testId'>[];
+  source: string;
+}
+
+export const batchImportGeneticTests = async (batch: GeneticTestBatch): Promise<{ success: boolean, count: number, errors?: string[] }> => {
   try {
-    // Validate input data
-    if (!dogId || !testData || !Array.isArray(testData) || testData.length === 0) {
-      return {
-        success: false,
-        dogId,
-        importDate: new Date().toISOString(),
-        provider: 'manual',
-        testsImported: 0,
-        errors: ['Invalid input data']
-      };
+    const { dogId, tests, source } = batch;
+    
+    if (!tests.length) {
+      return { success: false, count: 0, errors: ['No tests provided'] };
     }
-
-    // Format the test data for insertion
-    const formattedTests = testData.map(test => ({
+    
+    // Convert the test array to the format expected by the database
+    const testsToInsert = tests.map(test => ({
       dog_id: dogId,
-      test_type: test.test_name || test.test_type,
-      test_date: test.test_date,
+      test_type: test.testType,
+      test_date: test.testDate,
       result: test.result,
-      lab_name: test.lab || test.lab_name || 'Unknown',
-      certificate_url: test.certificate_url,
+      lab_name: test.labName || 'Unknown',
+      certificate_url: test.certificateUrl,
       verified: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      import_source: source || 'manual'
     }));
-
-    // Insert the tests into the database
+    
+    // Insert all tests in a batch
     const { data, error } = await supabase
       .from('dog_genetic_tests')
-      .insert(formattedTests);
-
+      .insert(testsToInsert)
+      .select();
+    
     if (error) {
-      console.error('Error importing genetic tests:', error);
-      return {
-        success: false,
-        dogId,
-        importDate: new Date().toISOString(),
-        provider: 'manual',
-        testsImported: 0,
-        errors: [error.message]
+      console.error('Error inserting genetic tests:', error);
+      return { 
+        success: false, 
+        count: 0, 
+        errors: [error.message] 
       };
     }
-
-    // Log the genetic data import to the audit log
-    try {
-      await supabase
-        .from('genetic_audit_logs')
-        .insert({
-          dog_id: dogId,
-          action: 'import_tests',
-          details: {
-            count: formattedTests.length,
-            method: 'batch_import',
-            test_types: formattedTests.map(t => t.test_type)
-          }
-        });
-    } catch (logError) {
-      console.warn('Failed to log genetic test import:', logError);
+    
+    // Create a record in the genetic_data table to indicate an import occurred
+    const { error: importError } = await supabase
+      .from('genetic_data')
+      .upsert({
+        dog_id: dogId,
+        import_source: source,
+        imported_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'dog_id' });
+    
+    if (importError) {
+      console.error('Error recording genetic import:', importError);
     }
-
+    
+    // Add an audit log entry
+    const { error: auditError } = await supabase
+      .from('genetic_audit_logs')
+      .insert({
+        dog_id: dogId,
+        action: 'import',
+        details: {
+          source,
+          test_count: testsToInsert.length,
+          test_types: testsToInsert.map(t => t.test_type)
+        }
+      });
+    
+    if (auditError) {
+      console.error('Error recording genetic audit log:', auditError);
+    }
+    
     return {
       success: true,
-      dogId,
-      importDate: new Date().toISOString(),
-      provider: 'manual',
-      testsImported: formattedTests.length
+      count: testsToInsert.length
     };
   } catch (error) {
-    console.error('Unexpected error during genetic test import:', error);
-    return {
-      success: false,
-      dogId,
-      importDate: new Date().toISOString(),
-      provider: 'manual',
-      testsImported: 0,
-      errors: [error instanceof Error ? error.message : 'Unknown error']
+    console.error('Unexpected error in batchImportGeneticTests:', error);
+    return { 
+      success: false, 
+      count: 0, 
+      errors: [(error as Error).message] 
     };
   }
-}
+};
 
-/**
- * Import genetic data from Embark file
- * This is a placeholder implementation for API integration
- */
-export async function importEmbarkData(dogId: string, fileData: any): Promise<GeneticImportResult> {
+export const importGeneticTestsFromCSV = async (dogId: string, csvText: string): Promise<{ success: boolean, count: number, errors?: string[] }> => {
   try {
-    // In a real implementation, parse the Embark file format
-    // For now, simulate a successful import with mock data
+    // Parse CSV text
+    const rows = csvText.split('\n');
+    if (rows.length <= 1) {
+      return { success: false, count: 0, errors: ['CSV file is empty or has only headers'] };
+    }
     
-    const mockTests = [
-      {
-        test_name: 'Degenerative Myelopathy',
-        test_date: new Date().toISOString().split('T')[0],
-        result: 'clear',
-        lab_name: 'Embark',
-      },
-      {
-        test_name: 'Exercise-Induced Collapse',
-        test_date: new Date().toISOString().split('T')[0],
-        result: 'carrier',
-        lab_name: 'Embark',
-      },
-      {
-        test_name: 'Progressive Retinal Atrophy',
-        test_date: new Date().toISOString().split('T')[0],
-        result: 'clear',
-        lab_name: 'Embark',
+    // Get headers from first row
+    const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+    
+    // Required columns
+    const requiredColumns = ['test_type', 'result'];
+    const missingColumns = requiredColumns.filter(col => !headers.includes(col));
+    
+    if (missingColumns.length > 0) {
+      return { 
+        success: false, 
+        count: 0, 
+        errors: [`CSV is missing required columns: ${missingColumns.join(', ')}`] 
+      };
+    }
+    
+    // Map CSV columns to test objects
+    const tests: Omit<TestResult, 'testId'>[] = [];
+    const errors: string[] = [];
+    
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row.trim()) continue; // Skip empty rows
+      
+      const values = row.split(',').map(v => v.trim());
+      
+      // Create an object from headers and values
+      const rowObj: Record<string, string> = {};
+      headers.forEach((header, index) => {
+        rowObj[header] = values[index] || '';
+      });
+      
+      // Validate required fields
+      if (!rowObj.test_type || !rowObj.result) {
+        errors.push(`Row ${i}: Missing required test_type or result`);
+        continue;
       }
-    ];
+      
+      // Map to test object
+      tests.push({
+        testType: rowObj.test_type,
+        result: rowObj.result,
+        testDate: rowObj.test_date || new Date().toISOString().split('T')[0],
+        labName: rowObj.lab_name || 'CSV Import',
+        certificateUrl: rowObj.certificate_url || null,
+        importSource: 'csv'
+      });
+    }
     
-    // Use the batch import function
-    return await batchImportGeneticTests(dogId, mockTests);
-  } catch (error) {
-    console.error('Error importing Embark data:', error);
-    return {
-      success: false,
+    if (tests.length === 0) {
+      return { 
+        success: false, 
+        count: 0, 
+        errors: errors.length ? errors : ['No valid tests found in CSV'] 
+      };
+    }
+    
+    // Import the parsed tests
+    const result = await batchImportGeneticTests({
       dogId,
-      importDate: new Date().toISOString(),
-      provider: 'embark',
-      testsImported: 0,
-      errors: [error instanceof Error ? error.message : 'Unknown error']
+      tests,
+      source: 'csv'
+    });
+    
+    return {
+      ...result,
+      errors: [...(result.errors || []), ...errors]
+    };
+  } catch (error) {
+    console.error('Error importing from CSV:', error);
+    return { 
+      success: false, 
+      count: 0, 
+      errors: [(error as Error).message] 
     };
   }
-}
-
-/**
- * Import genetic data from Wisdom Panel file
- * This is a placeholder implementation for API integration
- */
-export async function importWisdomPanelData(dogId: string, fileData: any): Promise<GeneticImportResult> {
-  try {
-    // In a real implementation, parse the Wisdom Panel file format
-    // For now, simulate a successful import with mock data
-    
-    const mockTests = [
-      {
-        test_name: 'MDR1 Medication Sensitivity',
-        test_date: new Date().toISOString().split('T')[0],
-        result: 'clear',
-        lab_name: 'Wisdom Panel',
-      },
-      {
-        test_name: 'Dilated Cardiomyopathy',
-        test_date: new Date().toISOString().split('T')[0],
-        result: 'clear',
-        lab_name: 'Wisdom Panel',
-      }
-    ];
-    
-    // Use the batch import function
-    return await batchImportGeneticTests(dogId, mockTests);
-  } catch (error) {
-    console.error('Error importing Wisdom Panel data:', error);
-    return {
-      success: false,
-      dogId,
-      importDate: new Date().toISOString(),
-      provider: 'wisdom_panel',
-      testsImported: 0,
-      errors: [error instanceof Error ? error.message : 'Unknown error']
-    };
-  }
-}
+};

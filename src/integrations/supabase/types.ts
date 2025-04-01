@@ -36,51 +36,138 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_summaries: {
+        Row: {
+          breeding_statistics: Json | null
+          created_at: string | null
+          customer_statistics: Json | null
+          end_date: string
+          financial_statistics: Json | null
+          health_statistics: Json | null
+          id: string
+          operational_statistics: Json | null
+          puppy_statistics: Json | null
+          social_statistics: Json | null
+          start_date: string
+          summary_period: string
+          tenant_id: string | null
+          updated_at: string | null
+          user_id: string | null
+          website_statistics: Json | null
+        }
+        Insert: {
+          breeding_statistics?: Json | null
+          created_at?: string | null
+          customer_statistics?: Json | null
+          end_date: string
+          financial_statistics?: Json | null
+          health_statistics?: Json | null
+          id?: string
+          operational_statistics?: Json | null
+          puppy_statistics?: Json | null
+          social_statistics?: Json | null
+          start_date: string
+          summary_period: string
+          tenant_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          website_statistics?: Json | null
+        }
+        Update: {
+          breeding_statistics?: Json | null
+          created_at?: string | null
+          customer_statistics?: Json | null
+          end_date?: string
+          financial_statistics?: Json | null
+          health_statistics?: Json | null
+          id?: string
+          operational_statistics?: Json | null
+          puppy_statistics?: Json | null
+          social_statistics?: Json | null
+          start_date?: string
+          summary_period?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          website_statistics?: Json | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
+          affected_records: number | null
+          application_version: string | null
+          browser_info: string | null
+          client_ip: string | null
           created_at: string
           entity_id: string | null
           entity_type: string
+          error_details: string | null
           id: string
           ip_address: string | null
           new_state: Json | null
           notes: string | null
+          os_info: string | null
           previous_state: Json | null
+          request_id: string | null
+          session_id: string | null
+          success_status: boolean | null
           tenant_id: string | null
           timestamp: string
           user_agent: string | null
           user_id: string | null
+          user_role: string | null
         }
         Insert: {
           action: string
+          affected_records?: number | null
+          application_version?: string | null
+          browser_info?: string | null
+          client_ip?: string | null
           created_at?: string
           entity_id?: string | null
           entity_type: string
+          error_details?: string | null
           id?: string
           ip_address?: string | null
           new_state?: Json | null
           notes?: string | null
+          os_info?: string | null
           previous_state?: Json | null
+          request_id?: string | null
+          session_id?: string | null
+          success_status?: boolean | null
           tenant_id?: string | null
           timestamp?: string
           user_agent?: string | null
           user_id?: string | null
+          user_role?: string | null
         }
         Update: {
           action?: string
+          affected_records?: number | null
+          application_version?: string | null
+          browser_info?: string | null
+          client_ip?: string | null
           created_at?: string
           entity_id?: string | null
           entity_type?: string
+          error_details?: string | null
           id?: string
           ip_address?: string | null
           new_state?: Json | null
           notes?: string | null
+          os_info?: string | null
           previous_state?: Json | null
+          request_id?: string | null
+          session_id?: string | null
+          success_status?: boolean | null
           tenant_id?: string | null
           timestamp?: string
           user_agent?: string | null
           user_id?: string | null
+          user_role?: string | null
         }
         Relationships: []
       }
@@ -601,6 +688,80 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "customer_communications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_preferences: {
+        Row: {
+          created_at: string | null
+          customer_id: string
+          dealbreakers: string[] | null
+          has_children: boolean | null
+          has_other_pets: boolean | null
+          housing_type: string | null
+          id: string
+          important_qualities: string[] | null
+          lifestyle_description: string | null
+          match_score_threshold: number | null
+          preference_updated_at: string | null
+          preferred_activity_level: string | null
+          preferred_age_range: unknown | null
+          preferred_colors: string[] | null
+          preferred_gender: string[] | null
+          preferred_sizes: string[] | null
+          preferred_temperament: string[] | null
+          willing_to_wait: boolean | null
+          yard_size: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id: string
+          dealbreakers?: string[] | null
+          has_children?: boolean | null
+          has_other_pets?: boolean | null
+          housing_type?: string | null
+          id?: string
+          important_qualities?: string[] | null
+          lifestyle_description?: string | null
+          match_score_threshold?: number | null
+          preference_updated_at?: string | null
+          preferred_activity_level?: string | null
+          preferred_age_range?: unknown | null
+          preferred_colors?: string[] | null
+          preferred_gender?: string[] | null
+          preferred_sizes?: string[] | null
+          preferred_temperament?: string[] | null
+          willing_to_wait?: boolean | null
+          yard_size?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string
+          dealbreakers?: string[] | null
+          has_children?: boolean | null
+          has_other_pets?: boolean | null
+          housing_type?: string | null
+          id?: string
+          important_qualities?: string[] | null
+          lifestyle_description?: string | null
+          match_score_threshold?: number | null
+          preference_updated_at?: string | null
+          preferred_activity_level?: string | null
+          preferred_age_range?: unknown | null
+          preferred_colors?: string[] | null
+          preferred_gender?: string[] | null
+          preferred_sizes?: string[] | null
+          preferred_temperament?: string[] | null
+          willing_to_wait?: boolean | null
+          yard_size?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_preferences_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
@@ -1179,6 +1340,66 @@ export type Database = {
         }
         Relationships: []
       }
+      environmental_monitoring: {
+        Row: {
+          air_quality: number | null
+          alert_details: string | null
+          alert_triggered: boolean | null
+          battery_level: number | null
+          created_at: string | null
+          device_id: string
+          humidity: number | null
+          id: string
+          light_level: number | null
+          location_id: string
+          location_name: string
+          motion_detected: boolean | null
+          noise_level: number | null
+          reading_time: string | null
+          sensor_type: string
+          temperature: number | null
+          tenant_id: string | null
+        }
+        Insert: {
+          air_quality?: number | null
+          alert_details?: string | null
+          alert_triggered?: boolean | null
+          battery_level?: number | null
+          created_at?: string | null
+          device_id: string
+          humidity?: number | null
+          id?: string
+          light_level?: number | null
+          location_id: string
+          location_name: string
+          motion_detected?: boolean | null
+          noise_level?: number | null
+          reading_time?: string | null
+          sensor_type: string
+          temperature?: number | null
+          tenant_id?: string | null
+        }
+        Update: {
+          air_quality?: number | null
+          alert_details?: string | null
+          alert_triggered?: boolean | null
+          battery_level?: number | null
+          created_at?: string | null
+          device_id?: string
+          humidity?: number | null
+          id?: string
+          light_level?: number | null
+          location_id?: string
+          location_name?: string
+          motion_detected?: boolean | null
+          noise_level?: number | null
+          reading_time?: string | null
+          sensor_type?: string
+          temperature?: number | null
+          tenant_id?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           breeder_id: string
@@ -1559,6 +1780,80 @@ export type Database = {
           },
         ]
       }
+      genetic_data: {
+        Row: {
+          breed_composition: Json | null
+          breed_lineage: Json | null
+          created_at: string | null
+          created_by: string | null
+          dog_id: string
+          genetic_age: number | null
+          genetic_diversity: number | null
+          health_results: Json | null
+          id: string
+          import_reference_id: string | null
+          import_source: string
+          imported_at: string | null
+          inbreeding_coefficient: number | null
+          maternal_haplogroup: string | null
+          paternal_haplogroup: string | null
+          raw_data: Json | null
+          trait_results: Json | null
+          updated_at: string | null
+          wolfiness: number | null
+        }
+        Insert: {
+          breed_composition?: Json | null
+          breed_lineage?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          dog_id: string
+          genetic_age?: number | null
+          genetic_diversity?: number | null
+          health_results?: Json | null
+          id?: string
+          import_reference_id?: string | null
+          import_source: string
+          imported_at?: string | null
+          inbreeding_coefficient?: number | null
+          maternal_haplogroup?: string | null
+          paternal_haplogroup?: string | null
+          raw_data?: Json | null
+          trait_results?: Json | null
+          updated_at?: string | null
+          wolfiness?: number | null
+        }
+        Update: {
+          breed_composition?: Json | null
+          breed_lineage?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          dog_id?: string
+          genetic_age?: number | null
+          genetic_diversity?: number | null
+          health_results?: Json | null
+          id?: string
+          import_reference_id?: string | null
+          import_source?: string
+          imported_at?: string | null
+          inbreeding_coefficient?: number | null
+          maternal_haplogroup?: string | null
+          paternal_haplogroup?: string | null
+          raw_data?: Json | null
+          trait_results?: Json | null
+          updated_at?: string | null
+          wolfiness?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genetic_data_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_alerts: {
         Row: {
           created_at: string
@@ -1829,27 +2124,48 @@ export type Database = {
       heat_cycles: {
         Row: {
           created_at: string
+          cycle_length: number | null
+          cycle_number: number | null
           dog_id: string
           end_date: string | null
+          fertility_indicators: Json | null
           id: string
+          intensity: string | null
           notes: string | null
+          recorded_by: string | null
           start_date: string
+          symptoms: string[] | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string
+          cycle_length?: number | null
+          cycle_number?: number | null
           dog_id: string
           end_date?: string | null
+          fertility_indicators?: Json | null
           id?: string
+          intensity?: string | null
           notes?: string | null
+          recorded_by?: string | null
           start_date: string
+          symptoms?: string[] | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string
+          cycle_length?: number | null
+          cycle_number?: number | null
           dog_id?: string
           end_date?: string | null
+          fertility_indicators?: Json | null
           id?: string
+          intensity?: string | null
           notes?: string | null
+          recorded_by?: string | null
           start_date?: string
+          symptoms?: string[] | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -2449,6 +2765,56 @@ export type Database = {
             columns: ["litter_id"]
             isOneToOne: false
             referencedRelation: "litters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      puppy_developmental_milestones: {
+        Row: {
+          actual_age_days: number | null
+          completion_date: string | null
+          created_at: string | null
+          created_by: string | null
+          expected_age_days: number | null
+          id: string
+          milestone_category: string
+          milestone_type: string
+          notes: string | null
+          photo_url: string | null
+          puppy_id: string
+        }
+        Insert: {
+          actual_age_days?: number | null
+          completion_date?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          expected_age_days?: number | null
+          id?: string
+          milestone_category: string
+          milestone_type: string
+          notes?: string | null
+          photo_url?: string | null
+          puppy_id: string
+        }
+        Update: {
+          actual_age_days?: number | null
+          completion_date?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          expected_age_days?: number | null
+          id?: string
+          milestone_category?: string
+          milestone_type?: string
+          notes?: string | null
+          photo_url?: string | null
+          puppy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "puppy_developmental_milestones_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
             referencedColumns: ["id"]
           },
         ]
