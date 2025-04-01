@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -82,15 +81,11 @@ const KennelCleaningTab: React.FC<KennelCleaningTabProps> = ({
             title="No Cleaning Records" 
             description="Add cleaning records to track kennel sanitation."
             icon={<Brush className="h-12 w-12 text-muted-foreground" />}
-            action={
-              <Button 
-                onClick={() => setIsAddDialogOpen(true)}
-                disabled={kennelUnits.length === 0}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Cleaning Record
-              </Button>
-            }
+            action={{
+              label: "Add Cleaning Record",
+              onClick: () => setIsAddDialogOpen(true),
+              disabled: kennelUnits.length === 0
+            }}
           />
         ) : (
           <div className="overflow-x-auto">

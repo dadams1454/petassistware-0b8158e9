@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -134,15 +133,11 @@ const KennelAssignmentsTab: React.FC<KennelAssignmentsTabProps> = ({
             title="No Kennel Assignments" 
             description="Assign dogs to kennels to see them here."
             icon={<Building2 className="h-12 w-12 text-muted-foreground" />}
-            action={
-              <Button 
-                onClick={() => setIsAddDialogOpen(true)}
-                disabled={availableKennelUnits.length === 0 || availableDogs.length === 0}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Assign Dog
-              </Button>
-            }
+            action={{
+              label: "Assign Dog",
+              onClick: () => setIsAddDialogOpen(true),
+              disabled: availableKennelUnits.length === 0 || availableDogs.length === 0
+            }}
           />
         ) : (
           <div className="space-y-6">

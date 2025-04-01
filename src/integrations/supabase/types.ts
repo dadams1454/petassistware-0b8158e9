@@ -1731,6 +1731,41 @@ export type Database = {
           },
         ]
       }
+      heat_cycles: {
+        Row: {
+          created_at: string
+          dog_id: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          dog_id: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          dog_id?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heat_cycles_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inspections: {
         Row: {
           breeder_id: string | null
@@ -1780,6 +1815,219 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kennel_assignments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dog_id: string
+          end_date: string | null
+          id: string
+          kennel_unit_id: string
+          notes: string | null
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dog_id: string
+          end_date?: string | null
+          id?: string
+          kennel_unit_id: string
+          notes?: string | null
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dog_id?: string
+          end_date?: string | null
+          id?: string
+          kennel_unit_id?: string
+          notes?: string | null
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kennel_assignments_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kennel_assignments_kennel_unit_id_fkey"
+            columns: ["kennel_unit_id"]
+            isOneToOne: false
+            referencedRelation: "kennel_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kennel_cleaning: {
+        Row: {
+          cleaned_by: string
+          cleaning_date: string
+          cleaning_type: string
+          created_at: string
+          id: string
+          kennel_unit_id: string
+          notes: string | null
+          products_used: string[] | null
+        }
+        Insert: {
+          cleaned_by: string
+          cleaning_date: string
+          cleaning_type: string
+          created_at?: string
+          id?: string
+          kennel_unit_id: string
+          notes?: string | null
+          products_used?: string[] | null
+        }
+        Update: {
+          cleaned_by?: string
+          cleaning_date?: string
+          cleaning_type?: string
+          created_at?: string
+          id?: string
+          kennel_unit_id?: string
+          notes?: string | null
+          products_used?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kennel_cleaning_kennel_unit_id_fkey"
+            columns: ["kennel_unit_id"]
+            isOneToOne: false
+            referencedRelation: "kennel_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kennel_cleaning_schedule: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          day_of_week: number[] | null
+          frequency: string
+          id: string
+          kennel_unit_id: string
+          time_of_day: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          day_of_week?: number[] | null
+          frequency: string
+          id?: string
+          kennel_unit_id: string
+          time_of_day?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          day_of_week?: number[] | null
+          frequency?: string
+          id?: string
+          kennel_unit_id?: string
+          time_of_day?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kennel_cleaning_schedule_kennel_unit_id_fkey"
+            columns: ["kennel_unit_id"]
+            isOneToOne: false
+            referencedRelation: "kennel_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kennel_maintenance: {
+        Row: {
+          cost: number | null
+          created_at: string
+          description: string
+          id: string
+          kennel_unit_id: string
+          maintenance_date: string
+          maintenance_type: string
+          notes: string | null
+          performed_by: string
+          status: string
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string
+          description: string
+          id?: string
+          kennel_unit_id: string
+          maintenance_date: string
+          maintenance_type: string
+          notes?: string | null
+          performed_by: string
+          status: string
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string
+          description?: string
+          id?: string
+          kennel_unit_id?: string
+          maintenance_date?: string
+          maintenance_type?: string
+          notes?: string | null
+          performed_by?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kennel_maintenance_kennel_unit_id_fkey"
+            columns: ["kennel_unit_id"]
+            isOneToOne: false
+            referencedRelation: "kennel_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kennel_units: {
+        Row: {
+          capacity: number
+          created_at: string
+          features: string[] | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          size: string | null
+          status: string
+          unit_type: string
+        }
+        Insert: {
+          capacity: number
+          created_at?: string
+          features?: string[] | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          size?: string | null
+          status: string
+          unit_type: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          features?: string[] | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          size?: string | null
+          status?: string
+          unit_type?: string
+        }
+        Relationships: []
       }
       licenses: {
         Row: {

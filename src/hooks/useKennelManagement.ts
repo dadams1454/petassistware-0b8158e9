@@ -30,7 +30,7 @@ export const useKennelManagement = () => {
       
       if (error) throw error;
       
-      setKennelUnits(data || []);
+      setKennelUnits(data as KennelUnit[] || []);
       setError(null);
     } catch (err: any) {
       console.error('Error fetching kennel units:', err);
@@ -69,7 +69,7 @@ export const useKennelManagement = () => {
         ...item,
         dog: item.dogs,
         kennel_unit: item.kennel_unit
-      })) || [];
+      })) as KennelAssignment[] || [];
       
       setKennelAssignments(formattedData);
       setError(null);
@@ -98,7 +98,7 @@ export const useKennelManagement = () => {
       
       if (error) throw error;
       
-      setCleaningRecords(data || []);
+      setCleaningRecords(data as KennelCleaning[] || []);
       setError(null);
     } catch (err: any) {
       console.error('Error fetching cleaning records:', err);
@@ -125,7 +125,7 @@ export const useKennelManagement = () => {
       
       if (error) throw error;
       
-      setMaintenanceRecords(data || []);
+      setMaintenanceRecords(data as KennelMaintenance[] || []);
       setError(null);
     } catch (err: any) {
       console.error('Error fetching maintenance records:', err);
@@ -152,7 +152,7 @@ export const useKennelManagement = () => {
       
       if (error) throw error;
       
-      setCleaningSchedules(data || []);
+      setCleaningSchedules(data as KennelCleaningSchedule[] || []);
       setError(null);
     } catch (err: any) {
       console.error('Error fetching cleaning schedules:', err);
@@ -174,9 +174,9 @@ export const useKennelManagement = () => {
       
       if (error) throw error;
       
-      setKennelUnits(prev => [...prev, data]);
+      setKennelUnits(prev => [...prev, data as KennelUnit]);
       toast.success('Kennel unit added successfully');
-      return data;
+      return data as KennelUnit;
     } catch (err: any) {
       console.error('Error adding kennel unit:', err);
       toast.error('Failed to add kennel unit');
@@ -197,10 +197,10 @@ export const useKennelManagement = () => {
       if (error) throw error;
       
       setKennelUnits(prev => 
-        prev.map(unit => unit.id === id ? { ...unit, ...data } : unit)
+        prev.map(unit => unit.id === id ? { ...unit, ...data as KennelUnit } : unit)
       );
       toast.success('Kennel unit updated successfully');
-      return data;
+      return data as KennelUnit;
     } catch (err: any) {
       console.error('Error updating kennel unit:', err);
       toast.error('Failed to update kennel unit');
@@ -280,7 +280,7 @@ export const useKennelManagement = () => {
         ...data,
         dog: data.dogs,
         kennel_unit: data.kennel_unit
-      };
+      } as KennelAssignment;
       
       setKennelAssignments(prev => [formattedData, ...prev]);
       toast.success('Dog assigned to kennel successfully');
@@ -314,10 +314,10 @@ export const useKennelManagement = () => {
       fetchKennelUnits();
       
       setKennelAssignments(prev => 
-        prev.map(assignment => assignment.id === id ? { ...assignment, ...data } : assignment)
+        prev.map(assignment => assignment.id === id ? { ...assignment, ...data } as KennelAssignment : assignment)
       );
       toast.success('Kennel assignment ended successfully');
-      return data;
+      return data as KennelAssignment;
     } catch (err: any) {
       console.error('Error ending kennel assignment:', err);
       toast.error('Failed to end kennel assignment');
@@ -341,9 +341,9 @@ export const useKennelManagement = () => {
       
       if (error) throw error;
       
-      setCleaningRecords(prev => [data, ...prev]);
+      setCleaningRecords(prev => [data as KennelCleaning, ...prev]);
       toast.success('Cleaning record added successfully');
-      return data;
+      return data as KennelCleaning;
     } catch (err: any) {
       console.error('Error adding cleaning record:', err);
       toast.error('Failed to add cleaning record');
@@ -378,9 +378,9 @@ export const useKennelManagement = () => {
         fetchKennelUnits();
       }
       
-      setMaintenanceRecords(prev => [data, ...prev]);
+      setMaintenanceRecords(prev => [data as KennelMaintenance, ...prev]);
       toast.success('Maintenance record added successfully');
-      return data;
+      return data as KennelMaintenance;
     } catch (err: any) {
       console.error('Error adding maintenance record:', err);
       toast.error('Failed to add maintenance record');
@@ -410,17 +410,17 @@ export const useKennelManagement = () => {
         await supabase
           .from('kennel_units')
           .update({ status: 'available' })
-          .eq('id', data.kennel_unit_id);
+          .eq('id', (data as KennelMaintenance).kennel_unit_id);
         
         // Fetch kennel units again to refresh the status
         fetchKennelUnits();
       }
       
       setMaintenanceRecords(prev => 
-        prev.map(record => record.id === id ? { ...record, ...data } : record)
+        prev.map(record => record.id === id ? { ...record, ...data } as KennelMaintenance : record)
       );
       toast.success('Maintenance record updated successfully');
-      return data;
+      return data as KennelMaintenance;
     } catch (err: any) {
       console.error('Error updating maintenance record:', err);
       toast.error('Failed to update maintenance record');
@@ -444,9 +444,9 @@ export const useKennelManagement = () => {
       
       if (error) throw error;
       
-      setCleaningSchedules(prev => [...prev, data]);
+      setCleaningSchedules(prev => [...prev, data as KennelCleaningSchedule]);
       toast.success('Cleaning schedule added successfully');
-      return data;
+      return data as KennelCleaningSchedule;
     } catch (err: any) {
       console.error('Error adding cleaning schedule:', err);
       toast.error('Failed to add cleaning schedule');
@@ -472,10 +472,10 @@ export const useKennelManagement = () => {
       if (error) throw error;
       
       setCleaningSchedules(prev => 
-        prev.map(schedule => schedule.id === id ? { ...schedule, ...data } : schedule)
+        prev.map(schedule => schedule.id === id ? { ...schedule, ...data } as KennelCleaningSchedule : schedule)
       );
       toast.success('Cleaning schedule updated successfully');
-      return data;
+      return data as KennelCleaningSchedule;
     } catch (err: any) {
       console.error('Error updating cleaning schedule:', err);
       toast.error('Failed to update cleaning schedule');

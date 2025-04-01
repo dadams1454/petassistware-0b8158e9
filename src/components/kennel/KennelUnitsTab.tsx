@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -104,12 +103,10 @@ const KennelUnitsTab: React.FC<KennelUnitsTabProps> = ({
             title="No Kennel Units Found" 
             description="Add your first kennel unit to get started."
             icon={<Store className="h-12 w-12 text-muted-foreground" />}
-            action={
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Unit
-              </Button>
-            }
+            action={{
+              label: "Add Unit",
+              onClick: () => setIsAddDialogOpen(true)
+            }}
           />
         ) : (
           <div className="overflow-x-auto">
