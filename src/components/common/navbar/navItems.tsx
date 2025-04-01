@@ -14,7 +14,9 @@ import {
   Coins,
   UserCog,
   ClipboardCheck,
-  Scale
+  Scale,
+  Baby,
+  UserCircle
 } from 'lucide-react';
 
 export const navItems = [
@@ -23,6 +25,12 @@ export const navItems = [
     href: '/dashboard',
     icon: LayoutDashboard,
     description: 'Overview of all your kennel activities'
+  },
+  {
+    title: 'Profile',
+    href: '/profile',
+    icon: UserCircle,
+    description: 'Manage your profile settings'
   },
   {
     title: 'Dogs',
@@ -83,6 +91,18 @@ export const navItems = [
     href: '/compliance',
     icon: Scale,
     description: 'Manage licenses and regulatory requirements'
+  },
+  {
+    title: 'Breeding Prep',
+    href: '/breeding-prep',
+    icon: ClipboardCheck,
+    description: 'Prepare for breeding cycles'
+  },
+  {
+    title: 'Welping',
+    href: '/welping/new',
+    icon: Baby,
+    description: 'Manage whelping and puppy care'
   },
   {
     title: 'Users',

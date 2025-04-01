@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -28,6 +29,7 @@ import Facility from '@/pages/Facility';
 import Compliance from '@/pages/Compliance';
 import ReproductiveManagementPage from '@/pages/ReproductiveManagementPage';
 import Profile from '@/pages/Profile';
+import Contracts from '@/pages/Contracts';
 
 const Router = () => {
   return (
@@ -69,7 +71,7 @@ const Router = () => {
           {/* Other routes */}
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/communications" element={<Communications />} />
-          <Route path="/contracts" element={<Calendar />} /> {/* Temporarily mapping to Calendar until Contracts page is implemented */}
+          <Route path="/contracts" element={<Contracts />} />
           <Route path="/finances" element={<Finances />} />
           <Route path="/facility" element={<Facility />} />
           <Route path="/compliance" element={<Compliance />} />

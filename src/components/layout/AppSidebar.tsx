@@ -28,7 +28,6 @@ import {
   Shield,
   Settings,
   Scale,
-  Weight,
   UserCircle,
   Baby
 } from 'lucide-react';
@@ -52,11 +51,10 @@ const AppSidebar = () => {
     { title: 'Communications', href: '/communications', icon: Mail },
     { title: 'Contracts', href: '/contracts', icon: FileText },
     { title: 'Finances', href: '/finances', icon: Coins },
-    { title: 'Facility Management', href: '/facility', icon: Building2 },
+    { title: 'Facility', href: '/facility', icon: Building2 },
     { title: 'Compliance', href: '/compliance', icon: Scale },
     { title: 'Breeding Prep', href: '/breeding-prep', icon: ClipboardList },
     { title: 'Welping', href: '/welping/new', icon: Baby },
-    { title: 'Weight Tracking', href: '/dogs/1/weight', icon: Weight },
   ];
   
   const adminMenuItems = [
