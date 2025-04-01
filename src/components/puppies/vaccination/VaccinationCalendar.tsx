@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Check, AlertTriangle } from 'lucide-react';
 import { usePuppyVaccinations } from '@/hooks/usePuppyVaccinations';
 import { LoadingState } from '@/components/ui/standardized';
 import { format, isSameDay, parseISO } from 'date-fns';
+import { VaccinationScheduleItem } from '@/types/puppyTracking';
 
 interface VaccinationCalendarProps {
   puppyId: string;
@@ -26,7 +28,7 @@ const VaccinationCalendar: React.FC<VaccinationCalendarProps> = ({
     addVaccination
   } = usePuppyVaccinations(puppyId);
   
-  const handleMarkComplete = (vaccination: any) => {
+  const handleMarkComplete = (vaccination: VaccinationScheduleItem) => {
     addVaccination({
       vaccination_type: vaccination.vaccination_type,
       vaccination_date: date ? format(date, 'yyyy-MM-dd') : new Date().toISOString().split('T')[0],
@@ -117,12 +119,19 @@ const VaccinationCalendar: React.FC<VaccinationCalendarProps> = ({
             selected={date}
             onSelect={setDate}
             className="rounded-md border"
-            modifiersStyles={{}}
             modifiers={{
-              selected: (date) => selected === date,
+              selected: date
             }}
-            styles={{
-              day: (day) => getDayStyle(day) || {},
+            modifiersStyles={{}}
+            components={{
+              Day: ({ day, ...props }) => {
+                const style = getDayStyle(day);
+                return (
+                  <div {...props} className={style?.className}>
+                    {day.getDate()}
+                  </div>
+                );
+              }
             }}
           />
         </CardContent>

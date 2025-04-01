@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { usePuppyMilestones } from '@/hooks/usePuppyMilestones'; 
 import { LoadingState, EmptyState } from '@/components/ui/standardized';
 import AddMilestoneDialog from './AddMilestoneDialog';
+import { PuppyMilestone } from '@/types/puppyTracking';
 
 interface GrowthMilestoneTrackerProps {
   puppyId: string;
@@ -30,17 +31,23 @@ const GrowthMilestoneTracker: React.FC<GrowthMilestoneTrackerProps> = ({ puppyId
     return <LoadingState message="Loading milestone data..." />;
   }
   
+  const getCategoryMilestones = (category: 'physical' | 'health' | 'behavioral'): PuppyMilestone[] => {
+    return milestones.filter(m => m.category === category);
+  };
+  
   const getFilteredMilestones = (category: 'physical' | 'health' | 'behavioral') => {
     // Filter all milestone types by the selected category
-    const categoryMilestones = milestones.filter(m => m.category === category);
+    const categoryMilestones = getCategoryMilestones(category);
     
     if (categoryMilestones.length === 0) {
       return (
         <EmptyState 
           title={`No ${category} milestones`}
           description={`No ${category} milestones have been set for this puppy.`}
-          onAction={() => setDialogOpen(true)}
-          actionLabel="Add Milestone"
+          action={{
+            label: "Add Milestone",
+            onClick: () => setDialogOpen(true)
+          }}
         />
       );
     }
@@ -80,7 +87,7 @@ const GrowthMilestoneTracker: React.FC<GrowthMilestoneTrackerProps> = ({ puppyId
     );
   };
   
-  const renderMilestoneList = (milestoneList: any[], type: 'overdue' | 'upcoming' | 'completed') => {
+  const renderMilestoneList = (milestoneList: PuppyMilestone[], type: 'overdue' | 'upcoming' | 'completed') => {
     const getCardStyle = () => {
       switch (type) {
         case 'overdue':

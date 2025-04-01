@@ -3,27 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { addDays, isBefore, isAfter } from 'date-fns';
-
-interface VaccinationScheduleItem {
-  id: string;
-  puppy_id: string;
-  vaccination_type: string;
-  due_date: string;
-  notes?: string;
-  created_at: string;
-  is_completed: boolean;
-}
-
-interface VaccinationRecord {
-  id: string;
-  puppy_id: string;
-  vaccination_type: string;
-  vaccination_date: string;
-  administered_by?: string;
-  lot_number?: string;
-  notes?: string;
-  created_at: string;
-}
+import { VaccinationScheduleItem, VaccinationRecord } from '@/types/puppyTracking';
 
 export const usePuppyVaccinations = (puppyId: string) => {
   const { toast } = useToast();
@@ -58,16 +38,18 @@ export const usePuppyVaccinations = (puppyId: string) => {
       // Process scheduled items to mark which ones have already been completed
       // by matching on vaccination_type
       const scheduledWithStatus = scheduledData.map(item => {
-        const isCompleted = completedData.some(
+        const matchingCompleted = completedData.find(
           completed => completed.vaccination_type === item.vaccination_type
         );
-        return { ...item, is_completed: isCompleted };
-      }) as VaccinationScheduleItem[];
+        return { 
+          ...item, 
+          is_completed: !!matchingCompleted,
+          vaccination_date: matchingCompleted?.vaccination_date
+        };
+      });
 
       // Create a unified list
-      const allVaccinations = [
-        ...scheduledWithStatus
-      ];
+      const allVaccinations = [...scheduledWithStatus] as VaccinationScheduleItem[];
 
       // If no vaccinations exist yet, create default schedule
       if (allVaccinations.length === 0) {

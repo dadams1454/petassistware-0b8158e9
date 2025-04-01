@@ -12,22 +12,22 @@ export const usePuppyBreedAverages = (puppyId: string) => {
       // First get the puppy to find breed
       const { data: puppy, error: puppyError } = await supabase
         .from('puppies')
-        .select('litter:litter_id(dam:dam_id(breed))')
+        .select(`
+          litter:litter_id(
+            dam:dam_id(
+              breed
+            )
+          )
+        `)
         .eq('id', puppyId)
         .single();
       
       if (puppyError) throw puppyError;
       
-      // Get breed
-      const breed = puppy?.litter?.dam?.breed;
+      // Get breed - making sure to handle missing data safely
+      const breed = puppy?.litter?.dam?.breed || 'Newfoundland';
       
-      if (!breed) {
-        // If breed is not found, return some generic values for Newfoundlands
-        return generateGenericGrowthCurve('Newfoundland');
-      }
-      
-      // TODO: In a real application, fetch actual breed averages from a database
-      // For now, return generic values based on breed
+      // Return generic values based on breed
       return generateGenericGrowthCurve(breed);
     },
     enabled: !!puppyId

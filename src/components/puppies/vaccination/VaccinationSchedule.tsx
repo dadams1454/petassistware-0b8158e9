@@ -56,8 +56,10 @@ const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
       <EmptyState
         title="No Vaccinations Scheduled"
         description="No vaccinations have been scheduled for this puppy yet."
-        onAction={onAddVaccination}
-        actionLabel="Add Vaccination"
+        action={{
+          label: "Add Vaccination",
+          onClick: onAddVaccination
+        }}
       />
     );
   }
