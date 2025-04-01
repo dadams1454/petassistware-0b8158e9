@@ -10,7 +10,8 @@ export function renderAkcRegistrationTemplate(
   context: PdfDocumentContext
 ): void {
   const { pdfDoc, fonts, dimensions } = context;
-  let { page } = context; // Changed from const to let
+  // Changed from const to let to allow reassignment
+  let { page } = context; 
   const { width, height, margin } = dimensions;
   const { regular, bold } = fonts;
 
