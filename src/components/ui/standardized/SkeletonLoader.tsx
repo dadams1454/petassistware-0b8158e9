@@ -1,58 +1,66 @@
 
 import React from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 
-export interface SkeletonLoaderProps {
+interface SkeletonLoaderProps {
   count?: number;
-  height?: number | string;
-  width?: number | string;
+  variant?: 'default' | 'card' | 'table' | 'text' | 'banner';
+  width?: string;
   className?: string;
-  circle?: boolean;
-  variant?: 'default' | 'text' | 'banner' | 'card' | 'table';
 }
 
-const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
-  count = 1,
-  height = '1rem',
-  width = '100%',
-  className = '',
-  circle = false,
-  variant = 'default'
+const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ 
+  count = 3, 
+  variant = 'default',
+  width = 'w-full', 
+  className = '' 
 }) => {
-  const items = Array(count).fill(null);
-  
-  const getVariantClasses = () => {
+  const renderSkeleton = (index: number) => {
     switch (variant) {
-      case 'text':
-        return 'h-4 w-full max-w-sm';
-      case 'banner':
-        return 'h-24 w-full';
       case 'card':
-        return 'h-40 w-full';
+        return (
+          <div key={index} className={`animate-pulse rounded-lg border p-4 ${className}`}>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-4"></div>
+            <div className="h-20 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mt-4"></div>
+          </div>
+        );
       case 'table':
-        return 'h-10 w-full';
+        return (
+          <div key={index} className={`animate-pulse ${className}`}>
+            <div className="grid grid-cols-4 gap-4 mb-2">
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            </div>
+          </div>
+        );
+      case 'text':
+        return (
+          <div key={index} className={`animate-pulse ${className}`}>
+            <div className={`h-4 bg-slate-200 dark:bg-slate-700 rounded ${width} mb-2`}></div>
+          </div>
+        );
+      case 'banner':
+        return (
+          <div key={index} className={`animate-pulse rounded-lg ${className}`}>
+            <div className="h-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
+          </div>
+        );
       default:
-        return '';
+        return (
+          <div key={index} className={`animate-pulse ${className}`}>
+            <div className={`h-4 bg-slate-200 dark:bg-slate-700 rounded ${width} mb-2`}></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+          </div>
+        );
     }
   };
-
+  
   return (
-    <div className="space-y-2">
-      {items.map((_, index) => (
-        <Skeleton
-          key={index}
-          className={cn(
-            getVariantClasses(),
-            className,
-            circle && 'rounded-full'
-          )}
-          style={{
-            height: variant === 'default' ? height : undefined,
-            width: variant === 'default' ? width : undefined
-          }}
-        />
-      ))}
+    <div className="space-y-4">
+      {Array.from({ length: count }).map((_, index) => renderSkeleton(index))}
     </div>
   );
 };

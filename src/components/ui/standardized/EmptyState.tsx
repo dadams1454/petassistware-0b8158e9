@@ -6,6 +6,8 @@ interface EmptyStateAction {
   label: string;
   onClick: () => void;
   icon?: React.ReactNode;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  disabled?: boolean;
 }
 
 interface EmptyStateProps {
@@ -32,7 +34,11 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
       
       {action && (
-        <Button onClick={action.onClick}>
+        <Button 
+          onClick={action.onClick}
+          variant={action.variant}
+          disabled={action.disabled}
+        >
           {action.icon}
           {action.label}
         </Button>

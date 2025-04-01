@@ -4,7 +4,7 @@ import { customSupabase, HeatCycleRow } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import HeatCycleMonitor, { HeatCycle } from './breeding/HeatCycleMonitor';
+import HeatCycleMonitor from './breeding/HeatCycleMonitor';
 import { format } from 'date-fns';
 
 export interface HeatCycleManagementProps {

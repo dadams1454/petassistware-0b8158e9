@@ -7,12 +7,12 @@ import { DogCareStatus } from '@/types/dailyCare';
 import { Dog } from 'lucide-react';
 
 interface DogLetOutTabProps {
-  onRefreshDogs?: () => void;
+  onRefresh?: () => void;
   dogStatuses?: DogCareStatus[];
 }
 
 const DogLetOutTab: React.FC<DogLetOutTabProps> = ({ 
-  onRefreshDogs,
+  onRefresh,
   dogStatuses = []
 }) => {
   const navigate = useNavigate();
