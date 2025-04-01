@@ -3,10 +3,74 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Pill, ArrowRight } from 'lucide-react';
+import { Pill, ArrowRight, Clock, AlertTriangle } from 'lucide-react';
+import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import MedicationTracker from '../../dogs/components/health/MedicationTracker';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const MedicationsTab: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [medicationCounts, setMedicationCounts] = React.useState({
+    today: 0,
+    pending: 0,
+    upcoming: 0
+  });
+  
+  React.useEffect(() => {
+    const fetchMedicationCounts = async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        const nextWeekStr = nextWeek.toISOString().split('T')[0];
+        
+        // Get today's count
+        const { count: todayCount, error: todayError } = await supabase
+          .from('health_records')
+          .select('*', { count: 'exact', head: true })
+          .eq('record_type', 'medication')
+          .eq('next_due_date', today);
+          
+        if (todayError) throw todayError;
+        
+        // Get pending count
+        const { count: pendingCount, error: pendingError } = await supabase
+          .from('health_records')
+          .select('*', { count: 'exact', head: true })
+          .eq('record_type', 'medication')
+          .lte('next_due_date', today);
+          
+        if (pendingError) throw pendingError;
+        
+        // Get upcoming count
+        const { count: upcomingCount, error: upcomingError } = await supabase
+          .from('health_records')
+          .select('*', { count: 'exact', head: true })
+          .eq('record_type', 'medication')
+          .gt('next_due_date', today)
+          .lte('next_due_date', nextWeekStr);
+          
+        if (upcomingError) throw upcomingError;
+        
+        setMedicationCounts({
+          today: todayCount || 0,
+          pending: pendingCount || 0,
+          upcoming: upcomingCount || 0
+        });
+      } catch (error) {
+        console.error('Error fetching medication counts:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load medication counts',
+          variant: 'destructive'
+        });
+      }
+    };
+    
+    fetchMedicationCounts();
+  }, [toast]);
   
   return (
     <Card>
@@ -34,28 +98,49 @@ const MedicationsTab: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 border rounded-md">
             <h4 className="text-sm font-medium mb-2">Today's Doses</h4>
-            <div className="text-2xl font-bold mb-1">0</div>
-            <p className="text-xs text-muted-foreground">
-              Medications given today
-            </p>
-          </div>
-          
-          <div className="p-4 border rounded-md">
-            <h4 className="text-sm font-medium mb-2">Pending</h4>
-            <div className="text-2xl font-bold mb-1">0</div>
+            <div className="text-2xl font-bold mb-1">{medicationCounts.today}</div>
             <p className="text-xs text-muted-foreground">
               Medications due today
             </p>
           </div>
           
           <div className="p-4 border rounded-md">
+            <h4 className="text-sm font-medium mb-2">Pending</h4>
+            <div className="text-2xl font-bold mb-1">{medicationCounts.pending}</div>
+            <p className="text-xs text-muted-foreground">
+              Medications due today or overdue
+            </p>
+          </div>
+          
+          <div className="p-4 border rounded-md">
             <h4 className="text-sm font-medium mb-2">Upcoming</h4>
-            <div className="text-2xl font-bold mb-1">0</div>
+            <div className="text-2xl font-bold mb-1">{medicationCounts.upcoming}</div>
             <p className="text-xs text-muted-foreground">
               Due in the next 7 days
             </p>
           </div>
         </div>
+        
+        <Tabs defaultValue="upcoming" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upcoming">
+              <Clock className="h-4 w-4 mr-2" />
+              Upcoming Medications
+            </TabsTrigger>
+            <TabsTrigger value="expiring">
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Expiring Medications
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="upcoming" className="pt-4">
+            <MedicationTracker />
+          </TabsContent>
+          
+          <TabsContent value="expiring" className="pt-4">
+            <MedicationTracker />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

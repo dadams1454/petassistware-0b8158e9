@@ -7,9 +7,11 @@ import { Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { useHealthTabContext } from './HealthTabContext';
 import { HealthRecordTypeEnum } from '@/types/health';
+import MedicationTracker from '../../health/MedicationTracker';
 
 const MedicationsTabContent: React.FC = () => {
   const { 
+    dogId,
     healthRecords, 
     isLoading, 
     getRecordsByType, 
@@ -23,26 +25,8 @@ const MedicationsTabContent: React.FC = () => {
     return <LoadingState message="Loading medication records..." />;
   }
   
-  if (medications.length === 0) {
-    return (
-      <EmptyState
-        title="No medication records"
-        description="Add your first medication record to keep track of your dog's medications."
-        action={{
-          label: "Add Medication",
-          onClick: () => handleAddRecord(HealthRecordTypeEnum.Medication)
-        }}
-      />
-    );
-  }
-  
-  // Sort medications by date (newest first)
-  const sortedMedications = [...medications].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-  
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-end">
         <Button 
           onClick={() => handleAddRecord(HealthRecordTypeEnum.Medication)}
@@ -53,33 +37,75 @@ const MedicationsTabContent: React.FC = () => {
         </Button>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2">
-        {sortedMedications.map(med => (
-          <Card key={med.id} className="overflow-hidden">
-            <CardContent className="p-0">
-              <div 
-                className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => handleEditRecord(med.id)}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium">{med.title}</h3>
-                  <span className="text-sm text-muted-foreground">
-                    {format(new Date(med.date), 'MMM d, yyyy')}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {med.description || 'No details provided'}
-                </p>
-                {med.performed_by && (
-                  <p className="text-sm mt-2">
-                    <span className="text-muted-foreground">Administered by:</span> {med.performed_by}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Medication Tracker Section */}
+      <div className="mb-6">
+        <h3 className="text-lg font-medium mb-3">Medication Schedule</h3>
+        <MedicationTracker dogId={dogId} />
       </div>
+      
+      {/* Medication Records */}
+      <h3 className="text-lg font-medium mb-3">Medication History</h3>
+      
+      {medications.length === 0 ? (
+        <EmptyState
+          title="No medication records"
+          description="Add your first medication record to keep track of your dog's medications."
+          action={{
+            label: "Add Medication",
+            onClick: () => handleAddRecord(HealthRecordTypeEnum.Medication)
+          }}
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {medications.map(med => (
+            <Card key={med.id} className="overflow-hidden">
+              <CardContent className="p-0">
+                <div 
+                  className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleEditRecord(med.id)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium">{med.title}</h3>
+                    <span className="text-sm text-muted-foreground">
+                      {format(new Date(med.date), 'MMM d, yyyy')}
+                    </span>
+                  </div>
+                  
+                  {med.medication_name && (
+                    <p className="text-sm mb-1">
+                      <span className="font-medium">Medication:</span> {med.medication_name}
+                    </p>
+                  )}
+                  
+                  {med.dosage && (
+                    <p className="text-sm mb-1">
+                      <span className="font-medium">Dosage:</span> {med.dosage} {med.dosage_unit || ''}
+                    </p>
+                  )}
+                  
+                  {med.frequency && (
+                    <p className="text-sm mb-1">
+                      <span className="font-medium">Frequency:</span> {med.frequency}
+                    </p>
+                  )}
+                  
+                  {med.next_due_date && (
+                    <p className="text-sm mb-1 text-orange-700 dark:text-orange-400">
+                      <span className="font-medium">Next Due:</span> {format(new Date(med.next_due_date), 'MMM d, yyyy')}
+                    </p>
+                  )}
+                  
+                  {med.description && (
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                      {med.description}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

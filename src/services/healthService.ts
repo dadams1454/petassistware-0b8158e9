@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { 
   HealthRecord, 
@@ -52,11 +51,42 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
     // Convert string dosage to numeric if needed
     dosage: record.dosage ? 
       (typeof record.dosage === 'string' ? parseFloat(record.dosage) : record.dosage) : 
-      undefined,
-    // Include any other relevant fields, but exclude dosage which is handled above
-    ...Object.entries(record)
-      .filter(([key]) => key !== 'dosage')
-      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {})
+      null,
+    // Convert string duration to numeric if needed
+    duration: record.duration ? 
+      (typeof record.duration === 'string' ? parseFloat(record.duration.toString()) : record.duration) : 
+      null,
+    // Include any other relevant fields
+    medication_name: record.medication_name,
+    dosage_unit: record.dosage_unit,
+    frequency: record.frequency,
+    duration_unit: record.duration_unit,
+    start_date: record.start_date,
+    end_date: record.end_date,
+    prescribed_by: record.prescribed_by,
+    pharmacy: record.pharmacy,
+    prescription_number: record.prescription_number,
+    refills_remaining: record.refills_remaining,
+    // Other fields that might be useful
+    vaccine_type: record.vaccine_type,
+    vaccine_name: record.vaccine_name,
+    manufacturer: record.manufacturer,
+    lot_number: record.lot_number,
+    expiration_date: record.expiration_date,
+    administration_route: record.administration_route,
+    // Exam fields
+    exam_type: record.exam_type,
+    examination_type: record.examination_type,
+    findings: record.findings,
+    recommendations: record.recommendations,
+    follow_up_date: record.follow_up_date,
+    examiner: record.examiner,
+    facility: record.facility,
+    // Surgery fields
+    procedure_name: record.procedure_name,
+    surgeon: record.surgeon,
+    anesthesia_used: record.anesthesia_used,
+    recovery_notes: record.recovery_notes
   };
 
   const { data, error } = await supabase
@@ -71,22 +101,24 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
 };
 
 export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>): Promise<HealthRecord> => {
-  // Handle dosage conversion
-  const dbUpdates = {
-    ...updates,
-    // Convert string dosage to numeric if needed
-    dosage: updates.dosage ?
-      (typeof updates.dosage === 'string' ? parseFloat(updates.dosage as string) : updates.dosage) :
-      undefined,
-    record_type: updates.record_type,
-    title: updates.title,
-    description: updates.description,
-    visit_date: updates.date || updates.visit_date,
-    performed_by: updates.performed_by,
-    next_due_date: updates.next_due_date,
-    vet_name: updates.performed_by || undefined,
-    record_notes: updates.description || undefined,
-  };
+  // Handle type conversions
+  const dbUpdates: any = { ...updates };
+  
+  // Convert string dosage to numeric if needed
+  if (updates.dosage !== undefined) {
+    dbUpdates.dosage = typeof updates.dosage === 'string' ? parseFloat(updates.dosage) : updates.dosage;
+  }
+  
+  // Convert string duration to numeric if needed
+  if (updates.duration !== undefined) {
+    dbUpdates.duration = typeof updates.duration === 'string' ? parseFloat(updates.duration.toString()) : updates.duration;
+  }
+  
+  // Additional mappings
+  if (updates.date) dbUpdates.visit_date = updates.date;
+  if (updates.visit_date) dbUpdates.visit_date = updates.visit_date;
+  if (updates.performed_by) dbUpdates.vet_name = updates.performed_by;
+  if (updates.description) dbUpdates.record_notes = updates.description;
 
   const { data, error } = await supabase
     .from('health_records')
@@ -168,4 +200,43 @@ export const deleteWeightRecord = async (id: string): Promise<void> => {
     .eq('id', id);
 
   if (error) throw error;
+};
+
+// Medication Management
+export const getUpcomingMedications = async (dogId: string, daysAhead = 30): Promise<HealthRecord[]> => {
+  const today = new Date();
+  const futureDate = new Date();
+  futureDate.setDate(today.getDate() + daysAhead);
+  
+  const { data, error } = await supabase
+    .from('health_records')
+    .select('*')
+    .eq('dog_id', dogId)
+    .eq('record_type', HealthRecordTypeEnum.Medication)
+    .gte('next_due_date', today.toISOString().split('T')[0])
+    .lte('next_due_date', futureDate.toISOString().split('T')[0])
+    .order('next_due_date', { ascending: true });
+
+  if (error) throw error;
+  
+  return (data || []).map(record => adaptHealthRecord(record));
+};
+
+export const getExpiringMedications = async (daysAhead = 30): Promise<HealthRecord[]> => {
+  const today = new Date();
+  const futureDate = new Date();
+  futureDate.setDate(today.getDate() + daysAhead);
+  
+  const { data, error } = await supabase
+    .from('health_records')
+    .select('*')
+    .eq('record_type', HealthRecordTypeEnum.Medication)
+    .not('expiration_date', 'is', null)
+    .gte('expiration_date', today.toISOString().split('T')[0])
+    .lte('expiration_date', futureDate.toISOString().split('T')[0])
+    .order('expiration_date', { ascending: true });
+
+  if (error) throw error;
+  
+  return (data || []).map(record => adaptHealthRecord(record));
 };

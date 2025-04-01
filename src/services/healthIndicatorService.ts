@@ -11,7 +11,7 @@ import {
 // Fetch health indicators for a dog
 export const getHealthIndicators = async (dogId: string): Promise<HealthIndicatorRecord[]> => {
   const { data, error } = await customSupabase
-    .from<any>('health_indicators')
+    .from('health_indicators')
     .select('*')
     .eq('dog_id', dogId)
     .order('date', { ascending: false });
@@ -27,7 +27,7 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
   const abnormal = isAbnormalHealthIndicator(record);
 
   const { data, error } = await customSupabase
-    .from<any>('health_indicators')
+    .from('health_indicators')
     .insert([
       {
         dog_id: record.dog_id,
@@ -47,7 +47,7 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
   if (error) throw error;
   
   // If abnormal, create an alert
-  if (abnormal) {
+  if (abnormal && data) {
     await createHealthAlert(data.id, record.dog_id);
   }
   
@@ -57,7 +57,7 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
 // Update a health indicator record
 export const updateHealthIndicator = async (id: string, updates: Partial<HealthIndicatorRecord>): Promise<HealthIndicatorRecord> => {
   const { data, error } = await customSupabase
-    .from<any>('health_indicators')
+    .from('health_indicators')
     .update(updates)
     .eq('id', id)
     .select()
@@ -71,7 +71,7 @@ export const updateHealthIndicator = async (id: string, updates: Partial<HealthI
 // Delete a health indicator record
 export const deleteHealthIndicator = async (id: string): Promise<void> => {
   const { error } = await customSupabase
-    .from<any>('health_indicators')
+    .from('health_indicators')
     .delete()
     .eq('id', id);
 
@@ -84,7 +84,7 @@ export const getRecentHealthIndicators = async (dogId: string, days = 7): Promis
   date.setDate(date.getDate() - days);
   
   const { data, error } = await customSupabase
-    .from<any>('health_indicators')
+    .from('health_indicators')
     .select('*')
     .eq('dog_id', dogId)
     .gte('date', date.toISOString().split('T')[0])
@@ -98,7 +98,7 @@ export const getRecentHealthIndicators = async (dogId: string, days = 7): Promis
 // Get abnormal health indicators
 export const getAbnormalHealthIndicators = async (dogId: string): Promise<HealthIndicatorRecord[]> => {
   const { data, error } = await customSupabase
-    .from<any>('health_indicators')
+    .from('health_indicators')
     .select('*')
     .eq('dog_id', dogId)
     .eq('abnormal', true)
@@ -112,7 +112,7 @@ export const getAbnormalHealthIndicators = async (dogId: string): Promise<Health
 // Create a health alert
 export const createHealthAlert = async (indicatorId: string, dogId: string): Promise<void> => {
   const { error } = await customSupabase
-    .from<any>('health_alerts')
+    .from('health_alerts')
     .insert([
       {
         indicator_id: indicatorId,
@@ -144,7 +144,7 @@ export const isAbnormalHealthIndicator = (record: Partial<HealthIndicatorRecord>
 // Get all health alerts for a dog
 export const getHealthAlerts = async (dogId: string, includeResolved = false): Promise<any[]> => {
   let query = customSupabase
-    .from<any>('health_alerts')
+    .from('health_alerts')
     .select('*, health_indicators(*)')
     .eq('dog_id', dogId);
   
@@ -164,7 +164,7 @@ export const getHealthAlerts = async (dogId: string, includeResolved = false): P
 // Resolve a health alert
 export const resolveHealthAlert = async (alertId: string): Promise<void> => {
   const { error } = await customSupabase
-    .from<any>('health_alerts')
+    .from('health_alerts')
     .update({ resolved: true, status: 'resolved', resolved_at: new Date().toISOString() })
     .eq('id', alertId);
 
