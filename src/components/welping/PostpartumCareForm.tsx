@@ -37,7 +37,8 @@ const PostpartumCareForm: React.FC<PostpartumCareFormProps> = ({
     
     try {
       const data: Omit<WelpingPostpartumCare, 'id' | 'created_at'> = {
-        puppy_id: puppyId,
+        puppy_id: puppyId,  // This will now be a valid property
+        date: new Date().toISOString().split('T')[0], // Adding required date field
         care_time: values.care_time,
         care_type: values.care_type,
         notes: values.notes,

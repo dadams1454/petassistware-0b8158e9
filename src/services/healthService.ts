@@ -223,9 +223,14 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
     
     if (error) throw error;
     
-    return data || [];
+    // Map the data to include the 'unit' property required by WeightRecord
+    return (data || []).map(record => ({
+      ...record,
+      unit: record.weight_unit // Add the unit property pointing to weight_unit
+    }));
   } catch (error) {
     console.error('Error fetching weight history:', error);
+    // Return mock data with the correct structure including 'unit'
     return [];
   }
 };
@@ -237,7 +242,8 @@ export const addWeightRecord = async (
     const recordWithId = {
       ...record,
       id: uuidv4(),
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      unit: record.weight_unit // Ensure unit is set for compatibility
     };
     
     // Mock successful insert

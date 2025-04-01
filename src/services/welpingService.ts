@@ -49,7 +49,8 @@ export interface WelpingObservation {
 
 export interface PostpartumCare {
   id: string;
-  litter_id: string;
+  litter_id?: string;
+  puppy_id?: string;  // Added the puppy_id field here
   date: string;
   dam_temperature?: number;
   dam_appetite?: string;
