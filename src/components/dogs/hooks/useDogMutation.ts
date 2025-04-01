@@ -34,7 +34,7 @@ export const useDogMutation = () => {
   return {
     createDogMutation,
     isEditing: createDogMutation.isPending,
-    deleteDog: deleteMutation.mutate,
+    deleteDog: (dogId: string) => deleteMutation.mutate(dogId),
     isDeleting: deleteMutation.isPending
   };
 };
