@@ -1,5 +1,6 @@
 
 import { PdfDocumentContext } from '../types';
+import { rgb } from 'pdf-lib';
 
 /**
  * Renders an AKC Litter Registration form using puppy and litter data
@@ -8,7 +9,8 @@ export function renderAkcRegistrationTemplate(
   data: AkcRegistrationData,
   context: PdfDocumentContext
 ): void {
-  const { pdfDoc, page, fonts, dimensions } = context;
+  const { pdfDoc, fonts, dimensions } = context;
+  let { page } = context; // Changed from const to let
   const { width, height, margin } = dimensions;
   const { regular, bold } = fonts;
 
@@ -65,7 +67,7 @@ export function renderAkcRegistrationTemplate(
       width: width,
       height: 20,
       borderWidth: 1,
-      borderColor: { r: 0, g: 0, b: 0 },
+      borderColor: rgb(0, 0, 0), // Changed format
       opacity: 0.1,
     });
 
@@ -157,8 +159,8 @@ export function renderAkcRegistrationTemplate(
       width: width - margin * 2,
       height: 20,
       borderWidth: 1,
-      borderColor: { r: 0, g: 0, b: 0 },
-      color: { r: 0.9, g: 0.9, b: 0.9 },
+      borderColor: rgb(0, 0, 0), // Changed format
+      color: rgb(0.9, 0.9, 0.9), // Changed format
     });
 
     let colX = tableX;
@@ -181,7 +183,7 @@ export function renderAkcRegistrationTemplate(
   data.puppies.forEach((puppy, index) => {
     // Check if we need a new page
     if (tableY < margin + 50) {
-      page = pdfDoc.addPage([612, 792]);
+      page = pdfDoc.addPage([612, 792]); // Now works since page is 'let'
       tableY = height - margin;
       drawTableHeader();
     }
@@ -194,8 +196,8 @@ export function renderAkcRegistrationTemplate(
         width: width - margin * 2,
         height: 20,
         borderWidth: 1,
-        borderColor: { r: 0, g: 0, b: 0 },
-        color: { r: 0.95, g: 0.95, b: 0.95 },
+        borderColor: rgb(0, 0, 0), // Changed format
+        color: rgb(0.95, 0.95, 0.95), // Changed format
       });
     }
 
@@ -252,7 +254,7 @@ export function renderAkcRegistrationTemplate(
   tableY -= lineHeight * 2;
   
   if (tableY < margin + 100) {
-    page = pdfDoc.addPage([612, 792]);
+    page = pdfDoc.addPage([612, 792]); // Now works since page is 'let'
     tableY = height - margin;
   }
 

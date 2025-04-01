@@ -17,8 +17,8 @@ export const getAkcRegistrationData = async (litterId: string): Promise<AkcRegis
       .from('litters')
       .select(`
         *,
-        dam:dam_id(*),
-        sire:sire_id(*)
+        dam:dam_id(id, name, breed, color, photo_url, registration_number),
+        sire:sire_id(id, name, breed, color, photo_url, registration_number)
       `)
       .eq('id', litterId)
       .single();
@@ -43,19 +43,23 @@ export const getAkcRegistrationData = async (litterId: string): Promise<AkcRegis
     
     if (breederError) throw breederError;
 
+    // Use type assertion to help TypeScript understand the structure
+    const dam = litter.dam as SimpleDog | null;
+    const sire = litter.sire as SimpleDog | null;
+
     // Format the data for AKC registration
     return {
       akcLitterNumber: litter.akc_registration_number || undefined,
-      breed: (litter.dam as SimpleDog)?.breed || '',
+      breed: dam?.breed || '',
       birthDate: litter.birth_date,
       maleCount: litter.male_count || 0,
       femaleCount: litter.female_count || 0,
       
-      sireName: (litter.sire as SimpleDog)?.name || 'Unknown',
-      sireRegistrationNumber: (litter.sire as any)?.registration_number,
+      sireName: sire?.name || 'Unknown',
+      sireRegistrationNumber: sire?.registration_number,
       
-      damName: (litter.dam as SimpleDog)?.name || 'Unknown',
-      damRegistrationNumber: (litter.dam as any)?.registration_number,
+      damName: dam?.name || 'Unknown',
+      damRegistrationNumber: dam?.registration_number,
       
       breederName: `${breeder?.first_name || ''} ${breeder?.last_name || ''}`.trim(),
       kennelName: litter.kennel_name || breeder?.business_name,
