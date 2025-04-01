@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,12 +7,14 @@ import { useDogStatus } from '../../hooks/useDogStatus';
 import BreedingCycleCard from './BreedingCycleCard';
 import { Heart, AlertTriangle, Calendar, Check, Clipboard } from 'lucide-react';
 import { BreedingRecommendations } from './BreedingRecommendations';
+import { useNavigate } from 'react-router-dom';
 
 interface BreedingDashboardProps {
   dog: any;
 }
 
 const BreedingDashboard: React.FC<BreedingDashboardProps> = ({ dog }) => {
+  const navigate = useNavigate();
   // Only relevant for female dogs
   if (dog.gender !== 'Female') {
     return <NonFemaleDogMessage dog={dog} />;
@@ -41,22 +42,32 @@ const BreedingDashboard: React.FC<BreedingDashboardProps> = ({ dog }) => {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Breeding Management</h2>
         
-        <div className="flex space-x-2">
-          {isPregnant && (
-            <Badge className="bg-pink-500">Pregnant</Badge>
-          )}
+        <div className="flex items-center gap-2">
+          <div className="flex space-x-2">
+            {isPregnant && (
+              <Badge className="bg-pink-500">Pregnant</Badge>
+            )}
+            
+            {isInHeat && currentStage && (
+              <Badge className="bg-red-500">In Heat ({currentStage.name})</Badge>
+            )}
+            
+            {isPreHeat && !isInHeat && !isPregnant && (
+              <Badge className="bg-purple-500">Heat Approaching</Badge>
+            )}
+            
+            {!isPregnant && !isInHeat && !isPreHeat && (
+              <Badge variant="outline">Not Breeding</Badge>
+            )}
+          </div>
           
-          {isInHeat && currentStage && (
-            <Badge className="bg-red-500">In Heat ({currentStage.name})</Badge>
-          )}
-          
-          {isPreHeat && !isInHeat && !isPregnant && (
-            <Badge className="bg-purple-500">Heat Approaching</Badge>
-          )}
-          
-          {!isPregnant && !isInHeat && !isPreHeat && (
-            <Badge variant="outline">Not Breeding</Badge>
-          )}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate(`/dogs/${dog.id}/reproductive`)}
+          >
+            Advanced Tracking
+          </Button>
         </div>
       </div>
       

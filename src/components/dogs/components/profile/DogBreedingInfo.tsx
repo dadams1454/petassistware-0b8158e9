@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Calendar, AlertTriangle } from 'lucide-react';
@@ -165,15 +164,26 @@ const DogBreedingInfo: React.FC<DogBreedingInfoProps> = ({ dog }) => {
             </div>
           )}
           
-          <div className="pt-2">
+          <div className="pt-2 flex flex-col gap-2">
             <Button 
               variant="outline" 
               size="sm" 
               className="w-full"
               onClick={() => navigate(`/dogs/${dog.id}?tab=breeding`)}
             >
-              View Detailed Breeding Information
+              View Breeding Information
             </Button>
+            
+            {dog.gender === 'Female' && (
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="w-full"
+                onClick={() => navigate(`/dogs/${dog.id}/reproductive`)}
+              >
+                Advanced Reproductive Management
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
