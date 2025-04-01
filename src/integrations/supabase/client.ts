@@ -65,6 +65,16 @@ export type GeneticAuditLogRow = {
   created_at: string;
 };
 
+// Define a type for HeatCycleRow
+export type HeatCycleRow = {
+  id: string;
+  dog_id: string;
+  start_date: string;
+  end_date?: string | null;
+  notes?: string | null;
+  created_at: string;
+};
+
 // Add types for our new compliance tables
 export type InspectionRow = {
   id: string;

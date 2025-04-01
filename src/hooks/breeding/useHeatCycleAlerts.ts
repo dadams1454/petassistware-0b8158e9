@@ -1,8 +1,13 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { customSupabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { HeatCycle } from '@/components/dogs/components/breeding/HeatCycleMonitor';
+
+export interface HeatCycleData {
+  dog_id: string;
+  start_date: string;
+}
 
 export const useHeatCycleAlerts = (dogIds: string[]) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,13 +19,13 @@ export const useHeatCycleAlerts = (dogIds: string[]) => {
       const dateString = format(date, 'yyyy-MM-dd');
       
       // Manually create the insert object to ensure it matches the expected shape
-      const heatCycleData = {
+      const heatCycleData: HeatCycleData = {
         dog_id: dogId,
         start_date: dateString,
       };
       
-      // Insert heat cycle record - manual approach to avoid type errors
-      const { error } = await supabase
+      // Insert heat cycle record using customSupabase to avoid typing issues
+      const { error } = await customSupabase
         .from('heat_cycles')
         .insert(heatCycleData);
       
@@ -30,7 +35,7 @@ export const useHeatCycleAlerts = (dogIds: string[]) => {
       }
       
       // Update dog's last heat date
-      const { error: updateError } = await supabase
+      const { error: updateError } = await customSupabase
         .from('dogs')
         .update({ last_heat_date: dateString })
         .eq('id', dogId);

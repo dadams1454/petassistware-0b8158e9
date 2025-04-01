@@ -32,15 +32,15 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
       setLoading(true);
       
       // Insert the heat cycle record using customSupabase
-      const { data, error } = await customSupabase
-        .from('heat_cycles')
-        .insert([{
+      const { error } = await customSupabase
+        .from<HeatCycle>('heat_cycles')
+        .insert({
           dog_id: dogId,
           start_date: startDate,
           end_date: endDate || null,
           notes: notes || null,
           created_at: new Date().toISOString()
-        }]);
+        });
       
       if (error) throw error;
       

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { customSupabase } from '@/integrations/supabase/client';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Plus, ArrowDown, ArrowUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,9 +34,8 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
     try {
       setLoading(true);
       
-      // Using a direct query with explicit typing
-      // This is a workaround until heat_cycles is added to the Supabase type definitions
-      const { data, error: supabaseError } = await supabase
+      // Using customSupabase to query the heat_cycles table
+      const { data, error: supabaseError } = await customSupabase
         .from('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
