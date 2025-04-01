@@ -1,141 +1,214 @@
 
-import React, { useMemo } from 'react';
-import { format, differenceInDays, parseISO } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, TooltipProps } from 'recharts';
-import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { LineChart, Line } from 'lucide-react';
+import React from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { format, differenceInDays, addDays } from 'date-fns';
+import { AlertTriangle, Calendar, Activity } from 'lucide-react';
+
+interface HeatCycle {
+  id: string;
+  dog_id: string;
+  start_date: string;
+  end_date?: string | null;
+  notes?: string | null;
+}
 
 interface HeatCycleChartProps {
   dogId: string;
-  heatCycles: any[];
+  heatCycles: HeatCycle[];
+}
+
+interface ChartDataPoint {
+  date: string;
+  dayNumber: number;
+  stage: string;
+  notes?: string;
 }
 
 const HeatCycleChart: React.FC<HeatCycleChartProps> = ({ dogId, heatCycles }) => {
-  // Process data for chart display
-  const chartData = useMemo(() => {
-    if (!heatCycles || heatCycles.length === 0) {
-      return [];
-    }
-    
-    return heatCycles.map(cycle => {
-      const startDate = parseISO(cycle.start_date);
-      const endDate = cycle.end_date ? parseISO(cycle.end_date) : new Date();
-      const duration = differenceInDays(endDate, startDate);
-      
-      return {
-        id: cycle.id,
-        startDate,
-        formattedStartDate: format(startDate, 'MMM d, yyyy'),
-        duration,
-        ongoing: !cycle.end_date
-      };
-    });
-  }, [heatCycles]);
-  
-  // Calculate average cycle duration
-  const averageDuration = useMemo(() => {
-    if (chartData.length === 0) return 0;
-    const completedCycles = chartData.filter(cycle => !cycle.ongoing);
-    if (completedCycles.length === 0) return 0;
-    
-    const sum = completedCycles.reduce((acc, cycle) => acc + cycle.duration, 0);
-    return Math.round(sum / completedCycles.length);
-  }, [chartData]);
-  
-  // Calculate average time between cycles
-  const averageInterval = useMemo(() => {
-    if (chartData.length <= 1) return 0;
-    
-    const sortedData = [...chartData].sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-    let intervals = [];
-    
-    for (let i = 1; i < sortedData.length; i++) {
-      const daysBetween = differenceInDays(
-        sortedData[i].startDate,
-        sortedData[i-1].startDate
-      );
-      intervals.push(daysBetween);
-    }
-    
-    const sum = intervals.reduce((acc, interval) => acc + interval, 0);
-    return Math.round(sum / intervals.length);
-  }, [chartData]);
-  
-  // No data state
-  if (chartData.length === 0) {
+  if (!heatCycles || heatCycles.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <LineChart className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">No Cycle Data Available</h3>
-        <p className="text-muted-foreground text-center max-w-sm mt-2">
-          Record heat cycles to generate analysis and visualizations for better breeding management.
+      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+        <AlertTriangle className="h-10 w-10 text-amber-500 mb-4" />
+        <h3 className="text-lg font-medium">No Heat Cycle Data</h3>
+        <p className="text-sm text-muted-foreground mt-2">
+          Record heat cycles to view analytics and patterns.
         </p>
       </div>
     );
   }
-  
-  // Custom tooltip component
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-popover border rounded-md p-3 shadow-md">
-          <p className="font-medium">{data.formattedStartDate}</p>
-          <p className="text-sm text-muted-foreground">
-            Duration: <span className="font-medium">{data.duration} days</span>
-          </p>
-          {data.ongoing && (
-            <p className="text-xs text-amber-500 mt-1">Cycle ongoing</p>
-          )}
-        </div>
-      );
+
+  const prepareCycleData = (cycle: HeatCycle): ChartDataPoint[] => {
+    const data: ChartDataPoint[] = [];
+    const startDate = new Date(cycle.start_date);
+    const endDate = cycle.end_date ? new Date(cycle.end_date) : addDays(startDate, 21); // Default to 21 days if no end date
+    
+    const cycleDuration = differenceInDays(endDate, startDate);
+    
+    // Create data points for each day of the cycle
+    for (let i = 0; i <= cycleDuration; i++) {
+      const currentDate = addDays(startDate, i);
+      const dayNumber = i + 1;
+      
+      // Determine cycle stage based on day number
+      let stage = 'Unknown';
+      if (dayNumber <= 9) {
+        stage = 'Proestrus';
+      } else if (dayNumber <= 13) {
+        stage = 'Estrus';
+      } else if (dayNumber <= 17) {
+        stage = 'Diestrus';
+      } else {
+        stage = 'Anestrus';
+      }
+      
+      data.push({
+        date: format(currentDate, 'MMM d'),
+        dayNumber,
+        stage,
+        notes: cycle.notes || undefined
+      });
     }
-    return null;
+    
+    return data;
   };
+
+  // Get the most recent cycle
+  const sortedCycles = [...heatCycles].sort((a, b) => 
+    new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+  );
   
+  const latestCycle = sortedCycles[0];
+  const chartData = prepareCycleData(latestCycle);
+  
+  // Calculate average cycle length
+  let avgCycleLength = 0;
+  if (heatCycles.length > 1) {
+    let totalLength = 0;
+    let validCycles = 0;
+    
+    heatCycles.forEach(cycle => {
+      if (cycle.end_date) {
+        const length = differenceInDays(new Date(cycle.end_date), new Date(cycle.start_date));
+        totalLength += length;
+        validCycles++;
+      }
+    });
+    
+    if (validCycles > 0) {
+      avgCycleLength = Math.round(totalLength / validCycles);
+    }
+  }
+
+  const stageColors = {
+    Proestrus: '#ef4444',  // Red
+    Estrus: '#ec4899',     // Pink
+    Diestrus: '#8b5cf6',   // Purple
+    Anestrus: '#3b82f6',   // Blue
+    Unknown: '#9ca3af'     // Gray
+  };
+
   return (
-    <div className="h-full">
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="p-3 bg-card rounded-md border">
-          <h4 className="text-sm font-medium text-muted-foreground">Average Cycle Duration</h4>
-          <p className="text-2xl font-bold">{averageDuration} days</p>
-        </div>
-        <div className="p-3 bg-card rounded-md border">
-          <h4 className="text-sm font-medium text-muted-foreground">Average Time Between Cycles</h4>
-          <p className="text-2xl font-bold">{averageInterval} days</p>
-        </div>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium">Latest Heat Cycle</CardTitle>
+          </CardHeader>
+          <CardContent className="py-2">
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{format(new Date(latestCycle.start_date), 'MMM d, yyyy')}</span>
+            </div>
+            {latestCycle.end_date && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Duration: {differenceInDays(new Date(latestCycle.end_date), new Date(latestCycle.start_date))} days
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium">Cycles Recorded</CardTitle>
+          </CardHeader>
+          <CardContent className="py-2">
+            <div className="flex items-center">
+              <Activity className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{heatCycles.length}</span>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium">Avg. Cycle Length</CardTitle>
+          </CardHeader>
+          <CardContent className="py-2">
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{avgCycleLength > 0 ? `${avgCycleLength} days` : 'N/A'}</span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
-      <div className="h-[250px]">
+      <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-          >
+          <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 30 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
-              dataKey="formattedStartDate"
-              angle={-45}
-              textAnchor="end"
-              height={70}
-              tick={{ fontSize: 12 }}
+              dataKey="date" 
+              padding={{ left: 10, right: 10 }}
             />
-            <YAxis 
-              label={{ value: 'Duration (days)', angle: -90, position: 'insideLeft' }}
-              tick={{ fontSize: 12 }}
+            <YAxis domain={[0, 4]}>
+              <Label 
+                value="Cycle Stage" 
+                angle={-90} 
+                position="insideLeft" 
+                style={{ textAnchor: 'middle', fill: 'var(--muted-foreground)' }}
+              />
+            </YAxis>
+            <Tooltip 
+              formatter={(value, name, props) => {
+                if (name === 'stage') {
+                  return [props.payload.stage, 'Stage'];
+                }
+                return [value, name];
+              }}
+              labelFormatter={(label) => `Day: ${chartData.find(d => d.date === label)?.dayNumber}`}
             />
-            <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine y={averageDuration} stroke="#8884d8" strokeDasharray="3 3">
-              <label position="insideBottomRight" value="Avg" fill="#8884d8" />
-            </ReferenceLine>
-            <Bar 
-              dataKey="duration" 
-              fill="#8884d8" 
-              radius={[4, 4, 0, 0]}
-              name="Duration"
+            <Legend />
+            <Line 
+              type="stepAfter" 
+              dataKey="stage" 
+              stroke="#8884d8" 
+              name="Stage"
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              isAnimationActive={true}
+              activeDot={{ r: 6, stroke: 'var(--primary)', strokeWidth: 2 }}
+              // Map stage names to numeric values for the chart
+              yAxisId={0}
+              data={chartData.map(point => ({
+                ...point,
+                stage: point.stage === 'Proestrus' ? 1 : 
+                       point.stage === 'Estrus' ? 2 : 
+                       point.stage === 'Diestrus' ? 3 : 
+                       point.stage === 'Anestrus' ? 4 : 0
+              }))}
             />
-          </BarChart>
+          </LineChart>
         </ResponsiveContainer>
+      </div>
+      
+      <div className="flex flex-wrap gap-2 justify-center">
+        {Object.entries(stageColors).map(([stage, color]) => (
+          <div key={stage} className="flex items-center">
+            <div className="w-4 h-4 rounded mr-1" style={{ backgroundColor: color }}></div>
+            <span className="text-xs">{stage}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { format, addDays, differenceInDays } from 'date-fns';
 import { useDogStatus } from '@/components/dogs/hooks/useDogStatus';
 import { Calendar, Heart, AlertTriangle, Plus, LineChart, Clock } from 'lucide-react';
 import { SectionHeader } from '@/components/ui/standardized';
+import { useToast } from '@/hooks/use-toast';
 import HeatCycleChart from './HeatCycleChart';
 import BreedingTimingOptimizer from './BreedingTimingOptimizer';
 
@@ -20,13 +21,14 @@ interface ReproductiveCycleDashboardProps {
 const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({ dog }) => {
   const [showAddCycleDialog, setShowAddCycleDialog] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState('overview');
+  const { toast } = useToast();
   
   const { 
     heatCycle,
     isPregnant
   } = useDogStatus(dog);
   
-  const { data: heatCycles, isLoading: isLoadingCycles } = useQuery({
+  const { data: heatCycles, isLoading: isLoadingCycles, refetch } = useQuery({
     queryKey: ['heat-cycles', dog.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -44,11 +46,24 @@ const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     
+    const startDate = formData.get('start_date')?.toString() || '';
+    const endDate = formData.get('end_date')?.toString() || null;
+    const notes = formData.get('notes')?.toString() || null;
+    
+    if (!startDate) {
+      toast({
+        title: "Error",
+        description: "Start date is required",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const cycleData = {
       dog_id: dog.id,
-      start_date: formData.get('start_date'),
-      end_date: formData.get('end_date') || null,
-      notes: formData.get('notes') || null
+      start_date: startDate,
+      end_date: endDate === '' ? null : endDate,
+      notes: notes
     };
     
     try {
@@ -59,17 +74,25 @@ const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({
       if (error) throw error;
       
       // Also update the dog's last heat date
-      if (cycleData.start_date) {
-        await supabase
-          .from('dogs')
-          .update({ last_heat_date: cycleData.start_date })
-          .eq('id', dog.id);
-      }
+      await supabase
+        .from('dogs')
+        .update({ last_heat_date: startDate })
+        .eq('id', dog.id);
+      
+      toast({
+        title: "Success",
+        description: "Heat cycle recorded successfully"
+      });
       
       setShowAddCycleDialog(false);
-      // You would normally trigger a refetch of heat cycles data here
+      refetch(); // Refetch heat cycles data
     } catch (error) {
       console.error('Error adding heat cycle:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save heat cycle",
+        variant: "destructive"
+      });
     }
   };
   
@@ -148,7 +171,7 @@ const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({
               />
             )}
             
-            {heatCycle.fertileDays.start && heatCycle.fertileDays.end && heatCycle.isInHeat && (
+            {heatCycle.fertileDays?.start && heatCycle.fertileDays?.end && heatCycle.isInHeat && (
               <StatusCard 
                 title="Fertile Window"
                 value={`${format(heatCycle.fertileDays.start, 'MMM d')} - ${format(heatCycle.fertileDays.end, 'MMM d')}`}

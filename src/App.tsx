@@ -16,10 +16,8 @@ import Users from './pages/Users';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 // Import the reproductive management page
 import ReproductiveManagementPage from './pages/ReproductiveManagementPage';
@@ -59,9 +57,8 @@ function App() {
             </Routes>
           </MainLayout>
         </Router>
-        <ToastContainer position="bottom-right" autoClose={5000} />
+        <Toaster />
       </AuthProvider>
-      {showDevtools ? <ReactQueryDevtools /> : null}
     </QueryClientProvider>
   );
 }
