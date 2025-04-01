@@ -13,13 +13,16 @@ export const useHeatCycleAlerts = (dogIds: string[]) => {
       // Format date to ISO string for database storage
       const dateString = format(date, 'yyyy-MM-dd');
       
-      // Insert heat cycle record
+      // Manually create the insert object to ensure it matches the expected shape
+      const heatCycleData = {
+        dog_id: dogId,
+        start_date: dateString,
+      };
+      
+      // Insert heat cycle record - manual approach to avoid type errors
       const { error } = await supabase
         .from('heat_cycles')
-        .insert({
-          dog_id: dogId,
-          start_date: dateString,
-        });
+        .insert(heatCycleData);
       
       if (error) {
         console.error('Error recording heat cycle:', error);
