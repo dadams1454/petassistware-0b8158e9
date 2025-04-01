@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { customSupabase } from '@/integrations/supabase/client';
+import { customSupabase, HeatCycleRow } from '@/integrations/supabase/client';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Plus, ArrowDown, ArrowUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +36,7 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
       
       // Using customSupabase to query the heat_cycles table
       const { data, error: supabaseError } = await customSupabase
-        .from('heat_cycles')
+        .from<HeatCycleRow>('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
         .order('start_date', { ascending: false });
@@ -45,19 +45,25 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
         throw supabaseError;
       }
       
-      // First check if we have data and it's an array
       if (data && Array.isArray(data)) {
-        // Then validate that each item has the required fields to be a HeatCycle
-        const isValidHeatCycle = (item: any): item is HeatCycle => {
-          return item && 
-                 typeof item.id === 'string' && 
-                 typeof item.dog_id === 'string' && 
-                 typeof item.start_date === 'string' &&
-                 typeof item.created_at === 'string';
-        };
+        // Validate and transform the data to ensure it matches the HeatCycle interface
+        const validHeatCycles: HeatCycle[] = data
+          .filter(item => 
+            item && 
+            typeof item.id === 'string' && 
+            typeof item.dog_id === 'string' && 
+            typeof item.start_date === 'string' &&
+            typeof item.created_at === 'string'
+          )
+          .map(item => ({
+            id: item.id,
+            dog_id: item.dog_id,
+            start_date: item.start_date,
+            end_date: item.end_date,
+            notes: item.notes,
+            created_at: item.created_at
+          }));
         
-        // Filter only valid heat cycles
-        const validHeatCycles = data.filter(isValidHeatCycle);
         setCycles(validHeatCycles);
       } else {
         // If data is not an array, set cycles to empty array
@@ -67,7 +73,7 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
     } catch (err) {
       console.error('Error fetching heat cycles:', err);
       setError('Failed to load heat cycle data');
-      // Important: In case of error, we set cycles to empty array instead of error objects
+      // Important: In case of error, we set cycles to empty array
       setCycles([]);
     } finally {
       setLoading(false);

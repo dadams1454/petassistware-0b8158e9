@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { customSupabase } from '@/integrations/supabase/client';
+import { customSupabase, HeatCycleRow } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -31,16 +31,19 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
     try {
       setLoading(true);
       
+      // Create heat cycle data object with the right type
+      const heatCycleData: Omit<HeatCycleRow, 'id'> = {
+        dog_id: dogId,
+        start_date: startDate,
+        end_date: endDate || null,
+        notes: notes || null,
+        created_at: new Date().toISOString()
+      };
+      
       // Insert the heat cycle record using customSupabase
       const { error } = await customSupabase
-        .from<HeatCycle>('heat_cycles')
-        .insert({
-          dog_id: dogId,
-          start_date: startDate,
-          end_date: endDate || null,
-          notes: notes || null,
-          created_at: new Date().toISOString()
-        });
+        .from<HeatCycleRow>('heat_cycles')
+        .insert(heatCycleData);
       
       if (error) throw error;
       
