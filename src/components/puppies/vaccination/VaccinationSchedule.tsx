@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Plus, AlertTriangle, Calendar } from 'lucide-react';
 import { usePuppyVaccinations } from '@/hooks/usePuppyVaccinations';
 import { LoadingState, EmptyState } from '@/components/ui/standardized';
+import { VaccinationScheduleItem } from '@/types/puppyTracking';
 
 interface VaccinationScheduleProps {
   puppyId: string;
@@ -31,7 +32,7 @@ const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
     addVaccination
   } = usePuppyVaccinations(puppyId);
   
-  const handleMarkComplete = (vaccination: any) => {
+  const handleMarkComplete = (vaccination: VaccinationScheduleItem) => {
     addVaccination({
       vaccination_type: vaccination.vaccination_type,
       vaccination_date: new Date().toISOString().split('T')[0],
@@ -66,17 +67,17 @@ const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
   
   // Group vaccinations by status
   const overdueVaccinations = vaccinations.filter(vax => 
-    !vax.is_completed && 
+    vax.is_completed === false && 
     new Date(vax.due_date) < new Date()
   );
   
   const upcomingVaccinations = vaccinations.filter(vax => 
-    !vax.is_completed && 
+    vax.is_completed === false && 
     new Date(vax.due_date) >= new Date()
   );
   
   const completedVaccinations = vaccinations.filter(vax => 
-    vax.is_completed
+    vax.is_completed === true
   );
   
   return (

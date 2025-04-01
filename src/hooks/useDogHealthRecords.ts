@@ -45,7 +45,7 @@ export const useDogHealthRecords = (dogId: string) => {
       
       const { data, error } = await supabase
         .from('health_records')
-        .insert([record])
+        .insert(record)
         .select()
         .single();
         

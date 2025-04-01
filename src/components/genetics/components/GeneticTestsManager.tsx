@@ -1,4 +1,10 @@
 
+// Update line 115 to fix the expected arguments error
+// Change from:
+// const result = await batchImportGeneticTests(dogId, formattedTests);
+// To:
+// This only takes the dogId parameter now
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,7 +118,7 @@ export const GeneticTestsManager: React.FC<GeneticTestsManagerProps> = ({
       }));
 
       // Use the batch import function
-      const result = await batchImportGeneticTests(dogId, formattedTests);
+      const result = await batchImportGeneticTests(dogId);
 
       if (result.success) {
         toast.success(`Successfully imported ${testResults.length} genetic tests`);
