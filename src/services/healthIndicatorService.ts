@@ -48,12 +48,12 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
   if (!data) throw new Error('Failed to insert health indicator record');
   
   // If abnormal, create an alert
-  if (abnormal && data) {  // Double-check that data is not null
+  if (abnormal) {
     try {
       // First check if data is a proper object with an id property (not an error object)
-      // Make a non-null assertion for TypeScript after our runtime checks
-      if (typeof data === 'object' && !('code' in data) && 'id' in data && data.id) {
-        await createHealthAlert(data.id.toString(), record.dog_id);
+      const recordId = data.id;
+      if (recordId) {
+        await createHealthAlert(recordId.toString(), record.dog_id);
       } else {
         console.error('Data object does not have a valid id property:', data);
       }
