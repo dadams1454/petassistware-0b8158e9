@@ -1,8 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { 
   HealthRecord, 
-  HealthRecordTypeEnum, 
-  HealthRecordType,
+  HealthRecordTypeEnum,
   WeightRecord,
   WeightUnitEnum,
   adaptHealthRecord,
@@ -23,7 +23,7 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
   return (data || []).map(record => adaptHealthRecord(record));
 };
 
-export const getHealthRecordsByType = async (dogId: string, type: HealthRecordType): Promise<HealthRecord[]> => {
+export const getHealthRecordsByType = async (dogId: string, type: HealthRecordTypeEnum): Promise<HealthRecord[]> => {
   const { data, error } = await supabase
     .from('health_records')
     .select('*')
@@ -50,11 +50,11 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
     record_notes: record.description || '', // Map description to record_notes
     // Convert string dosage to numeric if needed
     dosage: record.dosage ? 
-      (typeof record.dosage === 'string' ? parseFloat(record.dosage) : record.dosage) : 
+      (typeof record.dosage === 'string' ? parseFloat(record.dosage as string) : record.dosage) : 
       null,
     // Convert string duration to numeric if needed
     duration: record.duration ? 
-      (typeof record.duration === 'string' ? parseFloat(record.duration.toString()) : record.duration) : 
+      (typeof record.duration === 'string' ? parseFloat(record.duration as string) : record.duration) : 
       null,
     // Include any other relevant fields
     medication_name: record.medication_name,
@@ -106,12 +106,12 @@ export const updateHealthRecord = async (id: string, updates: Partial<HealthReco
   
   // Convert string dosage to numeric if needed
   if (updates.dosage !== undefined) {
-    dbUpdates.dosage = typeof updates.dosage === 'string' ? parseFloat(updates.dosage) : updates.dosage;
+    dbUpdates.dosage = typeof updates.dosage === 'string' ? parseFloat(updates.dosage as string) : updates.dosage;
   }
   
   // Convert string duration to numeric if needed
   if (updates.duration !== undefined) {
-    dbUpdates.duration = typeof updates.duration === 'string' ? parseFloat(updates.duration.toString()) : updates.duration;
+    dbUpdates.duration = typeof updates.duration === 'string' ? parseFloat(updates.duration as string) : updates.duration;
   }
   
   // Additional mappings

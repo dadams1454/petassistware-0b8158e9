@@ -1,299 +1,219 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 import { Puppy } from '@/types/litter';
 
+// Define types for welping records
 export interface WelpingRecord {
   id: string;
   litter_id: string;
-  birth_date: string;
-  start_time: string;
+  recording_date: string;
+  start_time?: string;
   end_time?: string;
-  total_puppies: number;
-  males: number;
-  females: number;
+  duration_minutes?: number;
+  total_puppies_born: number;
+  live_puppies_born: number;
+  stillborn_puppies: number;
+  dam_condition: string;
+  complications?: string;
+  assistance_required: boolean;
+  assistance_details?: string;
   notes?: string;
   created_at: string;
-  attended_by?: string;
-  complications?: boolean;
-  complication_notes?: string;
-  status: 'in-progress' | 'completed';
+  created_by?: string;
 }
 
 export interface WelpingObservation {
   id: string;
-  welping_record_id: string;
-  puppy_id?: string;
+  welping_id: string;
   observation_time: string;
-  observation_type: 'maternal' | 'puppy' | 'environment';
-  description: string;
-  action_taken?: string;
+  puppy_number?: number;
+  puppy_id?: string;
+  presentation?: string;
+  coloration?: string;
+  activity_level?: string;
+  weight?: number;
+  weight_unit?: string;
+  notes?: string;
   created_at: string;
+  created_by?: string;
 }
 
-export interface WelpingPostpartumCare {
+export interface PostpartumCare {
   id: string;
-  puppy_id: string;
-  care_time: string;
-  care_type: 'feeding' | 'cleaning' | 'medical' | 'weighing' | 'other';
-  notes: string;
-  performed_by?: string;
+  litter_id: string;
+  date: string;
+  dam_temperature?: number;
+  dam_appetite?: string;
+  dam_hydration?: string;
+  dam_discharge?: string;
+  dam_milk_production?: string;
+  dam_behavior?: string;
+  puppies_nursing?: boolean;
+  all_puppies_nursing?: boolean;
+  puppy_weights_recorded?: boolean;
+  weight_concerns?: string;
+  notes?: string;
   created_at: string;
+  created_by?: string;
 }
 
-// Mock function for getting welping record for a litter
-export const getWelpingRecordForLitter = async (
-  litterId: string
-): Promise<WelpingRecord | null> => {
+// Mock data for testing
+const mockWelpingRecords: WelpingRecord[] = [];
+const mockWelpingObservations: WelpingObservation[] = [];
+const mockPostpartumCare: PostpartumCare[] = [];
+
+// Create a welping record
+export const createWelpingRecord = async (record: Omit<WelpingRecord, 'id' | 'created_at'>): Promise<WelpingRecord> => {
   try {
-    // For now, we'll return mock data since the real tables don't exist in Supabase yet
-    const mockRecord: WelpingRecord = {
-      id: `welp-${litterId}`,
-      litter_id: litterId,
-      birth_date: new Date().toISOString().split('T')[0],
-      start_time: '08:30:00',
-      end_time: '14:45:00',
-      total_puppies: 6,
-      males: 4,
-      females: 2,
-      notes: 'All puppies healthy, no complications.',
-      created_at: new Date().toISOString(),
-      attended_by: 'Dr. Smith',
-      complications: false,
-      status: 'completed'
+    // In a real implementation, this would insert into the database
+    // For now, just create a mock record
+    const newRecord: WelpingRecord = {
+      ...record,
+      id: uuidv4(),
+      created_at: new Date().toISOString()
     };
     
-    return mockRecord;
-  } catch (error) {
-    console.error('Error fetching welping record:', error);
-    return null;
-  }
-};
-
-// Mock function for creating a welping record
-export const createWelpingRecord = async (
-  litterId: string,
-  data: Omit<WelpingRecord, 'id' | 'created_at'>
-): Promise<WelpingRecord | null> => {
-  try {
-    // For now, we'll return mock data since the real tables don't exist in Supabase yet
-    const mockRecord: WelpingRecord = {
-      id: `welp-${Math.random().toString(36).substring(2, 9)}`,
-      ...data,
-      litter_id: litterId,
-      created_at: new Date().toISOString(),
-    };
-
-    toast({
-      title: 'Success',
-      description: 'Welping record created successfully',
-    });
-    
-    return mockRecord;
+    mockWelpingRecords.push(newRecord);
+    return newRecord;
   } catch (error) {
     console.error('Error creating welping record:', error);
-    toast({
-      title: 'Error',
-      description: 'Failed to create welping record',
-      variant: 'destructive',
-    });
-    return null;
+    throw error;
   }
 };
 
-// Mock function for updating a welping record
+// Get welping records for a litter
+export const getWelpingRecordsForLitter = async (litterId: string): Promise<WelpingRecord[]> => {
+  try {
+    // In a real implementation, this would query the database
+    return mockWelpingRecords.filter(record => record.litter_id === litterId);
+  } catch (error) {
+    console.error('Error fetching welping records:', error);
+    return [];
+  }
+};
+
+// Update a welping record
 export const updateWelpingRecord = async (
   recordId: string,
-  data: Partial<WelpingRecord>
+  updates: Partial<WelpingRecord>
 ): Promise<WelpingRecord | null> => {
   try {
-    // For now, we'll return mock data since the real tables don't exist in Supabase yet
-    const mockRecord: WelpingRecord = {
-      id: recordId,
-      litter_id: data.litter_id || 'unknown',
-      birth_date: data.birth_date || new Date().toISOString().split('T')[0],
-      start_time: data.start_time || '00:00:00',
-      end_time: data.end_time,
-      total_puppies: data.total_puppies || 0,
-      males: data.males || 0,
-      females: data.females || 0,
-      notes: data.notes,
-      created_at: new Date().toISOString(),
-      attended_by: data.attended_by,
-      complications: data.complications || false,
-      complication_notes: data.complication_notes,
-      status: data.status || 'in-progress',
-    };
-
-    toast({
-      title: 'Success',
-      description: 'Welping record updated successfully',
-    });
+    // In a real implementation, this would update the database
+    const index = mockWelpingRecords.findIndex(record => record.id === recordId);
+    if (index === -1) return null;
     
-    return mockRecord;
+    mockWelpingRecords[index] = {
+      ...mockWelpingRecords[index],
+      ...updates
+    };
+    
+    return mockWelpingRecords[index];
   } catch (error) {
     console.error('Error updating welping record:', error);
-    toast({
-      title: 'Error',
-      description: 'Failed to update welping record',
-      variant: 'destructive',
-    });
     return null;
   }
 };
 
-// Mock function for adding a welping observation
+// Add welping observation
 export const addWelpingObservation = async (
-  data: Omit<WelpingObservation, 'id' | 'created_at'>
-): Promise<WelpingObservation | null> => {
+  observation: Omit<WelpingObservation, 'id' | 'created_at'>
+): Promise<WelpingObservation> => {
   try {
-    // For now, we'll return mock data since the real tables don't exist in Supabase yet
-    const mockObservation: WelpingObservation = {
-      id: `obs-${Math.random().toString(36).substring(2, 9)}`,
-      ...data,
-      created_at: new Date().toISOString(),
+    // In a real implementation, this would insert into the database
+    const newObservation: WelpingObservation = {
+      ...observation,
+      id: uuidv4(),
+      created_at: new Date().toISOString()
     };
     
-    toast({
-      title: 'Observation Recorded',
-      description: 'Whelping observation has been saved successfully'
-    });
-    
-    return mockObservation;
+    mockWelpingObservations.push(newObservation);
+    return newObservation;
   } catch (error) {
     console.error('Error adding welping observation:', error);
-    toast({
-      title: 'Error',
-      description: 'Failed to record welping observation',
-      variant: 'destructive',
-    });
-    return null;
+    throw error;
   }
 };
 
-// Mock function for getting welping observations
-export const getWelpingObservations = async (
-  welpingRecordId: string
-): Promise<WelpingObservation[]> => {
+// Get welping observations
+export const getWelpingObservations = async (welpingId: string): Promise<WelpingObservation[]> => {
   try {
-    // For now, we'll return mock data since the real tables don't exist in Supabase yet
-    const mockObservations: WelpingObservation[] = Array(3).fill(null).map((_, index) => ({
-      id: `obs-${index}`,
-      welping_record_id: welpingRecordId,
-      puppy_id: index % 2 === 0 ? `puppy-${index}` : undefined,
-      observation_time: new Date().toISOString(),
-      observation_type: index % 3 === 0 ? 'maternal' : index % 3 === 1 ? 'puppy' : 'environment',
-      description: `Observation ${index + 1}`,
-      action_taken: index % 2 === 0 ? `Action ${index + 1}` : undefined,
-      created_at: new Date().toISOString(),
-    }));
-    
-    return mockObservations;
+    // In a real implementation, this would query the database
+    return mockWelpingObservations.filter(obs => obs.welping_id === welpingId);
   } catch (error) {
     console.error('Error fetching welping observations:', error);
     return [];
   }
 };
 
-// Mock function for adding postpartum care
+// Add postpartum care record
 export const addPostpartumCare = async (
-  data: Omit<WelpingPostpartumCare, 'id' | 'created_at'>
-): Promise<WelpingPostpartumCare | null> => {
+  record: Omit<PostpartumCare, 'id' | 'created_at'>
+): Promise<PostpartumCare> => {
   try {
-    // For now, we'll return mock data since the real tables don't exist in Supabase yet
-    const mockCare: WelpingPostpartumCare = {
-      id: `care-${Math.random().toString(36).substring(2, 9)}`,
-      ...data,
-      created_at: new Date().toISOString(),
+    // In a real implementation, this would insert into the database
+    const newRecord: PostpartumCare = {
+      ...record,
+      id: uuidv4(),
+      created_at: new Date().toISOString()
     };
     
-    toast({
-      title: 'Care Recorded',
-      description: 'Postpartum care record has been saved successfully'
-    });
-    
-    return mockCare;
+    mockPostpartumCare.push(newRecord);
+    return newRecord;
   } catch (error) {
-    console.error('Error adding postpartum care:', error);
-    toast({
-      title: 'Error',
-      description: 'Failed to record postpartum care',
-      variant: 'destructive',
-    });
-    return null;
+    console.error('Error adding postpartum care record:', error);
+    throw error;
   }
 };
 
-// Mock function for getting postpartum care for a puppy
-export const getPostpartumCareForPuppy = async (
-  puppyId: string
-): Promise<WelpingPostpartumCare[]> => {
+// Get postpartum care records
+export const getPostpartumCareRecords = async (litterId: string): Promise<PostpartumCare[]> => {
   try {
-    // For now, we'll return mock data since the real tables don't exist in Supabase yet
-    const mockCare: WelpingPostpartumCare[] = Array(5).fill(null).map((_, index) => ({
-      id: `care-${index}`,
-      puppy_id: puppyId,
-      care_time: new Date().toISOString(),
-      care_type: index % 5 === 0 ? 'feeding' : index % 5 === 1 ? 'cleaning' : 
-                index % 5 === 2 ? 'medical' : index % 5 === 3 ? 'weighing' : 'other',
-      notes: `Care note ${index + 1}`,
-      performed_by: `Staff ${index % 3 + 1}`,
-      created_at: new Date().toISOString(),
-    }));
-    
-    return mockCare;
+    // In a real implementation, this would query the database
+    return mockPostpartumCare.filter(record => record.litter_id === litterId);
   } catch (error) {
     console.error('Error fetching postpartum care records:', error);
     return [];
   }
 };
 
-// Mock function for enhanced puppy data
-export const enhancedPuppyData = async (
-  puppyId: string
-): Promise<{
-  puppy: Puppy | null;
-  postpartumCare: WelpingPostpartumCare[];
-  birthDetails: any | null;
-}> => {
+// Get puppy observations
+export const getPuppyObservations = async (puppyId: string): Promise<WelpingObservation[]> => {
   try {
-    // Mock puppy data
+    // In a real implementation, this would query the database
+    return mockWelpingObservations.filter(obs => obs.puppy_id === puppyId);
+  } catch (error) {
+    console.error('Error fetching puppy observations:', error);
+    return [];
+  }
+};
+
+// Update puppy with AKC information or other details
+export const updatePuppy = async (
+  puppyId: string,
+  updates: Partial<Puppy>
+): Promise<Puppy | null> => {
+  try {
+    // Since we don't have direct DB access in this mock implementation,
+    // we'll pretend it succeeded and return a mock puppy with updates
     const mockPuppy: Puppy = {
       id: puppyId,
-      name: `Puppy ${puppyId.slice(-2)}`,
-      litter_id: 'litter-123',
-      gender: Math.random() > 0.5 ? 'Male' : 'Female',
-      color: 'Black',
-      birth_weight: '350g',
-      current_weight: '450g',
-      status: 'Available',
-      birth_date: new Date().toISOString().split('T')[0],
-      created_at: new Date().toISOString(),
-      birth_order: 2,
+      litter_id: updates.litter_id || 'litter-id',
+      name: updates.name || 'Puppy',
+      gender: updates.gender || 'male',
+      color: updates.color || 'black',
+      birth_weight: updates.birth_weight || 0.5,
+      birth_order: updates.birth_order || 1,
+      status: updates.status || 'available',
+      microchip_id: updates.microchip_id,
+      akc_registration: updates.akc_registration,
+      notes: updates.notes,
+      collar_color: updates.collar_color
     };
     
-    // Mock postpartum care
-    const mockCare = await getPostpartumCareForPuppy(puppyId);
-    
-    // Mock birth details
-    const mockBirthDetails = {
-      time: '09:15:00',
-      weight: '350g',
-      assistance_required: false,
-      notes: 'Normal birth, no assistance required.',
-    };
-    
-    return {
-      puppy: mockPuppy,
-      postpartumCare: mockCare,
-      birthDetails: mockBirthDetails
-    };
+    return mockPuppy;
   } catch (error) {
-    console.error('Error fetching enhanced puppy data:', error);
-    return {
-      puppy: null,
-      postpartumCare: [],
-      birthDetails: null
-    };
+    console.error('Error updating puppy:', error);
+    return null;
   }
 };

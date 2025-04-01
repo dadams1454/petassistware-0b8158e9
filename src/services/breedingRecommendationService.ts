@@ -9,6 +9,7 @@ export interface BreedingRecommendation {
     breed: string;
     color: string;
     age: number;
+    photo_url?: string;
   };
   dam: {
     id: string;
@@ -16,8 +17,10 @@ export interface BreedingRecommendation {
     breed: string;
     color: string;
     age: number;
+    photo_url?: string;
   };
   match_score: number;
+  compatibility_score: number;
   genetic_diversity: number;
   coefficient_of_inbreeding: number;
   color_compatibility: number;
@@ -26,6 +29,7 @@ export interface BreedingRecommendation {
   trait_predictions: {
     trait: string;
     probability: number;
+    description?: string;
   }[];
   health_risk: {
     condition: string;
@@ -69,25 +73,28 @@ export const getBreedingRecommendationsForDog = async (
           name: `Test Dog ${index}`,
           breed: 'Newfoundland',
           color: 'Black',
-          age: 3
+          age: 3,
+          photo_url: `https://example.com/dog${index}.jpg`
         },
         dam: {
           id: `partner-${index}`,
           name: `Partner Dog ${index}`,
           breed: 'Newfoundland',
           color: 'Brown',
-          age: 2
+          age: 2,
+          photo_url: `https://example.com/partner${index}.jpg`
         },
         match_score: 85 + Math.floor(Math.random() * 15),
+        compatibility_score: 75 + Math.floor(Math.random() * 25),
         genetic_diversity: 75 + Math.floor(Math.random() * 25),
         coefficient_of_inbreeding: Math.random() * 10,
         color_compatibility: 80 + Math.floor(Math.random() * 20),
         health_score: 90 + Math.floor(Math.random() * 10),
         common_ancestors: [],
         trait_predictions: [
-          { trait: 'Size', probability: 0.8 },
-          { trait: 'Coat Type', probability: 0.75 },
-          { trait: 'Temperament', probability: 0.9 }
+          { trait: 'Size', probability: 0.8, description: 'Likely to be large' },
+          { trait: 'Coat Type', probability: 0.75, description: 'Thick double coat' },
+          { trait: 'Temperament', probability: 0.9, description: 'Gentle and friendly' }
         ],
         health_risk: [
           { condition: 'Hip Dysplasia', risk_level: 'low', probability: 0.15 },
@@ -123,25 +130,28 @@ export const getSpecificCompatibility = async (
         name: 'Test Dog',
         breed: 'Newfoundland',
         color: 'Black',
-        age: 3
+        age: 3,
+        photo_url: `https://example.com/dog.jpg`
       },
       dam: {
         id: partnerId,
         name: 'Partner Dog',
         breed: 'Newfoundland',
         color: 'Brown',
-        age: 2
+        age: 2,
+        photo_url: `https://example.com/partner.jpg`
       },
       match_score: 92,
+      compatibility_score: 88,
       genetic_diversity: 85,
       coefficient_of_inbreeding: 2.5,
       color_compatibility: 95,
       health_score: 94,
       common_ancestors: [],
       trait_predictions: [
-        { trait: 'Size', probability: 0.85 },
-        { trait: 'Coat Type', probability: 0.8 },
-        { trait: 'Temperament', probability: 0.95 }
+        { trait: 'Size', probability: 0.85, description: 'Likely to be large' },
+        { trait: 'Coat Type', probability: 0.8, description: 'Thick double coat' },
+        { trait: 'Temperament', probability: 0.95, description: 'Gentle and friendly' }
       ],
       health_risk: [
         { condition: 'Hip Dysplasia', risk_level: 'low', probability: 0.1 },
@@ -160,4 +170,12 @@ export const getSpecificCompatibility = async (
     console.error('Error fetching specific compatibility:', error);
     return null;
   }
+};
+
+// For the GeneticPairingPage
+export const getBreedingCompatibility = async (
+  sireId: string,
+  damId: string
+): Promise<BreedingRecommendation | null> => {
+  return getSpecificCompatibility(sireId, damId);
 };

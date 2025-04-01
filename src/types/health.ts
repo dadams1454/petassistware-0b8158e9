@@ -60,6 +60,7 @@ export interface HealthRecord {
   performed_by?: string;
   // Vaccination specific fields
   vaccine_name?: string;
+  vaccine_type?: string;
   manufacturer?: string;
   lot_number?: string;
   expiration_date?: string;
@@ -74,12 +75,18 @@ export interface HealthRecord {
   start_date?: string;
   end_date?: string;
   prescription_number?: string;
+  prescribed_by?: string;
+  pharmacy?: string;
+  refills_remaining?: number;
   // Examination specific fields
   examination_type?: string;
+  exam_type?: string;
   findings?: string;
   recommendations?: string;
   vet_clinic?: string;
   follow_up_date?: string;
+  examiner?: string;
+  facility?: string;
   // Surgery specific fields
   procedure_name?: string;
   surgeon?: string;
@@ -106,6 +113,40 @@ export interface HealthAlert {
   created_at: string;
   resolved_at?: string;
   resolved: boolean;
+}
+
+export interface HealthIndicator {
+  id: string;
+  dog_id: string;
+  date: string;
+  temperature?: number;
+  heart_rate?: number;
+  respiration_rate?: number;
+  appetite?: AppetiteLevelEnum | null;
+  energy_level?: EnergyLevelEnum | null;
+  stool_consistency?: StoolConsistencyEnum | null;
+  hydration?: string;
+  gum_color?: string;
+  mucous_membrane?: string;
+  notes?: string;
+  abnormal: boolean;
+  created_by?: string;
+  created_at?: string;
+}
+
+export interface HealthIndicatorFormValues {
+  dog_id: string;
+  date: string;
+  temperature?: number | null;
+  heart_rate?: number | null;
+  respiration_rate?: number | null;
+  appetite?: AppetiteLevelEnum | null;
+  energy_level?: EnergyLevelEnum | null;
+  stool_consistency?: StoolConsistencyEnum | null;
+  hydration?: string | null;
+  gum_color?: string | null;
+  mucous_membrane?: string | null;
+  notes?: string | null;
 }
 
 // Helper function to adapt health record data
