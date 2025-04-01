@@ -54,6 +54,7 @@ export interface VaccinationScheduleItem {
   notes?: string;
   created_at: string;
   is_completed?: boolean; // Derived field (true if there's a matching vaccination record)
+  vaccination_date?: string; // Added for display purposes when completed
 }
 
 export interface VaccinationRecord {
@@ -78,6 +79,10 @@ export interface PuppyManagementStats {
   averageWeight: number;
   puppiesByColor: Record<string, number>;
   puppiesByAge: Record<string, number>;
+  // Adding missing properties
+  activeLitters: number;
+  upcomingVaccinations: number;
+  recentWeightChecks: number;
 }
 
 // Age group definitions for puppy management
@@ -89,6 +94,9 @@ export interface PuppyAgeGroupData {
   endDay: number;
   color: string;
   priority: number;
+  // Adding missing properties
+  milestones?: string;
+  careChecks?: string[];
 }
 
 // Socialization Types

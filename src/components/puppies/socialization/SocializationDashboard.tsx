@@ -28,6 +28,32 @@ const SocializationDashboard: React.FC<SocializationDashboardProps> = ({ puppyId
     isDeletingExperience
   } = usePuppySocialization(puppyId);
   
+  // Adapt the addExperience function to handle the different type signature
+  const handleAddExperience = (data: { 
+    notes?: string; 
+    experience?: string; 
+    experience_date?: Date; 
+    reaction?: string; 
+    category_id?: string; 
+  }) => {
+    if (!data.experience || !data.experience_date || !data.category_id) {
+      console.error("Missing required fields for socialization experience");
+      return;
+    }
+    
+    // Convert the date to string format
+    const experience_date_str = data.experience_date.toISOString().split('T')[0];
+    
+    // Call the actual addExperience with the correct type
+    addExperience({
+      category_id: data.category_id,
+      experience: data.experience,
+      experience_date: experience_date_str,
+      reaction: data.reaction,
+      notes: data.notes
+    });
+  };
+  
   if (isLoading) {
     return <LoadingState message="Loading socialization data..." />;
   }
@@ -63,7 +89,7 @@ const SocializationDashboard: React.FC<SocializationDashboardProps> = ({ puppyId
       
       <TabsContent value="add" className="mt-0">
         <SocializationForm
-          onSubmit={addExperience}
+          onSubmit={handleAddExperience}
           isSubmitting={isAddingExperience}
           onCancel={() => setActiveTab('experiences')}
         />

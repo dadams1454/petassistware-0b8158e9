@@ -59,9 +59,11 @@ const PuppyAgeGroupSection: React.FC<PuppyAgeGroupSectionProps> = ({
                 Care Checklist
               </h4>
               <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
-                {ageGroup.careChecks.map((check, index) => (
+                {ageGroup.careChecks?.map((check, index) => (
                   <li key={index}>{check}</li>
-                ))}
+                )) || (
+                  <li>No care checks defined for this age group</li>
+                )}
               </ul>
             </div>
           </CardContent>

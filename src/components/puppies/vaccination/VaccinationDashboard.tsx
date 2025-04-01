@@ -58,6 +58,15 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
     return <ErrorState title="Error" message="Failed to load puppy information." />;
   }
   
+  // Filter vaccinations
+  // For display purposes, set vaccination_date to undefined for UI to use
+  const scheduledVaccinationsWithNoDates = vaccinations.filter(vax => 
+    !vax.is_completed
+  ).map(vax => ({
+    ...vax,
+    vaccination_date: undefined // Ensure property exists but is undefined for scheduled items
+  }));
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -217,8 +226,8 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
         
         <TabsContent value="calendar" className="pt-4">
           <VaccinationCalendar 
-            puppyId={puppyId}
-            onAddVaccination={() => setIsDialogOpen(true)}
+            vaccinations={completedVaccinations as VaccinationRecord[]}
+            scheduledVaccinations={scheduledVaccinationsWithNoDates}
           />
         </TabsContent>
       </Tabs>

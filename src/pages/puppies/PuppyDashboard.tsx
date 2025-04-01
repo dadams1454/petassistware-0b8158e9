@@ -36,10 +36,8 @@ const PuppyDashboard: React.FC = () => {
         <ErrorState 
           title="Error Loading Puppy Data" 
           message="Could not load the puppy information. Please try again."
-          action={{
-            label: "Back to Litter",
-            onClick: () => navigate(-1)
-          }}
+          onAction={() => navigate(-1)}
+          actionLabel="Back to Litter"
         />
       </PageContainer>
     );

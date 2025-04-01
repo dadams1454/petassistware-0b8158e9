@@ -18,11 +18,11 @@ export const usePuppyWeightRecord = (puppyId: string) => {
       setIsSubmitting(true);
       
       try {
-        // Add weight record
+        // Add weight record - using dog_id field for puppy weight records
         const { data, error } = await supabase
           .from('weight_records')
           .insert({
-            puppy_id: puppyId,
+            dog_id: puppyId, // Using dog_id instead of puppy_id as per the schema
             weight: weightData.weight,
             weight_unit: weightData.weight_unit,
             date: weightData.date,

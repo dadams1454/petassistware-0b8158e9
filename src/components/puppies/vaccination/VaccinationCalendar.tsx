@@ -36,16 +36,16 @@ const VaccinationCalendar: React.FC<VaccinationCalendarProps> = ({
   };
   
   // Custom day rendering
-  const renderDay = (day: Date, isSelected: boolean, props: React.HTMLAttributes<HTMLButtonElement>) => {
-    const completedVaccinations = getVaccinationsForDate(day);
-    const scheduledVaccinations = getScheduledVaccinationsForDate(day);
+  const renderDay = (date: Date, isSelected: boolean) => {
+    const completedVaccinations = getVaccinationsForDate(date);
+    const scheduledVaccinations = getScheduledVaccinationsForDate(date);
     
     const hasCompletedVaccination = completedVaccinations.length > 0;
     const hasScheduledVaccination = scheduledVaccinations.length > 0;
     
     // If no vaccinations on this day, return default rendering
     if (!hasCompletedVaccination && !hasScheduledVaccination) {
-      return <>{day.getDate()}</>;
+      return <>{date.getDate()}</>;
     }
     
     // Custom rendering for days with vaccinations
@@ -53,7 +53,7 @@ const VaccinationCalendar: React.FC<VaccinationCalendarProps> = ({
       <HoverCard>
         <HoverCardTrigger asChild>
           <div className="relative flex items-center justify-center w-full h-full">
-            <span>{day.getDate()}</span>
+            <span>{date.getDate()}</span>
             <div className="absolute bottom-0 left-0 right-0 flex justify-center">
               {hasCompletedVaccination && (
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 mx-0.5" />
@@ -66,7 +66,7 @@ const VaccinationCalendar: React.FC<VaccinationCalendarProps> = ({
         </HoverCardTrigger>
         <HoverCardContent side="right" align="start" className="w-80 p-0">
           <div className="p-3">
-            <h4 className="font-medium mb-2">{format(day, 'EEEE, MMMM d, yyyy')}</h4>
+            <h4 className="font-medium mb-2">{format(date, 'EEEE, MMMM d, yyyy')}</h4>
             
             {hasCompletedVaccination && (
               <div className="mb-2">
@@ -112,16 +112,19 @@ const VaccinationCalendar: React.FC<VaccinationCalendarProps> = ({
         onSelect={setSelectedDate}
         className="rounded-md border"
         components={{
-          Day: ({ day, selected, ...props }) => (
-            <button
-              {...props}
-              className={`${props.className} ${
-                selected ? 'bg-primary text-primary-foreground' : ''
-              }`}
-            >
-              {renderDay(day, selected, props)}
-            </button>
-          )
+          Day: ({ date, ...props }) => {
+            const isSelected = selectedDate ? isSameDay(date, selectedDate) : false;
+            return (
+              <button
+                {...props}
+                className={`${props.className || ''} ${
+                  isSelected ? 'bg-primary text-primary-foreground' : ''
+                }`}
+              >
+                {renderDay(date, isSelected)}
+              </button>
+            );
+          }
         }}
       />
     </div>
