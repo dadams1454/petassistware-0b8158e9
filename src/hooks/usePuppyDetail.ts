@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { differenceInDays } from 'date-fns';
 
 export const usePuppyDetail = (puppyId: string) => {
   return useQuery({
@@ -15,6 +16,7 @@ export const usePuppyDetail = (puppyId: string) => {
           litter:litter_id(
             id, 
             birth_date, 
+            litter_name,
             dam:dam_id(id, name, breed),
             sire:sire_id(id, name, breed)
           )
@@ -34,7 +36,11 @@ export const usePuppyDetail = (puppyId: string) => {
         ageInDays = Math.floor((now - birthDateTime) / (1000 * 60 * 60 * 24));
       }
       
-      return { ...data, ageInDays };
+      return { 
+        ...data, 
+        ageInDays,
+        microchip_id: data.microchip_number // normalize microchip field name
+      };
     },
     enabled: !!puppyId,
   });

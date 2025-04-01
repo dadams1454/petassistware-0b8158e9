@@ -8,6 +8,7 @@ export interface PuppyWithAge {
   color?: string;
   gender?: string;
   microchip_id?: string;
+  microchip_number?: string; // For backward compatibility
   collar_color?: string;
   weight?: number;
   weight_unit?: string;
@@ -18,12 +19,14 @@ export interface PuppyWithAge {
   notes?: string;
   ageInDays: number;
   litters?: {
+    id?: string;
     name?: string;
     birth_date?: string;
   };
   photo_url?: string;
   current_weight?: string | number;
   birth_weight?: string | number;
+  birth_order?: number;
 }
 
 export interface PuppyAgeGroupData {
@@ -128,6 +131,7 @@ export interface SocializationExperience {
   id: string;
   puppy_id: string;
   category: string;
+  category_id?: string;
   experience: string;
   reaction: string;
   experience_date: string;
@@ -154,9 +158,11 @@ export interface VaccinationRecord {
   vaccination_date: string;
   due_date?: string;
   is_completed?: boolean;
+  completed?: boolean;
   notes?: string;
   administered_by?: string;
   lot_number?: string;
+  created_at?: string;
 }
 
 export interface WeightRecord {
