@@ -1,23 +1,23 @@
 
-import React from 'react';
+import { ReactNode } from 'react';
 import { Syringe, Stethoscope, Pill, Activity, AlertCircle, FileText, Scissors } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
 import { DogGenotype, HealthMarker, GeneticHealthStatus } from '@/types/genetics';
 
-export const getHealthRecordIcon = (recordType: string) => {
+export const getHealthRecordIcon = (recordType: string): ReactNode => {
   switch (recordType) {
     case HealthRecordTypeEnum.Vaccination:
-      return <Syringe className="h-5 w-5" />;
+      return { type: Syringe, props: { className: "h-5 w-5" } };
     case HealthRecordTypeEnum.Examination:
-      return <Stethoscope className="h-5 w-5" />;
+      return { type: Stethoscope, props: { className: "h-5 w-5" } };
     case HealthRecordTypeEnum.Medication:
-      return <Pill className="h-5 w-5" />;
+      return { type: Pill, props: { className: "h-5 w-5" } };
     case HealthRecordTypeEnum.Surgery:
-      return <Scissors className="h-5 w-5" />;
+      return { type: Scissors, props: { className: "h-5 w-5" } };
     case HealthRecordTypeEnum.Observation:
-      return <AlertCircle className="h-5 w-5" />;
+      return { type: AlertCircle, props: { className: "h-5 w-5" } };
     default:
-      return <FileText className="h-5 w-5" />;
+      return { type: FileText, props: { className: "h-5 w-5" } };
   }
 };
 
@@ -198,4 +198,78 @@ export function calculateRiskLevel(test: any): 'high' | 'medium' | 'low' {
     return 'medium';
   }
   return 'low';
+}
+
+/**
+ * Generate risk assessment based on breed and health markers
+ */
+export function generateRiskAssessment(breed: string, healthMarkers: Record<string, HealthMarker>) {
+  const breedLower = breed.toLowerCase();
+  
+  // Define breed-specific high-risk conditions
+  const breedConditions: Record<string, string[]> = {
+    'newfoundland': [
+      'Dilated Cardiomyopathy (DCM)',
+      'Subvalvular Aortic Stenosis (SAS)',
+      'Cystinuria',
+      'Degenerative Myelopathy (DM)',
+      'Hip Dysplasia'
+    ],
+    'golden_retriever': [
+      'Hip Dysplasia',
+      'Elbow Dysplasia',
+      'Progressive Retinal Atrophy (PRA)',
+      'Subvalvular Aortic Stenosis (SAS)',
+      'Hemangiosarcoma'
+    ],
+    'labrador_retriever': [
+      'Hip Dysplasia',
+      'Elbow Dysplasia',
+      'Exercise-Induced Collapse (EIC)',
+      'Progressive Retinal Atrophy (PRA)',
+      'Centronuclear Myopathy (CNM)'
+    ],
+    'german_shepherd': [
+      'Hip Dysplasia',
+      'Elbow Dysplasia',
+      'Degenerative Myelopathy (DM)',
+      'Exocrine Pancreatic Insufficiency (EPI)',
+      'Hemophilia A'
+    ]
+  };
+  
+  const breedHighRiskConditions = breedConditions[breedLower] || ['No breed-specific conditions recorded'];
+  
+  const affectedConditions: string[] = [];
+  const carrierConditions: string[] = [];
+  const missingTests: string[] = [];
+  
+  // Find affected and carrier conditions
+  Object.entries(healthMarkers).forEach(([condition, marker]) => {
+    if (marker.status === 'affected') {
+      affectedConditions.push(formatConditionName(condition));
+    } else if (marker.status === 'carrier') {
+      carrierConditions.push(formatConditionName(condition));
+    }
+  });
+  
+  // Check for missing high-risk tests
+  breedHighRiskConditions.forEach(condition => {
+    const conditionNormalized = condition.toLowerCase().replace(/[()]/g, '');
+    const hasTest = Object.keys(healthMarkers).some(testName => 
+      testName.toLowerCase().includes(conditionNormalized)
+    );
+    
+    if (!hasTest) {
+      missingTests.push(condition);
+    }
+  });
+  
+  return {
+    hasIssues: affectedConditions.length > 0 || carrierConditions.length > 0 || missingTests.length > 0,
+    affectedConditions,
+    carrierConditions,
+    missingTests,
+    breedHighRiskConditions
+  };
 }
