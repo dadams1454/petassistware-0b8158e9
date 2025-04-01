@@ -48,7 +48,8 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
       if (data && Array.isArray(data)) {
         // Validate that each item has the required properties before adding to state
         const validHeatCycles: HeatCycle[] = data
-          .filter((item): item is HeatCycleRow => 
+          // Use proper type guard without a type predicate since we're not sure of the input type
+          .filter((item): item is any => 
             item !== null && 
             typeof item === 'object' &&
             'id' in item && typeof item.id === 'string' && 
