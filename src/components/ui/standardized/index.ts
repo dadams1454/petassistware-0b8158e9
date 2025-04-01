@@ -7,6 +7,7 @@ import SkeletonLoader from './SkeletonLoader';
 import UnauthorizedState from './UnauthorizedState';
 import PageHeader from './PageHeader';
 import ActionButton from './ActionButton';
+import ConfirmDialog from './ConfirmDialog';
 
 export {
   ErrorState,
@@ -16,5 +17,6 @@ export {
   SkeletonLoader,
   UnauthorizedState,
   PageHeader,
-  ActionButton
+  ActionButton,
+  ConfirmDialog
 };

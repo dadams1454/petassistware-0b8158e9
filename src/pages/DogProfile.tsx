@@ -61,7 +61,7 @@ const DogProfilePage = () => {
           }
         />
         
-        <DogDeleteHandler dogId={dog.id} />
+        <DogDeleteHandler dogId={dog.id} dogName={dog.name} />
         
         <DogProfileTabs dog={dog} />
         

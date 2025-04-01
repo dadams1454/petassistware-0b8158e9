@@ -15,11 +15,11 @@ interface DogDeleteHandlerProps {
 const DogDeleteHandler: React.FC<DogDeleteHandlerProps> = ({ dogId, dogName }) => {
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const { deleteDog, isDeleting } = useDogMutation();
+  const dogMutation = useDogMutation();
 
   const handleDelete = async () => {
     try {
-      await deleteDog(dogId);
+      await dogMutation.deleteDog(dogId);
       toast.success(`${dogName} has been deleted.`);
       navigate('/dogs');
     } catch (error) {
@@ -45,12 +45,11 @@ const DogDeleteHandler: React.FC<DogDeleteHandlerProps> = ({ dogId, dogName }) =
         onOpenChange={setConfirmOpen}
         title={`Delete ${dogName}`}
         description={`Are you sure you want to delete ${dogName}? This action cannot be undone.`}
-        confirmLabel="Delete"
+        confirmText="Delete"
         variant="destructive"
-        isLoading={isDeleting}
+        isLoading={dogMutation.isDeleting}
         onConfirm={handleDelete}
       >
-        {/* The Dialog trigger button is outside this component, but we need to provide children */}
         <span />
       </ConfirmDialog>
     </>
