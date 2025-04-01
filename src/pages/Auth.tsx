@@ -1,10 +1,11 @@
+
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import BlurBackground from '@/components/ui/blur-background';
 import Logo from '@/components/common/Logo';
 import AuthForm from '@/components/auth/AuthForm';
 import { useAuthForm } from '@/hooks/useAuthForm';
-import { useAuth } from '@/contexts/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 
 const Auth: React.FC = () => {
   const auth = useAuthForm();
@@ -21,12 +22,11 @@ const Auth: React.FC = () => {
     }
   }, [user, navigate]);
 
-  // The rest of the component remains unchanged
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary/5 to-slate-50 dark:from-slate-900 dark:to-slate-900/80 px-4">
-      <Link to="/" className="absolute top-8 left-8">
+      <div className="absolute top-8 left-8">
         <Logo />
-      </Link>
+      </div>
       
       <BlurBackground
         className="w-full max-w-md p-8 rounded-xl"
@@ -40,7 +40,7 @@ const Auth: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400 mt-2">
             {auth.isLogin
               ? 'Enter your credentials to access your breeder dashboard'
-              : 'Fill in your information to get started with BreedElite'}
+              : 'Fill in your information to get started with Bear Paw Newfoundlands'}
           </p>
         </div>
 

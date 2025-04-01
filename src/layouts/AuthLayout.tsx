@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { AuthLoadingState } from '@/components/ui/standardized';
 
 const AuthLayout: React.FC = () => {
@@ -38,14 +38,8 @@ const AuthLayout: React.FC = () => {
   
   // For any protected route: always allow access in our mock environment
   // This ensures users can access the /dogs page without redirection
-  console.log('AuthLayout: rendering outlet regardless of auth');
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <main className="flex-1 overflow-auto">
-        <Outlet />
-      </main>
-    </div>
-  );
+  console.log('AuthLayout: rendering outlet with main layout');
+  return <Outlet />;
 };
 
 export default AuthLayout;

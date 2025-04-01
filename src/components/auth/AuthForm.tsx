@@ -6,7 +6,6 @@ import EmailField from './EmailField';
 import PasswordField from './PasswordField';
 import ErrorMessage from './ErrorMessage';
 import GoogleSignInButton from './GoogleSignInButton';
-import { AuthMode } from '@/hooks/useAuthForm';
 
 interface AuthFormProps {
   email: string;

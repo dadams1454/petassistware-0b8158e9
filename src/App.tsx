@@ -21,6 +21,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Import the reproductive management page
 import ReproductiveManagementPage from './pages/ReproductiveManagementPage';
+import AuthLayout from './layouts/AuthLayout';
 
 const queryClient = new QueryClient();
 
@@ -31,10 +32,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <MainLayout>
-            <Routes>
+          <Routes>
+            {/* Auth route with its own layout (no sidebar) */}
+            <Route element={<AuthLayout />}>
               <Route path="/auth" element={<Auth />} />
-              
+            </Route>
+            
+            {/* All other routes with MainLayout (including sidebar) */}
+            <Route element={<MainLayout />}>
               <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
@@ -52,12 +57,12 @@ function App() {
               <Route path="/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
               <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
               
-              {/* Add the reproductive management route */}
+              {/* Reproductive management route */}
               <Route path="/dogs/:dogId/reproductive" element={<ProtectedRoute><ReproductiveManagementPage /></ProtectedRoute>} />
-            </Routes>
-          </MainLayout>
+            </Route>
+          </Routes>
+          <Toaster />
         </Router>
-        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
