@@ -76,7 +76,11 @@ const WelpingDashboard = () => {
               (litter.birth_date && new Date(litter.birth_date) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
             ).length || 0}
             totalPuppiesCount={activeLitters?.reduce((total, litter) => {
-              const puppyCount = litter.puppies ? (Array.isArray(litter.puppies) ? litter.puppies.length : litter.puppies.count) : 0;
+              // Handle the puppies count safely regardless of whether it's an array or object with count property
+              const puppyCount = litter.puppies ? 
+                (typeof litter.puppies === 'number' ? litter.puppies : 
+                Array.isArray(litter.puppies) ? litter.puppies.length : 
+                typeof litter.puppies === 'object' && 'count' in litter.puppies ? litter.puppies.count : 0) : 0;
               return total + puppyCount;
             }, 0) || 0}
           />

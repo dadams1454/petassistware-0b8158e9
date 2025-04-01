@@ -63,7 +63,7 @@ export const useDogStatus = (dog: any): DogStatusData => {
     if (!dog) return;
 
     // Determine if dog is pregnant
-    const isPregnant = dog.breeding_status === 'pregnant';
+    const isPregnant = dog.is_pregnant === true;
     
     // Determine heat cycle status
     let isInHeat = false;
@@ -165,7 +165,7 @@ export const useDogStatus = (dog: any): DogStatusData => {
     }
     
     // Get tie date if available
-    const tieDate = dog.breeding_date || null;
+    const tieDate = dog.tie_date || null;
     
     // Calculate gestation progress days if pregnant
     let gestationProgressDays = null;
