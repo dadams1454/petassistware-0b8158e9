@@ -90,6 +90,44 @@ export const addHealthIndicator = async (
   }
 };
 
+// Delete a health indicator
+export const deleteHealthIndicator = async (
+  indicatorId: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // First, delete any associated health alerts
+    await supabase
+      .from('health_alerts')
+      .delete()
+      .eq('indicator_id', indicatorId);
+
+    // Then delete the indicator
+    const { error } = await supabase
+      .from('health_indicators')
+      .delete()
+      .eq('id', indicatorId);
+
+    if (error) throw error;
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting health indicator:', error);
+    let errorMessage = 'Failed to delete health indicator';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    toast({
+      title: 'Error',
+      description: errorMessage,
+      variant: 'destructive',
+    });
+    
+    return { success: false, error: errorMessage };
+  }
+};
+
 // Create a health alert for an abnormal indicator
 const createHealthAlert = async (indicatorId: string): Promise<void> => {
   try {

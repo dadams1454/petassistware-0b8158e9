@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   addHealthIndicator,
+  deleteHealthIndicator,
   getHealthIndicatorsForDog,
   HealthIndicator, 
   HealthIndicatorFormValues 
@@ -44,6 +45,23 @@ export const useHealthIndicators = (dogId: string) => {
       setIsAdding(false);
     }
   };
+
+  const deleteIndicator = async (indicatorId: string) => {
+    setIsDeleting(true);
+    try {
+      const result = await deleteHealthIndicator(indicatorId);
+      if (result.success) {
+        await refetch();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting health indicator:', error);
+      return false;
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   
   return {
     indicators,
@@ -53,6 +71,7 @@ export const useHealthIndicators = (dogId: string) => {
     isUpdating,
     isDeleting,
     addIndicator,
+    deleteIndicator,
     refetch
   };
 };
