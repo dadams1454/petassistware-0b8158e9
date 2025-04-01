@@ -5,7 +5,12 @@ export enum HealthRecordTypeEnum {
   Medication = 'medication',
   Surgery = 'surgery',
   Test = 'test',
-  Other = 'other'
+  Other = 'other',
+  Observation = 'observation',
+  Deworming = 'deworming',
+  Grooming = 'grooming',
+  Dental = 'dental',
+  Allergy = 'allergy'
 }
 
 export enum AppetiteLevelEnum {
@@ -34,6 +39,13 @@ export enum StoolConsistencyEnum {
   Mucousy = 'mucousy'
 }
 
+export enum WeightUnitEnum {
+  Pounds = 'lbs',
+  Kilograms = 'kg',
+  Grams = 'g',
+  Ounces = 'oz'
+}
+
 export interface HealthRecord {
   id: string;
   dog_id?: string;
@@ -41,9 +53,11 @@ export interface HealthRecord {
   title: string;
   description?: string;
   visit_date: string;
+  date: string; // Adding this for compatibility with existing code
   next_due_date?: string;
   document_url?: string;
   vet_name?: string;
+  performed_by?: string;
   // Vaccination specific fields
   vaccine_name?: string;
   manufacturer?: string;
@@ -79,6 +93,7 @@ export interface WeightRecord {
   date: string;
   weight: number;
   weight_unit: string;
+  unit: string; // Adding this for compatibility with existing code
   notes?: string;
   percent_change?: number;
 }
@@ -92,3 +107,20 @@ export interface HealthAlert {
   resolved_at?: string;
   resolved: boolean;
 }
+
+// Helper function to adapt health record data
+export const adaptHealthRecord = (record: any): HealthRecord => {
+  return {
+    ...record,
+    date: record.visit_date || record.date || new Date().toISOString(),
+    record_type: record.record_type || HealthRecordTypeEnum.Other
+  };
+};
+
+// Helper function to adapt weight record data
+export const adaptWeightRecord = (record: any): WeightRecord => {
+  return {
+    ...record,
+    unit: record.weight_unit || 'lbs'
+  };
+};

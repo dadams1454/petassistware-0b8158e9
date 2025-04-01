@@ -1,136 +1,163 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
-import { getMockGeneticData } from './genetics/mockGeneticData';
 
 export interface BreedingRecommendation {
   id: string;
-  dam_id: string;
-  sire_id: string;
-  compatibility_score: number;
-  health_risk: string;
-  color_prediction: string;
-  size_prediction: string;
-  recommendations: string[];
+  sire: {
+    id: string;
+    name: string;
+    breed: string;
+    color: string;
+    age: number;
+  };
+  dam: {
+    id: string;
+    name: string;
+    breed: string;
+    color: string;
+    age: number;
+  };
+  match_score: number;
+  genetic_diversity: number;
+  coefficient_of_inbreeding: number;
+  color_compatibility: number;
+  health_score: number;
+  common_ancestors: any[];
+  trait_predictions: {
+    trait: string;
+    probability: number;
+  }[];
+  health_risk: {
+    condition: string;
+    risk_level: 'low' | 'medium' | 'high';
+    probability: number;
+  }[];
+  expected_litter_size: {
+    min: number;
+    max: number;
+    average: number;
+  };
   created_at: string;
 }
 
 export interface GeneticCompatibility {
-  score: number;
-  healthRisks: { 
-    condition: string; 
-    risk: 'low' | 'moderate' | 'high';
-    description: string;
-  }[];
-  traits: { 
-    trait: string; 
-    probability: number;
-    description: string;
-  }[];
+  id: string;
+  sire_id: string;
+  dam_id: string;
+  match_score: number;
+  genetic_diversity: number;
+  coefficient_of_inbreeding: number;
+  color_compatibility: number;
+  health_score: number;
+  created_at: string;
 }
 
-// Mock function for now
-export const getBreedingCompatibility = async (
-  damId: string,
-  sireId: string
-): Promise<GeneticCompatibility> => {
+// Get breeding recommendations for a specific dog
+export const getBreedingRecommendationsForDog = async (
+  dogId: string,
+  limit = 10
+): Promise<BreedingRecommendation[]> => {
   try {
-    // Get mock genetic data for both dogs
-    const damGeneticData = await getMockGeneticData(damId);
-    const sireGeneticData = await getMockGeneticData(sireId);
-    
-    // For now, return mock data
-    return {
-      score: Math.floor(Math.random() * 51) + 50, // 50-100
-      healthRisks: [
-        {
-          condition: 'Hip Dysplasia',
-          risk: Math.random() > 0.7 ? 'high' : Math.random() > 0.3 ? 'moderate' : 'low',
-          description: 'Common hereditary condition affecting the hip joints.'
+    // In a real app, this would query the database for actual recommendations
+    // For now, we'll return mock data
+    const mockRecommendations: BreedingRecommendation[] = Array(limit)
+      .fill(null)
+      .map((_, index) => ({
+        id: `rec-${dogId}-${index}`,
+        sire: {
+          id: dogId,
+          name: `Test Dog ${index}`,
+          breed: 'Newfoundland',
+          color: 'Black',
+          age: 3
         },
-        {
-          condition: 'Cardiac Issues',
-          risk: Math.random() > 0.8 ? 'high' : Math.random() > 0.4 ? 'moderate' : 'low',
-          description: 'Various heart conditions that can be genetically transferred.'
+        dam: {
+          id: `partner-${index}`,
+          name: `Partner Dog ${index}`,
+          breed: 'Newfoundland',
+          color: 'Brown',
+          age: 2
         },
-        {
-          condition: 'Progressive Retinal Atrophy',
-          risk: Math.random() > 0.9 ? 'high' : Math.random() > 0.6 ? 'moderate' : 'low',
-          description: 'Degenerative eye disorder that can lead to blindness.'
-        }
-      ],
-      traits: [
-        {
-          trait: 'Coat Color',
-          probability: Math.random(),
-          description: 'Expected coat color distribution in puppies.'
+        match_score: 85 + Math.floor(Math.random() * 15),
+        genetic_diversity: 75 + Math.floor(Math.random() * 25),
+        coefficient_of_inbreeding: Math.random() * 10,
+        color_compatibility: 80 + Math.floor(Math.random() * 20),
+        health_score: 90 + Math.floor(Math.random() * 10),
+        common_ancestors: [],
+        trait_predictions: [
+          { trait: 'Size', probability: 0.8 },
+          { trait: 'Coat Type', probability: 0.75 },
+          { trait: 'Temperament', probability: 0.9 }
+        ],
+        health_risk: [
+          { condition: 'Hip Dysplasia', risk_level: 'low', probability: 0.15 },
+          { condition: 'Heart Conditions', risk_level: 'medium', probability: 0.3 }
+        ],
+        expected_litter_size: {
+          min: 6,
+          max: 10,
+          average: 8
         },
-        {
-          trait: 'Size',
-          probability: Math.random(),
-          description: 'Expected size range of puppies when fully grown.'
-        },
-        {
-          trait: 'Temperament',
-          probability: Math.random(),
-          description: 'Expected temperament traits based on parents.'
-        }
-      ]
-    };
+        created_at: new Date().toISOString()
+      }));
+
+    return mockRecommendations;
   } catch (error) {
-    console.error('Error getting breeding compatibility:', error);
-    toast({
-      title: 'Error',
-      description: 'Unable to calculate genetic compatibility. Using estimated values.',
-      variant: 'destructive',
-    });
-    
-    // Return fallback data
-    return {
-      score: 75,
-      healthRisks: [
-        {
-          condition: 'Unknown',
-          risk: 'moderate',
-          description: 'Could not determine specific health risks.'
-        }
-      ],
-      traits: [
-        {
-          trait: 'Unknown',
-          probability: 0.5,
-          description: 'Could not determine specific trait probabilities.'
-        }
-      ]
-    };
+    console.error('Error fetching breeding recommendations:', error);
+    return [];
   }
 };
 
-export const saveBreedingRecommendation = async (
-  damId: string,
-  sireId: string,
-  compatibility: GeneticCompatibility
+// Get specific compatibility between two dogs
+export const getSpecificCompatibility = async (
+  dogId: string,
+  partnerId: string
 ): Promise<BreedingRecommendation | null> => {
   try {
-    // This would save the recommendation to the database
-    // For now just return a mock object
-    return {
-      id: crypto.randomUUID(),
-      dam_id: damId,
-      sire_id: sireId,
-      compatibility_score: compatibility.score,
-      health_risk: compatibility.healthRisks[0]?.risk || 'unknown',
-      color_prediction: 'Mixed',
-      size_prediction: 'Medium to Large',
-      recommendations: [
-        'Consider genetic testing for specific conditions',
-        'Monitor for early signs of joint issues in offspring',
-        'Regular cardiac examinations recommended'
+    // In a real app, this would query the database for the specific match
+    // For now, we'll return mock data
+    const mockRecommendation: BreedingRecommendation = {
+      id: `rec-${dogId}-${partnerId}`,
+      sire: {
+        id: dogId,
+        name: 'Test Dog',
+        breed: 'Newfoundland',
+        color: 'Black',
+        age: 3
+      },
+      dam: {
+        id: partnerId,
+        name: 'Partner Dog',
+        breed: 'Newfoundland',
+        color: 'Brown',
+        age: 2
+      },
+      match_score: 92,
+      genetic_diversity: 85,
+      coefficient_of_inbreeding: 2.5,
+      color_compatibility: 95,
+      health_score: 94,
+      common_ancestors: [],
+      trait_predictions: [
+        { trait: 'Size', probability: 0.85 },
+        { trait: 'Coat Type', probability: 0.8 },
+        { trait: 'Temperament', probability: 0.95 }
       ],
+      health_risk: [
+        { condition: 'Hip Dysplasia', risk_level: 'low', probability: 0.1 },
+        { condition: 'Heart Conditions', risk_level: 'low', probability: 0.2 }
+      ],
+      expected_litter_size: {
+        min: 7,
+        max: 11,
+        average: 9
+      },
       created_at: new Date().toISOString()
     };
+
+    return mockRecommendation;
   } catch (error) {
-    console.error('Error saving breeding recommendation:', error);
+    console.error('Error fetching specific compatibility:', error);
     return null;
   }
 };

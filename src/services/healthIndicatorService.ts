@@ -16,6 +16,16 @@ export interface HealthIndicator {
   alert_generated: boolean;
 }
 
+export interface HealthAlert {
+  id: string;
+  dog_id: string;
+  indicator_id: string;
+  status: 'active' | 'resolved';
+  created_at: string;
+  resolved_at?: string;
+  resolved: boolean;
+}
+
 export interface HealthIndicatorFormValues {
   dog_id: string;
   date: string;
@@ -39,6 +49,23 @@ export const getHealthIndicatorsForDog = async (dogId: string): Promise<HealthIn
     return data as HealthIndicator[];
   } catch (error) {
     console.error('Error fetching health indicators:', error);
+    return [];
+  }
+};
+
+// Get health alerts for a specific dog
+export const getHealthAlertsForDog = async (dogId: string): Promise<HealthAlert[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('health_alerts')
+      .select('*')
+      .eq('dog_id', dogId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data as HealthAlert[];
+  } catch (error) {
+    console.error('Error fetching health alerts:', error);
     return [];
   }
 };
@@ -113,6 +140,41 @@ export const deleteHealthIndicator = async (
   } catch (error) {
     console.error('Error deleting health indicator:', error);
     let errorMessage = 'Failed to delete health indicator';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    toast({
+      title: 'Error',
+      description: errorMessage,
+      variant: 'destructive',
+    });
+    
+    return { success: false, error: errorMessage };
+  }
+};
+
+// Resolve a health alert
+export const resolveHealthAlert = async (
+  alertId: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const { error } = await supabase
+      .from('health_alerts')
+      .update({
+        status: 'resolved',
+        resolved: true,
+        resolved_at: new Date().toISOString()
+      })
+      .eq('id', alertId);
+
+    if (error) throw error;
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error resolving health alert:', error);
+    let errorMessage = 'Failed to resolve health alert';
     
     if (error instanceof Error) {
       errorMessage = error.message;
