@@ -3,9 +3,11 @@ import React, { createContext, useContext, useState } from 'react';
 import { HealthRecordTypeEnum, WeightRecord } from '@/types/health';
 import { useWeightTracking } from '@/components/dogs/hooks/useWeightTracking';
 import { useHealthRecords } from '@/components/dogs/hooks/useHealthRecords';
+import { useDogDetail } from '@/components/dogs/hooks/useDogDetail';
 
 interface HealthTabContextType {
   dogId: string;
+  dog?: any; // Add the dog property
   recordDialogOpen: boolean;
   setRecordDialogOpen: (open: boolean) => void;
   weightDialogOpen: boolean;
@@ -19,14 +21,12 @@ interface HealthTabContextType {
   isLoading: boolean;
   handleSaveRecord: () => void;
   handleSaveWeight: (data: any) => void;
-  // Add missing properties
   activeTab: string;
   setActiveTab: (tab: string) => void;
   healthRecords: any[];
   getRecordsByType: (type: HealthRecordTypeEnum) => any[];
   handleAddRecord: (type: HealthRecordTypeEnum) => void;
   handleEditRecord: (recordId: string) => void;
-  // Add the action functions
   openAddVaccinationDialog: () => void;
   openAddExaminationDialog: () => void;
   openAddMedicationDialog: () => void;
@@ -57,6 +57,9 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
   const [selectedRecordType, setSelectedRecordType] = useState<HealthRecordTypeEnum>();
   const [selectedRecord, setSelectedRecord] = useState<string>();
   
+  // Fetch dog data
+  const { dog, isLoading: isDogLoading } = useDogDetail(dogId);
+  
   const { 
     healthRecords, 
     isLoading: isHealthLoading,
@@ -72,7 +75,7 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
     addWeightRecord
   } = useWeightTracking(dogId);
   
-  const isLoading = isHealthLoading || isWeightLoading;
+  const isLoading = isHealthLoading || isWeightLoading || isDogLoading;
   
   const handleAddRecord = (type: HealthRecordTypeEnum) => {
     setSelectedRecordType(type);
@@ -103,6 +106,7 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
   
   const value = {
     dogId,
+    dog, // Add the dog property to the context value
     recordDialogOpen,
     setRecordDialogOpen,
     weightDialogOpen,
@@ -116,14 +120,12 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
     isLoading,
     handleSaveRecord,
     handleSaveWeight,
-    // Add the missing properties to the context value
     activeTab,
     setActiveTab,
     healthRecords: healthRecords || [],
     getRecordsByType,
     handleAddRecord,
     handleEditRecord,
-    // Add the new helper functions
     openAddVaccinationDialog,
     openAddExaminationDialog,
     openAddMedicationDialog,
