@@ -1,31 +1,58 @@
 
 import React from 'react';
-import { Plus, Activity } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { ActionButton } from '@/components/ui/standardized';
 import { useHealthTabContext } from './HealthTabContext';
-import { HealthRecordTypeEnum } from '@/types/health';
 
-const HealthTabActions: React.FC = () => {
-  const {
-    handleAddRecord,
-    setWeightDialogOpen
+const HealthTabActions = () => {
+  const { 
+    activeTab, 
+    openAddVaccinationDialog, 
+    openAddExaminationDialog,
+    openAddMedicationDialog,
+    openAddWeightDialog 
   } = useHealthTabContext();
 
+  const getButtonProps = () => {
+    switch (activeTab) {
+      case 'vaccinations':
+        return {
+          label: 'Add Vaccination',
+          onClick: openAddVaccinationDialog
+        };
+      case 'examinations':
+        return {
+          label: 'Add Examination',
+          onClick: openAddExaminationDialog
+        };
+      case 'medications':
+        return {
+          label: 'Add Medication',
+          onClick: openAddMedicationDialog
+        };
+      case 'weight':
+        return {
+          label: 'Add Weight',
+          onClick: openAddWeightDialog
+        };
+      default:
+        return null;
+    }
+  };
+
+  const buttonProps = getButtonProps();
+
+  if (!buttonProps || activeTab === 'summary') {
+    return null;
+  }
+
   return (
-    <div className="flex gap-2">
-      <ActionButton 
-        variant="outline" 
-        onClick={() => setWeightDialogOpen(true)}
-      >
-        <Activity className="h-4 w-4 mr-2" />
-        Add Weight
-      </ActionButton>
-      
-      <ActionButton onClick={() => handleAddRecord(HealthRecordTypeEnum.Examination)}>
-        <Plus className="h-4 w-4 mr-2" />
-        Add Record
-      </ActionButton>
-    </div>
+    <ActionButton
+      onClick={buttonProps.onClick}
+      icon={<Plus className="w-4 h-4 mr-2" />}
+    >
+      {buttonProps.label}
+    </ActionButton>
   );
 };
 
