@@ -56,7 +56,7 @@ export const useDogForm = (dog: any, onSuccess: () => void) => {
   const { colorOptions } = useBreedColors(form, watchBreed);
   
   // Get dog mutation functions
-  const { createDogMutation, isEditing } = useDogMutation(dog, user?.id, onSuccess);
+  const { createDogMutation, isEditing } = useDogMutation();
 
   return {
     form,

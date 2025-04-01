@@ -8,6 +8,7 @@ import UnauthorizedState from './UnauthorizedState';
 import PageHeader from './PageHeader';
 import ActionButton from './ActionButton';
 import ConfirmDialog from './ConfirmDialog';
+import SectionHeader from './SectionHeader';
 
 export {
   ErrorState,
@@ -18,5 +19,6 @@ export {
   UnauthorizedState,
   PageHeader,
   ActionButton,
-  ConfirmDialog
+  ConfirmDialog,
+  SectionHeader
 };

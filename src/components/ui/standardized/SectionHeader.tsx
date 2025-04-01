@@ -9,6 +9,7 @@ interface SectionHeaderProps {
     label: string;
     onClick: () => void;
     variant?: ButtonProps['variant'];
+    disabled?: boolean;
     icon?: React.ReactNode;
   };
 }
@@ -31,6 +32,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
         <Button
           onClick={action.onClick}
           variant={action.variant || "default"}
+          disabled={action.disabled}
           className="sm:self-start"
         >
           {action.icon}
