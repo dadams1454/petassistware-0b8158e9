@@ -23,3 +23,5 @@ export interface WeightTrackerProps {
   puppyId: string;
   onAddSuccess?: () => void;
 }
+
+export { WeightRecord };

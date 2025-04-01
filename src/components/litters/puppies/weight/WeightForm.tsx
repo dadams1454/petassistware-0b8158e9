@@ -2,76 +2,67 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import * as z from 'zod';
+import { Card, CardContent } from '@/components/ui/card';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { WeightFormProps } from './types';
+import { weightUnits } from './weightUnits';
 
 const formSchema = z.object({
-  weight: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 0, {
-    message: "Weight must be a positive number"
-  }),
-  weight_unit: z.string({
-    required_error: "Please select a unit"
-  }),
-  date: z.date({
-    required_error: "Please select a date"
-  }),
+  weight: z.coerce.number().positive({ message: 'Weight must be a positive number' }),
+  weight_unit: z.enum(['oz', 'g', 'lbs', 'kg']),
+  date: z.date(),
   notes: z.string().optional()
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const WeightForm: React.FC<WeightFormProps> = ({
-  onSubmit,
-  onCancel,
+const WeightForm: React.FC<WeightFormProps> = ({ 
+  onSubmit, 
+  onCancel, 
   defaultUnit,
   isSubmitting
 }) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      weight: '',
+      weight: undefined,
       weight_unit: defaultUnit,
       date: new Date(),
       notes: ''
     }
   });
 
-  const handleFormSubmit = (values: FormValues) => {
-    onSubmit({
-      weight: parseFloat(values.weight),
-      weight_unit: values.weight_unit,
-      date: format(values.date, 'yyyy-MM-dd'),
-      notes: values.notes
-    });
+  const handleSubmit = (values: FormValues) => {
+    onSubmit(values);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <FormField
             control={form.control}
             name="weight"
             render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>Weight*</FormLabel>
+              <FormItem>
+                <FormLabel>Weight</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="Enter weight"
-                    {...field}
-                    min="0"
+                  <Input 
+                    placeholder="Enter weight" 
+                    type="number" 
                     step="0.01"
+                    {...field}
+                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -83,19 +74,23 @@ const WeightForm: React.FC<WeightFormProps> = ({
             control={form.control}
             name="weight_unit"
             render={({ field }) => (
-              <FormItem className="w-full sm:w-32">
-                <FormLabel>Unit*</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormItem>
+                <FormLabel>Unit</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Unit" />
+                      <SelectValue placeholder="Select unit" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="oz">Ounces (oz)</SelectItem>
-                    <SelectItem value="g">Grams (g)</SelectItem>
-                    <SelectItem value="lbs">Pounds (lbs)</SelectItem>
-                    <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                    {weightUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -108,8 +103,8 @@ const WeightForm: React.FC<WeightFormProps> = ({
           control={form.control}
           name="date"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date*</FormLabel>
+            <FormItem className="mb-4">
+              <FormLabel>Date</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -134,7 +129,9 @@ const WeightForm: React.FC<WeightFormProps> = ({
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date > new Date()}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
                     initialFocus
                   />
                 </PopoverContent>
@@ -148,11 +145,11 @@ const WeightForm: React.FC<WeightFormProps> = ({
           control={form.control}
           name="notes"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="mb-4">
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Additional notes about this weight record"
+                <Textarea 
+                  placeholder="Enter any notes about this weight reading"
                   className="resize-none"
                   {...field}
                 />
@@ -162,19 +159,19 @@ const WeightForm: React.FC<WeightFormProps> = ({
           )}
         />
 
-        <div className="flex justify-end space-x-2 pt-2">
-          {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-          )}
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Weight"}
+        <div className="flex justify-end gap-2">
+          <Button 
+            type="button" 
+            onClick={onCancel} 
+            variant="outline"
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Saving...' : 'Save Weight'}
           </Button>
         </div>
       </form>

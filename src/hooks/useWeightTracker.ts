@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { WeightRecord } from '@/components/litters/puppies/weight/types';
+import { WeightRecord } from '@/types/puppyTracking';
 import { calculatePercentChange } from '@/components/litters/puppies/weight/weightUnits';
 import { useQuery } from '@tanstack/react-query';
 

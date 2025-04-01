@@ -15,7 +15,7 @@ import { WeightUnit } from '@/types/puppyTracking';
 const WeightTab: React.FC = () => {
   const { puppyId } = useParams<{ puppyId: string }>();
   const [isAddingWeight, setIsAddingWeight] = useState(false);
-  const [displayUnit, setDisplayUnit] = useState<'oz' | 'g' | 'lbs' | 'kg'>('oz');
+  const [displayUnit, setDisplayUnit] = useState<WeightUnit>('oz');
   
   const { data: puppy, isLoading: isPuppyLoading } = usePuppyDetails(puppyId || '');
   const { weights, isLoading: isWeightsLoading, error, addWeightRecord, deleteWeightRecord } = usePuppyWeights(puppyId || '');
@@ -27,10 +27,9 @@ const WeightTab: React.FC = () => {
     
     try {
       await addWeightRecord({
-        puppy_id: puppyId,
-        date: data.date,
         weight: data.weight,
         weight_unit: data.weight_unit,
+        date: data.date,
         notes: data.notes
       });
       
@@ -50,10 +49,10 @@ const WeightTab: React.FC = () => {
     }
   };
   
-  const getDefaultUnit = (): 'oz' | 'g' | 'lbs' | 'kg' => {
+  const getDefaultUnit = (): WeightUnit => {
     // Use most recent weight unit if available
     if (weights && weights.length > 0) {
-      return weights[0].weight_unit as 'oz' | 'g' | 'lbs' | 'kg';
+      return weights[0].weight_unit;
     }
     return 'oz';
   };
@@ -104,14 +103,14 @@ const WeightTab: React.FC = () => {
                 
                 <TabsContent value="chart">
                   <WeightChartView 
-                    weightRecords={weights || []} 
+                    weightRecords={weights} 
                     displayUnit={displayUnit}
                   />
                 </TabsContent>
                 
                 <TabsContent value="table">
                   <WeightTableView 
-                    weightRecords={weights || []}
+                    weightRecords={weights}
                     onDelete={handleDeleteWeight}
                     displayUnit={displayUnit}
                   />

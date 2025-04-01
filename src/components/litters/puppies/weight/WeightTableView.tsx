@@ -1,94 +1,98 @@
 
 import React from 'react';
-import { format } from 'date-fns';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { format, parseISO, differenceInDays } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { WeightRecord } from '@/types/puppyTracking';
+import { Badge } from '@/components/ui/badge';
+import { WeightTableViewProps } from './types';
 import { convertWeight, formatWeightWithUnit } from './weightUnits';
-
-interface WeightTableViewProps {
-  weightRecords: WeightRecord[];
-  onDelete: (id: string) => void;
-  displayUnit: 'oz' | 'g' | 'lbs' | 'kg';
-}
 
 const WeightTableView: React.FC<WeightTableViewProps> = ({ 
   weightRecords, 
   onDelete, 
   displayUnit 
 }) => {
-  if (!weightRecords || weightRecords.length === 0) {
+  // Get birthdate from first record if available
+  const birthDate = weightRecords[0]?.birth_date 
+    ? new Date(weightRecords[0].birth_date) 
+    : null;
+
+  if (weightRecords.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
-        <p>No weight records available to display.</p>
+      <div className="py-4 text-center">
+        <p className="text-muted-foreground">No weight records available</p>
       </div>
     );
   }
 
-  // Sort records by date (newest to oldest)
-  const sortedRecords = [...weightRecords].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-
   return (
-    <div className="border rounded-md">
+    <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
+            {birthDate && <TableHead>Age</TableHead>}
             <TableHead>Weight</TableHead>
             <TableHead>Change</TableHead>
             <TableHead>Notes</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="w-[80px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedRecords.map((record) => {
+          {weightRecords.map((record) => {
+            const recordDate = new Date(record.date);
+            const ageInDays = birthDate 
+              ? differenceInDays(recordDate, birthDate) 
+              : null;
+              
             // Convert weight to display unit
             const convertedWeight = convertWeight(
               record.weight,
-              record.weight_unit as any,
-              displayUnit as any
+              record.weight_unit,
+              displayUnit
             );
+            
+            // Format percentage change with colors
+            const percentChange = record.percent_change;
+            const percentChangeClass = 
+              percentChange > 0 
+                ? 'text-green-600' 
+                : percentChange < 0 
+                  ? 'text-red-600' 
+                  : 'text-gray-500';
             
             return (
               <TableRow key={record.id}>
+                <TableCell>{format(recordDate, 'MMM d, yyyy')}</TableCell>
+                {birthDate && (
+                  <TableCell>
+                    {ageInDays !== null ? `${ageInDays} days` : 'Unknown'}
+                  </TableCell>
+                )}
                 <TableCell>
-                  {format(new Date(record.date), 'MMM d, yyyy')}
+                  {formatWeightWithUnit(convertedWeight, displayUnit)}
                 </TableCell>
                 <TableCell>
-                  {convertedWeight.toFixed(2)} {displayUnit}
-                </TableCell>
-                <TableCell>
-                  {record.percent_change !== null && record.percent_change !== undefined ? (
-                    <span 
-                      className={
-                        record.percent_change > 0 
-                          ? "text-green-600 font-medium" 
-                          : record.percent_change < 0 
-                            ? "text-red-600 font-medium" 
-                            : ""
-                      }
-                    >
-                      {record.percent_change > 0 ? "+" : ""}
-                      {record.percent_change.toFixed(1)}%
+                  {percentChange !== null && percentChange !== undefined ? (
+                    <span className={percentChangeClass}>
+                      {percentChange > 0 ? '+' : ''}{percentChange.toFixed(1)}%
                     </span>
                   ) : (
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-gray-400">-</span>
                   )}
                 </TableCell>
                 <TableCell className="max-w-xs truncate">
-                  {record.notes || "-"}
+                  {record.notes || '-'}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell>
                   <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => onDelete(record.id)}
-                    title="Delete record"
+                    onClick={() => onDelete(record.id)} 
+                    size="sm" 
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </TableCell>
               </TableRow>

@@ -1,6 +1,13 @@
 
-// Export all from the htmlGenerator
-export * from './htmlGenerator';
+// Export needed functions from htmlGenerator without duplicate exports
+import * as HtmlGenerator from './htmlGenerator';
+export const { 
+  generateHtml,
+  renderTemplate, 
+  applyCustomStyles 
+} = HtmlGenerator;
+
+// Export specific functions from pdfIntegration
 export * from './pdfIntegration';
 
 // Import contractTemplates if it exists, otherwise we'll create it

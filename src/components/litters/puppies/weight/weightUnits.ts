@@ -58,3 +58,13 @@ export const formatWeightWithUnit = (
   
   return `${formattedWeight} ${unit}`;
 };
+
+// Calculate percent change between two weight values
+export const calculatePercentChange = (
+  currentWeight: number,
+  previousWeight: number
+): number => {
+  if (previousWeight === 0) return 0;
+  
+  return ((currentWeight - previousWeight) / previousWeight) * 100;
+};
