@@ -1,12 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { customSupabase, HeatCycleRow } from '@/integrations/supabase/client';
+import { customSupabase } from '@/integrations/supabase/client';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Plus, ArrowDown, ArrowUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export interface HeatCycle {
+  id: string;
+  dog_id: string;
+  start_date: string;
+  end_date?: string | null;
+  notes?: string | null;
+  created_at: string;
+}
+
+// Define the HeatCycleRow type to match what's returned from Supabase
+export interface HeatCycleRow {
   id: string;
   dog_id: string;
   start_date: string;
@@ -36,7 +46,7 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
       
       // Using customSupabase to query the heat_cycles table
       const { data, error: supabaseError } = await customSupabase
-        .from<HeatCycleRow>('heat_cycles')
+        .from('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
         .order('start_date', { ascending: false });
@@ -46,7 +56,7 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
       }
       
       if (data && Array.isArray(data)) {
-        // Validate that each item has the required properties before adding to state
+        // Type guard to ensure each item has the required properties
         const validHeatCycles: HeatCycle[] = data
           .filter((item): item is HeatCycleRow => {
             return item !== null && 
