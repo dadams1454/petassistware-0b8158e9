@@ -66,3 +66,63 @@ export interface VaccinationRecord {
   notes?: string;
   created_at: string;
 }
+
+// Puppy management and statistics
+export interface PuppyManagementStats {
+  totalPuppies: number;
+  availablePuppies: number;
+  reservedPuppies: number;
+  soldPuppies: number;
+  maleCount: number;
+  femaleCount: number;
+  averageWeight: number;
+  puppiesByColor: Record<string, number>;
+  puppiesByAge: Record<string, number>;
+}
+
+// Age group definitions for puppy management
+export interface PuppyAgeGroupData {
+  id: string;
+  name: string;
+  description: string;
+  startDay: number;
+  endDay: number;
+  color: string;
+  priority: number;
+}
+
+// Socialization Types
+export interface SocializationCategory {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+  examples?: string[];
+}
+
+export interface SocializationExperience {
+  id: string;
+  puppy_id: string;
+  category_id: string;
+  experience: string;
+  experience_date: string;
+  reaction?: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface SocializationReaction {
+  id: string;
+  name: string;
+  description?: string;
+  color: string;
+  order?: number;
+}
+
+export interface SocializationProgress {
+  categoryId: string;
+  categoryName: string;
+  count: number;
+  target: number;
+  completionPercentage: number;
+}

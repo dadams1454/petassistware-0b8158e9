@@ -4,12 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageContainer from '@/components/common/PageContainer';
 import { Button } from '@/components/ui/button';
-import { ChartBar, ChartLine, CalendarCheck } from 'lucide-react';
+import { ChartBar, ChartLine, CalendarCheck, UserRound } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { usePuppyDetail } from '@/hooks/usePuppyDetail';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
 import PuppyGrowthDashboard from '@/components/puppies/growth/PuppyGrowthDashboard';
 import VaccinationDashboard from '@/components/puppies/vaccination/VaccinationDashboard';
+import SocializationDashboard from '@/components/puppies/socialization/SocializationDashboard';
 
 const PuppyDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,8 +36,10 @@ const PuppyDashboard: React.FC = () => {
         <ErrorState 
           title="Error Loading Puppy Data" 
           message="Could not load the puppy information. Please try again."
-          onAction={() => navigate(-1)}
-          actionLabel="Back to Litter"
+          action={{
+            label: "Back to Litter",
+            onClick: () => navigate(-1)
+          }}
         />
       </PageContainer>
     );
@@ -51,7 +54,7 @@ const PuppyDashboard: React.FC = () => {
               {puppy.name || `Puppy #${puppy.birth_order || ''}`}
             </h1>
             <p className="text-muted-foreground">
-              Growth and health tracking dashboard - {puppy.ageInDays} days old
+              Growth and development tracking dashboard - {puppy.ageInDays} days old
             </p>
           </div>
           
@@ -61,7 +64,7 @@ const PuppyDashboard: React.FC = () => {
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 md:w-[400px]">
+          <TabsList className="grid w-full grid-cols-4 md:w-[500px]">
             <TabsTrigger value="growth" className="flex items-center">
               <ChartLine className="h-4 w-4 mr-2" />
               Growth
@@ -69,6 +72,10 @@ const PuppyDashboard: React.FC = () => {
             <TabsTrigger value="vaccinations" className="flex items-center">
               <CalendarCheck className="h-4 w-4 mr-2" />
               Vaccinations
+            </TabsTrigger>
+            <TabsTrigger value="socialization" className="flex items-center">
+              <UserRound className="h-4 w-4 mr-2" />
+              Socialization
             </TabsTrigger>
             <TabsTrigger value="overview" className="flex items-center">
               <ChartBar className="h-4 w-4 mr-2" />
@@ -82,6 +89,10 @@ const PuppyDashboard: React.FC = () => {
           
           <TabsContent value="vaccinations" className="pt-4">
             <VaccinationDashboard puppyId={puppyId} />
+          </TabsContent>
+          
+          <TabsContent value="socialization" className="pt-4">
+            <SocializationDashboard puppyId={puppyId} />
           </TabsContent>
           
           <TabsContent value="overview" className="pt-4">
