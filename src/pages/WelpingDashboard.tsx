@@ -13,11 +13,24 @@ import ActiveWelpingsList from '@/components/welping/dashboard/ActiveWelpingsLis
 import WelpingStatsCard from '@/components/welping/dashboard/WelpingStatsCard';
 import WelpingPreparationGuide from '@/components/welping/dashboard/WelpingPreparationGuide';
 
+interface PuppiesCount {
+  count: number;
+}
+
+interface Litter {
+  id: string;
+  birth_date: string;
+  dam?: any;
+  sire?: any;
+  puppies?: number | any[] | PuppiesCount;
+  status: string;
+}
+
 const WelpingDashboard = () => {
   const navigate = useNavigate();
   
   // Fetch active litters with pregnant dams
-  const { data: activeLitters, isLoading } = useQuery({
+  const { data: activeLitters, isLoading } = useQuery<Litter[]>({
     queryKey: ['welping-dashboard'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -55,6 +68,24 @@ const WelpingDashboard = () => {
     navigate('/welping/new');
   };
   
+  // Helper function to safely extract puppy count from different possible structures
+  const getPuppyCount = (puppies: any): number => {
+    if (!puppies) return 0;
+    
+    if (typeof puppies === 'number') return puppies;
+    
+    if (Array.isArray(puppies)) return puppies.length;
+    
+    if (typeof puppies === 'object') {
+      // Handle case where puppies is an object with count property
+      if ('count' in puppies && typeof puppies.count === 'number') {
+        return puppies.count;
+      }
+    }
+    
+    return 0;
+  };
+  
   return (
     <PageContainer>
       <div className="container mx-auto py-6 space-y-6">
@@ -76,12 +107,7 @@ const WelpingDashboard = () => {
               (litter.birth_date && new Date(litter.birth_date) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
             ).length || 0}
             totalPuppiesCount={activeLitters?.reduce((total, litter) => {
-              // Handle the puppies count safely regardless of whether it's an array or object with count property
-              const puppyCount = litter.puppies ? 
-                (typeof litter.puppies === 'number' ? litter.puppies : 
-                Array.isArray(litter.puppies) ? litter.puppies.length : 
-                typeof litter.puppies === 'object' && 'count' in litter.puppies ? litter.puppies.count : 0) : 0;
-              return total + puppyCount;
+              return total + getPuppyCount(litter.puppies);
             }, 0) || 0}
           />
           
