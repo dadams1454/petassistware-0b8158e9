@@ -1,7 +1,5 @@
 
-import { WeightUnitEnum } from './health';
-
-export type WeightUnit = keyof typeof WeightUnitEnum;
+export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg';
 
 export interface PuppyAgeGroupData {
   id: string;
@@ -78,6 +76,7 @@ export interface WeightRecord {
   notes?: string;
   percent_change?: number | null;
   created_at: string;
+  birth_date?: string;
 }
 
 export interface PuppyMilestone {
@@ -91,6 +90,7 @@ export interface PuppyMilestone {
   milestone_date?: string | null;
   completed?: boolean;
   notes?: string;
+  category?: string;
 }
 
 export interface SocializationCategory {
@@ -102,14 +102,14 @@ export interface SocializationCategory {
   examples?: string[];
 }
 
-export type SocializationReaction = string;
-
 export interface SocializationReactionType {
   id: string;
   name: string;
   color: string;
   order: number;
 }
+
+export type SocializationReaction = SocializationReactionType | string;
 
 export interface SocializationExperience {
   id: string;

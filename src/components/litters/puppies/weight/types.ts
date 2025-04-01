@@ -1,21 +1,22 @@
 
-export interface WeightRecord {
-  id: string;
-  puppy_id?: string;
-  dog_id?: string;
-  date: string;
-  weight: number;
-  weight_unit: 'oz' | 'g' | 'lbs' | 'kg';
-  notes?: string;
-  percent_change?: number | null;
-  created_at: string;
+import { WeightRecord } from '@/types/puppyTracking';
+
+export interface WeightFormProps {
+  onSubmit: (data: any) => void;
+  onCancel: () => void;
+  defaultUnit: 'oz' | 'g' | 'lbs' | 'kg';
+  isSubmitting: boolean;
 }
 
-export interface WeightFormData {
-  date: Date;
-  weight: number;
-  weight_unit: 'oz' | 'g' | 'lbs' | 'kg';
-  notes?: string;
+export interface WeightChartViewProps {
+  weightRecords: WeightRecord[];
+  displayUnit: 'oz' | 'g' | 'lbs' | 'kg';
+}
+
+export interface WeightTableViewProps {
+  weightRecords: WeightRecord[];
+  onDelete: (id: string) => void;
+  displayUnit: 'oz' | 'g' | 'lbs' | 'kg';
 }
 
 export interface WeightTrackerProps {

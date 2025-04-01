@@ -10,15 +10,15 @@ import { usePuppyDetails } from '@/hooks/usePuppyDetails';
 import WeightForm from './weight/WeightForm';
 import WeightChartView from './weight/WeightChartView';
 import WeightTableView from './weight/WeightTableView';
-import { WeightUnit } from '@/types/health';
+import { WeightUnit } from '@/types/puppyTracking';
 
 const WeightTab: React.FC = () => {
   const { puppyId } = useParams<{ puppyId: string }>();
   const [isAddingWeight, setIsAddingWeight] = useState(false);
-  const [displayUnit, setDisplayUnit] = useState<WeightUnit>('oz');
+  const [displayUnit, setDisplayUnit] = useState<'oz' | 'g' | 'lbs' | 'kg'>('oz');
   
   const { data: puppy, isLoading: isPuppyLoading } = usePuppyDetails(puppyId || '');
-  const { weights, isLoading: isWeightsLoading, error, addWeight, deleteWeight } = usePuppyWeights(puppyId || '');
+  const { weights, isLoading: isWeightsLoading, error, addWeightRecord, deleteWeightRecord } = usePuppyWeights(puppyId || '');
   
   const isLoading = isPuppyLoading || isWeightsLoading;
   
@@ -26,9 +26,9 @@ const WeightTab: React.FC = () => {
     if (!puppyId) return;
     
     try {
-      await addWeight({
+      await addWeightRecord({
         puppy_id: puppyId,
-        date: data.date.toISOString().split('T')[0],
+        date: data.date,
         weight: data.weight,
         weight_unit: data.weight_unit,
         notes: data.notes
@@ -43,17 +43,17 @@ const WeightTab: React.FC = () => {
   const handleDeleteWeight = async (weightId: string) => {
     if (window.confirm('Are you sure you want to delete this weight record?')) {
       try {
-        await deleteWeight(weightId);
+        await deleteWeightRecord(weightId);
       } catch (error) {
         console.error('Error deleting weight record:', error);
       }
     }
   };
   
-  const getDefaultUnit = (): WeightUnit => {
+  const getDefaultUnit = (): 'oz' | 'g' | 'lbs' | 'kg' => {
     // Use most recent weight unit if available
     if (weights && weights.length > 0) {
-      return weights[0].weight_unit;
+      return weights[0].weight_unit as 'oz' | 'g' | 'lbs' | 'kg';
     }
     return 'oz';
   };

@@ -1,9 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { HealthRecord, HealthRecordTypeEnum, WeightRecord } from '@/types/health';
 
 // Helper function for adapting health records
-export const adaptHealthRecord = (record: any): HealthRecord => {
+const adaptHealthRecord = (record: any): HealthRecord => {
   return {
     id: record.id,
     dog_id: record.dog_id,
