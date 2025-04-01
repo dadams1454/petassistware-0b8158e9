@@ -50,7 +50,9 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
   // If abnormal, create an alert
   if (abnormal) {
     try {
-      await createHealthAlert(data.id, record.dog_id);
+      // Explicitly cast data.id to string to ensure TypeScript knows it exists
+      const recordId: string = data.id;
+      await createHealthAlert(recordId, record.dog_id);
     } catch (alertError) {
       console.error('Failed to create health alert:', alertError);
       // Continue without failing the whole operation
