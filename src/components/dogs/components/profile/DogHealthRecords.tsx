@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { HealthRecord } from '@/types/dog';
 import { useDogHealthRecords } from '@/hooks/useDogHealthRecords';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
 import { Plus, AlertTriangle } from 'lucide-react';
@@ -17,8 +16,8 @@ interface DogHealthRecordsProps {
 const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
   const [showAddRecordDialog, setShowAddRecordDialog] = useState(false);
   const { healthRecords, isLoading, error, refresh, addHealthRecord } = useDogHealthRecords(dogId);
-  
-  const handleAddRecord = async (recordData: Partial<HealthRecord>) => {
+
+  const handleAddRecord = async (recordData: any) => {
     try {
       await addHealthRecord({
         ...recordData,
@@ -29,21 +28,21 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
       console.error('Error adding health record:', error);
     }
   };
-  
+
   if (isLoading) {
     return <LoadingState message="Loading health records..." />;
   }
-  
+
   if (error) {
     return (
-      <ErrorState 
-        title="Error Loading Health Records" 
+      <ErrorState
+        title="Error Loading Health Records"
         message={(error as Error).message}
         onRetry={refresh}
       />
     );
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -52,9 +51,9 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
           <Plus className="mr-2 h-4 w-4" /> Add Record
         </Button>
       </div>
-      
+
       <HealthAlertPanel dogId={dogId} />
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Medical History</CardTitle>
@@ -62,6 +61,7 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
             View all health examinations, vaccinations, and procedures
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           {healthRecords.length > 0 ? (
             <div className="space-y-4">
@@ -79,21 +79,21 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
                       {record.next_due_date && (
                         <div className="text-right">
                           <span className="text-xs text-muted-foreground">Next: </span>
-                          <span className="font-medium">{new Date(record.next_due_date).toLocaleDateString()}</span>
+                          <span className="font-medium">
+                            {new Date(record.next_due_date).toLocaleDateString()}
+                          </span>
                         </div>
                       )}
                     </div>
                   </div>
-                  
                   {record.record_notes && (
                     <p className="mt-2 text-sm">{record.record_notes}</p>
                   )}
-                  
                   {record.document_url && (
                     <div className="mt-2">
-                      <a 
-                        href={record.document_url} 
-                        target="_blank" 
+                      <a
+                        href={record.document_url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm text-blue-500 hover:underline"
                       >
@@ -118,13 +118,13 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
           )}
         </CardContent>
       </Card>
-      
+
       <Dialog open={showAddRecordDialog} onOpenChange={setShowAddRecordDialog}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
             <DialogTitle>Add Health Record</DialogTitle>
           </DialogHeader>
-          <AddHealthRecordForm 
+          <AddHealthRecordForm
             onSubmit={handleAddRecord}
             onCancel={() => setShowAddRecordDialog(false)}
           />

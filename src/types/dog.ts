@@ -6,7 +6,7 @@ export interface HealthRecord {
   record_type: string;
   visit_date: string;
   record_notes?: string;
-  vet_name?: string;
+  vet_name: string;
   document_url?: string;
   next_due_date?: string;
   created_at: string;
@@ -26,6 +26,7 @@ export interface Dog {
   height?: number;
   microchip_id?: string;
   registration_id?: string;
+  registration_number?: string;
   profile_photo_url?: string;
   owner_id?: string;
   notes?: string;
@@ -33,7 +34,6 @@ export interface Dog {
   updated_at?: string;
 }
 
-// Add missing exported enums and types
 export enum DogGender {
   Male = 'Male',
   Female = 'Female'
@@ -48,7 +48,9 @@ export enum DogStatus {
 
 export enum WeightUnit {
   Pounds = 'lbs',
-  Kilograms = 'kg'
+  Kilograms = 'kg',
+  Ounces = 'oz',
+  Grams = 'g'
 }
 
 export enum HealthRecordTypeEnum {
@@ -73,7 +75,6 @@ export enum DocumentType {
   Other = 'other'
 }
 
-// Create the DogProfile type that's being used in many components
 export interface DogProfile extends Dog {
   registration_number?: string;
   registration_organization?: string;

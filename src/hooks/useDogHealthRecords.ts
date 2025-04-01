@@ -34,6 +34,15 @@ export const useDogHealthRecords = (dogId: string) => {
   // Add health record
   const addHealthRecordMutation = useMutation({
     mutationFn: async (record: Partial<HealthRecord>) => {
+      // Ensure we have the required fields
+      if (!record.visit_date) {
+        throw new Error('Visit date is required');
+      }
+      
+      if (!record.vet_name) {
+        throw new Error('Veterinarian name is required');
+      }
+      
       const { data, error } = await supabase
         .from('health_records')
         .insert([record])
