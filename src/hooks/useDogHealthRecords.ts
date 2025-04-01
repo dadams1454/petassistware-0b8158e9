@@ -20,7 +20,7 @@ export const useDogHealthRecords = (dogId: string) => {
       if (!dogId) return [];
       
       const { data, error } = await supabase
-        .from('dog_health_records')
+        .from('health_records')
         .select('*')
         .eq('dog_id', dogId)
         .order('visit_date', { ascending: false });
@@ -35,7 +35,7 @@ export const useDogHealthRecords = (dogId: string) => {
   const addHealthRecordMutation = useMutation({
     mutationFn: async (record: Partial<HealthRecord>) => {
       const { data, error } = await supabase
-        .from('dog_health_records')
+        .from('health_records')
         .insert([record])
         .select()
         .single();

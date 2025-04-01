@@ -7,7 +7,6 @@ import DogBreedingInfo from './DogBreedingInfo';
 import DogDocuments from './DogDocuments';
 import GeneticAnalysisTab from '../tabs/GeneticAnalysisTab';
 import MedicalExpenses from '@/components/finances/MedicalExpenses';
-import HealthTab from '../tabs/HealthTab';
 
 interface DogProfileTabsProps {
   dog: any;

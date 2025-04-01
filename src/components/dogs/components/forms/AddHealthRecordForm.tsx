@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { HealthRecordTypeEnum } from '@/types/dog';
 
 // Form schema
 const formSchema = z.object({
@@ -39,7 +40,7 @@ const AddHealthRecordForm: React.FC<AddHealthRecordFormProps> = ({ onSubmit, onC
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
-      record_type: 'vaccination',
+      record_type: HealthRecordTypeEnum.Vaccination,
       visit_date: new Date(),
       vet_name: '',
       record_notes: '',
@@ -81,12 +82,14 @@ const AddHealthRecordForm: React.FC<AddHealthRecordFormProps> = ({ onSubmit, onC
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="vaccination">Vaccination</SelectItem>
-                  <SelectItem value="examination">Examination</SelectItem>
-                  <SelectItem value="medication">Medication</SelectItem>
-                  <SelectItem value="surgery">Surgery</SelectItem>
-                  <SelectItem value="test">Test/Lab Result</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value={HealthRecordTypeEnum.Vaccination}>Vaccination</SelectItem>
+                  <SelectItem value={HealthRecordTypeEnum.Examination}>Examination</SelectItem>
+                  <SelectItem value={HealthRecordTypeEnum.Medication}>Medication</SelectItem>
+                  <SelectItem value={HealthRecordTypeEnum.Surgery}>Surgery</SelectItem>
+                  <SelectItem value={HealthRecordTypeEnum.Observation}>Observation</SelectItem>
+                  <SelectItem value={HealthRecordTypeEnum.Deworming}>Deworming</SelectItem>
+                  <SelectItem value={HealthRecordTypeEnum.Test}>Test/Lab Result</SelectItem>
+                  <SelectItem value={HealthRecordTypeEnum.Other}>Other</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

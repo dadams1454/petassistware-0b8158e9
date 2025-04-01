@@ -18,7 +18,6 @@ interface HealthAlertPanelProps {
   dogId: string;
 }
 
-// A simple stub component for now, to be expanded later
 export const HealthAlertPanel: React.FC<HealthAlertPanelProps> = ({ dogId }) => {
   // We'll add real implementation later, this is just to resolve the import error
   return (

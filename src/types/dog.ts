@@ -10,6 +10,9 @@ export interface HealthRecord {
   document_url?: string;
   next_due_date?: string;
   created_at: string;
+  date?: string;
+  description?: string;
+  performed_by?: string;
 }
 
 export interface Dog {
@@ -28,4 +31,69 @@ export interface Dog {
   notes?: string;
   created_at: string;
   updated_at?: string;
+}
+
+// Add missing exported enums and types
+export enum DogGender {
+  Male = 'Male',
+  Female = 'Female'
+}
+
+export enum DogStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+  Sold = 'sold',
+  Deceased = 'deceased'
+}
+
+export enum WeightUnit {
+  Pounds = 'lbs',
+  Kilograms = 'kg'
+}
+
+export enum HealthRecordTypeEnum {
+  Vaccination = 'vaccination',
+  Examination = 'examination',
+  Medication = 'medication',
+  Surgery = 'surgery',
+  Observation = 'observation',
+  Deworming = 'deworming',
+  Grooming = 'grooming',
+  Dental = 'dental',
+  Allergy = 'allergy',
+  Test = 'test',
+  Other = 'other'
+}
+
+export enum DocumentType {
+  Registration = 'registration',
+  Health = 'health',
+  Pedigree = 'pedigree',
+  Contract = 'contract',
+  Other = 'other'
+}
+
+// Create the DogProfile type that's being used in many components
+export interface DogProfile extends Dog {
+  registration_number?: string;
+  registration_organization?: string;
+  microchip_number?: string;
+  microchip_location?: string;
+  status?: DogStatus;
+  group_ids?: string[];
+  sire_id?: string;
+  dam_id?: string;
+  is_pregnant?: boolean;
+  last_heat_date?: string;
+  tie_date?: string;
+  litter_number?: number;
+  pedigree?: boolean;
+  requires_special_handling?: boolean;
+  potty_alert_threshold?: number;
+  max_time_between_breaks?: number;
+  vaccination_type?: string;
+  vaccination_notes?: string;
+  last_vaccination_date?: string;
+  photo_url?: string;
+  weight_unit?: WeightUnit;
 }
