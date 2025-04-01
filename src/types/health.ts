@@ -23,6 +23,35 @@ export enum WeightUnitEnum {
   Grams = 'g'
 }
 
+// New enum for appetite level tracking
+export enum AppetiteLevelEnum {
+  Excellent = 'excellent',
+  Good = 'good',
+  Fair = 'fair',
+  Poor = 'poor',
+  None = 'none'
+}
+
+// New enum for energy level tracking
+export enum EnergyLevelEnum {
+  VeryHigh = 'very_high',
+  High = 'high',
+  Normal = 'normal',
+  Low = 'low',
+  VeryLow = 'very_low'
+}
+
+// New enum for stool consistency tracking
+export enum StoolConsistencyEnum {
+  Solid = 'solid',
+  SemiSolid = 'semi_solid',
+  Soft = 'soft',
+  Loose = 'loose',
+  Watery = 'watery',
+  Bloody = 'bloody',
+  Mucousy = 'mucousy'
+}
+
 export interface HealthRecord {
   id: string;
   dog_id: string;
@@ -43,6 +72,45 @@ export interface HealthRecord {
   vet_clinic?: string;
   record_notes?: string;
   attachments?: string[];
+  // Medication specific fields
+  medication_name?: string;
+  dosage?: number | string;
+  dosage_unit?: string;
+  frequency?: string;
+  duration?: number | string;
+  duration_unit?: string;
+  start_date?: string;
+  end_date?: string;
+  prescribed_by?: string;
+  pharmacy?: string;
+  prescription_number?: string;
+  refills_remaining?: number;
+  // Vaccination specific fields
+  vaccine_type?: string;
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  expiration_date?: string;
+  administered_by?: string;
+  route?: string;
+  administration_route?: string;
+  site?: string;
+  dose?: string;
+  next_dose_due?: string;
+  reminder_sent?: boolean;
+  // Examination specific fields
+  exam_type?: string;
+  examination_type?: string;
+  findings?: string;
+  recommendations?: string;
+  follow_up_date?: string;
+  examiner?: string;
+  facility?: string;
+  // Surgery specific fields
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
 }
 
 export interface VaccinationRecord extends HealthRecord {
@@ -105,6 +173,21 @@ export interface WeightRecord {
   percent_change?: number;
 }
 
+// New interface for health indicator records
+export interface HealthIndicatorRecord {
+  id: string;
+  dog_id: string;
+  date: string;
+  appetite?: AppetiteLevelEnum;
+  energy?: EnergyLevelEnum;
+  stool_consistency?: StoolConsistencyEnum;
+  notes?: string;
+  created_at: string;
+  created_by?: string;
+  abnormal?: boolean;
+  alert_generated?: boolean;
+}
+
 // Helper function to map database records to our interface
 export const adaptHealthRecord = (record: any): HealthRecord => {
   return {
@@ -137,5 +220,22 @@ export const adaptWeightRecord = (record: any): WeightRecord => {
     created_at: record.created_at,
     puppy_id: record.puppy_id,
     percent_change: record.percent_change
+  };
+};
+
+// Helper function to map database health indicator records to our interface
+export const adaptHealthIndicatorRecord = (record: any): HealthIndicatorRecord => {
+  return {
+    id: record.id,
+    dog_id: record.dog_id,
+    date: record.date,
+    appetite: record.appetite,
+    energy: record.energy,
+    stool_consistency: record.stool_consistency,
+    notes: record.notes,
+    created_at: record.created_at,
+    created_by: record.created_by,
+    abnormal: record.abnormal,
+    alert_generated: record.alert_generated
   };
 };

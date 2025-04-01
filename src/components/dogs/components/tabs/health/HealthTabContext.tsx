@@ -10,6 +10,8 @@ interface HealthTabContextType {
   setRecordDialogOpen: (open: boolean) => void;
   weightDialogOpen: boolean;
   setWeightDialogOpen: (open: boolean) => void;
+  healthIndicatorDialogOpen: boolean;
+  setHealthIndicatorDialogOpen: (open: boolean) => void;
   selectedRecordType?: HealthRecordTypeEnum;
   selectedRecord?: string;
   weightHistory: WeightRecord[];
@@ -29,6 +31,7 @@ interface HealthTabContextType {
   openAddExaminationDialog: () => void;
   openAddMedicationDialog: () => void;
   openAddWeightDialog: () => void;
+  openAddHealthIndicatorDialog: () => void;
 }
 
 const HealthTabContext = createContext<HealthTabContextType | undefined>(undefined);
@@ -50,6 +53,7 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
   const [activeTab, setActiveTab] = useState('summary');
   const [recordDialogOpen, setRecordDialogOpen] = useState(false);
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
+  const [healthIndicatorDialogOpen, setHealthIndicatorDialogOpen] = useState(false);
   const [selectedRecordType, setSelectedRecordType] = useState<HealthRecordTypeEnum>();
   const [selectedRecord, setSelectedRecord] = useState<string>();
   
@@ -95,6 +99,7 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
   const openAddExaminationDialog = () => handleAddRecord(HealthRecordTypeEnum.Examination);
   const openAddMedicationDialog = () => handleAddRecord(HealthRecordTypeEnum.Medication);
   const openAddWeightDialog = () => setWeightDialogOpen(true);
+  const openAddHealthIndicatorDialog = () => setHealthIndicatorDialogOpen(true);
   
   const value = {
     dogId,
@@ -102,6 +107,8 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
     setRecordDialogOpen,
     weightDialogOpen,
     setWeightDialogOpen,
+    healthIndicatorDialogOpen,
+    setHealthIndicatorDialogOpen,
     selectedRecordType,
     selectedRecord,
     weightHistory: weightHistory || [],
@@ -120,7 +127,8 @@ export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, chi
     openAddVaccinationDialog,
     openAddExaminationDialog,
     openAddMedicationDialog,
-    openAddWeightDialog
+    openAddWeightDialog,
+    openAddHealthIndicatorDialog
   };
   
   return (

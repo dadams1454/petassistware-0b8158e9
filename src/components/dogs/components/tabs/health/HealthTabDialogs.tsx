@@ -3,6 +3,7 @@ import React from 'react';
 import { useHealthTabContext } from './HealthTabContext';
 import HealthRecordDialog from '../../health/HealthRecordDialog';
 import WeightEntryDialog from '../../health/WeightEntryDialog';
+import HealthIndicatorDialog from '../../health/HealthIndicatorDialog';
 
 const HealthTabDialogs: React.FC = () => {
   const {
@@ -11,6 +12,8 @@ const HealthTabDialogs: React.FC = () => {
     setRecordDialogOpen,
     weightDialogOpen,
     setWeightDialogOpen,
+    healthIndicatorDialogOpen,
+    setHealthIndicatorDialogOpen,
     selectedRecordType,
     selectedRecord,
     handleSaveRecord,
@@ -33,6 +36,12 @@ const HealthTabDialogs: React.FC = () => {
         onOpenChange={setWeightDialogOpen}
         dogId={dogId}
         onSave={handleSaveWeight}
+      />
+      
+      <HealthIndicatorDialog
+        open={healthIndicatorDialogOpen}
+        onOpenChange={setHealthIndicatorDialogOpen}
+        dogId={dogId}
       />
     </>
   );

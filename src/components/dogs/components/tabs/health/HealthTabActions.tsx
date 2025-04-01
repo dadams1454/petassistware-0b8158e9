@@ -1,58 +1,46 @@
 
 import React from 'react';
-import { Plus } from 'lucide-react';
-import { ActionButton } from '@/components/ui/standardized';
+import { Button } from '@/components/ui/button';
+import { PlusCircle, Activity, Syringe, Stethoscope, Pill } from 'lucide-react';
 import { useHealthTabContext } from './HealthTabContext';
 
-const HealthTabActions = () => {
+const HealthTabActions: React.FC = () => {
   const { 
-    activeTab, 
     openAddVaccinationDialog, 
-    openAddExaminationDialog,
+    openAddExaminationDialog, 
     openAddMedicationDialog,
-    openAddWeightDialog 
+    openAddWeightDialog,
+    openAddHealthIndicatorDialog,
+    activeTab
   } = useHealthTabContext();
-
-  const getButtonProps = () => {
-    switch (activeTab) {
-      case 'vaccinations':
-        return {
-          label: 'Add Vaccination',
-          onClick: openAddVaccinationDialog
-        };
-      case 'examinations':
-        return {
-          label: 'Add Examination',
-          onClick: openAddExaminationDialog
-        };
-      case 'medications':
-        return {
-          label: 'Add Medication',
-          onClick: openAddMedicationDialog
-        };
-      case 'weight':
-        return {
-          label: 'Add Weight',
-          onClick: openAddWeightDialog
-        };
-      default:
-        return null;
-    }
-  };
-
-  const buttonProps = getButtonProps();
-
-  if (!buttonProps || activeTab === 'summary') {
-    return null;
-  }
-
+  
   return (
-    <ActionButton
-      onClick={buttonProps.onClick}
-      icon={<Plus className="w-4 h-4 mr-2" />}
-    >
-      {buttonProps.label}
-    </ActionButton>
+    <div className="flex flex-wrap gap-2">
+      <Button onClick={openAddVaccinationDialog} variant="outline" size="sm">
+        <Syringe className="h-4 w-4 mr-2" />
+        Add Vaccination
+      </Button>
+      
+      <Button onClick={openAddExaminationDialog} variant="outline" size="sm">
+        <Stethoscope className="h-4 w-4 mr-2" />
+        Add Examination
+      </Button>
+      
+      <Button onClick={openAddMedicationDialog} variant="outline" size="sm">
+        <Pill className="h-4 w-4 mr-2" />
+        Add Medication
+      </Button>
+      
+      <Button onClick={openAddWeightDialog} variant="outline" size="sm">
+        <PlusCircle className="h-4 w-4 mr-2" />
+        Add Weight
+      </Button>
+      
+      <Button onClick={openAddHealthIndicatorDialog} variant="outline" size="sm">
+        <Activity className="h-4 w-4 mr-2" />
+        Record Health Indicators
+      </Button>
+    </div>
   );
 };
 
