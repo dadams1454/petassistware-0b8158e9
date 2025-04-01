@@ -7,11 +7,11 @@ import { ChevronLeft } from 'lucide-react';
 export interface PageHeaderProps {
   title: string;
   description?: string;
-  subtitle?: string; // Added this property
-  backLink?: string; // Added this property
+  subtitle?: string;
+  backLink?: string;
   children?: React.ReactNode;
   className?: string;
-  action?: React.ReactNode; // Added this property
+  action?: React.ReactNode;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({

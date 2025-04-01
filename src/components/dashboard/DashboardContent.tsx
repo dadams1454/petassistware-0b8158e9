@@ -7,20 +7,44 @@ import QuickActions from './QuickActions';
 import DashboardTabs from './DashboardTabs';
 import GenerateTestDataButton from './GenerateTestDataButton';
 import KennelAssignmentsWidget from './widgets/KennelAssignmentsWidget';
+import { DashboardData, UpcomingEvent, RecentActivity } from '@/services/dashboard/types';
 
-const DashboardContent = () => {
+interface DashboardContentProps {
+  isLoading?: boolean;
+  stats?: DashboardData;
+  events?: UpcomingEvent[];
+  activities?: RecentActivity[];
+}
+
+const DashboardContent: React.FC<DashboardContentProps> = ({ 
+  isLoading = false,
+  stats = {
+    totalDogs: 0,
+    activeDogs: 0,
+    totalLitters: 0,
+    activeLitters: 0,
+    totalPuppies: 0,
+    availablePuppies: 0,
+    totalCustomers: 0
+  },
+  events = [],
+  activities = []
+}) => {
   return (
     <div className="space-y-6">
-      <DashboardOverview />
+      <DashboardOverview 
+        data={stats}
+        isLoading={isLoading}
+      />
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <UpcomingEvents />
-        <RecentActivities />
+        <UpcomingEvents events={events} isLoading={isLoading} />
+        <RecentActivities activities={activities} isLoading={isLoading} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <KennelAssignmentsWidget />
-        <QuickActions />
+        <QuickActions onCareLogClick={() => {}} />
       </div>
       
       <DashboardTabs />

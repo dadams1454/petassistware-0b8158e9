@@ -1,184 +1,194 @@
 
 import React, { useState, useEffect } from 'react';
+import { useBreedingPreparation } from '@/hooks/breeding/useBreedingPreparation';
+import { supabase } from '@/integrations/supabase/client';
+import { format, differenceInDays } from 'date-fns';
+import { Trash2, Edit, CalendarPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { customSupabase } from '@/integrations/supabase/client';
-import { format, parseISO, differenceInDays } from 'date-fns';
-import { Plus, ArrowDown, ArrowUp } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import RecordHeatCycleDialog from './RecordHeatCycleDialog';
+import { Badge } from '@/components/ui/badge';
 
-export interface HeatCycle {
+// Define an interface for the heat cycle rows
+interface HeatCycleRow {
   id: string;
   dog_id: string;
   start_date: string;
-  end_date?: string | null;
-  notes?: string | null;
+  end_date: string | null;
+  notes: string | null;
   created_at: string;
 }
 
-// Define the HeatCycleRow type to match what's returned from Supabase
-export interface HeatCycleRow {
-  id: string;
-  dog_id: string;
-  start_date: string;
-  end_date?: string | null;
-  notes?: string | null;
-  created_at: string;
+// Interface for error objects
+interface GenericStringError {
+  error: true;
+  message: string;
 }
 
-interface HeatCycleMonitorProps {
-  dogId: string;
-  onAddCycle?: () => void;
-}
+const HeatCycleMonitor = ({ dogId }: { dogId: string }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [heatCycles, setHeatCycles] = useState<HeatCycleRow[]>([]);
+  const [editingCycle, setEditingCycle] = useState<HeatCycleRow | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { fetchBreedingData } = useBreedingPreparation();
 
-const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }) => {
-  const [cycles, setCycles] = useState<HeatCycle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAll, setShowAll] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  useEffect(() => {
-    fetchHeatCycles();
-  }, [dogId]);
-  
   const fetchHeatCycles = async () => {
+    setIsLoading(true);
     try {
-      setLoading(true);
-      
-      // Using customSupabase to query the heat_cycles table
-      const { data, error: supabaseError } = await customSupabase
+      const { data, error } = await supabase
         .from('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
         .order('start_date', { ascending: false });
-      
-      if (supabaseError) {
-        throw supabaseError;
-      }
-      
-      if (data && Array.isArray(data)) {
-        // Type guard to ensure each item has the required properties
-        const validHeatCycles: HeatCycle[] = data
-          .filter((item): item is HeatCycleRow => {
-            return item !== null && 
-              typeof item === 'object' &&
-              'id' in item && 
-              'dog_id' in item && 
-              'start_date' in item &&
-              'created_at' in item;
-          })
-          .map((item) => ({
-            id: item.id,
-            dog_id: item.dog_id,
-            start_date: item.start_date,
-            end_date: item.end_date,
-            notes: item.notes,
-            created_at: item.created_at
-          }));
-        
-        setCycles(validHeatCycles);
-      } else {
-        // If data is not an array or is null, set cycles to empty array
-        setCycles([]);
-      }
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching heat cycles:', err);
-      setError('Failed to load heat cycle data');
-      // Important: In case of error, we set cycles to empty array
-      setCycles([]);
+
+      if (error) throw error;
+      setHeatCycles(data || []);
+    } catch (error) {
+      console.error('Error fetching heat cycles:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
-  
-  const displayedCycles = showAll ? cycles : cycles.slice(0, 3);
-  
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg">Heat Cycle History</CardTitle>
-        {onAddCycle && (
-          <Button onClick={onAddCycle} variant="outline" size="sm">
-            <Plus className="h-4 w-4 mr-1" /> Record Heat
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="py-4 text-center text-muted-foreground">
-            <p>Loading heat cycle data...</p>
-          </div>
-        ) : error ? (
-          <div className="py-4 text-center text-destructive">
-            <p>{error}</p>
-          </div>
-        ) : cycles.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-muted-foreground">No heat cycles recorded yet.</p>
-            {onAddCycle && (
-              <Button onClick={onAddCycle} className="mt-4" variant="default" size="sm">
-                Record First Heat Cycle
-              </Button>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="space-y-4">
-              {displayedCycles.map((cycle) => (
-                <div
-                  key={cycle.id}
-                  className="border-b pb-3 last:border-b-0 last:pb-0"
-                >
-                  <div className="flex justify-between">
-                    <div>
-                      <p className="font-medium">
-                        {format(parseISO(cycle.start_date), 'MMM d, yyyy')}
-                      </p>
-                      {cycle.end_date && (
-                        <p className="text-sm text-muted-foreground">
-                          Ended: {format(parseISO(cycle.end_date), 'MMM d, yyyy')}
-                          <span className="ml-2">
-                            ({differenceInDays(parseISO(cycle.end_date), parseISO(cycle.start_date))} days)
-                          </span>
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-muted-foreground">
-                        {!cycle.end_date && 'Ongoing'}
-                      </div>
-                    </div>
-                  </div>
-                  {cycle.notes && (
-                    <p className="text-sm mt-1 text-muted-foreground">{cycle.notes}</p>
-                  )}
-                </div>
-              ))}
-            </div>
 
-            {cycles.length > 3 && (
-              <div className="mt-4 text-center">
-                <Button
-                  variant="link"
-                  onClick={() => setShowAll(!showAll)}
-                  className="text-sm"
-                >
-                  {showAll ? (
-                    <>
-                      Show Less <ArrowUp className="h-3 w-3 ml-1" />
-                    </>
-                  ) : (
-                    <>
-                      Show All ({cycles.length}) <ArrowDown className="h-3 w-3 ml-1" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+  useEffect(() => {
+    if (dogId) {
+      fetchHeatCycles();
+    }
+  }, [dogId]);
+
+  const handleDelete = async (cycleId: string) => {
+    if (!confirm('Are you sure you want to delete this heat cycle record?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('heat_cycles')
+        .delete()
+        .eq('id', cycleId);
+
+      if (error) throw error;
+      
+      await fetchHeatCycles();
+      await fetchBreedingData(dogId);
+    } catch (error) {
+      console.error('Error deleting heat cycle:', error);
+    }
+  };
+
+  // Type guard function to check if an item is a HeatCycleRow and not an error
+  const isHeatCycleRow = (item: HeatCycleRow | GenericStringError): item is HeatCycleRow => {
+    return !('error' in item);
+  };
+
+  const handleEdit = (cycle: HeatCycleRow) => {
+    setEditingCycle(cycle);
+    setIsDialogOpen(true);
+  };
+
+  const onDialogClose = async (refreshData: boolean) => {
+    setIsDialogOpen(false);
+    setEditingCycle(null);
+    
+    if (refreshData) {
+      await fetchHeatCycles();
+      await fetchBreedingData(dogId);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="py-4">Loading heat cycle data...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Heat Cycle Records</h3>
+        <Button 
+          onClick={() => setIsDialogOpen(true)} 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-1"
+        >
+          <CalendarPlus className="h-4 w-4" />
+          <span>Record Heat Cycle</span>
+        </Button>
+      </div>
+
+      {heatCycles.length === 0 ? (
+        <div className="text-center py-6 border rounded-md bg-muted/20">
+          <p className="text-muted-foreground">No heat cycle records found</p>
+        </div>
+      ) : (
+        <div className="border rounded-md overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="px-4 py-2 text-left text-sm font-medium">Start Date</th>
+                <th className="px-4 py-2 text-left text-sm font-medium">End Date</th>
+                <th className="px-4 py-2 text-left text-sm font-medium">Duration</th>
+                <th className="px-4 py-2 text-left text-sm font-medium">Notes</th>
+                <th className="px-4 py-2 text-right text-sm font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {heatCycles.map((cycle) => (
+                <tr key={cycle.id} className="bg-card hover:bg-muted/20 transition-colors">
+                  <td className="px-4 py-3 text-sm">
+                    {format(new Date(cycle.start_date), 'MMM d, yyyy')}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {cycle.end_date 
+                      ? format(new Date(cycle.end_date), 'MMM d, yyyy')
+                      : (
+                        <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">
+                          Active
+                        </Badge>
+                      )
+                    }
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {cycle.end_date 
+                      ? `${differenceInDays(new Date(cycle.end_date), new Date(cycle.start_date))} days`
+                      : `${differenceInDays(new Date(), new Date(cycle.start_date))} days and counting`
+                    }
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {cycle.notes || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleEdit(cycle)}
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(cycle.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <RecordHeatCycleDialog
+        open={isDialogOpen}
+        onOpenChange={onDialogClose}
+        dogId={dogId}
+        editData={editingCycle}
+      />
+    </div>
   );
 };
 

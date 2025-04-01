@@ -11,6 +11,7 @@ import { Heart, Calendar } from 'lucide-react';
 import { useHeatCycleStatus } from '@/hooks/breeding/useHeatCycleStatus';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { DashboardData, UpcomingEvent, RecentActivity } from '@/services/dashboard/types';
 
 const Dashboard: React.FC = () => {
   const { alerts, hasAlerts } = useHeatCycleStatus();
@@ -23,6 +24,20 @@ const Dashboard: React.FC = () => {
       navigate('/litters');
     }
   };
+
+  // Mock data for dashboard stats, events, and activities
+  const dashboardStats: DashboardData = {
+    totalDogs: 0,
+    activeDogs: 0,
+    totalLitters: 0,
+    activeLitters: 0,
+    totalPuppies: 0,
+    availablePuppies: 0,
+    totalCustomers: 0
+  };
+
+  const upcomingEvents: UpcomingEvent[] = [];
+  const recentActivities: RecentActivity[] = [];
   
   return (
     <PageContainer>
@@ -83,17 +98,9 @@ const Dashboard: React.FC = () => {
               {/* Daily Care and other dashboard content */}
               <DashboardContent 
                 isLoading={false}
-                stats={{
-                  totalDogs: 0,
-                  activeDogs: 0,
-                  totalLitters: 0,
-                  activeLitters: 0,
-                  totalPuppies: 0,
-                  availablePuppies: 0,
-                  totalCustomers: 0
-                }}
-                events={[]}
-                activities={[]}
+                stats={dashboardStats}
+                events={upcomingEvents}
+                activities={recentActivities}
               />
             </div>
           </DailyCareProvider>
