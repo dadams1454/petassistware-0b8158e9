@@ -5,9 +5,10 @@ import { useHealthTabContext } from './HealthTabContext';
 import { Separator } from '@/components/ui/separator';
 import HealthIndicatorDashboard from '../../health/HealthIndicatorDashboard';
 import MedicationTracker from '../../health/MedicationTracker';
+import BreedingTimingIndicator from '../../breeding/BreedingTimingIndicator';
 
 const HealthTabContent: React.FC = () => {
-  const { dogId, isLoading } = useHealthTabContext();
+  const { dogId, isLoading, dog } = useHealthTabContext();
   
   if (isLoading) {
     return (
@@ -18,6 +19,8 @@ const HealthTabContent: React.FC = () => {
       </TabsContent>
     );
   }
+  
+  const showBreedingIndicator = dog?.gender === 'Female' && !dog?.is_pregnant;
   
   return (
     <TabsContent value="health" className="space-y-8">
@@ -32,6 +35,17 @@ const HealthTabContent: React.FC = () => {
         <h3 className="text-lg font-medium mb-4">Medication Schedule</h3>
         <MedicationTracker dogId={dogId} />
       </div>
+      
+      {showBreedingIndicator && (
+        <>
+          <Separator className="my-6" />
+          
+          <div>
+            <h3 className="text-lg font-medium mb-4">Breeding Cycle Indicators</h3>
+            <BreedingTimingIndicator dogId={dogId} />
+          </div>
+        </>
+      )}
     </TabsContent>
   );
 };
