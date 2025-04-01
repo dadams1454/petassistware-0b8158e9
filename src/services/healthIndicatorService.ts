@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, customSupabase } from '@/integrations/supabase/client';
 import { 
   HealthIndicatorRecord, 
   AppetiteLevelEnum, 
@@ -10,8 +10,8 @@ import {
 
 // Fetch health indicators for a dog
 export const getHealthIndicators = async (dogId: string): Promise<HealthIndicatorRecord[]> => {
-  const { data, error } = await supabase
-    .from('health_indicators')
+  const { data, error } = await customSupabase
+    .from<any>('health_indicators')
     .select('*')
     .eq('dog_id', dogId)
     .order('date', { ascending: false });
@@ -26,8 +26,8 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
   // Determine if the record is abnormal based on indicator values
   const abnormal = isAbnormalHealthIndicator(record);
 
-  const { data, error } = await supabase
-    .from('health_indicators')
+  const { data, error } = await customSupabase
+    .from<any>('health_indicators')
     .insert([
       {
         dog_id: record.dog_id,
@@ -56,8 +56,8 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
 
 // Update a health indicator record
 export const updateHealthIndicator = async (id: string, updates: Partial<HealthIndicatorRecord>): Promise<HealthIndicatorRecord> => {
-  const { data, error } = await supabase
-    .from('health_indicators')
+  const { data, error } = await customSupabase
+    .from<any>('health_indicators')
     .update(updates)
     .eq('id', id)
     .select()
@@ -70,8 +70,8 @@ export const updateHealthIndicator = async (id: string, updates: Partial<HealthI
 
 // Delete a health indicator record
 export const deleteHealthIndicator = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from('health_indicators')
+  const { error } = await customSupabase
+    .from<any>('health_indicators')
     .delete()
     .eq('id', id);
 
@@ -83,8 +83,8 @@ export const getRecentHealthIndicators = async (dogId: string, days = 7): Promis
   const date = new Date();
   date.setDate(date.getDate() - days);
   
-  const { data, error } = await supabase
-    .from('health_indicators')
+  const { data, error } = await customSupabase
+    .from<any>('health_indicators')
     .select('*')
     .eq('dog_id', dogId)
     .gte('date', date.toISOString().split('T')[0])
@@ -97,8 +97,8 @@ export const getRecentHealthIndicators = async (dogId: string, days = 7): Promis
 
 // Get abnormal health indicators
 export const getAbnormalHealthIndicators = async (dogId: string): Promise<HealthIndicatorRecord[]> => {
-  const { data, error } = await supabase
-    .from('health_indicators')
+  const { data, error } = await customSupabase
+    .from<any>('health_indicators')
     .select('*')
     .eq('dog_id', dogId)
     .eq('abnormal', true)
@@ -111,8 +111,8 @@ export const getAbnormalHealthIndicators = async (dogId: string): Promise<Health
 
 // Create a health alert
 export const createHealthAlert = async (indicatorId: string, dogId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('health_alerts')
+  const { error } = await customSupabase
+    .from<any>('health_alerts')
     .insert([
       {
         indicator_id: indicatorId,
@@ -143,8 +143,8 @@ export const isAbnormalHealthIndicator = (record: Partial<HealthIndicatorRecord>
 
 // Get all health alerts for a dog
 export const getHealthAlerts = async (dogId: string, includeResolved = false): Promise<any[]> => {
-  let query = supabase
-    .from('health_alerts')
+  let query = customSupabase
+    .from<any>('health_alerts')
     .select('*, health_indicators(*)')
     .eq('dog_id', dogId);
   
@@ -163,8 +163,8 @@ export const getHealthAlerts = async (dogId: string, includeResolved = false): P
 
 // Resolve a health alert
 export const resolveHealthAlert = async (alertId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('health_alerts')
+  const { error } = await customSupabase
+    .from<any>('health_alerts')
     .update({ resolved: true, status: 'resolved', resolved_at: new Date().toISOString() })
     .eq('id', alertId);
 

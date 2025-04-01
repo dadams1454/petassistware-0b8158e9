@@ -49,13 +49,19 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
     next_due_date: record.next_due_date,
     vet_name: record.performed_by || '',  // Ensure vet_name is provided
     record_notes: record.description || '', // Map description to record_notes
-    // Include any other relevant fields
-    ...record
+    // Convert string dosage to numeric if needed
+    dosage: record.dosage ? 
+      (typeof record.dosage === 'string' ? parseFloat(record.dosage) : record.dosage) : 
+      undefined,
+    // Include any other relevant fields, but exclude dosage which is handled above
+    ...Object.entries(record)
+      .filter(([key]) => key !== 'dosage')
+      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {})
   };
 
   const { data, error } = await supabase
     .from('health_records')
-    .insert([dbRecord])
+    .insert(dbRecord)
     .select()
     .single();
 
@@ -65,7 +71,13 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
 };
 
 export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>): Promise<HealthRecord> => {
+  // Handle dosage conversion
   const dbUpdates = {
+    ...updates,
+    // Convert string dosage to numeric if needed
+    dosage: updates.dosage ?
+      (typeof updates.dosage === 'string' ? parseFloat(updates.dosage as string) : updates.dosage) :
+      undefined,
     record_type: updates.record_type,
     title: updates.title,
     description: updates.description,
@@ -74,8 +86,6 @@ export const updateHealthRecord = async (id: string, updates: Partial<HealthReco
     next_due_date: updates.next_due_date,
     vet_name: updates.performed_by || undefined,
     record_notes: updates.description || undefined,
-    // Include any other relevant fields
-    ...updates
   };
 
   const { data, error } = await supabase

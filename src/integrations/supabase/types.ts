@@ -1559,6 +1559,101 @@ export type Database = {
           },
         ]
       }
+      health_alerts: {
+        Row: {
+          created_at: string
+          dog_id: string
+          id: string
+          indicator_id: string
+          resolved: boolean
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          dog_id: string
+          id?: string
+          indicator_id: string
+          resolved?: boolean
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          dog_id?: string
+          id?: string
+          indicator_id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_alerts_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "health_alerts_indicator_id_fkey"
+            columns: ["indicator_id"]
+            isOneToOne: false
+            referencedRelation: "health_indicators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_indicators: {
+        Row: {
+          abnormal: boolean | null
+          alert_generated: boolean | null
+          appetite: string | null
+          created_at: string
+          created_by: string | null
+          date: string
+          dog_id: string
+          energy: string | null
+          id: string
+          notes: string | null
+          stool_consistency: string | null
+        }
+        Insert: {
+          abnormal?: boolean | null
+          alert_generated?: boolean | null
+          appetite?: string | null
+          created_at?: string
+          created_by?: string | null
+          date: string
+          dog_id: string
+          energy?: string | null
+          id?: string
+          notes?: string | null
+          stool_consistency?: string | null
+        }
+        Update: {
+          abnormal?: boolean | null
+          alert_generated?: boolean | null
+          appetite?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          dog_id?: string
+          energy?: string | null
+          id?: string
+          notes?: string | null
+          stool_consistency?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_indicators_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_protocols: {
         Row: {
           completed_date: string | null
