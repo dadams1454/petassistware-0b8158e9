@@ -1,100 +1,53 @@
 
-import { useEffect } from 'react';
-import { useToast } from '@/components/ui/use-toast';
-import { addDays, format } from 'date-fns';
-import { customSupabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { HeatCycle } from '@/components/dogs/components/breeding/HeatCycleMonitor';
 
-export const useHeatCycleAlerts = (dogs: any[] = []) => {
-  const { toast } = useToast();
-  
-  useEffect(() => {
-    // Check for female dogs with upcoming or active heat cycles
-    const femaleDogs = dogs.filter(dog => dog.gender === 'Female');
-    
-    femaleDogs.forEach(dog => {
-      const lastHeatDate = dog.last_heat_date ? new Date(dog.last_heat_date) : null;
+export const useHeatCycleAlerts = (dogIds: string[]) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const recordHeatDate = async (dogId: string, date: Date): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      // Format date to ISO string for database storage
+      const dateString = format(date, 'yyyy-MM-dd');
       
-      if (!lastHeatDate) return;
-      
-      // Calculate next heat (roughly 6 months after last heat)
-      const nextHeatDate = addDays(lastHeatDate, 180);
-      const today = new Date();
-      
-      // Check if we're within 7 days of the next heat
-      if (isWithinDays(today, nextHeatDate, 7)) {
-        // Dog's heat cycle is approaching, show notification
-        toast({
-          title: "Heat Cycle Alert",
-          description: `${dog.name}'s heat cycle is approaching (expected around ${format(nextHeatDate, 'MMM d')})`,
-          variant: "default",
-          duration: 5000, // Show for 5 seconds
+      // Insert heat cycle record
+      const { error } = await supabase
+        .from('heat_cycles')
+        .insert({
+          dog_id: dogId,
+          start_date: dateString,
         });
+      
+      if (error) {
+        console.error('Error recording heat cycle:', error);
+        return false;
       }
       
-      // Check if we're likely within active heat (first 21 days after start)
-      const heatEndDate = addDays(nextHeatDate, 21);
-      if (today >= nextHeatDate && today <= heatEndDate) {
-        // Dog is likely in heat, show notification
-        toast({
-          title: "Active Heat Cycle",
-          description: `${dog.name} is currently in heat. Consider separation protocols.`,
-          variant: "destructive",
-          duration: 5000, // Show for 5 seconds
-        });
+      // Update dog's last heat date
+      const { error: updateError } = await supabase
+        .from('dogs')
+        .update({ last_heat_date: dateString })
+        .eq('id', dogId);
+      
+      if (updateError) {
+        console.error('Error updating dog last heat date:', updateError);
+        return false;
       }
-    });
-  }, [dogs, toast]);
-  
-  const recordHeatDate = async (dogId: string, heatStartDate: Date) => {
-    try {
-      const { error } = await customSupabase
-        .from('dogs')
-        .update({ 
-          last_heat_date: heatStartDate.toISOString().split('T')[0],
-          is_pregnant: false // Reset pregnancy status if manually recording heat
-        })
-        .eq('id', dogId);
-      
-      if (error) throw error;
       
       return true;
-    } catch (error) {
-      console.error('Error recording heat date:', error);
+    } catch (err) {
+      console.error('Error in recordHeatDate function:', err);
       return false;
-    }
-  };
-  
-  const markAsPregnant = async (dogId: string, tieDate: Date) => {
-    try {
-      const { error } = await customSupabase
-        .from('dogs')
-        .update({ 
-          tie_date: tieDate.toISOString().split('T')[0],
-          is_pregnant: true
-        })
-        .eq('id', dogId);
-      
-      if (error) throw error;
-      
-      return true;
-    } catch (error) {
-      console.error('Error marking dog as pregnant:', error);
-      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
   
   return {
-    recordHeatDate,
-    markAsPregnant
+    isLoading,
+    recordHeatDate
   };
 };
-
-// Helper function to check if a date is within X days of a target date
-function isWithinDays(date: Date, targetDate: Date, days: number): boolean {
-  const earliestDate = addDays(targetDate, -days);
-  const latestDate = addDays(targetDate, days);
-  
-  return (
-    date >= earliestDate && date <= latestDate
-  );
-}

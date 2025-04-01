@@ -1,11 +1,18 @@
-
-import { Puppy } from '@/types/litter';
-
-export interface PuppyWithAge extends Puppy {
+export interface PuppyWithAge {
+  id: string;
+  litter_id: string;
+  name: string | null;
+  gender: 'Male' | 'Female' | null;
+  color: string | null;
+  status: string | null;
+  birth_date: string | null;
+  current_weight: string | null;
+  photo_url: string | null;
+  microchip_number: string | null;
   ageInDays: number;
   litters?: {
     id: string;
-    name?: string;
+    name: string;
     birth_date: string;
   };
 }
@@ -20,12 +27,10 @@ export interface PuppyAgeGroupData {
   careChecks: string[];
 }
 
+// Management statistics
 export interface PuppyManagementStats {
   totalPuppies: number;
   activeLitters: number;
   upcomingVaccinations: number;
   recentWeightChecks: number;
 }
-
-// Add an alias for backward compatibility
-export type PuppyStatistics = PuppyManagementStats;

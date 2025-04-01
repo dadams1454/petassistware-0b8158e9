@@ -34,12 +34,12 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
     try {
       setLoading(true);
       
-      // Use the supabase client for the heat_cycles table
+      // Try using a RPC (database function) or a direct query with explicit typing
       const { data, error: supabaseError } = await supabase
         .from('heat_cycles')
         .select('*')
         .eq('dog_id', dogId)
-        .order('start_date', { ascending: false });
+        .order('start_date', { ascending: false }) as { data: HeatCycle[] | null, error: any };
       
       if (supabaseError) {
         throw supabaseError;
