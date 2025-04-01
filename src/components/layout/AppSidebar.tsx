@@ -24,7 +24,7 @@ import {
   Mail,
   FileText,
   Coins,
-  Building,
+  Building2,
   Shield,
   Settings,
   Scale
@@ -48,7 +48,7 @@ export const AppSidebar = () => {
     { title: 'Communications', href: '/communications', icon: Mail },
     { title: 'Contracts', href: '/contracts', icon: FileText },
     { title: 'Finances', href: '/finances', icon: Coins },
-    { title: 'Facility', href: '/facility', icon: Building },
+    { title: 'Facility Management', href: '/facility', icon: Building2 },
     { title: 'Compliance', href: '/compliance', icon: Scale },
   ];
   

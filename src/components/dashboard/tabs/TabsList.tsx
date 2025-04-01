@@ -9,7 +9,8 @@ import {
   RefreshCw,
   Building2,
   Baby,
-  GraduationCap
+  GraduationCap,
+  Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -76,6 +77,14 @@ const TabsList: React.FC<TabsListProps> = ({
           >
             <Building2 className="h-4 w-4 mr-2" />
             <span>Facility</span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="kennels" 
+            className={`transition-all ${activeTab === 'kennels' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          >
+            <Home className="h-4 w-4 mr-2" />
+            <span>Kennels</span>
           </TabsTrigger>
           
           <TabsTrigger 

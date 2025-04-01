@@ -13,6 +13,7 @@ import DogLetOutTab from './tabs/DogLetOutTab';
 import PuppiesTab from './tabs/PuppiesTab';
 import TrainingTab from './tabs/TrainingTab';
 import FacilityTab from './tabs/FacilityTab';
+import KennelTab from './tabs/KennelTab';
 
 interface DashboardContentProps {
   isLoading: boolean;
@@ -108,6 +109,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           <FacilityTab 
             onRefreshData={handleManualRefresh}
             dogStatuses={dogStatuses || []}
+          />
+        )}
+        
+        {activeTab === 'kennels' && (
+          <KennelTab 
+            onRefreshData={handleManualRefresh}
           />
         )}
         
