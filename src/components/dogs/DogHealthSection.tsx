@@ -6,6 +6,7 @@ import { useDogHealthVaccinations } from './hooks/useDogHealthVaccinations';
 import VaccinationHistorySection from './components/VaccinationHistorySection';
 import HealthSectionHeader from './components/health/HealthSectionHeader';
 import VaccinationManager from './components/VaccinationManager';
+import { useDogStatus } from './hooks/useDogStatus';
 
 interface DogHealthSectionProps {
   dog: any;
@@ -17,6 +18,9 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
     latestVaccinations, 
     isLoading 
   } = useDogHealthVaccinations(dog.id);
+
+  // Use the dogStatus hook to get health and breeding status
+  const dogStatus = useDogStatus(dog);
 
   // Extract relevant health data from the dog object
   const lastHeatDate = dog.last_heat_date ? new Date(dog.last_heat_date) : null;
@@ -40,10 +44,10 @@ const DogHealthSection: React.FC<DogHealthSectionProps> = ({ dog }) => {
 
   return (
     <div className="text-sm space-y-4">
-      {/* Only show breeding section for females first and more prominently */}
+      {/* Pass the correct props to HealthSectionHeader */}
       <HealthSectionHeader
-        gender={dog.gender}
-        dog={dog}
+        dogId={dog.id}
+        dogStatus={dogStatus}
       />
       
       {dog.gender === 'Female' && <Separator className="my-2" />}

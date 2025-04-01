@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define UserRole type that's needed across the app
@@ -17,7 +16,7 @@ export type AuthContextType = {
 };
 
 // Create the context with a default value
-const AuthContext = createContext<AuthContextType>({
+export const AuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => {},
   logout: () => {},
