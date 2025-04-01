@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import BlurBackground from '@/components/ui/blur-background';
 import Logo from '@/components/common/Logo';
@@ -12,10 +12,10 @@ const Auth: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  console.log('Auth page rendered, user:', !!user);
+  console.log('Auth page rendered, user state:', !!user);
   
   // If user is already authenticated, redirect to dashboard
-  useEffect(() => {
+  React.useEffect(() => {
     if (user) {
       console.log('Auth page: User already authenticated, redirecting to dashboard');
       navigate('/dashboard', { replace: true });

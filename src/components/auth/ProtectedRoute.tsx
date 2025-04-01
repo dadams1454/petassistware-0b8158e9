@@ -1,23 +1,18 @@
 
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth, UserRole } from '@/contexts/AuthProvider';
-import { UnauthorizedState } from '@/components/ui/standardized';
-import { AuthLoadingState } from '@/components/ui/standardized';
-import { hasMinimumRole, PERMISSIONS, hasPermission } from '@/utils/permissions';
+import { useAuth } from '@/hooks/useAuth';
+import { AuthLoadingState, UnauthorizedState } from '@/components/ui/standardized';
+import { hasPermission } from '@/utils/permissions';
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
-  requiredRoles?: UserRole[];
-  resource?: keyof typeof PERMISSIONS;
+  requiredRoles?: string[];
+  resource?: string;
   action?: 'view' | 'add' | 'edit' | 'delete';
   fallbackPath?: string;
 }
 
-/**
- * ProtectedRoute - A component that protects routes from unauthorized access
- * It checks if the user is authenticated and if they have the required permissions
- */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requiredRoles = [], 
@@ -35,7 +30,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     path: location.pathname 
   });
 
-  // Show loading state briefly while auth state is loading
+  // Show loading state while auth state is loading
   if (loading) {
     return <AuthLoadingState message="Checking permissions..." />;
   }
@@ -74,30 +69,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }
 
-  // If role-based access check is required
-  if (requiredRoles.length > 0) {
-    const hasRole = requiredRoles.some(role => userRole === role || 
-      hasMinimumRole(userRole, role));
-    
-    console.log('[ProtectedRoute] Role check:', { 
-      userRole, 
-      requiredRoles, 
-      hasRole 
-    });
-    
-    if (!hasRole) {
-      return (
-        <UnauthorizedState 
-          title="Access Restricted" 
-          description="You don't have the required role to access this page"
-          backPath="/dashboard"
-          showAdminSetupLink={true}
-        />
-      );
-    }
-  }
-
-  // If all checks pass, render the protected content
+  // All checks passed, render the protected content
   return <>{children}</>;
 };
 

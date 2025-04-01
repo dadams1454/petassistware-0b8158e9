@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define UserRole type that's needed across the app
@@ -44,6 +45,8 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     const checkAuth = async () => {
       try {
         const storedUser = localStorage.getItem('user');
+        console.log('AuthProvider: Checking for stored user:', !!storedUser);
+        
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
@@ -53,6 +56,8 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           
           // Set tenant ID from the stored user data
           setTenantId(parsedUser.tenantId || '00000000-0000-0000-0000-000000000000');
+          
+          console.log('AuthProvider: User restored from storage');
         }
       } catch (err) {
         console.error('Error checking authentication:', err);
@@ -68,6 +73,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
+    console.log('AuthProvider: Login attempt with email', email);
 
     try {
       // Mock API call - replace with actual authentication logic
@@ -87,10 +93,12 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         setUser(mockUser);
         setUserRole(mockUser.role);
         setTenantId(mockUser.tenantId);
+        console.log('AuthProvider: Login successful, user set');
       } else {
         throw new Error('Email and password are required');
       }
     } catch (err: any) {
+      console.error('AuthProvider: Login error', err);
       setError(err.message || 'Failed to authenticate');
       throw err;
     } finally {
@@ -100,11 +108,13 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   // Logout function
   const logout = () => {
+    console.log('AuthProvider: Logging out');
     // Remove user from localStorage
     localStorage.removeItem('user');
     setUser(null);
     setUserRole(null);
     setTenantId(null);
+    console.log('AuthProvider: User logged out, state cleared');
   };
 
   // SignOut function (Promise-based alias for logout)

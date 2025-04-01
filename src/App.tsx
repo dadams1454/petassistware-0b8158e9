@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AuthProvider from './contexts/AuthProvider';
 import MainLayout from './layouts/MainLayout';
+import AuthLayout from './layouts/AuthLayout';
 import Dashboard from './pages/Dashboard';
 import DogsPage from './pages/Dogs';
 import DogProfilePage from './pages/DogProfile';
@@ -15,50 +16,45 @@ import Finances from './pages/Finances';
 import Users from './pages/Users';
 import Auth from './pages/Auth';
 import Profile from './pages/Profile';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import Index from './pages/Index';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-// Import the reproductive management page
 import ReproductiveManagementPage from './pages/ReproductiveManagementPage';
-import AuthLayout from './layouts/AuthLayout';
 
 const queryClient = new QueryClient();
 
 function App() {
-  const showDevtools = process.env.NODE_ENV === 'development';
-  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
           <Routes>
-            {/* Auth route with its own layout (no sidebar) */}
+            {/* All routes go through the AuthLayout for auth checking */}
             <Route element={<AuthLayout />}>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-            </Route>
-            
-            {/* All other routes with MainLayout (including sidebar) */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               
-              <Route path="/dogs" element={<ProtectedRoute><DogsPage /></ProtectedRoute>} />
-              <Route path="/dogs/new" element={<ProtectedRoute><DogsPage /></ProtectedRoute>} />
-              <Route path="/dogs/:id" element={<ProtectedRoute><DogProfilePage /></ProtectedRoute>} />
-              
-              <Route path="/litters" element={<ProtectedRoute><LittersPage /></ProtectedRoute>} />
-              <Route path="/litters/new" element={<ProtectedRoute><AddLitter /></ProtectedRoute>} />
-              <Route path="/litters/:id" element={<ProtectedRoute><LitterDetail /></ProtectedRoute>} />
-              <Route path="/breeding-prep" element={<ProtectedRoute><BreedingPrepPage /></ProtectedRoute>} />
-              <Route path="/welping/:id" element={<ProtectedRoute><WelpingPage /></ProtectedRoute>} />
-              
-              <Route path="/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
-              <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-              
-              {/* Reproductive management route */}
-              <Route path="/dogs/:dogId/reproductive" element={<ProtectedRoute><ReproductiveManagementPage /></ProtectedRoute>} />
+              {/* Protected routes with MainLayout (sidebar) */}
+              <Route element={<MainLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                
+                <Route path="/dogs" element={<DogsPage />} />
+                <Route path="/dogs/new" element={<DogsPage />} />
+                <Route path="/dogs/:id" element={<DogProfilePage />} />
+                
+                <Route path="/litters" element={<LittersPage />} />
+                <Route path="/litters/new" element={<AddLitter />} />
+                <Route path="/litters/:id" element={<LitterDetail />} />
+                <Route path="/breeding-prep" element={<BreedingPrepPage />} />
+                <Route path="/welping/:id" element={<WelpingPage />} />
+                
+                <Route path="/finances" element={<Finances />} />
+                <Route path="/users" element={<Users />} />
+                
+                <Route path="/dogs/:dogId/reproductive" element={<ReproductiveManagementPage />} />
+              </Route>
             </Route>
           </Routes>
           <Toaster />
