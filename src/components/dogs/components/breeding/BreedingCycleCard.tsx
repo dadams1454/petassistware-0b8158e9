@@ -5,7 +5,7 @@ import { Heart, CalendarDays, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { useDogStatus, CycleStage } from '../../hooks/useDogStatus';
+import { useDogStatus } from '../../hooks/useDogStatus';
 import { cn } from '@/lib/utils';
 
 interface BreedingCycleCardProps {
@@ -43,15 +43,15 @@ const BreedingCycleCard: React.FC<BreedingCycleCardProps> = ({ dog, showCard = t
 
   const cycleProgress = isPregnant 
     ? (gestationProgressDays ? (gestationProgressDays / 63) * 100 : 0)
-    : (daysIntoCurrentHeat ? (daysIntoCurrentHeat / averageCycleLength) * 100 : 
-      (daysUntilNextHeat ? ((averageCycleLength - daysUntilNextHeat) / averageCycleLength) * 100 : 0));
+    : (daysIntoCurrentHeat ? (daysIntoCurrentHeat / (averageCycleLength || 180)) * 100 : 
+      (daysUntilNextHeat ? (((averageCycleLength || 180) - daysUntilNextHeat) / (averageCycleLength || 180)) * 100 : 0));
 
   const today = new Date();
   const isFertileWindow = fertileDays.start && fertileDays.end
     ? (isAfter(today, fertileDays.start) && isBefore(today, fertileDays.end))
     : false;
 
-  const isOptimalBreedingWindow = recommendedBreedingDays.start && recommendedBreedingDays.end
+  const isOptimalBreedingWindow = recommendedBreedingDays?.start && recommendedBreedingDays?.end
     ? (isAfter(today, recommendedBreedingDays.start) && isBefore(today, recommendedBreedingDays.end))
     : false;
 
@@ -127,7 +127,7 @@ const BreedingCycleCard: React.FC<BreedingCycleCardProps> = ({ dog, showCard = t
               {currentStage && (
                 <Badge 
                   variant="outline" 
-                  className={`bg-${currentStage.color} text-gray-800 dark:text-gray-100`}
+                  className={`bg-${currentStage.color || 'gray-100'} text-gray-800 dark:text-gray-100`}
                 >
                   {currentStage.name}
                 </Badge>
@@ -137,7 +137,7 @@ const BreedingCycleCard: React.FC<BreedingCycleCardProps> = ({ dog, showCard = t
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span>Day {daysIntoCurrentHeat || 0}</span>
-                <span>Day {averageCycleLength}</span>
+                <span>Day {averageCycleLength || 180}</span>
               </div>
               <Progress value={cycleProgress} className="h-2" />
             </div>
@@ -188,7 +188,7 @@ const BreedingCycleCard: React.FC<BreedingCycleCardProps> = ({ dog, showCard = t
                 <div>
                   <div className="text-muted-foreground text-xs">Optimal Breeding</div>
                   <div className={cn("font-medium", isOptimalBreedingWindow ? "text-red-600 font-bold" : "")}>
-                    {recommendedBreedingDays.start && recommendedBreedingDays.end 
+                    {recommendedBreedingDays?.start && recommendedBreedingDays?.end 
                       ? `${format(recommendedBreedingDays.start, "MMM d")} - ${format(recommendedBreedingDays.end, "MMM d")}` 
                       : "Unknown"}
                   </div>

@@ -1,11 +1,13 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { format, differenceInDays } from 'date-fns';
 import { useDogStatus } from '../../hooks/useDogStatus';
 import BreedingCycleCard from './BreedingCycleCard';
-import { Heart, AlertTriangle, Calendar, Check, Clipboard } from 'lucide-react';
+import { Heart, AlertTriangle, Calendar, Check, Clipboard, Info } from 'lucide-react';
 import { BreedingRecommendations } from './BreedingRecommendations';
 import { useNavigate } from 'react-router-dom';
 

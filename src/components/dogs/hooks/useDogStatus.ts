@@ -13,6 +13,11 @@ export interface DogStatusData {
   nextHeatDate?: Date;
   estimatedDueDate?: Date;
   hasVaccinationHeatConflict?: boolean;
+  
+  // Properties needed by various components
+  tieDate?: string | null;
+  gestationProgressDays?: number | null;
+  
   heatCycle: {
     isInHeat: boolean;
     isPreHeat: boolean;
@@ -21,11 +26,19 @@ export interface DogStatusData {
     currentStage?: {
       name: string;
       description: string;
+      color?: string; // Added color property
     };
+    lastHeatDate?: Date; // Added lastHeatDate
+    daysIntoCurrentHeat?: number; // Added daysIntoCurrentHeat
     fertileDays: {
       start?: Date;
       end?: Date;
     };
+    recommendedBreedingDays?: { // Added recommendedBreedingDays
+      start?: Date;
+      end?: Date;
+    };
+    averageCycleLength?: number; // Added averageCycleLength
   };
 }
 
@@ -33,10 +46,16 @@ export const useDogStatus = (dog: any): DogStatusData => {
   const [dogStatus, setDogStatus] = useState<DogStatusData>({
     isPregnant: false,
     isInHeat: false,
+    tieDate: null,
+    gestationProgressDays: null,
     heatCycle: {
       isInHeat: false,
       isPreHeat: false,
-      fertileDays: {}
+      fertileDays: {},
+      lastHeatDate: undefined,
+      daysIntoCurrentHeat: 0,
+      recommendedBreedingDays: {},
+      averageCycleLength: 180
     }
   });
 
@@ -52,13 +71,17 @@ export const useDogStatus = (dog: any): DogStatusData => {
     let nextHeatDate: Date | undefined = undefined;
     let currentStage = undefined;
     let fertileDays = {};
+    let lastHeatDate: Date | undefined = undefined;
+    let daysIntoCurrentHeat = 0;
+    let recommendedBreedingDays = {};
+    const averageCycleLength = 180; // 6 months in days
     
     if (dog.gender === 'Female' && dog.last_heat_date) {
-      const lastHeatDate = new Date(dog.last_heat_date);
+      lastHeatDate = new Date(dog.last_heat_date);
       const today = new Date();
       
       // Typical heat cycle length is around 180 days (6 months)
-      nextHeatDate = addDays(lastHeatDate, 180);
+      nextHeatDate = addDays(lastHeatDate, averageCycleLength);
       
       // If within 21 days of last heat date, consider the dog in heat
       const heatEndDate = addDays(lastHeatDate, 21);
@@ -70,6 +93,11 @@ export const useDogStatus = (dog: any): DogStatusData => {
         end: nextHeatDate 
       });
       
+      // Calculate days into current heat
+      if (isInHeat) {
+        daysIntoCurrentHeat = differenceInDays(today, lastHeatDate);
+      }
+      
       // Determine current stage of heat cycle if in heat
       if (isInHeat) {
         const daysSinceStart = differenceInDays(today, lastHeatDate);
@@ -77,12 +105,14 @@ export const useDogStatus = (dog: any): DogStatusData => {
         if (daysSinceStart <= 9) {
           currentStage = {
             name: 'Proestrus',
-            description: 'Swelling and bloody discharge, not receptive to males'
+            description: 'Swelling and bloody discharge, not receptive to males',
+            color: 'pink-100'
           };
         } else if (daysSinceStart <= 13) {
           currentStage = {
             name: 'Estrus',
-            description: 'Fertile period, receptive to males, lighter discharge'
+            description: 'Fertile period, receptive to males, lighter discharge',
+            color: 'red-100'
           };
           
           // Fertile days typically days 9-13 of the cycle
@@ -90,10 +120,17 @@ export const useDogStatus = (dog: any): DogStatusData => {
             start: addDays(lastHeatDate, 9),
             end: addDays(lastHeatDate, 13)
           };
+          
+          // Recommended breeding days (slight overlap with fertile days)
+          recommendedBreedingDays = {
+            start: addDays(lastHeatDate, 10),
+            end: addDays(lastHeatDate, 12)
+          };
         } else {
           currentStage = {
             name: 'Diestrus',
-            description: 'No longer fertile, discharge diminishing'
+            description: 'No longer fertile, discharge diminishing',
+            color: 'purple-100'
           };
         }
       }
@@ -127,9 +164,18 @@ export const useDogStatus = (dog: any): DogStatusData => {
       breedingStatus = 'resting';
     }
     
+    // Get tie date if available
+    const tieDate = dog.breeding_date || null;
+    
+    // Calculate gestation progress days if pregnant
+    let gestationProgressDays = null;
+    if (isPregnant && tieDate) {
+      gestationProgressDays = differenceInDays(new Date(), new Date(tieDate));
+    }
+    
     // Mock estimated due date if pregnant
-    const estimatedDueDate = isPregnant && dog.breeding_date 
-      ? addDays(new Date(dog.breeding_date), 63) // 63 days is typical canine gestation
+    const estimatedDueDate = isPregnant && tieDate 
+      ? addDays(new Date(tieDate), 63) // 63 days is typical canine gestation
       : undefined;
     
     // Calculate days until next heat
@@ -147,13 +193,19 @@ export const useDogStatus = (dog: any): DogStatusData => {
       nextHeatDate,
       estimatedDueDate,
       hasVaccinationHeatConflict,
+      tieDate,
+      gestationProgressDays,
       heatCycle: {
         isInHeat,
         isPreHeat,
         nextHeatDate,
         daysUntilNextHeat,
         currentStage,
-        fertileDays
+        fertileDays,
+        lastHeatDate,
+        daysIntoCurrentHeat,
+        recommendedBreedingDays,
+        averageCycleLength
       }
     });
     
