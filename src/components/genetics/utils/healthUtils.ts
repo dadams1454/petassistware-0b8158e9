@@ -27,6 +27,17 @@ export function formatConditionName(condition: string): string {
 }
 
 /**
+ * Format date for UI display
+ */
+export function formatDate(date: string): string {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+/**
  * Get a summary of health marker status counts
  */
 export function getHealthSummaryData(healthMarkers: Record<string, HealthMarker>) {
@@ -69,18 +80,34 @@ export function getHealthSummaryData(healthMarkers: Record<string, HealthMarker>
 }
 
 /**
- * Get color-coded status text
+ * Get color-coded status text and colors for result display
  */
-export function getStatusStyleClasses(status: string): string {
+export function getResultWithColorProps(status: string): { color: string; bgColor: string } {
   switch(status.toLowerCase()) {
     case 'clear':
-      return 'text-green-600 bg-green-100 border-green-200';
+      return { color: 'text-green-700', bgColor: 'bg-green-100' };
     case 'carrier':
-      return 'text-yellow-600 bg-yellow-100 border-yellow-200';
+      return { color: 'text-amber-700', bgColor: 'bg-amber-100' };
     case 'affected':
-      return 'text-red-600 bg-red-100 border-red-200';
+      return { color: 'text-red-700', bgColor: 'bg-red-100' };
     default:
-      return 'text-gray-600 bg-gray-100 border-gray-200';
+      return { color: 'text-gray-700', bgColor: 'bg-gray-100' };
+  }
+}
+
+/**
+ * Get status color for visualization
+ */
+export function getStatusColor(status: string): string {
+  switch(status.toLowerCase()) {
+    case 'clear':
+      return '#10b981'; // green-500
+    case 'carrier': 
+      return '#f59e0b'; // amber-500
+    case 'affected':
+      return '#ef4444'; // red-500
+    default:
+      return '#6b7280'; // gray-500
   }
 }
 
