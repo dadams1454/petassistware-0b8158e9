@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 
-export const AppSidebar = () => {
+const AppSidebar = () => {
   const location = useLocation();
   const { userRole } = useAuth();
   
@@ -69,7 +69,7 @@ export const AppSidebar = () => {
   const showAdminItems = userRole === 'admin' || userRole === 'owner';
   
   const isActive = (path: string) => {
-    return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
   return (

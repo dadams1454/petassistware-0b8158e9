@@ -10,7 +10,7 @@ import {
   FileText,
   ClipboardList,
   Bookmark,
-  Building,
+  Building2,
   Coins,
   UserCog,
   ClipboardCheck,
@@ -75,7 +75,7 @@ export const navItems = [
   {
     title: 'Facility',
     href: '/facility',
-    icon: Building,
+    icon: Building2,
     description: 'Manage facility, staff, and maintenance'
   },
   {

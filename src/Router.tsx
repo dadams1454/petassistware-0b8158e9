@@ -55,8 +55,8 @@ const Router = () => {
           <Route path="/litters/new" element={<AddLitter />} />
           <Route path="/litters/:id" element={<LitterDetail />} />
           <Route path="/breeding-prep" element={<BreedingPrepPage />} />
-          <Route path="/breeding/prepare" element={<BreedingPrepPage />} />
           <Route path="/welping/:id" element={<WelpingPage />} />
+          <Route path="/welping/new" element={<WelpingPage />} />
           
           {/* Customer routes */}
           <Route path="/customers" element={<Customers />} />

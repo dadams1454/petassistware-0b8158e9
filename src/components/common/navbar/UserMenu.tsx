@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Settings, LogOut, Home, LayoutDashboard, Dog, ClipboardList, BookmarkCheck, FileText } from 'lucide-react';
+import { User, Settings, LogOut, Home, LayoutDashboard, Dog, ClipboardList, BookmarkCheck, FileText, Users, CalendarDays, Mail, Coins, Building2, Scale } from 'lucide-react';
 
 const UserMenu = () => {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ const UserMenu = () => {
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent className="w-56 mt-1" align="end">
+      <DropdownMenuContent className="w-56 mt-1 bg-white" align="end">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user?.name || 'User'}</p>
@@ -86,6 +86,13 @@ const UserMenu = () => {
         </DropdownMenuItem>
         
         <DropdownMenuItem asChild>
+          <Link to="/customers" className="cursor-pointer flex w-full">
+            <Users className="mr-2 h-4 w-4" />
+            <span>Customers</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
           <Link to="/reservations" className="cursor-pointer flex w-full">
             <BookmarkCheck className="mr-2 h-4 w-4" />
             <span>Reservations</span>
@@ -93,9 +100,44 @@ const UserMenu = () => {
         </DropdownMenuItem>
         
         <DropdownMenuItem asChild>
+          <Link to="/calendar" className="cursor-pointer flex w-full">
+            <CalendarDays className="mr-2 h-4 w-4" />
+            <span>Calendar</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
+          <Link to="/communications" className="cursor-pointer flex w-full">
+            <Mail className="mr-2 h-4 w-4" />
+            <span>Communications</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
           <Link to="/contracts" className="cursor-pointer flex w-full">
             <FileText className="mr-2 h-4 w-4" />
             <span>Contracts</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
+          <Link to="/finances" className="cursor-pointer flex w-full">
+            <Coins className="mr-2 h-4 w-4" />
+            <span>Finances</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
+          <Link to="/facility" className="cursor-pointer flex w-full">
+            <Building2 className="mr-2 h-4 w-4" />
+            <span>Facility</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
+          <Link to="/compliance" className="cursor-pointer flex w-full">
+            <Scale className="mr-2 h-4 w-4" />
+            <span>Compliance</span>
           </Link>
         </DropdownMenuItem>
         
