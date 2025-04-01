@@ -2,6 +2,7 @@
 import React from 'react';
 import { SectionHeader } from '@/components/ui/standardized';
 import BreedingManagement from './BreedingManagement';
+import GeneticBreedingRecommendations from '@/components/breeding/GeneticBreedingRecommendations';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dna } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,9 +10,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface BreedingSectionProps {
   onRefresh?: () => void;
+  selectedDogId?: string;
 }
 
-const BreedingSection: React.FC<BreedingSectionProps> = ({ onRefresh }) => {
+const BreedingSection: React.FC<BreedingSectionProps> = ({ onRefresh, selectedDogId }) => {
   const navigate = useNavigate();
   
   const handleViewGeneticCompatibility = () => {
@@ -27,10 +29,12 @@ const BreedingSection: React.FC<BreedingSectionProps> = ({ onRefresh }) => {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
-          <BreedingManagement onRefresh={onRefresh} />
+          <BreedingManagement onRefresh={onRefresh} dog={selectedDogId ? { id: selectedDogId } : undefined} />
         </div>
         
-        <div>
+        <div className="space-y-4">
+          <GeneticBreedingRecommendations preselectedDogId={selectedDogId} />
+          
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
@@ -40,7 +44,7 @@ const BreedingSection: React.FC<BreedingSectionProps> = ({ onRefresh }) => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Analyze genetic compatibility between potential breeding pairs to predict offspring traits and health.
+                Advanced genetic compatibility analysis for specific breeding pairs.
               </p>
               
               <Button 
@@ -49,7 +53,7 @@ const BreedingSection: React.FC<BreedingSectionProps> = ({ onRefresh }) => {
                 onClick={handleViewGeneticCompatibility}
               >
                 <Dna className="h-4 w-4 mr-2" />
-                Analyze Genetic Compatibility
+                Analyze Specific Pair
               </Button>
             </CardContent>
           </Card>

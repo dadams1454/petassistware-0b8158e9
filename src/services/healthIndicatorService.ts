@@ -50,13 +50,9 @@ export const addHealthIndicator = async (record: Omit<HealthIndicatorRecord, 'id
   // If abnormal, create an alert
   if (abnormal) {
     try {
-      // First check if data is a proper object with an id property (not an error object)
-      const recordId = data.id;
-      if (recordId) {
-        await createHealthAlert(recordId.toString(), record.dog_id);
-      } else {
-        console.error('Data object does not have a valid id property:', data);
-      }
+      // Type assertion to ensure TypeScript knows this is not a Supabase error
+      const recordData = data as {id: string};
+      await createHealthAlert(recordData.id.toString(), record.dog_id);
     } catch (alertError) {
       console.error('Failed to create health alert:', alertError);
       // Continue without failing the whole operation

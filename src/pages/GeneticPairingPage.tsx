@@ -1,15 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DogSelector } from '@/components/genetics/DogSelector';
 import { GeneticCompatibilityAnalyzer } from '@/components/genetics/GeneticCompatibilityAnalyzer';
 import { TraitProbabilityChart } from '@/components/genetics/TraitProbabilityChart';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
+import { useGeneticPairing } from '@/hooks/useGeneticPairing';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { DogProfile } from '@/types/dog';
+import { getBreedingCompatibility } from '@/services/breedingRecommendationService';
 import { useDogDetail } from '@/components/dogs/hooks/useDogDetail';
 
 const GeneticPairingPage: React.FC = () => {
@@ -25,7 +26,7 @@ const GeneticPairingPage: React.FC = () => {
   const urlDamId = urlParams.get('damId');
   
   // Set initial values from URL if available
-  React.useEffect(() => {
+  useEffect(() => {
     if (urlSireId) setSireId(urlSireId);
     if (urlDamId) setDamId(urlDamId);
   }, [urlSireId, urlDamId]);
@@ -38,12 +39,35 @@ const GeneticPairingPage: React.FC = () => {
   const { dog: sireDetails } = useDogDetail(sireId);
   const { dog: damDetails } = useDogDetail(damId);
   
+  // Use the genetic pairing hook
+  const { analysis, loading: pairingLoading } = useGeneticPairing(sireId, damId);
+  
   // Save breeding plan
-  const savePairingPlan = () => {
-    toast({
-      title: "Breeding Plan Saved",
-      description: `Breeding plan for ${sireDetails?.name || 'Unknown'} × ${damDetails?.name || 'Unknown'} has been saved.`,
-    });
+  const savePairingPlan = async () => {
+    if (!sireId || !damId) return;
+    
+    try {
+      // Get compatibility analysis
+      const compatibility = await getBreedingCompatibility(sireId, damId);
+      
+      // Here we would normally save this to a database
+      // For now we'll just show a toast
+      
+      toast({
+        title: "Breeding Plan Saved",
+        description: `Breeding plan for ${sireDetails?.name || 'Unknown'} × ${damDetails?.name || 'Unknown'} has been saved.`,
+      });
+      
+      // Redirect to breeding prep page
+      navigate(`/breeding/prep?dogId=${damId}`);
+    } catch (error) {
+      console.error('Error saving breeding plan:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save breeding plan",
+        variant: "destructive"
+      });
+    }
   };
   
   return (
@@ -109,13 +133,13 @@ const GeneticPairingPage: React.FC = () => {
                 </TabsContent>
                 
                 <TabsContent value="traits">
-                  {sireLoading || damLoading ? (
+                  {sireLoading || damLoading || !sireGenetics || !damGenetics ? (
                     <div className="animate-pulse space-y-4">
                       <div className="h-64 bg-gray-200 rounded-md"></div>
                       <div className="h-4 bg-gray-200 rounded-md w-1/3"></div>
                       <div className="h-4 bg-gray-200 rounded-md w-1/2"></div>
                     </div>
-                  ) : sireGenetics && damGenetics ? (
+                  ) : (
                     <div className="space-y-6">
                       <TraitProbabilityChart
                         sireGenotype={sireGenetics}
@@ -139,10 +163,6 @@ const GeneticPairingPage: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center p-8 text-gray-500">
-                      Unable to load genetic data for one or both dogs.
                     </div>
                   )}
                 </TabsContent>
