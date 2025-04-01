@@ -8,7 +8,7 @@ import { hasPermission } from '@/utils/permissions';
 interface ProtectedRouteProps {
   children?: React.ReactNode;
   requiredRoles?: string[];
-  resource?: string;
+  resource?: 'dogs' | 'litters' | 'users' | 'adminSetup'; // Strictly type the resources
   action?: 'view' | 'add' | 'edit' | 'delete';
   fallbackPath?: string;
 }

@@ -14,7 +14,11 @@ const ROLE_HIERARCHY: Record<UserRole, number> = {
 };
 
 // Define permissions for each resource
-export const PERMISSIONS = {
+export const PERMISSIONS: {
+  [key in 'dogs' | 'litters' | 'users' | 'adminSetup']: {
+    [key in 'view' | 'add' | 'edit' | 'delete']?: string[]
+  }
+} = {
   dogs: {
     view: ['user', 'staff', 'manager', 'admin', 'owner', 'veterinarian', 'buyer'],
     add: ['staff', 'manager', 'admin', 'owner'],
@@ -37,7 +41,6 @@ export const PERMISSIONS = {
     view: ['admin', 'owner'],
     edit: ['admin', 'owner']
   }
-  // Add other resources as needed
 };
 
 // Check if a user has minimum role level
@@ -70,7 +73,7 @@ export const hasPermission = (
   }
   
   // Check if the user's role is in the list of allowed roles for this action on this resource
-  return PERMISSIONS[resource][action].includes(userRole);
+  return PERMISSIONS[resource][action]?.includes(userRole) || false;
 };
 
 export default {

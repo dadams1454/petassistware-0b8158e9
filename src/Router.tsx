@@ -15,6 +15,7 @@ import Litters from '@/pages/Litters';
 import AddLitter from '@/pages/AddLitter';
 import LitterDetail from '@/pages/LitterDetail';
 import BreedingPrepPage from '@/pages/BreedingPrepPage';
+import WelpingPage from '@/pages/WelpingPage';
 import Calendar from '@/pages/Calendar';
 import Communications from '@/pages/Communications';
 import AdminSetup from '@/pages/AdminSetup';
@@ -24,35 +25,48 @@ import Reservations from '@/pages/Reservations';
 import Finances from '@/pages/Finances';
 import Facility from '@/pages/Facility';
 import Compliance from '@/pages/Compliance';
+import ReproductiveManagementPage from '@/pages/ReproductiveManagementPage';
+import Profile from '@/pages/Profile';
 
 const Router = () => {
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
-      
-      {/* Authentication route - direct path without protection */}
-      <Route path="/auth" element={<Auth />} />
-      
-      {/* All protected routes are inside MainLayout */}
+      {/* All routes go through the AuthLayout for auth checking */}
       <Route element={<AuthLayout />}>
+        {/* Public routes */}
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        
+        {/* Protected routes with MainLayout (sidebar) */}
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          
           <Route path="/dogs" element={<Dogs />} />
+          <Route path="/dogs/new" element={<Dogs />} />
           <Route path="/dogs/:id" element={<DogProfilePage />} />
           <Route path="/dogs/:id/weight" element={<WeightTracking />} />
-          <Route path="/customers" element={<Customers />} />
+          <Route path="/dogs/:dogId/reproductive" element={<ReproductiveManagementPage />} />
+          
           <Route path="/litters" element={<Litters />} />
           <Route path="/litters/new" element={<AddLitter />} />
           <Route path="/litters/:id" element={<LitterDetail />} />
+          <Route path="/breeding-prep" element={<BreedingPrepPage />} />
           <Route path="/breeding/prepare" element={<BreedingPrepPage />} />
+          <Route path="/welping/:id" element={<WelpingPage />} />
+          
+          <Route path="/customers" element={<Customers />} />
           <Route path="/reservations" element={<Reservations />} />
           <Route path="/reservations/:id" element={<Reservations />} />
+          
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/communications" element={<Communications />} />
           <Route path="/contracts" element={<Calendar />} /> {/* Temporarily mapping to Calendar until Contracts page is implemented */}
+          
           <Route path="/finances" element={<Finances />} />
           <Route path="/facility" element={<Facility />} />
           <Route path="/compliance" element={<Compliance />} />
+          
           <Route path="/users" element={
             <ProtectedRoute resource="users" action="view">
               <Users />
@@ -68,8 +82,6 @@ const Router = () => {
               <AuditLogs />
             </ProtectedRoute>
           } />
-          {/* Redirect daily-care to facility */}
-          <Route path="/daily-care" element={<Navigate to="/facility" replace />} />
         </Route>
       </Route>
       

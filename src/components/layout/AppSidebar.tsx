@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Sidebar, 
   SidebarContent, 
@@ -27,7 +27,9 @@ import {
   Building2,
   Shield,
   Settings,
-  Scale
+  Scale,
+  Weight,
+  UserCircle
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 
@@ -37,6 +39,7 @@ export const AppSidebar = () => {
   
   const mainMenuItems = [
     { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { title: 'Profile', href: '/profile', icon: UserCircle },
     { title: 'Dogs', href: '/dogs', icon: Dog },
     { title: 'Litters', href: '/litters', icon: ClipboardList },
     { title: 'Reservations', href: '/reservations', icon: Bookmark },
@@ -50,6 +53,8 @@ export const AppSidebar = () => {
     { title: 'Finances', href: '/finances', icon: Coins },
     { title: 'Facility Management', href: '/facility', icon: Building2 },
     { title: 'Compliance', href: '/compliance', icon: Scale },
+    { title: 'Breeding Prep', href: '/breeding/prepare', icon: ClipboardList },
+    { title: 'Weight Tracking', href: '/dogs/1/weight', icon: Weight },
   ];
   
   const adminMenuItems = [
@@ -58,8 +63,8 @@ export const AppSidebar = () => {
     { title: 'Settings', href: '/admin-setup', icon: Settings },
   ];
   
-  // Only show admin items to admins
-  const showAdminItems = userRole === 'admin';
+  // Only show admin items to admins or owners
+  const showAdminItems = userRole === 'admin' || userRole === 'owner';
   
   const isActive = (path: string) => {
     return location.pathname === path;
