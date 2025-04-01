@@ -1,22 +1,22 @@
 
-import { WeightRecord } from '@/types/puppyTracking';
+import { WeightUnit, WeightRecord } from '@/types/puppyTracking';
 
 export interface WeightFormProps {
   onSubmit: (data: any) => void;
   onCancel: () => void;
-  defaultUnit: 'oz' | 'g' | 'lbs' | 'kg';
+  defaultUnit: WeightUnit;
   isSubmitting: boolean;
 }
 
 export interface WeightChartViewProps {
   weightRecords: WeightRecord[];
-  displayUnit: 'oz' | 'g' | 'lbs' | 'kg';
+  displayUnit: WeightUnit;
 }
 
 export interface WeightTableViewProps {
   weightRecords: WeightRecord[];
   onDelete: (id: string) => void;
-  displayUnit: 'oz' | 'g' | 'lbs' | 'kg';
+  displayUnit: WeightUnit;
 }
 
 export interface WeightTrackerProps {
@@ -24,4 +24,5 @@ export interface WeightTrackerProps {
   onAddSuccess?: () => void;
 }
 
-export { WeightRecord };
+// Use export type for re-exporting types to avoid isolatedModules error
+export type { WeightRecord };

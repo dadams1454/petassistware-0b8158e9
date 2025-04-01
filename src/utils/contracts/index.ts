@@ -1,18 +1,20 @@
 
-// Export needed functions from htmlGenerator without duplicate exports
+// Import everything from htmlGenerator
 import * as HtmlGenerator from './htmlGenerator';
+
+// Export specific functions from htmlGenerator
 export const { 
-  generateHtml,
-  renderTemplate, 
-  applyCustomStyles 
+  generateHtml = () => {},
+  renderTemplate = () => {}, 
+  applyCustomStyles = () => {}
 } = HtmlGenerator;
 
 // Export specific functions from pdfIntegration
 export * from './pdfIntegration';
 
-// Import contractTemplates if it exists, otherwise we'll create it
+// Try to import contractTemplates dynamically
 try {
-  // Dynamic import that will be resolved at runtime
+  // We'll use a dynamic import that will be resolved at runtime
   import('./contractTemplates').then(module => {
     // Export all from contractTemplates
     Object.keys(module).forEach(key => {

@@ -2,10 +2,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PuppyWithAge } from '@/types/puppyTracking';
+import { differenceInDays } from 'date-fns';
 
 export const usePuppyDetails = (puppyId: string) => {
-  return useQuery({
-    queryKey: ['puppy', puppyId],
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['puppy-detail', puppyId],
     queryFn: async () => {
       if (!puppyId) {
         throw new Error('Puppy ID is required');
@@ -15,11 +16,7 @@ export const usePuppyDetails = (puppyId: string) => {
         .from('puppies')
         .select(`
           *,
-          litters:litter_id (
-            id,
-            name,
-            birth_date
-          )
+          litters:litter_id(name, birth_date)
         `)
         .eq('id', puppyId)
         .single();
@@ -30,16 +27,28 @@ export const usePuppyDetails = (puppyId: string) => {
       }
 
       // Calculate age in days
-      const birthDate = data.birth_date || data.litters?.birth_date;
-      const ageInDays = birthDate 
-        ? Math.floor((Date.now() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24))
-        : 0;
+      const birthDateString = data.birth_date || 
+        (data.litters && 'birth_date' in data.litters ? data.litters.birth_date : null);
+      
+      let ageInDays = 0;
+      if (birthDateString) {
+        const birthDate = new Date(birthDateString);
+        ageInDays = differenceInDays(new Date(), birthDate);
+      }
 
+      // Cast to PuppyWithAge and return
       return {
         ...data,
-        ageInDays,
-      } as PuppyWithAge;
+        ageInDays
+      } as unknown as PuppyWithAge;
     },
     enabled: !!puppyId
   });
+
+  return {
+    data,
+    isLoading,
+    error,
+    refetch
+  };
 };
