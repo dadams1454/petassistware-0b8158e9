@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { ContractsList } from '@/components/contracts/ContractsList';
+import ContractsList from '@/components/contracts/ContractsList';
 import { SectionHeader } from '@/components/ui/standardized';
 import { Plus } from 'lucide-react';
-import { ContractDialog } from '@/components/contracts/ContractDialog';
+import ContractDialog from '@/components/contracts/ContractDialog';
 import PageContainer from '@/components/common/PageContainer';
 
 const Contracts = () => {
@@ -26,7 +26,7 @@ const Contracts = () => {
         
         <ContractDialog 
           open={isCreateDialogOpen} 
-          onOpenChange={setIsCreateDialogOpen} 
+          onOpenChange={setIsCreateDialogOpen}
         />
       </div>
     </PageContainer>

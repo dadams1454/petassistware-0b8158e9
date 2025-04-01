@@ -5,31 +5,29 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import ContractForm from './ContractForm';
 
 interface ContractDialogProps {
-  trigger: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   puppyId?: string;
   onSuccess?: () => void;
 }
 
 const ContractDialog: React.FC<ContractDialogProps> = ({
-  trigger,
+  open,
+  onOpenChange,
   puppyId,
   onSuccess
 }) => {
-  const [open, setOpen] = React.useState(false);
-
   const handleSuccess = () => {
-    setOpen(false);
+    onOpenChange(false);
     if (onSuccess) onSuccess();
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Create New Contract</DialogTitle>
@@ -37,7 +35,7 @@ const ContractDialog: React.FC<ContractDialogProps> = ({
         <ContractForm
           puppyId={puppyId || ''}
           onSubmit={handleSuccess}
-          onCancel={() => setOpen(false)}
+          onCancel={() => onOpenChange(false)}
         />
       </DialogContent>
     </Dialog>
