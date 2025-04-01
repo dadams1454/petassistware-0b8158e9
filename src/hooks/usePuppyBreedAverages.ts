@@ -1,24 +1,25 @@
 
 import { useState, useEffect } from 'react';
+import { WeightData } from '@/types/puppyTracking';
 
-export interface WeightData {
-  age: number;
-  weight: number;
-  unit: string;
-  // Add id for compatibility with existing code
-  id?: string;
-}
-
-interface UsePuppyBreedAveragesReturn {
+export interface UsePuppyBreedAveragesReturn {
   averageWeights: WeightData[];
   isLoading: boolean;
   error: Error | null;
+  breedAverages?: {
+    breed: string;
+    averageGrowthData: WeightData[];
+  };
 }
 
 export const usePuppyBreedAverages = (breed: string): UsePuppyBreedAveragesReturn => {
   const [averageWeights, setAverageWeights] = useState<WeightData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const [breedData, setBreedData] = useState<{
+    breed: string;
+    averageGrowthData: WeightData[];
+  } | null>(null);
   
   useEffect(() => {
     const fetchBreedData = async () => {
@@ -50,6 +51,12 @@ export const usePuppyBreedAverages = (breed: string): UsePuppyBreedAveragesRetur
         ];
         
         setAverageWeights(mockAverageWeights);
+        
+        // Set breed data for compatibility with GrowthChart
+        setBreedData({
+          breed: breed || 'Unknown',
+          averageGrowthData: mockAverageWeights
+        });
       } catch (err) {
         console.error('Error fetching breed average data:', err);
         setError(err instanceof Error ? err : new Error('Failed to fetch breed data'));
@@ -66,6 +73,7 @@ export const usePuppyBreedAverages = (breed: string): UsePuppyBreedAveragesRetur
   return {
     averageWeights,
     isLoading,
-    error
+    error,
+    breedAverages: breedData
   };
 };

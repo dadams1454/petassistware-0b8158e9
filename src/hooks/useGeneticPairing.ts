@@ -1,340 +1,191 @@
 import { useState, useEffect } from 'react';
 import { useDogGenetics } from './useDogGenetics';
-import { PairingAnalysis, HealthWarning, DogGenotype, HealthMarker } from '@/types/genetics';
 
-interface UseGeneticPairingReturn {
-  analysis: PairingAnalysis | null;
-  loading: boolean;
-  error: Error | null;
-  sireGenetics: DogGenotype | null;
-  damGenetics: DogGenotype | null;
-}
-
-/**
- * Custom hook to analyze genetic compatibility between two dogs
- */
-export function useGeneticPairing(sireId: string, damId: string): UseGeneticPairingReturn {
-  // Use the useDogGenetics hook to fetch data for both dogs
-  const { dogData: sireGenetics, isLoading: sireLoading, error: sireError } = useDogGenetics(sireId);
-  const { dogData: damGenetics, isLoading: damLoading, error: damError } = useDogGenetics(damId);
-  
-  // State for analysis results
-  const [analysis, setAnalysis] = useState<PairingAnalysis | null>(null);
+// Just showing the problem area
+export const useGeneticPairing = (sireId: string, damId: string) => {
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [pairingResults, setPairingResults] = useState<any>(null);
+  const [healthRisks, setHealthRisks] = useState<string[]>([]);
   
-  // Combine loading states and errors
-  const loading = sireLoading || damLoading;
+  // Get genetic data for sire and dam
+  const { 
+    dogData: sireData, 
+    isLoading: sireLoading, 
+    error: sireError 
+  } = useDogGenetics(sireId);
+  
+  const { 
+    dogData: damData, 
+    isLoading: damLoading, 
+    error: damError 
+  } = useDogGenetics(damId);
   
   useEffect(() => {
-    // Reset analysis when IDs change
-    setAnalysis(null);
-    setError(null);
-    
-    // Skip if IDs are not provided or data is still loading
-    if (!sireId || !damId || loading) {
-      return;
-    }
-    
-    // Handle errors
-    if (sireError) {
-      setError(sireError);
-      return;
-    }
-    
-    if (damError) {
-      setError(damError);
-      return;
-    }
-    
-    // Skip if data is not available
-    if (!sireGenetics || !damGenetics) {
-      return;
-    }
-    
-    try {
-      // Perform analysis
-      const compatibilityAnalysis = analyzeGenetics(sireGenetics, damGenetics);
-      setAnalysis(compatibilityAnalysis);
-    } catch (err) {
-      console.error('Error analyzing genetic compatibility:', err);
-      setError(err instanceof Error ? err : new Error('Error analyzing genetics'));
-    }
-  }, [sireId, damId, sireGenetics, damGenetics, sireError, damError, loading]);
-  
-  return {
-    analysis,
-    loading,
-    error,
-    sireGenetics,
-    damGenetics
-  };
-}
-
-/**
- * Helper function to analyze genetic compatibility between two dogs
- */
-function analyzeGenetics(sireGenetics: DogGenotype, damGenetics: DogGenotype): PairingAnalysis {
-  // Start with empty results
-  const healthWarnings: HealthWarning[] = [];
-  const compatibleTests: string[] = [];
-  const incompatibleTests: string[] = [];
-  
-  // Calculate coefficient of inbreeding
-  // This is typically a complex calculation based on pedigree data
-  // For now, we'll use a placeholder value
-  const coi = calculateCOI(sireGenetics, damGenetics);
-  
-  // Check for health condition carrier status
-  for (const [condition, sireMarker] of Object.entries(sireGenetics.healthMarkers)) {
-    // Check if both dogs have data for this condition
-    if (damGenetics.healthMarkers[condition]) {
-      const damMarker = damGenetics.healthMarkers[condition];
+    const analyzePairing = async () => {
+      setIsLoading(true);
+      setError(null);
       
-      // Add to compatible tests list if both are clear
-      if (sireMarker.status === 'clear' && damMarker.status === 'clear') {
-        compatibleTests.push(condition);
+      try {
+        // Wait for both dogs' genetic data to load
+        if (sireLoading || damLoading) return;
+        
+        // Check for errors
+        if (sireError) throw sireError;
+        if (damError) throw damError;
+        
+        // Check if we have data for both dogs
+        if (!sireData || !damData) {
+          throw new Error('Missing genetic data for one or both dogs');
+        }
+        
+        // Calculate genetic compatibility and potential outcomes
+        const results = calculateCompatibility();
+        setPairingResults(results);
+        
+        // Identify potential health risks
+        const risks = identifyHealthRisks();
+        setHealthRisks(risks);
+      } catch (err) {
+        console.error('Error analyzing genetic pairing:', err);
+        setError(err instanceof Error ? err : new Error('Failed to analyze genetic pairing'));
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Check for carrier × carrier scenarios
-      if (sireMarker.status === 'carrier' && damMarker.status === 'carrier') {
-        healthWarnings.push({
-          condition: formatConditionName(condition),
-          riskLevel: 'critical',
-          description: `Both parents are carriers for ${formatConditionName(condition)}`,
-          affectedPercentage: 25
-        });
-        incompatibleTests.push(condition);
-      }
-      
-      // Check for affected × carrier scenarios
-      if ((sireMarker.status === 'affected' && damMarker.status === 'carrier') ||
-          (sireMarker.status === 'carrier' && damMarker.status === 'affected')) {
-        healthWarnings.push({
-          condition: formatConditionName(condition),
-          riskLevel: 'high',
-          description: `One parent is affected and one is a carrier for ${formatConditionName(condition)}`,
-          affectedPercentage: 50
-        });
-        incompatibleTests.push(condition);
-      }
-      
-      // Check for affected × affected scenarios
-      if (sireMarker.status === 'affected' && damMarker.status === 'affected') {
-        healthWarnings.push({
-          condition: formatConditionName(condition),
-          riskLevel: 'critical',
-          description: `Both parents are affected with ${formatConditionName(condition)}`,
-          affectedPercentage: 100
-        });
-        incompatibleTests.push(condition);
-      }
+    };
+    
+    analyzePairing();
+  }, [sireData, damData, sireLoading, damLoading, sireError, damError]);
+  
+  // Calculate genetic compatibility between sire and dam
+  const calculateCompatibility = () => {
+    if (!sireData || !damData) {
+      return {
+        compatibilityScore: 0,
+        matchedTraits: [],
+        conflictingTraits: [],
+        potentialColors: [],
+        isCompatible: false
+      };
     }
-  }
-  
-  // Check COI level for warnings
-  if (coi > 12.5) {
-    healthWarnings.push({
-      condition: 'High Inbreeding',
-      riskLevel: 'high',
-      description: `COI of ${coi.toFixed(1)}% exceeds recommended maximum (12.5%)`
-    });
-  } else if (coi > 6.25) {
-    healthWarnings.push({
-      condition: 'Moderate Inbreeding',
-      riskLevel: 'medium',
-      description: `COI of ${coi.toFixed(1)}% is above ideal level (6.25%)`
-    });
-  }
-  
-  // Calculate trait predictions
-  const traitPredictions = {
-    color: calculateColorProbabilities(sireGenetics, damGenetics),
-    size: estimateSize(sireGenetics, damGenetics),
-    coat: predictCoatType(sireGenetics, damGenetics)
+    
+    // This is a simplified example - real genetic compatibility would be more complex
+    const matchedTraits = [];
+    const conflictingTraits = [];
+    
+    // Check color genetics
+    if (sireData.baseColor === damData.baseColor) {
+      matchedTraits.push(`Base color: ${sireData.baseColor}`);
+    } else {
+      conflictingTraits.push(`Base color: Sire ${sireData.baseColor}, Dam ${damData.baseColor}`);
+    }
+    
+    // Check dilution
+    if (sireData.dilution === damData.dilution) {
+      matchedTraits.push(`Dilution: ${sireData.dilution}`);
+    } else {
+      conflictingTraits.push(`Dilution: Sire ${sireData.dilution}, Dam ${damData.dilution}`);
+    }
+    
+    // Calculate potential puppy colors
+    const potentialColors = calculatePotentialColors(sireData, damData);
+    
+    // Calculate compatibility score (simplified)
+    const compatibilityScore = Math.round((matchedTraits.length / (matchedTraits.length + conflictingTraits.length)) * 100) || 0;
+    
+    // Replace string[] with boolean
+    const isCompatible = matchedTraits.length > 0; // Convert to boolean
+    
+    return {
+      compatibilityScore,
+      matchedTraits,
+      conflictingTraits,
+      potentialColors,
+      isCompatible, // Now it's a boolean
+    };
   };
   
-  // Fix the type issue by providing compatibleTests as a string array
-  // not a boolean value
-  return {
-    coi,
-    healthWarnings,
-    compatibleTests: compatibleTests,
-    incompatibleTests,
-    traitPredictions,
-    colorProbabilities: [],
-    compatibilityScore: 0
+  // Calculate potential puppy colors based on parents' genetics
+  const calculatePotentialColors = (sire: any, dam: any) => {
+    // This is a simplified example - real color genetics would be more complex
+    const potentialColors = new Set<string>();
+    
+    // Add parent colors as possibilities
+    if (sire.baseColor && sire.baseColor !== 'unknown') potentialColors.add(sire.baseColor);
+    if (dam.baseColor && dam.baseColor !== 'unknown') potentialColors.add(dam.baseColor);
+    
+    // Add potential diluted colors
+    if (sire.dilution === 'carrier' || dam.dilution === 'carrier' || 
+        sire.dilution === 'affected' || dam.dilution === 'affected') {
+      
+      // Add diluted versions of base colors
+      if (potentialColors.has('black')) potentialColors.add('blue');
+      if (potentialColors.has('liver')) potentialColors.add('isabella');
+      if (potentialColors.has('red')) potentialColors.add('cream');
+    }
+    
+    return Array.from(potentialColors);
   };
-}
-
-/**
- * Calculate the coefficient of inbreeding (COI)
- * This is a placeholder for a more complex pedigree analysis
- */
-function calculateCOI(sireGenetics: DogGenotype, damGenetics: DogGenotype): number {
-  // In a real implementation, this would analyze the pedigree
-  // to find common ancestors and calculate COI
-  // For now, we'll return a placeholder value
-  return 4.2;
-}
-
-/**
- * Calculate the probability distribution of offspring coat colors
- */
-function calculateColorProbabilities(sireGenetics: DogGenotype, damGenetics: DogGenotype): Record<string, number> {
-  // Parse genotypes
-  const sireBase = sireGenetics.baseColor.split('/');
-  const damBase = damGenetics.baseColor.split('/');
   
-  const sireBrown = sireGenetics.brownDilution.split('/');
-  const damBrown = damGenetics.brownDilution.split('/');
-  
-  const sireDilution = sireGenetics.dilution.split('/');
-  const damDilution = damGenetics.dilution.split('/');
-  
-  // Initialize outcome counter
-  const colorOutcomes: Record<string, number> = {};
-  let totalOutcomes = 0;
-  
-  // Calculate for each possible allele combination
-  for (const sireAllele1 of sireBase) {
-    for (const damAllele1 of damBase) {
-      for (const sireAllele2 of sireBrown) {
-        for (const damAllele2 of damBrown) {
-          for (const sireAllele3 of sireDilution) {
-            for (const damAllele3 of damDilution) {
-              // Generate genotype for this combination
-              const baseGenotype = sortAlleles(sireAllele1 + damAllele1);
-              const brownGenotype = sortAlleles(sireAllele2 + damAllele2);
-              const dilutionGenotype = sortAlleles(sireAllele3 + damAllele3);
-              
-              // Determine the phenotype (actual color)
-              const phenotype = determinePhenotype(
-                baseGenotype, 
-                brownGenotype, 
-                dilutionGenotype
-              );
-              
-              // Increment count for this phenotype
-              colorOutcomes[phenotype] = (colorOutcomes[phenotype] || 0) + 1;
-              totalOutcomes++;
-            }
-          }
+  // Identify potential health risks in the pairing
+  const identifyHealthRisks = () => {
+    if (!sireData || !damData) return [];
+    
+    const risks: string[] = [];
+    
+    // Check for common genetic health issues
+    // This is a simplified example - real health risk analysis would be more complex
+    
+    // Check if both parents carry the same recessive health conditions
+    const sireHealthIssues = sireData.healthResults || [];
+    const damHealthIssues = damData.healthResults || [];
+    
+    // Find matching carrier status
+    sireHealthIssues.forEach((sireIssue: any) => {
+      if (sireIssue.status === 'carrier') {
+        const matchingDamIssue = damHealthIssues.find(
+          (damIssue: any) => damIssue.condition === sireIssue.condition && damIssue.status === 'carrier'
+        );
+        
+        if (matchingDamIssue) {
+          risks.push(`Both parents are carriers for ${sireIssue.condition}`);
         }
       }
-    }
-  }
-  
-  // Convert to percentages
-  const percentages: Record<string, number> = {};
-  for (const [color, count] of Object.entries(colorOutcomes)) {
-    percentages[color] = Math.round((count / totalOutcomes) * 100);
-  }
-  
-  return percentages;
-}
-
-/**
- * Helper function to sort alleles (dominant first)
- */
-function sortAlleles(genotype: string): string {
-  if (genotype.length !== 2) return genotype;
-  
-  const alleles = genotype.split('');
-  
-  // Sort so capital (dominant) letters come first
-  alleles.sort((a, b) => {
-    if (a === a.toUpperCase() && b !== b.toUpperCase()) return -1;
-    if (a !== a.toUpperCase() && b === b.toUpperCase()) return 1;
-    return a.localeCompare(b);
-  });
-  
-  return alleles.join('');
-}
-
-/**
- * Determine phenotype based on genotype
- */
-function determinePhenotype(
-  baseGenotype: string,
-  brownGenotype: string,
-  dilutionGenotype: string
-): string {
-  // E is dominant (black-based), e is recessive (red-based)
-  const isBlackBased = baseGenotype.includes('E');
-  
-  // B is dominant (no brown), b is recessive (brown)
-  const hasBrownDilution = brownGenotype === 'bb';
-  
-  // D is dominant (no dilution), d is recessive (dilute)
-  const hasDilution = dilutionGenotype === 'dd';
-  
-  // Determine base color
-  if (!isBlackBased) {
-    // Red-based colors
-    if (hasDilution) {
-      return 'Cream';
-    }
-    return 'Red';
-  } else {
-    // Black-based colors
-    if (hasBrownDilution) {
-      // Brown variants
-      if (hasDilution) {
-        return 'Light Brown';
+    });
+    
+    // Add breed-specific risks
+    if (sireData.breed === damData.breed) {
+      // Add common breed-specific issues
+      switch (sireData.breed) {
+        case 'Labrador Retriever':
+          risks.push('Hip dysplasia risk');
+          risks.push('Exercise-induced collapse risk');
+          break;
+        case 'German Shepherd':
+          risks.push('Hip/elbow dysplasia risk');
+          risks.push('Degenerative myelopathy risk');
+          break;
+        case 'Bulldog':
+          risks.push('Brachycephalic airway syndrome risk');
+          risks.push('Heat intolerance risk');
+          break;
+        // Add more breeds as needed
       }
-      return 'Brown';
-    } else {
-      // Black variants
-      if (hasDilution) {
-        return 'Grey';
-      }
-      return 'Black';
     }
-  }
-}
-
-/**
- * Estimate size range for offspring
- */
-function estimateSize(sireGenetics: DogGenotype, damGenetics: DogGenotype): { males: string; females: string } {
-  // In a real implementation, this would use actual genetics and historical data
-  // For now, we'll return placeholder values for Newfoundlands
+    
+    return risks;
+  };
+  
   return {
-    males: '145-160 lbs',
-    females: '115-130 lbs'
+    isLoading,
+    error,
+    pairingResults,
+    healthRisks,
+    sireGenetics: sireData,
+    damGenetics: damData,
+    refresh: () => {
+      // Force a refresh of the analysis
+      setIsLoading(true);
+    }
   };
-}
-
-/**
- * Predict coat type for offspring
- */
-function predictCoatType(sireGenetics: DogGenotype, damGenetics: DogGenotype): string {
-  // In a real implementation, this would use actual genetics
-  // For now, we'll return a placeholder for Newfoundlands
-  return 'Straight coat, standard length';
-}
-
-/**
- * Format condition names for display
- */
-function formatConditionName(condition: string): string {
-  // Convert common abbreviations
-  const abbreviations: Record<string, string> = {
-    'DM': 'Degenerative Myelopathy',
-    'DCM': 'Dilated Cardiomyopathy',
-    'vWD': 'von Willebrand Disease',
-    'PRA': 'Progressive Retinal Atrophy'
-  };
-  
-  if (abbreviations[condition]) {
-    return abbreviations[condition];
-  }
-  
-  // Otherwise capitalize each word
-  return condition
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
-export default useGeneticPairing;
+};

@@ -1,4 +1,3 @@
-
 import { PuppyAgeGroupData } from '@/types/puppyTracking';
 
 export const puppyAgeGroups: PuppyAgeGroupData[] = [
@@ -83,3 +82,6 @@ export const puppyAgeGroups: PuppyAgeGroupData[] = [
     ]
   }
 ];
+
+// Export DEFAULT_AGE_GROUPS as an alias to keep compatibility with existing code
+export const DEFAULT_AGE_GROUPS = puppyAgeGroups;

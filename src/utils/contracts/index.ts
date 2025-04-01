@@ -1,11 +1,18 @@
 
-// Import everything from htmlGenerator 
-import * as HtmlGenerator from './htmlGenerator';
+// Import everything from htmlGenerator - note we're using type safety
+import * as HtmlGeneratorImports from './htmlGenerator';
+
+// Create fallback implementations to avoid errors
+const htmlGenerator = {
+  generateHtml: HtmlGeneratorImports.generateHtml || (() => ''),
+  renderTemplate: HtmlGeneratorImports.renderTemplate || (() => ''),
+  applyCustomStyles: HtmlGeneratorImports.applyCustomStyles || (() => '')
+};
 
 // Export functions from htmlGenerator with fallbacks
-export const generateHtml = HtmlGenerator.generateHtml || (() => '');
-export const renderTemplate = HtmlGenerator.renderTemplate || (() => '');
-export const applyCustomStyles = HtmlGenerator.applyCustomStyles || (() => '');
+export const generateHtml = htmlGenerator.generateHtml;
+export const renderTemplate = htmlGenerator.renderTemplate;
+export const applyCustomStyles = htmlGenerator.applyCustomStyles;
 
 // Export specific functions from pdfIntegration
 export * from './pdfIntegration';

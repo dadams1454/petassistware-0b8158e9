@@ -45,7 +45,8 @@ export const useDogGenetics = (dogId: string) => {
           brownDilution: 'unknown',
           dilution: 'unknown',
           healthMarkers: {},
-          healthResults: []
+          healthResults: [],
+          updated_at: new Date().toISOString()
         });
       }
     } catch (err) {

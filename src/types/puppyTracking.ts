@@ -13,6 +13,14 @@ export interface WeightRecord {
   notes?: string;
   created_at: string;
   percent_change?: number;
+  birth_date?: string; // Added for components that need it
+}
+
+export interface WeightData {
+  age: number;
+  weight: number;
+  unit: string;
+  id?: string; // Add id to fix issues in usePuppyBreedAverages
 }
 
 export interface PuppyWithAge extends Record<string, any> {
@@ -31,6 +39,7 @@ export interface SocializationCategory {
   name: string;
   description?: string;
   examples?: string[];
+  color?: string; // Added for SocializationProgressChart
 }
 
 export interface SocializationReaction {
@@ -61,6 +70,7 @@ export interface VaccinationRecord {
   notes?: string;
   lot_number?: string;
   created_at: string;
+  is_completed?: boolean; // Added to fix VaccinationSchedule errors
 }
 
 export interface VaccinationScheduleItem {
@@ -70,6 +80,7 @@ export interface VaccinationScheduleItem {
   due_date: string;
   notes?: string;
   created_at: string;
+  is_completed?: boolean; // Added to fix errors in usePuppyVaccinations
 }
 
 export const DEFAULT_AGE_GROUPS = [
@@ -82,3 +93,50 @@ export const DEFAULT_AGE_GROUPS = [
   { name: '6-12 months', min: 181, max: 365 },
   { name: '1+ years', min: 366, max: 9999 }
 ];
+
+// Adding PuppyAgeGroupData interface
+export interface PuppyAgeGroupData {
+  id: string;
+  name: string;
+  startDay: number;
+  endDay: number;
+  description: string;
+  color?: string;
+  milestones?: string;
+  careChecks?: string[];
+}
+
+// Adding PuppyManagementStats interface
+export interface PuppyManagementStats {
+  totalPuppies: number;
+  availablePuppies: number;
+  reservedPuppies: number;
+  soldPuppies: number;
+  maleCount: number;
+  femaleCount: number;
+  averageWeight: number;
+  puppiesByColor: Record<string, number>;
+  puppiesByAge: Record<string, number>;
+  activeLitters: number;
+  upcomingVaccinations: number;
+  recentWeightChecks: number;
+}
+
+// Adding PuppyMilestone interface
+export interface PuppyMilestone {
+  id: string;
+  puppy_id: string;
+  title: string;
+  description?: string;
+  expected_age_days?: number;
+  actual_age_days?: number;
+  completion_date?: string;
+  category: 'physical' | 'health' | 'behavioral';
+}
+
+// Adding SocializationProgress interface
+export interface SocializationProgress {
+  category: SocializationCategory;
+  count: number;
+  percentage: number;
+}

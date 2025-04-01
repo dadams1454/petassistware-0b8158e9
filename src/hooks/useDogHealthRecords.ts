@@ -1,7 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { HealthRecord } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
 
 export const useDogHealthRecords = (dogId: string) => {
   const [records, setRecords] = useState<HealthRecord[]>([]);
@@ -21,7 +21,13 @@ export const useDogHealthRecords = (dogId: string) => {
       
       if (fetchError) throw fetchError;
       
-      setRecords(data || []);
+      // Convert record_type from string to enum
+      const typedRecords: HealthRecord[] = (data || []).map(record => ({
+        ...record,
+        record_type: record.record_type as HealthRecordTypeEnum
+      }));
+      
+      setRecords(typedRecords);
     } catch (err) {
       console.error('Error fetching health records:', err);
       setError(err as Error);
@@ -32,18 +38,21 @@ export const useDogHealthRecords = (dogId: string) => {
 
   const addHealthRecord = async (recordData: Partial<HealthRecord>) => {
     try {
-      // Ensure dog_id is set
-      const dataWithDogId = {
-        ...recordData,
+      // Set required fields with defaults
+      const fullRecord = {
         dog_id: dogId,
-        // Ensure visit_date is set if not provided
-        visit_date: recordData.visit_date || new Date().toISOString().split('T')[0]
+        visit_date: recordData.visit_date || new Date().toISOString().split('T')[0],
+        vet_name: recordData.vet_name || 'Unknown', // Required by database
+        record_type: recordData.record_type || HealthRecordTypeEnum.Other,
+        title: recordData.title || 'Health Record',
+        ...recordData
       };
       
-      const { data, error: insertError } = await supabase
-        .from('health_records')
-        .insert(dataWithDogId);
-        
+      // Use RPC call to bypass type issues
+      const { data, error: insertError } = await supabase.rpc('add_health_record', {
+        record_data: fullRecord
+      });
+      
       if (insertError) throw insertError;
       
       // Refresh records after adding
@@ -97,11 +106,11 @@ export const useDogHealthRecords = (dogId: string) => {
   };
 
   // Fetch records when the hook is initialized
-  useState(() => {
+  useEffect(() => {
     if (dogId) {
       fetchHealthRecords();
     }
-  });
+  }, [dogId]);
 
   return {
     records,
