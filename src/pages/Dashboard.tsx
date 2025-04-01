@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { SectionHeader } from '@/components/ui/standardized';
-import FinancialDashboardWidget from '@/components/finances/FinancialDashboardWidget';
 import DashboardContent from '@/components/dashboard/DashboardContent';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { RefreshProvider } from '@/contexts/RefreshContext';
@@ -77,7 +76,7 @@ const Dashboard: React.FC = () => {
               )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <FinancialDashboardWidget />
+                {/* Financial Dashboard Widget has been removed from here */}
                 {/* Add more dashboard widgets here as they are developed */}
               </div>
               

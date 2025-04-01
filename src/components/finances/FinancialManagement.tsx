@@ -9,6 +9,7 @@ import ExpenseDialog from './ExpenseDialog';
 import ExpenseTable from './ExpenseTable';
 import ExpenseFilters from './ExpenseFilters';
 import ExpenseCategories from './ExpenseCategories';
+import FinancialDashboardWidget from './FinancialDashboardWidget';  // Import the widget
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Expense } from '@/types/financial';
@@ -98,6 +99,9 @@ const FinancialManagement: React.FC = () => {
           icon: <Plus className="h-4 w-4" />,
         }}
       />
+
+      {/* Add Financial Dashboard Widget at the top */}
+      <FinancialDashboardWidget />
 
       <ExpenseFilters
         dateRange={dateRange}
