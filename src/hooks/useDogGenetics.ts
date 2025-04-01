@@ -10,6 +10,8 @@ interface UseDogGeneticsReturn {
   loading: boolean;
   error: Error | null;
   refresh: () => void;
+  breedRisks: string[];
+  lastUpdated: string | null;
 }
 
 /**
@@ -20,6 +22,8 @@ export function useDogGenetics(dogId: string): UseDogGeneticsReturn {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+  const [breedRisks, setBreedRisks] = useState<string[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   
   // Function to trigger a refresh of the data
   const refresh = () => {
@@ -47,6 +51,15 @@ export function useDogGenetics(dogId: string): UseDogGeneticsReturn {
         const processedData = processGeneticData(response);
         
         setGeneticData(processedData);
+        setLastUpdated(new Date().toISOString());
+        
+        // Get breed-specific risks
+        if (response.dog && response.dog.breed) {
+          const { getBreedHighRiskConditions } = await import('@/services/genetics/processGeneticData');
+          const risks = getBreedHighRiskConditions(response.dog.breed);
+          setBreedRisks(risks);
+        }
+        
         setError(null);
       } catch (err) {
         console.error('Error fetching genetic data:', err);
@@ -60,7 +73,14 @@ export function useDogGenetics(dogId: string): UseDogGeneticsReturn {
     fetchGeneticData();
   }, [dogId, refreshTrigger]);
   
-  return { geneticData, loading, error, refresh };
+  return { 
+    geneticData, 
+    loading, 
+    error, 
+    refresh, 
+    breedRisks,
+    lastUpdated
+  };
 }
 
 export default useDogGenetics;

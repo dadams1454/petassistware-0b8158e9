@@ -31,6 +31,11 @@ export const dogFormSchema = z.object({
   requires_special_handling: z.boolean().optional().default(false),
   potty_alert_threshold: z.number().optional(),
   max_time_between_breaks: z.number().optional(),
+  // Genetic fields
+  genetic_testing_id: z.string().optional(),
+  genetic_testing_provider: z.string().optional(),
+  genetic_coi: z.number().optional(),
+  has_genetic_tests: z.boolean().optional().default(false),
 });
 
 export type DogFormValues = z.infer<typeof dogFormSchema>;
