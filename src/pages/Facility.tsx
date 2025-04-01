@@ -9,7 +9,8 @@ import {
   Clock, 
   Banknote, 
   Wrench,
-  Package
+  Package,
+  Home
 } from 'lucide-react';
 import TasksView from '@/components/facility/TasksView';
 import StaffManagement from '@/components/facility/StaffManagement';
@@ -17,6 +18,7 @@ import MaintenanceSchedule from '@/components/facility/MaintenanceSchedule';
 import StaffSchedule from '@/components/facility/StaffSchedule';
 import ExpenseTracking from '@/components/facility/ExpenseTracking';
 import InventoryManagement from '@/components/facility/InventoryManagement';
+import KennelManagement from './KennelManagement';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PageContainer from '@/components/common/PageContainer';
 
@@ -34,7 +36,7 @@ const Facility: React.FC = () => {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-6'} mb-6 w-full`}>
+          <TabsList className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-7'} mb-6 w-full`}>
             <TabsTrigger value="staff" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span>Staff Management</span>
@@ -53,6 +55,11 @@ const Facility: React.FC = () => {
             <TabsTrigger value="maintenance" className="flex items-center gap-2">
               <Wrench className="h-4 w-4" />
               <span>Maintenance</span>
+            </TabsTrigger>
+            
+            <TabsTrigger value="kennels" className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              <span>Kennels</span>
             </TabsTrigger>
             
             <TabsTrigger value="inventory" className="flex items-center gap-2">
@@ -90,6 +97,10 @@ const Facility: React.FC = () => {
 
           <TabsContent value="maintenance" className="mt-0">
             <MaintenanceSchedule />
+          </TabsContent>
+
+          <TabsContent value="kennels" className="mt-0">
+            <KennelManagement />
           </TabsContent>
 
           <TabsContent value="inventory" className="mt-0">
