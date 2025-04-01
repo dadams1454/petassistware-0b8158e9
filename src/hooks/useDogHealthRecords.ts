@@ -2,123 +2,150 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { useToast } from '@/hooks/use-toast';
 
 export const useDogHealthRecords = (dogId: string) => {
   const [records, setRecords] = useState<HealthRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { toast } = useToast();
 
-  const fetchHealthRecords = async () => {
+  useEffect(() => {
+    fetchRecords();
+  }, [dogId]);
+
+  const fetchRecords = async () => {
     setIsLoading(true);
-    setError(null);
-    
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error } = await supabase
         .from('health_records')
         .select('*')
-        .eq('dog_id', dogId)
-        .order('visit_date', { ascending: false });
+        .eq('dog_id', dogId);
+
+      if (error) throw new Error(error.message);
       
-      if (fetchError) throw fetchError;
-      
-      // Convert record_type from string to enum
-      const typedRecords: HealthRecord[] = (data || []).map(record => ({
+      // Cast the records to ensure they have the correct type
+      const typedRecords = (data || []).map(record => ({
         ...record,
         record_type: record.record_type as HealthRecordTypeEnum
-      }));
+      })) as HealthRecord[];
       
       setRecords(typedRecords);
+      setError(null);
     } catch (err) {
       console.error('Error fetching health records:', err);
-      setError(err as Error);
+      setError(err instanceof Error ? err : new Error('Failed to load health records'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const addHealthRecord = async (recordData: Partial<HealthRecord>) => {
+  const addHealthRecord = async (recordData: Omit<HealthRecord, 'id'>) => {
     try {
-      // Set required fields with defaults
-      const fullRecord = {
+      const record = {
+        ...recordData,
         dog_id: dogId,
-        visit_date: recordData.visit_date || new Date().toISOString().split('T')[0],
-        vet_name: recordData.vet_name || 'Unknown', // Required by database
-        record_type: recordData.record_type || HealthRecordTypeEnum.Other,
-        title: recordData.title || 'Health Record',
-        ...recordData
+        vet_name: recordData.vet_name || 'Unknown', // Required
+        record_type: recordData.record_type || HealthRecordTypeEnum.Examination,
+        visit_date: recordData.visit_date || new Date().toISOString().split('T')[0]
       };
-      
-      // Use RPC call to bypass type issues
-      const { data, error: insertError } = await supabase.rpc('add_health_record', {
-        record_data: fullRecord
+
+      const { data, error } = await supabase
+        .from('health_records')
+        .insert(record as any)
+        .select();
+
+      if (error) throw error;
+
+      // Call a function to log the action
+      await supabase.rpc('log_audit_event', {
+        action: 'INSERT',
+        entity_type: 'health_records',
+        entity_id: data[0].id,
+        new_state: data[0],
+        notes: 'Health record added'
       });
-      
-      if (insertError) throw insertError;
-      
-      // Refresh records after adding
-      await fetchHealthRecords();
-      
-      return { success: true, data };
+
+      toast({
+        title: 'Health record added',
+        description: 'The health record has been successfully added.'
+      });
+
+      // Refresh records
+      fetchRecords();
+      return data;
     } catch (err) {
       console.error('Error adding health record:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to add health record',
+        variant: 'destructive'
+      });
       throw err;
     }
   };
 
-  const updateHealthRecord = async (id: string, recordData: Partial<HealthRecord>) => {
+  const updateHealthRecord = async (recordId: string, updates: Partial<HealthRecord>) => {
     try {
-      const { data, error: updateError } = await supabase
+      const { data, error } = await supabase
         .from('health_records')
-        .update(recordData)
-        .eq('id', id)
-        .eq('dog_id', dogId);
-        
-      if (updateError) throw updateError;
-      
-      // Refresh records after updating
-      await fetchHealthRecords();
-      
-      return { success: true, data };
+        .update(updates)
+        .eq('id', recordId)
+        .select();
+
+      if (error) throw error;
+
+      toast({
+        title: 'Health record updated',
+        description: 'The health record has been successfully updated.'
+      });
+
+      // Refresh records
+      fetchRecords();
+      return data;
     } catch (err) {
       console.error('Error updating health record:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to update health record',
+        variant: 'destructive'
+      });
       throw err;
     }
   };
 
-  const deleteHealthRecord = async (id: string) => {
+  const deleteHealthRecord = async (recordId: string) => {
     try {
-      const { error: deleteError } = await supabase
+      const { error } = await supabase
         .from('health_records')
         .delete()
-        .eq('id', id)
-        .eq('dog_id', dogId);
-        
-      if (deleteError) throw deleteError;
-      
-      // Refresh records after deleting
-      await fetchHealthRecords();
-      
-      return { success: true };
+        .eq('id', recordId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Health record deleted',
+        description: 'The health record has been successfully deleted.'
+      });
+
+      // Refresh records
+      fetchRecords();
     } catch (err) {
       console.error('Error deleting health record:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete health record',
+        variant: 'destructive'
+      });
       throw err;
     }
   };
-
-  // Fetch records when the hook is initialized
-  useEffect(() => {
-    if (dogId) {
-      fetchHealthRecords();
-    }
-  }, [dogId]);
 
   return {
     records,
-    healthRecords: records, // Alias for compatibility
     isLoading,
     error,
-    fetchHealthRecords,
-    refresh: fetchHealthRecords, // Alias for compatibility
+    refresh: fetchRecords,
     addHealthRecord,
     updateHealthRecord,
     deleteHealthRecord

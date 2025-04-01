@@ -27,15 +27,16 @@ export const usePuppyDetails = (puppyId: string) => {
       }
 
       // Calculate age in days
-      const birthDateString = data.birth_date || 
-        (data.litters && typeof data.litters === 'object' && 
-         'birth_date' in data.litters && data.litters.birth_date) 
-          ? data.litters.birth_date 
-          : null;
+      let birthDateString = data.birth_date;
+      
+      // Safely check if litters data exists and has a birth_date
+      if (!birthDateString && data.litters && typeof data.litters === 'object') {
+        birthDateString = (data.litters as any).birth_date;
+      }
       
       let ageInDays = 0;
       if (birthDateString) {
-        const birthDate = new Date(birthDateString as string);
+        const birthDate = new Date(birthDateString);
         ageInDays = differenceInDays(new Date(), birthDate);
       }
 

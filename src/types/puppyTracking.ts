@@ -21,6 +21,9 @@ export interface PuppyWithAge {
     name?: string;
     birth_date?: string;
   };
+  photo_url?: string;
+  current_weight?: string | number;
+  birth_weight?: string | number;
 }
 
 export interface PuppyAgeGroupData {
@@ -30,6 +33,8 @@ export interface PuppyAgeGroupData {
   endDay: number;
   description: string;
   color: string;
+  milestones?: string;
+  careChecks?: string[];
 }
 
 export interface PuppyAgeGroup {
@@ -59,6 +64,10 @@ export interface PuppyManagementStats {
   weightUnit: string;
   totalLitters: number;
   activeLitters: number;
+  upcomingVaccinations: number;
+  recentWeightChecks: number;
+  puppiesByColor?: Record<string, number>;
+  puppiesByAge?: Record<string, number>;
 }
 
 export interface WeightData {
@@ -66,6 +75,8 @@ export interface WeightData {
   age: number;
   date: string;
   weight_unit?: string;
+  unit?: string;
+  id?: string;
 }
 
 export interface PuppyMilestone {
@@ -77,6 +88,10 @@ export interface PuppyMilestone {
   milestone_date?: string;
   notes?: string;
   created_at?: string;
+  category?: string;
+  title?: string;
+  description?: string;
+  expected_age_days?: number;
 }
 
 export interface SocializationCategory {
@@ -86,6 +101,7 @@ export interface SocializationCategory {
   importance: 'high' | 'medium' | 'low';
   age_range: { min: number; max: number };
   color?: string;
+  examples?: string[];
 }
 
 export interface SocializationProgress {
@@ -96,15 +112,28 @@ export interface SocializationProgress {
   total: number;
   completionPercentage: number;
   target: number;
+  count?: number;
 }
 
 export interface SocializationReaction {
   id?: string;
   name?: string;
   color?: string;
+  description?: string;
 }
 
 export type SocializationReactionType = string | SocializationReaction;
+
+export interface SocializationExperience {
+  id: string;
+  puppy_id: string;
+  category: string;
+  experience: string;
+  reaction: string;
+  experience_date: string;
+  notes?: string;
+  created_at: string;
+}
 
 export interface VaccinationScheduleItem {
   id: string;
@@ -117,3 +146,31 @@ export interface VaccinationScheduleItem {
   notes?: string;
   created_at: string;
 }
+
+export interface VaccinationRecord {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  due_date?: string;
+  is_completed?: boolean;
+  notes?: string;
+  administered_by?: string;
+  lot_number?: string;
+}
+
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: string;
+  unit?: string;
+  date: string;
+  notes?: string;
+  created_at: string;
+  percent_change?: number;
+  birth_date?: string; // For puppy weight tracking
+}
+
+export type WeightUnit = 'lbs' | 'kg' | 'g' | 'oz' | string;

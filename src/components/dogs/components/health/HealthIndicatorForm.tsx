@@ -164,11 +164,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={EnergyLevelEnum.VeryHigh}>Very High</SelectItem>
+                    <SelectItem value={EnergyLevelEnum.Hyperactive}>Hyperactive</SelectItem>
                     <SelectItem value={EnergyLevelEnum.High}>High</SelectItem>
                     <SelectItem value={EnergyLevelEnum.Normal}>Normal</SelectItem>
                     <SelectItem value={EnergyLevelEnum.Low}>Low</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.VeryLow}>Very Low</SelectItem>
+                    <SelectItem value={EnergyLevelEnum.Lethargic}>Lethargic</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -189,13 +189,13 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={StoolConsistencyEnum.Solid}>Solid</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.SemiSolid}>Semi-Solid</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.Normal}>Normal</SelectItem>
                     <SelectItem value={StoolConsistencyEnum.Soft}>Soft</SelectItem>
                     <SelectItem value={StoolConsistencyEnum.Loose}>Loose</SelectItem>
                     <SelectItem value={StoolConsistencyEnum.Watery}>Watery</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Bloody}>Bloody</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.Hard}>Hard</SelectItem>
                     <SelectItem value={StoolConsistencyEnum.Mucousy}>Mucousy</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.Bloody}>Bloody</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

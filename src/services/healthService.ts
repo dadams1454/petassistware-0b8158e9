@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum, WeightUnitEnum } from '@/types/health';
+import { WeightRecord } from '@/types/puppyTracking';
 
 // Fix the issue with record type incompatibility
 export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>) => {
@@ -68,7 +69,7 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
       throw error;
     }
     
-    return data || [];
+    return data as HealthRecord[] || [];
   } catch (error) {
     console.error('Error in getHealthRecords:', error);
     throw error;
@@ -88,7 +89,7 @@ export const getHealthRecordsByType = async (dogId: string, recordType: HealthRe
       throw error;
     }
     
-    return data || [];
+    return data as HealthRecord[] || [];
   } catch (error) {
     console.error(`Error in getHealthRecordsByType for type ${recordType}:`, error);
     throw error;
@@ -153,7 +154,7 @@ export const getUpcomingVaccinations = async (dogId: string, daysAhead: number =
       throw error;
     }
     
-    return data || [];
+    return data as HealthRecord[] || [];
   } catch (error) {
     console.error('Error in getUpcomingVaccinations:', error);
     throw error;
@@ -186,7 +187,7 @@ export const getUpcomingMedications = async (dogId?: string, daysAhead: number =
       throw error;
     }
     
-    return data || [];
+    return data as HealthRecord[] || [];
   } catch (error) {
     console.error('Error in getUpcomingMedications:', error);
     throw error;
@@ -219,7 +220,7 @@ export const getExpiringMedications = async (dogId?: string, daysAhead: number =
       throw error;
     }
     
-    return data || [];
+    return data as HealthRecord[] || [];
   } catch (error) {
     console.error('Error in getExpiringMedications:', error);
     throw error;
@@ -233,7 +234,10 @@ export const addWeightRecord = async (record: Omit<WeightRecord, 'id' | 'created
       .from('weight_records')
       .insert({
         ...record,
-        weight_unit: record.weight_unit || 'lbs'
+        dog_id: record.dog_id,
+        weight: record.weight,
+        date: record.date,
+        weight_unit: record.weight_unit || WeightUnitEnum.Pounds
       })
       .select()
       .single();
@@ -243,7 +247,7 @@ export const addWeightRecord = async (record: Omit<WeightRecord, 'id' | 'created
       throw error;
     }
     
-    return data;
+    return data as WeightRecord;
   } catch (error) {
     console.error('Error in addWeightRecord:', error);
     throw error;
@@ -263,7 +267,7 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
       throw error;
     }
     
-    return data || [];
+    return data as WeightRecord[] || [];
   } catch (error) {
     console.error('Error in getWeightHistory:', error);
     throw error;

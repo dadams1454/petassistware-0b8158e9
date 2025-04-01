@@ -4,7 +4,7 @@ export interface DogGenotype {
   baseColor?: string;
   brownDilution?: string;
   dilution?: string;
-  healthMarkers?: Record<string, unknown>;
+  healthMarkers?: Record<string, HealthMarker>;
   healthResults: any[];
   breed?: string;
   updated_at?: string;
@@ -15,6 +15,9 @@ export interface DogGenotype {
 export interface CompactGenotypeViewProps {
   genotype: DogGenotype;
   showBreed?: boolean;
+  dogData?: DogGenotype;
+  showColorTraits?: boolean;
+  showHealthTests?: boolean;
 }
 
 export interface GeneticHealthStatus {
@@ -29,6 +32,8 @@ export interface HealthWarning {
   risk: string;
   description: string;
   action: string;
+  riskLevel?: string;
+  affectedPercentage?: number;
 }
 
 export interface TestResult {
@@ -44,12 +49,17 @@ export interface GeneticImportResult {
   dogId: string;
   importedTests: TestResult[];
   errors?: string[];
+  provider?: string;
+  testsImported?: number;
 }
 
 export interface ColorProbability {
   color: string;
   probability: number;
   hex: string;
+  percentage?: number;
+  name?: string;
+  value?: number;
 }
 
 export interface HealthMarker {
@@ -65,8 +75,21 @@ export interface HistoricalCOIChartProps {
 }
 
 export interface MultiTraitMatrixProps {
-  sireDogId: string;
-  damDogId: string;
+  sireDogId?: string;
+  damDogId?: string;
+  dogId?: string;
+  dogGenetics?: DogGenotype;
+}
+
+export interface ManualTestEntry {
+  id?: string;
+  result?: string;
+  name?: string;
+  date?: string;
+  testType?: string;
+  testDate?: string;
+  labName?: string;
+  importSource?: string;
 }
 
 // Add any other necessary genetics types

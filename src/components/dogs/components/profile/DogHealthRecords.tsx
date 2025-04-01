@@ -87,8 +87,8 @@ const DogHealthRecords: React.FC<DogHealthRecordsProps> = ({ dogId }) => {
                       )}
                     </div>
                   </div>
-                  {record.record_notes && (
-                    <p className="mt-2 text-sm">{record.record_notes}</p>
+                  {record.description && (
+                    <p className="mt-2 text-sm">{record.description}</p>
                   )}
                   {record.document_url && (
                     <div className="mt-2">

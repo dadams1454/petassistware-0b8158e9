@@ -4,9 +4,9 @@ import * as HtmlGeneratorImports from './htmlGenerator';
 
 // Create a simplified HTML generator with fallbacks
 const htmlGenerator = {
-  generateHtml: HtmlGeneratorImports.generateHtml || ((template, data) => `<div>Template: ${template}, Data: ${JSON.stringify(data)}</div>`),
-  renderTemplate: HtmlGeneratorImports.renderTemplate || ((template, data) => `<div>Template: ${template}, Data: ${JSON.stringify(data)}</div>`),
-  applyCustomStyles: HtmlGeneratorImports.applyCustomStyles || ((html, styles) => html)
+  generateHtml: (template: string, data: any) => `<div>Template: ${template}, Data: ${JSON.stringify(data)}</div>`,
+  renderTemplate: (template: string, data: any) => `<div>Template: ${template}, Data: ${JSON.stringify(data)}</div>`,
+  applyCustomStyles: (html: string, styles: any) => html
 };
 
 // Export functions from htmlGenerator with fallbacks

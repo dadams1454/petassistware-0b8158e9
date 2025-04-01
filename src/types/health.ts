@@ -100,7 +100,9 @@ export enum EnergyLevelEnum {
   High = 'high',
   Normal = 'normal',
   Low = 'low',
-  Lethargic = 'lethargic'
+  Lethargic = 'lethargic',
+  VeryHigh = 'very_high',
+  VeryLow = 'very_low'
 }
 
 export enum StoolConsistencyEnum {
@@ -110,7 +112,9 @@ export enum StoolConsistencyEnum {
   Watery = 'watery',
   Hard = 'hard',
   Mucousy = 'mucousy',
-  Bloody = 'bloody'
+  Bloody = 'bloody',
+  Solid = 'solid',
+  SemiSolid = 'semi_solid'
 }
 
 // Add weight unit enum
