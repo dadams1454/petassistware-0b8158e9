@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Settings, LogOut, Home, LayoutDashboard, Dog, ClipboardList, BookmarkCheck } from 'lucide-react';
+import { User, Settings, LogOut, Home, LayoutDashboard, Dog, ClipboardList, BookmarkCheck, FileText } from 'lucide-react';
 
 const UserMenu = () => {
   const navigate = useNavigate();
@@ -89,6 +89,13 @@ const UserMenu = () => {
           <Link to="/reservations" className="cursor-pointer flex w-full">
             <BookmarkCheck className="mr-2 h-4 w-4" />
             <span>Reservations</span>
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
+          <Link to="/contracts" className="cursor-pointer flex w-full">
+            <FileText className="mr-2 h-4 w-4" />
+            <span>Contracts</span>
           </Link>
         </DropdownMenuItem>
         

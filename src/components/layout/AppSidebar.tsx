@@ -29,7 +29,8 @@ import {
   Settings,
   Scale,
   Weight,
-  UserCircle
+  UserCircle,
+  Baby
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 
@@ -53,7 +54,8 @@ export const AppSidebar = () => {
     { title: 'Finances', href: '/finances', icon: Coins },
     { title: 'Facility Management', href: '/facility', icon: Building2 },
     { title: 'Compliance', href: '/compliance', icon: Scale },
-    { title: 'Breeding Prep', href: '/breeding/prepare', icon: ClipboardList },
+    { title: 'Breeding Prep', href: '/breeding-prep', icon: ClipboardList },
+    { title: 'Welping', href: '/welping/new', icon: Baby },
     { title: 'Weight Tracking', href: '/dogs/1/weight', icon: Weight },
   ];
   

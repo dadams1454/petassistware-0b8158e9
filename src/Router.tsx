@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -22,6 +21,8 @@ import AdminSetup from '@/pages/AdminSetup';
 import Users from '@/pages/Users';
 import AuditLogs from '@/pages/AuditLogs';
 import Reservations from '@/pages/Reservations';
+import ReservationDetail from '@/pages/ReservationDetail';
+import CustomerDetail from '@/pages/CustomerDetail';
 import Finances from '@/pages/Finances';
 import Facility from '@/pages/Facility';
 import Compliance from '@/pages/Compliance';
@@ -42,12 +43,14 @@ const Router = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
           
+          {/* Dog routes */}
           <Route path="/dogs" element={<Dogs />} />
           <Route path="/dogs/new" element={<Dogs />} />
           <Route path="/dogs/:id" element={<DogProfilePage />} />
           <Route path="/dogs/:id/weight" element={<WeightTracking />} />
           <Route path="/dogs/:dogId/reproductive" element={<ReproductiveManagementPage />} />
           
+          {/* Litter routes */}
           <Route path="/litters" element={<Litters />} />
           <Route path="/litters/new" element={<AddLitter />} />
           <Route path="/litters/:id" element={<LitterDetail />} />
@@ -55,18 +58,23 @@ const Router = () => {
           <Route path="/breeding/prepare" element={<BreedingPrepPage />} />
           <Route path="/welping/:id" element={<WelpingPage />} />
           
+          {/* Customer routes */}
           <Route path="/customers" element={<Customers />} />
-          <Route path="/reservations" element={<Reservations />} />
-          <Route path="/reservations/:id" element={<Reservations />} />
+          <Route path="/customers/:id" element={<CustomerDetail />} />
           
+          {/* Reservation routes */}
+          <Route path="/reservations" element={<Reservations />} />
+          <Route path="/reservations/:id" element={<ReservationDetail />} />
+          
+          {/* Other routes */}
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/communications" element={<Communications />} />
           <Route path="/contracts" element={<Calendar />} /> {/* Temporarily mapping to Calendar until Contracts page is implemented */}
-          
           <Route path="/finances" element={<Finances />} />
           <Route path="/facility" element={<Facility />} />
           <Route path="/compliance" element={<Compliance />} />
           
+          {/* Admin routes */}
           <Route path="/users" element={
             <ProtectedRoute resource="users" action="view">
               <Users />
