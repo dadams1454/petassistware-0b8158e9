@@ -57,6 +57,7 @@ export interface SectionHeaderProps {
     onClick: () => void;
     variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
     disabled?: boolean;
+    icon?: React.ReactNode; // Add icon support
   };
 }
 
@@ -77,6 +78,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           variant={action.variant || 'default'}
           disabled={action.disabled}
         >
+          {action.icon && <span className="mr-2">{action.icon}</span>}
           {action.label}
         </Button>
       )}

@@ -6,6 +6,7 @@ import AuthLoadingState from './AuthLoadingState';
 import SkeletonLoader from './SkeletonLoader';
 import UnauthorizedState from './UnauthorizedState';
 import PageHeader from './PageHeader';
+import ActionButton from './ActionButton';
 
 export {
   ErrorState,
@@ -14,5 +15,6 @@ export {
   AuthLoadingState,
   SkeletonLoader,
   UnauthorizedState,
-  PageHeader
+  PageHeader,
+  ActionButton
 };

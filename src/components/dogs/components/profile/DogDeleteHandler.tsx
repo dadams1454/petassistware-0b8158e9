@@ -1,76 +1,58 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ui/standardized';
+import { useDogMutation } from '../../hooks/useDogMutation';
+import { toast } from 'sonner';
 
 interface DogDeleteHandlerProps {
   dogId: string;
+  dogName: string;
 }
 
-const DogDeleteHandler: React.FC<DogDeleteHandlerProps> = ({ dogId }) => {
+const DogDeleteHandler: React.FC<DogDeleteHandlerProps> = ({ dogId, dogName }) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  
-  const handleDeleteDog = async () => {
-    if (!dogId) return;
-    
-    setIsDeleting(true);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const { deleteDog, isDeleting } = useDogMutation();
+
+  const handleDelete = async () => {
     try {
-      const { error } = await supabase
-        .from('dogs')
-        .delete()
-        .eq('id', dogId);
-        
-      if (error) throw error;
-      
-      toast({
-        title: 'Dog deleted',
-        description: 'The dog has been permanently deleted',
-      });
-      
+      await deleteDog(dogId);
+      toast.success(`${dogName} has been deleted.`);
       navigate('/dogs');
     } catch (error) {
-      toast({
-        title: 'Error deleting dog',
-        description: error instanceof Error ? error.message : 'An unknown error occurred',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsDeleting(false);
-      setIsDeleteDialogOpen(false);
+      toast.error('Failed to delete dog.');
+      console.error('Delete error:', error);
     }
   };
 
   return (
     <>
-      <div className="flex justify-end mb-4">
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => setIsDeleteDialogOpen(true)}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete Dog
-        </Button>
-      </div>
-      
-      {/* Delete Confirmation Dialog */}
+      <Button 
+        variant="destructive" 
+        size="sm" 
+        onClick={() => setConfirmOpen(true)}
+        className="flex items-center gap-1"
+      >
+        <Trash2 className="h-4 w-4" />
+        Delete Dog
+      </Button>
+
       <ConfirmDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        title="Delete Dog Profile"
-        description="Are you sure you want to delete this dog? This action cannot be undone."
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={`Delete ${dogName}`}
+        description={`Are you sure you want to delete ${dogName}? This action cannot be undone.`}
         confirmLabel="Delete"
         variant="destructive"
         isLoading={isDeleting}
-        onConfirm={handleDeleteDog}
-      />
+        onConfirm={handleDelete}
+      >
+        {/* The Dialog trigger button is outside this component, but we need to provide children */}
+        <span />
+      </ConfirmDialog>
     </>
   );
 };

@@ -1,45 +1,58 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
 
 export interface PageHeaderProps {
   title: string;
   description?: string;
-  backPath?: string;
-  actions?: React.ReactNode;
+  subtitle?: string; // Added to fix TypeScript errors
+  backLink?: string;
+  className?: string;
+  action?: React.ReactNode;
+  actions?: {
+    label: string;
+    onClick: () => void;
+    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+    disabled?: boolean;
+    icon?: React.ReactNode; // Add icon support
+  };
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   description,
-  backPath,
-  actions,
+  subtitle, // Added to support subtitle
+  backLink,
+  className = '',
+  action,
+  actions
 }) => {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          {backPath && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 mr-1"
-              asChild
-            >
-              <a href={backPath}>
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Back</span>
-              </a>
-            </Button>
-          )}
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        </div>
-        {description && (
-          <p className="text-muted-foreground">{description}</p>
+    <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 ${className}`}>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+        {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
+        {description && <p className="text-muted-foreground mt-1">{description}</p>}
+        {backLink && (
+          <a href={backLink} className="text-sm text-primary hover:underline mt-1 inline-block">
+            ← Back
+          </a>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      
+      <div className="flex items-center gap-2 mt-4 sm:mt-0">
+        {action}
+        {actions && (
+          <Button
+            onClick={actions.onClick}
+            variant={actions.variant || 'default'}
+            disabled={actions.disabled}
+          >
+            {actions.icon && <span className="mr-2">{actions.icon}</span>}
+            {actions.label}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
