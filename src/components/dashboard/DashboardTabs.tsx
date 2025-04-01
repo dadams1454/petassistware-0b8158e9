@@ -1,20 +1,20 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { DogLetOutTab } from './tabs/DogLetOutTab';
-import { FeedingTab } from './tabs/FeedingTab';
-import { MedicationsTab } from './tabs/MedicationsTab';
-import { GroomingTab } from './tabs/GroomingTab';
-import { DailyCareTab } from './tabs/DailyCareTab';
-import { NotesTab } from './tabs/NotesTab';
-import { PottyBreaksTab } from './tabs/PottyBreaksTab';
-import { ExerciseTab } from './tabs/ExerciseTab';
-import { TrainingTab } from './tabs/TrainingTab';
-import { PuppiesTab } from './tabs/PuppiesTab';
-import { FacilityTab } from './tabs/FacilityTab';
-import { KennelTab } from './tabs/KennelTab';
-import TabsList from './tabs/TabsList';
+import DogLetOutTab from './tabs/DogLetOutTab';
+import FeedingTab from './tabs/FeedingTab';
+import MedicationsTab from './tabs/MedicationsTab';
+import GroomingTab from './tabs/GroomingTab';
+import DailyCareTab from './tabs/DailyCareTab';
+import NotesTab from './tabs/NotesTab';
+import PottyBreaksTab from './tabs/PottyBreaksTab';
+import ExerciseTab from './tabs/ExerciseTab';
+import TrainingTab from './tabs/TrainingTab';
+import PuppiesTab from './tabs/PuppiesTab';
+import FacilityTab from './tabs/FacilityTab';
+import KennelTab from './tabs/KennelTab';
+import CustomTabsList from './tabs/TabsList';
 
 const DashboardTabs = () => {
   const [activeTab, setActiveTab] = useState('daily-care');
@@ -23,7 +23,7 @@ const DashboardTabs = () => {
   return (
     <div className="mt-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList activeTab={activeTab} />
+        <CustomTabsList activeTab={activeTab} onTabChange={setActiveTab} onRefreshDogs={() => {}} />
         
         <TabsContent value="daily-care" className="mt-6">
           <DailyCareTab />

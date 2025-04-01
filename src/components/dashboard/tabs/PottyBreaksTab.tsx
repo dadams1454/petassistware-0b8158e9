@@ -7,7 +7,7 @@ import { DogCareStatus } from '@/types/dailyCare';
 import { Dog } from 'lucide-react';
 
 interface PottyBreaksTabProps {
-  onRefreshDogs: () => void;
+  onRefreshDogs?: () => void;
   dogStatuses?: DogCareStatus[];
 }
 

@@ -32,35 +32,51 @@ const TabsList: React.FC<TabsListProps> = ({
       <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
         <ShadcnTabsList className="h-auto bg-transparent p-0 overflow-x-auto flex-wrap w-full">
           <TabsTrigger 
-            value="overview" 
-            className={`transition-all ${activeTab === 'overview' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
-          >
-            <LayoutDashboard className="h-4 w-4 mr-2" />
-            <span>Overview</span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
-            value="dailycare" 
-            className={`transition-all ${activeTab === 'dailycare' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+            value="daily-care" 
+            className={`transition-all ${activeTab === 'daily-care' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
           >
             <Calendar className="h-4 w-4 mr-2" />
             <span>Daily Care</span>
           </TabsTrigger>
           
           <TabsTrigger 
-            value="dogletout" 
-            className={`transition-all ${activeTab === 'dogletout' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+            value="feeding" 
+            className={`transition-all ${activeTab === 'feeding' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
           >
-            <Dog className="h-4 w-4 mr-2" />
-            <span>Dog Let Out</span>
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>Feeding</span>
           </TabsTrigger>
           
           <TabsTrigger 
-            value="puppies" 
-            className={`transition-all ${activeTab === 'puppies' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+            value="medications" 
+            className={`transition-all ${activeTab === 'medications' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
           >
-            <Baby className="h-4 w-4 mr-2" />
-            <span>Puppies</span>
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>Medications</span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="potty-breaks" 
+            className={`transition-all ${activeTab === 'potty-breaks' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>Potty Breaks</span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="exercise" 
+            className={`transition-all ${activeTab === 'exercise' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>Exercise</span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="grooming" 
+            className={`transition-all ${activeTab === 'grooming' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>Grooming</span>
           </TabsTrigger>
           
           <TabsTrigger 
@@ -72,6 +88,30 @@ const TabsList: React.FC<TabsListProps> = ({
           </TabsTrigger>
           
           <TabsTrigger 
+            value="let-out" 
+            className={`transition-all ${activeTab === 'let-out' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          >
+            <Dog className="h-4 w-4 mr-2" />
+            <span>Dog Let Out</span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="notes" 
+            className={`transition-all ${activeTab === 'notes' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>Notes</span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="puppies" 
+            className={`transition-all ${activeTab === 'puppies' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+          >
+            <Baby className="h-4 w-4 mr-2" />
+            <span>Puppies</span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
             value="facility" 
             className={`transition-all ${activeTab === 'facility' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
           >
@@ -80,27 +120,11 @@ const TabsList: React.FC<TabsListProps> = ({
           </TabsTrigger>
           
           <TabsTrigger 
-            value="kennels" 
-            className={`transition-all ${activeTab === 'kennels' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
+            value="kennel" 
+            className={`transition-all ${activeTab === 'kennel' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
           >
             <Home className="h-4 w-4 mr-2" />
-            <span>Kennels</span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
-            value="events" 
-            className={`transition-all ${activeTab === 'events' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
-          >
-            <Calendar className="h-4 w-4 mr-2" />
-            <span>Events</span>
-          </TabsTrigger>
-          
-          <TabsTrigger 
-            value="reports" 
-            className={`transition-all ${activeTab === 'reports' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-accent hover:text-accent-foreground'} px-3 py-2`}
-          >
-            <FileBarChart className="h-4 w-4 mr-2" />
-            <span>Reports</span>
+            <span>Kennel</span>
           </TabsTrigger>
         </ShadcnTabsList>
       </Tabs>

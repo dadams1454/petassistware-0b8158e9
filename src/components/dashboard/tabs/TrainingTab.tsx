@@ -4,15 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { GraduationCap, PlusCircle } from 'lucide-react';
-import { EmptyState } from '@/components/ui/standardized';
-import { useNavigate } from 'react-router-dom';
 
 interface TrainingTabProps {
-  onRefresh: () => void;
+  onRefresh?: () => void;
 }
 
 const TrainingTab: React.FC<TrainingTabProps> = ({ onRefresh }) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,19 +29,14 @@ const TrainingTab: React.FC<TrainingTabProps> = ({ onRefresh }) => {
           Add Training Session
         </Button>
       </CardHeader>
-      <CardContent>
-        <EmptyState
-          icon={<GraduationCap className="h-12 w-12 text-muted-foreground" />}
-          title="Training Feature Coming Soon"
-          description="Track and manage your dogs' training sessions, progress, and achievements."
-          action={{
-            label: "Learn More",
-            onClick: () => toast({
-              title: "Training Module",
-              description: "The training module will be available in the next update."
-            })
-          }}
-        />
+      <CardContent className="flex flex-col items-center justify-center py-12">
+        <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+          <GraduationCap className="h-6 w-6 text-amber-600" />
+        </div>
+        <h3 className="text-xl font-semibold mb-2">Training Feature Coming Soon</h3>
+        <p className="text-muted-foreground text-center max-w-md mb-6">
+          Track and manage your dogs' training sessions, progress, and achievements.
+        </p>
       </CardContent>
     </Card>
   );

@@ -1,41 +1,55 @@
 
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DogCareStatus } from '@/types/dailyCare';
-import GroomingSchedule from '@/components/dogs/components/care/table/GroomingSchedule';
-import { Card, CardContent } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
+import { Scissors, ArrowRight } from 'lucide-react';
 
-interface GroomingTabProps {
-  dogStatuses?: DogCareStatus[];
-  onRefreshDogs: () => void;
-}
-
-const GroomingTab: React.FC<GroomingTabProps> = ({ 
-  dogStatuses = [], 
-  onRefreshDogs 
-}) => {
-  const hasDogs = Array.isArray(dogStatuses) && dogStatuses.length > 0;
+const GroomingTab: React.FC = () => {
+  const navigate = useNavigate();
   
   return (
-    <>
-      <div className="mb-4 bg-pink-50 dark:bg-pink-900/20 p-3 rounded-lg border border-pink-200 dark:border-pink-800">
-        <h3 className="text-lg font-medium text-pink-800 dark:text-pink-300">Monthly Grooming Schedule</h3>
-        <p className="text-sm text-pink-600 dark:text-pink-400">
-          Track and schedule grooming activities for all dogs throughout the month.
-        </p>
-      </div>
-      
-      {hasDogs ? (
-        <GroomingSchedule dogs={dogStatuses} onRefresh={onRefreshDogs} />
-      ) : (
-        <Card className="p-8 text-center">
-          <CardContent>
-            <p className="text-muted-foreground">No dogs found. Please refresh or add dogs to the system.</p>
-            <Button onClick={onRefreshDogs} className="mt-4">Refresh Dogs</Button>
-          </CardContent>
-        </Card>
-      )}
-    </>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Scissors className="h-5 w-5 text-pink-500" />
+          <span>Grooming Management</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="p-6 bg-pink-50 dark:bg-pink-900/20 rounded-md border border-pink-200 dark:border-pink-800">
+          <h3 className="text-lg font-medium mb-2">Grooming Schedule</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Track and schedule grooming activities for all dogs.
+          </p>
+          <Button
+            variant="outline"
+            className="bg-white dark:bg-background"
+            onClick={() => navigate("/dogs")}
+          >
+            Manage Grooming <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 border rounded-md">
+            <h4 className="text-sm font-medium mb-2">Today's Grooming</h4>
+            <div className="text-2xl font-bold mb-1">0</div>
+            <p className="text-xs text-muted-foreground">
+              Grooming appointments today
+            </p>
+          </div>
+          
+          <div className="p-4 border rounded-md">
+            <h4 className="text-sm font-medium mb-2">Upcoming</h4>
+            <div className="text-2xl font-bold mb-1">0</div>
+            <p className="text-xs text-muted-foreground">
+              Scheduled in the next 7 days
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

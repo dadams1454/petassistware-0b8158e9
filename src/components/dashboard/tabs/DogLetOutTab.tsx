@@ -1,14 +1,13 @@
 
 import React from 'react';
-import { useDailyCare } from '@/contexts/dailyCare';
 import { Card, CardContent } from '@/components/ui/card';
-import DogLetOutTabComponent from '@/components/facility/DogLetOutTab';
-import { Dog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
+import { Dog } from 'lucide-react';
 
 interface DogLetOutTabProps {
-  onRefreshDogs: () => void;
+  onRefreshDogs?: () => void;
   dogStatuses?: DogCareStatus[];
 }
 
@@ -16,27 +15,21 @@ const DogLetOutTab: React.FC<DogLetOutTabProps> = ({
   onRefreshDogs,
   dogStatuses = []
 }) => {
-  const { dogStatuses: contextDogStatuses, loading } = useDailyCare();
-  
-  // Use provided dogStatuses if available, otherwise use context
-  const effectiveDogStatuses = dogStatuses.length > 0 
-    ? dogStatuses 
-    : contextDogStatuses || [];
-  
+  const navigate = useNavigate();
+
   return (
-    <div className="space-y-6">
-      {effectiveDogStatuses && effectiveDogStatuses.length > 0 ? (
-        <DogLetOutTabComponent onRefreshDogs={onRefreshDogs} />
-      ) : (
-        <Card className="p-8 text-center">
-          <CardContent>
-            <Dog className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-4">No dogs found. Please refresh or add dogs to the system.</p>
-            <Button onClick={onRefreshDogs}>Refresh Dogs</Button>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+    <Card>
+      <CardContent className="flex flex-col items-center justify-center py-12">
+        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+          <Dog className="h-6 w-6 text-blue-600" />
+        </div>
+        <h3 className="text-xl font-semibold mb-2">Dog Let Out Tracking</h3>
+        <p className="text-muted-foreground text-center max-w-md mb-6">
+          Track when dogs are let outside, their activities, and any observations.
+        </p>
+        <Button onClick={() => navigate("/facility/dogletout")}>Go to Dog Let Out</Button>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -18,12 +18,6 @@ interface HeatCycleRow {
   created_at: string;
 }
 
-// Interface for error objects
-interface GenericStringError {
-  error: true;
-  message: string;
-}
-
 const HeatCycleMonitor = ({ dogId }: { dogId: string }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [heatCycles, setHeatCycles] = useState<HeatCycleRow[]>([]);
@@ -71,11 +65,6 @@ const HeatCycleMonitor = ({ dogId }: { dogId: string }) => {
     } catch (error) {
       console.error('Error deleting heat cycle:', error);
     }
-  };
-
-  // Type guard function to check if an item is a HeatCycleRow and not an error
-  const isHeatCycleRow = (item: HeatCycleRow | GenericStringError): item is HeatCycleRow => {
-    return !('error' in item);
   };
 
   const handleEdit = (cycle: HeatCycleRow) => {
@@ -184,7 +173,7 @@ const HeatCycleMonitor = ({ dogId }: { dogId: string }) => {
 
       <RecordHeatCycleDialog
         open={isDialogOpen}
-        onOpenChange={onDialogClose}
+        onOpenChange={setIsDialogOpen}
         dogId={dogId}
         editData={editingCycle}
       />

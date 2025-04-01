@@ -1,119 +1,191 @@
 
-import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Heart } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useHeatCycleAlerts } from '@/hooks/breeding/useHeatCycleAlerts';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
-interface RecordHeatCycleDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  dog: any;
-  onSuccess: () => void;
+export interface RecordHeatCycleDialogProps {
+  open?: boolean;
+  onOpenChange?: (value: boolean) => void;
+  dogId: string;
+  editData?: any;
 }
 
-const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({ 
-  isOpen, 
-  onClose,
-  dog,
-  onSuccess
+const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
+  open = false,
+  onOpenChange = () => {},
+  dogId,
+  editData = null
 }) => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [isLoading, setIsLoading] = useState(false);
-  const { recordHeatDate } = useHeatCycleAlerts([]);
   const { toast } = useToast();
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    editData?.start_date ? new Date(editData.start_date) : new Date()
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    editData?.end_date ? new Date(editData.end_date) : undefined
+  );
+  const [notes, setNotes] = useState(editData?.notes || '');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Update form when edit data changes
+  useEffect(() => {
+    if (editData) {
+      setStartDate(editData.start_date ? new Date(editData.start_date) : new Date());
+      setEndDate(editData.end_date ? new Date(editData.end_date) : undefined);
+      setNotes(editData.notes || '');
+    } else {
+      setStartDate(new Date());
+      setEndDate(undefined);
+      setNotes('');
+    }
+  }, [editData]);
 
   const handleSubmit = async () => {
-    if (!date) {
+    if (!startDate) {
       toast({
-        title: "Date Required",
-        description: "Please select a heat cycle start date",
+        title: "Error",
+        description: "Start date is required",
         variant: "destructive"
       });
       return;
     }
 
-    setIsLoading(true);
-    
+    setIsSubmitting(true);
+
     try {
-      const success = await recordHeatDate(dog.id, date);
-      
-      if (success) {
-        toast({
-          title: "Heat Cycle Recorded",
-          description: `${dog.name}'s heat cycle has been recorded successfully.`
-        });
-        onSuccess();
-        onClose();
+      const heatCycleData = {
+        dog_id: dogId,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate ? endDate.toISOString().split('T')[0] : null,
+        notes: notes.trim() || null
+      };
+
+      let result;
+
+      if (editData?.id) {
+        // Update existing record
+        result = await supabase
+          .from('heat_cycles')
+          .update(heatCycleData)
+          .eq('id', editData.id);
       } else {
-        throw new Error("Failed to record heat cycle");
+        // Insert new record
+        result = await supabase
+          .from('heat_cycles')
+          .insert(heatCycleData);
+      }
+
+      if (result.error) throw result.error;
+
+      toast({
+        title: "Success",
+        description: editData?.id
+          ? "Heat cycle updated successfully"
+          : "Heat cycle recorded successfully"
+      });
+
+      if (onOpenChange) {
+        onOpenChange(false);
       }
     } catch (error) {
+      console.error('Error saving heat cycle:', error);
       toast({
         title: "Error",
-        description: "Failed to record heat cycle. Please try again.",
+        description: "Failed to save heat cycle data",
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-red-500" />
-            Record Heat Cycle
-          </DialogTitle>
-          <DialogDescription>
-            Record the start date of {dog?.name}'s heat cycle.
-          </DialogDescription>
+          <DialogTitle>{editData ? "Edit Heat Cycle" : "Record Heat Cycle"}</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <label htmlFor="heat-date" className="text-sm font-medium">
-              Heat Cycle Start Date
-            </label>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Start Date</label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  id="heat-date"
-                  variant="outline"
+                  variant={"outline"}
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
+                    !startDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Select date"}
+                  {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
-                  selected={date}
-                  onSelect={setDate}
+                  selected={startDate}
+                  onSelect={setStartDate}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">End Date (Leave blank if still in heat)</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !endDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
+                  initialFocus
+                  disabled={(date) => date < (startDate || new Date())}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Notes (Optional)</label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Enter any observations or notes"
+              className="min-h-[100px]"
+            />
+          </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save"}
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
           </Button>
-        </DialogFooter>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
