@@ -1,58 +1,53 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { addPostpartumCare } from '@/services/welpingService';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { addPostpartumCare, WelpingPostpartumCare } from '@/services/welpingService';
 import { format } from 'date-fns';
-
-const postpartumCareSchema = z.object({
-  care_type: z.enum(['feeding', 'cleaning', 'medical', 'weighing', 'other']),
-  care_time: z.string().min(1, 'Time is required'),
-  notes: z.string().min(1, 'Notes are required'),
-  performed_by: z.string().optional(),
-});
-
-type PostpartumCareFormValues = z.infer<typeof postpartumCareSchema>;
 
 interface PostpartumCareFormProps {
   puppyId: string;
   onSuccess: () => void;
-  onCancel?: () => void;
+  onCancel: () => void;
 }
 
 const PostpartumCareForm: React.FC<PostpartumCareFormProps> = ({
   puppyId,
   onSuccess,
-  onCancel,
+  onCancel
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const currentTime = format(new Date(), 'HH:mm');
   
-  const form = useForm<PostpartumCareFormValues>({
-    resolver: zodResolver(postpartumCareSchema),
+  const form = useForm({
     defaultValues: {
-      care_type: 'feeding',
-      care_time: format(new Date(), 'HH:mm'),
+      care_time: currentTime,
+      care_type: '',
       notes: '',
-      performed_by: '',
-    },
+      performed_by: ''
+    }
   });
   
-  const handleSubmit = async (values: PostpartumCareFormValues) => {
+  const handleSubmit = async (values: any) => {
     setIsSubmitting(true);
+    
     try {
-      await addPostpartumCare({
+      const data: Omit<WelpingPostpartumCare, 'id' | 'created_at'> = {
         puppy_id: puppyId,
-        ...values,
-      });
+        care_time: values.care_time,
+        care_type: values.care_type,
+        notes: values.notes,
+        performed_by: values.performed_by
+      };
+      
+      await addPostpartumCare(data);
       onSuccess();
     } catch (error) {
-      console.error('Error submitting postpartum care:', error);
+      console.error('Error saving postpartum care:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -61,14 +56,31 @@ const PostpartumCareForm: React.FC<PostpartumCareFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="care_time"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Time</FormLabel>
+                <FormControl>
+                  <Input type="time" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           <FormField
             control={form.control}
             name="care_type"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Care Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select care type" />
@@ -86,20 +98,6 @@ const PostpartumCareForm: React.FC<PostpartumCareFormProps> = ({
               </FormItem>
             )}
           />
-          
-          <FormField
-            control={form.control}
-            name="care_time"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Time</FormLabel>
-                <FormControl>
-                  <Input type="time" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
         
         <FormField
@@ -109,9 +107,8 @@ const PostpartumCareForm: React.FC<PostpartumCareFormProps> = ({
             <FormItem>
               <FormLabel>Performed By</FormLabel>
               <FormControl>
-                <Input placeholder="Who performed this care" {...field} />
+                <Input placeholder="Name of person who performed the care" {...field} />
               </FormControl>
-              <FormDescription>Optional - record who provided this care</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -124,32 +121,23 @@ const PostpartumCareForm: React.FC<PostpartumCareFormProps> = ({
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Enter care details"
+                <Textarea
+                  placeholder="Details about the care provided..."
                   className="min-h-[100px]"
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
-              <FormDescription>
-                {form.watch('care_type') === 'feeding' && 'Record feeding method, amount, and puppy response'}
-                {form.watch('care_type') === 'cleaning' && 'Record cleaning method and areas cleaned'}
-                {form.watch('care_type') === 'medical' && 'Record treatment, medication, dosage if applicable'}
-                {form.watch('care_type') === 'weighing' && 'Record current weight and any changes from previous measurements'}
-                {form.watch('care_type') === 'other' && 'Describe the care provided in detail'}
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         
-        <div className="flex justify-end space-x-2 pt-4">
-          {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-          )}
+        <div className="flex justify-end space-x-2">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Record Care'}
+            {isSubmitting ? 'Saving...' : 'Save Care Record'}
           </Button>
         </div>
       </form>

@@ -2837,6 +2837,151 @@ export type Database = {
           },
         ]
       }
+      welping_observations: {
+        Row: {
+          action_taken: string | null
+          created_at: string | null
+          description: string
+          id: string
+          observation_time: string
+          observation_type: string
+          puppy_id: string | null
+          welping_record_id: string
+        }
+        Insert: {
+          action_taken?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          observation_time: string
+          observation_type: string
+          puppy_id?: string | null
+          welping_record_id: string
+        }
+        Update: {
+          action_taken?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          observation_time?: string
+          observation_type?: string
+          puppy_id?: string | null
+          welping_record_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welping_observations_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "welping_observations_welping_record_id_fkey"
+            columns: ["welping_record_id"]
+            isOneToOne: false
+            referencedRelation: "welping_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      welping_postpartum_care: {
+        Row: {
+          care_time: string
+          care_type: string
+          created_at: string | null
+          id: string
+          notes: string
+          performed_by: string | null
+          puppy_id: string
+        }
+        Insert: {
+          care_time: string
+          care_type: string
+          created_at?: string | null
+          id?: string
+          notes: string
+          performed_by?: string | null
+          puppy_id: string
+        }
+        Update: {
+          care_time?: string
+          care_type?: string
+          created_at?: string | null
+          id?: string
+          notes?: string
+          performed_by?: string | null
+          puppy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welping_postpartum_care_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      welping_records: {
+        Row: {
+          attended_by: string | null
+          birth_date: string
+          complication_notes: string | null
+          complications: boolean | null
+          created_at: string | null
+          end_time: string | null
+          females: number
+          id: string
+          litter_id: string
+          males: number
+          notes: string | null
+          start_time: string
+          status: string
+          total_puppies: number
+        }
+        Insert: {
+          attended_by?: string | null
+          birth_date: string
+          complication_notes?: string | null
+          complications?: boolean | null
+          created_at?: string | null
+          end_time?: string | null
+          females?: number
+          id?: string
+          litter_id: string
+          males?: number
+          notes?: string | null
+          start_time: string
+          status?: string
+          total_puppies?: number
+        }
+        Update: {
+          attended_by?: string | null
+          birth_date?: string
+          complication_notes?: string | null
+          complications?: boolean | null
+          created_at?: string | null
+          end_time?: string | null
+          females?: number
+          id?: string
+          litter_id?: string
+          males?: number
+          notes?: string | null
+          start_time?: string
+          status?: string
+          total_puppies?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welping_records_litter_id_fkey"
+            columns: ["litter_id"]
+            isOneToOne: false
+            referencedRelation: "litters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

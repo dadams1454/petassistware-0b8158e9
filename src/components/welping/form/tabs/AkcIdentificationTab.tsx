@@ -13,7 +13,7 @@ const AkcIdentificationTab = ({ form }: { form: any }) => {
           <FormItem>
             <FormLabel>AKC Litter Number</FormLabel>
             <FormControl>
-              <Input placeholder="Enter AKC litter number" {...field} />
+              <Input placeholder="Enter AKC litter number" {...field} value={field.value || ''} />
             </FormControl>
             <FormDescription>
               The AKC assigned litter registration number
@@ -30,7 +30,7 @@ const AkcIdentificationTab = ({ form }: { form: any }) => {
           <FormItem>
             <FormLabel>AKC Registration Number</FormLabel>
             <FormControl>
-              <Input placeholder="Enter AKC registration number if available" {...field} />
+              <Input placeholder="Enter AKC registration number if available" {...field} value={field.value || ''} />
             </FormControl>
             <FormDescription>
               Individual puppy AKC registration number (if already assigned)
@@ -47,7 +47,7 @@ const AkcIdentificationTab = ({ form }: { form: any }) => {
           <FormItem>
             <FormLabel>Microchip Number</FormLabel>
             <FormControl>
-              <Input placeholder="Enter microchip number if available" {...field} />
+              <Input placeholder="Enter microchip number if available" {...field} value={field.value || ''} />
             </FormControl>
             <FormDescription>
               Unique microchip identification number (if already chipped)

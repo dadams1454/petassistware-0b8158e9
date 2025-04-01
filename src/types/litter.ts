@@ -26,6 +26,15 @@ export interface Puppy {
   vet_check_dates?: string;
   akc_litter_number?: string;
   akc_registration_number?: string;
+  litter?: {
+    birth_date: string;
+    dam?: {
+      name: string;
+    };
+    sire?: {
+      name: string;
+    };
+  };
 }
 
 export interface SimpleDog {

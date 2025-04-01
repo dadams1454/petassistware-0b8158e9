@@ -4,3 +4,4 @@ export * from './dailyCare';
 export * from './careService';
 export * from './breedingRecommendationService';
 export * from './welpingService';
+export * from './healthIndicatorService';
