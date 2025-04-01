@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/ui/standardized';
 import { 
@@ -12,6 +11,7 @@ import {
   Package,
   Home
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import TasksView from '@/components/facility/TasksView';
 import StaffManagement from '@/components/facility/StaffManagement';
 import MaintenanceSchedule from '@/components/facility/MaintenanceSchedule';
@@ -25,6 +25,14 @@ import PageContainer from '@/components/common/PageContainer';
 const Facility: React.FC = () => {
   const [activeTab, setActiveTab] = useState('staff');
   const isMobile = useIsMobile();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if we have a state with an activeTab
+    if (location.state && location.state.activeTab === 'kennels') {
+      setActiveTab('kennels');
+    }
+  }, [location.state]);
 
   return (
     <PageContainer>
