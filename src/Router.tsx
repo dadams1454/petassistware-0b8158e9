@@ -16,6 +16,7 @@ import AddLitter from '@/pages/AddLitter';
 import LitterDetail from '@/pages/LitterDetail';
 import BreedingPrepPage from '@/pages/BreedingPrepPage';
 import WelpingPage from '@/pages/WelpingPage';
+import WelpingDashboard from '@/pages/WelpingDashboard';
 import Calendar from '@/pages/Calendar';
 import Communications from '@/pages/Communications';
 import AdminSetup from '@/pages/AdminSetup';
@@ -57,6 +58,7 @@ const Router = () => {
           <Route path="/litters/new" element={<AddLitter />} />
           <Route path="/litters/:id" element={<LitterDetail />} />
           <Route path="/breeding-prep" element={<BreedingPrepPage />} />
+          <Route path="/welping-dashboard" element={<WelpingDashboard />} />
           <Route path="/welping/:id" element={<WelpingPage />} />
           <Route path="/welping/new" element={<WelpingPage />} />
           

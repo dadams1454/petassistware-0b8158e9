@@ -100,7 +100,7 @@ export const navItems = [
   },
   {
     title: 'Welping',
-    href: '/welping/new',
+    href: '/welping-dashboard',
     icon: Baby,
     description: 'Manage whelping and puppy care'
   },
