@@ -48,12 +48,13 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
       if (data && Array.isArray(data)) {
         // Validate that each item has the required properties before adding to state
         const validHeatCycles: HeatCycle[] = data
-          .filter(item => 
-            item && 
-            typeof item.id === 'string' && 
-            typeof item.dog_id === 'string' && 
-            typeof item.start_date === 'string' &&
-            typeof item.created_at === 'string'
+          .filter((item): item is HeatCycleRow => 
+            item !== null && 
+            typeof item === 'object' &&
+            'id' in item && typeof item.id === 'string' && 
+            'dog_id' in item && typeof item.dog_id === 'string' && 
+            'start_date' in item && typeof item.start_date === 'string' &&
+            'created_at' in item && typeof item.created_at === 'string'
           )
           .map(item => ({
             id: item.id,
