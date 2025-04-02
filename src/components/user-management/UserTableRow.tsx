@@ -22,6 +22,11 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   const userCreated = user.created_at ? new Date(user.created_at) : new Date();
   const timeAgo = formatDistanceToNow(userCreated, { addSuffix: true });
 
+  // Get a display name from first_name + last_name or email if not available
+  const displayName = user.first_name && user.last_name 
+    ? `${user.first_name} ${user.last_name}`
+    : user.name || 'Not set';
+
   const handleEdit = () => {
     onEdit(user);
   };
@@ -36,7 +41,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   return (
     <TableRow>
       <TableCell>{user.email}</TableCell>
-      <TableCell>{user.name || 'Not set'}</TableCell>
+      <TableCell>{displayName}</TableCell>
       <TableCell>{user.role || 'User'}</TableCell>
       <TableCell className="hidden md:table-cell">{timeAgo}</TableCell>
       <TableCell className="text-right">

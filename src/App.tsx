@@ -11,15 +11,15 @@ import ReservationPage from './components/reservations/ReservationList';
 import NewDogPage from './pages/NewDogPage';
 import EditDogPage from './pages/EditDogPage';
 import CustomerForm from './components/customers/CustomerForm';
-import NewCustomerPage from './components/customers/CustomerDialog';
+import CustomerDialog from './components/customers/CustomerDialog';
 import BreedingPrepPage from './modules/Reproduction/pages/BreedingManagementPage';
 import LitterDetailsPage from './modules/Reproduction/pages/LitterDetailsPage';
 import NewLitterPage from './modules/Reproduction/pages/NewLitterPage';
 import Breeding from './modules/Reproduction/pages/BreedingDashboard';
 import ReproductiveManagementPage from './pages/ReproductiveManagementPage';
 import ContractsPage from './components/contracts/ContractsList';
-import ContractDetailsPage from './components/contracts/ContractPreviewDialog';
-import NewContractPage from './components/contracts/ContractForm';
+import ContractPreviewDialog from './components/contracts/ContractPreviewDialog';
+import ContractForm from './components/contracts/ContractForm';
 import FacilityPage from './components/facility/FacilityTasksList';
 import CommunicationsPage from './components/communications/CommunicationHistory';
 import UserManagement from './pages/UserManagement';
@@ -41,15 +41,26 @@ const App: React.FC = () => {
             <Route path="dogs/:dogId" element={<DogDetailPage />} />
             <Route path="dogs/:dogId/edit" element={<EditDogPage />} />
             <Route path="customers" element={<Customers />} />
-            {/* Pass required props as empty objects for now */}
-            <Route path="customers/new" element={<NewCustomerPage isOpen={true} onClose={() => {}} />} />
+            {/* Fixed: Adding customer prop which is required */}
+            <Route path="customers/new" element={<CustomerDialog isOpen={true} onClose={() => {}} customer={null} />} />
             <Route path="customers/:customerId" element={<CustomerDetails />} />
             <Route path="customers/:customerId/edit" element={<CustomerForm onSubmit={() => {}} onCancel={() => {}} />} />
             <Route path="reservations" element={<ReservationPage />} />
             <Route path="reproductive-management/:dogId" element={<ReproductiveManagementPage />} />
             <Route path="contracts" element={<ContractsPage />} />
-            <Route path="contracts/new" element={<NewContractPage puppyId={null} onSubmit={() => {}} onCancel={() => {}} />} />
-            <Route path="contracts/:contractId" element={<ContractDetailsPage isOpen={true} onOpenChange={() => {}} contractData={null} onSignContract={() => {}} />} />
+            <Route path="contracts/new" element={<ContractForm puppyId={null} onSubmit={() => {}} onCancel={() => {}} />} />
+            {/* Fixed: Making onSignContract return a Promise */}
+            <Route path="contracts/:contractId" element={
+              <ContractPreviewDialog 
+                isOpen={true} 
+                onOpenChange={() => {}} 
+                contractData={null} 
+                onSignContract={async (signatureData: string) => { 
+                  // Async function to handle contract signing
+                  return Promise.resolve(); 
+                }} 
+              />
+            } />
             <Route path="communications" element={<CommunicationsPage />} />
             <Route path="facility" element={<FacilityPage tasks={[]} onEdit={() => {}} onRefresh={() => {}} />} />
             <Route path="settings" element={<UserManagement />} />

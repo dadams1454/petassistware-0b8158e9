@@ -9,4 +9,6 @@ export interface UserWithProfile {
   profile_image_url: string | null;
   role: string | null;
   tenant_id: string | null;
+  // Adding name property to support UserTableRow component
+  name?: string; 
 }
