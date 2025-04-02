@@ -1,3 +1,4 @@
+
 export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg' | 'lb';
 
 export interface WeightRecord {
@@ -34,7 +35,9 @@ export enum EnergyLevelEnum {
   High = 'high',
   Normal = 'normal',
   Low = 'low',
-  VeryLow = 'very_low'
+  VeryLow = 'very_low',
+  Hyperactive = 'hyperactive',
+  Lethargic = 'lethargic'
 }
 
 export enum StoolConsistencyEnum {
@@ -42,7 +45,11 @@ export enum StoolConsistencyEnum {
   Soft = 'soft',
   Loose = 'loose',
   Watery = 'watery',
-  Hard = 'hard'
+  Hard = 'hard',
+  Solid = 'solid',
+  SemiSolid = 'semi_solid',
+  Bloody = 'bloody',
+  Mucousy = 'mucousy'
 }
 
 export enum HealthRecordTypeEnum {
@@ -52,7 +59,12 @@ export enum HealthRecordTypeEnum {
   Surgery = 'surgery',
   Test = 'test',
   Treatment = 'treatment',
-  Other = 'other'
+  Other = 'other',
+  Observation = 'observation',
+  Deworming = 'deworming',
+  Grooming = 'grooming',
+  Dental = 'dental',
+  Allergy = 'allergy'
 }
 
 export interface HealthRecord {
@@ -61,6 +73,7 @@ export interface HealthRecord {
   title?: string;
   record_type: HealthRecordTypeEnum;
   visit_date: string;
+  date?: string; // Adding this for compatibility with existing code
   vet_name: string;
   vet_clinic?: string;
   findings?: string;

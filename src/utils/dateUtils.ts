@@ -81,3 +81,24 @@ export const calculateAgeInDays = (startDate: unknown, endDate: unknown = new Da
   const diffTime = Math.abs(end.getTime() - start.getTime());
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 };
+
+/**
+ * Format a date for display in a user-friendly format
+ * @param date - Date to format
+ * @returns Formatted date string
+ */
+export const formatDateForDisplay = (date: string | Date | null | undefined): string => {
+  if (!date) return 'N/A';
+  
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString(undefined, { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  } catch (e) {
+    console.error('Error formatting date:', e);
+    return 'Invalid date';
+  }
+};
