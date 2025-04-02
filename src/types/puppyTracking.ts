@@ -44,6 +44,8 @@ export interface PuppyAgeGroupData extends AgeGroup {
   maxAge: number;
   count: number;
   puppies: PuppyWithAge[];
+  careChecks?: string[];
+  milestones?: string[];
 }
 
 // Puppy statistics by status and other metrics
@@ -65,6 +67,16 @@ export interface PuppyManagementStats {
   };
   adoptionRate: number;
   reservationRate: number;
+  totalPuppies: number;
+  totalLitters: number;
+  activeLitters: number;
+  availablePuppies: number;
+  reservedPuppies: number;
+  upcomingVaccinations: number;
+  recentWeightChecks: number;
+  puppiesByAgeGroup: Record<string, number>;
+  weightCompletionRate: number;
+  vaccinationCompletionRate: number;
 }
 
 // Milestone tracking for puppies
@@ -87,11 +99,19 @@ export interface PuppyWeightRecord {
   id: string;
   puppy_id: string;
   weight: number;
-  weight_unit: 'g' | 'oz' | 'lbs' | 'kg';
+  weight_unit: WeightUnit;
   date: string;
   notes?: string;
   created_at: string;
   updated_at?: string;
+}
+
+// Define WeightUnit type
+export type WeightUnit = 'g' | 'oz' | 'lbs' | 'kg';
+
+// Define WeightRecord for backward compatibility
+export interface WeightRecord extends PuppyWeightRecord {
+  dog_id: string; // Required by some components
 }
 
 // Health tracking for puppies
@@ -120,6 +140,9 @@ export interface PuppyVaccinationRecord {
   updated_at?: string;
 }
 
+// For backward compatibility
+export type VaccinationRecord = PuppyVaccinationRecord;
+
 // Vaccination schedule
 export interface PuppyVaccinationSchedule {
   id: string;
@@ -130,7 +153,14 @@ export interface PuppyVaccinationSchedule {
   vaccination_record_id?: string;
   created_at: string;
   updated_at?: string;
+  due_date: string;
+  vaccine_name?: string;
+  administered?: boolean;
+  administered_date?: string;
 }
+
+// For backward compatibility
+export type VaccinationScheduleItem = PuppyVaccinationSchedule;
 
 // Socialization tracking
 export interface SocializationCategory {
@@ -143,7 +173,12 @@ export interface SocializationCategory {
   age_end_days: number;
   created_at: string;
   updated_at?: string;
+  color?: string;
+  examples?: string[];
 }
+
+// Socialization reaction type
+export type SocializationReaction = 'positive' | 'neutral' | 'negative';
 
 // Socialization experience records
 export interface SocializationExperience {
@@ -152,10 +187,12 @@ export interface SocializationExperience {
   category_id: string;
   experience_type: string;
   experience_date: string;
-  reaction: 'positive' | 'neutral' | 'negative';
+  reaction: SocializationReaction;
   notes?: string;
   created_at: string;
   updated_at?: string;
+  category?: string;
+  experience?: string;
 }
 
 // Socialization progress tracking
@@ -163,26 +200,9 @@ export interface SocializationProgress {
   id: string;
   categoryId: string;
   category_name: string;
+  categoryName?: string;
   completion_percentage: number;
   count: number;
   target: number;
   puppy_id: string;
 }
-
-// Exporting all types
-export type {
-  AgeGroup,
-  PuppyAgeGroupData,
-  PuppyManagementStats,
-  PuppyMilestone,
-  PuppyWeightRecord,
-  PuppyHealthRecord,
-  PuppyVaccinationRecord,
-  PuppyVaccinationSchedule,
-  SocializationCategory,
-  SocializationExperience,
-  SocializationProgress
-};
-
-// Re-export as type
-export type { PuppyWithAge };

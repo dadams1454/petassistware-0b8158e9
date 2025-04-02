@@ -1,64 +1,122 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Task } from "@/types/task"
 
-// Mock task data
-const mockTasks: Task[] = [
-  { id: "1", title: "Clean Kennel A", description: "Thoroughly clean and disinfect Kennel A.", status: "In Progress", priority: "High", category: "Cleaning" },
-  { id: "2", title: "Check Food Supplies", description: "Verify and replenish food supplies for all kennels.", status: "To Do", priority: "Medium", category: "Feeding" },
-  { id: "3", title: "Administer Medication", description: "Administer daily medication to dogs in medical care.", status: "Completed", priority: "High", category: "Medical" },
-  { id: "4", title: "Exercise Dogs", description: "Take dogs for their scheduled exercise routines.", status: "To Do", priority: "Medium", category: "Care" },
-  { id: "5", title: "Inspect Kennels", description: "Inspect all kennels for safety and maintenance issues.", status: "To Do", priority: "Low", category: "Maintenance" },
-];
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CalendarClock, CheckSquare, Clock } from 'lucide-react';
+import { Task } from '@/types/task';
 
-// Update the component props to include onEditTask
-interface TasksViewProps {
-  onEditTask?: (taskId: string) => void;
-}
+const TasksView: React.FC = () => {
+  // Example tasks with corrected status values
+  const tasks: Task[] = [
+    { id: '1', name: 'Clean kennels', description: 'Daily cleaning of all kennels', status: 'in-progress', priority: 'high', due_date: '2023-12-05', created_at: '2023-12-01' },
+    { id: '2', name: 'Restock food supplies', description: 'Order new food supplies', status: 'pending', priority: 'medium', due_date: '2023-12-07', created_at: '2023-12-01' },
+    { id: '3', name: 'Update vaccination records', description: 'Update all dog vaccination records', status: 'completed', priority: 'high', due_date: '2023-12-03', created_at: '2023-11-28' },
+    { id: '4', name: 'Facility inspection', description: 'Prepare for monthly inspection', status: 'pending', priority: 'medium', due_date: '2023-12-15', created_at: '2023-12-01' },
+    { id: '5', name: 'Training session', description: 'Group training session for staff', status: 'pending', priority: 'low', due_date: '2023-12-10', created_at: '2023-12-01' }
+  ];
 
-const TasksView: React.FC<TasksViewProps> = ({ onEditTask }) => {
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
-
+  const pendingTasks = tasks.filter(task => task.status === 'pending');
+  const inProgressTasks = tasks.filter(task => task.status === 'in-progress');
+  const completedTasks = tasks.filter(task => task.status === 'completed');
+  
   return (
-    <Card className="col-span-2">
-      <CardHeader>
-        <CardTitle>Tasks</CardTitle>
-      </CardHeader>
-      <CardContent className="pl-2 pr-2">
-        <ScrollArea className="h-[500px] w-full rounded-md border">
-          <TaskList onEditTask={onEditTask} />
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  );
-};
-
-// Update TaskList component to accept onEditTask prop
-interface TaskListProps {
-  onEditTask?: (taskId: string) => void;
-}
-
-const TaskList: React.FC<TaskListProps> = ({ onEditTask }) => {
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
-
-  return (
-    <div className="relative">
-      {tasks.map((task) => (
-        <div key={task.id} className="grid grid-cols-4 gap-4 py-3 border-b last:border-b-0">
-          <div className="col-span-3">
-            <div className="font-medium">{task.title}</div>
-            <div className="text-sm text-muted-foreground">{task.description}</div>
-          </div>
-          <div className="flex flex-col space-y-1.5">
-            <div className="text-sm font-medium leading-none">{task.priority}</div>
-            <p className="text-sm text-muted-foreground">
-              {task.status}
-            </p>
-            <button onClick={() => onEditTask?.(task.id)} className="text-sm text-blue-500">Edit</button>
-          </div>
-        </div>
-      ))}
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Tasks</h2>
+        <Button>Add Task</Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center text-lg">
+              <Clock className="mr-2 h-5 w-5 text-amber-500" />
+              Pending ({pendingTasks.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {pendingTasks.map(task => (
+              <div key={task.id} className="p-3 bg-muted rounded-md">
+                <h3 className="font-medium">{task.name}</h3>
+                <p className="text-sm text-muted-foreground">{task.description}</p>
+                <div className="flex justify-between mt-2 text-xs">
+                  <span className="flex items-center">
+                    <CalendarClock className="h-3 w-3 mr-1" />
+                    Due: {task.due_date}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full ${
+                    task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                    task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
+                    'bg-green-100 text-green-700'
+                  }`}>
+                    {task.priority}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center text-lg">
+              <Clock className="mr-2 h-5 w-5 text-blue-500" />
+              In Progress ({inProgressTasks.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {inProgressTasks.map(task => (
+              <div key={task.id} className="p-3 bg-muted rounded-md">
+                <h3 className="font-medium">{task.name}</h3>
+                <p className="text-sm text-muted-foreground">{task.description}</p>
+                <div className="flex justify-between mt-2 text-xs">
+                  <span className="flex items-center">
+                    <CalendarClock className="h-3 w-3 mr-1" />
+                    Due: {task.due_date}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full ${
+                    task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                    task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
+                    'bg-green-100 text-green-700'
+                  }`}>
+                    {task.priority}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center text-lg">
+              <CheckSquare className="mr-2 h-5 w-5 text-green-500" />
+              Completed ({completedTasks.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {completedTasks.map(task => (
+              <div key={task.id} className="p-3 bg-muted rounded-md">
+                <h3 className="font-medium">{task.name}</h3>
+                <p className="text-sm text-muted-foreground">{task.description}</p>
+                <div className="flex justify-between mt-2 text-xs">
+                  <span className="flex items-center">
+                    <CalendarClock className="h-3 w-3 mr-1" />
+                    Completed
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full ${
+                    task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                    task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
+                    'bg-green-100 text-green-700'
+                  }`}>
+                    {task.priority}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
