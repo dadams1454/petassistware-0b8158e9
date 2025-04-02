@@ -76,6 +76,11 @@ export interface SocializationProgress {
   total: number;
   completed: number;
   percentage: number;
+  // For backward compatibility with snake_case naming
+  category_id?: string;
+  completion_percentage?: number;
+  count?: number;
+  target?: number;
 }
 
 export interface PuppyVaccinationSchedule {
@@ -83,6 +88,8 @@ export interface PuppyVaccinationSchedule {
   puppy_id: string;
   vaccination_type: string;
   due_date: string;
+  vaccination_date?: string; // Added to fix errors
+  is_completed?: boolean; // Added to fix errors
   notes?: string;
   created_at?: string;
 }
@@ -94,6 +101,16 @@ export interface VaccinationRecord {
   vaccination_date: string;
   lot_number?: string;
   administered_by?: string;
+  notes?: string;
+  created_at?: string;
+}
+
+// Export PuppyMilestone to fix import errors
+export interface PuppyMilestone {
+  id: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
   notes?: string;
   created_at?: string;
 }
@@ -118,6 +135,9 @@ export interface WeightRecord {
 }
 
 export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg' | 'lb';
+
+// Re-export PuppyWithAge from litter.ts to fix imports
+export { PuppyWithAge } from './litter';
 
 // Re-export WeightUnit for backward compatibility
 export { DEFAULT_AGE_GROUPS } from '@/data/puppyAgeGroups';

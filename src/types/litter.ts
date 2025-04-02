@@ -9,13 +9,13 @@ export interface SimpleDog {
   gender?: 'Male' | 'Female';
   photo_url?: string;
   birthdate?: Date | string;
+  registration_number?: string;
 }
 
 export interface Dog extends SimpleDog {
   // Additional dog properties
   weight?: number;
   microchip_number?: string;
-  registration_number?: string;
   pedigree?: boolean;
   notes?: string;
   vaccination_type?: string;
@@ -84,6 +84,12 @@ export interface Litter {
   notes?: string;
   breeding_notes?: string;
   created_at?: string;
+  // Add missing properties to resolve errors
+  dam?: Dog;
+  sire?: Dog;
+  puppies?: Puppy[];
+  archived?: boolean;
+  name?: string;
 }
 
 export interface LitterWithDogs extends Litter {

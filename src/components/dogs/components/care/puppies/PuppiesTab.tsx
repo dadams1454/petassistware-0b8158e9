@@ -4,36 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Baby, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { usePuppyTracking } from '@/hooks/usePuppyTracking';
-import { PuppyWithAge } from '@/types/puppyTracking';
+import { usePuppyTracking } from './hooks/usePuppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
+import PuppyAgeGroupSection from './PuppyAgeGroupSection';
 
 interface PuppiesTabProps {
   onRefresh: () => void;
 }
-
-// Placeholder component until real implementation is ready
-const PuppyAgeGroupSection = ({ ageGroup, puppies, onRefresh }: { 
-  ageGroup: any, 
-  puppies: PuppyWithAge[], 
-  onRefresh: () => void 
-}) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>{ageGroup.name}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      {puppies.length === 0 ? (
-        <p>No puppies in this age group</p>
-      ) : (
-        <ul>
-          {puppies.map(puppy => (
-            <li key={puppy.id}>{puppy.name}</li>
-          ))}
-        </ul>
-      )}
-    </CardContent>
-  </Card>
-);
 
 // Placeholder component until real implementation is ready
 const PuppyStatCards = ({ stats }: { stats: any }) => (
@@ -126,14 +103,17 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
       {Object.entries(puppiesByAgeGroup).map(([groupId, puppiesInGroup]) => {
         if (!Array.isArray(puppiesInGroup) || puppiesInGroup.length === 0) return null;
         
-        const ageGroup = ageGroups.find(group => group.id === groupId);
+        const ageGroup = ageGroups && typeof ageGroups === 'object' && 'find' in ageGroups ? 
+          ageGroups.find((group: PuppyAgeGroupData) => group.id === groupId) : 
+          null;
+        
         if (!ageGroup) return null;
         
         return (
           <PuppyAgeGroupSection
             key={ageGroup.id}
             ageGroup={ageGroup}
-            puppies={puppiesInGroup}
+            puppies={puppiesInGroup as PuppyWithAge[]}
             onRefresh={onRefresh}
           />
         );

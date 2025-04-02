@@ -1,90 +1,79 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { PottyBreak, PottyBreakDog } from '../types';
 
-/**
- * Get all potty breaks for a specific dog on a specific date
- */
-export const getPottyBreaksByDogAndDate = async (dogId: string, date: string): Promise<PottyBreak[]> => {
-  const { data, error } = await supabase
-    .from('potty_break_dogs')
-    .select('potty_break_sessions:session_id(*)')
-    .eq('dog_id', dogId)
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching potty breaks for dog:', error);
-    throw error;
-  }
-
-  // Transform the data to return just the potty breaks with proper date/time format
-  return (data || []).map(item => {
-    if (!item.potty_break_sessions) {
-      console.warn('Missing potty_break_sessions data for item:', item);
-      return {
-        id: 'unknown',
-        date: 'unknown',
-        time: 'unknown',
-        created_at: new Date().toISOString(),
-        potty_break_dogs: [{ dog_id: dogId, session_id: 'unknown' }]
-      };
-    }
-    
-    const session = item.potty_break_sessions;
-    const sessionDate = new Date(session.session_time);
-    return {
-      id: session.id,
-      date: sessionDate.toISOString().split('T')[0],
-      time: sessionDate.toTimeString().slice(0, 5),
-      notes: session.notes || undefined,
-      created_at: session.created_at,
-      potty_break_dogs: [{ dog_id: dogId, session_id: session.id }]
-    };
-  });
-};
-
-/**
- * Get all dogs that had a potty break at a specific time and date
- */
-export const getDogsByPottyBreakTimeAndDate = async (time: string, date: string): Promise<PottyBreakDog[]> => {
-  const { data, error } = await supabase
-    .from('potty_break_dogs')
-    .select('*, potty_break_sessions:session_id(*)')
-    .eq('potty_break_sessions.session_time', time)
-    .eq('potty_break_sessions.created_at', date);
-
-  if (error) {
-    console.error('Error fetching dogs by potty break time:', error);
-    throw error;
-  }
-
-  return data || [];
-};
-
-/**
- * Get all potty breaks for a specific dog by time slot
- */
-export const getPottyBreaksByDogAndTimeSlot = async (dogId: string, timeSlot: string, date: string): Promise<boolean> => {
+// Fix the type issues by properly handling the response data
+export async function fetchLatestPottyBreak(dogId: string) {
   try {
-    console.log('Fetching potty breaks for dog:', dogId, 'at time:', timeSlot, 'on date:', date);
-    
+    // Fetch the latest potty break session that includes this dog
     const { data, error } = await supabase
       .from('potty_break_dogs')
-      .select('potty_break_sessions:session_id(*)')
+      .select(`
+        session_id,
+        potty_break_sessions!inner(
+          id,
+          session_time,
+          notes,
+          created_at
+        )
+      `)
       .eq('dog_id', dogId)
-      .eq('potty_break_sessions.session_time', timeSlot)
-      .eq('potty_break_sessions.created_at', date);
-
-    if (error) {
-      console.error('Error fetching potty breaks by dog and time slot:', error);
-      throw error;
+      .order('created_at', { ascending: false })
+      .limit(1);
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      return null;
     }
-
-    console.log('Retrieved potty breaks:', data);
-    return data && data.length > 0;
+    
+    // Safely extract session data
+    const session = data[0].potty_break_sessions;
+    if (!session) return null;
+    
+    // Return properly structured data
+    return {
+      session_time: session.session_time,
+      id: session.id,
+      notes: session.notes,
+      created_at: session.created_at
+    };
   } catch (error) {
-    console.error('Error in getPottyBreaksByDogAndTimeSlot:', error);
-    // Return false in case of error to avoid breaking the UI
-    return false;
+    console.error('Error fetching latest potty break:', error);
+    return null;
   }
-};
+}
+
+export async function logPottyBreak(dogId: string, sessionId: string, notes: string) {
+  try {
+    const { data, error } = await supabase
+      .from('potty_break_dogs')
+      .insert([
+        { dog_id: dogId, session_id: sessionId, notes: notes }
+      ])
+      .select();
+    
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error('Error logging potty break:', error);
+    return null;
+  }
+}
+
+export async function updatePottyBreakNotes(dogId: string, sessionId: string, notes: string) {
+  try {
+    const { data, error } = await supabase
+      .from('potty_break_dogs')
+      .update({ notes: notes })
+      .eq('dog_id', dogId)
+      .eq('session_id', sessionId)
+      .select();
+    
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error('Error updating potty break notes:', error);
+    return null;
+  }
+}

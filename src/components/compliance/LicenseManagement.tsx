@@ -4,7 +4,7 @@ import { CircleDashed, CheckCircle2, AlertTriangle, FileText, BadgeCheck, Calend
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { customSupabase, LicenseRow } from '@/integrations/supabase/client';
+import { customSupabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { format, isAfter, isBefore, addDays } from 'date-fns';
 import LicenseDialog from './dialogs/LicenseDialog';
@@ -14,14 +14,14 @@ interface License {
   id: string;
   license_type: string;
   license_number?: string;
-  license_name?: string; // Add this property
-  description?: string; // Add this property
+  license_name?: string;
+  description?: string;
   issued_date?: string;
   expiry_date: string;
   document_url?: string;
   created_at: string;
   breeder_id?: string;
-  status: string; // Add this property
+  status: string;
 }
 
 const LicenseManagement: React.FC = () => {
@@ -43,7 +43,7 @@ const LicenseManagement: React.FC = () => {
     setIsLoading(true);
     try {
       const { data, error } = await customSupabase
-        .from<LicenseRow, LicenseRow>('licenses')
+        .from('licenses')
         .select('*');
       
       if (error) throw error;
@@ -72,7 +72,7 @@ const LicenseManagement: React.FC = () => {
       
       setLicenses(processedData);
     } catch (error) {
-      setLicenses([]);  // Set to empty array of the correct type
+      setLicenses([]);
       console.error("Error fetching licenses:", error);
     } finally {
       setIsLoading(false);
@@ -123,7 +123,7 @@ const LicenseManagement: React.FC = () => {
       if (selectedLicense) {
         // Update existing license
         const { error } = await customSupabase
-          .from<LicenseRow, LicenseRow>('licenses')
+          .from('licenses')
           .update(updatedData)
           .eq('id', selectedLicense.id);
 
@@ -136,7 +136,7 @@ const LicenseManagement: React.FC = () => {
       } else {
         // Insert new license
         const { error } = await customSupabase
-          .from<LicenseRow, LicenseRow>('licenses')
+          .from('licenses')
           .insert(updatedData);
 
         if (error) throw error;

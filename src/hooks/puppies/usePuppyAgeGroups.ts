@@ -1,46 +1,48 @@
 
-import { useState, useEffect } from 'react';
-import { PuppyWithAge, PuppyAgeGroupData, DEFAULT_AGE_GROUPS } from '@/types/puppyTracking';
+import { useMemo } from 'react';
+import { DEFAULT_AGE_GROUPS } from '@/data/puppyAgeGroups';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 
-export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
-  const [ageGroups, setAgeGroups] = useState<PuppyAgeGroupData[]>([]);
-  const [puppiesByAgeGroup, setPuppiesByAgeGroup] = useState<Record<string, PuppyWithAge[]>>({});
-  
-  useEffect(() => {
-    // Load age groups
-    setAgeGroups(DEFAULT_AGE_GROUPS || []);
+export function usePuppyAgeGroups(puppies: PuppyWithAge[] = []) {
+  const ageGroups = useMemo(() => {
+    return DEFAULT_AGE_GROUPS.map(group => ({
+      ...group,
+      minAge: group.startDay,
+      maxAge: group.endDay,
+      count: 0,
+      puppies: []
+    }));
+  }, []);
+
+  const puppiesByAgeGroup = useMemo(() => {
+    if (!puppies || !puppies.length) return {};
     
-    // Group puppies by age
-    if (puppies.length > 0 && DEFAULT_AGE_GROUPS) {
-      const groupedPuppies: Record<string, PuppyWithAge[]> = {};
+    const groupedPuppies: Record<string, PuppyWithAge[]> = {};
+    
+    // Initialize groups
+    ageGroups.forEach(group => {
+      groupedPuppies[group.id] = [];
+    });
+    
+    // Place puppies in appropriate age groups
+    puppies.forEach(puppy => {
+      // Ensure puppy has ageInDays property
+      const ageInDays = puppy.age_days || puppy.ageInDays || 0;
       
-      // Initialize empty arrays for each age group
-      DEFAULT_AGE_GROUPS.forEach(group => {
-        groupedPuppies[group.id] = [];
-      });
+      const matchingGroup = ageGroups.find(
+        group => ageInDays >= group.startDay && ageInDays <= group.endDay
+      );
       
-      // Add puppies to appropriate age groups
-      puppies.forEach(puppy => {
-        const age_days = puppy.age_days;
-        if (typeof age_days !== 'number') return;
-        
-        const ageGroup = DEFAULT_AGE_GROUPS.find(
-          group => age_days >= group.startDay! && age_days <= group.endDay!
-        );
-        
-        if (ageGroup) {
-          if (!groupedPuppies[ageGroup.id]) {
-            groupedPuppies[ageGroup.id] = [];
-          }
-          groupedPuppies[ageGroup.id].push(puppy);
+      if (matchingGroup) {
+        if (!groupedPuppies[matchingGroup.id]) {
+          groupedPuppies[matchingGroup.id] = [];
         }
-      });
-      
-      setPuppiesByAgeGroup(groupedPuppies);
-    } else {
-      setPuppiesByAgeGroup({});
-    }
-  }, [puppies]);
-  
+        groupedPuppies[matchingGroup.id].push(puppy);
+      }
+    });
+    
+    return groupedPuppies;
+  }, [puppies, ageGroups]);
+
   return { ageGroups, puppiesByAgeGroup };
-};
+}

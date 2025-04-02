@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +15,21 @@ import { Puppy } from '@/types/litter';
 
 interface BreedingAnalyticsProps {
   className?: string;
+}
+
+interface LitterData {
+  id: string;
+  litter_name: string | null;
+  birth_date: string;
+  dam: {
+    id: string;
+    name: string;
+  } | null;
+  sire: {
+    id: string;
+    name: string;
+  } | null;
+  puppies: Puppy[];
 }
 
 const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
@@ -37,7 +53,7 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
         .order('birth_date', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data as LitterData[] || [];
     }
   });
 

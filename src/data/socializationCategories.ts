@@ -1,98 +1,94 @@
 
-import { SocializationCategory, SocializationReaction } from '@/types/puppyTracking';
+import { SocializationCategory, SocializationReaction } from "@/types/puppyTracking";
 
-export const socializationCategories: SocializationCategory[] = [
+export const SOCIALIZATION_CATEGORIES: SocializationCategory[] = [
   {
-    id: '1',
-    name: 'People',
-    description: 'Exposure to different types of people',
-    color: 'blue',
-    examples: ['Men with beards', 'People with hats', 'Children', 'Elderly'],
-    importance: 'high'
+    id: "people",
+    name: "People & Handling",
+    description: "Exposing puppies to different types of people and handling experiences",
+    color: "#4f46e5",
+    examples: ["Children", "Men with beards", "People with hats", "Gentle handling", "Nail trimming"],
+    importance: "high"
   },
   {
-    id: '2',
-    name: 'Animals',
-    description: 'Exposure to other animals',
-    color: 'green',
-    examples: ['Other dogs', 'Cats', 'Livestock', 'Wildlife'],
-    importance: 'high'
+    id: "sounds",
+    name: "Sounds & Noises",
+    description: "Introducing various sounds from quiet to loud",
+    color: "#06b6d4",
+    examples: ["Thunder", "Vacuum cleaner", "Doorbell", "Traffic", "Appliances"],
+    importance: "high"
   },
   {
-    id: '3',
-    name: 'Environments',
-    description: 'Exposure to different environments',
-    color: 'amber',
-    examples: ['Parks', 'Urban areas', 'Rural areas', 'Bodies of water'],
-    importance: 'medium'
+    id: "surfaces",
+    name: "Surfaces & Textures",
+    description: "Walking on different surfaces and textures",
+    color: "#10b981",
+    examples: ["Grass", "Tile", "Carpet", "Metal", "Wood", "Uneven surfaces"],
+    importance: "medium"
   },
   {
-    id: '4',
-    name: 'Sounds',
-    description: 'Exposure to different sounds',
-    color: 'purple',
-    examples: ['Thunderstorms', 'Fireworks', 'Traffic', 'Construction noise'],
-    importance: 'medium'
+    id: "objects",
+    name: "Objects & Toys",
+    description: "Interaction with various objects, toys and puzzles",
+    color: "#f59e0b",
+    examples: ["Umbrellas", "Balloons", "Novel toys", "Moving objects", "Plastic bags"],
+    importance: "medium"
   },
   {
-    id: '5',
-    name: 'Surfaces',
-    description: 'Walking on different surfaces',
-    color: 'stone',
-    examples: ['Grass', 'Gravel', 'Wood', 'Metal grates', 'Slippery floors'],
-    importance: 'low'
+    id: "animals",
+    name: "Other Animals",
+    description: "Safe exposure to other animals and species",
+    color: "#ef4444",
+    examples: ["Adult dogs", "Cats", "Small animals", "Livestock", "Birds"],
+    importance: "high"
   },
   {
-    id: '6',
-    name: 'Objects',
-    description: 'Exposure to novel objects',
-    color: 'cyan',
-    examples: ['Umbrellas', 'Vacuum cleaners', 'Bicycles', 'Skateboards'],
-    importance: 'low'
+    id: "environments",
+    name: "Environments",
+    description: "Visiting different places and environments",
+    color: "#8b5cf6",
+    examples: ["Car rides", "Park visits", "Urban areas", "Rural settings", "Water exposure"],
+    importance: "high"
   },
   {
-    id: '7',
-    name: 'Handling',
-    description: 'Tolerance of different types of handling',
-    color: 'pink',
-    examples: ['Nail trimming', 'Ear cleaning', 'Bathing', 'Teeth brushing'],
-    importance: 'medium'
+    id: "handling",
+    name: "Body Handling",
+    description: "Getting puppies used to being handled for grooming and veterinary care",
+    color: "#ec4899",
+    examples: ["Ear cleaning", "Teeth examination", "Paw handling", "Brushing", "Being held"],
+    importance: "medium"
   }
 ];
 
-// Export for backward compatibility
-export const SOCIALIZATION_CATEGORIES = socializationCategories;
-
-// Update socialization reactions to match the type in puppyTracking.ts
 export const SOCIALIZATION_REACTIONS: SocializationReaction[] = [
   {
-    id: 'curious',
-    name: 'Curious',
-    color: 'green',
-    description: 'Shows interest and approaches willingly'
+    id: "curious",
+    name: "Curious",
+    color: "#10b981",
+    description: "Shows interest and approaches without fear"
   },
   {
-    id: 'neutral',
-    name: 'Neutral',
-    color: 'blue',
-    description: 'Neither fearful nor excited'
+    id: "neutral",
+    name: "Neutral",
+    color: "#6b7280",
+    description: "Neither interested nor fearful"
   },
   {
-    id: 'cautious',
-    name: 'Cautious',
-    color: 'amber',
-    description: 'Shows some hesitation'
+    id: "cautious",
+    name: "Cautious",
+    color: "#f59e0b",
+    description: "Initially hesitant but recovers quickly"
   },
   {
-    id: 'fearful',
-    name: 'Fearful',
-    color: 'red',
-    description: 'Shows fear, tries to retreat'
+    id: "fearful",
+    name: "Fearful",
+    color: "#ef4444",
+    description: "Shows fear, tries to retreat or hide"
   },
   {
-    id: 'excited',
-    name: 'Excited',
-    color: 'purple',
-    description: 'Shows enthusiasm and excitement'
+    id: "excited",
+    name: "Excited",
+    color: "#3b82f6",
+    description: "Very enthusiastic, possibly overexcited"
   }
 ];

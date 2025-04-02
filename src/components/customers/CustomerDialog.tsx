@@ -31,7 +31,7 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
         <CustomerForm
-          customer={customer as Customer}
+          customer={customer}
           onSubmit={() => {
             if (onSuccess) onSuccess();
             onClose();

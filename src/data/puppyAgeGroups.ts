@@ -1,87 +1,105 @@
-import { PuppyAgeGroupData } from '@/types/puppyTracking';
 
-export const puppyAgeGroups: PuppyAgeGroupData[] = [
+import { PuppyAgeGroupData } from "@/types/puppyTracking";
+
+export const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
   {
     id: "neonatal",
-    name: "Neonatal",
+    name: "Neonatal Period",
     startDay: 0,
     endDay: 14,
-    description: "Newborn puppies requiring intensive care",
-    color: "pink",
-    milestones: "Eyes open, ears open, first health check",
+    description: "Early developmental stage with limited mobility and senses.",
+    color: "red-200",
+    milestones: "Eyes and ears closed, limited mobility, mainly sleeping and nursing.",
     careChecks: [
-      "Monitor weight daily",
-      "Ensure proper nursing",
-      "Keep environment warm (85-90°F)",
-      "Stimulate elimination after feeding",
-      "Check for umbilical issues"
-    ]
+      "Weight gain daily",
+      "Temperature regulation",
+      "Nursing frequency",
+      "Dam's attentiveness",
+      "Umbilical healing"
+    ],
+    minAge: 0,
+    maxAge: 14,
+    count: 0,
+    puppies: []
   },
   {
     id: "transitional",
-    name: "Transitional",
+    name: "Transitional Period",
     startDay: 15,
     endDay: 21,
-    description: "Development of senses and mobility beginning",
-    color: "purple",
-    milestones: "Beginning to walk, playing with littermates, first teeth",
+    description: "Puppies begin to open eyes, ears, and explore surroundings.",
+    color: "yellow-200",
+    milestones: "Eyes and ears opening, improved mobility, beginning interactions with littermates.",
     careChecks: [
-      "Monitor weight every other day",
-      "Introduce shallow water dish",
-      "Begin very gentle handling",
-      "Introduce different surfaces",
-      "Maintain environment temperature (80-85°F)"
-    ]
+      "Full eye opening",
+      "Response to sounds",
+      "Starting to walk",
+      "Beginning environmental exploration",
+      "First teeth appearing"
+    ],
+    minAge: 15,
+    maxAge: 21,
+    count: 0,
+    puppies: []
   },
   {
-    id: "socialization",
-    name: "Socialization",
+    id: "socialization-early",
+    name: "Early Socialization",
     startDay: 22,
-    endDay: 49,
-    description: "Critical period for socialization and learning",
-    color: "blue",
-    milestones: "Walking well, playing actively, first vaccination, weaning starts",
+    endDay: 35,
+    description: "Puppies develop social skills with siblings and humans.",
+    color: "green-200",
+    milestones: "Walking confidently, playing with siblings, curiosity about environment, responsive to humans.",
     careChecks: [
-      "Begin weaning process (puppy mush)",
-      "Introduce to new people",
-      "Start basic potty training",
-      "First deworming",
-      "Monitor socialization exposure"
-    ]
+      "Social interactions with littermates",
+      "Basic play behaviors",
+      "Introduction to various surfaces",
+      "Response to human handling",
+      "Beginning of weaning process"
+    ],
+    minAge: 22,
+    maxAge: 35,
+    count: 0,
+    puppies: []
+  },
+  {
+    id: "socialization-late",
+    name: "Late Socialization",
+    startDay: 36,
+    endDay: 56,
+    description: "Critical period for learning about the world and humans.",
+    color: "blue-200",
+    milestones: "Fully weaned, more confident exploration, complex play, responsive to training cues.",
+    careChecks: [
+      "Exposure to new people and experiences",
+      "Progress with weaning",
+      "Introduction to basic training concepts",
+      "Socialization with various stimuli",
+      "Development of individual personality traits"
+    ],
+    minAge: 36,
+    maxAge: 56,
+    count: 0,
+    puppies: []
   },
   {
     id: "juvenile",
-    name: "Juvenile",
-    startDay: 50,
+    name: "Juvenile Period",
+    startDay: 57,
     endDay: 84,
-    description: "Growth and training development phase",
-    color: "green",
-    milestones: "Fully weaned, vaccination series, ready for new homes",
+    description: "Preparing for independent life away from littermates.",
+    color: "purple-200",
+    milestones: "Ready for new homes, developing independence, learning manners and boundaries.",
     careChecks: [
-      "Regular feeding schedule",
-      "Complete vaccination protocol",
-      "Microchipping",
-      "Pre-adoption health checks",
-      "Advanced socialization experiences"
-    ]
-  },
-  {
-    id: "adolescent",
-    name: "Adolescent",
-    startDay: 85,
-    endDay: 365,
-    description: "Teenage phase with growth spurts and training challenges",
-    color: "amber",
-    milestones: "Adult teeth coming in, sexual maturity beginning",
-    careChecks: [
-      "Monitor growth rate",
-      "Begin more structured training",
-      "Establish exercise routine",
-      "Watch for behavioral changes",
-      "Evaluate nutrition needs as growth continues"
-    ]
+      "Regular vaccinations",
+      "Deworming schedule",
+      "Housetraining progress",
+      "Crate training adaptation",
+      "Temperament assessment for placement"
+    ],
+    minAge: 57,
+    maxAge: 84,
+    count: 0,
+    puppies: []
   }
 ];
-
-// Export DEFAULT_AGE_GROUPS as an alias to keep compatibility with existing code
-export const DEFAULT_AGE_GROUPS = puppyAgeGroups;

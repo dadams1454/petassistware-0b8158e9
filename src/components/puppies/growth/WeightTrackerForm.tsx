@@ -1,173 +1,143 @@
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import WeightInput from '@/components/dogs/form/WeightInput';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { useWeightData } from '@/hooks/useWeightData';
+import { WeightRecord } from '@/types/puppyTracking';
 
-// Form schema
-const weightFormSchema = z.object({
-  weight: z.string().min(1, 'Weight is required'),
-  weight_unit: z.enum(['oz', 'g', 'lbs', 'kg']).default('oz'),
-  date: z.date({
-    required_error: 'Date is required',
-  }),
+const formSchema = z.object({
+  weight: z.coerce.number().positive('Weight must be a positive number'),
+  weight_unit: z.enum(['oz', 'g', 'lbs', 'kg']),
+  date: z.string().min(1, 'Date is required'),
   notes: z.string().optional(),
 });
 
-type WeightFormValues = z.infer<typeof weightFormSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 interface WeightTrackerFormProps {
   puppyId: string;
-  onSuccess?: () => void;
+  onSubmit: (record: Omit<WeightRecord, 'id' | 'created_at'>) => Promise<void>;
+  onCancel: () => void;
+  initialData?: Partial<WeightRecord>;
 }
 
 const WeightTrackerForm: React.FC<WeightTrackerFormProps> = ({
   puppyId,
-  onSuccess,
+  onSubmit,
+  onCancel,
+  initialData,
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addWeightRecord } = useWeightData({ puppyId });
-
-  // Initialize form with validation
-  const form = useForm<WeightFormValues>({
-    resolver: zodResolver(weightFormSchema),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      weight: '',
-      weight_unit: 'oz',
-      date: new Date(),
-      notes: '',
+      weight: initialData?.weight || 0,
+      weight_unit: (initialData?.weight_unit as 'oz' | 'g' | 'lbs' | 'kg') || 'oz',
+      date: initialData?.date || new Date().toISOString().split('T')[0],
+      notes: initialData?.notes || '',
     },
   });
 
-  // Handle form submission
-  const handleSubmit = async (values: WeightFormValues) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (values: FormValues) => {
     try {
-      await addWeightRecord({
+      await onSubmit({
         puppy_id: puppyId,
-        weight: parseFloat(values.weight),
+        weight: values.weight,
         weight_unit: values.weight_unit,
-        date: values.date.toISOString(),
+        date: values.date,
         notes: values.notes || '',
+        dog_id: puppyId, // Set dog_id to puppyId to make TypeScript happy
+        updated_at: new Date().toISOString(), // Add required updated_at field
       });
-
-      // Reset form
-      form.reset({
-        weight: '',
-        weight_unit: 'oz',
-        date: new Date(),
-        notes: '',
-      });
-
-      if (onSuccess) {
-        onSuccess();
-      }
+      form.reset();
     } catch (error) {
-      console.error('Error adding weight record:', error);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Error submitting weight record:', error);
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add Weight</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="weight"
-              render={({ field }) => (
-                <WeightInput
-                  form={form}
-                  name="weight"
-                  label="Weight"
-                  defaultUnit="oz"
-                />
-              )}
-            />
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="weight"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Weight</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (optional)</FormLabel>
+          <FormField
+            control={form.control}
+            name="weight_unit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Unit</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <Textarea
-                      placeholder="Any observations about the weight or puppy condition"
-                      {...field}
-                    />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <SelectContent>
+                    <SelectItem value="oz">Ounces (oz)</SelectItem>
+                    <SelectItem value="g">Grams (g)</SelectItem>
+                    <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                    <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : 'Save Weight'}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes (Optional)</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Add any notes about this weight measurement" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit">Save Weight Record</Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 

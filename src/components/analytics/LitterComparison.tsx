@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,18 @@ import { AlertCircle, Users, Scale, Palette, ArrowLeftRight } from 'lucide-react
 
 interface LitterComparisonProps {
   className?: string;
+}
+
+interface Dam {
+  id: string;
+  name: string;
+  breed: string;
+  color: string;
+  litters: {
+    id: string;
+    litter_name: string | null;
+    birth_date: string;
+  }[];
 }
 
 const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
@@ -38,7 +49,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
       if (error) throw error;
       
       // Filter to only include dams with at least one litter
-      return (data || []).filter(dam => dam.litters && dam.litters.length > 0);
+      return (data || []).filter(dam => dam.litters && dam.litters.length > 0) as Dam[];
     }
   });
 
@@ -47,6 +58,12 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
     if (dams && dams.length > 0 && !selectedDamId) {
       setSelectedDamId(dams[0].id);
     }
+  }, [dams, selectedDamId]);
+
+  // Get the selected dam details
+  const selectedDam = useMemo(() => {
+    if (!dams || !selectedDamId) return null;
+    return dams.find(dam => dam.id === selectedDamId);
   }, [dams, selectedDamId]);
 
   // Fetch litter details for the selected dam
@@ -142,12 +159,6 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
 
   // Generate colors for charts
   const COLORS = ['#2563eb', '#db2777', '#16a34a', '#ea580c', '#9333ea', '#ca8a04', '#0891b2', '#4f46e5'];
-
-  // Get the selected dam details
-  const selectedDam = useMemo(() => {
-    if (!dams || !selectedDamId) return null;
-    return dams.find(dam => dam.id === selectedDamId);
-  }, [dams, selectedDamId]);
 
   if (isLoadingDams) {
     return (
