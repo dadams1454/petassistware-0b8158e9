@@ -19,20 +19,18 @@ import Index from './pages/Index';
 import WelpingDashboard from './pages/WelpingDashboard';
 import WelpingPage from './pages/WelpingPage';
 import Compliance from './pages/Compliance';
-
-// Placeholder components for routes that aren't fully implemented yet
-const BreedingPrepPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Breeding Preparation</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const FacilityPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Facility Management</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const FinancesPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Financial Management</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const UsersPage = () => <div className="p-8"><h1 className="text-2xl font-bold">User Management</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const AuditLogsPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Audit Logs</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const SettingsPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Settings</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const ContractsPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Contracts Management</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const CalendarPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Calendar</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const CommunicationsPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Communications</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const ReservationsPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Reservations</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const CustomersPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Customers</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const ProfilePage = () => <div className="p-8"><h1 className="text-2xl font-bold">User Profile</h1><p className="mt-4">This feature is coming soon...</p></div>;
+import Calendar from './pages/Calendar';
+import Communications from './pages/Communications';
+import Contracts from './pages/Contracts';
+import Finances from './pages/Finances';
+import Facility from './pages/Facility';
+import BreedingPrepPage from './pages/BreedingPrepPage';
+import Users from './pages/Users';
+import AuditLogs from './pages/AuditLogs';
+import Settings from './pages/Settings';
+import Reservations from './pages/Reservations';
+import Customers from './pages/Customers';
+import Profile from './pages/Profile';
 
 const Router = () => {
   return (
@@ -50,7 +48,7 @@ const Router = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           
           {/* Profile */}
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<Profile />} />
           
           {/* Dogs routes */}
           <Route path="/dogs" element={<DogsList />} />
@@ -61,23 +59,23 @@ const Router = () => {
           <Route path="/litters/:id" element={<LitterDetail />} />
           
           {/* Reservations routes */}
-          <Route path="/reservations" element={<ReservationsPage />} />
+          <Route path="/reservations" element={<Reservations />} />
           
           {/* Customers routes */}
-          <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/customers" element={<Customers />} />
           
           {/* Puppies routes */}
           <Route path="/puppies" element={<PuppyDashboard />} />
           <Route path="/puppies/:id" element={<PuppyDashboard />} />
           
           {/* Operations routes */}
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/communications" element={<CommunicationsPage />} />
-          <Route path="/contracts" element={<ContractsPage />} />
-          <Route path="/finances" element={<FinancesPage />} />
-          <Route path="/facility" element={<FacilityPage />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/communications" element={<Communications />} />
+          <Route path="/contracts" element={<Contracts />} />
+          <Route path="/finances" element={<Finances />} />
+          <Route path="/facility" element={<Facility />} />
           
-          {/* Compliance route - Now using the actual Compliance component */}
+          {/* Compliance route */}
           <Route path="/compliance" element={<Compliance />} />
           
           {/* Breeding/Welping routes */}
@@ -86,9 +84,9 @@ const Router = () => {
           <Route path="/welping/:id" element={<WelpingPage />} />
           
           {/* Administration routes */}
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/audit-logs" element={<AuditLogsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/audit-logs" element={<AuditLogs />} />
+          <Route path="/settings" element={<Settings />} />
           
           {/* Redirect from root to dashboard */}
           <Route index element={<Navigate to="/dashboard" replace />} />

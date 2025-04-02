@@ -1,63 +1,52 @@
 
-import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState } from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
-import { ReservationList } from '@/components/reservations/ReservationList';
-import { ReservationDetails } from '@/components/reservations/ReservationDetails';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { ReservationList } from '@/components/reservations/ReservationList';
+import { WaitlistManager } from '@/components/waitlist/WaitlistManager';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const ReservationsPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  
-  const handleViewReservation = (reservationId: string) => {
-    navigate(`/reservations/${reservationId}`);
-  };
-  
-  const handleCreateReservation = () => {
-    // Navigate to create reservation page or open a modal
-    console.log('Create reservation');
-  };
-  
-  const handleBackToList = () => {
-    navigate('/reservations');
-  };
+const Reservations: React.FC = () => {
+  const [isAddOpen, setIsAddOpen] = useState(false);
   
   return (
     <PageContainer>
       <div className="container mx-auto py-6 px-4">
-        {id ? (
-          <>
-            <div className="mb-6">
-              <Button variant="outline" onClick={handleBackToList} className="mb-4">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Reservations
-              </Button>
-              <PageHeader
-                title="Reservation Details"
-                subtitle="View and manage reservation details"
-              />
-            </div>
-            <ReservationDetails reservationId={id} />
-          </>
-        ) : (
-          <>
-            <PageHeader
-              title="Reservations"
-              subtitle="Manage puppy reservations and deposits"
-              className="mb-6"
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+          <PageHeader 
+            title="Reservations & Waitlist"
+            subtitle="Manage puppy reservations and waitlist"
+            className="mb-4 md:mb-0"
+          />
+          
+          <Button onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Reservation
+          </Button>
+        </div>
+        
+        <Tabs defaultValue="reservations" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="reservations">Reservations</TabsTrigger>
+            <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="reservations" className="space-y-4">
+            <ReservationList 
+              isAddOpen={isAddOpen}
+              onAddOpenChange={setIsAddOpen}
             />
-            <ReservationList
-              onViewReservation={handleViewReservation}
-              onCreateReservation={handleCreateReservation}
-            />
-          </>
-        )}
+          </TabsContent>
+          
+          <TabsContent value="waitlist" className="space-y-4">
+            <WaitlistManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </PageContainer>
   );
 };
 
-export default ReservationsPage;
+export default Reservations;

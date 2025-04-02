@@ -16,15 +16,16 @@ interface MainLayoutProps {
 
 // Internal layout component that uses the theme
 const MainLayoutContent: React.FC<MainLayoutProps> = ({ children, hideNavbar = false }) => {
-  const { theme } = useTheme();
+  const { setTheme } = useTheme();
   
   // Force dark theme for this application
   useEffect(() => {
     document.documentElement.classList.add('dark');
-  }, []);
+    setTheme('dark');
+  }, [setTheme]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background w-full text-foreground">
+    <div className="flex h-screen overflow-hidden bg-background text-foreground w-full">
       {!hideNavbar && <Sidebar />}
       <SidebarRail />
       <SidebarInset className="flex flex-col w-full">
