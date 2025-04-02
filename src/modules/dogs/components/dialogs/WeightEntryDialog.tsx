@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { format } from 'date-fns';
+import { WeightUnit } from '../../types/dog';
 
 interface WeightEntryDialogProps {
   open: boolean;
@@ -14,43 +16,52 @@ interface WeightEntryDialogProps {
   dogId: string;
 }
 
-const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
-  open,
-  onOpenChange,
-  onSave,
-  dogId
+const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({ 
+  open, 
+  onOpenChange, 
+  onSave, 
+  dogId 
 }) => {
-  const [weight, setWeight] = useState('');
-  const [weightUnit, setWeightUnit] = useState('lbs');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [notes, setNotes] = useState('');
+  const [weight, setWeight] = React.useState('');
+  const [unit, setUnit] = React.useState<WeightUnit>('lb');
+  const [notes, setNotes] = React.useState('');
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    onSave({
+    const weightData = {
       dog_id: dogId,
       weight: parseFloat(weight),
-      weight_unit: weightUnit,
-      date,
-      notes: notes.trim() || null
-    });
+      weight_unit: unit,
+      date: format(new Date(), 'yyyy-MM-dd'),
+      notes: notes
+    };
     
-    // Reset form
+    onSave(weightData);
+    resetForm();
+  };
+  
+  const resetForm = () => {
     setWeight('');
-    setWeightUnit('lbs');
-    setDate(new Date().toISOString().split('T')[0]);
+    setUnit('lb');
     setNotes('');
   };
-
+  
+  const handleDialogClose = (open: boolean) => {
+    if (!open) {
+      resetForm();
+    }
+    onOpenChange(open);
+  };
+  
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Weight Record</DialogTitle>
+          <DialogTitle>Add Weight Entry</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="weight">Weight</Label>
@@ -58,57 +69,53 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
                 id="weight"
                 type="number"
                 step="0.01"
-                min="0"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
+                placeholder="Enter weight"
                 required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="weightUnit">Unit</Label>
-              <Select value={weightUnit} onValueChange={setWeightUnit}>
-                <SelectTrigger id="weightUnit">
+              <Label htmlFor="unit">Unit</Label>
+              <Select
+                value={unit}
+                onValueChange={(value) => setUnit(value as WeightUnit)}
+              >
+                <SelectTrigger>
                   <SelectValue placeholder="Select unit" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="lbs">Pounds (lbs)</SelectItem>
-                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                  <SelectItem value="oz">Ounces (oz)</SelectItem>
-                  <SelectItem value="g">Grams (g)</SelectItem>
+                  <SelectItem value="lb">lb</SelectItem>
+                  <SelectItem value="kg">kg</SelectItem>
+                  <SelectItem value="oz">oz</SelectItem>
+                  <SelectItem value="g">g</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Enter any additional notes..."
+              placeholder="Optional notes about this weight entry"
               rows={3}
             />
           </div>
           
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex justify-end gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit">Save Record</Button>
-          </DialogFooter>
+            <Button type="submit">Save</Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

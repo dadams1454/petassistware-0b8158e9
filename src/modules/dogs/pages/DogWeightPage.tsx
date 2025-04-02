@@ -20,8 +20,9 @@ const DogWeightPage = () => {
   const { 
     weightHistory, 
     isLoading: isWeightLoading, 
-    growthStats,
-    addWeightRecord
+    error: weightError,
+    addWeightRecord,
+    growthStats
   } = useWeightTracking(id || '');
   
   const isLoading = isDogLoading || isWeightLoading;

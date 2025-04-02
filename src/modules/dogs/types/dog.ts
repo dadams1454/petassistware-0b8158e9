@@ -13,7 +13,7 @@ export enum DogStatus {
   Guardian = 'guardian'
 }
 
-export type WeightUnit = 'lbs' | 'kg' | 'oz' | 'g';
+export type WeightUnit = 'lb' | 'kg' | 'oz' | 'g';
 
 export interface Dog {
   id: string;
@@ -67,6 +67,7 @@ export interface WeightRecord {
   dog_id: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   created_at: string;
