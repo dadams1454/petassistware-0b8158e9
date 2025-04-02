@@ -3,11 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
-
-export interface PedigreeTabProps {
-  dogId: string;
-  currentDog: any;
-}
+import { PedigreeTabProps } from '../profile/DogProfileTabs';
 
 const PedigreeTab: React.FC<PedigreeTabProps> = ({ dogId, currentDog }) => {
   return (

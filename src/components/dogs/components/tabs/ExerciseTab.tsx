@@ -1,12 +1,8 @@
 
 import React from 'react';
 import ExerciseTracker from '../exercise/ExerciseTracker';
-import { DogProfile } from '@/types/dog';
+import { ExerciseTabProps } from '../profile/DogProfileTabs';
 import { differenceInYears } from 'date-fns';
-
-interface ExerciseTabProps {
-  dog: DogProfile;
-}
 
 const ExerciseTab: React.FC<ExerciseTabProps> = ({ dog }) => {
   // Extract health conditions (this could be expanded with more detailed health information)

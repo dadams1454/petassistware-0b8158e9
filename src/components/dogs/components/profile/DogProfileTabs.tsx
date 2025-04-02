@@ -18,14 +18,15 @@ interface DogProfileTabsProps {
   dog: DogProfile;
   activeTab?: string;
   onTabChange?: (value: string) => void;
+  currentUser?: any;
 }
 
 export interface OverviewTabProps {
-  currentDog: DogProfile;
+  dog: DogProfile;
 }
 
 export interface HealthTabProps {
-  currentDog: DogProfile;
+  dogId: string;
 }
 
 export interface CareTabProps {
@@ -33,11 +34,12 @@ export interface CareTabProps {
 }
 
 export interface BreedingTabProps {
-  currentDog: DogProfile;
+  dog: DogProfile;
 }
 
 export interface GalleryTabProps {
-  dog: DogProfile;
+  dogId: string;
+  mainPhotoUrl?: string;
 }
 
 export interface DocumentsTabProps {
@@ -49,7 +51,8 @@ export interface NotesTabProps {
 }
 
 export interface PedigreeTabProps {
-  dog: DogProfile;
+  dogId: string;
+  currentDog: DogProfile;
 }
 
 export interface GeneticsTabProps {
@@ -57,7 +60,8 @@ export interface GeneticsTabProps {
 }
 
 export interface DailyCareTabProps {
-  dog: DogProfile;
+  dogId: string;
+  dogName?: string;
 }
 
 export interface ExerciseTabProps {
@@ -67,7 +71,8 @@ export interface ExerciseTabProps {
 const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
   dog,
   activeTab = 'overview',
-  onTabChange
+  onTabChange,
+  currentUser
 }) => {
   const [value, setValue] = useState(activeTab);
 
@@ -89,15 +94,15 @@ const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
       </TabsList>
 
       <TabsContent value="overview" className="mt-6">
-        <OverviewTab currentDog={dog} />
+        <OverviewTab dog={dog} />
       </TabsContent>
 
       <TabsContent value="health" className="mt-6">
-        <HealthTab currentDog={dog} />
+        <HealthTab dogId={dog.id} />
       </TabsContent>
 
       <TabsContent value="breeding" className="mt-6">
-        <BreedingTab currentDog={dog} />
+        <BreedingTab dog={dog} />
       </TabsContent>
 
       <TabsContent value="care" className="mt-6">
@@ -105,7 +110,7 @@ const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="gallery" className="mt-6">
-        <GalleryTab dog={dog} />
+        <GalleryTab dogId={dog.id} mainPhotoUrl={dog.photo_url} />
       </TabsContent>
 
       <TabsContent value="documents" className="mt-6">
@@ -117,7 +122,7 @@ const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="pedigree" className="mt-6">
-        <PedigreeTab dog={dog} />
+        <PedigreeTab dogId={dog.id} currentDog={dog} />
       </TabsContent>
 
       <TabsContent value="genetics" className="mt-6">
@@ -125,7 +130,7 @@ const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="daily-care" className="mt-6">
-        <DailyCareTab dog={dog} />
+        <DailyCareTab dogId={dog.id} dogName={dog.name} />
       </TabsContent>
 
       <TabsContent value="exercise" className="mt-6">

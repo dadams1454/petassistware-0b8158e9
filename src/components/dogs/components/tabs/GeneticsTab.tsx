@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DogProfile } from '@/types/dog';
-import { GeneticsTabProps } from '../../components/profile/DogProfileTabs';
+import { GeneticsTabProps } from '../profile/DogProfileTabs';
 import { DogGenotype } from '@/types/genetics';
 import { formatConditionName } from '@/components/genetics/utils/healthUtils';
 

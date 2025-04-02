@@ -16,6 +16,8 @@ export interface DogGenotype {
   geneticDiversity?: number;
   traits?: Record<string, string>;
   colorProbabilities?: ColorProbability[];
+  colorGenetics?: any;
+  agouti?: string;
 }
 
 export interface HealthMarker {
@@ -24,6 +26,7 @@ export interface HealthMarker {
   lab?: string;
   certificateUrl?: string;
   notes?: string;
+  source?: string;
 }
 
 export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'at risk' | 'not tested' | 'unknown';
@@ -57,6 +60,10 @@ export interface HealthWarning {
   severity: 'low' | 'medium' | 'high';
   testDate?: string;
   notes?: string;
+  risk?: string;
+  description?: string;
+  affectedPercentage?: number;
+  riskLevel?: string;
 }
 
 export interface GeneticImportResult {
@@ -74,6 +81,9 @@ export interface CompactGenotypeViewProps {
   showHealth?: boolean;
   showColor?: boolean;
   showTitle?: boolean;
+  showBreed?: boolean;
+  showColorTraits?: boolean;
+  showHealthTests?: boolean;
 }
 
 export interface ManualTestEntry {
@@ -83,6 +93,8 @@ export interface ManualTestEntry {
   result: GeneticHealthStatus;
   condition: string;
   notes?: string;
+  test_type?: string;
+  test_date?: string;
 }
 
 export interface ColorMatrixProps {
@@ -94,4 +106,11 @@ export interface TestResult {
   condition: string;
   result: GeneticHealthStatus;
   date?: string;
+}
+
+export interface HistoricalCOIChartProps {
+  data: {
+    generation: number;
+    coi: number;
+  }[];
 }

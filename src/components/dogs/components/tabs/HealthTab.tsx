@@ -10,10 +10,7 @@ import MedicationsTabContent from './health/MedicationsTabContent';
 import WeightTabContent from './health/WeightTabContent';
 import HealthTabActions from './health/HealthTabActions';
 import HealthTabDialogs from './health/HealthTabDialogs';
-
-interface HealthTabProps {
-  dogId: string;
-}
+import { HealthTabProps } from '../profile/DogProfileTabs';
 
 // Inner component to use context
 const HealthTabContent: React.FC = () => {

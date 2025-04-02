@@ -2,11 +2,7 @@
 import React from 'react';
 import { DailyCareProvider } from '@/contexts/dailyCare';
 import EnhancedDailyCareTab from '../care/EnhancedDailyCareTab';
-
-interface DailyCareTabProps {
-  dogId: string;
-  dogName?: string;
-}
+import { DailyCareTabProps } from '../profile/DogProfileTabs';
 
 const DailyCareTab: React.FC<DailyCareTabProps> = ({ dogId, dogName = 'Dog' }) => {
   return (

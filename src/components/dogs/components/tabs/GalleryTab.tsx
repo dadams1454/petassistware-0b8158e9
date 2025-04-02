@@ -4,11 +4,7 @@ import PhotoGrid from '../gallery/PhotoGrid';
 import PhotoViewer from '../gallery/PhotoViewer';
 import PhotoUploader from '../gallery/PhotoUploader';
 import { usePhotoGallery } from '../../hooks/usePhotoGallery';
-
-interface GalleryTabProps {
-  dogId: string;
-  mainPhotoUrl?: string;
-}
+import { GalleryTabProps } from '../profile/DogProfileTabs';
 
 const GalleryTab: React.FC<GalleryTabProps> = ({ dogId, mainPhotoUrl }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);

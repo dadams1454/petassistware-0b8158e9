@@ -88,7 +88,7 @@ const DogProfile: React.FC = () => {
           </CardHeader>
           <CardContent>
             <DogProfileTabs 
-              currentDog={dog}
+              dog={dog}
               activeTab={activeTab}
               onTabChange={setActiveTab}
               currentUser={user}

@@ -11,12 +11,7 @@ import { useCareActivities } from '@/hooks/useCareActivities';
 import { formatDistanceToNow, format } from 'date-fns';
 import { CareActivity } from '@/services/careService';
 import { SectionHeader, ActionButton, LoadingState } from '@/components/ui/standardized';
-
-interface CareTabProps {
-  dogId: string;
-  dogName: string;
-  isFullPage?: boolean;
-}
+import { CareTabProps } from '../profile/DogProfileTabs';
 
 const activityIcons = {
   potty: <PawPrint className="h-4 w-4" />,
@@ -25,7 +20,7 @@ const activityIcons = {
   training: <Dumbbell className="h-4 w-4" />
 };
 
-const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false }) => {
+const CareTab: React.FC<CareTabProps> = ({ dog, isFullPage = false }) => {
   const [activeTab, setActiveTab] = useState<CareActivity['activity_type']>('potty');
   const { 
     activities, 
@@ -33,14 +28,14 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
     recordActivity, 
     isRecording,
     isLoading 
-  } = useCareActivities(dogId, activeTab);
+  } = useCareActivities(dog.id, activeTab);
 
   const handleRecordActivity = () => {
     recordActivity({
-      dog_id: dogId,
+      dog_id: dog.id,
       activity_type: activeTab,
       timestamp: new Date().toISOString(),
-      notes: `${activeTab} activity recorded for ${dogName}`
+      notes: `${activeTab} activity recorded for ${dog.name}`
     });
   };
 
@@ -50,7 +45,7 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
         <InfoIcon className="h-4 w-4 text-primary" />
         <AlertTitle>Daily care tracking</AlertTitle>
         <AlertDescription>
-          Track feeding, medications, exercise, and other care activities for {dogName}.
+          Track feeding, medications, exercise, and other care activities for {dog.name}.
         </AlertDescription>
       </Alert>
       
@@ -75,7 +70,7 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
                 </ActionButton>
                 
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link to={`/daily-care?dogId=${dogId}`}>
+                  <Link to={`/daily-care?dogId=${dog.id}`}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     View Care Dashboard
                   </Link>
@@ -112,7 +107,7 @@ const CareTab: React.FC<CareTabProps> = ({ dogId, dogName, isFullPage = false })
               <Separator className="my-4" />
               
               <Button variant="link" className="p-0" asChild>
-                <Link to={`/care?dogId=${dogId}`}>
+                <Link to={`/care?dogId=${dog.id}`}>
                   View all care activities
                 </Link>
               </Button>

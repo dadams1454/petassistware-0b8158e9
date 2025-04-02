@@ -3,20 +3,16 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import DogHealthSection from '../../DogHealthSection';
 import UpcomingEvents from '../details/UpcomingEvents';
-
-interface OverviewTabProps {
-  dog: any;
-  events: any[];
-  onViewEvent: (event: any) => void;
-  onAddAppointment: () => void;
-}
+import { OverviewTabProps } from '../profile/DogProfileTabs';
 
 const OverviewTab: React.FC<OverviewTabProps> = ({
-  dog,
-  events,
-  onViewEvent,
-  onAddAppointment
+  dog
 }) => {
+  // Placeholder for events until we implement fetching them
+  const events = [];
+  const onViewEvent = (event: any) => console.log('View event', event);
+  const onAddAppointment = () => console.log('Add appointment');
+
   return (
     <>
       <Card>
