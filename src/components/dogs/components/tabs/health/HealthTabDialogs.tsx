@@ -28,7 +28,7 @@ const HealthTabDialogs: React.FC = () => {
         dogId={dogId}
         recordType={selectedRecordType}
         recordId={selectedRecord}
-        onSave={(data) => handleSaveRecord(data)}
+        onSave={handleSaveRecord}
       />
       
       <WeightEntryDialog
