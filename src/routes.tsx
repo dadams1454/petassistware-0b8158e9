@@ -7,13 +7,11 @@ import MainLayout from '@/layouts/MainLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 
 // Pages
-import Dashboard from '@/pages/Dashboard';
+import DashboardPage from '@/pages/DashboardPage';
 import DogDetailPage from '@/pages/DogDetail';
-import DogProfilePage from '@/pages/DogProfile';
 import WeightTrackingPage from '@/pages/WeightTracking';
-import WelpingDashboardPage from '@/pages/WelpingDashboard';
 import WelpingPage from '@/pages/WelpingPage';
-import PuppyDashboardPage from '@/pages/puppies/PuppyDashboard';
+import PuppyDetailPage from '@/pages/puppies/PuppyDashboard';
 import IndexPage from '@/pages/Index';
 import NotFoundPage from '@/pages/NotFound';
 import CompliancePage from '@/pages/Compliance';
@@ -32,8 +30,7 @@ import ProfilePage from '@/pages/Profile';
 import LittersPage from '@/pages/Litters';
 import LitterDetailPage from '@/pages/LitterDetail';
 import BatchPuppyEntryPage from '@/pages/BatchPuppyEntry';
-import PuppyTestingDashboardPage from '@/pages/PuppyTestingDashboard';
-import WelpingLandingPage from '@/pages/Whelping';
+import PuppyTestingPage from '@/pages/PuppyTestingDashboard';
 
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
@@ -60,7 +57,7 @@ export const appRoutes = (
     {/* Protected routes */}
     <Route element={<MainLayout />}>
       {/* Dashboard */}
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       
       {/* Profile */}
       <Route path="/profile" element={<ProfilePage />} />
@@ -70,7 +67,6 @@ export const appRoutes = (
       <Route path="/dogs/add" element={<AddDogPage />} />
       <Route path="/dogs/:id" element={<DogDetailPage />} />
       <Route path="/dogs/:id/edit" element={<EditDogPage />} />
-      <Route path="/dogs/:id/profile" element={<DogProfilePage />} />
       <Route path="/dogs/:id/weight" element={<WeightTrackingPage />} />
       <Route path="/dogs/add-multiple" element={<AddDogsPage />} />
       
@@ -78,16 +74,15 @@ export const appRoutes = (
       <Route path="/litters" element={<LittersPage />} />
       <Route path="/litters/:id" element={<LitterDetailPage />} />
       <Route path="/litter/:litterId/add-puppies" element={<BatchPuppyEntryPage />} />
-      <Route path="/litter/:litterId/puppy-testing" element={<PuppyTestingDashboardPage />} />
+      <Route path="/litter/:litterId/puppy-testing" element={<PuppyTestingPage />} />
       
       {/* Puppies routes */}
-      <Route path="/puppies/:id" element={<PuppyDashboardPage />} />
+      <Route path="/puppies/:id" element={<PuppyDetailPage />} />
       
       {/* Breeding/Welping routes */}
       <Route path="/breeding-prep" element={<BreedingPrepPage />} />
-      <Route path="/welping-dashboard" element={<WelpingDashboardPage />} />
+      <Route path="/welping" element={<WelpingPage />} />
       <Route path="/welping/:id" element={<WelpingPage />} />
-      <Route path="/welping" element={<WelpingLandingPage />} />
       
       {/* Operations routes */}
       <Route path="/calendar" element={<CalendarPage />} />
