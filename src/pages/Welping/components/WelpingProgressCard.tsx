@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { differenceInDays } from 'date-fns';
-import { Litter } from '../types';
+import { Litter } from '@/types/litter';
 
 interface WelpingProgressCardProps {
   litter: Litter;
@@ -11,10 +11,11 @@ interface WelpingProgressCardProps {
 }
 
 const WelpingProgressCard: React.FC<WelpingProgressCardProps> = ({ litter, puppiesCount }) => {
-  // Calculate birth progress
+  // Calculate birth progress - use puppy_count if available, otherwise default to expected values
   const birthProgress = () => {
-    if (!litter.total_puppies || litter.total_puppies === 0) return 100;
-    return Math.min(100, Math.round((puppiesCount / litter.total_puppies) * 100));
+    const expectedCount = litter.puppy_count || 0;
+    if (expectedCount === 0) return 100;
+    return Math.min(100, Math.round((puppiesCount / expectedCount) * 100));
   };
   
   // Calculate days since birth
@@ -66,7 +67,7 @@ const WelpingProgressCard: React.FC<WelpingProgressCardProps> = ({ litter, puppi
           </div>
           <Progress value={birthProgress()} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            {puppiesCount} of {litter.total_puppies || '?'} puppies recorded
+            {puppiesCount} of {litter.puppy_count || '?'} puppies recorded
           </p>
         </div>
         
