@@ -59,3 +59,40 @@ export const socializationCategories: SocializationCategory[] = [
     importance: 4
   }
 ];
+
+// Export for backward compatibility
+export const SOCIALIZATION_CATEGORIES = socializationCategories;
+
+// Export socialization reactions for compatibility
+export const SOCIALIZATION_REACTIONS = [
+  {
+    id: 'curious',
+    name: 'Curious',
+    color: 'green',
+    description: 'Shows interest and approaches willingly'
+  },
+  {
+    id: 'neutral',
+    name: 'Neutral',
+    color: 'blue',
+    description: 'Neither fearful nor excited'
+  },
+  {
+    id: 'cautious',
+    name: 'Cautious',
+    color: 'amber',
+    description: 'Shows some hesitation'
+  },
+  {
+    id: 'fearful',
+    name: 'Fearful',
+    color: 'red',
+    description: 'Shows fear, tries to retreat'
+  },
+  {
+    id: 'excited',
+    name: 'Excited',
+    color: 'purple',
+    description: 'Shows enthusiasm and excitement'
+  }
+];

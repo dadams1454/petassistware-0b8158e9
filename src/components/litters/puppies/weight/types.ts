@@ -12,6 +12,8 @@ export interface WeightFormProps {
   onCancel: () => void;
   defaultUnit: WeightUnit;
   isSubmitting?: boolean;
+  puppyId?: string;
+  birthDate?: string;
 }
 
 export interface WeightChartViewProps {
@@ -28,6 +30,7 @@ export interface WeightTableViewProps {
 export interface WeightTrackerProps {
   puppyId: string;
   onAddSuccess?: () => void;
+  birthDate?: string;
 }
 
 // Use export type for re-exporting types to avoid isolatedModules error

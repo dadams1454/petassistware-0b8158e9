@@ -7,29 +7,21 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useWeightData } from '@/hooks/useWeightData';
 import { WeightUnit } from '@/types/health';
-
-interface WeightFormProps {
-  puppyId: string;
-  birthDate?: string;
-  onCancel: () => void;
-  onSuccess?: () => void;
-  defaultUnit?: WeightUnit;
-}
+import { WeightFormProps } from '@/components/litters/puppies/weight/types';
 
 const WeightForm: React.FC<WeightFormProps> = ({ 
-  puppyId, 
+  puppyId = '', 
   birthDate,
+  onSubmit,
   onCancel,
-  onSuccess,
-  defaultUnit = 'oz'
+  defaultUnit = 'oz',
+  isSubmitting = false
 }) => {
   const [weight, setWeight] = useState<string>('');
   const [weightUnit, setWeightUnit] = useState<WeightUnit>(defaultUnit);
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { addWeightRecord } = useWeightData(puppyId);
+  const [submitting, setSubmitting] = useState(isSubmitting);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,10 +31,10 @@ const WeightForm: React.FC<WeightFormProps> = ({
       return;
     }
     
-    setIsSubmitting(true);
+    setSubmitting(true);
     
     try {
-      await addWeightRecord({
+      const success = await onSubmit({
         weight: parseFloat(weight),
         weight_unit: weightUnit,
         date,
@@ -50,10 +42,8 @@ const WeightForm: React.FC<WeightFormProps> = ({
         birth_date: birthDate
       });
       
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        // Reset form
+      if (success) {
+        // Reset form if needed
         setWeight('');
         setDate(new Date().toISOString().split('T')[0]);
         setNotes('');
@@ -62,7 +52,7 @@ const WeightForm: React.FC<WeightFormProps> = ({
       console.error('Error adding weight record:', error);
       alert('Failed to save weight record');
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
   
@@ -129,8 +119,8 @@ const WeightForm: React.FC<WeightFormProps> = ({
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Weight'}
+            <Button type="submit" disabled={submitting}>
+              {submitting ? 'Saving...' : 'Save Weight'}
             </Button>
           </div>
         </form>

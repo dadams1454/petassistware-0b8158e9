@@ -1,4 +1,3 @@
-
 /**
  * Types related to puppy tracking functionality
  */
@@ -80,14 +79,12 @@ export interface SocializationProgress {
 export interface SocializationExperience {
   id: string;
   puppy_id: string;
-  category: string;
   category_id: string;
   experience: string;
   experience_date: string;
   reaction?: string;
   notes?: string;
   created_at: string;
-  category?: SocializationCategory;
 }
 
 export interface SocializationReaction {

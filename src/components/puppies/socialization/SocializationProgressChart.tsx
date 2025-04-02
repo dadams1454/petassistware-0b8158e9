@@ -14,10 +14,10 @@ const SocializationProgressChart: React.FC<SocializationProgressChartProps> = ({
   categories 
 }) => {
   const chartData = progress.map(item => {
-    const category = categories.find(c => c.id === item.categoryId);
+    const category = categories.find(c => c.id === item.category_id);
     return {
       categoryName: category?.name || item.categoryName,
-      completionPercentage: item.completionPercentage,
+      completionPercentage: item.completion_percentage,
       count: item.count,
       target: item.target
     };
@@ -85,21 +85,21 @@ const SocializationProgressChart: React.FC<SocializationProgressChartProps> = ({
       </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {progress.map((item, index) => (
-          <Card key={item.categoryId} className="overflow-hidden">
+        {progress.map((item) => (
+          <Card key={item.category_id} className="overflow-hidden">
             <CardContent className="p-4">
               <div className="flex flex-col space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">{item.categoryName}</span>
-                  <span className="text-sm font-semibold">{item.completionPercentage}%</span>
+                  <span className="text-sm font-semibold">{item.completion_percentage}%</span>
                 </div>
                 
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div 
                     className="h-2.5 rounded-full" 
                     style={{ 
-                      width: `${Math.min(item.completionPercentage, 100)}%`,
-                      backgroundColor: getCompletionColor(item.completionPercentage)
+                      width: `${Math.min(item.completion_percentage || 0, 100)}%`,
+                      backgroundColor: getCompletionColor(item.completion_percentage || 0)
                     }}
                   />
                 </div>

@@ -27,6 +27,7 @@ export interface HealthMarker {
   primary?: boolean;
   testDate?: string;
   condition?: string;
+  source?: string;
 }
 
 export interface HealthResult {
@@ -107,6 +108,8 @@ export interface HistoricalCOIChartProps {
 export interface HealthRisk {
   status: GeneticHealthStatus;
   probability: number;
+  condition: string;
+  severity: string;
 }
 
 export interface HealthSummary {
@@ -114,4 +117,5 @@ export interface HealthSummary {
   carrierCount: number;
   clearCount: number;
   unknownCount: number;
+  totalTests: number;
 }

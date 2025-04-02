@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Dialog, 
@@ -19,7 +18,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { useGeneticDataImport } from '@/hooks/useGeneticDataImport';
-import { TestResult, ManualTestEntry, GeneticImportResult } from '@/types/genetics';
+import { TestResult, ManualTestEntry, GeneticImportResult, GeneticHealthStatus } from '@/types/genetics';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface GeneticImportDialogProps {
@@ -38,7 +37,15 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   const [activeTab, setActiveTab] = useState<string>('csv');
   const [csvData, setCsvData] = useState<string>('');
   const [manualTests, setManualTests] = useState<ManualTestEntry[]>([
-    { test_type: '', result: '', test_date: new Date().toISOString().split('T')[0], provider: 'manual' }
+    { 
+      test_type: '', 
+      result: 'unknown' as GeneticHealthStatus, 
+      test_date: new Date().toISOString().split('T')[0], 
+      provider: 'manual', 
+      name: '', 
+      date: new Date().toISOString().split('T')[0],
+      condition: ''
+    }
   ]);
   const [importResult, setImportResult] = useState<{success?: boolean; errors?: string[]}>({});
   
@@ -92,7 +99,15 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   const handleAddTest = () => {
     setManualTests([
       ...manualTests,
-      { test_type: '', result: '', test_date: new Date().toISOString().split('T')[0], provider: 'manual' }
+      { 
+        test_type: '', 
+        result: 'unknown' as GeneticHealthStatus, 
+        test_date: new Date().toISOString().split('T')[0], 
+        provider: 'manual',
+        name: '', 
+        date: new Date().toISOString().split('T')[0],
+        condition: ''
+      }
     ]);
   };
   
@@ -102,10 +117,21 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   
   const handleTestChange = (index: number, field: keyof ManualTestEntry, value: string) => {
     const updatedTests = [...manualTests];
-    updatedTests[index] = {
-      ...updatedTests[index],
-      [field]: value
-    };
+    
+    // For the 'result' field, ensure it's a valid GeneticHealthStatus
+    if (field === 'result') {
+      const typedValue = (value || 'unknown') as GeneticHealthStatus;
+      updatedTests[index] = {
+        ...updatedTests[index],
+        [field]: typedValue
+      };
+    } else {
+      updatedTests[index] = {
+        ...updatedTests[index],
+        [field]: value
+      };
+    }
+    
     setManualTests(updatedTests);
   };
   
@@ -113,7 +139,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
     if (!open) {
       // Reset form state when dialog closes
       setCsvData('');
-      setManualTests([{ test_type: '', result: '', test_date: new Date().toISOString().split('T')[0], provider: 'manual' }]);
+      setManualTests([{ test_type: '', result: '', test_date: new Date().toISOString().split('T')[0], provider: 'manual', name: '', date: new Date().toISOString().split('T')[0], condition: '' }]);
       setImportResult({});
     }
     onOpenChange(open);

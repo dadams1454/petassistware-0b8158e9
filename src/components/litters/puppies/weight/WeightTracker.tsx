@@ -5,39 +5,36 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useWeightData } from '@/hooks/useWeightData';
 import WeightForm from '@/components/puppies/growth/WeightForm';
-
-interface WeightTrackerProps {
-  puppyId: string;
-  birthDate?: string;
-  isAddingWeight?: boolean;
-  onCancelAdd?: () => void;
-  onWeightAdded?: () => void;
-}
+import { WeightTrackerProps } from './types';
 
 const WeightTracker: React.FC<WeightTrackerProps> = ({
   puppyId,
   birthDate,
-  isAddingWeight = false,
-  onCancelAdd,
-  onWeightAdded
+  onAddSuccess
 }) => {
   const { weightData, isLoading, addWeightRecord } = useWeightData(puppyId);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [isAddingWeight, setIsAddingWeight] = useState(false);
   
   // Format weight data for chart
   useEffect(() => {
     if (!weightData) return;
     
     const formattedData = weightData.map(record => {
+      // Calculate age from birthDate and record.date if needed
+      const age = birthDate && record.date ? 
+        Math.floor((new Date(record.date).getTime() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24)) : 
+        record.age_days || 0;
+        
       return {
         date: new Date(record.date).toLocaleDateString(),
         weight: record.weight,
-        age: record.age || 0
+        age: age
       };
     });
     
     setChartData(formattedData);
-  }, [weightData]);
+  }, [weightData, birthDate]);
   
   const handleWeightSubmit = async (data: any) => {
     try {
@@ -49,8 +46,10 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
         birth_date: birthDate
       });
       
-      if (onWeightAdded) {
-        onWeightAdded();
+      setIsAddingWeight(false);
+      
+      if (onAddSuccess) {
+        onAddSuccess();
       }
       
       return true;
@@ -58,6 +57,10 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
       console.error('Error adding weight record:', error);
       return false;
     }
+  };
+  
+  const handleCancelAdd = () => {
+    setIsAddingWeight(false);
   };
   
   if (isLoading) {
@@ -74,7 +77,7 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
         puppyId={puppyId}
         birthDate={birthDate}
         onSubmit={handleWeightSubmit}
-        onCancel={onCancelAdd || (() => {})}
+        onCancel={handleCancelAdd}
         defaultUnit="oz"
       />
     );

@@ -22,7 +22,7 @@ const SocializationProgressTracker: React.FC<SocializationProgressTrackerProps> 
 }) => {
   // Sort categories by completion percentage (descending)
   const sortedProgress = [...progressData].sort((a, b) => 
-    b.completionPercentage - a.completionPercentage
+    (b.completion_percentage || 0) - (a.completion_percentage || 0)
   );
   
   const getProgressBarColor = (percentage: number): string => {
@@ -51,12 +51,12 @@ const SocializationProgressTracker: React.FC<SocializationProgressTrackerProps> 
         
         <div className="space-y-4">
           {sortedProgress.map((progress) => (
-            <div key={progress.categoryId} className="space-y-1">
+            <div key={progress.category_id} className="space-y-1">
               <div className="flex justify-between items-center text-sm">
                 <div className="flex items-center gap-1.5">
-                  {progress.completionPercentage >= 100 ? (
+                  {(progress.completion_percentage || 0) >= 100 ? (
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  ) : progress.completionPercentage < 30 ? (
+                  ) : (progress.completion_percentage || 0) < 30 ? (
                     <AlertCircle className="h-4 w-4 text-amber-500" />
                   ) : null}
                   <span>{progress.categoryName}</span>
@@ -66,8 +66,8 @@ const SocializationProgressTracker: React.FC<SocializationProgressTrackerProps> 
                 </span>
               </div>
               <Progress
-                value={progress.completionPercentage}
-                className={`h-1.5 ${getProgressBarColor(progress.completionPercentage)}`}
+                value={progress.completion_percentage}
+                className={`h-1.5 ${getProgressBarColor(progress.completion_percentage || 0)}`}
               />
             </div>
           ))}

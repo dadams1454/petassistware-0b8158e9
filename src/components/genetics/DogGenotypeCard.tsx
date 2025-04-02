@@ -4,8 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
 import { DogGenotype, CompactGenotypeViewProps } from '@/types/genetics';
-import { AlertCircle, CheckCircle2, Dna } from 'lucide-react';
-import { HealthMarkersPanel } from './components/HealthMarkersPanel';
+import { AlertCircle, CheckCircle2, Dna, Check, AlertTriangle, XCircle, HelpCircle } from 'lucide-react';
+
+// Helper function to get icon for genetic status
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'clear':
+      return <Check className="h-4 w-4 text-green-600" />;
+    case 'carrier':
+      return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+    case 'at_risk':
+    case 'affected':
+      return <XCircle className="h-4 w-4 text-red-600" />;
+    case 'unknown':
+    default:
+      return <HelpCircle className="h-4 w-4 text-gray-400" />;
+  }
+};
 
 export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({ 
   genotype,

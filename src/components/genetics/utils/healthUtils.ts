@@ -1,132 +1,122 @@
 
-import { DogGenotype, HealthMarker, HealthRisk, HealthSummary, GeneticHealthStatus } from '@/types/genetics';
+import { GeneticHealthStatus, HealthMarker, HealthRisk, HealthSummary, HealthWarning } from '@/types/genetics';
 
-// Format condition name for display (e.g., "progressive_retinal_atrophy" -> "Progressive Retinal Atrophy")
-export const formatConditionName = (conditionName: string): string => {
-  return conditionName
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+export const formatConditionName = (condition: string): string => {
+  // Remove underscores and capitalize first letter of each word
+  return condition
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase());
 };
 
-// Get color props based on status
-export const getResultWithColorProps = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'clear':
-      return { color: 'text-green-700', bgColor: 'bg-green-100' };
-    case 'carrier':
-      return { color: 'text-amber-700', bgColor: 'bg-amber-100' };
-    case 'at_risk':
-    case 'at risk':
-      return { color: 'text-red-700', bgColor: 'bg-red-100' };
-    default:
-      return { color: 'text-gray-700', bgColor: 'bg-gray-100' };
-  }
-};
-
-// Get color for health status
-export const getStatusColor = (status: GeneticHealthStatus): string => {
-  switch (status) {
-    case 'clear':
-      return 'green';
-    case 'carrier':
-      return 'amber';
-    case 'at_risk':
-    case 'at risk':
-      return 'red';
-    default:
-      return 'gray';
-  }
-};
-
-// Format date string
-export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-};
-
-// Generate health summary data
-export const getHealthSummaryData = (genotype: DogGenotype): HealthSummary => {
-  if (!genotype || !genotype.healthMarkers) {
-    return {
-      clearCount: 0,
-      carrierCount: 0,
-      atRiskCount: 0,
-      totalTests: 0,
-      healthScore: 100,
-      topRisks: []
-    };
-  }
-  
-  let clearCount = 0;
-  let carrierCount = 0;
+export const generateHealthSummary = (healthMarkers: Record<string, HealthMarker>): HealthSummary => {
   let atRiskCount = 0;
-  let totalTests = Object.keys(genotype.healthMarkers).length;
+  let carrierCount = 0;
+  let clearCount = 0;
+  let unknownCount = 0;
   
-  const risks: HealthRisk[] = [];
-  
-  Object.entries(genotype.healthMarkers).forEach(([condition, data]) => {
-    switch (data.status) {
-      case 'clear':
-        clearCount++;
+  Object.values(healthMarkers).forEach(marker => {
+    switch (marker.status) {
+      case 'at_risk':
+      case 'affected':
+        atRiskCount++;
         break;
       case 'carrier':
         carrierCount++;
-        // Add to risks with medium severity
-        risks.push({
-          condition,
-          status: 'carrier',
-          severity: 'medium',
-          description: `Carrier for ${formatConditionName(condition)}`
-        });
         break;
-      case 'at_risk':
-      case 'at risk':
-        atRiskCount++;
-        // Add to risks with high severity
-        risks.push({
-          condition,
-          status: 'at_risk',
-          severity: 'high',
-          description: `At risk for ${formatConditionName(condition)}`
-        });
+      case 'clear':
+        clearCount++;
+        break;
+      case 'unknown':
+      default:
+        unknownCount++;
         break;
     }
   });
   
-  // Calculate health score (basic algorithm)
-  const healthScore = Math.max(0, 100 - (carrierCount * 5) - (atRiskCount * 15));
-  
-  // Sort risks by severity (high first, then medium)
-  const topRisks = risks.sort((a, b) => {
-    if (a.severity === 'high' && b.severity !== 'high') return -1;
-    if (a.severity !== 'high' && b.severity === 'high') return 1;
-    return 0;
-  });
-  
   return {
-    clearCount,
-    carrierCount,
     atRiskCount,
-    totalTests,
-    healthScore,
-    topRisks: topRisks.slice(0, 3) // Return top 3 risks
+    carrierCount,
+    clearCount,
+    unknownCount,
+    totalTests: atRiskCount + carrierCount + clearCount + unknownCount
   };
 };
 
-// Generate risk assessment text
-export const generateRiskAssessment = (genotype: DogGenotype): string => {
-  if (!genotype || !genotype.healthMarkers) {
-    return "No genetic health data available.";
-  }
+export const generateRiskSummary = (healthMarkers: Record<string, HealthMarker>): string => {
+  const summary = generateHealthSummary(healthMarkers);
   
-  const { atRiskCount, carrierCount, totalTests } = getHealthSummaryData(genotype);
-  
-  if (atRiskCount === 0 && carrierCount === 0) {
-    return "This dog is clear of all tested genetic health conditions.";
-  } else if (atRiskCount > 0) {
-    return `This dog is at risk for ${atRiskCount} genetic ${atRiskCount === 1 ? 'condition' : 'conditions'} and is a carrier for ${carrierCount} ${carrierCount === 1 ? 'condition' : 'conditions'}.`;
+  if (summary.atRiskCount === 0 && summary.carrierCount === 0) {
+    return "Clear of all tested genetic health conditions";
+  } else if (summary.atRiskCount > 0) {
+    return `At risk for ${summary.atRiskCount} ${summary.atRiskCount === 1 ? 'condition' : 'conditions'}, carrier for ${summary.carrierCount}`;
   } else {
-    return `This dog is a carrier for ${carrierCount} genetic ${carrierCount === 1 ? 'condition' : 'conditions'} but is not at risk for any tested conditions.`;
+    return `Carrier for ${summary.carrierCount} ${summary.carrierCount === 1 ? 'condition' : 'conditions'}, not at risk for any tested condition`;
   }
+};
+
+export const calculateHealthRisks = (healthMarkers: Record<string, HealthMarker>): HealthRisk[] => {
+  const risks: HealthRisk[] = [];
+  
+  Object.entries(healthMarkers).forEach(([conditionKey, marker]) => {
+    if (marker.status === 'at_risk' || marker.status === 'affected') {
+      risks.push({
+        status: marker.status,
+        probability: 1.0,
+        condition: marker.name || formatConditionName(conditionKey),
+        severity: 'high'
+      });
+    } else if (marker.status === 'carrier') {
+      risks.push({
+        status: marker.status,
+        probability: 0.5,
+        condition: marker.name || formatConditionName(conditionKey),
+        severity: 'medium'
+      });
+    }
+  });
+  
+  // Sort risks by severity
+  return risks.sort((a, b) => {
+    if (a.severity === 'high' && b.severity !== 'high') return -1;
+    if (a.severity !== 'high' && b.severity === 'high') return 1;
+    if (a.severity === 'medium' && b.severity === 'low') return -1;
+    if (a.severity === 'low' && b.severity === 'medium') return 1;
+    return 0;
+  });
+};
+
+export const generateHealthWarnings = (healthMarkers: Record<string, HealthMarker>): HealthWarning[] => {
+  const warnings: HealthWarning[] = [];
+  const summary: HealthSummary = {
+    atRiskCount: 0,
+    carrierCount: 0,
+    clearCount: 0,
+    unknownCount: 0,
+    totalTests: 0
+  };
+  
+  // Calculate summary stats for percentage calculations
+  Object.values(healthMarkers).forEach(marker => {
+    summary.totalTests++;
+    
+    if (marker.status === 'at_risk' || marker.status === 'affected') {
+      summary.atRiskCount++;
+    } else if (marker.status === 'carrier') {
+      summary.carrierCount++;
+    } else if (marker.status === 'clear') {
+      summary.clearCount++;
+    } else {
+      summary.unknownCount++;
+    }
+  });
+  
+  return warnings;
+};
+
+export default {
+  formatConditionName,
+  generateHealthSummary,
+  generateRiskSummary,
+  calculateHealthRisks,
+  generateHealthWarnings
 };

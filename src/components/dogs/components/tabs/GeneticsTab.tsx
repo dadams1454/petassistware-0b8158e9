@@ -15,7 +15,7 @@ const generateRiskAssessment = (genotype: DogGenotype | null): string => {
   let carrierCount = 0;
   
   Object.values(genotype.healthMarkers).forEach(marker => {
-    if (marker.status === 'at_risk' || marker.status === 'at risk') {
+    if (marker.status === 'at_risk' || marker.status === 'affected') {
       atRiskCount++;
     } else if (marker.status === 'carrier') {
       carrierCount++;
