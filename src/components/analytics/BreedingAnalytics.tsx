@@ -53,7 +53,7 @@ const BreedingAnalytics: React.FC<BreedingAnalyticsProps> = ({ className }) => {
         .order('birth_date', { ascending: false });
 
       if (error) throw error;
-      return data as LitterData[] || [];
+      return (data as unknown) as LitterData[] || [];
     }
   });
 

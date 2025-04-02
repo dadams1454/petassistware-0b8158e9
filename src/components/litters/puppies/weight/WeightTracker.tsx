@@ -44,6 +44,7 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
         date: data.date,
         notes: data.notes,
         dog_id: '', // Empty string as it's required but we're tracking a puppy
+        puppy_id: puppyId, // Add puppy_id as required
         updated_at: new Date().toISOString()
       });
       

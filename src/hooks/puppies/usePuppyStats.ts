@@ -5,6 +5,23 @@ import { PuppyManagementStats } from '@/types/puppyTracking';
 
 export function usePuppyStats() {
   const [stats, setStats] = useState<PuppyManagementStats>({
+    totalCount: 0,
+    byStatus: {},
+    byGender: {
+      male: 0,
+      female: 0,
+      unknown: 0
+    },
+    byColor: {},
+    byAgeGroup: {},
+    weightRanges: {
+      min: 0,
+      max: 0,
+      avg: 0,
+      unit: 'oz'
+    },
+    adoptionRate: 0,
+    reservationRate: 0,
     totalPuppies: 0,
     totalLitters: 0,
     activeLitters: 0,
@@ -27,7 +44,7 @@ export function usePuppyStats() {
       // Fetch basic puppy counts
       const { data: puppiesData, error: puppiesError } = await supabase
         .from('puppies')
-        .select('id, status, birth_date', { count: 'exact' });
+        .select('id, status, birth_date, gender, color', { count: 'exact' });
 
       if (puppiesError) throw puppiesError;
 
@@ -44,6 +61,27 @@ export function usePuppyStats() {
       const reservedPuppies = puppiesData?.filter(p => p.status === 'Reserved').length || 0;
       const totalLitters = littersData?.length || 0;
       const activeLitters = littersData?.filter(l => l.status === 'active').length || 0;
+      
+      // Calculate gender distribution
+      const maleCount = puppiesData?.filter(p => p.gender?.toLowerCase() === 'male').length || 0;
+      const femaleCount = puppiesData?.filter(p => p.gender?.toLowerCase() === 'female').length || 0;
+      const unknownGenderCount = totalPuppies - maleCount - femaleCount;
+      
+      // Calculate color distribution
+      const byColor: Record<string, number> = {};
+      puppiesData?.forEach(puppy => {
+        if (puppy.color) {
+          byColor[puppy.color] = (byColor[puppy.color] || 0) + 1;
+        }
+      });
+      
+      // Calculate status distribution
+      const byStatus: Record<string, number> = {};
+      puppiesData?.forEach(puppy => {
+        if (puppy.status) {
+          byStatus[puppy.status] = (byStatus[puppy.status] || 0) + 1;
+        }
+      });
 
       // Mock data for now - will be implemented in future
       const upcomingVaccinations = Math.floor(Math.random() * 10);
@@ -51,12 +89,34 @@ export function usePuppyStats() {
       
       // Create empty puppiesByAgeGroup for now
       const puppiesByAgeGroup: Record<string, number> = {};
+      const byAgeGroup: Record<string, number> = {};
       
       // Mock completion rates
       const weightCompletionRate = Math.round(Math.random() * 100);
       const vaccinationCompletionRate = Math.round(Math.random() * 100);
+      
+      // Mock adoption rates
+      const adoptionRate = totalPuppies > 0 ? Math.round((reservedPuppies / totalPuppies) * 100) : 0;
+      const reservationRate = totalPuppies > 0 ? Math.round((availablePuppies / totalPuppies) * 100) : 0;
 
       setStats({
+        totalCount: totalPuppies,
+        byStatus,
+        byGender: {
+          male: maleCount,
+          female: femaleCount,
+          unknown: unknownGenderCount
+        },
+        byColor,
+        byAgeGroup,
+        weightRanges: {
+          min: 0,
+          max: 0,
+          avg: 0,
+          unit: 'oz'
+        },
+        adoptionRate,
+        reservationRate,
         totalPuppies,
         totalLitters,
         activeLitters,

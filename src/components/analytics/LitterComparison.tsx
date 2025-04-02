@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,7 +50,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
       if (error) throw error;
       
       // Filter to only include dams with at least one litter
-      return (data || []).filter(dam => dam.litters && dam.litters.length > 0) as Dam[];
+      return ((data || []).filter(dam => dam.litters && dam.litters.length > 0) as unknown) as Dam[];
     }
   });
 

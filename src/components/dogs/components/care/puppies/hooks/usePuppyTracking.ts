@@ -2,7 +2,7 @@
 import { usePuppyData } from '@/hooks/puppies/usePuppyData';
 import { usePuppyAgeGroups } from '@/hooks/puppies/usePuppyAgeGroups';
 import { usePuppyStats } from '@/hooks/puppies/usePuppyStats';
-import { PuppyWithAge } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats } from '@/types/puppyTracking';
 
 export const usePuppyTracking = () => {
   // Fetch puppy data

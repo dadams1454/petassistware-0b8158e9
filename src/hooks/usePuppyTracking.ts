@@ -5,6 +5,23 @@ import { PuppyManagementStats } from '@/types/puppyTracking';
 
 export const usePuppyTracking = () => {
   const [stats, setStats] = useState<PuppyManagementStats>({
+    totalCount: 0,
+    byStatus: {},
+    byGender: {
+      male: 0,
+      female: 0,
+      unknown: 0
+    },
+    byColor: {},
+    byAgeGroup: {},
+    weightRanges: {
+      min: 0,
+      max: 0,
+      avg: 0,
+      unit: 'oz'
+    },
+    adoptionRate: 0,
+    reservationRate: 0,
     totalPuppies: 0,
     totalLitters: 0,
     activeLitters: 0,
@@ -69,8 +86,30 @@ export const usePuppyTracking = () => {
 
       if (weightError) throw weightError;
 
-      // Update stats
+      // Update stats with mocked data for other properties
+      const byStatus: Record<string, number> = {};
+      const byColor: Record<string, number> = {};
+      const byAgeGroup: Record<string, number> = {};
+      const puppiesByAgeGroup: Record<string, number> = {};
+
       setStats({
+        totalCount: totalPuppies || 0,
+        byStatus,
+        byGender: {
+          male: 0,
+          female: 0,
+          unknown: 0
+        },
+        byColor,
+        byAgeGroup,
+        weightRanges: {
+          min: 0,
+          max: 0,
+          avg: 0,
+          unit: 'oz'
+        },
+        adoptionRate: 0,
+        reservationRate: 0,
         totalPuppies: totalPuppies || 0,
         totalLitters: 0, // You would need another query to get this
         activeLitters: activeLitters || 0,
@@ -78,7 +117,7 @@ export const usePuppyTracking = () => {
         reservedPuppies: 0, // Would need to query for reserved puppies
         upcomingVaccinations: upcomingVaccinations || 0,
         recentWeightChecks: recentWeightChecks || 0,
-        puppiesByAgeGroup: {}, // Would need additional queries for this
+        puppiesByAgeGroup, // Would need additional queries for this
         weightCompletionRate: 0, // Need additional queries
         vaccinationCompletionRate: 0 // Need additional queries
       });

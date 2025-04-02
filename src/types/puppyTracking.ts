@@ -36,6 +36,8 @@ export interface AgeGroup {
   startDay: number;
   endDay: number;
   color?: string;
+  careChecks?: string[];
+  milestones?: string[];
 }
 
 // Extended age group data with puppy counts
@@ -44,8 +46,6 @@ export interface PuppyAgeGroupData extends AgeGroup {
   maxAge: number;
   count: number;
   puppies: PuppyWithAge[];
-  careChecks?: string[];
-  milestones?: string[];
 }
 
 // Puppy statistics by status and other metrics
@@ -104,6 +104,7 @@ export interface PuppyWeightRecord {
   notes?: string;
   created_at: string;
   updated_at?: string;
+  age_days?: number; // Adding age_days for compatibility
 }
 
 // Define WeightUnit type
@@ -112,6 +113,9 @@ export type WeightUnit = 'g' | 'oz' | 'lbs' | 'kg';
 // Define WeightRecord for backward compatibility
 export interface WeightRecord extends PuppyWeightRecord {
   dog_id: string; // Required by some components
+  puppy_id?: string; // Make puppy_id optional for compatibility
+  age_days?: number; // Add age_days property
+  birth_date?: string; // Add birth_date property
 }
 
 // Health tracking for puppies
@@ -157,6 +161,8 @@ export interface PuppyVaccinationSchedule {
   vaccine_name?: string;
   administered?: boolean;
   administered_date?: string;
+  notes?: string; // Adding notes property that was missing
+  vaccination_date?: string; // Adding for compatibility
 }
 
 // For backward compatibility
@@ -175,6 +181,14 @@ export interface SocializationCategory {
   updated_at?: string;
   color?: string;
   examples?: string[];
+}
+
+// Socialization reaction interface
+export interface SocializationReactionObject {
+  id: string;
+  name: string;
+  color: string;
+  description: string;
 }
 
 // Socialization reaction type
