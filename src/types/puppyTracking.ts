@@ -51,6 +51,7 @@ export interface PuppyAgeGroupData {
   milestones?: string;
   careChecks?: any[];
   examples?: string[];
+  color?: string; // Used for styling
 }
 
 // Define DEFAULT_AGE_GROUPS for use in hooks
@@ -65,7 +66,8 @@ export const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
     endDay: 14,
     count: 0,
     puppies: [],
-    milestones: 'Eyes closed, minimal movement, needs frequent feeding and cleaning'
+    milestones: 'Eyes closed, minimal movement, needs frequent feeding and cleaning',
+    color: '#FFD8E6' // Soft pink
   },
   {
     id: 'transition',
@@ -77,7 +79,8 @@ export const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
     endDay: 28,
     count: 0,
     puppies: [],
-    milestones: 'Eyes opening, beginning to hear, starting to walk'
+    milestones: 'Eyes opening, beginning to hear, starting to walk',
+    color: '#FFF4D8' // Soft yellow
   },
   {
     id: 'socialization',
@@ -89,7 +92,8 @@ export const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
     endDay: 49,
     count: 0,
     puppies: [],
-    milestones: 'Playing with littermates, weaning from mother, exploring environment'
+    milestones: 'Playing with littermates, weaning from mother, exploring environment',
+    color: '#E2F4FF' // Soft blue
   },
   {
     id: 'juvenile',
@@ -101,7 +105,21 @@ export const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
     endDay: 84,
     count: 0,
     puppies: [],
-    milestones: 'Ready for adoption, basic training begins, fully eating solid food'
+    milestones: 'Ready for adoption, basic training begins, fully eating solid food',
+    color: '#E5FFE2' // Soft green
+  },
+  {
+    id: 'older',
+    name: 'Older Puppies',
+    description: 'Puppies 85+ days old',
+    minAge: 85,
+    maxAge: 365,
+    startDay: 85,
+    endDay: 365,
+    count: 0,
+    puppies: [],
+    milestones: 'Advanced training, full vaccinations, continued socialization',
+    color: '#F0E6FF' // Soft purple
   }
 ];
 
@@ -131,6 +149,7 @@ export interface SocializationCategory {
   experiences: SocializationExperience[];
   // Additional fields needed by components
   examples?: string[];
+  importance?: 'high' | 'medium' | 'low';
 }
 
 export interface SocializationExperience {
@@ -139,7 +158,7 @@ export interface SocializationExperience {
   category: string;
   experience: string;
   date: string;
-  reaction: 'positive' | 'neutral' | 'negative' | 'fearful' | 'excited';
+  reaction: SocializationReaction;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -148,13 +167,25 @@ export interface SocializationExperience {
   experience_date?: string;
 }
 
+// Updated to be a rich object with properties rather than just a string
+export interface SocializationReactionOption {
+  id: string;
+  name: string;
+  color: string;
+  description: string;
+}
+
 export type SocializationReaction = 'positive' | 'neutral' | 'negative' | 'fearful' | 'excited';
 
 export interface SocializationProgress {
   category: string;
+  category_id?: string;
+  categoryName?: string;
   count: number;
   positiveCount: number;
   negativeCount: number;
+  completion_percentage: number;
+  target?: number;
 }
 
 export interface PuppyVaccination {
@@ -175,6 +206,8 @@ export interface PuppyVaccinationSchedule {
   due_date: string;
   notes?: string;
   created_at: string;
+  is_completed?: boolean;
+  vaccination_date?: string;
 }
 
 // Alias for backward compatibility
@@ -194,4 +227,14 @@ export interface PuppyMilestone {
   expected_age_days?: number;
   description?: string;
   completion_date?: string;
+}
+
+// Dog Care Status for daily care logs
+export interface DogCareStatus {
+  id: string;
+  name: string;
+  lastCareTime?: string;
+  careStatus: 'recent' | 'overdue' | 'none';
+  careTypes: string[];
+  needsAttention: boolean;
 }

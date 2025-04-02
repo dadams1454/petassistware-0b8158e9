@@ -2,10 +2,7 @@
 import React from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ReservationList from '@/components/reservations/ReservationList';
-import DepositsList from '@/components/deposits/DepositsList';
-import ContractList from '@/components/contracts/ContractList';
-import WaitlistManager from '@/components/waitlist/WaitlistManager';
+import { WaitlistManager } from '@/components/waitlist/WaitlistManager';
 
 const Reservations: React.FC = () => {
   return (
@@ -22,7 +19,9 @@ const Reservations: React.FC = () => {
           </TabsList>
           
           <TabsContent value="reservations">
-            <ReservationList />
+            <div className="p-4 border rounded text-center">
+              <p>Reservation management interface coming soon</p>
+            </div>
           </TabsContent>
           
           <TabsContent value="waitlist">
@@ -30,11 +29,15 @@ const Reservations: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="deposits">
-            <DepositsList />
+            <div className="p-4 border rounded text-center">
+              <p>Deposits management interface coming soon</p>
+            </div>
           </TabsContent>
           
           <TabsContent value="contracts">
-            <ContractList />
+            <div className="p-4 border rounded text-center">
+              <p>Contracts management interface coming soon</p>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

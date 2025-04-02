@@ -4,7 +4,11 @@ import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
 import UserManagement from '@/components/admin/UserManagement';
 
-const Users: React.FC = () => {
+interface UsersProps {
+  tenantId?: string;
+}
+
+const Users: React.FC<UsersProps> = ({ tenantId }) => {
   return (
     <PageContainer>
       <div className="container mx-auto py-6 px-4">
@@ -14,7 +18,7 @@ const Users: React.FC = () => {
           className="mb-6"
         />
         
-        <UserManagement />
+        <UserManagement tenantId={tenantId} />
       </div>
     </PageContainer>
   );

@@ -36,3 +36,11 @@ export type SortOrder = 'asc' | 'desc';
 export interface ReservationListProps {
   customerId?: string;
 }
+
+export interface CustomerPreference {
+  size?: 'tiny' | 'small' | 'medium' | 'large' | 'giant';
+  temperament?: string[];
+  sex?: 'male' | 'female' | 'any';
+  coatColor?: string[];
+  activityLevel?: 'low' | 'moderate' | 'high';
+}
