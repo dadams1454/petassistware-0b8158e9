@@ -11,7 +11,7 @@ interface DogDetailsProps {
   isFullPage?: boolean;
 }
 
-const DogDetails: React.FC<DogDetailsProps> = ({ dog, isFullPage = false }) => {
+const DogDetails: React.FC<DogDetailsProps> = ({ dog = {}, isFullPage = false }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   // Use our custom hook to manage events

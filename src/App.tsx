@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import AuthProvider from './contexts/AuthProvider';
 import Router from './Router';
 import { Toaster } from '@/components/ui/toaster';
@@ -9,12 +10,14 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router />
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 }
 
