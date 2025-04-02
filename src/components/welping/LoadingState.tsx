@@ -1,6 +1,6 @@
 
 import React from 'react';
-import MainLayout from '@/layouts/MainLayout';
+import { Loader2 } from 'lucide-react';
 
 interface LoadingStateProps {
   message?: string;
@@ -8,11 +8,12 @@ interface LoadingStateProps {
 
 const LoadingState: React.FC<LoadingStateProps> = ({ message = "Loading..." }) => {
   return (
-    <MainLayout>
-      <div className="container mx-auto py-6">
-        <p>{message}</p>
+    <div className="container mx-auto py-12">
+      <div className="flex flex-col items-center justify-center text-center">
+        <Loader2 className="h-8 w-8 animate-spin mb-4" />
+        <p className="text-muted-foreground">{message}</p>
       </div>
-    </MainLayout>
+    </div>
   );
 };
 

@@ -17,6 +17,7 @@ import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import Index from './pages/Index';
 import WelpingDashboard from './pages/WelpingDashboard';
+import WelpingPage from './pages/WelpingPage';
 
 const Router = () => {
   return (
@@ -48,6 +49,7 @@ const Router = () => {
           {/* Breeding/Welping routes */}
           <Route path="/breeding-prep" element={<div>Breeding Preparation</div>} />
           <Route path="/welping" element={<WelpingDashboard />} />
+          <Route path="/welping/:id" element={<WelpingPage />} />
           
           {/* Redirect from root to dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

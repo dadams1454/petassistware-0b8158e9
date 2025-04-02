@@ -17,10 +17,10 @@ const StatCard: React.FC<StatCardProps> = ({
   icon
 }) => {
   return (
-    <Card className="bg-white text-black dark:bg-gray-950 dark:text-white border-0">
+    <Card className="bg-card text-card-foreground border-0">
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
           {isLoading ? (
             <Skeleton className="h-12 w-16 mt-2" />
           ) : (
