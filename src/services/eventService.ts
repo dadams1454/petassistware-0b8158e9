@@ -1,83 +1,143 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Event, NewEvent } from '@/types/events';
 
-// Get all events
-export const getEvents = async (): Promise<Event[]> => {
-  const { data, error } = await supabase
-    .from('events')
-    .select('*')
-    .order('event_date', { ascending: true });
-    
-  if (error) {
-    console.error('Error fetching events:', error);
-    throw error;
-  }
-  
-  return data as Event[];
-};
+export interface Event {
+  id: string;
+  title: string;
+  description?: string;
+  start_date: string;
+  end_date?: string;
+  all_day: boolean;
+  event_type: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  recurring: boolean;
+  recurrence_pattern?: string;
+  created_at: string;
+  updated_at: string;
+  tenant_id: string;
+  dog_id?: string;
+  customer_id?: string;
+  litter_id?: string;
+}
 
-// Get a single event by ID
-export const getEventById = async (id: string): Promise<Event | null> => {
-  const { data, error } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', id)
-    .single();
+export interface NewEvent {
+  title: string;
+  description?: string;
+  start_date: string;
+  end_date?: string;
+  all_day: boolean;
+  event_type: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  recurring: boolean;
+  recurrence_pattern?: string;
+  dog_id?: string;
+  customer_id?: string;
+  litter_id?: string;
+}
+
+export const EVENT_TYPES = [
+  { value: 'appointment', label: 'Appointment' },
+  { value: 'vaccination', label: 'Vaccination' },
+  { value: 'medication', label: 'Medication' },
+  { value: 'grooming', label: 'Grooming' },
+  { value: 'training', label: 'Training' },
+  { value: 'breeding', label: 'Breeding' },
+  { value: 'whelping', label: 'Whelping' },
+  { value: 'customer', label: 'Customer Visit' },
+  { value: 'other', label: 'Other' }
+];
+
+// Function to get events (replaces fetchEvents to match what components are importing)
+export const getEvents = async (filters?: {
+  dogId?: string;
+  customerId?: string;
+  litterId?: string;
+  fromDate?: string;
+  toDate?: string;
+  eventType?: string;
+  status?: string;
+}): Promise<Event[]> => {
+  try {
+    let query = supabase.from('events').select('*');
     
-  if (error) {
-    if (error.code === 'PGRST116') {
-      return null; // Not found
+    // Apply filters if provided
+    if (filters) {
+      if (filters.dogId) query = query.eq('dog_id', filters.dogId);
+      if (filters.customerId) query = query.eq('customer_id', filters.customerId);
+      if (filters.litterId) query = query.eq('litter_id', filters.litterId);
+      if (filters.fromDate) query = query.gte('start_date', filters.fromDate);
+      if (filters.toDate) query = query.lte('start_date', filters.toDate);
+      if (filters.eventType) query = query.eq('event_type', filters.eventType);
+      if (filters.status) query = query.eq('status', filters.status);
     }
-    console.error('Error fetching event:', error);
-    throw error;
+    
+    // Order by start date
+    query = query.order('start_date', { ascending: true });
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      throw error;
+    }
+    
+    return data as Event[];
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    return [];
   }
-  
-  return data as Event;
 };
 
-// Create a new event
 export const createEvent = async (event: NewEvent): Promise<Event> => {
-  const { data, error } = await supabase
-    .from('events')
-    .insert(event)
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('events')
+      .insert(event)
+      .select()
+      .single();
     
-  if (error) {
+    if (error) {
+      throw error;
+    }
+    
+    return data as Event;
+  } catch (error) {
     console.error('Error creating event:', error);
-    throw error;
+    throw new Error('Failed to create event');
   }
-  
-  return data as Event;
 };
 
-// Update an existing event
-export const updateEvent = async (id: string, event: Partial<Event>): Promise<Event> => {
-  const { data, error } = await supabase
-    .from('events')
-    .update(event)
-    .eq('id', id)
-    .select()
-    .single();
+export const updateEvent = async (id: string, updates: Partial<Event>): Promise<Event> => {
+  try {
+    const { data, error } = await supabase
+      .from('events')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
     
-  if (error) {
+    if (error) {
+      throw error;
+    }
+    
+    return data as Event;
+  } catch (error) {
     console.error('Error updating event:', error);
-    throw error;
+    throw new Error('Failed to update event');
   }
-  
-  return data as Event;
 };
 
-// Delete an event
 export const deleteEvent = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from('events')
-    .delete()
-    .eq('id', id);
+  try {
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', id);
     
-  if (error) {
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
     console.error('Error deleting event:', error);
-    throw error;
+    throw new Error('Failed to delete event');
   }
 };

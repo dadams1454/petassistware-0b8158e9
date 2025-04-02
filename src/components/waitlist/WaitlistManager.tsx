@@ -16,3 +16,5 @@ export const WaitlistManager: React.FC = () => {
     </Card>
   );
 };
+
+export default WaitlistManager;

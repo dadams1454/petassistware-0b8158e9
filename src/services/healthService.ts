@@ -38,6 +38,103 @@ export const getHealthRecordsByType = async (dogId: string, recordType: HealthRe
   }
 };
 
+// Function to get upcoming medications for a specific dog or all dogs
+export const getUpcomingMedications = async (dogId?: string): Promise<HealthRecord[]> => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysLater = new Date();
+    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+    const thirtyDaysLaterStr = thirtyDaysLater.toISOString().split('T')[0];
+    
+    let query = supabase
+      .from('health_records')
+      .select('*')
+      .eq('record_type', HealthRecordTypeEnum.Medication)
+      .gte('next_due_date', today)
+      .lte('next_due_date', thirtyDaysLaterStr)
+      .order('next_due_date', { ascending: true });
+      
+    // If dogId is provided, filter by that dog
+    if (dogId) {
+      query = query.eq('dog_id', dogId);
+    }
+    
+    const { data, error } = await query;
+      
+    if (error) throw error;
+    
+    return data as HealthRecord[];
+  } catch (error) {
+    console.error('Error fetching upcoming medications:', error);
+    return [];
+  }
+};
+
+// Function to get medications that are expiring soon
+export const getExpiringMedications = async (dogId?: string): Promise<HealthRecord[]> => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysLater = new Date();
+    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+    const thirtyDaysLaterStr = thirtyDaysLater.toISOString().split('T')[0];
+    
+    let query = supabase
+      .from('health_records')
+      .select('*')
+      .eq('record_type', HealthRecordTypeEnum.Medication)
+      .not('expiration_date', 'is', null)
+      .gte('expiration_date', today)
+      .lte('expiration_date', thirtyDaysLaterStr)
+      .order('expiration_date', { ascending: true });
+      
+    // If dogId is provided, filter by that dog
+    if (dogId) {
+      query = query.eq('dog_id', dogId);
+    }
+    
+    const { data, error } = await query;
+      
+    if (error) throw error;
+    
+    return data as HealthRecord[];
+  } catch (error) {
+    console.error('Error fetching expiring medications:', error);
+    return [];
+  }
+};
+
+// Function to get upcoming vaccinations
+export const getUpcomingVaccinations = async (dogId?: string): Promise<HealthRecord[]> => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const ninetyDaysLater = new Date();
+    ninetyDaysLater.setDate(ninetyDaysLater.getDate() + 90);
+    const ninetyDaysLaterStr = ninetyDaysLater.toISOString().split('T')[0];
+    
+    let query = supabase
+      .from('health_records')
+      .select('*')
+      .eq('record_type', HealthRecordTypeEnum.Vaccination)
+      .gte('next_due_date', today)
+      .lte('next_due_date', ninetyDaysLaterStr)
+      .order('next_due_date', { ascending: true });
+      
+    // If dogId is provided, filter by that dog
+    if (dogId) {
+      query = query.eq('dog_id', dogId);
+    }
+    
+    const { data, error } = await query;
+      
+    if (error) throw error;
+    
+    return data as HealthRecord[];
+  } catch (error) {
+    console.error('Error fetching upcoming vaccinations:', error);
+    return [];
+  }
+};
+
 export const addHealthRecord = async (record: Partial<HealthRecord>): Promise<HealthRecord> => {
   try {
     const { data, error } = await supabase

@@ -16,3 +16,5 @@ export const UserManagement: React.FC = () => {
     </Card>
   );
 };
+
+export default UserManagement;
