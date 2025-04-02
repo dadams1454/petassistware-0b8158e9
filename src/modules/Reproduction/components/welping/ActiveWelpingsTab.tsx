@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
 import { Litter } from '@/types/litter';
-import { Eye, Edit, Dog } from 'lucide-react';
+import { Eye, Edit, Dog, PlayCircle } from 'lucide-react';
 import EmptyState from '@/components/common/EmptyState';
 
 interface ActiveWelpingsTabProps {
@@ -95,7 +95,7 @@ const ActiveWelpingsTab: React.FC<ActiveWelpingsTabProps> = ({
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
+          <CardFooter className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -111,6 +111,15 @@ const ActiveWelpingsTab: React.FC<ActiveWelpingsTabProps> = ({
             >
               <Edit className="h-4 w-4 mr-2" />
               Logs
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => navigate(`/welping/${litter.id}/live`)}
+              className="ml-auto"
+            >
+              <PlayCircle className="h-4 w-4 mr-2" />
+              Live Whelping
             </Button>
           </CardFooter>
         </Card>

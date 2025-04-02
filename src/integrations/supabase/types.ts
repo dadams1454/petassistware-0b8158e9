@@ -3459,6 +3459,41 @@ export type Database = {
           },
         ]
       }
+      whelping_shift_logs: {
+        Row: {
+          attended_by: string
+          created_at: string | null
+          id: string
+          litter_id: string
+          notes: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          attended_by: string
+          created_at?: string | null
+          id?: string
+          litter_id: string
+          notes?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          attended_by?: string
+          created_at?: string | null
+          id?: string
+          litter_id?: string
+          notes?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whelping_shift_logs_litter_id_fkey"
+            columns: ["litter_id"]
+            isOneToOne: false
+            referencedRelation: "litters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

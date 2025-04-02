@@ -1,4 +1,3 @@
-// If this file doesn't exist, we'll create it
 export interface Dog {
   id: string;
   name: string;
@@ -34,7 +33,6 @@ export interface HeatCycle {
   fertility_indicators?: any;
 }
 
-// Update the ReproductiveStatus enum to include missing statuses
 export enum ReproductiveStatus {
   IN_HEAT = 'in_heat',
   PRE_HEAT = 'pre_heat',
@@ -106,7 +104,6 @@ export interface ReproductiveCycleData {
   estimatedDueDate: Date | null;
 }
 
-// Update the BreedingChecklistItem interface to include missing properties
 export interface BreedingChecklistItem {
   id: string;
   task: string;
@@ -118,11 +115,10 @@ export interface BreedingChecklistItem {
   category: string;
 }
 
-// Update BreedingPrepFormData to align with the form usage
 export interface BreedingPrepFormData {
   damId: string;
   sireId: string;
   plannedDate: string;
-  plannedTieDate?: Date; // Add this field to match the form usage
+  plannedTieDate?: Date; // Added this field to match the form usage
   notes?: string;
 }
