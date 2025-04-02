@@ -14,11 +14,11 @@ export * from './litter';
 export * from './genetics';
 
 // Handle health exports to include WeightUnit explicitly
-import { WeightUnit as HealthWeightUnit } from './health';
+import { WeightUnit } from './health';
 import * as HealthTypes from './health';
 export { HealthTypes };
 // Export the WeightUnit from health explicitly to avoid conflicts
-export { HealthWeightUnit };
+export type { WeightUnit as HealthWeightUnit };
 
 // Export specific types from puppyTracking to avoid conflicts
 export * from './puppyTracking';
