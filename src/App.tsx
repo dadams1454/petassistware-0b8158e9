@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
 import AuthProvider from './contexts/AuthProvider';
 import Router from './Router';
 import { Toaster } from '@/components/ui/toaster';
@@ -12,10 +11,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <Router />
-          <Toaster />
-        </BrowserRouter>
+        <Router />
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
