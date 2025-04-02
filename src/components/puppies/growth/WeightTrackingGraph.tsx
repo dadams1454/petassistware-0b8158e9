@@ -33,9 +33,10 @@ interface WeightData {
 interface WeightTrackingGraphProps {
   puppyId: string;
   puppyName: string;
+  birthDate?: string;
 }
 
-const WeightTrackingGraph: React.FC<WeightTrackingGraphProps> = ({ puppyId, puppyName }) => {
+const WeightTrackingGraph: React.FC<WeightTrackingGraphProps> = ({ puppyId, puppyName, birthDate }) => {
   const { toast } = useToast();
   const [weightData, setWeightData] = useState<WeightData[]>([]);
   const [newWeight, setNewWeight] = useState('');
@@ -206,7 +207,6 @@ const WeightTrackingGraph: React.FC<WeightTrackingGraphProps> = ({ puppyId, pupp
               <DatePicker
                 date={weightDate}
                 onSelect={setWeightDate}
-                initialFocus
               />
             </PopoverContent>
           </Popover>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { PlusCircle, Milk, Droplet, Weight, Stethoscope, ArrowLeft, TextCursor } from 'lucide-react';
 import { differenceInDays, format } from 'date-fns';
-import PuppyCareLog from '@/components/puppies/care/PuppyCareLog';
+import PuppyCareLog from '@/components/puppies/dashboard/PuppyCareLog';
 import WeightTrackingGraph from '@/components/puppies/growth/WeightTrackingGraph';
 import MilestoneTracker from '@/components/puppies/milestones/MilestoneTracker';
 import { Switch } from '@/components/ui/switch';
@@ -483,12 +482,13 @@ const PuppyTestingDashboard = () => {
               <TabsContent value="care">
                 <PuppyCareLog 
                   puppyId={selectedPuppyId} 
-                  onCareAdded={handleCareLogAdded} 
+                  onSuccess={handleCareLogAdded} 
                 />
               </TabsContent>
               <TabsContent value="weight">
                 <WeightTrackingGraph 
                   puppyId={selectedPuppyId} 
+                  puppyName={getSelectedPuppy()?.name || 'Puppy'}
                   birthDate={litter?.birth_date} 
                 />
               </TabsContent>

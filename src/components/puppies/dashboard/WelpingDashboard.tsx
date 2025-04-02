@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, subDays, addDays } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import {
   Card,
   CardHeader,
@@ -41,21 +42,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Plus, RefreshCw, Edit, Trash2 } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
-import { PuppyCareLog } from './PuppyCareLog';
+import PuppyCareLog from './PuppyCareLog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SectionHeader } from '@/components/ui/standardized';
 import { Puppy } from '@/types/puppy';
-
-interface PuppyCareLogEntry {
-  id: string;
-  puppy_id: string;
-  care_type: string;
-  timestamp: string;
-  details: any;
-  notes: string | null;
-  created_at: string;
-}
 
 interface WelpingDashboardProps {
   litterId: string;
@@ -81,7 +72,7 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: puppies, isLoading, error, refetch: refreshData } = useQuery({
+  const { data: puppies, isLoading, error, refetch } = useQuery({
     queryKey: ['puppies', litterId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -120,13 +111,13 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
         console.error('Error fetching puppy care logs:', error);
         throw error;
       }
-      return data as PuppyCareLogEntry[];
+      return data;
     },
     enabled: !!puppies && puppies.length > 0 && !!dateRange?.from && !!dateRange?.to,
   });
 
-  const { mutate: addPuppy, isLoading: isAddingPuppy } = useMutation(
-    async () => {
+  const addPuppyMutation = useMutation({
+    mutationFn: async () => {
       const { data, error } = await supabase
         .from('puppies')
         .insert([{ litter_id: litterId, name: newPuppyName, gender: newPuppyGender, color: newPuppyColor }])
@@ -139,30 +130,28 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
       }
       return data;
     },
-    {
-      onSuccess: () => {
-        toast({
-          title: 'Puppy added',
-          description: `${newPuppyName} has been added to the litter.`,
-        });
-        setIsAddPuppyOpen(false);
-        setNewPuppyName('');
-        setNewPuppyGender('Male');
-        setNewPuppyColor('');
-        refreshData();
-      },
-      onError: (err: any) => {
-        toast({
-          title: 'Error adding puppy',
-          description: err.message,
-          variant: 'destructive',
-        });
-      },
-    }
-  );
+    onSuccess: () => {
+      toast({
+        title: 'Puppy added',
+        description: `${newPuppyName} has been added to the litter.`,
+      });
+      setIsAddPuppyOpen(false);
+      setNewPuppyName('');
+      setNewPuppyGender('Male');
+      setNewPuppyColor('');
+      queryClient.invalidateQueries({ queryKey: ['puppies', litterId] });
+    },
+    onError: (err: any) => {
+      toast({
+        title: 'Error adding puppy',
+        description: err.message,
+        variant: 'destructive',
+      });
+    },
+  });
 
-  const { mutate: editPuppy, isLoading: isEditingPuppy } = useMutation(
-    async () => {
+  const editPuppyMutation = useMutation({
+    mutationFn: async () => {
       if (!selectedPuppyId) {
         throw new Error('No puppy selected to edit.');
       }
@@ -180,36 +169,34 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
       }
       return data;
     },
-    {
-      onSuccess: () => {
-        toast({
-          title: 'Puppy updated',
-          description: `${editPuppyName} has been updated.`,
-        });
-        setIsEditPuppyOpen(false);
-        setEditPuppyName('');
-        setEditPuppyGender('Male');
-        setEditPuppyColor('');
-        setSelectedPuppyId(null);
-        refreshData();
-      },
-      onError: (err: any) => {
-        toast({
-          title: 'Error updating puppy',
-          description: err.message,
-          variant: 'destructive',
-        });
-      },
-    }
-  );
+    onSuccess: () => {
+      toast({
+        title: 'Puppy updated',
+        description: `${editPuppyName} has been updated.`,
+      });
+      setIsEditPuppyOpen(false);
+      setEditPuppyName('');
+      setEditPuppyGender('Male');
+      setEditPuppyColor('');
+      setSelectedPuppyId(null);
+      queryClient.invalidateQueries({ queryKey: ['puppies', litterId] });
+    },
+    onError: (err: any) => {
+      toast({
+        title: 'Error updating puppy',
+        description: err.message,
+        variant: 'destructive',
+      });
+    },
+  });
 
-  const { mutate: deletePuppy, isLoading: isDeletingPuppy } = useMutation(
-    async () => {
+  const deletePuppyMutation = useMutation({
+    mutationFn: async () => {
       if (!selectedPuppyId) {
         throw new Error('No puppy selected to delete.');
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('puppies')
         .delete()
         .eq('id', selectedPuppyId);
@@ -218,38 +205,36 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
         console.error('Error deleting puppy:', error);
         throw error;
       }
-      return data;
+      return null;
     },
-    {
-      onSuccess: () => {
-        toast({
-          title: 'Puppy deleted',
-          description: 'Puppy has been deleted successfully.',
-        });
-        setIsDeleteConfirmationOpen(false);
-        setSelectedPuppyId(null);
-        refreshData();
-      },
-      onError: (err: any) => {
-        toast({
-          title: 'Error deleting puppy',
-          description: err.message,
-          variant: 'destructive',
-        });
-      },
-    }
-  );
+    onSuccess: () => {
+      toast({
+        title: 'Puppy deleted',
+        description: 'Puppy has been deleted successfully.',
+      });
+      setIsDeleteConfirmationOpen(false);
+      setSelectedPuppyId(null);
+      queryClient.invalidateQueries({ queryKey: ['puppies', litterId] });
+    },
+    onError: (err: any) => {
+      toast({
+        title: 'Error deleting puppy',
+        description: err.message,
+        variant: 'destructive',
+      });
+    },
+  });
 
   const handleAddPuppy = () => {
-    addPuppy();
+    addPuppyMutation.mutate();
   };
 
   const handleEditPuppy = () => {
-    editPuppy();
+    editPuppyMutation.mutate();
   };
 
   const handleDeletePuppy = () => {
-    deletePuppy();
+    deletePuppyMutation.mutate();
   };
 
   const handleOpenEditPuppyDialog = (puppy: Puppy) => {
@@ -263,10 +248,6 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
   const handleOpenDeleteConfirmation = (puppy: Puppy) => {
     setSelectedPuppyId(puppy.id);
     setIsDeleteConfirmationOpen(true);
-  };
-
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
   };
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
@@ -289,7 +270,7 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
   };
 
   if (isLoading) return <div>Loading puppies...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (error) return <div>Error: {(error as Error).message}</div>;
 
   return (
     <div>
@@ -397,18 +378,21 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
                 />
               </PopoverContent>
             </Popover>
-            <Button onClick={refreshData} disabled={isLoading}><RefreshCw className="mr-2 h-4 w-4" /> Refresh</Button>
+            <Button onClick={() => refetch()} disabled={isLoading}>
+              <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+            </Button>
           </div>
 
           {puppies?.map((puppy) => (
             <PuppyCareLog
+              key={puppy.id}
               puppyId={puppy.id}
               puppyName={puppy.name} 
               puppyGender={puppy.gender}
               puppyColor={puppy.color}
               puppyAge={calculateAgeInDays(puppy.created_at)}
-              onSuccess={refreshData}
-              onRefresh={refreshData}
+              onSuccess={() => refetch()}
+              onRefresh={() => refetch()}
             />
           ))}
         </CardContent>
@@ -465,8 +449,12 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
             <Button type="button" variant="secondary" onClick={() => setIsAddPuppyOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" onClick={handleAddPuppy} disabled={isAddingPuppy}>
-              {isAddingPuppy ? "Adding..." : "Add Puppy"}
+            <Button 
+              type="submit" 
+              onClick={handleAddPuppy} 
+              disabled={addPuppyMutation.isPending}
+            >
+              {addPuppyMutation.isPending ? "Adding..." : "Add Puppy"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -523,8 +511,12 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
             <Button type="button" variant="secondary" onClick={() => setIsEditPuppyOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" onClick={handleEditPuppy} disabled={isEditingPuppy}>
-              {isEditingPuppy ? "Updating..." : "Update Puppy"}
+            <Button 
+              type="submit" 
+              onClick={handleEditPuppy} 
+              disabled={editPuppyMutation.isPending}
+            >
+              {editPuppyMutation.isPending ? "Updating..." : "Update Puppy"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -543,8 +535,13 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
             <Button type="button" variant="secondary" onClick={() => setIsDeleteConfirmationOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" variant="destructive" onClick={handleDeletePuppy} disabled={isDeletingPuppy}>
-              {isDeletingPuppy ? "Deleting..." : "Delete Puppy"}
+            <Button 
+              type="submit" 
+              variant="destructive" 
+              onClick={handleDeletePuppy} 
+              disabled={deletePuppyMutation.isPending}
+            >
+              {deletePuppyMutation.isPending ? "Deleting..." : "Delete Puppy"}
             </Button>
           </DialogFooter>
         </DialogContent>
