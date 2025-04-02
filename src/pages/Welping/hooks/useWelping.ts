@@ -1,228 +1,166 @@
 
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { getLitterById } from '@/services/litterService';
-import { createLitter } from '@/services/litterService';
-import { 
-  WelpingRecord, 
-  WelpingObservation,
-  addWelpingObservation, 
-  getWelpingRecordForLitter, 
-  getWelpingObservations
-} from '@/services/welpingService';
-import { Litter, Puppy } from '@/types/litter';
+import { Litter } from '@/types/litter';
+import { WelpingObservation } from '@/services/welpingService';
 
+// Define the WelpingLogEntry type here
 export interface WelpingLogEntry {
   id: string;
+  litter_id: string;
   timestamp: string;
-  event_type: 'start' | 'contraction' | 'puppy_born' | 'end' | 'note';
-  notes?: string;
+  event_type: 'start' | 'contraction' | 'puppy_born' | 'note' | 'end';
   puppy_id?: string;
+  notes?: string;
   puppy_details?: {
-    gender?: 'Male' | 'Female';
+    gender?: string;
     color?: string;
-    weight?: string;
-    birth_order?: number;
-  }
-}
-
-// Interface for creating a new welping session
-export interface CreateWelpingParams {
-  damId: string;
-  sireId: string;
-  birthDate: Date;
-  litterName?: string;
-  totalPuppies?: number;
-  males?: number;
-  females?: number;
-  attendedBy?: string;
+    weight?: number;
+  };
 }
 
 export const useWelping = (litterId?: string) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
-  
-  // Fetch litter details
-  const { 
-    data: litter, 
-    isLoading: isLoadingLitter, 
-    error: litterError,
+
+  // Query to fetch litter data
+  const {
+    data: litter,
+    isLoading,
+    error,
     refetch: refetchLitter
   } = useQuery({
-    queryKey: ['welping-litter', litterId],
+    queryKey: ['litter', litterId],
     queryFn: async () => {
       if (!litterId) return null;
-      
-      const result = await getLitterById(litterId);
-      if (!result.success) throw new Error(result.error);
-      return result.data;
+
+      const { data, error } = await supabase
+        .from('litters')
+        .select(`
+          *,
+          dam:dam_id(*),
+          sire:sire_id(*),
+          puppies:puppies(*)
+        `)
+        .eq('id', litterId)
+        .single();
+
+      if (error) throw error;
+      return data as unknown as Litter;
     },
-    enabled: !!litterId
+    enabled: !!litterId,
   });
-  
-  // Fetch welping logs
+
+  // Query to fetch welping logs
   const {
     data: welpingLogs,
     isLoading: isLoadingLogs,
-    error: logsError,
     refetch: refetchLogs
   } = useQuery({
-    queryKey: ['welping-logs', litterId],
+    queryKey: ['welpingLogs', litterId],
     queryFn: async () => {
       if (!litterId) return [];
-      
-      // In a real implementation, this would fetch logs from the database
-      // For now, we'll return a mock list
-      const observations = await getWelpingObservations(litterId);
-      
-      // Map observations to a standardized log entry format
-      return observations.map(obs => ({
-        id: obs.id,
-        timestamp: obs.observation_time,
-        event_type: 'note',
-        notes: obs.notes,
-        puppy_id: obs.puppy_id
-      })) as WelpingLogEntry[];
+
+      const { data, error } = await supabase
+        .from('welping_logs')
+        .select('*')
+        .eq('litter_id', litterId)
+        .order('timestamp', { ascending: true });
+
+      if (error) throw error;
+      return data as WelpingLogEntry[];
     },
-    enabled: !!litterId
+    enabled: !!litterId,
   });
 
-  // Create a new welping record
-  const createWelping = async (params: CreateWelpingParams) => {
-    try {
-      setIsCreating(true);
-      
-      // 1. Create the litter first
-      const litterResult = await createLitter({
-        damId: params.damId,
-        sireId: params.sireId,
-        birthDate: params.birthDate,
-        litterName: params.litterName
-      });
-      
-      if (!litterResult.success || !litterResult.litterId) {
-        throw new Error(litterResult.error || 'Failed to create litter');
-      }
-      
-      const litterId = litterResult.litterId;
-      
-      // 2. Create the welping record
-      const welpingRecordData = {
-        litter_id: litterId,
-        birth_date: params.birthDate.toISOString().split('T')[0],
-        total_puppies: params.totalPuppies || 0,
-        males: params.males || 0,
-        females: params.females || 0,
-        attended_by: params.attendedBy,
-        status: 'in-progress'
-      };
-      
-      // Insert the welping record
-      const { data, error } = await supabase
-        .from('welping_records')
-        .insert(welpingRecordData)
-        .select();
-      
-      if (error) {
-        throw error;
-      }
-      
-      return {
-        success: true,
-        litterId,
-        welpingRecordId: data?.[0]?.id
-      };
-    } catch (error: any) {
-      console.error('Error creating welping record:', error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsCreating(false);
-    }
-  };
+  // Mutation to update litter
+  const updateMutation = useMutation({
+    mutationFn: async (updates: Partial<Litter>) => {
+      if (!litterId) throw new Error('Litter ID is required for updates');
 
-  // Update litter
-  const updateLitter = async (updates: Partial<Litter>) => {
-    try {
-      setIsSubmitting(true);
-      
-      if (!litterId) {
-        throw new Error('Litter ID is required');
-      }
-      
-      // Update the litter in the database
       const { data, error } = await supabase
         .from('litters')
         .update(updates)
         .eq('id', litterId)
-        .select();
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['litter', litterId] });
+    },
+  });
+
+  // Mutation to add welping log
+  const addLogMutation = useMutation({
+    mutationFn: async (logEntry: Omit<WelpingLogEntry, 'id'>) => {
+      const { data, error } = await supabase
+        .from('welping_logs')
+        .insert(logEntry)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['welpingLogs', litterId] });
+    },
+  });
+
+  // Mutation to create a new welping record
+  const createMutation = useMutation({
+    mutationFn: async (litterData: Omit<Litter, 'id'>) => {
+      setIsCreating(true);
       
-      if (error) {
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from('litters')
+          .insert(litterData)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } finally {
+        setIsCreating(false);
       }
-      
-      // Refetch the litter details
-      await refetchLitter();
-      
-      return { success: true, data };
-    } catch (error: any) {
-      console.error('Error updating litter:', error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  // Add welping log
-  const addWelpingLog = async (logEntry: Omit<WelpingLogEntry, 'id'>) => {
-    try {
-      setIsSubmitting(true);
-      
-      if (!litterId) {
-        throw new Error('Litter ID is required');
-      }
-      
-      // Convert to observation format
-      const observation: Omit<WelpingObservation, 'id' | 'created_at'> = {
-        welping_id: litterId,
-        observation_time: logEntry.timestamp,
-        puppy_id: logEntry.puppy_id,
-        notes: logEntry.notes,
-        // Map event_type to something that makes sense for the WelpingObservation
-        observation_type: logEntry.event_type,
-        // Additional fields
-        puppy_number: logEntry.puppy_details?.birth_order,
-        presentation: logEntry.event_type === 'puppy_born' ? 'normal' : undefined,
-        weight: logEntry.puppy_details?.weight ? parseFloat(logEntry.puppy_details.weight) : undefined,
-        weight_unit: 'oz'
-      };
-      
-      // Add the observation
-      const result = await addWelpingObservation(observation);
-      
-      // Refetch the logs
-      await refetchLogs();
-      
-      return { success: true, data: result };
-    } catch (error: any) {
-      console.error('Error adding welping log:', error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['litters'] });
+      return data;
+    },
+  });
+
+  // Function to add a welping observation (for compatibility with WelpingLogTimeline)
+  const addWelpingObservation = async (observation: Omit<WelpingObservation, 'id' | 'created_at'>) => {
+    // Convert to format expected by addWelpingLog
+    const logEntry = {
+      litter_id: observation.welping_id,
+      timestamp: observation.observation_time,
+      event_type: 'note' as const,
+      notes: observation.notes,
+      // Add other fields as needed
+    };
+    
+    return addLogMutation.mutateAsync(logEntry);
   };
   
   return {
     litter,
-    isLoading: isLoadingLitter || isSubmitting,
-    isCreating,
-    error: litterError,
-    welpingLogs,
+    isLoading,
+    error,
+    welpingLogs: welpingLogs || [],
     isLoadingLogs,
     refetchLitter,
     refetchLogs,
-    createWelping,
-    updateWelping: updateLitter,
-    addWelpingLog
+    updateWelping: updateMutation.mutateAsync,
+    addWelpingLog: addLogMutation.mutateAsync,
+    addWelpingObservation,
+    createWelping: createMutation.mutateAsync,
+    isCreating,
   };
 };
