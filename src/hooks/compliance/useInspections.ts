@@ -16,8 +16,9 @@ export const useInspections = () => {
   const fetchInspections = async () => {
     setIsLoading(true);
     try {
+      // Change from compliance_inspections to inspections which exists in the database
       const { data, error } = await supabase
-        .from('compliance_inspections')
+        .from('inspections')
         .select('*')
         .order('inspection_date', { ascending: false });
 
@@ -41,7 +42,7 @@ export const useInspections = () => {
       if (inspectionData.id) {
         // Update existing inspection
         const { error } = await supabase
-          .from('compliance_inspections')
+          .from('inspections')
           .update(inspectionData)
           .eq('id', inspectionData.id);
 
@@ -54,7 +55,7 @@ export const useInspections = () => {
       } else {
         // Insert new inspection
         const { error } = await supabase
-          .from('compliance_inspections')
+          .from('inspections')
           .insert(inspectionData);
 
         if (error) throw error;

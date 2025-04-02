@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,7 +74,7 @@ const WhelpingLiveSession: React.FC = () => {
       try {
         await updateWelping({
           status: 'completed'
-          // Remove end_time as it doesn't exist in the Litter type
+          // Removed end_time as it doesn't exist in the Litter type
         });
       } catch (updateError) {
         console.log('Could not update welping_records (table may not exist)', updateError);

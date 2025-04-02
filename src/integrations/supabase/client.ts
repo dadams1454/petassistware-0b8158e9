@@ -16,6 +16,9 @@ console.log('Supabase Key available:', !!supabaseAnonKey);
 // Create Supabase client
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
+// For backward compatibility
+export const customSupabase = supabase;
+
 // Type definitions for our Supabase tables
 export type CommunicationTemplatesRow = {
   id: string;
@@ -50,7 +53,7 @@ export type InspectionRow = {
   inspection_date: string;
   next_date?: string | null;
   inspector?: string;
-  status: 'scheduled' | 'completed' | 'failed';
+  status: 'scheduled' | 'passed' | 'failed';
   follow_up?: string;
   notes?: string;
   created_at: string;
@@ -58,5 +61,3 @@ export type InspectionRow = {
   breeder_id?: string;
 };
 
-// Just use regular supabase for compliance functions - no need for customSupabase
-export const customSupabase = supabase;
