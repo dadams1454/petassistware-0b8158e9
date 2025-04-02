@@ -1,146 +1,31 @@
 
-import { Dog as BaseDog } from './dog';
-
-// Export the Dog type from reproductive.ts
-export interface Dog extends BaseDog {
+// If this file doesn't exist, we'll create it
+export interface Dog {
+  id: string;
+  name: string;
+  photoUrl?: string;  // Add this field
+  gender: 'Male' | 'Female';
   is_pregnant?: boolean;
   last_heat_date?: string;
   tie_date?: string;
+  breed?: string;
+  color?: string;
+  created_at?: string;
+}
+
+export interface Breeding {
+  id: string;
+  dam_id: string;
+  sire_id: string;
+  date: string;
+  notes?: string;
+  status: 'Planned' | 'Completed' | 'Failed';
 }
 
 export interface HeatCycle {
   id: string;
   dog_id: string;
   start_date: string;
-  end_date?: string | null;
-  symptoms?: string[] | null;
-  intensity?: string | null;
-  cycle_number?: number | null;
-  cycle_length?: number | null;
-  notes?: string | null;
-  fertility_indicators?: FertilityIndicators | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface FertilityIndicators {
-  vulva_swelling?: 'none' | 'mild' | 'moderate' | 'significant';
-  discharge_color?: string;
-  discharge_consistency?: string;
-  behavioral_changes?: string[];
-  fertile_window_start?: string;
-  fertile_window_end?: string;
-  standing_heat_date?: string;
-}
-
-export interface BreedingRecord {
-  id: string;
-  dog_id: string;
-  sire_id?: string | null;
-  heat_cycle_id?: string | null;
-  tie_date: string;
-  breeding_method?: string | null;
-  is_successful?: boolean | null;
-  estimated_due_date?: string | null;
-  notes?: string | null;
-  created_at: string;
-  updated_at: string;
-  sire?: Dog;
-}
-
-export interface PregnancyRecord {
-  id: string;
-  dog_id: string;
-  breeding_record_id?: string | null;
-  confirmation_date?: string | null;
-  estimated_whelp_date?: string | null;
-  actual_whelp_date?: string | null;
-  complications?: string | null;
-  outcome?: string | null;
-  puppies_born?: number | null;
-  puppies_alive?: number | null;
-  notes?: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ReproductiveMilestone {
-  id: string;
-  dog_id: string;
-  milestone_type: string;
-  milestone_date: string;
-  notes?: string | null;
-  created_at: string;
-}
-
-export enum ReproductiveStatus {
-  NOT_IN_HEAT = 'not_in_heat',
-  PRE_HEAT = 'pre_heat',
-  IN_HEAT = 'in_heat',
-  PREGNANT = 'pregnant',
-  WHELPING = 'whelping',
-  NURSING = 'nursing',
-  RECOVERY = 'recovery'
-}
-
-export type HeatStage = {
-  name: string;
-  description: string;
-  day: number;
-  fertility: 'low' | 'medium' | 'high' | 'peak';
-};
-
-export type ReproductiveCycleData = {
-  dog: Dog;
-  heatCycles: HeatCycle[];
-  breedingRecords: BreedingRecord[];
-  pregnancyRecords: PregnancyRecord[];
-  milestones: ReproductiveMilestone[];
-  
-  // Computed values
-  status: ReproductiveStatus;
-  nextHeatDate?: Date | null;
-  daysUntilNextHeat?: number | null;
-  averageCycleLength?: number | null;
-  currentHeatCycle?: HeatCycle | null;
-  currentHeatDay?: number | null;
-  currentHeatStage?: HeatStage | null;
-  fertilityWindow?: { start: Date; end: Date } | null;
-  currentPregnancy?: PregnancyRecord | null;
-  gestationDays?: number | null;
-  estimatedDueDate?: Date | null;
-};
-
-export type TimelineEvent = {
-  id: string;
-  type: 'whelping' | 'heat' | 'breeding' | 'pregnancy' | 'milestone';
-  title: string;
-  date: Date;
-  description: string;
-  icon: JSX.Element;
-  color: string;
-};
-
-export type BreedingPreparation = {
-  dam?: Dog;
-  sire?: Dog;
-  plannedTieDate?: Date;
-  checklistItems: BreedingChecklistItem[];
-  notes?: string;
-};
-
-export type BreedingChecklistItem = {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  dueDate?: Date;
-  category: 'supplies' | 'medical' | 'facility' | 'documentation';
-};
-
-export interface BreedingPrepFormData {
-  damId: string;
-  sireId: string;
-  plannedTieDate: string;
+  end_date?: string;
   notes?: string;
 }

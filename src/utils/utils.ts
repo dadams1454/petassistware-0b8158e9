@@ -1,17 +1,5 @@
 
 /**
- * Truncate a string to a specified length and add an ellipsis.
- * @param text The text to truncate
- * @param length The maximum length (default: 100)
- * @returns The truncated text
- */
-export const truncate = (text: string, length: number = 100): string => {
-  if (!text) return '';
-  if (text.length <= length) return text;
-  return text.substring(0, length) + '...';
-};
-
-/**
  * Create a URL slug from a string
  * @param text Text to convert to a slug
  * @returns The slugified text
@@ -59,3 +47,6 @@ export const randomString = (length: number = 8): string => {
   }
   return result;
 };
+
+// Import truncate from lib/utils to re-export for backward compatibility
+export { truncate } from '@/lib/utils';
