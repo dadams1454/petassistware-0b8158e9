@@ -61,8 +61,8 @@ export interface PuppyMilestone {
 export interface SocializationCategory {
   id: string;
   name: string;
-  description?: string;
-  color?: string;
+  description: string;
+  color: string;
   examples?: string[];
   importance?: number;
 }
@@ -72,7 +72,7 @@ export interface SocializationProgress {
   category_id: string;
   progress_level: number;
   categoryName?: string;
-  completionPercentage?: number;
+  completion_percentage?: number;
   count?: number;
   target?: number;
 }
@@ -81,19 +81,20 @@ export interface SocializationExperience {
   id: string;
   puppy_id: string;
   category: string;
-  category_id?: string;
+  category_id: string;
   experience: string;
   experience_date: string;
   reaction?: string;
   notes?: string;
   created_at: string;
+  category?: SocializationCategory;
 }
 
 export interface SocializationReaction {
   id: string;
   name: string;
   color: string;
-  description?: string;
+  description: string;
 }
 
 export interface VaccinationScheduleItem {
@@ -121,6 +122,7 @@ export interface VaccinationRecord {
   administered_by?: string;
   lot_number?: string;
   notes?: string;
+  created_at: string;
 }
 
 // Export the existing puppy age groups to maintain compatibility

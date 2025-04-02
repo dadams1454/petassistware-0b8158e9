@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { WeightUnitEnum } from '@/types/health';
+import { WeightUnit, WeightUnitEnum } from '@/types/health';
 
 // Schema for weight entry form
 const weightEntrySchema = z.object({

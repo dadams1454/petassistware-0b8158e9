@@ -1,4 +1,6 @@
 
+import { SocializationCategory as AppSocializationCategory } from '@/types/puppyTracking';
+
 export interface SocializationCategory {
   id: string;
   name: string;
@@ -20,7 +22,7 @@ export interface SocializationRecord {
   created_at: string;
 }
 
-export const SOCIALIZATION_CATEGORIES = [
+export const SOCIALIZATION_CATEGORIES: SocializationCategory[] = [
   { id: 'people', name: 'People Interactions' },
   { id: 'animals', name: 'Animal Interactions' },
   { id: 'environments', name: 'New Environments' },

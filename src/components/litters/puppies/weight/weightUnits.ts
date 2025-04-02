@@ -6,7 +6,8 @@ const CONVERSION_TO_GRAMS = {
   oz: 28.3495,   // 1 oz = 28.3495g
   g: 1,          // 1g = 1g
   lbs: 453.592,  // 1 lb = 453.592g
-  kg: 1000       // 1 kg = 1000g
+  kg: 1000,      // 1 kg = 1000g
+  lb: 453.592    // 1 lb = 453.592g (added for compatibility)
 };
 
 // List of weight units for selection
@@ -27,10 +28,10 @@ export const convertWeight = (
   if (fromUnit === toUnit) return weight;
   
   // Convert to grams first
-  const grams = weight * CONVERSION_TO_GRAMS[fromUnit];
+  const grams = weight * (CONVERSION_TO_GRAMS[fromUnit as keyof typeof CONVERSION_TO_GRAMS] || 0);
   
   // Then convert from grams to target unit
-  return grams / CONVERSION_TO_GRAMS[toUnit];
+  return grams / (CONVERSION_TO_GRAMS[toUnit as keyof typeof CONVERSION_TO_GRAMS] || 1);
 };
 
 // Format weight with unit
@@ -44,6 +45,7 @@ export const formatWeightWithUnit = (
   switch (unit) {
     case 'oz':
     case 'lbs':
+    case 'lb':
       formattedWeight = weight.toFixed(1);
       break;
     case 'g':

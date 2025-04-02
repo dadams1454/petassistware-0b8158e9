@@ -15,6 +15,7 @@ export interface DogGenotype {
   healthResults?: HealthResult[];
   breedComposition?: any;
   colorProbabilities?: ColorProbability[];
+  agouti?: string;
 }
 
 export interface HealthMarker {
@@ -41,9 +42,9 @@ export interface HealthWarning {
   severity: 'low' | 'medium' | 'high' | 'critical';
   test?: string;
   action?: string;
-  condition?: string;
+  condition: string;
   risk?: string;
-  riskLevel?: string;
+  riskLevel: string;
   affectedPercentage?: number;
 }
 
@@ -79,12 +80,12 @@ export interface TestResult {
 
 export interface GeneticImportResult {
   dogId: string;
-  importedTests: any[];
+  importedTests: TestResult[];
   count: number;
-  success?: boolean;
+  success: boolean;
   errors?: string[];
-  provider?: string;
-  testsImported?: number;
+  provider: string;
+  testsImported: number;
 }
 
 export interface CompactGenotypeViewProps {

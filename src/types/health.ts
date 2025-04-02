@@ -1,3 +1,4 @@
+
 export enum HealthRecordTypeEnum {
   Vaccination = 'vaccination',
   Examination = 'examination',
@@ -65,7 +66,7 @@ export interface WeightRecord {
   puppy_id?: string;
   dog_id?: string;
   weight: number;
-  weight_unit: string;
+  weight_unit: WeightUnit;
   unit?: string; // Alias for compatibility with existing components
   date: string;
   notes?: string;
@@ -136,4 +137,4 @@ export enum WeightUnitEnum {
 }
 
 // Export WeightUnit for compatibility with puppyTracking
-export type WeightUnit = 'oz' | 'lb' | 'kg' | 'g' | 'lbs';
+export type WeightUnit = 'oz' | 'lb' | 'g' | 'kg' | 'lbs';
