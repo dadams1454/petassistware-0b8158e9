@@ -17,8 +17,10 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onEdit,
   onDelete
 }) => {
-  // Safely handle user.profile which may be undefined
-  const fullName = user.profile?.full_name || user.name || 'N/A';
+  // Using firstName and lastName directly instead of profile.full_name
+  const fullName = user.first_name && user.last_name 
+    ? `${user.first_name} ${user.last_name}` 
+    : user.email || 'N/A';
   
   return (
     <tr>

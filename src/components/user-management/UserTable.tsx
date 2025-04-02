@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UserTableRow } from './components/UserTableRow';
+import UserTableRow from './UserTableRow';
 import { DeleteUserDialog } from './components/DeleteUserDialog';
 import { EmptyUserTableState } from './components/EmptyUserTableState';
 
@@ -63,11 +63,10 @@ export const UserTable: React.FC<UserTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Name</TableHead>
               <TableHead>Role</TableHead>
               <TableHead className="hidden md:table-cell">Created</TableHead>
-              <TableHead className="hidden lg:table-cell">Last Sign In</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -90,4 +89,4 @@ export const UserTable: React.FC<UserTableProps> = ({
       </div>
     </>
   );
-}
+};
