@@ -1,65 +1,86 @@
 
-import { DogGenotype, ColorProbability } from '@/types/genetics';
+import { ColorProbability } from '@/types/genetics';
 
 /**
- * Generate color probability data for charts
+ * Calculate color probabilities based on parental genotypes
  */
-export function generateColorProbabilityData(colorProbabilities: Record<string, number>): ColorProbability[] {
-  const colorMap: Record<string, string> = {
-    'Black': '#111827',
-    'Brown': '#92400E',
-    'Grey': '#6B7280',
-    'Light Brown': '#B45309',
-    'Red': '#B91C1C',
-    'Cream': '#FCD34D'
+export const calculateColorProbabilities = (
+  sireGenotype: Record<string, any>,
+  damGenotype: Record<string, any>
+): ColorProbability[] => {
+  // This is a simplified implementation
+  // A real implementation would use Punnett squares or similar genetic algorithms
+  
+  // Mock data for demonstration
+  return [
+    {
+      color: 'Black',
+      probability: 0.5,
+      hex: '#000000',
+      percentage: 50,
+      name: 'Black',
+      value: 50
+    },
+    {
+      color: 'Brown',
+      probability: 0.25,
+      hex: '#8B4513',
+      percentage: 25,
+      name: 'Brown',
+      value: 25
+    },
+    {
+      color: 'Gray',
+      probability: 0.25,
+      hex: '#808080',
+      percentage: 25,
+      name: 'Gray',
+      value: 25
+    }
+  ];
+};
+
+/**
+ * Calculate coat pattern probabilities
+ */
+export const calculatePatternProbabilities = (
+  sireGenotype: Record<string, any>,
+  damGenotype: Record<string, any>
+): Record<string, number> => {
+  // Simplified mock implementation
+  return {
+    'Solid': 0.6,
+    'Landseer': 0.4
   };
+};
+
+/**
+ * Calculate coefficient of inbreeding
+ */
+export const calculateCOI = (
+  sirePedigree: any[],
+  damPedigree: any[],
+  generations: number = 5
+): number => {
+  // This is a simplified placeholder
+  // A real implementation would analyze pedigrees for common ancestors
+  // and apply Wright's formula or a similar algorithm
   
-  return Object.entries(colorProbabilities).map(([name, value]) => ({
-    name,
-    value,
-    color: colorMap[name] || '#64748B',
-    percentage: value  // Add percentage property
-  }));
-}
+  return 0.05; // 5% COI as a default
+};
 
 /**
- * Parse genotype string into alleles
+ * Format coefficient of inbreeding value
  */
-export function parseGenotype(genotype: string): string[] {
-  // Parses a genotype like "B/b" into ["B", "b"]
-  return genotype.split('/');
-}
+export const formatCOI = (coi: number): string => {
+  return `${(coi * 100).toFixed(2)}%`;
+};
 
 /**
- * Get the phenotype (visual color) from color genes
+ * Get risk level based on COI
  */
-export function getPhenotypeFromGenes(
-  baseColor: string,
-  brownDilution: string,
-  dilution: string
-): string {
-  const isBlackBased = baseColor.includes('E');
-  const hasBrownDilution = brownDilution === 'b/b';
-  const hasDilution = dilution === 'd/d';
-  
-  if (!isBlackBased) {
-    return hasDilution ? 'Cream' : 'Red';
-  } else if (hasBrownDilution) {
-    return hasDilution ? 'Light Brown' : 'Brown';
-  } else {
-    return hasDilution ? 'Grey' : 'Black';
-  }
-}
-
-/**
- * Calculate coefficient of inbreeding (COI)
- * Note: This is a simplified placeholder. Real COI calculations require extensive pedigree analysis.
- */
-export function calculateCOI(
-  sireGenotype: DogGenotype,
-  damGenotype: DogGenotype
-): number {
-  // This is a placeholder. Real COI calculations require examining the pedigree
-  // to find common ancestors and calculate inbreeding coefficient.
-  return 4.5; // Returning a placeholder value
-}
+export const getCOIRiskLevel = (coi: number): 'low' | 'medium' | 'high' => {
+  if (coi < 0.0625) return 'low';
+  if (coi < 0.125) return 'medium';
+  return 'high';
+};

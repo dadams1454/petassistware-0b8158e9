@@ -44,3 +44,18 @@ export const applyCustomStyles = (
   
   return html.replace('<head>', `<head><style>${styles}</style>`);
 };
+
+// Helper function for contract generation
+export const generateContractHTML = (
+  templateContent: string,
+  contractData: Record<string, any>,
+  customStyles?: string
+): string => {
+  let html = generateHtml(templateContent, contractData);
+  
+  if (customStyles) {
+    html = applyCustomStyles(html, customStyles);
+  }
+  
+  return html;
+};

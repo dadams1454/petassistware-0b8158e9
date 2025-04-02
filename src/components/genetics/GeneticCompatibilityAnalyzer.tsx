@@ -74,8 +74,10 @@ export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityProps> =
         if (sireStatus === 'carrier' && damStatus === 'carrier') {
           healthWarnings.push({
             condition,
-            riskLevel: 'critical',
+            risk: 'High (25%)',
             description: `Both parents are carriers for ${condition}`,
+            action: 'Consider selecting different breeding pair',
+            riskLevel: 'critical',
             affectedPercentage: 25
           });
           incompatibleTests.push(condition);
@@ -86,8 +88,10 @@ export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityProps> =
             (sireStatus === 'carrier' && damStatus === 'affected')) {
           healthWarnings.push({
             condition,
-            riskLevel: 'high',
+            risk: 'Very High (50%)',
             description: `One parent is affected and one is a carrier for ${condition}`,
+            action: 'Avoid this breeding pair',
+            riskLevel: 'high',
             affectedPercentage: 50
           });
           incompatibleTests.push(condition);
@@ -97,8 +101,10 @@ export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityProps> =
         if (sireStatus === 'affected' && damStatus === 'affected') {
           healthWarnings.push({
             condition,
-            riskLevel: 'critical',
+            risk: 'Extreme (100%)',
             description: `Both parents are affected with ${condition}`,
+            action: 'Do not breed these dogs',
+            riskLevel: 'critical',
             affectedPercentage: 100
           });
           incompatibleTests.push(condition);
@@ -110,14 +116,18 @@ export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityProps> =
     if (coi > 12.5) {
       healthWarnings.push({
         condition: 'High Inbreeding',
-        riskLevel: 'high',
-        description: `COI of ${coi.toFixed(1)}% exceeds recommended maximum (12.5%)`
+        risk: 'High',
+        description: `COI of ${coi.toFixed(1)}% exceeds recommended maximum (12.5%)`,
+        action: 'Select breeding pair with lower COI',
+        riskLevel: 'high'
       });
     } else if (coi > 6.25) {
       healthWarnings.push({
         condition: 'Moderate Inbreeding',
-        riskLevel: 'medium',
-        description: `COI of ${coi.toFixed(1)}% is above ideal level (6.25%)`
+        risk: 'Medium',
+        description: `COI of ${coi.toFixed(1)}% is above ideal level (6.25%)`,
+        action: 'Consider genetic diversity in future breeding decisions',
+        riskLevel: 'medium'
       });
     }
     

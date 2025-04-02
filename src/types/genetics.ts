@@ -9,6 +9,7 @@ export interface DogGenotype {
   breed?: string;
   updated_at?: string;
   agouti?: string;
+  name?: string; // Added name property
 }
 
 // Add missing interfaces for the Genetics components
@@ -20,12 +21,7 @@ export interface CompactGenotypeViewProps {
   showHealthTests?: boolean;
 }
 
-export interface GeneticHealthStatus {
-  status: 'clear' | 'carrier' | 'at_risk' | 'unknown';
-  condition: string;
-  description?: string;
-  severity?: 'low' | 'medium' | 'high';
-}
+export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'affected' | 'unknown';
 
 export interface HealthWarning {
   condition: string;
@@ -42,6 +38,7 @@ export interface TestResult {
   result: string;
   date: string;
   provider: string;
+  testType?: string;
 }
 
 export interface GeneticImportResult {
@@ -51,6 +48,7 @@ export interface GeneticImportResult {
   errors?: string[];
   provider?: string;
   testsImported?: number;
+  count?: number;
 }
 
 export interface ColorProbability {
@@ -65,7 +63,7 @@ export interface ColorProbability {
 export interface HealthMarker {
   name: string;
   result: string;
-  status: 'clear' | 'carrier' | 'at_risk' | 'unknown';
+  status: 'clear' | 'carrier' | 'at_risk' | 'affected' | 'unknown';
   testDate?: string;
 }
 

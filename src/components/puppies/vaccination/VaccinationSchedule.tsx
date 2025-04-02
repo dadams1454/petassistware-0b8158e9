@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Plus, AlertTriangle, Calendar } from 'lucide-react';
 import { usePuppyVaccinations } from '@/hooks/usePuppyVaccinations';
 import { LoadingState, EmptyState } from '@/components/ui/standardized';
-import { VaccinationScheduleItem } from '@/types/puppyTracking';
+import { VaccinationScheduleItem, VaccinationRecord } from '@/types/puppyTracking';
 
 interface VaccinationScheduleProps {
   puppyId: string;
@@ -36,7 +36,9 @@ const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
     addVaccination({
       vaccination_type: vaccination.vaccination_type,
       vaccination_date: new Date().toISOString().split('T')[0],
-      notes: vaccination.notes
+      notes: vaccination.notes,
+      due_date: vaccination.due_date,
+      created_at: new Date().toISOString()
     });
   };
   

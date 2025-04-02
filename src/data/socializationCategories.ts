@@ -1,93 +1,102 @@
 
-import { SocializationCategory, SocializationReaction } from "@/types/puppyTracking";
+import { SocializationCategory, SocializationReaction } from '@/types/puppyTracking';
 
-// Export with the names expected by the components
+// Define socialization categories
 export const SOCIALIZATION_CATEGORIES: SocializationCategory[] = [
   {
-    id: "people",
-    name: "People",
-    description: "Interactions with different types of people",
-    examples: ["Children", "Men with beards", "People in uniforms", "People with hats"]
+    id: '1',
+    name: 'People',
+    description: 'Social interactions with different types of people',
+    importance: 'high',
+    age_range: { min: 3, max: 16 },
+    examples: ['Children', 'Men with beards', 'People with hats', 'Elderly people']
   },
   {
-    id: "animals",
-    name: "Animals",
-    description: "Interactions with other animals",
-    examples: ["Other dogs", "Cats", "Farm animals", "Wildlife"]
+    id: '2',
+    name: 'Animals',
+    description: 'Exposure to other animals and pets',
+    importance: 'high',
+    age_range: { min: 4, max: 16 },
+    examples: ['Other dogs', 'Cats', 'Small animals', 'Livestock']
   },
   {
-    id: "environments",
-    name: "Environments",
-    description: "Exposure to different environments",
-    examples: ["Urban areas", "Countryside", "Beach", "Forest"]
+    id: '3',
+    name: 'Environments',
+    description: 'Different places and settings',
+    importance: 'high',
+    age_range: { min: 5, max: 20 },
+    examples: ['City streets', 'Parks', 'Pet stores', 'Veterinary office']
   },
   {
-    id: "surfaces",
-    name: "Surfaces",
-    description: "Walking on different surfaces",
-    examples: ["Grass", "Concrete", "Sand", "Metal grates"]
+    id: '4',
+    name: 'Surfaces',
+    description: 'Walking on different surfaces and textures',
+    importance: 'medium',
+    age_range: { min: 4, max: 12 },
+    examples: ['Grass', 'Carpet', 'Tile', 'Metal grates']
   },
   {
-    id: "sounds",
-    name: "Sounds",
-    description: "Exposure to different sounds",
-    examples: ["Thunderstorms", "Fireworks", "Traffic", "Household appliances"]
+    id: '5',
+    name: 'Sounds',
+    description: 'Exposure to various sounds and noises',
+    importance: 'high',
+    age_range: { min: 3, max: 16 },
+    examples: ['Vacuum cleaner', 'Thunderstorms', 'Traffic', 'Appliances']
   },
   {
-    id: "handling",
-    name: "Handling",
-    description: "Getting used to being handled",
-    examples: ["Grooming", "Nail trimming", "Ear cleaning", "Teeth brushing"]
+    id: '6',
+    name: 'Handling',
+    description: 'Being handled in different ways',
+    importance: 'high',
+    age_range: { min: 2, max: 16 },
+    examples: ['Nail trimming', 'Teeth examination', 'Ear cleaning', 'Bathing']
   },
   {
-    id: "objects",
-    name: "Objects",
-    description: "Interaction with different objects",
-    examples: ["Umbrellas", "Bicycles", "Vacuum cleaners", "Strollers"]
+    id: '7',
+    name: 'Objects',
+    description: 'Exposure to novel objects',
+    importance: 'medium',
+    age_range: { min: 4, max: 16 },
+    examples: ['Umbrellas', 'Balloons', 'Bicycles', 'Skateboards']
   }
 ];
 
-// For backward compatibility
-export const socializationCategories = SOCIALIZATION_CATEGORIES;
-
+// Define socialization reactions
 export const SOCIALIZATION_REACTIONS: SocializationReaction[] = [
   {
-    id: "curious",
-    name: "Curious",
-    description: "Shows interest and approaches willingly",
-    color: "green"
+    id: '1',
+    name: 'Confident',
+    color: 'green',
+    description: 'Approaches with confidence, shows interest'
   },
   {
-    id: "neutral",
-    name: "Neutral",
-    description: "Neither interested nor fearful",
-    color: "blue"
+    id: '2',
+    name: 'Curious',
+    color: 'blue',
+    description: 'Shows interest but approaches cautiously'
   },
   {
-    id: "cautious",
-    name: "Cautious",
-    description: "Hesitant but will approach with encouragement",
-    color: "amber"
+    id: '3',
+    name: 'Neutral',
+    color: 'gray',
+    description: 'Neither fearful nor particularly interested'
   },
   {
-    id: "fearful",
-    name: "Fearful",
-    description: "Shows signs of fear but recovers",
-    color: "red"
+    id: '4',
+    name: 'Cautious',
+    color: 'yellow',
+    description: 'Hesitant, some anxiety but recovers quickly'
   },
   {
-    id: "very_fearful",
-    name: "Very Fearful",
-    description: "Shows strong fear response",
-    color: "purple"
+    id: '5',
+    name: 'Fearful',
+    color: 'orange',
+    description: 'Shows fear, attempts to retreat or hide'
   },
   {
-    id: "excited",
-    name: "Excited",
-    description: "Shows enthusiasm and excitement",
-    color: "green"
+    id: '6',
+    name: 'Very Fearful',
+    color: 'red',
+    description: 'Strong fear response, trembling, hiding, or freezing'
   }
 ];
-
-// For backward compatibility
-export const socializationReactionTypes = SOCIALIZATION_REACTIONS;

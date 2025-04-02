@@ -143,7 +143,7 @@ export interface VaccinationScheduleItem {
   id: string;
   puppy_id: string;
   vaccination_type: string;
-  vaccination_date: string;
+  vaccination_date?: string;
   due_date: string;
   completed?: boolean;
   is_completed?: boolean;

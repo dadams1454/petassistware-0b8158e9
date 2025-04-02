@@ -12,7 +12,7 @@ export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({
   dogGenetics
 }) => {
   const [activeTab, setActiveTab] = useState('color');
-  const { geneticData, loading, error } = useDogGenetics(dogId);
+  const { geneticData, loading, error } = useDogGenetics(dogId || '');
   
   // Use the passed genetics data or the fetched data
   const dogData = dogGenetics || geneticData;
@@ -51,6 +51,9 @@ export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({
     );
   }
   
+  // Default dog name if not available
+  const dogName = dogData.name || "This dog";
+  
   return (
     <Card>
       <CardHeader>
@@ -68,7 +71,7 @@ export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({
             <Alert>
               <Dna className="h-4 w-4 mr-2" />
               <AlertDescription>
-                {dogData.name}'s color is influenced by multiple genetic factors.
+                {dogName}'s color is influenced by multiple genetic factors.
               </AlertDescription>
             </Alert>
             
@@ -76,28 +79,28 @@ export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TraitCard 
                   title="Base Color (E Locus)" 
-                  genotype={dogData.baseColor} 
-                  description={getBaseColorDescription(dogData.baseColor)}
+                  genotype={dogData.baseColor || 'Unknown'} 
+                  description={getBaseColorDescription(dogData.baseColor || 'Unknown')}
                 />
                 
                 <TraitCard 
                   title="Brown Dilution (B Locus)" 
-                  genotype={dogData.brownDilution}
-                  description={getBrownDescription(dogData.brownDilution)}
+                  genotype={dogData.brownDilution || 'Unknown'}
+                  description={getBrownDescription(dogData.brownDilution || 'Unknown')}
                 />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TraitCard 
                   title="Dilution (D Locus)" 
-                  genotype={dogData.dilution}
-                  description={getDilutionDescription(dogData.dilution)}
+                  genotype={dogData.dilution || 'Unknown'}
+                  description={getDilutionDescription(dogData.dilution || 'Unknown')}
                 />
                 
                 <TraitCard 
                   title="Agouti (A Locus)" 
-                  genotype={dogData.agouti}
-                  description={getAgoutiDescription(dogData.agouti)}
+                  genotype={dogData.agouti || 'Unknown'}
+                  description={getAgoutiDescription(dogData.agouti || 'Unknown')}
                 />
               </div>
             </div>
@@ -111,7 +114,7 @@ export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({
             </Alert>
             
             <div className="space-y-4">
-              {Object.keys(dogData.healthMarkers).length > 0 ? (
+              {dogData.healthMarkers && Object.keys(dogData.healthMarkers).length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(dogData.healthMarkers).map(([condition, marker]) => (
                     <HealthMarkerCard
