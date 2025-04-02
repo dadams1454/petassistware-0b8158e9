@@ -1,124 +1,343 @@
-import React from 'react';
-import {
-  Card,
-  CardContent,
+
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { format, addDays } from 'date-fns';
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle, 
   CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CalendarDays, Dog, PawPrint, Calendar } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useWelpingManagement } from "../../hooks/useWelpingManagement";
-import EmptyState from "@/components/common/EmptyState";
-import { format, addDays } from "date-fns";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+  CardFooter 
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Baby, 
+  Calendar, 
+  Clock, 
+  Dog, 
+  Eye, 
+  Info, 
+  PlayCircle 
+} from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import EmptyState from '@/components/common/EmptyState';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
 interface PregnantDogsTabProps {
   isLoading?: boolean;
 }
 
-const PregnantDogsTab: React.FC<PregnantDogsTabProps> = ({ isLoading }) => {
+const PregnantDogsTab: React.FC<PregnantDogsTabProps> = ({
+  isLoading: parentLoading
+}) => {
   const navigate = useNavigate();
-  const { pregnantDogs, isLoading: isLoadingHook } = useWelpingManagement();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isStartLabor, setIsStartLabor] = useState(false);
+  const [selectedDog, setSelectedDog] = useState<any>(null);
   
-  // Use the prop loading state or the hook loading state
-  const isDataLoading = isLoading || isLoadingHook;
-
-  if (isDataLoading) {
+  const { data: pregnantDogs = [], isLoading: isDogsLoading } = useQuery({
+    queryKey: ['pregnant-dogs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dogs')
+        .select('*')
+        .eq('gender', 'Female')
+        .eq('is_pregnant', true)
+        .order('name');
+        
+      if (error) throw error;
+      return data;
+    }
+  });
+  
+  const startLaborMutation = useMutation({
+    mutationFn: async ({ dogId, damId, birthDate }: { dogId: string, damId: string, birthDate: string }) => {
+      // Try to find if there's already a litter with this dam
+      const { data: existingLitters, error: existingError } = await supabase
+        .from('litters')
+        .select('id')
+        .eq('dam_id', damId)
+        .eq('birth_date', birthDate)
+        .limit(1);
+        
+      if (existingError) throw existingError;
+      
+      let litterId;
+      
+      if (existingLitters && existingLitters.length > 0) {
+        // Use existing litter
+        litterId = existingLitters[0].id;
+      } else {
+        // Create a new litter
+        const { data: litter, error: litterError } = await supabase
+          .from('litters')
+          .insert({
+            dam_id: damId,
+            birth_date: birthDate,
+            status: 'active',
+            litter_name: `${selectedDog?.name || 'Unknown'}'s Litter - ${format(new Date(birthDate), 'MMM d, yyyy')}`
+          })
+          .select()
+          .single();
+          
+        if (litterError) throw litterError;
+        litterId = litter.id;
+      }
+      
+      // Create a new whelping record
+      const { data: whelping, error: welpingError } = await supabase
+        .from('welping_records')
+        .insert({
+          litter_id: litterId,
+          birth_date: birthDate,
+          start_time: format(new Date(), 'HH:mm'),
+          status: 'in-progress',
+          total_puppies: 0,
+          males: 0,
+          females: 0
+        })
+        .select()
+        .single();
+        
+      if (welpingError) throw welpingError;
+      
+      return { whelping, litterId };
+    },
+    onSuccess: (data) => {
+      setIsStartLabor(false);
+      setSelectedDog(null);
+      
+      toast({
+        title: 'Whelping Started',
+        description: 'Whelping session started successfully.',
+      });
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['litters'] });
+      queryClient.invalidateQueries({ queryKey: ['pregnant-dogs'] });
+      
+      // Navigate to the whelping page
+      navigate(`/reproduction/welping/${data.whelping.id}`);
+    },
+    onError: (error) => {
+      console.error('Error starting whelping:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to start whelping session. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  const handleStartLabor = (dog: any) => {
+    setSelectedDog(dog);
+    setIsStartLabor(true);
+  };
+  
+  const confirmStartLabor = () => {
+    if (!selectedDog) return;
+    
+    const today = format(new Date(), 'yyyy-MM-dd');
+    
+    startLaborMutation.mutate({
+      dogId: selectedDog.id,
+      damId: selectedDog.id,
+      birthDate: today
+    });
+  };
+  
+  const isLoading = parentLoading || isDogsLoading;
+  
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center p-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-pulse text-center">
+          <p className="text-muted-foreground">Loading pregnant dogs...</p>
+        </div>
       </div>
     );
   }
-
-  if (!pregnantDogs || pregnantDogs.length === 0) {
+  
+  if (pregnantDogs.length === 0) {
     return (
       <EmptyState
-        icon={<Dog className="h-12 w-12 text-muted-foreground" />}
-        title="No pregnant dogs"
-        description="There are currently no dogs marked as pregnant in the system."
+        title="No Pregnant Dogs"
+        description="There are no pregnant dogs in your records. Mark a dog as pregnant in their profile or record a breeding."
+        icon={<Dog className="h-10 w-10 text-muted-foreground" />}
         action={{
-          label: "Add Pregnant Dog",
-          onClick: () => navigate("/reproductive-management"),
+          label: "Record Breeding",
+          onClick: () => navigate('/reproduction/breeding'),
         }}
       />
     );
   }
-
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {pregnantDogs.map((dog) => {
-        const dueDate = dog.tie_date
-          ? addDays(new Date(dog.tie_date), 63)
-          : undefined;
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {pregnantDogs.map((dog) => {
+          // Calculate estimated due date (63 days from tie date if available)
+          let dueDate = null;
+          if (dog.tie_date) {
+            dueDate = addDays(new Date(dog.tie_date), 63);
+          }
           
-        return (
-          <Card key={dog.id} className="overflow-hidden">
-            <CardHeader className="p-4 pb-2">
-              <div className="flex items-center space-x-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={dog.photoUrl || ''} alt={dog.name} />
-                  <AvatarFallback>{dog.name.substring(0, 2)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle className="text-lg">{dog.name}</CardTitle>
-                  <CardDescription>
-                    {dog.breed || "Unknown breed"}
-                  </CardDescription>
-                </div>
+          return (
+            <Card key={dog.id} className="overflow-hidden">
+              <div className="h-40 bg-gray-100 flex items-center justify-center">
+                {dog.photo_url ? (
+                  <img 
+                    src={dog.photo_url} 
+                    alt={dog.name} 
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Dog className="h-16 w-16 text-gray-400" />
+                )}
               </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-2">
-              <div className="space-y-2 mt-2">
-                <div className="flex items-center text-sm">
-                  <CalendarDays className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="font-medium">
-                    {dueDate
-                      ? `Due around ${format(dueDate, "PPP")}`
-                      : "Due date unknown"}
-                  </span>
-                </div>
-                
-                {dog.last_heat_date && (
-                  <div className="flex items-center text-sm">
-                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span>
-                      Last heat: {format(new Date(dog.last_heat_date), "MMM d, yyyy")}
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">{dog.name}</CardTitle>
+                <CardDescription>
+                  {dog.breed}, {dog.color || 'Unknown color'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Status:</span>
+                    <span className="text-sm font-medium flex items-center">
+                      <Baby className="h-3 w-3 mr-1 text-pink-500" />
+                      Pregnant
                     </span>
                   </div>
-                )}
-                
-                <div className="flex mt-2">
-                  <Badge variant="outline" className="bg-pink-50 text-pink-800 border-pink-200">
-                    <PawPrint className="h-3 w-3 mr-1" />
-                    Pregnant
-                  </Badge>
+                  
+                  {dog.tie_date && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Bred Date:</span>
+                      <span className="text-sm font-medium">
+                        {format(new Date(dog.tie_date), 'MMM d, yyyy')}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {dueDate && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Est. Due Date:</span>
+                      <span className="text-sm font-medium">
+                        {format(dueDate, 'MMM d, yyyy')}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter className="p-4 pt-0 flex justify-between">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/dogs/${dog.id}`)}
-              >
-                View Profile
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => navigate(`/reproductive-management/${dog.id}`)}
-              >
-                Manage Pregnancy
-              </Button>
-            </CardFooter>
-          </Card>
-        );
-      })}
-    </div>
+              </CardContent>
+              <CardFooter className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/dogs/${dog.id}`)}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Details
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/reproductive-management/${dog.id}`)}
+                >
+                  <Info className="h-4 w-4 mr-2" />
+                  Manage
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleStartLabor(dog)}
+                  className="ml-auto"
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  Start Whelping
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
+      </div>
+      
+      {/* Start Labor Dialog */}
+      <Dialog open={isStartLabor} onOpenChange={setIsStartLabor}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start Whelping Session</DialogTitle>
+            <DialogDescription>
+              {selectedDog && (
+                <>
+                  You are about to start a whelping session for {selectedDog.name}.
+                  This will create a new litter and begin tracking the birth process.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Birth Date</Label>
+              <Input 
+                type="date" 
+                defaultValue={format(new Date(), 'yyyy-MM-dd')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Start Time</Label>
+              <Input 
+                type="time" 
+                defaultValue={format(new Date(), 'HH:mm')}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsStartLabor(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmStartLabor}
+              disabled={startLaborMutation.isPending}
+            >
+              {startLaborMutation.isPending ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <>
+                  <PlayCircle className="h-4 w-4 mr-2" />
+                  Start Whelping
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
