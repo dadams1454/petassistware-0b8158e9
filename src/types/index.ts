@@ -20,7 +20,8 @@ export { HealthTypes };
 // Export specific types from puppyTracking to avoid conflicts
 export * from './puppyTracking';
 
-// To fix the WeightUnit conflict, explicitly export from litter without WeightUnit
+// To fix the WeightUnit conflict, explicitly export specific types from litter
+// Using 'export type' for type-only exports to comply with isolatedModules
 import { 
   Puppy,
   SimpleDog, 
@@ -31,13 +32,12 @@ import {
   WeightUnitValue
 } from './litter';
 
-export {
-  Puppy,
-  SimpleDog,
-  Litter,
-  Dog,
-  // WeightUnit, // Excluded to avoid conflict
-  WeightUnitValue
-};
+// Re-export using 'export type' to comply with isolatedModules
+export type { Puppy };
+export type { SimpleDog };
+export type { Litter };
+export type { Dog };
+// WeightUnit excluded to avoid conflict
+export type { WeightUnitValue };
 
 // Not exporting organization, notification, subscription and adoption as they're missing
