@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CircleDashed, CheckCircle2, AlertTriangle, Info, FileCheck2, ShieldAlert, Calendar } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { customSupabase, ComplianceRequirementRow } from '@/integrations/supabase/client';
+import { customSupabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { format, isAfter, isBefore, addDays } from 'date-fns';
 import RequirementDialog from './dialogs/RequirementDialog';
@@ -263,35 +264,37 @@ const RequirementsDashboard: React.FC = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Requirements</CardTitle>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                <TabsTrigger value="overdue">Overdue</TabsTrigger>
-                <TabsTrigger value="completed">Completed</TabsTrigger>
-              </TabsList>
-            </TabsHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin h-6 w-6 border-2 border-blue-500 rounded-full border-t-transparent"></div>
-              </div>
-            ) : filteredRequirements.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No {activeTab} requirements</p>
-              </div>
-            ) : (
-              <ul className="space-y-4">
-                {filteredRequirements.map(requirement => (
-                  <RequirementItem 
-                    key={requirement.id}
-                    requirement={requirement}
-                    formatDate={formatDate}
-                    onEdit={() => handleEditRequirement(requirement)}
-                  />
-                ))}
-              </ul>
-            )}
-          </CardContent>
+          </CardHeader>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+              <TabsTrigger value="overdue">Overdue</TabsTrigger>
+              <TabsTrigger value="completed">Completed</TabsTrigger>
+            </TabsList>
+          
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin h-6 w-6 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                </div>
+              ) : filteredRequirements.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No {activeTab} requirements</p>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  {filteredRequirements.map(requirement => (
+                    <RequirementItem 
+                      key={requirement.id}
+                      requirement={requirement}
+                      formatDate={formatDate}
+                      onEdit={() => handleEditRequirement(requirement)}
+                    />
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Tabs>
         </Card>
         
         <Card>
