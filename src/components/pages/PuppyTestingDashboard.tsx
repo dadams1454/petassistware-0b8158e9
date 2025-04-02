@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ import {
 } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
 import WeightTrackingGraph from '@/components/puppies/growth/WeightTrackingGraph';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface Puppy {
   id: string;
@@ -24,7 +25,7 @@ interface Puppy {
 const PuppyTestingDashboard: React.FC = () => {
   const [puppies, setPuppies] = useState<Puppy[]>([]);
   const [selectedPuppy, setSelectedPuppy] = useState<Puppy | null>(null);
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -120,6 +121,13 @@ const PuppyTestingDashboard: React.FC = () => {
               <WeightTrackingGraph
                 puppyId={selectedPuppy.id}
               />
+              
+              <div className="mt-4">
+                <DatePicker 
+                  date={date} 
+                  onSelect={setDate}
+                />
+              </div>
             </div>
           ) : (
             <p>Select a puppy to view weight tracking data.</p>

@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Puppy } from '@/types/puppy';
 import { PuppyCareLogProps } from '@/types/puppy';
 import PuppyCareLog from '@/components/puppies/dashboard/PuppyCareLog';
@@ -14,13 +14,15 @@ import {
   SortingState, 
   VisibilityState 
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, Calendar as CalendarIcon } from 'lucide-react';
 import WeightTrackingGraph from '@/components/puppies/growth/WeightTrackingGraph';
+import { Calendar } from '@/components/ui/calendar';
+import { DatePicker } from '@/components/ui/date-picker';
 
 const PuppyTestingDashboard = () => {
   const [puppies, setPuppies] = useState<Puppy[]>([]);
   const [selectedPuppy, setSelectedPuppy] = useState<Puppy | null>(null);
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -122,23 +124,10 @@ const PuppyTestingDashboard = () => {
         <label className="block text-sm font-medium text-gray-700">
           Select Date:
         </label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              className="w-[300px] justify-start text-left font-normal"
-            >
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto flex-col p-0" align="start">
-            <Calendar
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border"
-            />
-          </PopoverContent>
-        </Popover>
+        <DatePicker
+          date={date}
+          onSelect={(d) => setDate(d)}
+        />
       </div>
 
       {/* Refresh Button */}
@@ -146,7 +135,7 @@ const PuppyTestingDashboard = () => {
         <Button 
           size="sm" 
           variant="secondary" 
-          onClick={() => refetch()}
+          onClick={refetch}
         >
           Refresh
         </Button>

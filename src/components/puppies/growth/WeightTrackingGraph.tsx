@@ -1,14 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-// Import the correct dependencies
 import { Calendar } from '@/components/ui/calendar';
+import { CalendarIcon } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
 Chart.register(...registerables);
 
@@ -20,7 +21,7 @@ const WeightTrackingGraph: React.FC<WeightTrackingGraphProps> = ({ puppyId }) =>
   const [weights, setWeights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
   
   useEffect(() => {
     fetchWeights();
@@ -91,10 +92,6 @@ const WeightTrackingGraph: React.FC<WeightTrackingGraphProps> = ({ puppyId }) =>
     },
   };
   
-  const onSelect = (date: Date | undefined) => {
-    setDate(date);
-  };
-  
   return (
     <div>
       {loading && <p>Loading...</p>}
@@ -104,6 +101,12 @@ const WeightTrackingGraph: React.FC<WeightTrackingGraphProps> = ({ puppyId }) =>
       ) : (
         <p>No weight data available for this puppy.</p>
       )}
+      <div className="mt-4">
+        <DatePicker
+          date={date}
+          onSelect={setDate}
+        />
+      </div>
     </div>
   );
 };
