@@ -133,6 +133,7 @@ const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) 
           </CardHeader>
           <CardContent>
             <VaccinationForm 
+              puppyId={puppyId}
               onSubmit={handleFormSubmit}
               onCancel={() => setShowForm(false)}
             />

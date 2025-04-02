@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { WeightData } from '@/types/puppyTracking';
 
 export const useWeightData = (puppyId: string) => {
@@ -12,26 +13,44 @@ export const useWeightData = (puppyId: string) => {
     setError(null);
 
     try {
-      // In a real implementation, this would be a fetch from Supabase
-      // Simulated API response with mock data
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Fetch weight records for the specified puppy
+      const { data, error: fetchError } = await supabase
+        .from('weight_records')
+        .select('*')
+        .eq('puppy_id', puppyId)
+        .order('date', { ascending: true });
+
+      if (fetchError) throw fetchError;
+
+      // Transform the data to match WeightData format
+      const transformedData: WeightData[] = data.map(record => ({
+        weight: record.weight,
+        weight_unit: record.weight_unit,
+        date: record.date,
+        age: calculateAge(record.date, record.birth_date),
+        id: record.id,
+        birth_date: record.birth_date,
+        notes: record.notes,
+        created_at: record.created_at
+      }));
       
-      // Mock data for development
-      const mockWeightData: WeightData[] = [
-        { weight: 1.2, age: 7, date: '2023-05-10', weight_unit: 'lbs' },
-        { weight: 1.8, age: 14, date: '2023-05-17', weight_unit: 'lbs' },
-        { weight: 2.5, age: 21, date: '2023-05-24', weight_unit: 'lbs' },
-        { weight: 3.2, age: 28, date: '2023-05-31', weight_unit: 'lbs' },
-        { weight: 4.0, age: 35, date: '2023-06-07', weight_unit: 'lbs' },
-      ];
-      
-      setWeightData(mockWeightData);
+      setWeightData(transformedData);
     } catch (err) {
       console.error('Error fetching weight data:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch weight data'));
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Calculate age in days based on birth date and record date
+  const calculateAge = (recordDate: string, birthDate?: string): number => {
+    if (!birthDate) return 0;
+    
+    const birth = new Date(birthDate);
+    const record = new Date(recordDate);
+    const diffTime = Math.abs(record.getTime() - birth.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   useEffect(() => {
@@ -45,18 +64,23 @@ export const useWeightData = (puppyId: string) => {
 
   const addWeightRecord = async (record: Omit<WeightData, 'id' | 'age'>) => {
     try {
-      // In a real implementation, this would be a POST to Supabase
-      // Simulated API response
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Simulate adding the record locally
-      const newRecord: WeightData = {
-        ...record,
-        age: 42, // Calculated based on birth date in a real implementation
-        date: record.date
-      };
-      
-      setWeightData(prev => [...prev, newRecord]);
+      // Insert new weight record into Supabase
+      const { data, error } = await supabase
+        .from('weight_records')
+        .insert({
+          puppy_id: puppyId,
+          weight: record.weight,
+          weight_unit: record.weight_unit,
+          date: record.date,
+          notes: record.notes
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Refresh weight data
+      await fetchWeightData();
       return true;
     } catch (err) {
       console.error('Error adding weight record:', err);

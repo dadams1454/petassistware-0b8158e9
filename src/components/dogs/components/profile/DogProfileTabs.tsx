@@ -1,24 +1,25 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DogProfile } from '@/types/dog';
 import OverviewTab from '../tabs/OverviewTab';
 import HealthTab from '../tabs/HealthTab';
-import DocumentsTab from '../tabs/DocumentsTab';
-import GeneticsTab from '../tabs/GeneticsTab';
-import NotesTab from '../tabs/NotesTab';
 import BreedingTab from '../tabs/BreedingTab';
 import GalleryTab from '../tabs/GalleryTab';
+import DocumentsTab from '../tabs/DocumentsTab';
+import NotesTab from '../tabs/NotesTab';
+import PedigreeTab from '../tabs/PedigreeTab';
+import GeneticsTab from '../tabs/GeneticsTab';
+import CareTab from '../tabs/CareTab';
 import DailyCareTab from '../tabs/DailyCareTab';
-import { DogProfile } from '@/types/dog';
+import ExerciseTab from '../tabs/ExerciseTab';
 
-// Define custom UserWithAuth type here instead of importing from @/types
-interface UserWithAuth {
-  id: string;
-  email?: string;
-  role?: string;
+interface DogProfileTabsProps {
+  dog: DogProfile;
+  activeTab?: string;
+  onTabChange?: (value: string) => void;
 }
 
-// Update all tab props to include currentDog
 export interface OverviewTabProps {
   currentDog: DogProfile;
 }
@@ -27,80 +28,108 @@ export interface HealthTabProps {
   currentDog: DogProfile;
 }
 
+export interface CareTabProps {
+  dog: DogProfile;
+}
+
 export interface BreedingTabProps {
   currentDog: DogProfile;
 }
 
-interface DogProfileTabsProps {
-  currentDog: DogProfile;
-  activeTab?: string;
-  onTabChange?: (value: string) => void;
-  currentUser?: UserWithAuth;
+export interface GalleryTabProps {
+  dog: DogProfile;
+}
+
+export interface DocumentsTabProps {
+  dog: DogProfile;
+}
+
+export interface NotesTabProps {
+  dog: DogProfile;
+}
+
+export interface PedigreeTabProps {
+  dog: DogProfile;
+}
+
+export interface GeneticsTabProps {
+  dog: DogProfile;
+}
+
+export interface DailyCareTabProps {
+  dog: DogProfile;
+}
+
+export interface ExerciseTabProps {
+  dog: DogProfile;
 }
 
 const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
-  currentDog,
+  dog,
   activeTab = 'overview',
-  onTabChange,
-  currentUser
+  onTabChange
 }) => {
-  const dogId = currentDog?.id || '';
-  const dogName = currentDog?.name || 'Dog';
-  
-  const handleTabChange = (value: string) => {
+  const [value, setValue] = useState(activeTab);
+
+  const handleValueChange = (newValue: string) => {
+    setValue(newValue);
     if (onTabChange) {
-      onTabChange(value);
-    }
-    
-    // Save last tab in localStorage
-    if (dogId) {
-      localStorage.setItem(`lastDogTab_${dogId}`, value);
+      onTabChange(newValue);
     }
   };
 
   return (
-    <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
+    <Tabs value={value} onValueChange={handleValueChange} className="mt-6">
+      <TabsList className="grid grid-cols-5 md:w-[600px]">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="health">Health</TabsTrigger>
-        <TabsTrigger value="genetics">Genetics</TabsTrigger>
         <TabsTrigger value="breeding">Breeding</TabsTrigger>
-        <TabsTrigger value="care">Daily Care</TabsTrigger>
+        <TabsTrigger value="care">Care</TabsTrigger>
         <TabsTrigger value="gallery">Gallery</TabsTrigger>
-        <TabsTrigger value="documents">Documents</TabsTrigger>
-        <TabsTrigger value="notes">Notes</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="overview" className="py-4">
-        <OverviewTab currentDog={currentDog} />
+      <TabsContent value="overview" className="mt-6">
+        <OverviewTab currentDog={dog} />
       </TabsContent>
 
-      <TabsContent value="health" className="py-4">
-        <HealthTab currentDog={currentDog} />
+      <TabsContent value="health" className="mt-6">
+        <HealthTab currentDog={dog} />
       </TabsContent>
 
-      <TabsContent value="genetics" className="py-4">
-        <GeneticsTab dogId={currentDog?.id} dogName={currentDog?.name} />
+      <TabsContent value="breeding" className="mt-6">
+        <BreedingTab currentDog={dog} />
       </TabsContent>
 
-      <TabsContent value="breeding" className="py-4">
-        <BreedingTab currentDog={currentDog} />
+      <TabsContent value="care" className="mt-6">
+        <CareTab dog={dog} />
       </TabsContent>
 
-      <TabsContent value="care" className="py-4">
-        <DailyCareTab dogId={currentDog?.id} dogName={currentDog?.name} />
+      <TabsContent value="gallery" className="mt-6">
+        <GalleryTab dog={dog} />
       </TabsContent>
 
-      <TabsContent value="gallery" className="py-4">
-        <GalleryTab dogId={currentDog?.id} />
+      <TabsContent value="documents" className="mt-6">
+        <DocumentsTab dog={dog} />
       </TabsContent>
 
-      <TabsContent value="documents" className="py-4">
-        <DocumentsTab dogId={currentDog?.id} />
+      <TabsContent value="notes" className="mt-6">
+        <NotesTab dog={dog} />
       </TabsContent>
 
-      <TabsContent value="notes" className="py-4">
-        <NotesTab dogId={currentDog?.id} />
+      <TabsContent value="pedigree" className="mt-6">
+        <PedigreeTab dog={dog} />
+      </TabsContent>
+
+      <TabsContent value="genetics" className="mt-6">
+        <GeneticsTab dog={dog} />
+      </TabsContent>
+
+      <TabsContent value="daily-care" className="mt-6">
+        <DailyCareTab dog={dog} />
+      </TabsContent>
+
+      <TabsContent value="exercise" className="mt-6">
+        <ExerciseTab dog={dog} />
       </TabsContent>
     </Tabs>
   );

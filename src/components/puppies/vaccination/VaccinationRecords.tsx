@@ -1,85 +1,55 @@
 
 import React from 'react';
-import { VaccinationRecord } from '@/types/puppyTracking';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar, FileText, Trash } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { VaccinationScheduleItem } from '@/types/puppyTracking';
 
-interface VaccinationRecordsProps {
-  records: VaccinationRecord[];
-  onDelete?: (id: string) => Promise<void>;
+export interface VaccinationRecordsProps {
+  vaccinations: VaccinationScheduleItem[];
+  onRefresh: () => Promise<void>;
 }
 
-const VaccinationRecords: React.FC<VaccinationRecordsProps> = ({
-  records,
-  onDelete
+const VaccinationRecords: React.FC<VaccinationRecordsProps> = ({ 
+  vaccinations,
+  onRefresh
 }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
+  if (!vaccinations || vaccinations.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-6 text-center">
+          <p className="text-muted-foreground">No vaccination records found</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Vaccination History</h2>
-      </div>
-
-      {records.length === 0 ? (
-        <Card>
-          <CardContent className="py-6">
-            <div className="text-center text-gray-500">
-              <p>No vaccination records found.</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {records.map((record) => (
-            <Card key={record.id} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium">{record.vaccination_type}</h3>
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                      <Calendar className="h-3.5 w-3.5 mr-1" />
-                      {formatDate(record.vaccination_date)}
-                    </div>
-                    {record.notes && (
-                      <p className="text-sm text-gray-600 mt-2">{record.notes}</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {record.lot_number && (
-                      <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        Lot# {record.lot_number}
-                      </div>
-                    )}
-                    <Button size="sm" variant="outline">
-                      <FileText className="h-4 w-4" />
-                    </Button>
-                    {onDelete && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => onDelete(record.id)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+    <Card>
+      <CardContent className="py-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Vaccination Type</TableHead>
+              <TableHead>Date Administered</TableHead>
+              <TableHead>Notes</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {vaccinations.map(vaccination => (
+              <TableRow key={vaccination.id}>
+                <TableCell className="font-medium">{vaccination.vaccination_type}</TableCell>
+                <TableCell>
+                  {vaccination.vaccination_date && format(new Date(vaccination.vaccination_date), 'MMM d, yyyy')}
+                </TableCell>
+                <TableCell>{vaccination.notes || '-'}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -1,244 +1,103 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useDogGenetics } from '@/hooks/useDogGenetics';
-import { DogGenotype, MultiTraitMatrixProps } from '@/types/genetics';
-import { Dna, AlertCircle } from 'lucide-react';
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { DogGenotype } from '@/types/genetics';
 
-export const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({
-  dogId,
-  dogGenetics
+interface MultiTraitMatrixProps {
+  genotypes: DogGenotype[];
+  selectedTraits: string[];
+}
+
+const MultiTraitMatrix: React.FC<MultiTraitMatrixProps> = ({
+  genotypes,
+  selectedTraits = []
 }) => {
-  const [activeTab, setActiveTab] = useState('color');
-  const { geneticData, loading, error } = useDogGenetics(dogId || '');
-  
-  // Use the passed genetics data or the fetched data
-  const dogData = dogGenetics || geneticData;
-  
-  if (loading) {
+  if (!genotypes || genotypes.length === 0) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Genetic Trait Analysis</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded-md w-1/3"></div>
-            <div className="h-40 bg-gray-200 rounded-md"></div>
-          </div>
+        <CardContent className="p-6 text-center">
+          <p className="text-muted-foreground">No genetic data available for comparison</p>
         </CardContent>
       </Card>
     );
   }
   
-  if (error || !dogData) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Genetic Trait Analysis</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error ? error.message : "Could not load genetic data."}
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
-  }
+  // If no traits selected, use some defaults
+  const traitsToShow = selectedTraits.length > 0 
+    ? selectedTraits 
+    : ['progressive_retinal_atrophy', 'degenerative_myelopathy', 'exercise_induced_collapse'];
   
-  // Default dog name if not available
-  const dogName = dogData.name || "This dog";
+  // Format trait name for display
+  const formatTraitName = (name: string) => {
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
   
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Genetic Trait Analysis</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="color">Color Genetics</TabsTrigger>
-            <TabsTrigger value="health">Health Markers</TabsTrigger>
-            <TabsTrigger value="physical">Physical Traits</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="color" className="space-y-4">
-            <Alert>
-              <Dna className="h-4 w-4 mr-2" />
-              <AlertDescription>
-                {dogName}'s color is influenced by multiple genetic factors.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TraitCard 
-                  title="Base Color (E Locus)" 
-                  genotype={dogData.baseColor || 'Unknown'} 
-                  description={getBaseColorDescription(dogData.baseColor || 'Unknown')}
-                />
-                
-                <TraitCard 
-                  title="Brown Dilution (B Locus)" 
-                  genotype={dogData.brownDilution || 'Unknown'}
-                  description={getBrownDescription(dogData.brownDilution || 'Unknown')}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TraitCard 
-                  title="Dilution (D Locus)" 
-                  genotype={dogData.dilution || 'Unknown'}
-                  description={getDilutionDescription(dogData.dilution || 'Unknown')}
-                />
-                
-                <TraitCard 
-                  title="Agouti (A Locus)" 
-                  genotype={dogData.agouti || 'Unknown'}
-                  description={getAgoutiDescription(dogData.agouti || 'Unknown')}
-                />
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="health" className="space-y-4">
-            <Alert>
-              <AlertDescription>
-                Health genetic markers are important factors in breeding decisions.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="space-y-4">
-              {dogData.healthMarkers && Object.keys(dogData.healthMarkers).length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(dogData.healthMarkers).map(([condition, marker]) => (
-                    <HealthMarkerCard
-                      key={condition}
-                      title={condition}
-                      status={(marker as any).status}
-                      genotype={(marker as any).genotype}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-4 border rounded-md">
-                  <p className="text-muted-foreground">No health markers recorded.</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="physical" className="space-y-4">
-            <Alert>
-              <AlertDescription>
-                Physical traits are influenced by both genetics and environment.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TraitCard 
-                title="Size" 
-                genotype="Polygenic" 
-                description="Size in Newfoundlands is determined by multiple genes and is polygenic."
-              />
-              
-              <TraitCard 
-                title="Coat Type" 
-                genotype="Standard" 
-                description="Newfoundlands typically have a water-resistant double coat."
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface TraitCardProps {
-  title: string;
-  genotype: string;
-  description: string;
-}
-
-const TraitCard: React.FC<TraitCardProps> = ({ title, genotype, description }) => {
-  return (
-    <div className="border rounded-md p-4 bg-gray-50">
-      <h3 className="font-medium text-sm">{title}</h3>
-      <div className="mt-1 font-bold text-lg">{genotype}</div>
-      <p className="text-sm text-gray-600 mt-2">{description}</p>
-    </div>
-  );
-};
-
-interface HealthMarkerCardProps {
-  title: string;
-  status: 'clear' | 'carrier' | 'affected' | 'unknown';
-  genotype: string;
-}
-
-const HealthMarkerCard: React.FC<HealthMarkerCardProps> = ({ title, status, genotype }) => {
-  const getStatusBg = () => {
-    switch (status) {
-      case 'clear': return 'bg-green-100 text-green-800';
-      case 'carrier': return 'bg-yellow-100 text-yellow-800';
-      case 'affected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  // Get status color class
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return 'bg-gray-100';
+    
+    switch (status.toLowerCase()) {
+      case 'clear':
+        return 'bg-green-100 text-green-800';
+      case 'carrier':
+        return 'bg-amber-100 text-amber-800';
+      case 'at_risk':
+      case 'at risk':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-600';
     }
   };
   
   return (
-    <div className="border rounded-md p-4 bg-gray-50">
-      <h3 className="font-medium text-sm">{title}</h3>
-      <div className="mt-1">
-        <span className={`${getStatusBg()} text-xs font-medium px-2 py-1 rounded-full`}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </span>
-      </div>
-      <div className="mt-2 font-mono text-sm">{genotype}</div>
-    </div>
+    <Card>
+      <CardContent className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Trait Comparison</h3>
+        
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Trait / Dog
+                </th>
+                {genotypes.map((genotype, index) => (
+                  <th key={index} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {genotype.name || `Dog ${index + 1}`}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {traitsToShow.map(trait => (
+                <tr key={trait}>
+                  <td className="px-4 py-2 text-sm font-medium">
+                    {formatTraitName(trait)}
+                  </td>
+                  {genotypes.map((genotype, index) => {
+                    const status = genotype.healthMarkers && genotype.healthMarkers[trait]
+                      ? genotype.healthMarkers[trait].status
+                      : 'unknown';
+                      
+                    return (
+                      <td key={index} className="px-4 py-2">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(status)}`}>
+                          {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
+                        </span>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
-
-// Helper functions for trait descriptions
-
-function getBaseColorDescription(genotype: string): string {
-  if (genotype.includes('E')) {
-    return "E/E or E/e allows expression of black pigment. This dog can produce black-based colors.";
-  } else {
-    return "e/e prevents expression of black pigment. This dog will only show red-based colors.";
-  }
-}
-
-function getBrownDescription(genotype: string): string {
-  if (genotype === 'B/B' || genotype === 'B/b') {
-    return "B/B or B/b allows normal black pigment. No dilution to brown.";
-  } else {
-    return "b/b causes dilution of black pigment to brown/liver.";
-  }
-}
-
-function getDilutionDescription(genotype: string): string {
-  if (genotype === 'D/D' || genotype === 'D/d') {
-    return "D/D or D/d allows full expression of color. No dilution effect.";
-  } else {
-    return "d/d causes dilution of black to blue/gray and red to cream.";
-  }
-}
-
-function getAgoutiDescription(genotype: string): string {
-  if (genotype === 'a/a') {
-    return "a/a produces a solid color without banding on individual hairs.";
-  } else if (genotype.includes('w')) {
-    return "Contains the 'ay' allele which can produce sable/fawn patterns.";
-  } else {
-    return "Various agouti patterns that determine distribution of black and red pigment.";
-  }
-}
 
 export default MultiTraitMatrix;

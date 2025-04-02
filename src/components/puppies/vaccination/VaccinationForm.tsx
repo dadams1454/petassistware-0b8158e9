@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
 
-interface VaccinationFormProps {
+export interface VaccinationFormProps {
   puppyId: string;
   onSubmit: (data: any) => Promise<void>;
   onCancel: () => void;
@@ -19,6 +20,7 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
 }) => {
   const [vaccinationType, setVaccinationType] = useState('');
   const [vaccinationDate, setVaccinationDate] = useState(new Date().toISOString().split('T')[0]);
+  const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,6 +39,7 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
         puppy_id: puppyId,
         vaccination_type: vaccinationType,
         vaccination_date: vaccinationDate,
+        due_date: dueDate,
         notes
       });
     } catch (error) {
@@ -44,6 +47,18 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
       alert('Failed to save vaccination record');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setVaccinationDate(date.toISOString().split('T')[0]);
+    }
+  };
+
+  const handleDueDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setDueDate(date.toISOString().split('T')[0]);
     }
   };
 
@@ -80,6 +95,16 @@ const VaccinationForm: React.FC<VaccinationFormProps> = ({
               type="date"
               value={vaccinationDate}
               onChange={(e) => setVaccinationDate(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="due-date">Due Date</Label>
+            <Input
+              id="due-date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
             />
           </div>
           

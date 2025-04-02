@@ -21,8 +21,8 @@ const GrowthChart: React.FC<GrowthChartProps> = ({ puppyId }) => {
     
     const processedData = weightData.map(record => {
       // Calculate age in days if birth_date is available
-      let ageInDays = 0;
-      if (record.birth_date) {
+      let ageInDays = record.age || 0;
+      if (!ageInDays && record.birth_date) {
         const birthDate = new Date(record.birth_date).getTime();
         const recordDate = new Date(record.date).getTime();
         ageInDays = Math.floor((recordDate - birthDate) / (1000 * 60 * 60 * 24));
@@ -31,7 +31,7 @@ const GrowthChart: React.FC<GrowthChartProps> = ({ puppyId }) => {
       return {
         date: new Date(record.date).toLocaleDateString(),
         weight: record.weight,
-        unit: record.weight_unit || record.unit || 'oz',
+        unit: record.weight_unit || 'oz',
         age: ageInDays
       };
     });

@@ -1,119 +1,132 @@
 
-/**
- * Formats a condition name from snake_case or camelCase to Title Case
- */
-export const formatConditionName = (condition: string): string => {
-  // Replace underscores with spaces
-  let formatted = condition.replace(/_/g, ' ');
-  
-  // Add spaces before capital letters for camelCase
-  formatted = formatted.replace(/([A-Z])/g, ' $1');
-  
-  // Capitalize first letter of each word
-  formatted = formatted
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+import { DogGenotype, HealthMarker, HealthRisk, HealthSummary, GeneticHealthStatus } from '@/types/genetics';
+
+// Format condition name for display (e.g., "progressive_retinal_atrophy" -> "Progressive Retinal Atrophy")
+export const formatConditionName = (conditionName: string): string => {
+  return conditionName
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-    
-  // Special case handling for acronyms and medical terms
-  const acronyms = ['DM', 'EIC', 'PRA', 'vWD', 'MDR1', 'IVDD', 'CDDY', 'NCL'];
-  acronyms.forEach(acronym => {
-    const lowercaseAcronym = acronym.toLowerCase();
-    const regex = new RegExp(`\\b${lowercaseAcronym}\\b`, 'gi');
-    formatted = formatted.replace(regex, acronym);
-  });
-  
-  return formatted.trim();
 };
 
-/**
- * Get color-related props based on the test result status
- */
+// Get color props based on status
 export const getResultWithColorProps = (status: string) => {
-  const statusLower = status.toLowerCase();
-  
-  // Match status to appropriate styling
-  switch (statusLower) {
+  switch (status.toLowerCase()) {
     case 'clear':
-    case 'normal':
-    case 'negative':
-      return { 
-        color: 'text-green-700', 
-        bgColor: 'bg-green-100',
-        textColor: 'text-green-700',
-        borderColor: 'border-green-200'
-      };
-      
+      return { color: 'text-green-700', bgColor: 'bg-green-100' };
     case 'carrier':
-    case 'abnormal':
-    case 'suspicious':
-      return { 
-        color: 'text-yellow-700', 
-        bgColor: 'bg-yellow-100',
-        textColor: 'text-yellow-700',
-        borderColor: 'border-yellow-200' 
-      };
-      
+      return { color: 'text-amber-700', bgColor: 'bg-amber-100' };
     case 'at_risk':
     case 'at risk':
-    case 'affected':
-    case 'positive':
-      return { 
-        color: 'text-red-700', 
-        bgColor: 'bg-red-100',
-        textColor: 'text-red-700',
-        borderColor: 'border-red-200'
-      };
-      
-    case 'likely_clear':
-    case 'likely clear':
-      return { 
-        color: 'text-emerald-700', 
-        bgColor: 'bg-emerald-100',
-        textColor: 'text-emerald-700',
-        borderColor: 'border-emerald-200'
-      };
-      
-    case 'likely_carrier':
-    case 'likely carrier':
-      return { 
-        color: 'text-amber-700', 
-        bgColor: 'bg-amber-100',
-        textColor: 'text-amber-700',
-        borderColor: 'border-amber-200'
-      };
-      
-    case 'inconclusive':
-    case 'pending':
-      return { 
-        color: 'text-purple-700', 
-        bgColor: 'bg-purple-100',
-        textColor: 'text-purple-700',
-        borderColor: 'border-purple-200' 
-      };
-      
+      return { color: 'text-red-700', bgColor: 'bg-red-100' };
     default:
-      return { 
-        color: 'text-gray-700', 
-        bgColor: 'bg-gray-100',
-        textColor: 'text-gray-700',
-        borderColor: 'border-gray-200'
-      };
+      return { color: 'text-gray-700', bgColor: 'bg-gray-100' };
   }
 };
 
-/**
- * Format a date for display
- */
-export const formatDate = (dateStr: string): string => {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  } catch (error) {
-    return dateStr;
+// Get color for health status
+export const getStatusColor = (status: GeneticHealthStatus): string => {
+  switch (status) {
+    case 'clear':
+      return 'green';
+    case 'carrier':
+      return 'amber';
+    case 'at_risk':
+    case 'at risk':
+      return 'red';
+    default:
+      return 'gray';
+  }
+};
+
+// Format date string
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+// Generate health summary data
+export const getHealthSummaryData = (genotype: DogGenotype): HealthSummary => {
+  if (!genotype || !genotype.healthMarkers) {
+    return {
+      clearCount: 0,
+      carrierCount: 0,
+      atRiskCount: 0,
+      totalTests: 0,
+      healthScore: 100,
+      topRisks: []
+    };
+  }
+  
+  let clearCount = 0;
+  let carrierCount = 0;
+  let atRiskCount = 0;
+  let totalTests = Object.keys(genotype.healthMarkers).length;
+  
+  const risks: HealthRisk[] = [];
+  
+  Object.entries(genotype.healthMarkers).forEach(([condition, data]) => {
+    switch (data.status) {
+      case 'clear':
+        clearCount++;
+        break;
+      case 'carrier':
+        carrierCount++;
+        // Add to risks with medium severity
+        risks.push({
+          condition,
+          status: 'carrier',
+          severity: 'medium',
+          description: `Carrier for ${formatConditionName(condition)}`
+        });
+        break;
+      case 'at_risk':
+      case 'at risk':
+        atRiskCount++;
+        // Add to risks with high severity
+        risks.push({
+          condition,
+          status: 'at_risk',
+          severity: 'high',
+          description: `At risk for ${formatConditionName(condition)}`
+        });
+        break;
+    }
+  });
+  
+  // Calculate health score (basic algorithm)
+  const healthScore = Math.max(0, 100 - (carrierCount * 5) - (atRiskCount * 15));
+  
+  // Sort risks by severity (high first, then medium)
+  const topRisks = risks.sort((a, b) => {
+    if (a.severity === 'high' && b.severity !== 'high') return -1;
+    if (a.severity !== 'high' && b.severity === 'high') return 1;
+    return 0;
+  });
+  
+  return {
+    clearCount,
+    carrierCount,
+    atRiskCount,
+    totalTests,
+    healthScore,
+    topRisks: topRisks.slice(0, 3) // Return top 3 risks
+  };
+};
+
+// Generate risk assessment text
+export const generateRiskAssessment = (genotype: DogGenotype): string => {
+  if (!genotype || !genotype.healthMarkers) {
+    return "No genetic health data available.";
+  }
+  
+  const { atRiskCount, carrierCount, totalTests } = getHealthSummaryData(genotype);
+  
+  if (atRiskCount === 0 && carrierCount === 0) {
+    return "This dog is clear of all tested genetic health conditions.";
+  } else if (atRiskCount > 0) {
+    return `This dog is at risk for ${atRiskCount} genetic ${atRiskCount === 1 ? 'condition' : 'conditions'} and is a carrier for ${carrierCount} ${carrierCount === 1 ? 'condition' : 'conditions'}.`;
+  } else {
+    return `This dog is a carrier for ${carrierCount} genetic ${carrierCount === 1 ? 'condition' : 'conditions'} but is not at risk for any tested conditions.`;
   }
 };

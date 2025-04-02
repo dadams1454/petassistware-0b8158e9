@@ -1,91 +1,104 @@
 
 import React from 'react';
-import { VaccinationScheduleItem } from '@/types/puppyTracking';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Check, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { VaccinationScheduleItem } from '@/types/puppyTracking';
 
-export interface VaccinationScheduleProps {
+interface VaccinationScheduleProps {
   vaccinations: VaccinationScheduleItem[];
   onRefresh: () => Promise<void>;
-  status: string;
+  status: 'upcoming' | 'overdue';
 }
 
-const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
+const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({ 
   vaccinations,
   onRefresh,
-  status
+  status 
 }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+  if (!vaccinations || vaccinations.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-6 text-center">
+          <p className="text-muted-foreground">
+            {status === 'overdue' 
+              ? 'No overdue vaccinations' 
+              : 'No upcoming vaccinations scheduled'}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  const handleMarkComplete = (vaccination: VaccinationScheduleItem) => {
+    // Implementation would be added here
+    console.log('Mark as complete:', vaccination);
   };
-
+  
+  const handleReschedule = (vaccination: VaccinationScheduleItem) => {
+    // Implementation would be added here
+    console.log('Reschedule:', vaccination);
+  };
+  
+  const getDueStatusClass = (dueDate: string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    
+    if (status === 'overdue') return 'text-red-600 font-semibold';
+    
+    // For upcoming vaccs, show warning if due within 7 days
+    const daysUntilDue = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysUntilDue <= 7) return 'text-amber-600 font-semibold';
+    
+    return 'text-green-600';
+  };
+  
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">
-          {status === 'upcoming' ? 'Upcoming Vaccinations' : 
-           status === 'overdue' ? 'Overdue Vaccinations' : 
-           'Completed Vaccinations'}
-        </h2>
-        <Button size="sm" variant="outline" onClick={onRefresh}>
-          Refresh
-        </Button>
-      </div>
-
-      {vaccinations.length === 0 ? (
-        <Card>
-          <CardContent className="py-6">
-            <div className="text-center text-gray-500">
-              <p>No {status} vaccinations found.</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {vaccinations.map((vaccination) => (
-            <Card key={vaccination.id} className="overflow-hidden">
-              <div className={`h-1 ${
-                status === 'overdue' ? 'bg-red-500' : 
-                status === 'upcoming' ? 'bg-amber-500' : 
-                'bg-green-500'
-              }`}></div>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium">{vaccination.vaccination_type}</h3>
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                      <Calendar className="h-3.5 w-3.5 mr-1" />
-                      {formatDate(vaccination.due_date)}
-                    </div>
-                  </div>
-                  <div>
-                    {status === 'completed' ? (
-                      <span className="inline-flex items-center text-sm bg-green-50 text-green-700 px-2 py-1 rounded">
-                        <Check className="h-3.5 w-3.5 mr-1" />
-                        Complete
-                      </span>
-                    ) : status === 'overdue' ? (
-                      <span className="inline-flex items-center text-sm bg-red-50 text-red-700 px-2 py-1 rounded">
-                        <AlertTriangle className="h-3.5 w-3.5 mr-1" />
-                        Overdue
-                      </span>
-                    ) : (
-                      <Button size="sm">Mark Complete</Button>
+    <Card>
+      <CardContent className="py-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Vaccination Type</TableHead>
+              <TableHead>Due Date</TableHead>
+              <TableHead>Notes</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {vaccinations.map(vaccination => (
+              <TableRow key={vaccination.id}>
+                <TableCell className="font-medium">{vaccination.vaccination_type}</TableCell>
+                <TableCell className={getDueStatusClass(vaccination.due_date)}>
+                  {format(new Date(vaccination.due_date), 'MMM d, yyyy')}
+                </TableCell>
+                <TableCell>{vaccination.notes || '-'}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleMarkComplete(vaccination)}
+                    >
+                      Mark Complete
+                    </Button>
+                    {status === 'overdue' && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleReschedule(vaccination)}
+                      >
+                        Reschedule
+                      </Button>
                     )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 };
 

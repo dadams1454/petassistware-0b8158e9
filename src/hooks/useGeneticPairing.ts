@@ -1,212 +1,148 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useDogGenetics } from './useDogGenetics';
-import { DogGenotype, HealthMarker, HealthWarning } from '@/types/genetics';
+import { DogGenotype, ColorProbability, GeneticHealthStatus } from '@/types/genetics';
+import { calculateColorProbabilities, calculateHealthRisks, calculateInbreedingCoefficient } from '@/components/genetics/utils/geneticCalculations';
 
-export interface PairingResults {
-  coiEstimate?: number;
-  coiRisk?: 'low' | 'medium' | 'high';
-  healthWarnings: HealthWarning[];
-  colorProbabilities?: Record<string, number>;
-  breedCompatibility?: number;
-  overallCompatibility?: number;
-  reasons?: string[];
-  evaluations?: Record<string, any>; 
-}
-
-export const useGeneticPairing = (sireDogId?: string, damDogId?: string) => {
-  const [results, setResults] = useState<PairingResults | null>(null);
-  const [loading, setLoading] = useState(false);
+export const useGeneticPairing = (sireId?: string, damId?: string) => {
+  const [sireGenotype, setSireGenotype] = useState<DogGenotype | null>(null);
+  const [damGenotype, setDamGenotype] = useState<DogGenotype | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-
-  const { dogData: sireGenetics, isLoading: sireLoading } = useDogGenetics(sireDogId || '');
-  const { dogData: damGenetics, isLoading: damLoading } = useDogGenetics(damDogId || '');
-
+  
+  const [colorProbabilities, setColorProbabilities] = useState<ColorProbability[]>([]);
+  const [healthRisks, setHealthRisks] = useState<Record<string, { status: string; probability: number }>>({});
+  const [inbreedingCoefficient, setInbreedingCoefficient] = useState<number | null>(null);
+  
+  // Fetch genetic data for both dogs
   useEffect(() => {
-    const evaluatePairing = async () => {
-      if (!sireDogId || !damDogId || sireLoading || damLoading) {
-        return;
-      }
-
-      if (!sireGenetics || !damGenetics) {
-        setError(new Error('Genetic data not available for one or both dogs'));
-        return;
-      }
-
-      setLoading(true);
+    const fetchGeneticData = async () => {
+      if (!sireId && !damId) return;
+      
+      setIsLoading(true);
       setError(null);
-
+      
       try {
-        // Calculate potential health risks
-        const healthWarnings = calculateHealthRisks(sireGenetics, damGenetics);
-
-        // Simulate COI calculation (in a real app, this would be more sophisticated)
-        const coiEstimate = calculateCOI(sireGenetics, damGenetics);
+        // Fetch sire genotype if ID provided
+        if (sireId) {
+          const { data: sireData, error: sireError } = await supabase
+            .from('genetic_data')
+            .select('*')
+            .eq('dog_id', sireId)
+            .single();
+            
+          if (sireError) throw sireError;
+          
+          setSireGenotype({
+            dog_id: sireId,
+            healthMarkers: sireData?.health_results || {},
+            inbreedingCoefficient: sireData?.inbreeding_coefficient,
+            breed: sireData?.breed_composition?.primary?.breed,
+            baseColor: 'Black', // Placeholder for testing
+            ...sireData
+          });
+        }
         
-        // Determine COI risk level
-        let coiRisk: 'low' | 'medium' | 'high' = 'low';
-        if (coiEstimate > 0.125) coiRisk = 'high';
-        else if (coiEstimate > 0.0625) coiRisk = 'medium';
-
-        // Calculate compatibility
-        const breedCompatibility = calculateBreedCompatibility(sireGenetics, damGenetics);
-        
-        // Calculate overall compatibility
-        const healthScore = healthWarnings.length === 0 ? 100 : Math.max(0, 100 - (healthWarnings.length * 10));
-        const coiScore = Math.max(0, 100 - (coiEstimate * 100));
-        const overallCompatibility = Math.round((healthScore * 0.7 + coiScore * 0.3) / 10) / 10;
-
-        // Set results
-        setResults({
-          coiEstimate,
-          coiRisk,
-          healthWarnings,
-          breedCompatibility,
-          overallCompatibility,
-          reasons: deriveRecommendationReasons(healthWarnings, coiEstimate, breedCompatibility)
-        });
+        // Fetch dam genotype if ID provided
+        if (damId) {
+          const { data: damData, error: damError } = await supabase
+            .from('genetic_data')
+            .select('*')
+            .eq('dog_id', damId)
+            .single();
+            
+          if (damError) throw damError;
+          
+          setDamGenotype({
+            dog_id: damId,
+            healthMarkers: damData?.health_results || {},
+            inbreedingCoefficient: damData?.inbreeding_coefficient,
+            breed: damData?.breed_composition?.primary?.breed,
+            baseColor: 'Brown', // Placeholder for testing
+            ...damData
+          });
+        }
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to evaluate genetic compatibility'));
+        console.error('Error fetching genetic data:', err);
+        setError(err instanceof Error ? err : new Error('Failed to fetch genetic data'));
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-
-    evaluatePairing();
-  }, [sireDogId, damDogId, sireGenetics, damGenetics, sireLoading, damLoading]);
-
-  // Calculate potential health risks
-  const calculateHealthRisks = (sire: DogGenotype, dam: DogGenotype): HealthWarning[] => {
-    const warnings: HealthWarning[] = [];
-
-    if (!sire.healthMarkers || !dam.healthMarkers) {
-      warnings.push({
-        condition: 'Incomplete genetic health data',
-        risk: 'Unknown risks',
-        description: 'One or both dogs are missing genetic health test results',
-        action: 'Complete genetic health testing before breeding',
-        riskLevel: 'high'
-      });
-      return warnings;
+    
+    fetchGeneticData();
+  }, [sireId, damId]);
+  
+  // Calculate genetic predictions when both genotypes are available
+  useEffect(() => {
+    if (sireGenotype && damGenotype) {
+      // Calculate color probabilities
+      const colors = calculateColorProbabilities(sireGenotype, damGenotype);
+      setColorProbabilities(colors);
+      
+      // Calculate health risks
+      const risks = calculateHealthRisks(sireGenotype, damGenotype);
+      setHealthRisks(risks);
+      
+      // Calculate inbreeding coefficient
+      const coefficient = calculateInbreedingCoefficient(sireGenotype, damGenotype);
+      setInbreedingCoefficient(coefficient);
     }
-
-    // Check for carrier x carrier matches (autosomal recessive diseases)
-    const sireMarkers = sire.healthMarkers as Record<string, HealthMarker>;
-    const damMarkers = dam.healthMarkers as Record<string, HealthMarker>;
-
-    const allConditions = new Set([
-      ...Object.keys(sireMarkers),
-      ...Object.keys(damMarkers)
-    ]);
-
-    allConditions.forEach(condition => {
-      const sireStatus = sireMarkers[condition]?.status;
-      const damStatus = damMarkers[condition]?.status;
-
-      // Both are carriers
-      if (sireStatus === 'carrier' && damStatus === 'carrier') {
-        warnings.push({
-          condition,
-          risk: 'High risk (25%)',
-          description: `Both dogs are carriers for ${condition}. 25% of puppies may be affected.`,
-          action: 'Avoid this pairing or prepare for genetic testing of puppies',
-          riskLevel: 'high'
-        });
-      } 
-      // One affected and one carrier
-      else if (
-        (sireStatus === 'at_risk' && damStatus === 'carrier') ||
-        (sireStatus === 'carrier' && damStatus === 'at_risk')
-      ) {
-        warnings.push({
-          condition,
-          risk: 'High risk (50%)',
-          description: `One dog is affected and one is a carrier for ${condition}. 50% of puppies may be affected.`,
-          action: 'Strongly advise against this pairing',
-          riskLevel: 'high'
-        });
-      }
-      // Both affected
-      else if (sireStatus === 'at_risk' && damStatus === 'at_risk') {
-        warnings.push({
-          condition,
-          risk: 'Extreme risk (100%)',
-          description: `Both dogs are affected with ${condition}. All puppies will be affected.`,
-          action: 'Do not proceed with this pairing',
-          riskLevel: 'critical'
-        });
-      }
-      // One affected, one unknown
-      else if (
-        (sireStatus === 'at_risk' && (!damStatus || damStatus === 'unknown')) ||
-        (damStatus === 'at_risk' && (!sireStatus || sireStatus === 'unknown'))
-      ) {
-        warnings.push({
-          condition,
-          risk: 'Unknown - high potential',
-          description: `One dog is affected with ${condition} and the other's status is unknown`,
-          action: 'Test the other dog before considering this pairing',
-          riskLevel: 'high'
-        });
-      }
-      // Both unknown for a significant condition
-      else if ((!sireStatus || sireStatus === 'unknown') && (!damStatus || damStatus === 'unknown')) {
-        warnings.push({
-          condition,
-          risk: 'Unknown',
-          description: `Neither dog has been tested for ${condition}`,
-          action: 'Test both dogs before considering this pairing',
-          riskLevel: 'medium'
-        });
+  }, [sireGenotype, damGenotype]);
+  
+  // Get the count of health concerns
+  const getHealthConcernCounts = () => {
+    if (!healthRisks) return { atRisk: 0, carrier: 0, clear: 0 };
+    
+    let atRisk = 0;
+    let carrier = 0;
+    let clear = 0;
+    
+    Object.values(healthRisks).forEach(risk => {
+      if (risk.status === 'at_risk' || risk.status === 'at risk') {
+        atRisk++;
+      } else if (risk.status === 'carrier') {
+        carrier++;
+      } else if (risk.status === 'clear') {
+        clear++;
       }
     });
-
-    return warnings;
+    
+    return { atRisk, carrier, clear };
   };
-
-  // Calculate COI (Coefficient of Inbreeding)
-  const calculateCOI = (sire: DogGenotype, dam: DogGenotype): number => {
-    // In a real app, this would use pedigree data and sophisticated algorithms
-    // This is a simplified placeholder
-    return Math.random() * 0.1; // Returns a random value between 0 and 0.1 (10%)
-  };
-
-  // Calculate breed compatibility
-  const calculateBreedCompatibility = (sire: DogGenotype, dam: DogGenotype): number => {
-    if ((sire.breed || '') === (dam.breed || '')) return 1.0;
-    return 0.5; // Simple placeholder
-  };
-
-  // Derive recommendation reasons
-  const deriveRecommendationReasons = (
-    warnings: HealthWarning[],
-    coi: number,
-    breedCompatibility: number
-  ): string[] => {
-    const reasons = [];
-
-    if (warnings.length > 0) {
-      reasons.push(`${warnings.length} health concerns detected`);
+  
+  // Calculate overall compatibility score (0-100)
+  const calculateCompatibilityScore = () => {
+    if (!sireGenotype || !damGenotype) return null;
+    
+    const { atRisk, carrier } = getHealthConcernCounts();
+    
+    // Base score
+    let score = 100;
+    
+    // Deduct for health risks
+    score -= atRisk * 15; // Major deduction for at-risk conditions
+    score -= carrier * 5;  // Minor deduction for carrier status
+    
+    // Deduct for inbreeding
+    if (inbreedingCoefficient) {
+      score -= inbreedingCoefficient * 100; // e.g., 0.0625 COI = -6.25 points
     }
-
-    if (coi > 0.125) {
-      reasons.push('High inbreeding coefficient');
-    } else if (coi < 0.03125) {
-      reasons.push('Good genetic diversity');
-    }
-
-    if (breedCompatibility < 1) {
-      reasons.push('Different breeds');
-    }
-
-    return reasons;
+    
+    return Math.max(0, Math.min(100, score));
   };
-
+  
   return {
-    results,
-    loading,
-    error
+    sireGenotype,
+    damGenotype,
+    isLoading,
+    error,
+    colorProbabilities,
+    healthRisks,
+    inbreedingCoefficient,
+    healthConcernCounts: getHealthConcernCounts(),
+    compatibilityScore: calculateCompatibilityScore(),
+    hasData: Boolean(sireGenotype && damGenotype)
   };
 };
 

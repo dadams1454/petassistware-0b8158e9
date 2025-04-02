@@ -185,4 +185,4 @@ export interface WeightRecord {
   birth_date?: string; // For puppy weight tracking
 }
 
-export type WeightUnit = 'lbs' | 'kg' | 'g' | 'oz' | string;
+export type WeightUnit = 'lbs' | 'kg' | 'g' | 'oz';
