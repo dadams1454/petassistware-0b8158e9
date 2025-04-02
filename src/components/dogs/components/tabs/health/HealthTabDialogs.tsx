@@ -36,6 +36,7 @@ const HealthTabDialogs: React.FC = () => {
         onOpenChange={setWeightDialogOpen}
         dogId={dogId}
         onSave={handleSaveWeight}
+        initialData={null}
       />
       
       <HealthIndicatorDialog
