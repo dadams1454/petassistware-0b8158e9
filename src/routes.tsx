@@ -47,6 +47,9 @@ import {
   WelpingLogPage
 } from '@/pages/Welping';
 
+// Import Reproduction Module
+import { ReproductiveCyclePage } from '@/modules/Reproduction';
+
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
 const RegisterPage = () => <div>Register Page</div>;
@@ -79,6 +82,7 @@ export const appRoutes = (
       <Route path="/dogs/:id" element={<DogDetailPage />} />
       <Route path="/dogs/:id/edit" element={<DogEditPage />} />
       <Route path="/dogs/:id/weight" element={<DogWeightPage />} />
+      <Route path="/dogs/:dogId/reproductive" element={<ReproductiveCyclePage />} />
       
       {/* Litters routes */}
       <Route path="/litters" element={<LittersPage />} />
