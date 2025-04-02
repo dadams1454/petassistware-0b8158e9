@@ -1,258 +1,196 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Calendar, Check, AlertTriangle, CalendarCheck } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle
-} from '@/components/ui/dialog';
-import { useNavigate } from 'react-router-dom';
-import { usePuppyDetail } from '@/hooks/usePuppyDetail';
-import { usePuppyVaccinations } from '@/hooks/usePuppyVaccinations';
+import { Plus, RefreshCw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
-import AddVaccinationForm from './AddVaccinationForm';
+import { usePuppyVaccinations } from '@/hooks/usePuppyVaccinations';
+import VaccinationForm from './VaccinationForm';
 import VaccinationSchedule from './VaccinationSchedule';
-import VaccinationCalendar from './VaccinationCalendar';
-import { VaccinationRecord, VaccinationScheduleItem } from '@/types/puppyTracking';
+import VaccinationRecords from './VaccinationRecords';
+import { VaccinationScheduleItem } from '@/types/puppyTracking';
 
 interface VaccinationDashboardProps {
   puppyId: string;
 }
 
 const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) => {
-  const [activeTab, setActiveTab] = useState('schedule');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const navigate = useNavigate();
-  
-  const puppyQuery = usePuppyDetail(puppyId);
+  const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState('upcoming');
   
   const { 
     vaccinations, 
-    upcomingVaccinations,
-    completedVaccinations,
-    overdueVaccinations,
-    isLoading: isVaxLoading,
-    error: vaxError,
-    addVaccination
+    isLoading, 
+    error, 
+    refresh,
+    addVaccination,
+    scheduleVaccination 
   } = usePuppyVaccinations(puppyId);
   
-  const isLoading = puppyQuery.isLoading || isVaxLoading;
-  const error = puppyQuery.error || vaxError;
-  const puppy = puppyQuery.data;
-
-  const handleAddVaccination = async (data: any) => {
-    await addVaccination(data);
-    setIsDialogOpen(false);
+  // Derived data - process vaccinations into categories
+  const [upcomingVaccinations, setUpcomingVaccinations] = useState<VaccinationScheduleItem[]>([]);
+  const [completedVaccinations, setCompletedVaccinations] = useState<VaccinationScheduleItem[]>([]);
+  const [overdueVaccinations, setOverdueVaccinations] = useState<VaccinationScheduleItem[]>([]);
+  
+  // Process vaccinations into categories
+  useEffect(() => {
+    if (!vaccinations) return;
+    
+    const today = new Date();
+    const upcoming: VaccinationScheduleItem[] = [];
+    const completed: VaccinationScheduleItem[] = [];
+    const overdue: VaccinationScheduleItem[] = [];
+    
+    vaccinations.forEach(vaccination => {
+      const isCompleted = vaccination.completed || vaccination.is_completed || 
+                           (vaccination.vaccination_date !== undefined && vaccination.vaccination_date !== null);
+      
+      if (isCompleted) {
+        completed.push(vaccination);
+      } else {
+        const dueDate = new Date(vaccination.due_date);
+        if (dueDate < today) {
+          overdue.push(vaccination);
+        } else {
+          upcoming.push(vaccination);
+        }
+      }
+    });
+    
+    setUpcomingVaccinations(upcoming);
+    setCompletedVaccinations(completed);
+    setOverdueVaccinations(overdue);
+  }, [vaccinations]);
+  
+  const handleRefresh = () => {
+    refresh();
+  };
+  
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (data.vaccination_date) {
+        // Add as completed vaccination
+        await addVaccination({
+          ...data,
+          puppy_id: puppyId,
+          completed: true,
+          is_completed: true
+        });
+      } else {
+        // Schedule for the future
+        await scheduleVaccination({
+          ...data,
+          puppy_id: puppyId
+        });
+      }
+      setShowForm(false);
+      refresh();
+    } catch (error) {
+      console.error('Error submitting vaccination:', error);
+    }
   };
   
   if (isLoading) {
     return <LoadingState message="Loading vaccination data..." />;
   }
   
-  if (error || !puppy) {
-    return <ErrorState title="Error" message="Failed to load puppy information." />;
+  if (error) {
+    return (
+      <ErrorState 
+        title="Error Loading Vaccinations" 
+        message="Could not load vaccination data"
+        onAction={handleRefresh}
+        actionLabel="Retry"
+      />
+    );
   }
-  
-  // Prepare vaccination records for the calendar
-  // These are completed vaccinations with known vaccination_date
-  const vaccinationRecords: VaccinationRecord[] = completedVaccinations
-    .filter(vax => vax.due_date) // Ensure due_date exists
-    .map(vax => ({
-      ...vax,
-      vaccination_date: vax.due_date // Use due_date for the vaccination_date
-    })) as VaccinationRecord[];
-  
-  // These are scheduled vaccinations
-  // For display purposes, set is_completed to false for all scheduled items
-  const scheduledVaccinations = upcomingVaccinations as VaccinationScheduleItem[];
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">{puppy.name || 'Puppy'} Vaccination Tracking</h2>
-          <p className="text-muted-foreground">
-            Manage vaccination schedule and health records
-          </p>
+          <h2 className="text-2xl font-bold">Vaccination Management</h2>
+          <p className="text-muted-foreground">Track and schedule vaccinations</p>
         </div>
         
         <div className="flex gap-2">
-          <Button 
-            onClick={() => setIsDialogOpen(true)}
-          >
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button onClick={() => setShowForm(true)} disabled={showForm}>
             <Plus className="h-4 w-4 mr-2" />
             Add Vaccination
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            onClick={() => navigate(`/litters/${puppy.litter_id}`)}
-          >
-            Back to Litter
           </Button>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {showForm && (
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2">
-              <CalendarCheck className="h-4 w-4 text-green-500" />
-              Vaccination Status
-            </CardTitle>
+          <CardHeader>
+            <CardTitle>Add New Vaccination</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Age:</span>
-                <span className="font-medium">{puppy.ageInDays || 0} days</span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Vaccinations Due:</span>
-                <Badge variant={overdueVaccinations.length > 0 ? "destructive" : "outline"}>
-                  {overdueVaccinations.length}
-                </Badge>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Upcoming Vaccinations:</span>
-                <Badge variant="outline">
-                  {upcomingVaccinations.length}
-                </Badge>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Completed Vaccinations:</span>
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                  {completedVaccinations.length}
-                </Badge>
-              </div>
-            </div>
+            <VaccinationForm 
+              onSubmit={handleFormSubmit}
+              onCancel={() => setShowForm(false)}
+            />
           </CardContent>
         </Card>
-        
-        <Card className="md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle>Vaccination Summary</CardTitle>
-            <CardDescription>Recent and upcoming vaccinations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {vaccinations.length === 0 ? (
-              <div className="text-center py-6">
-                <p className="text-muted-foreground mb-4">No vaccination records yet</p>
-                <Button onClick={() => setIsDialogOpen(true)}>Add First Vaccination</Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {overdueVaccinations.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive" />
-                      Overdue
-                    </h3>
-                    {overdueVaccinations.slice(0, 2).map((vax) => (
-                      <div key={vax.id} className="mb-2 p-2 border border-destructive/20 bg-destructive/5 rounded-md">
-                        <div className="flex justify-between">
-                          <span className="font-medium">{vax.vaccination_type}</span>
-                          <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
-                            {new Date(vax.due_date).toLocaleDateString()}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{vax.notes || 'No notes'}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {upcomingVaccinations.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-blue-500" />
-                      Upcoming
-                    </h3>
-                    {upcomingVaccinations.slice(0, 2).map((vax) => (
-                      <div key={vax.id} className="mb-2 p-2 border rounded-md">
-                        <div className="flex justify-between">
-                          <span className="font-medium">{vax.vaccination_type}</span>
-                          <Badge variant="outline">
-                            {new Date(vax.due_date).toLocaleDateString()}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{vax.notes || 'No notes'}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {completedVaccinations.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
-                      Completed
-                    </h3>
-                    {completedVaccinations.slice(0, 2).map((vax) => (
-                      <div key={vax.id} className="mb-2 p-2 border border-green-100 bg-green-50 rounded-md">
-                        <div className="flex justify-between">
-                          <span className="font-medium">{vax.vaccination_type}</span>
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            {vax.due_date && new Date(vax.due_date).toLocaleDateString()}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{vax.notes || 'No notes'}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      )}
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-2 w-full md:w-[400px]">
-          <TabsTrigger value="schedule">Schedule</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="upcoming">
+            Upcoming
+            {upcomingVaccinations.length > 0 && (
+              <span className="ml-2 bg-primary/10 text-primary px-2 rounded-full text-xs">
+                {upcomingVaccinations.length}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            Completed
+            {completedVaccinations.length > 0 && (
+              <span className="ml-2 bg-green-100 text-green-700 px-2 rounded-full text-xs">
+                {completedVaccinations.length}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="overdue">
+            Overdue
+            {overdueVaccinations.length > 0 && (
+              <span className="ml-2 bg-red-100 text-red-700 px-2 rounded-full text-xs">
+                {overdueVaccinations.length}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="schedule" className="pt-4">
+        <TabsContent value="upcoming" className="pt-4">
           <VaccinationSchedule 
-            puppyId={puppyId} 
-            onAddVaccination={() => setIsDialogOpen(true)}
+            vaccinations={upcomingVaccinations} 
+            onRefresh={refresh}
+            status="upcoming"
           />
         </TabsContent>
         
-        <TabsContent value="calendar" className="pt-4">
-          <VaccinationCalendar 
-            vaccinations={vaccinationRecords}
-            scheduledVaccinations={scheduledVaccinations}
+        <TabsContent value="completed" className="pt-4">
+          <VaccinationRecords 
+            vaccinations={completedVaccinations}
+            onRefresh={refresh}
+          />
+        </TabsContent>
+        
+        <TabsContent value="overdue" className="pt-4">
+          <VaccinationSchedule 
+            vaccinations={overdueVaccinations}
+            onRefresh={refresh} 
+            status="overdue"
           />
         </TabsContent>
       </Tabs>
-      
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[525px]">
-          <DialogHeader>
-            <DialogTitle>Add Vaccination Record</DialogTitle>
-            <DialogDescription>
-              Record a new vaccination for {puppy.name || 'this puppy'}.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <AddVaccinationForm 
-            puppyId={puppyId}
-            onSubmit={handleAddVaccination}
-            onCancel={() => setIsDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

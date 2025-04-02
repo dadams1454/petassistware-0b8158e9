@@ -1,27 +1,20 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { WeightData } from '@/types/puppyTracking';
-import { useToast } from '@/hooks/use-toast';
+import { WeightData, WeightRecord } from '@/types/puppyTracking';
+import { toast } from '@/components/ui/use-toast';
 
 export const usePuppyWeights = (puppyId: string) => {
-  const [weights, setWeights] = useState<WeightData[]>([]);
+  const [weightData, setWeightData] = useState<WeightData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { toast } = useToast();
-
-  const fetchWeights = async () => {
+  
+  const fetchWeightData = async () => {
     setIsLoading(true);
+    setError(null);
+    
     try {
-      const { data, error } = await supabase
-        .from('weight_records')
-        .select('*')
-        .eq('puppy_id', puppyId)
-        .order('date', { ascending: true });
-        
-      if (error) throw error;
-      
-      // Get puppy birth date for calculating age
+      // First get the puppy record to get the birth date
       const { data: puppyData, error: puppyError } = await supabase
         .from('puppies')
         .select('birth_date, litter_id')
@@ -30,10 +23,9 @@ export const usePuppyWeights = (puppyId: string) => {
         
       if (puppyError) throw puppyError;
       
-      let birthDate = puppyData?.birth_date;
-      
-      // If puppy doesn't have a birth date, try to get it from the litter
-      if (!birthDate && puppyData?.litter_id) {
+      // If puppy doesn't have birth date, try to get it from the litter
+      let birthDate = puppyData.birth_date;
+      if (!birthDate && puppyData.litter_id) {
         const { data: litterData, error: litterError } = await supabase
           .from('litters')
           .select('birth_date')
@@ -45,97 +37,123 @@ export const usePuppyWeights = (puppyId: string) => {
         }
       }
       
-      // Calculate age for each weight record
-      const weightData = data?.map(record => {
-        let age = 0;
+      // Then get the weight records
+      const { data: weightRecords, error: weightError } = await supabase
+        .from('weight_records')
+        .select('*')
+        .eq('puppy_id', puppyId)
+        .order('date', { ascending: true });
         
+      if (weightError) throw weightError;
+      
+      // Process and format the weight data
+      const processedData = weightRecords.map((record: WeightRecord) => {
+        // Calculate age in days if we have a birth date
+        let ageInDays = 0;
         if (birthDate) {
-          const recordDate = new Date(record.date);
-          const puppyBirthDate = new Date(birthDate);
-          const ageInDays = Math.floor((recordDate.getTime() - puppyBirthDate.getTime()) / (1000 * 60 * 60 * 24));
-          age = ageInDays;
+          const birthDateTime = new Date(birthDate).getTime();
+          const recordDateTime = new Date(record.date).getTime();
+          ageInDays = Math.floor((recordDateTime - birthDateTime) / (1000 * 60 * 60 * 24));
         }
         
         return {
           id: record.id,
+          dog_id: record.dog_id,
+          puppy_id: record.puppy_id,
           weight: record.weight,
+          weight_unit: record.weight_unit,
+          unit: record.weight_unit, // For compatibility
           date: record.date,
-          age,
-          weight_unit: record.weight_unit
-        } as WeightData;
-      }) || [];
+          age: ageInDays,
+          notes: record.notes,
+          created_at: record.created_at,
+          birth_date: birthDate
+        };
+      });
       
-      setWeights(weightData);
+      setWeightData(processedData);
     } catch (err) {
-      console.error('Error fetching weight records:', err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch weight records'));
+      console.error('Error fetching puppy weight data:', err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch weight data'));
     } finally {
       setIsLoading(false);
     }
   };
   
-  const addWeightRecord = async (weightData: Omit<WeightData, 'id' | 'age'>) => {
+  useEffect(() => {
+    if (puppyId) {
+      fetchWeightData();
+    }
+  }, [puppyId]);
+  
+  // Function to add a new weight record
+  const addWeightRecord = async (data: Omit<WeightData, 'id' | 'age'>) => {
     try {
-      // Make sure we include the puppy_id in the records
-      const newRecord = {
-        puppy_id: puppyId,
-        dog_id: weightData.dog_id || '00000000-0000-0000-0000-000000000000', // Adding dog_id since it's required
-        weight: weightData.weight,
-        weight_unit: weightData.weight_unit,
-        date: weightData.date,
-        notes: weightData.notes || '',
-        created_at: new Date().toISOString()
-      };
-      
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('weight_records')
-        .insert(newRecord)
-        .select()
-        .single();
+        .insert({
+          puppy_id: puppyId,
+          dog_id: data.dog_id || '00000000-0000-0000-0000-000000000000', // Required field, use placeholder if not provided
+          weight: data.weight,
+          weight_unit: data.weight_unit || data.unit,
+          date: data.date,
+          notes: data.notes,
+        });
         
       if (error) throw error;
       
-      // Calculate age for the new record
-      const { data: puppyData } = await supabase
-        .from('puppies')
-        .select('birth_date')
-        .eq('id', puppyId)
-        .single();
-        
-      let age = 0;
-      if (puppyData?.birth_date) {
-        const recordDate = new Date(data.date);
-        const puppyBirthDate = new Date(puppyData.birth_date);
-        age = Math.floor((recordDate.getTime() - puppyBirthDate.getTime()) / (1000 * 60 * 60 * 24));
-      }
-      
-      const newWeightData: WeightData = {
-        id: data.id,
-        weight: data.weight,
-        date: data.date,
-        age,
-        weight_unit: data.weight_unit
-      };
-      
-      setWeights([...weights, newWeightData]);
-      
       toast({
-        title: 'Weight Recorded',
-        description: `Successfully recorded weight of ${data.weight} ${data.weight_unit}.`,
+        title: 'Weight Added',
+        description: 'Weight record has been added successfully',
       });
       
-      return data;
+      await fetchWeightData();
+      return true;
     } catch (err) {
       console.error('Error adding weight record:', err);
       toast({
         title: 'Error',
-        description: 'Failed to add weight record.',
-        variant: 'destructive'
+        description: 'Failed to add weight record',
+        variant: 'destructive',
       });
-      return null;
+      throw err;
     }
   };
   
+  // Function to update an existing weight record
+  const updateWeightRecord = async (id: string, data: Partial<WeightData>) => {
+    try {
+      const { error } = await supabase
+        .from('weight_records')
+        .update({
+          weight: data.weight,
+          weight_unit: data.weight_unit || data.unit,
+          date: data.date,
+          notes: data.notes,
+        })
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: 'Weight Updated',
+        description: 'Weight record has been updated successfully',
+      });
+      
+      await fetchWeightData();
+      return true;
+    } catch (err) {
+      console.error('Error updating weight record:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to update weight record',
+        variant: 'destructive',
+      });
+      throw err;
+    }
+  };
+  
+  // Function to delete a weight record
   const deleteWeightRecord = async (id: string) => {
     try {
       const { error } = await supabase
@@ -145,37 +163,31 @@ export const usePuppyWeights = (puppyId: string) => {
         
       if (error) throw error;
       
-      setWeights(weights.filter(w => w.id !== id));
-      
       toast({
-        title: 'Weight Record Deleted',
-        description: 'Successfully deleted weight record.',
+        title: 'Weight Deleted',
+        description: 'Weight record has been deleted',
       });
       
+      await fetchWeightData();
       return true;
     } catch (err) {
       console.error('Error deleting weight record:', err);
       toast({
         title: 'Error',
-        description: 'Failed to delete weight record.',
-        variant: 'destructive'
+        description: 'Failed to delete weight record',
+        variant: 'destructive',
       });
-      return false;
+      throw err;
     }
   };
   
-  useEffect(() => {
-    if (puppyId) {
-      fetchWeights();
-    }
-  }, [puppyId]);
-  
   return {
-    weights,
+    weightData,
     isLoading,
     error,
-    refresh: fetchWeights,
+    refresh: fetchWeightData,
     addWeightRecord,
+    updateWeightRecord,
     deleteWeightRecord
   };
 };

@@ -1,11 +1,9 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { usePuppyWeights } from '@/hooks/usePuppyWeights';
-import { usePuppyBreedAverages } from '@/hooks/usePuppyBreedAverages';
-import { LoadingState, ErrorState } from '@/components/ui/standardized';
+import { useWeightData } from '@/hooks/useWeightData';
 import { WeightData } from '@/types/puppyTracking';
 
 interface GrowthChartProps {
@@ -13,81 +11,55 @@ interface GrowthChartProps {
 }
 
 const GrowthChart: React.FC<GrowthChartProps> = ({ puppyId }) => {
-  const [activeView, setActiveView] = React.useState<'weight' | 'percentile'>('weight');
+  const [displayUnit, setDisplayUnit] = useState<'oz' | 'g' | 'lbs' | 'kg'>('oz');
+  const { weightData, isLoading } = useWeightData(puppyId);
+  const [chartData, setChartData] = useState<Array<any>>([]);
   
-  // Fetch puppy weight records
-  const {
-    weights,
-    isLoading: isLoadingWeights,
-    error: weightsError
-  } = usePuppyWeights(puppyId);
-  
-  // Fetch breed average data
-  const {
-    breedAverages,
-    isLoading: isLoadingAverages,
-    error: averagesError
-  } = usePuppyBreedAverages(puppyId);
-  
-  const isLoading = isLoadingWeights || isLoadingAverages;
-  const error = weightsError || averagesError;
-  
-  // Process weight data for chart
-  const processedWeightData = React.useMemo(() => {
-    if (!weights || weights.length === 0 || !weights[0].birth_date) return [];
+  // Process weight data for the chart
+  useEffect(() => {
+    if (!weightData) return;
     
-    const birthDate = new Date(weights[0].birth_date);
-    
-    return weights.map(record => {
-      const recordDate = new Date(record.date);
-      const ageInDays = Math.floor((recordDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24));
+    const processedData = weightData.map(record => {
+      // Calculate age in days if birth_date is available
+      let ageInDays = 0;
+      if (record.birth_date) {
+        const birthDate = new Date(record.birth_date).getTime();
+        const recordDate = new Date(record.date).getTime();
+        ageInDays = Math.floor((recordDate - birthDate) / (1000 * 60 * 60 * 24));
+      }
       
       return {
-        age: ageInDays,
-        weight: parseFloat(record.weight.toString()),
-        unit: record.weight_unit,
-        date: record.date
-      };
-    }).sort((a, b) => a.age - b.age);
-  }, [weights]);
-  
-  // Combine puppy data with breed averages for comparison
-  const combinedChartData = React.useMemo(() => {
-    if (!processedWeightData.length || !breedAverages?.averageGrowthData) {
-      return processedWeightData;
-    }
-    
-    // Create a map of breed average data by age
-    const averagesByAge = new Map<number, number>();
-    breedAverages.averageGrowthData.forEach((item: WeightData) => {
-      averagesByAge.set(item.age, item.weight);
-    });
-    
-    // Combine puppy data with breed averages
-    return processedWeightData.map(record => {
-      const breedAverage = averagesByAge.get(record.age) || null;
-      return {
-        ...record,
-        averageWeight: breedAverage
+        date: new Date(record.date).toLocaleDateString(),
+        weight: record.weight,
+        unit: record.weight_unit || record.unit || 'oz',
+        age: ageInDays
       };
     });
-  }, [processedWeightData, breedAverages]);
+    
+    setChartData(processedData);
+  }, [weightData]);
   
   if (isLoading) {
-    return <LoadingState message="Loading weight data..." />;
-  }
-  
-  if (error) {
-    return <ErrorState title="Error" message="Could not load weight data" />;
-  }
-  
-  if (!weights || weights.length === 0) {
     return (
       <Card>
         <CardContent className="py-10">
-          <div className="text-center">
-            <p className="text-muted-foreground mb-2">No weight records found for this puppy.</p>
-            <p className="text-sm">Add weight records to see the growth chart.</p>
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (!weightData || weightData.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-10">
+          <div className="flex justify-center items-center h-64 text-center">
+            <div>
+              <p className="text-muted-foreground mb-2">No weight data recorded yet</p>
+              <p className="text-xs text-muted-foreground">Add weight records to see growth chart</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -97,33 +69,14 @@ const GrowthChart: React.FC<GrowthChartProps> = ({ puppyId }) => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <CardTitle>Growth Chart</CardTitle>
-            <CardDescription>
-              Track puppy weight progress over time
-              {breedAverages?.breed ? ` compared to ${breedAverages.breed} average` : ''}
-            </CardDescription>
-          </div>
-          
-          <Tabs 
-            value={activeView} 
-            onValueChange={(v) => setActiveView(v as 'weight' | 'percentile')}
-            className="w-[200px]"
-          >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="weight">Weight</TabsTrigger>
-              <TabsTrigger value="percentile">Percentile</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        <CardTitle>Growth Chart</CardTitle>
+        <CardDescription>Track puppy weight over time</CardDescription>
       </CardHeader>
-      
       <CardContent>
-        <div className="h-[400px] w-full">
+        <div className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={combinedChartData}
+              data={chartData}
               margin={{
                 top: 5,
                 right: 30,
@@ -134,69 +87,22 @@ const GrowthChart: React.FC<GrowthChartProps> = ({ puppyId }) => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="age" 
-                label={{ 
-                  value: 'Age (days)', 
-                  position: 'insideBottomRight', 
-                  offset: -5 
-                }} 
+                label={{ value: 'Age in Days', position: 'insideBottomRight', offset: 0 }} 
               />
               <YAxis 
-                label={{ 
-                  value: `Weight (${processedWeightData[0]?.unit || 'lbs'})`, 
-                  angle: -90, 
-                  position: 'insideLeft' 
-                }} 
+                label={{ value: `Weight (${displayUnit})`, angle: -90, position: 'insideLeft' }} 
               />
-              <Tooltip 
-                formatter={(value) => [`${value} ${processedWeightData[0]?.unit || 'lbs'}`, 'Weight']}
-                labelFormatter={(age) => `Age: ${age} days`}
-              />
+              <Tooltip />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey="weight"
-                name="Puppy Weight"
-                stroke="#4f46e5"
-                strokeWidth={2}
-                activeDot={{ r: 8 }}
-                dot={{ strokeWidth: 2 }}
+              <Line 
+                type="monotone" 
+                dataKey="weight" 
+                stroke="#8884d8" 
+                activeDot={{ r: 8 }} 
+                name="Weight" 
               />
-              {breedAverages?.breed && (
-                <Line
-                  type="monotone"
-                  dataKey="averageWeight"
-                  name={`${breedAverages.breed} Average`}
-                  stroke="#9ca3af"
-                  strokeDasharray="5 5"
-                  dot={false}
-                />
-              )}
             </LineChart>
           </ResponsiveContainer>
-        </div>
-        
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div className="p-3 border rounded-lg">
-            <div className="text-sm text-muted-foreground">Current Weight</div>
-            <div className="text-xl font-semibold">
-              {processedWeightData[processedWeightData.length - 1]?.weight || '-'} 
-              {processedWeightData[0]?.unit || 'lbs'}
-            </div>
-          </div>
-          
-          <div className="p-3 border rounded-lg">
-            <div className="text-sm text-muted-foreground">Age</div>
-            <div className="text-xl font-semibold">
-              {processedWeightData[processedWeightData.length - 1]?.age || '-'} days
-            </div>
-          </div>
-          
-          <div className="p-3 border rounded-lg">
-            <div className="text-sm text-muted-foreground">Records</div>
-            <div className="text-xl font-semibold">
-              {processedWeightData.length}
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>

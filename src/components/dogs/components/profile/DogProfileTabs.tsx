@@ -8,8 +8,14 @@ import GeneticsTab from '../tabs/GeneticsTab';
 import NotesTab from '../tabs/NotesTab';
 import BreedingTab from '../tabs/BreedingTab';
 import GalleryTab from '../tabs/GalleryTab';
-import OwnershipTab from '../tabs/OwnershipTab';
-import { UserWithAuth } from '@/types';
+import DailyCareTab from '../tabs/DailyCareTab';
+
+// Define custom UserWithAuth type here instead of importing from @/types
+interface UserWithAuth {
+  id: string;
+  email?: string;
+  role?: string;
+}
 
 interface DogProfileTabsProps {
   currentDog: any;
@@ -45,7 +51,7 @@ const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
         <TabsTrigger value="health">Health</TabsTrigger>
         <TabsTrigger value="genetics">Genetics</TabsTrigger>
         <TabsTrigger value="breeding">Breeding</TabsTrigger>
-        <TabsTrigger value="ownership">Ownership</TabsTrigger>
+        <TabsTrigger value="care">Daily Care</TabsTrigger>
         <TabsTrigger value="gallery">Gallery</TabsTrigger>
         <TabsTrigger value="documents">Documents</TabsTrigger>
         <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -67,8 +73,8 @@ const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
         <BreedingTab currentDog={currentDog} />
       </TabsContent>
 
-      <TabsContent value="ownership" className="py-4">
-        <OwnershipTab currentDog={currentDog} currentUser={currentUser} />
+      <TabsContent value="care" className="py-4">
+        <DailyCareTab dogId={currentDog?.id} dogName={currentDog?.name} />
       </TabsContent>
 
       <TabsContent value="gallery" className="py-4">
@@ -76,7 +82,7 @@ const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="documents" className="py-4">
-        <DocumentsTab dogId={currentDog?.id} dogName={currentDog?.name} />
+        <DocumentsTab dogId={currentDog?.id} />
       </TabsContent>
 
       <TabsContent value="notes" className="py-4">

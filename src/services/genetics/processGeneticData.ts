@@ -1,118 +1,156 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { DogGenotype, BreedHealthConcern } from '@/types/genetics';
+import { DogGenotype } from '@/types/genetics';
 
-export async function processGeneticData(dogId: string): Promise<DogGenotype | null> {
+// Helper to extract color genetics from various data sources
+export const extractColorGenetics = (rawData: any): DogGenotype['colorGenetics'] => {
+  // Default structure
+  const colorGenetics: DogGenotype['colorGenetics'] = {
+    base_color: 'Unknown',
+    brown_dilution: 'Unknown',
+    dilution: 'Unknown',
+    patterns: []
+  };
+  
+  // Try to extract from different formats based on the testing company
   try {
-    const { data, error } = await supabase
-      .from('genetic_data')
-      .select('*')
-      .eq('dog_id', dogId)
-      .single();
+    if (!rawData) return colorGenetics;
     
-    if (error) {
-      console.error('Error fetching genetic data:', error);
-      return null;
+    // If the data already contains extracted color data
+    if (rawData.colorGenetics) {
+      return {
+        ...colorGenetics,
+        ...rawData.colorGenetics
+      };
     }
     
-    if (!data) {
-      return null;
+    // Extract from EmbarkVet format
+    if (rawData.traits && rawData.traits.coat_color) {
+      const traitData = rawData.traits.coat_color;
+      return {
+        base_color: traitData.base_color || 'Unknown',
+        brown_dilution: traitData.brown_dilution || 'Unknown',
+        dilution: traitData.dilution || 'Unknown',
+        patterns: traitData.patterns || []
+      };
     }
     
-    // Map database fields to DogGenotype
-    const genotype: DogGenotype = {
-      dogId,
-      // Create base properties with defaults even if they don't exist in the database
-      baseColor: data.base_color || 'unknown',
-      brownDilution: data.brown_dilution || 'unknown',
-      dilution: data.dilution || 'unknown',
-      healthMarkers: {},
-      healthResults: [],
-      updated_at: data.updated_at || new Date().toISOString()
+    // Extract from WisdomPanel format
+    if (rawData.trait_results && rawData.trait_results.coat_colors) {
+      const traitData = rawData.trait_results.coat_colors;
+      return {
+        base_color: traitData.primary_color || 'Unknown',
+        brown_dilution: traitData.modifiers?.brown || 'Unknown',
+        dilution: traitData.modifiers?.dilution || 'Unknown',
+        patterns: traitData.patterns || []
+      };
+    }
+    
+    // Return default if no matching format found
+    return colorGenetics;
+  } catch (error) {
+    console.error('Error extracting color genetics:', error);
+    return colorGenetics;
+  }
+};
+
+// Helper to extract health test results
+export const extractHealthMarkers = (rawData: any): DogGenotype['healthMarkers'] => {
+  const healthMarkers: DogGenotype['healthMarkers'] = {};
+  
+  try {
+    if (!rawData) return healthMarkers;
+    
+    // If data already contains extracted health markers
+    if (rawData.healthMarkers) {
+      return rawData.healthMarkers;
+    }
+    
+    // Try to extract from different formats
+    const healthData = 
+      rawData.health_results || 
+      rawData.health_traits || 
+      rawData.health_markers ||
+      {};
+    
+    // Extract from common format - iterate through all health tests
+    Object.entries(healthData).forEach(([condition, data]: [string, any]) => {
+      healthMarkers[condition] = {
+        status: data.status || data.result || 'unknown',
+        testDate: data.test_date || data.date || new Date().toISOString().slice(0, 10),
+        source: data.source || data.provider || 'genetic_test'
+      };
+    });
+    
+    return healthMarkers;
+  } catch (error) {
+    console.error('Error extracting health markers:', error);
+    return healthMarkers;
+  }
+};
+
+// Helper to extract trait information
+export const extractTraits = (rawData: any): DogGenotype['traits'] => {
+  const traits: DogGenotype['traits'] = {};
+  
+  try {
+    if (!rawData) return traits;
+    
+    // If data already contains traits
+    if (rawData.traits) {
+      return rawData.traits;
+    }
+    
+    // Extract from trait_results which contains physical traits data
+    const traitData = rawData.trait_results || {};
+    
+    // Filter out coat colors (handled separately) and extract remaining traits
+    Object.entries(traitData).forEach(([trait, data]: [string, any]) => {
+      if (trait !== 'coat_colors' && trait !== 'color_genetics') {
+        traits[trait] = {
+          value: data.value || data.result || 'unknown',
+          description: data.description || ''
+        };
+      }
+    });
+    
+    return traits;
+  } catch (error) {
+    console.error('Error extracting traits:', error);
+    return traits;
+  }
+};
+
+// Process raw genetic data into standardized format
+export const processGeneticData = (rawData: any): DogGenotype => {
+  try {
+    const colorGenetics = extractColorGenetics(rawData);
+    const healthMarkers = extractHealthMarkers(rawData);
+    const traits = extractTraits(rawData);
+    
+    return {
+      id: rawData.id,
+      dog_id: rawData.dog_id,
+      created_at: rawData.created_at,
+      colorGenetics,
+      healthMarkers,
+      traits,
+      // Include other fields as needed
+      breedComposition: rawData.breed_composition || {}
     };
-    
-    // Process health results if available
-    if (data.health_results) {
-      try {
-        const healthResults = typeof data.health_results === 'string' 
-          ? JSON.parse(data.health_results) 
-          : data.health_results;
-        
-        genotype.healthResults = Array.isArray(healthResults) 
-          ? healthResults 
-          : [];
-      } catch (e) {
-        console.error('Error parsing health results:', e);
-        genotype.healthResults = [];
-      }
-    }
-    
-    // Extract breed information
-    if (data.breed_composition) {
-      try {
-        const breedComp = typeof data.breed_composition === 'string'
-          ? JSON.parse(data.breed_composition)
-          : data.breed_composition;
-        
-        // Get primary breed
-        if (Array.isArray(breedComp) && breedComp.length > 0) {
-          genotype.breed = breedComp[0].breed || null;
-        }
-      } catch (e) {
-        console.error('Error parsing breed composition:', e);
-      }
-    }
-    
-    // Process color genetics if available - this might not be in the database schema
-    // so we'll handle it safely
-    if (data.color_genetics || data.traits || data.trait_results) {
-      try {
-        // Try to extract from different possible fields
-        const colorData = data.color_genetics || data.traits || data.trait_results;
-        
-        if (colorData) {
-          const parsedColorData = typeof colorData === 'string' 
-            ? JSON.parse(colorData) 
-            : colorData;
-            
-          // Assign known color traits if they exist
-          if (parsedColorData.base_color) genotype.baseColor = parsedColorData.base_color;
-          if (parsedColorData.brown_dilution) genotype.brownDilution = parsedColorData.brown_dilution;
-          if (parsedColorData.dilution) genotype.dilution = parsedColorData.dilution;
-          if (parsedColorData.markers) genotype.healthMarkers = parsedColorData.markers;
-        }
-      } catch (e) {
-        console.error('Error parsing color genetics:', e);
-      }
-    }
-    
-    return genotype;
-  } catch (err) {
-    console.error('Error in processGeneticData:', err);
-    return null;
+  } catch (error) {
+    console.error('Error processing genetic data:', error);
+    return {
+      id: rawData.id,
+      dog_id: rawData.dog_id,
+      colorGenetics: {
+        base_color: 'Unknown',
+        brown_dilution: 'Unknown',
+        dilution: 'Unknown',
+        patterns: []
+      },
+      healthMarkers: {},
+      traits: {},
+      breedComposition: {}
+    };
   }
-}
-
-// Function to get breed-specific health concerns
-export async function getBreedHighRiskConditions(breed: string): Promise<BreedHealthConcern[]> {
-  try {
-    // Use a different table name that doesn't create TypeScript errors
-    const { data, error } = await supabase
-      .from('dogs')
-      .select('*')
-      .filter('breed', 'eq', breed)
-      .limit(10);
-    
-    if (error) throw error;
-    
-    // Mock data for now, would come from real table in production
-    return [
-      { breed, condition: 'Hip Dysplasia', risk_level: 'high', description: 'Joint malformation' },
-      { breed, condition: 'Elbow Dysplasia', risk_level: 'medium', description: 'Joint abnormality' },
-      { breed, condition: 'Progressive Retinal Atrophy', risk_level: 'low', description: 'Eye disorder' }
-    ];
-  } catch (err) {
-    console.error('Error fetching breed health concerns:', err);
-    return [];
-  }
-}
+};
