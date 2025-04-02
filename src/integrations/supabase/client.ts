@@ -20,6 +20,89 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+// Add customSupabase as an alias to match existing imports
+export const customSupabase = supabase;
+
+// Define row types used in various components
+export interface HeatCycleRow {
+  id: string;
+  dog_id: string;
+  start_date: string;
+  end_date?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+  intensity?: string | null;
+  cycle_number?: number | null;
+  symptoms?: string[] | null;
+  fertility_indicators?: any | null;
+  cycle_length?: number | null;
+  recorded_by?: string | null;
+}
+
+export interface LicenseRow {
+  id: string;
+  license_type: string;
+  license_number?: string;
+  license_name?: string;
+  description?: string;
+  issued_date?: string;
+  expiry_date: string;
+  document_url?: string;
+  breeder_id?: string;
+  created_at: string;
+  status?: string;
+}
+
+export interface InspectionRow {
+  id: string;
+  title: string;
+  inspection_date: string;
+  status: string;
+  inspector?: string;
+  notes?: string;
+  follow_up?: string;
+  next_date?: string;
+  breeder_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ComplianceRequirementRow {
+  id: string;
+  title: string;
+  category: string;
+  description?: string;
+  due_date: string;
+  status: string;
+  priority: string;
+  breeder_id?: string;
+  reminder_sent: boolean;
+  completed_at?: string;
+  created_at: string;
+}
+
+export interface CommunicationTemplatesRow {
+  id: string;
+  name: string;
+  type: string;
+  subject?: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CustomerCommunicationsRow {
+  id: string;
+  customer_id: string;
+  type: string;
+  subject?: string;
+  content: string;
+  status: string;
+  sent_at: string;
+  created_at: string;
+}
+
 // Add a helper to check table existence - useful for development
 export const checkTableExists = async (tableName: string): Promise<boolean> => {
   try {

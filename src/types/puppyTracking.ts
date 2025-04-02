@@ -23,6 +23,11 @@ export interface PuppyWithLitter extends Puppy {
   };
 }
 
+export interface PuppyWithAge extends Puppy {
+  age_days: number;
+  age_weeks: number;
+}
+
 export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb' | 'lbs';
 
 export interface WeightRecord {
@@ -36,6 +41,8 @@ export interface WeightRecord {
   notes?: string;
   created_at: string;
   updated_at: string;
+  age_days?: number;
+  birth_date?: string;
 }
 
 export interface PuppyAgeGroupData {
@@ -46,6 +53,10 @@ export interface PuppyAgeGroupData {
   color: string;
   description?: string;
   puppies: Puppy[];
+  startDay?: number; // For backward compatibility
+  endDay?: number; // For backward compatibility
+  milestones?: string[]; // For backward compatibility
+  careChecks?: string[]; // For backward compatibility
 }
 
 export const DEFAULT_AGE_GROUPS: Omit<PuppyAgeGroupData, 'puppies'>[] = [
@@ -55,7 +66,10 @@ export const DEFAULT_AGE_GROUPS: Omit<PuppyAgeGroupData, 'puppies'>[] = [
     minAgeDays: 0,
     maxAgeDays: 14,
     color: 'blue',
-    description: 'First two weeks of life'
+    description: 'First two weeks of life',
+    startDay: 0,
+    endDay: 14,
+    milestones: ['Eyes closed', 'Ears closed', 'Limited mobility']
   },
   {
     id: 'transitional',
@@ -63,7 +77,10 @@ export const DEFAULT_AGE_GROUPS: Omit<PuppyAgeGroupData, 'puppies'>[] = [
     minAgeDays: 15,
     maxAgeDays: 21,
     color: 'green',
-    description: 'Eyes and ears opening'
+    description: 'Eyes and ears opening',
+    startDay: 15,
+    endDay: 21,
+    milestones: ['Eyes opening', 'Ears opening', 'Increased mobility']
   },
   {
     id: 'socialization',
@@ -71,7 +88,10 @@ export const DEFAULT_AGE_GROUPS: Omit<PuppyAgeGroupData, 'puppies'>[] = [
     minAgeDays: 22,
     maxAgeDays: 49,
     color: 'amber',
-    description: 'Key period for development'
+    description: 'Key period for development',
+    startDay: 22,
+    endDay: 49,
+    milestones: ['Walking well', 'Playing with littermates', 'Starting to eat solid food']
   },
   {
     id: 'juvenile',
@@ -79,7 +99,10 @@ export const DEFAULT_AGE_GROUPS: Omit<PuppyAgeGroupData, 'puppies'>[] = [
     minAgeDays: 50,
     maxAgeDays: 84,
     color: 'purple',
-    description: 'Preparing for new homes'
+    description: 'Preparing for new homes',
+    startDay: 50,
+    endDay: 84,
+    milestones: ['Fully weaned', 'Social with humans', 'Ready for vaccinations']
   }
 ];
 
@@ -104,11 +127,20 @@ export interface SocializationCategory {
   description: string;
   recommended_age_weeks: number[];
   experiences: string[];
+  examples?: string[]; // For backward compatibility
   icon?: string;
   color?: string;
 }
 
 export type SocializationReaction = 'positive' | 'neutral' | 'negative' | 'fearful' | 'not_exposed';
+
+// Extended type for backward compatibility
+export interface SocializationReactionExtended {
+  id: string;
+  name: string;
+  color: string;
+  description: string;
+}
 
 export interface SocializationExperience {
   id: string;
@@ -118,6 +150,7 @@ export interface SocializationExperience {
   reaction: SocializationReaction;
   notes?: string;
   date: string;
+  experience_date?: string; // For backward compatibility
   created_at: string;
   updated_at: string;
 }
@@ -130,6 +163,9 @@ export interface SocializationProgress {
   negative_reactions: number;
   neutral_reactions: number;
   completion_percentage: number;
+  categoryName?: string; // For backward compatibility
+  count?: number; // For backward compatibility
+  target?: number; // For backward compatibility
 }
 
 // Vaccination types
@@ -141,6 +177,11 @@ export interface VaccinationScheduleItem {
   is_core: boolean;
   created_at: string;
   updated_at: string;
+  vaccination_type?: string; // For backward compatibility
+  due_date?: string; // For backward compatibility
+  notes?: string; // For backward compatibility
+  vaccination_date?: string; // For backward compatibility
+  is_completed?: boolean; // For backward compatibility
 }
 
 export interface VaccinationRecord {
@@ -154,6 +195,9 @@ export interface VaccinationRecord {
   created_at: string;
   updated_at: string;
   vaccination?: VaccinationScheduleItem;
+  vaccination_type?: string; // For backward compatibility
+  vaccination_date?: string; // For backward compatibility
+  lot_number?: string; // For backward compatibility
 }
 
 // Puppy milestone types
@@ -165,6 +209,7 @@ export interface PuppyMilestone {
   description?: string;
   expected_age_days: number;
   completion_date?: string;
+  milestone_date?: string; // For backward compatibility
   notes?: string;
   created_at: string;
   updated_at: string;

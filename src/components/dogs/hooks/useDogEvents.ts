@@ -1,7 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchEvents } from '@/services/eventService';
+import { getEvents } from '@/services/eventService';
 
 export const useDogEvents = (dog: any) => {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export const useDogEvents = (dog: any) => {
   const { data: events } = useQuery({
     queryKey: ['dogEvents', dog.id],
     queryFn: async () => {
-      const allEvents = await fetchEvents();
+      const allEvents = await getEvents();
       // Filter events that mention this dog in the title or description
       return allEvents.filter(event => 
         (event.title?.toLowerCase().includes(dog.name.toLowerCase()) || 

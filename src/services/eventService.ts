@@ -87,6 +87,9 @@ export const getEvents = async (filters?: {
   }
 };
 
+// For backward compatibility with existing code
+export const fetchEvents = getEvents;
+
 export const createEvent = async (event: NewEvent): Promise<Event> => {
   try {
     const { data, error } = await supabase

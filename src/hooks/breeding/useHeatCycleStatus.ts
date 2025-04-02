@@ -1,7 +1,7 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { customSupabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { addDays, differenceInDays, isPast } from 'date-fns';
 
 interface Dog {
@@ -25,14 +25,14 @@ export const useHeatCycleStatus = () => {
   const { data: femaleDogs, isLoading } = useQuery({
     queryKey: ['heat-cycle-female-dogs'],
     queryFn: async () => {
-      const { data, error } = await customSupabase
+      const { data, error } = await supabase
         .from('dogs')
         .select('id, name, gender, last_heat_date, is_pregnant')
         .eq('gender', 'Female')
         .order('name');
         
       if (error) throw error;
-      return (data || []) as unknown as Dog[];
+      return (data || []) as Dog[];
     }
   });
   

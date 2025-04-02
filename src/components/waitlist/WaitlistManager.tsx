@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export const WaitlistManager: React.FC = () => {
+const WaitlistManager: React.FC = () => {
   return (
     <Card>
       <CardHeader>
