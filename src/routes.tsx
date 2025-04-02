@@ -53,6 +53,9 @@ import {
   WelpingLogPage
 } from '@/pages/Welping';
 
+// Import WhelpingLiveSession component
+import WhelpingLiveSession from '@/modules/Reproduction/components/welping/WhelpingLiveSession';
+
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
 const RegisterPage = () => <div>Register Page</div>;
@@ -105,6 +108,7 @@ export const appRoutes = (
       <Route path="/welping/:id" element={<WelpingDetailPage />} />
       <Route path="/welping/:id/edit" element={<WelpingEditPage />} />
       <Route path="/welping/:id/logs" element={<WelpingLogPage />} />
+      <Route path="/welping/:id/live" element={<WhelpingLiveSession />} />
       
       {/* Operations routes */}
       <Route path="/calendar" element={<CalendarPage />} />

@@ -1,36 +1,40 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { useForm, Controller } from 'react-hook-form';
+import { format, formatDistanceToNow } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format, formatDistanceToNow, differenceInMinutes, differenceInHours } from 'date-fns';
-import { Camera, Save, Clock, Plus, ArrowLeft, XCircle } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { uploadPhoto, resizeImage } from '@/utils/imageUpload';
-import { toast } from 'sonner';
+import { Camera, Clock, Save, CheckCircle, PlusCircle, ArrowLeft, Users, AlertCircle } from 'lucide-react';
+import { Litter } from '@/types/litter';
+import { useToast } from '@/components/ui/use-toast';
 
-interface Puppy {
-  id: string;
+interface PuppyForm {
+  sex: 'Male' | 'Female';
+  color: string;
+  weight: string;
+  weight_unit: 'g' | 'oz' | 'lb'; 
+  notes: string;
+  photo?: File;
+}
+
+interface PuppyRecord {
+  id?: string;
   litter_id: string;
+  name?: string;
   gender: 'Male' | 'Female';
   color: string;
   birth_weight: string;
-  weight_unit: 'oz' | 'g' | 'lbs' | 'kg';
+  weight_unit: 'g' | 'oz' | 'lb';
   birth_time: string;
   birth_order: number;
   photo_url?: string;
@@ -41,709 +45,713 @@ interface ShiftLog {
   id?: string;
   litter_id: string;
   attended_by: string;
-  notes?: string;
+  notes: string;
   timestamp: string;
-}
-
-interface PuppyFormData {
-  gender: 'Male' | 'Female';
-  color: string;
-  birth_weight: string;
-  weight_unit: 'oz' | 'g' | 'lbs' | 'kg';
-  notes?: string;
-  photo?: File | null;
-}
-
-interface LitterData {
-  id: string;
-  litter_name?: string;
-  birth_date: string;
-  dam?: { name: string; id: string; };
-  sire?: { name: string; id: string; };
 }
 
 const WhelpingLiveSession: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('puppies');
-  const [isAddPuppyOpen, setIsAddPuppyOpen] = useState(false);
-  const [isAddShiftLogOpen, setIsAddShiftLogOpen] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const { toast } = useToast();
   
-  // Form data
-  const [puppyForm, setPuppyForm] = useState<PuppyFormData>({
-    gender: 'Male',
-    color: '',
-    birth_weight: '',
-    weight_unit: 'oz',
-    notes: '',
-    photo: null
-  });
+  const [litter, setLitter] = useState<Litter | null>(null);
+  const [puppies, setPuppies] = useState<PuppyRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState('logging');
+  const [shiftLogs, setShiftLogs] = useState<ShiftLog[]>([]);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
-  const [shiftLog, setShiftLog] = useState<Omit<ShiftLog, 'litter_id' | 'timestamp'>>({
-    attended_by: '',
-    notes: ''
-  });
-  
-  const [isFinishSessionOpen, setIsFinishSessionOpen] = useState(false);
-
-  // Fetch litter data
-  const { data: litter, isLoading: litterLoading } = useQuery({
-    queryKey: ['litter', id],
-    queryFn: async () => {
-      if (!id) return null;
-      
-      const { data, error } = await supabase
-        .from('litters')
-        .select(`
-          *,
-          dam:dogs!litters_dam_id_fkey(id, name),
-          sire:dogs!litters_sire_id_fkey(id, name)
-        `)
-        .eq('id', id)
-        .single();
-        
-      if (error) throw new Error(error.message);
-      return data as LitterData;
-    },
-    enabled: !!id
-  });
-  
-  // Fetch puppies for this litter
-  const { data: puppies = [], isLoading: puppiesLoading } = useQuery({
-    queryKey: ['puppies', id],
-    queryFn: async () => {
-      if (!id) return [];
-      
-      const { data, error } = await supabase
-        .from('puppies')
-        .select('*')
-        .eq('litter_id', id)
-        .order('birth_time', { ascending: true });
-        
-      if (error) throw new Error(error.message);
-      return data as Puppy[];
-    },
-    enabled: !!id
-  });
-  
-  // Fetch shift logs
-  const { data: shiftLogs = [], isLoading: shiftLogsLoading } = useQuery({
-    queryKey: ['shift-logs', id],
-    queryFn: async () => {
-      if (!id) return [];
-      
-      const { data, error } = await supabase
-        .from('whelping_shift_logs')
-        .select('*')
-        .eq('litter_id', id)
-        .order('timestamp', { ascending: false });
-        
-      if (error) throw new Error(error.message);
-      return data as ShiftLog[];
-    },
-    enabled: !!id
-  });
-  
-  // Add puppy mutation
-  const addPuppyMutation = useMutation({
-    mutationFn: async (newPuppy: Omit<Puppy, 'id' | 'birth_time' | 'birth_order'>) => {
-      // First upload the photo if present
-      let photoUrl = undefined;
-      if (puppyForm.photo) {
-        try {
-          // Resize image before upload to optimize storage
-          const resizedImage = await resizeImage(puppyForm.photo);
-          photoUrl = await uploadPhoto(resizedImage, 'puppy-photos', `litter-${id}`);
-        } catch (error) {
-          console.error('Error uploading photo:', error);
-          toast.error('Failed to upload photo, but continuing with puppy record creation');
-        }
-      }
-      
-      // Create puppy record
-      const birthTime = new Date().toISOString();
-      const birth_order = puppies.length + 1;
-      
-      const { data, error } = await supabase
-        .from('puppies')
-        .insert({
-          ...newPuppy,
-          photo_url: photoUrl,
-          birth_time: birthTime,
-          birth_order
-        })
-        .select()
-        .single();
-        
-      if (error) throw new Error(error.message);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['puppies', id] });
-      setIsAddPuppyOpen(false);
-      resetPuppyForm();
-      toast.success('Puppy recorded successfully!');
-    },
-    onError: (error) => {
-      console.error('Error recording puppy:', error);
-      toast.error('Failed to record puppy. Please try again.');
-    }
-  });
-  
-  // Add shift log mutation
-  const addShiftLogMutation = useMutation({
-    mutationFn: async (newLog: Omit<ShiftLog, 'id'>) => {
-      const { data, error } = await supabase
-        .from('whelping_shift_logs')
-        .insert(newLog)
-        .select()
-        .single();
-        
-      if (error) throw new Error(error.message);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shift-logs', id] });
-      setIsAddShiftLogOpen(false);
-      setShiftLog({ attended_by: '', notes: '' });
-      toast.success('Shift log recorded successfully!');
-    },
-    onError: (error) => {
-      console.error('Error recording shift log:', error);
-      toast.error('Failed to record shift log. Please try again.');
-    }
-  });
-  
-  // Finish session (will just navigate away for now)
-  const finishSession = () => {
-    toast.success('Whelping session completed!');
-    navigate(`/litters/${id}`);
-  };
-  
-  // Handle form submission for puppy
-  const handleAddPuppy = () => {
-    if (!id) return;
-    if (!puppyForm.color || !puppyForm.birth_weight) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-    
-    addPuppyMutation.mutate({
-      litter_id: id,
-      gender: puppyForm.gender,
-      color: puppyForm.color,
-      birth_weight: puppyForm.birth_weight,
-      weight_unit: puppyForm.weight_unit,
-      notes: puppyForm.notes
-    });
-  };
-  
-  // Handle form submission for shift log
-  const handleAddShiftLog = () => {
-    if (!id || !shiftLog.attended_by) {
-      toast.error('Please enter the name of the attendant');
-      return;
-    }
-    
-    addShiftLogMutation.mutate({
-      litter_id: id,
-      attended_by: shiftLog.attended_by,
-      notes: shiftLog.notes,
-      timestamp: new Date().toISOString()
-    });
-  };
-  
-  // Reset puppy form
-  const resetPuppyForm = () => {
-    setPuppyForm({
-      gender: 'Male',
+  const { handleSubmit, reset, control, formState: { errors } } = useForm<PuppyForm>({
+    defaultValues: {
+      sex: 'Male',
       color: '',
-      birth_weight: '',
-      weight_unit: 'oz',
-      notes: '',
-      photo: null
-    });
-    setPhotoPreview(null);
-  };
+      weight: '',
+      weight_unit: 'g',
+      notes: ''
+    }
+  });
   
-  // Handle file input change
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { handleSubmit: handleShiftSubmit, reset: resetShiftForm, control: shiftControl } = useForm<{
+    attended_by: string;
+    notes: string;
+  }>({
+    defaultValues: {
+      attended_by: '',
+      notes: ''
+    }
+  });
+
+  // Fetch litter details and existing puppies
+  useEffect(() => {
+    const fetchLitterData = async () => {
+      if (!id) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Fetch litter details
+        const { data: litterData, error: litterError } = await supabase
+          .from('litters')
+          .select(`
+            *,
+            dam:dogs!litters_dam_id_fkey(id, name, breed, photo_url),
+            sire:dogs!litters_sire_id_fkey(id, name, breed, photo_url)
+          `)
+          .eq('id', id)
+          .single();
+        
+        if (litterError) throw litterError;
+        
+        setLitter(litterData);
+        
+        // Fetch puppies for this litter
+        const { data: puppiesData, error: puppiesError } = await supabase
+          .from('puppies')
+          .select('*')
+          .eq('litter_id', id)
+          .order('birth_order', { ascending: true });
+        
+        if (puppiesError) throw puppiesError;
+        
+        setPuppies(puppiesData || []);
+        
+        // Fetch shift logs
+        const { data: logsData, error: logsError } = await supabase
+          .from('whelping_shift_logs')
+          .select('*')
+          .eq('litter_id', id)
+          .order('timestamp', { ascending: false });
+        
+        if (logsError) throw logsError;
+        
+        setShiftLogs(logsData || []);
+        
+      } catch (error) {
+        console.error('Error fetching litter data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load whelping session data",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLitterData();
+  }, [id, toast]);
+
+  // Handle image upload
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setPuppyForm(prev => ({ ...prev, photo: file }));
+      setUploadedImage(file);
       
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
-  
-  // Calculate time between puppies
-  const getTimeBetweenPuppies = (index: number) => {
-    if (index === 0 || !puppies[index - 1]) return null;
-    
-    const currentPupTime = new Date(puppies[index].birth_time);
-    const prevPupTime = new Date(puppies[index - 1].birth_time);
-    
-    const minutes = differenceInMinutes(currentPupTime, prevPupTime);
-    if (minutes < 60) {
-      return `${minutes} mins after previous`;
+
+  // Upload image to Supabase Storage
+  const uploadImage = async (file: File, puppyId: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${id}/${puppyId}-${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('puppy-photos')
+        .upload(fileName, file);
+      
+      if (error) throw error;
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('puppy-photos')
+        .getPublicUrl(fileName);
+      
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
     }
-    
-    const hours = differenceInHours(currentPupTime, prevPupTime);
-    return `${hours} hr${hours !== 1 ? 's' : ''} ${minutes % 60} mins after previous`;
   };
-  
-  if (litterLoading) {
+
+  // Submit new puppy
+  const onSubmitPuppy = async (data: PuppyForm) => {
+    if (!id || !litter) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Prepare puppy data
+      const birthTime = new Date().toISOString();
+      const puppyOrder = puppies.length + 1;
+      
+      const puppyData: PuppyRecord = {
+        litter_id: id,
+        gender: data.sex,
+        color: data.color,
+        birth_weight: data.weight,
+        weight_unit: data.weight_unit,
+        birth_time: birthTime,
+        birth_order: puppyOrder,
+        notes: data.notes,
+        name: `${litter.dam?.name}'s Puppy #${puppyOrder}`
+      };
+      
+      // Insert puppy record
+      const { data: newPuppy, error } = await supabase
+        .from('puppies')
+        .insert(puppyData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Upload image if available
+      if (uploadedImage && newPuppy) {
+        const photoUrl = await uploadImage(uploadedImage, newPuppy.id);
+        
+        if (photoUrl) {
+          // Update puppy with photo URL
+          await supabase
+            .from('puppies')
+            .update({ photo_url: photoUrl })
+            .eq('id', newPuppy.id);
+          
+          newPuppy.photo_url = photoUrl;
+        }
+      }
+      
+      // Update puppies state with new record
+      setPuppies([...puppies, newPuppy]);
+      
+      // Reset form
+      reset();
+      setUploadedImage(null);
+      setImagePreview(null);
+      
+      toast({
+        title: "Success",
+        description: `Puppy #${puppyOrder} logged successfully`,
+      });
+      
+    } catch (error) {
+      console.error('Error submitting puppy:', error);
+      toast({
+        title: "Error",
+        description: "Failed to log puppy",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Submit shift log
+  const onSubmitShiftLog = async (data: { attended_by: string; notes: string; }) => {
+    if (!id) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      const logData: ShiftLog = {
+        litter_id: id,
+        attended_by: data.attended_by,
+        notes: data.notes,
+        timestamp: new Date().toISOString()
+      };
+      
+      const { data: newLog, error } = await supabase
+        .from('whelping_shift_logs')
+        .insert(logData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      setShiftLogs([newLog, ...shiftLogs]);
+      resetShiftForm();
+      
+      toast({
+        title: "Success",
+        description: "Caretaker shift log recorded",
+      });
+      
+    } catch (error) {
+      console.error('Error submitting shift log:', error);
+      toast({
+        title: "Error",
+        description: "Failed to record shift log",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Complete whelping session
+  const finishWhelpingSession = async () => {
+    if (!id) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Update litter status
+      await supabase
+        .from('litters')
+        .update({ status: 'active', whelping_complete: true })
+        .eq('id', id);
+      
+      toast({
+        title: "Whelping Complete",
+        description: "Whelping session has been completed successfully",
+      });
+      
+      // Navigate to litter overview
+      navigate(`/welping/${id}`);
+      
+    } catch (error) {
+      console.error('Error completing whelping session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete whelping session",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <p className="text-muted-foreground">Loading whelping session...</p>
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center min-h-[300px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading whelping session...</p>
+          </div>
         </div>
       </div>
     );
   }
-  
+
   if (!litter) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <h2 className="text-xl font-bold">Litter Not Found</h2>
-          <p className="text-muted-foreground mt-2">Could not find the specified litter.</p>
-          <Button className="mt-4" onClick={() => navigate('/litters')}>
-            Go to Litters
-          </Button>
-        </div>
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Litter not found. This whelping session may have been removed or doesn't exist.
+          </AlertDescription>
+        </Alert>
+        <Button 
+          variant="secondary" 
+          className="mt-4"
+          onClick={() => navigate('/welping')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Welping Dashboard
+        </Button>
       </div>
     );
   }
-  
+
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => navigate(-1)}
-            className="mb-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-2xl font-bold">
-            Live Whelping Session
-          </h1>
-          <p className="text-muted-foreground">
-            {litter.litter_name || 'Unnamed Litter'} - 
-            {litter.birth_date && format(new Date(litter.birth_date), ' MMM d, yyyy')}
-          </p>
-          <div className="flex items-center mt-1 text-sm">
-            <span className="font-medium">Dam:</span>
-            <span className="ml-2">{litter.dam?.name || 'Unknown'}</span>
-            {litter.sire && (
-              <>
-                <span className="font-medium ml-4">Sire:</span>
-                <span className="ml-2">{litter.sire.name}</span>
-              </>
-            )}
+    <div className="container mx-auto px-4 py-6">
+      <Button 
+        variant="ghost" 
+        onClick={() => navigate('/welping')}
+        className="mb-4"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Welping Dashboard
+      </Button>
+      
+      <div className="bg-muted p-4 rounded-lg mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">
+              Live Whelping Session
+              <Badge className="ml-2 bg-red-500">In Progress</Badge>
+            </h1>
+            <p className="text-muted-foreground mb-2">
+              {litter.litter_name || `${litter.dam?.name}'s Litter`}
+            </p>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Clock className="mr-1 h-4 w-4" />
+              <span>Started: {format(new Date(litter.birth_date), 'PPP p')}</span>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => setIsAddPuppyOpen(true)}
-            className="gap-1"
-          >
-            <Plus className="h-4 w-4" />
-            Record Puppy
-          </Button>
-          <Button 
-            onClick={() => setIsAddShiftLogOpen(true)}
-            variant="outline"
-            className="gap-1"
-          >
-            <Clock className="h-4 w-4" />
-            Add Shift Log
-          </Button>
-          <Button 
-            onClick={() => setIsFinishSessionOpen(true)}
-            variant="destructive"
-            className="gap-1"
-          >
-            <XCircle className="h-4 w-4" />
-            Finish
-          </Button>
+          
+          <div className="flex mt-4 md:mt-0 space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setActiveTab('shift')}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Record Caretaker Shift
+            </Button>
+            <Button
+              onClick={finishWhelpingSession}
+              disabled={isSubmitting || puppies.length === 0}
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Complete Whelping
+            </Button>
+          </div>
         </div>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList>
-          <TabsTrigger value="puppies">
-            Puppies ({puppies.length})
-          </TabsTrigger>
-          <TabsTrigger value="shiftLogs">
-            Shift Logs ({shiftLogs.length})
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="puppies" className="space-y-4">
-          {puppiesLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <p>Loading puppies...</p>
-            </div>
-          ) : puppies.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center p-6">
-                <p className="text-muted-foreground mb-4">No puppies recorded yet</p>
-                <Button onClick={() => setIsAddPuppyOpen(true)}>
-                  Record First Puppy
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {puppies.map((puppy, index) => (
-                <Card key={puppy.id} className="overflow-hidden">
-                  <div className="h-40 bg-muted flex items-center justify-center overflow-hidden">
-                    {puppy.photo_url ? (
-                      <img 
-                        src={puppy.photo_url} 
-                        alt={`Puppy #${puppy.birth_order}`}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-muted-foreground">No photo</div>
-                    )}
-                  </div>
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg">Puppy #{puppy.birth_order}</CardTitle>
-                      <span className="text-sm font-medium bg-primary/10 px-2 py-1 rounded-md">
-                        {puppy.gender}
-                      </span>
-                    </div>
-                    <CardDescription>
-                      {format(new Date(puppy.birth_time), 'h:mm a')} - {
-                        formatDistanceToNow(new Date(puppy.birth_time), { addSuffix: true })
-                      }
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Color:</span>
-                        <span>{puppy.color}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="logging">Puppy Logging</TabsTrigger>
+              <TabsTrigger value="shift">Caretaker Shifts</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="logging" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <PlusCircle className="mr-2 h-5 w-5" />
+                    Log New Puppy
+                    <Badge className="ml-2">#{puppies.length + 1}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit(onSubmitPuppy)}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="sex">Sex</Label>
+                        <Controller
+                          name="sex"
+                          control={control}
+                          rules={{ required: true }}
+                          render={({ field }) => (
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select gender" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Male">Male</SelectItem>
+                                <SelectItem value="Female">Female</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {errors.sex && <p className="text-red-500 text-sm mt-1">Sex is required</p>}
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Weight:</span>
-                        <span>{puppy.birth_weight} {puppy.weight_unit}</span>
+                      
+                      <div>
+                        <Label htmlFor="color">Color/Markings</Label>
+                        <Controller
+                          name="color"
+                          control={control}
+                          rules={{ required: true }}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Black & White, Solid Brown, etc." />
+                          )}
+                        />
+                        {errors.color && <p className="text-red-500 text-sm mt-1">Color is required</p>}
                       </div>
-                      {index > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Time since previous:</span>
-                          <span>{getTimeBetweenPuppies(index)}</span>
+                      
+                      <div className="flex space-x-2">
+                        <div className="flex-1">
+                          <Label htmlFor="weight">Weight</Label>
+                          <Controller
+                            name="weight"
+                            control={control}
+                            rules={{ required: true }}
+                            render={({ field }) => (
+                              <Input {...field} type="number" step="0.01" placeholder="Weight" />
+                            )}
+                          />
+                          {errors.weight && <p className="text-red-500 text-sm mt-1">Weight is required</p>}
                         </div>
-                      )}
-                      {puppy.notes && (
-                        <div className="mt-2 pt-2 border-t text-sm">
-                          <p className="text-muted-foreground mb-1">Notes:</p>
-                          <p>{puppy.notes}</p>
+                        
+                        <div>
+                          <Label htmlFor="weight_unit">Unit</Label>
+                          <Controller
+                            name="weight_unit"
+                            control={control}
+                            render={({ field }) => (
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <SelectTrigger className="w-[80px]">
+                                  <SelectValue placeholder="Unit" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="g">g</SelectItem>
+                                  <SelectItem value="oz">oz</SelectItem>
+                                  <SelectItem value="lb">lb</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
                         </div>
-                      )}
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="photo">Photo</Label>
+                        <div className="mt-1 flex items-center">
+                          <Input
+                            id="photo"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden"
+                          />
+                          <Label 
+                            htmlFor="photo" 
+                            className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium bg-white hover:bg-gray-50"
+                          >
+                            <Camera className="h-4 w-4 mr-2" />
+                            Upload Photo
+                          </Label>
+                          
+                          {imagePreview && (
+                            <div className="ml-4 h-16 w-16 rounded-md overflow-hidden">
+                              <img 
+                                src={imagePreview} 
+                                alt="Preview" 
+                                className="h-full w-full object-cover" 
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="md:col-span-2">
+                        <Label htmlFor="notes">Notes</Label>
+                        <Controller
+                          name="notes"
+                          control={control}
+                          render={({ field }) => (
+                            <Textarea 
+                              {...field} 
+                              placeholder="Any observations or special notes about this puppy..."
+                              rows={3}
+                            />
+                          )}
+                        />
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="shiftLogs" className="space-y-4">
-          {shiftLogsLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <p>Loading shift logs...</p>
-            </div>
-          ) : shiftLogs.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center p-6">
-                <p className="text-muted-foreground mb-4">No shift logs recorded yet</p>
-                <Button onClick={() => setIsAddShiftLogOpen(true)}>
-                  Add First Shift Log
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {shiftLogs.map((log) => (
-                <Card key={log.id}>
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg">{log.attended_by}</CardTitle>
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(log.timestamp), 'MMM d, yyyy - h:mm a')}
-                      </span>
+                    
+                    <div className="mt-4 flex justify-end">
+                      <Button type="submit" disabled={isSubmitting}>
+                        <Save className="mr-2 h-4 w-4" />
+                        Log Puppy #{puppies.length + 1}
+                      </Button>
                     </div>
-                  </CardHeader>
-                  {log.notes && (
-                    <CardContent>
-                      <p>{log.notes}</p>
-                    </CardContent>
-                  )}
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-      
-      {/* Add Puppy Dialog */}
-      <Dialog open={isAddPuppyOpen} onOpenChange={setIsAddPuppyOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Record New Puppy</DialogTitle>
-            <DialogDescription>
-              Puppy #{puppies.length + 1} - {format(new Date(), 'h:mm a')}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="gender" className="text-right">
-                Gender
-              </Label>
-              <Select
-                value={puppyForm.gender}
-                onValueChange={(value: 'Male' | 'Female') => 
-                  setPuppyForm(prev => ({ ...prev, gender: value }))
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                  </form>
+                </CardContent>
+              </Card>
+              
+              {/* Emergency information card */}
+              <Card className="bg-amber-50 border-amber-200">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-amber-800 text-base">Whelping Emergency Information</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-amber-700">
+                  <p className="mb-2">
+                    <strong>Veterinarian:</strong> Call Dr. Jenkins at (555) 123-4567
+                  </p>
+                  <p className="mb-2">
+                    <strong>If puppy is not breathing:</strong> Clear airways and gently massage
+                  </p>
+                  <p>
+                    <strong>If dam shows distress:</strong> Monitor temperature and call vet immediately
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="color" className="text-right">
-                Color/Markings
-              </Label>
-              <Input
-                id="color"
-                className="col-span-3"
-                value={puppyForm.color}
-                onChange={(e) => setPuppyForm(prev => ({ ...prev, color: e.target.value }))}
-                placeholder="e.g., Black with white chest"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="weight" className="text-right">
-                Birth Weight
-              </Label>
-              <div className="col-span-3 flex gap-2">
-                <Input
-                  id="weight"
-                  type="text"
-                  className="flex-1"
-                  value={puppyForm.birth_weight}
-                  onChange={(e) => setPuppyForm(prev => ({ ...prev, birth_weight: e.target.value }))}
-                  placeholder="Weight"
-                />
-                <Select
-                  value={puppyForm.weight_unit}
-                  onValueChange={(value: 'oz' | 'g' | 'lbs' | 'kg') => 
-                    setPuppyForm(prev => ({ ...prev, weight_unit: value }))
-                  }
-                >
-                  <SelectTrigger className="w-24">
-                    <SelectValue placeholder="Unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="oz">oz</SelectItem>
-                    <SelectItem value="g">g</SelectItem>
-                    <SelectItem value="lbs">lbs</SelectItem>
-                    <SelectItem value="kg">kg</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="notes" className="text-right pt-2">
-                Notes
-              </Label>
-              <Textarea
-                id="notes"
-                className="col-span-3"
-                value={puppyForm.notes}
-                onChange={(e) => setPuppyForm(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Any notes about the puppy or birth"
-                rows={3}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="photo" className="text-right pt-2">
-                Photo
-              </Label>
-              <div className="col-span-3 space-y-2">
-                {photoPreview ? (
-                  <div className="relative w-full h-40 bg-muted rounded-md overflow-hidden">
-                    <img 
-                      src={photoPreview} 
-                      alt="Preview" 
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={() => {
-                        setPuppyForm(prev => ({ ...prev, photo: null }));
-                        setPhotoPreview(null);
-                      }}
-                    >
-                      <XCircle className="h-4 w-4" />
-                    </Button>
-                  </div>
+            <TabsContent value="shift" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Users className="mr-2 h-5 w-5" />
+                    Record Caretaker Shift
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleShiftSubmit(onSubmitShiftLog)}>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="attended_by">Attended By</Label>
+                        <Controller
+                          name="attended_by"
+                          control={shiftControl}
+                          rules={{ required: true }}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Caretaker name" />
+                          )}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="notes">Notes</Label>
+                        <Controller
+                          name="notes"
+                          control={shiftControl}
+                          render={({ field }) => (
+                            <Textarea 
+                              {...field} 
+                              placeholder="Any special instructions or observations during this shift..."
+                              rows={4}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 flex justify-end">
+                      <Button type="submit" disabled={isSubmitting}>
+                        <Save className="mr-2 h-4 w-4" />
+                        Record Shift
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Previous Shifts</h3>
+                {shiftLogs.length === 0 ? (
+                  <p className="text-muted-foreground">No shift logs recorded yet.</p>
                 ) : (
-                  <div className="flex flex-col gap-2">
-                    <label 
-                      htmlFor="puppy-photo" 
-                      className="flex flex-col items-center justify-center w-full h-32 bg-muted hover:bg-muted/80 rounded-md cursor-pointer border-2 border-dashed border-muted-foreground/25"
-                    >
-                      <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-                      <span className="text-sm text-muted-foreground">Click to add a photo</span>
-                      <input
-                        id="puppy-photo"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handlePhotoChange}
-                      />
-                    </label>
-                  </div>
+                  shiftLogs.map((log) => (
+                    <Card key={log.id}>
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium">{log.attended_by}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(log.timestamp), 'PPP p')}
+                            </p>
+                          </div>
+                          <Badge variant="outline">
+                            {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
+                          </Badge>
+                        </div>
+                        {log.notes && (
+                          <p className="mt-2 text-sm">{log.notes}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
                 )}
               </div>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddPuppyOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddPuppy} disabled={addPuppyMutation.isPending}>
-              {addPuppyMutation.isPending ? (
-                <>Saving...</>
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Clock className="mr-2 h-5 w-5" />
+                Whelping Timeline
+                <Badge className="ml-2">{puppies.length} Puppies</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="max-h-[600px] overflow-y-auto">
+              {puppies.length === 0 ? (
+                <div className="text-center p-6 text-muted-foreground">
+                  <p>No puppies logged yet.</p>
+                  <p className="text-sm mt-2">Start logging puppies as they are born.</p>
+                </div>
               ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Puppy
-                </>
+                <div className="space-y-4">
+                  {puppies.map((puppy, index) => {
+                    const prevPuppyTime = index > 0 ? new Date(puppies[index - 1].birth_time) : null;
+                    const currentPuppyTime = new Date(puppy.birth_time);
+                    const timeSincePrevious = prevPuppyTime 
+                      ? Math.round((currentPuppyTime.getTime() - prevPuppyTime.getTime()) / (1000 * 60))
+                      : null;
+                    
+                    return (
+                      <div key={puppy.id} className="border rounded-md p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <Badge 
+                              className={puppy.gender === 'Male' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'}
+                            >
+                              {puppy.gender}
+                            </Badge>
+                            <span className="ml-2 font-medium">
+                              Puppy #{puppy.birth_order}
+                            </span>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {format(new Date(puppy.birth_time), 'h:mm a')}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start gap-4">
+                          {puppy.photo_url ? (
+                            <div className="h-16 w-16 rounded overflow-hidden flex-shrink-0">
+                              <img 
+                                src={puppy.photo_url}
+                                alt={`Puppy #${puppy.birth_order}`}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-16 w-16 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs text-muted-foreground">No photo</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Color:</span>{' '}
+                                {puppy.color}
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Weight:</span>{' '}
+                                {puppy.birth_weight} {puppy.weight_unit}
+                              </div>
+                              {timeSincePrevious !== null && (
+                                <div className="col-span-2">
+                                  <span className="text-muted-foreground">Time since previous:</span>{' '}
+                                  {timeSincePrevious} minutes
+                                </div>
+                              )}
+                              {puppy.notes && (
+                                <div className="col-span-2 mt-1">
+                                  <span className="text-muted-foreground">Notes:</span>{' '}
+                                  {puppy.notes}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Add Shift Log Dialog */}
-      <Dialog open={isAddShiftLogOpen} onOpenChange={setIsAddShiftLogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Record Shift Change</DialogTitle>
-            <DialogDescription>
-              Log who is attending the whelping session
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="attended_by" className="text-right">
-                Attended By
-              </Label>
-              <Input
-                id="attended_by"
-                className="col-span-3"
-                value={shiftLog.attended_by}
-                onChange={(e) => setShiftLog(prev => ({ ...prev, attended_by: e.target.value }))}
-                placeholder="Enter name of caretaker"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="shift_notes" className="text-right pt-2">
-                Notes
-              </Label>
-              <Textarea
-                id="shift_notes"
-                className="col-span-3"
-                value={shiftLog.notes}
-                onChange={(e) => setShiftLog(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Any notes about this shift"
-                rows={3}
-              />
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddShiftLogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddShiftLog} disabled={addShiftLogMutation.isPending}>
-              {addShiftLogMutation.isPending ? (
-                <>Saving...</>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Log
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Finish Session Dialog */}
-      <Dialog open={isFinishSessionOpen} onOpenChange={setIsFinishSessionOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Finish Whelping Session</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to finish the whelping session?
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <p>You have recorded {puppies.length} puppies.</p>
-            <p className="mt-2">This will take you back to the litter details page.</p>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFinishSessionOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              variant="default" 
-              onClick={finishSession}
-            >
-              Finish Session
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </CardContent>
+            <CardFooter className="flex justify-between text-sm text-muted-foreground border-t pt-4">
+              <div>Dam: {litter.dam?.name || 'Unknown'}</div>
+              <div>Sire: {litter.sire?.name || 'Unknown'}</div>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
