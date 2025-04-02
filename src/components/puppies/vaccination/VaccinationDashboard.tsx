@@ -38,7 +38,8 @@ const VaccinationDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       const schedules = await getVaccinationSchedules(puppyId);
-      setVaccinationSchedules(schedules);
+      // Make sure we cast the result to the correct type
+      setVaccinationSchedules(schedules as VaccinationSchedule[]);
     } catch (err: any) {
       setError(err.message || 'Failed to load vaccination schedules');
     } finally {
@@ -91,6 +92,7 @@ const VaccinationDashboard: React.FC = () => {
               onSave={handleVaccinationSaved}
               onCancel={handleCancelAdd}
               onSubmit={handleSaveVaccination}
+              puppyId={puppyId}
             />
           ) : (
             <div>
@@ -102,7 +104,7 @@ const VaccinationDashboard: React.FC = () => {
               </div>
               {vaccinationSchedules.length > 0 ? (
                 <Table>
-                  <TableCaption>A list of your recent invoices.</TableCaption>
+                  <TableCaption>List of scheduled vaccinations.</TableCaption>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[100px]">Vaccine</TableHead>

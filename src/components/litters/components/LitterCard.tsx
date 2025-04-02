@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronRight, Paw, Calendar } from 'lucide-react';
+import { ChevronRight, Calendar } from 'lucide-react';
 import { formatDateForDisplay } from '@/utils/dateUtils';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,7 +46,7 @@ const LitterCard: React.FC<LitterCardProps> = ({
       </CardContent>
       <CardFooter className="justify-between items-center">
         <Badge variant="secondary">
-          <Paw className="h-4 w-4 mr-2" />
+          <Calendar className="h-4 w-4 mr-2" />
           {breed}
         </Badge>
         <Button variant="outline" size="sm" onClick={handleViewLitter}>

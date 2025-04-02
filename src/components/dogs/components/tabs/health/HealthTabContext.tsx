@@ -1,140 +1,67 @@
 
-import React, { createContext, useContext, useState } from 'react';
-import { HealthRecordTypeEnum, WeightRecord } from '@/types/health';
-import { useWeightTracking } from '@/components/dogs/hooks/useWeightTracking';
-import { useHealthRecords } from '@/components/dogs/hooks/useHealthRecords';
-import { useDogDetail } from '@/components/dogs/hooks/useDogDetail';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { WeightRecord } from '@/types/health';
 
 interface HealthTabContextType {
-  dogId: string;
-  dog?: any; // Add the dog property
-  recordDialogOpen: boolean;
-  setRecordDialogOpen: (open: boolean) => void;
-  weightDialogOpen: boolean;
-  setWeightDialogOpen: (open: boolean) => void;
-  healthIndicatorDialogOpen: boolean;
-  setHealthIndicatorDialogOpen: (open: boolean) => void;
-  selectedRecordType?: HealthRecordTypeEnum;
-  selectedRecord?: string;
-  weightHistory: WeightRecord[];
-  growthStats: any;
-  isLoading: boolean;
-  handleSaveRecord: () => void;
-  handleSaveWeight: (data: any) => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  healthRecords: any[];
-  getRecordsByType: (type: HealthRecordTypeEnum) => any[];
-  handleAddRecord: (type: HealthRecordTypeEnum) => void;
-  handleEditRecord: (recordId: string) => void;
-  openAddVaccinationDialog: () => void;
-  openAddExaminationDialog: () => void;
-  openAddMedicationDialog: () => void;
-  openAddWeightDialog: () => void;
-  openAddHealthIndicatorDialog: () => void;
+  recentHealthRecords: any[];
+  weightRecords: WeightRecord[];
+  medications: any[];
+  isLoading: boolean;
+  refreshData: () => void;
 }
 
-const HealthTabContext = createContext<HealthTabContextType | undefined>(undefined);
-
-export const useHealthTabContext = () => {
-  const context = useContext(HealthTabContext);
-  if (!context) {
-    throw new Error('useHealthTabContext must be used within a HealthTabProvider');
-  }
-  return context;
+const defaultContext: HealthTabContextType = {
+  activeTab: 'summary',
+  setActiveTab: () => {},
+  recentHealthRecords: [],
+  weightRecords: [],
+  medications: [],
+  isLoading: false,
+  refreshData: () => {},
 };
 
+const HealthTabContext = createContext<HealthTabContextType>(defaultContext);
+
+export const useHealthTabContext = () => useContext(HealthTabContext);
+
 interface HealthTabProviderProps {
+  children: ReactNode;
   dogId: string;
-  children: React.ReactNode;
 }
 
-export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ dogId, children }) => {
+export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ children, dogId }) => {
   const [activeTab, setActiveTab] = useState('summary');
-  const [recordDialogOpen, setRecordDialogOpen] = useState(false);
-  const [weightDialogOpen, setWeightDialogOpen] = useState(false);
-  const [healthIndicatorDialogOpen, setHealthIndicatorDialogOpen] = useState(false);
-  const [selectedRecordType, setSelectedRecordType] = useState<HealthRecordTypeEnum>();
-  const [selectedRecord, setSelectedRecord] = useState<string>();
-  
-  // Fetch dog data
-  const { dog, isLoading: isDogLoading } = useDogDetail(dogId);
-  
-  const { 
-    healthRecords, 
-    isLoading: isHealthLoading,
-    addHealthRecord,
-    updateHealthRecord,
-    getRecordsByType
-  } = useHealthRecords(dogId);
-  
-  const {
-    weightHistory,
-    isLoading: isWeightLoading,
-    growthStats,
-    addWeightRecord
-  } = useWeightTracking(dogId);
-  
-  const isLoading = isHealthLoading || isWeightLoading || isDogLoading;
-  
-  const handleAddRecord = (type: HealthRecordTypeEnum) => {
-    setSelectedRecordType(type);
-    setSelectedRecord(undefined);
-    setRecordDialogOpen(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [recentHealthRecords, setRecentHealthRecords] = useState<any[]>([]);
+  const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
+  const [medications, setMedications] = useState<any[]>([]);
+
+  const refreshData = () => {
+    setIsLoading(true);
+    
+    // Mock fetch data in a future implementation
+    setTimeout(() => {
+      setRecentHealthRecords([]);
+      setWeightRecords([]);
+      setMedications([]);
+      setIsLoading(false);
+    }, 500);
   };
-  
-  const handleEditRecord = (recordId: string) => {
-    setSelectedRecord(recordId);
-    setRecordDialogOpen(true);
-  };
-  
-  const handleSaveRecord = () => {
-    setRecordDialogOpen(false);
-  };
-  
-  const handleSaveWeight = (data: any) => {
-    addWeightRecord(data);
-    setWeightDialogOpen(false);
-  };
-  
-  // Add these convenience functions for opening dialogs
-  const openAddVaccinationDialog = () => handleAddRecord(HealthRecordTypeEnum.Vaccination);
-  const openAddExaminationDialog = () => handleAddRecord(HealthRecordTypeEnum.Examination);
-  const openAddMedicationDialog = () => handleAddRecord(HealthRecordTypeEnum.Medication);
-  const openAddWeightDialog = () => setWeightDialogOpen(true);
-  const openAddHealthIndicatorDialog = () => setHealthIndicatorDialogOpen(true);
-  
-  const value = {
-    dogId,
-    dog, // Add the dog property to the context value
-    recordDialogOpen,
-    setRecordDialogOpen,
-    weightDialogOpen,
-    setWeightDialogOpen,
-    healthIndicatorDialogOpen,
-    setHealthIndicatorDialogOpen,
-    selectedRecordType,
-    selectedRecord,
-    weightHistory: weightHistory || [],
-    growthStats,
-    isLoading,
-    handleSaveRecord,
-    handleSaveWeight,
-    activeTab,
-    setActiveTab,
-    healthRecords: healthRecords || [],
-    getRecordsByType,
-    handleAddRecord,
-    handleEditRecord,
-    openAddVaccinationDialog,
-    openAddExaminationDialog,
-    openAddMedicationDialog,
-    openAddWeightDialog,
-    openAddHealthIndicatorDialog
-  };
-  
+
   return (
-    <HealthTabContext.Provider value={value}>
+    <HealthTabContext.Provider
+      value={{
+        activeTab,
+        setActiveTab,
+        recentHealthRecords,
+        weightRecords,
+        medications,
+        isLoading,
+        refreshData,
+      }}
+    >
       {children}
     </HealthTabContext.Provider>
   );

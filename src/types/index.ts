@@ -1,15 +1,19 @@
 
 // Re-export all types from individual domain files
 export * from './user';
-export * from './auth';
+// Not exporting auth types as the import is missing
+// export * from './auth';
 export * from './dog';
-export * from './puppy';
+// Not exporting puppy types as the import is missing
+// export * from './puppy';
 export * from './litter';
 export * from './genetics';
 export * as Health from './health';
-export * from './ui';
+// Not exporting UI types as the import is missing
+// export * from './ui'; 
 export * from './puppyTracking';
-export * from './organization';
-export * from './notification';
-export * from './subscription';
-export * from './adoption';
+// Not exporting organization, notification, subscription and adoption as they're missing
+// export * from './organization';
+// export * from './notification';
+// export * from './subscription';
+// export * from './adoption';
