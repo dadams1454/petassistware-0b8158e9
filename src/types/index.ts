@@ -30,7 +30,7 @@ import {
   SimpleDog, 
   Litter,
   Dog,
-  // WeightUnit, // Exclude the conflicting type
+  // WeightUnit, // Exclude this to avoid conflicts
   WeightUnitValue
 } from './litter';
 

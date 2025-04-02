@@ -44,17 +44,16 @@ const Dashboard: React.FC = () => {
       <RefreshProvider>
         <DashboardProvider>
           <DailyCareProvider>
-            <div className="space-y-6">
-              <SectionHeader 
-                title="Dashboard" 
-                description="Welcome to your kennel management dashboard"
-              />
+            <div className="space-y-6 p-6">
+              <div className="flex items-center justify-between pb-4">
+                <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+              </div>
               
               {hasAlerts && (
-                <Alert className="bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800">
+                <Alert className="bg-purple-950/40 border-purple-800 text-purple-300">
                   <Heart className="h-4 w-4 text-purple-500" />
-                  <AlertTitle>Heat Cycle Alerts</AlertTitle>
-                  <AlertDescription className="flex flex-col gap-2">
+                  <AlertTitle className="text-white font-medium">Heat Cycle Alerts</AlertTitle>
+                  <AlertDescription className="flex flex-col gap-2 text-purple-200">
                     <div>
                       {alerts.map((alert) => (
                         <div key={alert.dogId} className="mb-1 flex justify-between items-center">
@@ -69,7 +68,7 @@ const Dashboard: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            className="ml-4"
+                            className="ml-4 border-purple-700 bg-purple-900/40 text-purple-200 hover:bg-purple-900 hover:text-purple-100"
                             onClick={() => handleGoToBreeding(alert.dogId)}
                           >
                             Manage Breeding
@@ -80,7 +79,7 @@ const Dashboard: React.FC = () => {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-fit mt-1"
+                      className="w-fit mt-1 border-purple-700 bg-purple-900/40 text-purple-200 hover:bg-purple-900 hover:text-purple-100"
                       onClick={() => handleGoToBreeding()}
                     >
                       <Calendar className="h-4 w-4 mr-2" />
@@ -90,12 +89,8 @@ const Dashboard: React.FC = () => {
                 </Alert>
               )}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Financial Dashboard Widget has been removed from here */}
-                {/* Add more dashboard widgets here as they are developed */}
-              </div>
+              <h2 className="text-xl font-bold text-white mt-4">Overview</h2>
               
-              {/* Daily Care and other dashboard content */}
               <DashboardContent 
                 isLoading={false}
                 stats={dashboardStats}

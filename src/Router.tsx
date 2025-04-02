@@ -16,6 +16,7 @@ import NotFound from './pages/NotFound';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import Index from './pages/Index';
+import WelpingDashboard from './pages/WelpingDashboard';
 
 const Router = () => {
   return (
@@ -43,6 +44,13 @@ const Router = () => {
           {/* Puppies routes */}
           <Route path="/puppies" element={<PuppyDashboard />} />
           <Route path="/puppies/:id" element={<PuppyDashboard />} />
+          
+          {/* Breeding/Welping routes */}
+          <Route path="/breeding-prep" element={<div>Breeding Preparation</div>} />
+          <Route path="/welping" element={<WelpingDashboard />} />
+          
+          {/* Redirect from root to dashboard */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           
           {/* Fallback route */}
           <Route path="*" element={<NotFound />} />

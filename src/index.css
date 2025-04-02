@@ -13,16 +13,49 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  background-color: #121212;
+  color: #ffffff;
 }
 
 #root {
   min-height: 100vh;
 }
 
+/* Dark mode styles */
+:root {
+  --background: 0 0% 7%;
+  --foreground: 0 0% 95%;
+  color-scheme: dark;
+}
+
 /* Default dark mode styles */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 95%;
   }
+}
+
+/* Card overrides for dark theme */
+.card {
+  @apply bg-gray-900 border-gray-800;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

@@ -1,27 +1,17 @@
 
 import React from 'react';
-import { DashboardData } from '@/services/dashboardService';
+import { DashboardData } from '@/services/dashboard/types';
 import StatCard from './StatCard';
-import { useAuth } from '@/contexts/AuthProvider';
-import GenerateTestDataButton from './GenerateTestDataButton';
 
 interface DashboardOverviewProps {
   data: DashboardData;
   isLoading: boolean;
-  onCareLogClick?: () => void;
 }
 
-const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data, isLoading, onCareLogClick }) => {
-  const { user } = useAuth();
-  
+const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data, isLoading }) => {
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Overview</h2>
-        {user && <GenerateTestDataButton />}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title="Total Dogs"
           value={data.totalDogs}

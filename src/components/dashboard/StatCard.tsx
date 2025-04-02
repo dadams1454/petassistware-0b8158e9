@@ -1,40 +1,34 @@
 
 import React from 'react';
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/standardized';
 
 interface StatCardProps {
   title: string;
   value: number | string;
-  change?: number;
   isLoading?: boolean;
+  icon?: React.ReactNode;
 }
 
 const StatCard: React.FC<StatCardProps> = ({ 
   title, 
   value, 
-  change, 
-  isLoading = false 
+  isLoading = false,
+  icon
 }) => {
   return (
-    <div className="bg-white border rounded-lg p-6 shadow-sm">
-      {isLoading ? (
-        <>
-          <Skeleton className="h-5 w-24 mb-2" />
-          <Skeleton className="h-8 w-16" />
-        </>
-      ) : (
-        <>
-          <h3 className="text-sm font-medium text-gray-500 text-center mb-2">{title}</h3>
-          <p className="text-3xl font-bold text-center">{value}</p>
-          
-          {change !== undefined && (
-            <div className={`text-sm mt-2 text-center ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {change >= 0 ? '+' : ''}{change}%
-            </div>
+    <Card className="bg-white text-black dark:bg-gray-950 dark:text-white border-0">
+      <CardContent className="p-6">
+        <div className="flex flex-col items-center text-center">
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</h3>
+          {isLoading ? (
+            <Skeleton className="h-12 w-16 mt-2" />
+          ) : (
+            <p className="text-4xl font-bold mt-1">{value}</p>
           )}
-        </>
-      )}
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
