@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { WeightRecord } from '@/types/health';
 
 interface WeightHistoryChartProps {
@@ -23,11 +23,11 @@ const WeightHistoryChart: React.FC<WeightHistoryChartProps> = ({ weightRecords }
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
   
-  // Format data for the chart
+  // Format data for the chart with fallback for unit
   const chartData = sortedRecords.map(record => ({
     date: format(new Date(record.date), 'MMM d, yyyy'),
     weight: record.weight,
-    unit: record.unit || record.weight_unit
+    unit: record.unit || record.weight_unit || 'lbs'
   }));
 
   return (

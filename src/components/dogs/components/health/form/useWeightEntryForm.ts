@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { WeightUnitEnum } from '@/types/health';
+import { WeightUnit } from '@/types/health';
+import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 
 // Schema for weight entry form
 const weightEntrySchema = z.object({
@@ -18,34 +19,46 @@ const weightEntrySchema = z.object({
   }).positive({
     message: 'Weight must be greater than 0',
   }),
-  unit: z.nativeEnum(WeightUnitEnum, {
-    required_error: 'Unit is required',
+  unit: z.custom<WeightUnit>((val) => {
+    return ['oz', 'g', 'lbs', 'kg', 'lb'].includes(val as string);
+  }, {
+    message: 'Please select a valid weight unit',
   }),
   notes: z.string().optional(),
 });
 
-type WeightEntryValues = z.infer<typeof weightEntrySchema>;
+export type WeightEntryValues = z.infer<typeof weightEntrySchema>;
 
-export const useWeightEntryForm = (dogId: string, onSave: (data: any) => void) => {
+interface UseWeightEntryFormProps {
+  dogId: string;
+  onSave: (data: any) => Promise<any>;
+  initialData?: Partial<WeightEntryValues>;
+}
+
+export const useWeightEntryForm = ({ dogId, onSave, initialData }: UseWeightEntryFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<WeightEntryValues>({
     resolver: zodResolver(weightEntrySchema),
     defaultValues: {
-      date: new Date(),
-      weight: 0,
-      unit: WeightUnitEnum.Pounds,
-      notes: '',
+      date: initialData?.date || new Date(),
+      weight: initialData?.weight || 0,
+      unit: initialData?.unit || 'lbs',
+      notes: initialData?.notes || '',
     }
   });
   
   const handleSubmit = async (values: WeightEntryValues) => {
     setIsSubmitting(true);
     try {
-      // Format the data for the API, converting Date to string
+      // Format the data for the API, safely converting Date to string
+      const formattedDate = values.date instanceof Date 
+        ? formatDateToYYYYMMDD(values.date) 
+        : new Date().toISOString().split('T')[0];
+      
       const weightRecord = {
         dog_id: dogId,
-        date: values.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        date: formattedDate,
         weight: values.weight,
         unit: values.unit,
         // We also include weight_unit for backward compatibility
@@ -54,8 +67,10 @@ export const useWeightEntryForm = (dogId: string, onSave: (data: any) => void) =
       };
       
       await onSave(weightRecord);
+      return true;
     } catch (error) {
       console.error('Error saving weight record:', error);
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -64,6 +79,6 @@ export const useWeightEntryForm = (dogId: string, onSave: (data: any) => void) =
   return {
     form,
     isSubmitting,
-    handleSubmit
+    handleSubmit: form.handleSubmit(handleSubmit)
   };
 };
