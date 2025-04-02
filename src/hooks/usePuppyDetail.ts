@@ -27,7 +27,7 @@ export const usePuppyDetail = (puppyId: string) => {
       if (error) throw error;
       
       // Calculate age in days
-      const birthDate = data.birth_date || (data.litter?.birth_date);
+      const birthDate = data.birth_date || (data.litter && data.litter.birth_date);
       let ageInDays = 0;
       
       if (birthDate) {
