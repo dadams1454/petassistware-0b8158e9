@@ -1,4 +1,3 @@
-
 export interface Puppy {
   id: string;
   name: string;

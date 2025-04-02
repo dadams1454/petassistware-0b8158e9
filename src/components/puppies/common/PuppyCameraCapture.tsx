@@ -1,190 +1,263 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, X, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Camera, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { compressImage } from '@/utils/imageOptimization';
-import { cn } from '@/lib/utils';
 
 interface PuppyCameraCaptureProps {
   puppyId: string;
+  currentPhotoUrl?: string | null;
   onPhotoUploaded: (url: string) => void;
-  currentPhotoUrl?: string;
-  className?: string;
   showRemoveButton?: boolean;
+  className?: string;
 }
 
 const PuppyCameraCapture: React.FC<PuppyCameraCaptureProps> = ({
   puppyId,
-  onPhotoUploaded,
   currentPhotoUrl,
-  className,
-  showRemoveButton = false,
+  onPhotoUploaded,
+  showRemoveButton = true,
+  className = '',
 }) => {
-  const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl || null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(currentPhotoUrl || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  // Update photoUrl when currentPhotoUrl changes
+  useEffect(() => {
+    if (currentPhotoUrl !== undefined) {
+      setPhotoUrl(currentPhotoUrl);
+    }
+  }, [currentPhotoUrl]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    await uploadImage(file);
+  };
+
+  const uploadImage = async (file: File) => {
     if (!file) return;
 
     try {
       setIsUploading(true);
+
+      // Compress the image before uploading
+      console.log('Compressing image...');
+      const compressedFile = await compressImage(file, 1200, 0.8);
       
-      // Show preview immediately
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-      
-      // Compress the image before upload (max width 1200px, 85% quality)
-      const compressedFile = await compressImage(file, 1200, 0.85);
-      
-      // Upload to Supabase
-      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      // Create storage path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `puppies/${puppyId}/photos/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
+
+      // Upload image to Supabase storage
+      console.log('Uploading to:', filePath);
+      const { data, error } = await supabase.storage
         .from('dog-photos')
-        .upload(filePath, compressedFile);
-        
-      if (uploadError) throw uploadError;
-      
-      // Get the public URL
+        .upload(filePath, compressedFile, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) throw error;
+
+      // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('dog-photos')
         .getPublicUrl(filePath);
-        
-      if (!publicUrlData?.publicUrl) throw new Error('Failed to get public URL');
+
+      const url = publicUrlData.publicUrl;
       
-      // Call the callback with the URL
-      onPhotoUploaded(publicUrlData.publicUrl);
+      // Store the URL in state
+      setPhotoUrl(url);
       
-      toast({
-        title: "Photo uploaded",
-        description: "Your photo has been uploaded successfully",
-      });
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload photo",
-        variant: "destructive",
-      });
-      
-      // Revert to previous photo if available
-      setPreviewUrl(currentPhotoUrl || null);
-    } finally {
-      setIsUploading(false);
-      
-      // Reset the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      // Check if this is the first photo, and if so, set it as the main photo in the puppy record
+      if (!currentPhotoUrl) {
+        // Update the puppy's photo_url if this is the first photo
+        const { error: updateError } = await supabase
+          .from('puppies')
+          .update({ photo_url: url })
+          .eq('id', puppyId);
+          
+        if (updateError) {
+          console.error('Error updating puppy photo_url:', updateError);
+        }
       }
-    }
-  };
-  
-  const handleRemovePhoto = async () => {
-    if (!currentPhotoUrl) return;
-    
-    try {
-      setIsUploading(true);
-      setPreviewUrl(null);
       
-      // Call the callback with empty string to remove the photo
-      onPhotoUploaded('');
+      // Insert the photo into the puppy_photos table
+      const { error: insertError } = await supabase
+        .from('puppy_photos')
+        .insert({
+          puppy_id: puppyId,
+          photo_url: url,
+          is_main: !currentPhotoUrl // Set as main photo if there's no current photo
+        });
+        
+      if (insertError) {
+        console.error('Error inserting into puppy_photos:', insertError);
+      }
+
+      // Notify the parent component
+      onPhotoUploaded(url);
       
       toast({
-        title: "Photo removed",
-        description: "The photo has been removed",
+        title: 'Photo uploaded',
+        description: 'Your photo has been uploaded successfully',
       });
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error uploading image:', error);
       toast({
-        title: "Error",
-        description: "Failed to remove photo",
-        variant: "destructive",
+        title: 'Upload failed',
+        description: 'There was an error uploading your photo',
+        variant: 'destructive',
       });
-      setPreviewUrl(currentPhotoUrl);
     } finally {
       setIsUploading(false);
+      // Clear the file input value to allow the same file to be selected again
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
-  
-  const openCamera = () => {
+
+  const handleCaptureClick = () => {
     fileInputRef.current?.click();
   };
 
-  return (
-    <div className={cn("flex flex-col items-center justify-center", className)}>
-      {previewUrl ? (
-        <div className="relative">
-          <img 
-            src={previewUrl} 
-            alt="Puppy photo" 
-            className="w-48 h-48 object-cover rounded-lg"
-          />
-          
-          {isUploading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
-              <Loader2 className="h-8 w-8 text-white animate-spin" />
-            </div>
-          )}
-          
-          {showRemoveButton && (
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute -top-2 -right-2 rounded-full h-8 w-8"
-              onClick={handleRemovePhoto}
-              disabled={isUploading}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div 
-          className="w-48 h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={openCamera}
-        >
-          <Camera className="h-10 w-10 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground">Take a photo</p>
-        </div>
-      )}
+  const handleRemovePhoto = async () => {
+    if (!photoUrl) return;
+
+    try {
+      setIsUploading(true);
       
-      <div className="mt-3 flex space-x-2">
+      // Extract the file path from the URL
+      const urlParts = photoUrl.split('/');
+      const storagePathIndex = urlParts.indexOf('dog-photos') + 1;
+      
+      if (storagePathIndex > 0 && storagePathIndex < urlParts.length) {
+        const storagePath = urlParts.slice(storagePathIndex).join('/');
+        
+        // Delete the file from storage
+        const { error: storageError } = await supabase.storage
+          .from('dog-photos')
+          .remove([storagePath]);
+          
+        if (storageError) {
+          console.error('Error removing from storage:', storageError);
+        }
+      }
+      
+      // Remove from the puppy_photos table
+      const { error: deleteError } = await supabase
+        .from('puppy_photos')
+        .delete()
+        .eq('photo_url', photoUrl);
+        
+      if (deleteError) {
+        console.error('Error deleting from puppy_photos:', deleteError);
+      }
+
+      // Update the puppy record if this is the main photo
+      const { error: updateError } = await supabase
+        .from('puppies')
+        .update({ photo_url: null })
+        .eq('id', puppyId)
+        .eq('photo_url', photoUrl);
+        
+      if (updateError) {
+        console.error('Error updating puppy photo_url:', updateError);
+      }
+
+      // Clear the photo URL
+      setPhotoUrl(null);
+      onPhotoUploaded('');
+      
+      toast({
+        title: 'Photo removed',
+        description: 'Your photo has been removed successfully',
+      });
+    } catch (error) {
+      console.error('Error removing image:', error);
+      toast({
+        title: 'Removal failed',
+        description: 'There was an error removing your photo',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className={`flex flex-col items-center space-y-2 ${className}`}>
+      <div className="w-40 h-40 relative bg-gray-100 rounded-md overflow-hidden">
+        {photoUrl ? (
+          <img 
+            src={photoUrl} 
+            alt="Puppy" 
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <ImageIcon className="h-12 w-12 text-gray-400" />
+          </div>
+        )}
+        
+        {isUploading && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex space-x-2">
         <Button 
           type="button" 
           variant="outline" 
           size="sm"
-          onClick={openCamera}
+          onClick={handleCaptureClick} 
           disabled={isUploading}
-          className="flex items-center"
         >
-          <Camera className="h-4 w-4 mr-2" />
-          {previewUrl ? 'Replace' : 'Camera'}
+          <Camera className="h-4 w-4 mr-1" />
+          Capture
         </Button>
         
-        <Button
-          type="button"
+        <Button 
+          type="button" 
           variant="outline" 
           size="sm"
-          onClick={openCamera}
+          onClick={() => fileInputRef.current?.click()} 
           disabled={isUploading}
-          className="flex items-center"
         >
-          <Upload className="h-4 w-4 mr-2" />
+          <Upload className="h-4 w-4 mr-1" />
           Upload
         </Button>
+        
+        {showRemoveButton && photoUrl && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm"
+            onClick={handleRemovePhoto} 
+            disabled={isUploading}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Remove
+          </Button>
+        )}
       </div>
       
       <input
-        ref={fileInputRef}
         type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
         accept="image/*"
         capture="environment"
-        onChange={handleFileChange}
         className="hidden"
       />
     </div>
