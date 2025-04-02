@@ -29,7 +29,15 @@ const WelpingManagementPage: React.FC = () => {
   } = useWelpingManagement();
 
   const handleStartNewWelping = () => {
-    navigate('/welping/new');
+    navigate('/reproduction/welping/new');
+  };
+
+  const handleGoToBreeding = () => {
+    navigate('/reproduction/breeding');
+  };
+
+  const handleGoToLitters = () => {
+    navigate('/reproduction/litters');
   };
 
   const handleStartBreedingPrep = () => {
@@ -62,9 +70,9 @@ const WelpingManagementPage: React.FC = () => {
             <Button 
               variant="outline" 
               className="w-full justify-start" 
-              onClick={() => setActiveTab('breeding-prep')}
+              onClick={handleGoToBreeding}
             >
-              Breeding Preparation
+              Breeding Management
             </Button>
             <Button 
               variant="outline" 
@@ -76,7 +84,7 @@ const WelpingManagementPage: React.FC = () => {
             <Button 
               variant="outline" 
               className="w-full justify-start"
-              onClick={() => setActiveTab('litter-overview')}
+              onClick={handleGoToLitters}
             >
               Litter Management
             </Button>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,7 +29,8 @@ import {
   Settings,
   Scale,
   UserCircle,
-  Baby
+  Baby,
+  Heart
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 
@@ -40,7 +42,7 @@ const AppSidebar = () => {
     { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { title: 'Profile', href: '/profile', icon: UserCircle },
     { title: 'Dogs', href: '/dogs', icon: Dog },
-    { title: 'Litters', href: '/litters', icon: ClipboardList },
+    { title: 'Reproduction', href: '/reproduction', icon: Heart },
     { title: 'Reservations', href: '/reservations', icon: Bookmark },
     { title: 'Customers', href: '/customers', icon: Users },
   ];
@@ -52,8 +54,6 @@ const AppSidebar = () => {
     { title: 'Finances', href: '/finances', icon: Coins },
     { title: 'Facility', href: '/facility', icon: Building2 },
     { title: 'Compliance', href: '/compliance', icon: Scale },
-    { title: 'Breeding Prep', href: '/breeding-prep', icon: ClipboardList },
-    { title: 'Welping', href: '/welping', icon: Baby },
   ];
   
   const adminMenuItems = [

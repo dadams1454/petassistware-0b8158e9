@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Dog, Clipboard, Calendar, 
   MessageSquare, FileText, DollarSign, Building2,
   ShieldCheck, Heart, Baby, FileSpreadsheet, Settings,
-  PawPrint
+  PawPrint, AreaChart
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -25,7 +25,7 @@ const Sidebar = () => {
             <SidebarLink to="/dashboard" icon={<LayoutDashboard size={18} />} label="Dashboard" />
             <SidebarLink to="/profile" icon={<Users size={18} />} label="Profile" />
             <SidebarLink to="/dogs" icon={<Dog size={18} />} label="Dogs" />
-            <SidebarLink to="/litters" icon={<Clipboard size={18} />} label="Litters" />
+            <SidebarLink to="/reproduction" icon={<Heart size={18} />} label="Reproduction" />
             <SidebarLink to="/reservations" icon={<Calendar size={18} />} label="Reservations" />
             <SidebarLink to="/customers" icon={<Users size={18} />} label="Customers" />
           </nav>
@@ -40,8 +40,6 @@ const Sidebar = () => {
             <SidebarLink to="/finances" icon={<DollarSign size={18} />} label="Finances" />
             <SidebarLink to="/facility" icon={<Building2 size={18} />} label="Facility" />
             <SidebarLink to="/compliance" icon={<ShieldCheck size={18} />} label="Compliance" />
-            <SidebarLink to="/breeding-prep" icon={<Heart size={18} />} label="Breeding Prep" />
-            <SidebarLink to="/welping" icon={<Baby size={18} />} label="Welping" />
           </nav>
         </div>
         

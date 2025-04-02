@@ -23,7 +23,6 @@ import SettingsPage from '@/pages/Settings';
 import ReservationsPage from '@/pages/Reservations';
 import CustomersPage from '@/pages/Customers';
 import ProfilePage from '@/pages/Profile';
-import LitterDetailPage from '@/pages/LitterDetail';
 import BatchPuppyEntryPage from '@/pages/BatchPuppyEntry';
 import PuppyTestingPage from '@/pages/PuppyTestingDashboard';
 
@@ -44,17 +43,11 @@ import {
   WelpingManagementPage
 } from '@/modules/Reproduction';
 
-// Import Welping Module (legacy pages - will be redirected)
-import {
-  WelpingDashboardPage,
-  WelpingCreatePage,
-  WelpingDetailPage,
-  WelpingEditPage,
-  WelpingLogPage
-} from '@/pages/Welping';
-
 // Import WhelpingLiveSession component
 import WhelpingLiveSession from '@/modules/Reproduction/components/welping/WhelpingLiveSession';
+
+// Import LitterDetail component for consistent routing
+import LitterDetail from '@/pages/LitterDetail';
 
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
@@ -90,25 +83,37 @@ export const appRoutes = (
       <Route path="/dogs/:id/weight" element={<DogWeightPage />} />
       <Route path="/dogs/:dogId/reproductive" element={<ReproductiveCyclePage />} />
       
-      {/* New Unified Reproduction Module */}
+      {/* CENTRALIZED REPRODUCTION ROUTES */}
+      {/* Main Reproduction dashboard */}
       <Route path="/reproduction" element={<WelpingManagementPage />} />
-      <Route path="/reproduction/breeding" element={<BreedingManagementPage />} />
-      <Route path="/reproduction/litters" element={<LitterManagementPage />} />
       
-      {/* Legacy routes for backwards compatibility - redirect to new module */}
+      {/* Breeding Management */}
+      <Route path="/reproduction/breeding" element={<BreedingManagementPage />} />
+      
+      {/* Litter Management */}
+      <Route path="/reproduction/litters" element={<LitterManagementPage />} />
+      <Route path="/reproduction/litters/:id" element={<LitterDetail />} />
+      <Route path="/reproduction/litters/:litterId/add-puppies" element={<BatchPuppyEntryPage />} />
+      <Route path="/reproduction/litters/:litterId/puppy-testing" element={<PuppyTestingPage />} />
+      
+      {/* Whelping Management */}
+      <Route path="/reproduction/welping" element={<WelpingManagementPage />} />
+      <Route path="/reproduction/welping/:id" element={<WhelpingLiveSession />} />
+      
+      {/* LEGACY ROUTES - Redirects to new structure */}
+      {/* These routes will still work for backward compatibility but point to the new components */}
       <Route path="/litters" element={<LitterManagementPage />} />
-      <Route path="/litters/:id" element={<LitterDetailPage />} />
+      <Route path="/litters/:id" element={<LitterDetail />} />
       <Route path="/litter/:litterId/add-puppies" element={<BatchPuppyEntryPage />} />
       <Route path="/litter/:litterId/puppy-testing" element={<PuppyTestingPage />} />
       <Route path="/breeding-prep" element={<BreedingManagementPage />} />
       
       {/* Legacy Welping routes - for backwards compatibility */}
       <Route path="/welping" element={<WelpingManagementPage />} />
-      <Route path="/welping/new" element={<WelpingCreatePage />} />
-      <Route path="/welping/:id" element={<WelpingDetailPage />} />
-      <Route path="/welping/:id/edit" element={<WelpingEditPage />} />
-      <Route path="/welping/:id/logs" element={<WelpingLogPage />} />
+      <Route path="/welping/:id" element={<LitterDetail />} /> 
       <Route path="/welping/:id/live" element={<WhelpingLiveSession />} />
+      <Route path="/welping/:id/edit" element={<LitterDetail />} />
+      <Route path="/welping/:id/logs" element={<LitterDetail />} />
       
       {/* Operations routes */}
       <Route path="/calendar" element={<CalendarPage />} />

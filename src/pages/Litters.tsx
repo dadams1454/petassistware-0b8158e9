@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
 import { Button } from '@/components/ui/button';
@@ -12,10 +14,16 @@ import { Litter } from '@/types/litter';
 
 const Litters: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [litters, setLitters] = useState<Litter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedLitter, setSelectedLitter] = useState<Litter | null>(null);
+  
+  // Redirect to the centralized reproduction section
+  useEffect(() => {
+    navigate('/reproduction/litters');
+  }, [navigate]);
   
   const loadLitters = async () => {
     setIsLoading(true);

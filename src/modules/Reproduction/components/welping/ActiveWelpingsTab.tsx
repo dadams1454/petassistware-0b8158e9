@@ -51,7 +51,7 @@ const ActiveWelpingsTab: React.FC<ActiveWelpingsTabProps> = ({
         icon={<Dog className="h-10 w-10 text-muted-foreground" />}
         action={{
           label: "Start New Whelping",
-          onClick: () => navigate('/welping/new'),
+          onClick: () => navigate('/reproduction/welping/new'),
         }}
       />
     );
@@ -99,7 +99,7 @@ const ActiveWelpingsTab: React.FC<ActiveWelpingsTabProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/welping/${litter.id}`)}
+              onClick={() => navigate(`/reproduction/litters/${litter.id}`)}
             >
               <Eye className="h-4 w-4 mr-2" />
               View
@@ -107,15 +107,15 @@ const ActiveWelpingsTab: React.FC<ActiveWelpingsTabProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/welping/${litter.id}/logs`)}
+              onClick={() => navigate(`/reproduction/litters/${litter.id}`)}
             >
               <Edit className="h-4 w-4 mr-2" />
-              Logs
+              Edit
             </Button>
             <Button
               variant="default"
               size="sm"
-              onClick={() => navigate(`/welping/${litter.id}/live`)}
+              onClick={() => navigate(`/reproduction/welping/${litter.id}`)}
               className="ml-auto"
             >
               <PlayCircle className="h-4 w-4 mr-2" />
