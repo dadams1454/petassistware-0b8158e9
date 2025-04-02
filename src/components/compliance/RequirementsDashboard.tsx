@@ -11,7 +11,19 @@ import { format, isAfter, isBefore, addDays } from 'date-fns';
 import RequirementDialog from './dialogs/RequirementDialog';
 import { useAuth } from '@/contexts/AuthProvider';
 
-interface Requirement extends ComplianceRequirementRow {}
+interface Requirement {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  due_date: string;
+  priority: "high" | "medium" | "low";
+  status: "completed" | "overdue" | "due-soon" | "pending";
+  completed_at: string | null;
+  notes: string;
+  breeder_id: string;
+  created_at: string;
+}
 
 const RequirementsDashboard: React.FC = () => {
   const { toast } = useToast();
@@ -32,7 +44,7 @@ const RequirementsDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       const { data, error } = await customSupabase
-        .from<ComplianceRequirementRow, ComplianceRequirementRow>('compliance_requirements')
+        .from('compliance_requirements')
         .select('*');
       
       if (error) throw error;
@@ -127,7 +139,7 @@ const RequirementsDashboard: React.FC = () => {
       if (selectedRequirement) {
         // Update existing requirement
         const { error } = await customSupabase
-          .from<ComplianceRequirementRow, ComplianceRequirementRow>('compliance_requirements')
+          .from('compliance_requirements')
           .update(updatedData)
           .eq('id', selectedRequirement.id);
 
@@ -140,7 +152,7 @@ const RequirementsDashboard: React.FC = () => {
       } else {
         // Insert new requirement
         const { error } = await customSupabase
-          .from<ComplianceRequirementRow, ComplianceRequirementRow>('compliance_requirements')
+          .from('compliance_requirements')
           .insert(updatedData);
 
         if (error) throw error;
@@ -272,7 +284,7 @@ const RequirementsDashboard: React.FC = () => {
               <TabsTrigger value="completed">Completed</TabsTrigger>
             </TabsList>
           
-            <CardContent>
+            <TabsContent value={activeTab}>
               {isLoading ? (
                 <div className="flex justify-center py-8">
                   <div className="animate-spin h-6 w-6 border-2 border-blue-500 rounded-full border-t-transparent"></div>
@@ -282,7 +294,7 @@ const RequirementsDashboard: React.FC = () => {
                   <p>No {activeTab} requirements</p>
                 </div>
               ) : (
-                <ul className="space-y-4">
+                <ul className="space-y-4 p-6">
                   {filteredRequirements.map(requirement => (
                     <RequirementItem 
                       key={requirement.id}
@@ -293,7 +305,7 @@ const RequirementsDashboard: React.FC = () => {
                   ))}
                 </ul>
               )}
-            </CardContent>
+            </TabsContent>
           </Tabs>
         </Card>
         
