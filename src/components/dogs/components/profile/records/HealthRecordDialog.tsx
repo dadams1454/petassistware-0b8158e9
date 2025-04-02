@@ -107,6 +107,7 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
         title: values.title,
         description: values.description || '',
         performed_by: values.performed_by,
+        vet_name: values.performed_by, // Add this to match HealthRecord interface
         next_due_date: values.has_next_due_date && values.next_due_date 
           ? values.next_due_date.toISOString() 
           : undefined,

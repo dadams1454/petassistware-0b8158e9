@@ -1,197 +1,134 @@
-
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, RefreshCw } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LoadingState, ErrorState } from '@/components/ui/standardized';
-import { usePuppyVaccinations } from '@/hooks/usePuppyVaccinations';
+import { PlusIcon } from '@heroicons/react/24/solid';
 import VaccinationForm from './VaccinationForm';
-import VaccinationSchedule from './VaccinationSchedule';
-import VaccinationRecords from './VaccinationRecords';
-import { VaccinationScheduleItem } from '@/types/puppyTracking';
+import { saveVaccinationSchedule, getVaccinationSchedules } from '@/services/vaccinationService';
+import { toast } from '@/hooks/use-toast';
+import { LoadingState, ErrorState } from '@/components/ui/standardized';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { format } from 'date-fns';
 
-interface VaccinationDashboardProps {
-  puppyId: string;
+interface VaccinationSchedule {
+  id: string;
+  puppy_id: string;
+  vaccine_name: string;
+  due_date: string;
+  administered: boolean;
+  administered_date?: string;
 }
 
-const VaccinationDashboard: React.FC<VaccinationDashboardProps> = ({ puppyId }) => {
-  const [showForm, setShowForm] = useState(false);
-  const [activeTab, setActiveTab] = useState('upcoming');
-  
-  const { 
-    vaccinations, 
-    isLoading, 
-    error, 
-    refresh,
-    addVaccination,
-    scheduleVaccination 
-  } = usePuppyVaccinations(puppyId);
-  
-  // Derived data - process vaccinations into categories
-  const [upcomingVaccinations, setUpcomingVaccinations] = useState<VaccinationScheduleItem[]>([]);
-  const [completedVaccinations, setCompletedVaccinations] = useState<VaccinationScheduleItem[]>([]);
-  const [overdueVaccinations, setOverdueVaccinations] = useState<VaccinationScheduleItem[]>([]);
-  
-  // Process vaccinations into categories
+const VaccinationDashboard: React.FC = () => {
+  const { puppyId } = useParams<{ puppyId: string }>();
+  const navigate = useNavigate();
+  const [vaccinationSchedules, setVaccinationSchedules] = useState<VaccinationSchedule[]>([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!vaccinations) return;
-    
-    const today = new Date();
-    const upcoming: VaccinationScheduleItem[] = [];
-    const completed: VaccinationScheduleItem[] = [];
-    const overdue: VaccinationScheduleItem[] = [];
-    
-    vaccinations.forEach(vaccination => {
-      const isCompleted = vaccination.completed || vaccination.is_completed || 
-                           (vaccination.vaccination_date !== undefined && vaccination.vaccination_date !== null);
-      
-      if (isCompleted) {
-        completed.push(vaccination);
-      } else {
-        const dueDate = new Date(vaccination.due_date);
-        if (dueDate < today) {
-          overdue.push(vaccination);
-        } else {
-          upcoming.push(vaccination);
-        }
-      }
-    });
-    
-    setUpcomingVaccinations(upcoming);
-    setCompletedVaccinations(completed);
-    setOverdueVaccinations(overdue);
-  }, [vaccinations]);
-  
-  const handleRefresh = () => {
-    refresh();
-  };
-  
-  const handleFormSubmit = async (data: any) => {
+    if (puppyId) {
+      fetchVaccinationSchedules(puppyId);
+    }
+  }, [puppyId]);
+
+  const fetchVaccinationSchedules = async (puppyId: string) => {
+    setIsLoading(true);
     try {
-      if (data.vaccination_date) {
-        // Add as completed vaccination
-        await addVaccination({
-          ...data,
-          puppy_id: puppyId,
-          completed: true,
-          is_completed: true
-        });
-      } else {
-        // Schedule for the future
-        await scheduleVaccination({
-          ...data,
-          puppy_id: puppyId
-        });
-      }
-      setShowForm(false);
-      refresh();
-    } catch (error) {
-      console.error('Error submitting vaccination:', error);
+      const schedules = await getVaccinationSchedules(puppyId);
+      setVaccinationSchedules(schedules);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load vaccination schedules');
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
+  const handleAddVaccination = () => {
+    setIsAdding(true);
+  };
+
+  const handleCancelAdd = () => {
+    setIsAdding(false);
+  };
+
+  const handleVaccinationSaved = () => {
+    setIsAdding(false);
+    if (puppyId) {
+      fetchVaccinationSchedules(puppyId);
+    }
+  };
+
+  const handleSaveVaccination = async (data: any): Promise<boolean> => {
+    try {
+      await saveVaccinationSchedule(data);
+      return true;
+    } catch (error) {
+      console.error("Error saving vaccination schedule", error);
+      return false;
+    }
+  };
+
   if (isLoading) {
-    return <LoadingState message="Loading vaccination data..." />;
+    return <LoadingState message="Loading vaccination schedules..." />;
   }
-  
+
   if (error) {
-    return (
-      <ErrorState 
-        title="Error Loading Vaccinations" 
-        message="Could not load vaccination data"
-        onAction={handleRefresh}
-        actionLabel="Retry"
-      />
-    );
+    return <ErrorState title="Error" message={error} />;
   }
-  
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Vaccination Management</h2>
-          <p className="text-muted-foreground">Track and schedule vaccinations</p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-          <Button onClick={() => setShowForm(true)} disabled={showForm}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Vaccination
-          </Button>
-        </div>
-      </div>
-      
-      {showForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New Vaccination</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <VaccinationForm 
-              puppyId={puppyId}
-              onSubmit={handleFormSubmit}
-              onCancel={() => setShowForm(false)}
+    <div className="container mx-auto p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Vaccination Schedule</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isAdding ? (
+            <VaccinationForm
+              puppyId={puppyId || ''}
+              onSave={handleVaccinationSaved}
+              onCancel={handleCancelAdd}
+              onSubmit={handleSaveVaccination}
             />
-          </CardContent>
-        </Card>
-      )}
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="upcoming">
-            Upcoming
-            {upcomingVaccinations.length > 0 && (
-              <span className="ml-2 bg-primary/10 text-primary px-2 rounded-full text-xs">
-                {upcomingVaccinations.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            Completed
-            {completedVaccinations.length > 0 && (
-              <span className="ml-2 bg-green-100 text-green-700 px-2 rounded-full text-xs">
-                {completedVaccinations.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="overdue">
-            Overdue
-            {overdueVaccinations.length > 0 && (
-              <span className="ml-2 bg-red-100 text-red-700 px-2 rounded-full text-xs">
-                {overdueVaccinations.length}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="upcoming" className="pt-4">
-          <VaccinationSchedule 
-            vaccinations={upcomingVaccinations} 
-            onRefresh={refresh}
-            status="upcoming"
-          />
-        </TabsContent>
-        
-        <TabsContent value="completed" className="pt-4">
-          <VaccinationRecords 
-            vaccinations={completedVaccinations}
-            onRefresh={refresh}
-          />
-        </TabsContent>
-        
-        <TabsContent value="overdue" className="pt-4">
-          <VaccinationSchedule 
-            vaccinations={overdueVaccinations}
-            onRefresh={refresh} 
-            status="overdue"
-          />
-        </TabsContent>
-      </Tabs>
+          ) : (
+            <div>
+              <div className="mb-4 flex justify-end">
+                <Button onClick={handleAddVaccination}>
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Add Vaccination
+                </Button>
+              </div>
+              {vaccinationSchedules.length > 0 ? (
+                <Table>
+                  <TableCaption>A list of your recent invoices.</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">Vaccine</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Administered</TableHead>
+                      <TableHead>Administered Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {vaccinationSchedules.map((schedule) => (
+                      <TableRow key={schedule.id}>
+                        <TableCell className="font-medium">{schedule.vaccine_name}</TableCell>
+                        <TableCell>{format(new Date(schedule.due_date), 'MMM d, yyyy')}</TableCell>
+                        <TableCell>{schedule.administered ? 'Yes' : 'No'}</TableCell>
+                        <TableCell>{schedule.administered_date ? format(new Date(schedule.administered_date), 'MMM d, yyyy') : 'N/A'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center">No vaccination schedules found.</div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

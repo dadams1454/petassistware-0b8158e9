@@ -6,7 +6,7 @@ import {
   addWeightRecord as addRecord,
   deleteWeightRecord as deleteRecord
 } from '@/services/healthService';
-import { WeightRecord, WeightUnitEnum } from '@/types/health';
+import { WeightRecord, WeightUnit } from '@/types/health';
 
 export const useWeightTracking = (dogId: string) => {
   const { toast } = useToast();
@@ -76,8 +76,8 @@ export const useWeightTracking = (dogId: string) => {
     const lastRecord = sortedHistory[sortedHistory.length - 1];
     
     // Convert weights to the same unit (kg)
-    const firstWeight = convertWeightToKg(firstRecord.weight, firstRecord.unit);
-    const lastWeight = convertWeightToKg(lastRecord.weight, lastRecord.unit);
+    const firstWeight = convertWeightToKg(firstRecord.weight, firstRecord.unit || firstRecord.weight_unit);
+    const lastWeight = convertWeightToKg(lastRecord.weight, lastRecord.unit || lastRecord.weight_unit);
     
     // Calculate days between measurements
     const daysDiff = Math.max(1, Math.floor(
@@ -117,15 +117,16 @@ export const useWeightTracking = (dogId: string) => {
 };
 
 // Helper function to convert weight to kg for calculations
-const convertWeightToKg = (weight: number, unit: string): number => {
+const convertWeightToKg = (weight: number, unit: WeightUnit): number => {
   switch (unit) {
-    case WeightUnitEnum.Kilograms:
+    case 'kg':
       return weight;
-    case WeightUnitEnum.Pounds:
+    case 'lbs':
+    case 'lb':
       return weight * 0.453592;
-    case WeightUnitEnum.Grams:
+    case 'g':
       return weight / 1000;
-    case WeightUnitEnum.Ounces:
+    case 'oz':
       return weight * 0.0283495;
     default:
       return weight;

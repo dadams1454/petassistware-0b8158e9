@@ -28,7 +28,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { WeightUnitEnum } from '@/types/health';
+import { WeightUnit } from '@/types/health';
 
 const weightSchema = z.object({
   weight: z.string().min(1, 'Weight is required').refine(
@@ -37,8 +37,10 @@ const weightSchema = z.object({
       message: 'Weight must be a positive number',
     }
   ),
-  unit: z.nativeEnum(WeightUnitEnum, {
-    required_error: 'Unit is required',
+  unit: z.custom<WeightUnit>((val) => {
+    return ['oz', 'g', 'lbs', 'kg', 'lb'].includes(val as string);
+  }, {
+    message: 'Please select a valid weight unit',
   }),
   date: z.date({
     required_error: 'Date is required',
@@ -67,24 +69,26 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
     resolver: zodResolver(weightSchema),
     defaultValues: initialData ? {
       weight: String(initialData.weight),
-      unit: initialData.unit as WeightUnitEnum,
+      unit: initialData.unit as WeightUnit || initialData.weight_unit as WeightUnit,
       date: new Date(initialData.date),
       notes: initialData.notes || '',
     } : {
       weight: '',
-      unit: WeightUnitEnum.Pounds,
+      unit: 'lbs' as WeightUnit,
       date: new Date(),
       notes: '',
     },
   });
   
   const handleSubmit = (values: WeightFormValues) => {
+    const date = values.date instanceof Date ? values.date.toISOString() : new Date().toISOString();
+    
     const weightData = {
       dog_id: dogId,
       weight: Number(values.weight),
       unit: values.unit,
       weight_unit: values.unit, // For database compatibility
-      date: values.date.toISOString(),
+      date: date,
       notes: values.notes,
     };
     
@@ -136,10 +140,10 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value={WeightUnitEnum.Pounds}>Pounds (lbs)</SelectItem>
-                        <SelectItem value={WeightUnitEnum.Kilograms}>Kilograms (kg)</SelectItem>
-                        <SelectItem value={WeightUnitEnum.Ounces}>Ounces (oz)</SelectItem>
-                        <SelectItem value={WeightUnitEnum.Grams}>Grams (g)</SelectItem>
+                        <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                        <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                        <SelectItem value="oz">Ounces (oz)</SelectItem>
+                        <SelectItem value="g">Grams (g)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

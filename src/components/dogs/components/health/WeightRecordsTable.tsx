@@ -38,7 +38,7 @@ const WeightRecordsTable: React.FC<WeightRecordsTableProps> = ({ weightRecords }
                 {format(new Date(record.date), 'MMM d, yyyy')}
               </TableCell>
               <TableCell>
-                {record.weight} {record.unit || record.weight_unit}
+                {record.weight} {record.unit || record.weight_unit || 'lbs'}
               </TableCell>
               <TableCell>{record.notes || '-'}</TableCell>
             </TableRow>

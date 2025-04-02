@@ -1,122 +1,121 @@
-
-import React from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useForm } from 'react-hook-form';
-import { VaccinationScheduleItem } from '@/types/puppyTracking';
+import { Checkbox } from '@/components/ui/checkbox';
 
-export interface VaccinationFormProps {
-  onSubmit: (data: Partial<VaccinationScheduleItem>) => Promise<boolean>;
+interface VaccinationFormProps {
+  onSubmit: (data: any) => Promise<boolean>;
   onCancel: () => void;
-  defaultValues?: Partial<VaccinationScheduleItem>;
-  isEdit?: boolean;
-  puppyId?: string;
+  initialData?: any;
+  isSubmitting?: boolean;
 }
 
-const VaccinationForm: React.FC<VaccinationFormProps> = ({
-  onSubmit,
-  onCancel,
-  defaultValues,
-  isEdit = false,
-  puppyId
-}) => {
-  const [dueDate, setDueDate] = React.useState<Date | undefined>(
-    defaultValues?.due_date ? new Date(defaultValues.due_date) : undefined
-  );
-  
-  const [vaccinationDate, setVaccinationDate] = React.useState<Date | undefined>(
-    defaultValues?.vaccination_date ? new Date(defaultValues.vaccination_date) : undefined
-  );
-  
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
-    defaultValues: {
-      vaccination_type: defaultValues?.vaccination_type || '',
-      notes: defaultValues?.notes || '',
-    }
-  });
+const VaccinationForm: React.FC<VaccinationFormProps> = ({ onSubmit, onCancel, initialData, isSubmitting }) => {
+  const [vaccineName, setVaccineName] = useState<string>(initialData?.vaccine_name || '');
+  const [manufacturer, setManufacturer] = useState<string>(initialData?.manufacturer || '');
+  const [lotNumber, setLotNumber] = useState<string>(initialData?.lot_number || '');
+  const [dueDate, setDueDate] = useState<Date | null>(initialData?.next_due_date ? new Date(initialData.next_due_date) : null);
+  const [administered, setAdministered] = useState<boolean>(initialData?.administered || false);
+  const [administeredDate, setAdministeredDate] = useState<Date | null>(initialData?.administered_date ? new Date(initialData.administered_date) : null);
 
-  const onFormSubmit = async (data: any) => {
-    try {
-      const formData = {
-        ...data,
-        due_date: dueDate?.toISOString().split('T')[0],
-        vaccination_date: vaccinationDate?.toISOString().split('T')[0],
-        puppy_id: puppyId
-      };
-      
-      const success = await onSubmit(formData);
-      if (success) {
-        onCancel();
-      }
-    } catch (error) {
-      console.error('Error submitting vaccination form:', error);
+  useEffect(() => {
+    if (initialData) {
+      setVaccineName(initialData.vaccine_name || '');
+      setManufacturer(initialData.manufacturer || '');
+      setLotNumber(initialData.lot_number || '');
+      setDueDate(initialData.next_due_date ? new Date(initialData.next_due_date) : null);
+      setAdministered(initialData.administered || false);
+      setAdministeredDate(initialData.administered_date ? new Date(initialData.administered_date) : null);
+    }
+  }, [initialData]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const data = {
+      vaccine_name: vaccineName,
+      manufacturer: manufacturer,
+      lot_number: lotNumber,
+      next_due_date: dueDate ? dueDate.toISOString() : null,
+      administered: administered,
+      administered_date: administeredDate ? administeredDate.toISOString() : null,
+    };
+
+    const success = await onSubmit(data);
+    if (success) {
+      onCancel();
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{isEdit ? 'Edit Vaccination' : 'Add Vaccination'}</CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmit(onFormSubmit)}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="vaccination_type">Vaccination Type</Label>
-            <Input
-              id="vaccination_type"
-              {...register('vaccination_type', { required: 'Vaccination type is required' })}
-              placeholder="e.g., DHPP, Rabies, Bordetella"
-            />
-            {errors.vaccination_type && (
-              <p className="text-sm text-red-500">{errors.vaccination_type.message as string}</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Due Date</Label>
-            <DatePicker
-              date={dueDate}
-              onSelect={setDueDate}
-              disabled={isSubmitting}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Vaccination Date</Label>
-            <DatePicker
-              date={vaccinationDate}
-              onSelect={setVaccinationDate}
-              disabled={isSubmitting}
-            />
-            <p className="text-xs text-muted-foreground">
-              Leave blank if not administered yet
-            </p>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              {...register('notes')}
-              placeholder="Additional information about this vaccination"
-              rows={3}
-            />
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : isEdit ? 'Update' : 'Add Vaccination'}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="vaccineName">Vaccine Name</Label>
+          <Input
+            type="text"
+            id="vaccineName"
+            value={vaccineName}
+            onChange={(e) => setVaccineName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="manufacturer">Manufacturer</Label>
+          <Input
+            type="text"
+            id="manufacturer"
+            value={manufacturer}
+            onChange={(e) => setManufacturer(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="lotNumber">Lot Number</Label>
+          <Input
+            type="text"
+            id="lotNumber"
+            value={lotNumber}
+            onChange={(e) => setLotNumber(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="dueDate">Due Date</Label>
+          <DatePicker date={dueDate} onSelect={setDueDate} />
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="administered"
+          checked={administered}
+          onCheckedChange={setAdministered}
+        />
+        <Label htmlFor="administered">Administered</Label>
+      </div>
+
+      {administered && (
+        <div>
+          <Label htmlFor="administeredDate">Administered Date</Label>
+          <DatePicker date={administeredDate} onSelect={setAdministeredDate} />
+        </div>
+      )}
+
+      <div className="flex justify-end space-x-2">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : 'Save'}
+        </Button>
+      </div>
+    </form>
   );
 };
 

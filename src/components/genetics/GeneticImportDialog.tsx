@@ -1,320 +1,162 @@
-import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
+import React, { useState, useCallback } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
   DialogTitle,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  FileUp, 
-  Upload, 
-  FileSpreadsheet, 
-  PlusCircle, 
-  X, 
-  AlertCircle 
-} from 'lucide-react';
-import { useGeneticDataImport } from '@/hooks/useGeneticDataImport';
-import { TestResult, ManualTestEntry, GeneticImportResult, GeneticHealthStatus } from '@/types/genetics';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "@/hooks/use-toast"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { insertGeneticTest } from "@/services/geneticsService"
+import { CheckCircle, Circle, XCircle } from "lucide-react"
+import { GeneticHealthStatus } from "@/types/genetics"
 
-interface GeneticImportDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  dogId: string;
-  onImportComplete?: () => void;
+interface Props {
+  dogId: string
 }
 
-export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({ 
-  open, 
-  onOpenChange, 
-  dogId,
-  onImportComplete 
-}) => {
-  const [activeTab, setActiveTab] = useState<string>('csv');
-  const [csvData, setCsvData] = useState<string>('');
-  const [manualTests, setManualTests] = useState<ManualTestEntry[]>([
-    { 
-      test_type: '', 
-      result: 'unknown' as GeneticHealthStatus, 
-      test_date: new Date().toISOString().split('T')[0], 
-      provider: 'manual', 
-      name: '', 
-      date: new Date().toISOString().split('T')[0],
-      condition: ''
-    }
-  ]);
-  const [importResult, setImportResult] = useState<{success?: boolean; errors?: string[]}>({});
-  
-  const { isImporting, importFromCSV, importManualTests } = useGeneticDataImport(dogId);
-  
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setCsvData(event.target?.result as string || '');
-    };
-    reader.readAsText(file);
-  };
-  
-  const handleCSVUpload = async () => {
-    const result = await importFromCSV(csvData);
-    setImportResult(result || {});
-    
-    if (result?.success && onImportComplete) {
-      onImportComplete();
-    }
-  };
-  
-  const handleManualImport = async () => {
-    // Filter out empty tests
-    const validTests = manualTests
-      .filter(test => test.test_type && test.result)
-      .map(test => ({
-        ...test,
-        provider: test.provider || 'manual'
-      })) as Omit<TestResult, 'testId'>[];
-    
-    if (validTests.length === 0) {
-      setImportResult({
-        success: false,
-        errors: ['Please provide at least one valid test with test type and result']
-      });
-      return;
-    }
-    
-    const result = await importManualTests(validTests);
-    setImportResult(result || {});
-    
-    if (result?.success && onImportComplete) {
-      onImportComplete();
-    }
-  };
-  
-  const handleAddTest = () => {
-    setManualTests([
-      ...manualTests,
-      { 
-        test_type: '', 
-        result: 'unknown' as GeneticHealthStatus, 
-        test_date: new Date().toISOString().split('T')[0], 
-        provider: 'manual',
-        name: '', 
-        date: new Date().toISOString().split('T')[0],
-        condition: ''
+const GeneticImportDialog = ({ dogId }: Props) => {
+  const [open, setOpen] = useState(false)
+  const [file, setFile] = useState<File | null>(null)
+  const [name, setName] = useState("")
+  const [status, setStatus] = useState<GeneticHealthStatus>("unknown");
+  const queryClient = useQueryClient()
+
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async () => {
+      if (!file) {
+        throw new Error("No file selected")
       }
-    ]);
-  };
-  
-  const handleRemoveTest = (index: number) => {
-    setManualTests(manualTests.filter((_, i) => i !== index));
-  };
-  
-  const handleTestChange = (index: number, field: keyof ManualTestEntry, value: string) => {
-    const updatedTests = [...manualTests];
-    
-    // For the 'result' field, ensure it's a valid GeneticHealthStatus
-    if (field === 'result') {
-      const typedValue = (value || 'unknown') as GeneticHealthStatus;
-      updatedTests[index] = {
-        ...updatedTests[index],
-        [field]: typedValue
-      };
-    } else {
-      updatedTests[index] = {
-        ...updatedTests[index],
-        [field]: value
-      };
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("dogId", dogId)
+      formData.append("name", name)
+      formData.append("status", status)
+      return insertGeneticTest(formData)
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Genetic test imported successfully",
+      })
+      queryClient.invalidateQueries({ queryKey: ["geneticTests", dogId] })
+      setOpen(false)
+      setFile(null)
+      setName("")
+      setStatus("unknown")
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0])
     }
-    
-    setManualTests(updatedTests);
-  };
-  
-  const handleDialogClose = (open: boolean) => {
-    if (!open) {
-      // Reset form state when dialog closes
-      setCsvData('');
-      setManualTests([{ test_type: '', result: '', test_date: new Date().toISOString().split('T')[0], provider: 'manual', name: '', date: new Date().toISOString().split('T')[0], condition: '' }]);
-      setImportResult({});
-    }
-    onOpenChange(open);
-  };
-  
+  }
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault()
+      mutate()
+    },
+    [mutate]
+  )
+
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">Import Genetic Test</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Import Genetic Test Results</DialogTitle>
+          <DialogTitle>Import Genetic Test</DialogTitle>
           <DialogDescription>
-            Upload genetic test results from a CSV file or enter them manually.
+            Upload a genetic test report to automatically fill in the results.
           </DialogDescription>
         </DialogHeader>
-        
-        {importResult.errors && importResult.errors.length > 0 && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {importResult.errors.map((error, i) => (
-                <div key={i}>{error}</div>
-              ))}
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="csv">
-              <FileSpreadsheet className="h-4 w-4 mr-2" />
-              CSV Import
-            </TabsTrigger>
-            <TabsTrigger value="manual">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Manual Entry
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="csv" className="py-4">
-            <div className="space-y-4">
-              <div className="border-2 border-dashed rounded-md p-6 text-center">
-                <div className="flex flex-col items-center">
-                  <FileUp className="h-8 w-8 text-muted-foreground mb-2" />
-                  <h3 className="text-sm font-semibold mb-1">Upload CSV File</h3>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    CSV should have columns: test_type, result, test_date
-                  </p>
-                  
-                  <div>
-                    <label htmlFor="csv-upload" className="cursor-pointer">
-                      <div className="bg-primary text-primary-foreground hover:bg-primary/90 py-2 px-4 rounded-md text-sm flex items-center">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Select File
-                      </div>
-                      <input 
-                        id="csv-upload" 
-                        type="file" 
-                        accept=".csv" 
-                        className="hidden" 
-                        onChange={handleFileChange}
-                      />
-                    </label>
-                  </div>
-                  
-                  {csvData && (
-                    <div className="mt-2 text-xs text-green-600">
-                      File loaded! Ready to import.
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {csvData && (
-                <div className="border p-3 rounded-md overflow-auto max-h-[200px]">
-                  <h3 className="text-sm font-semibold mb-2">CSV Preview:</h3>
-                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap">{csvData}</pre>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="manual" className="py-4">
-            <div className="space-y-4">
-              {manualTests.map((test, index) => (
-                <div key={index} className="p-3 border rounded-md relative">
-                  <button 
-                    type="button"
-                    onClick={() => handleRemoveTest(index)}
-                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold" htmlFor={`test-type-${index}`}>
-                        Test Type*
-                      </label>
-                      <input
-                        id={`test-type-${index}`}
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-md text-sm"
-                        value={test.test_type}
-                        onChange={(e) => handleTestChange(index, 'test_type', e.target.value)}
-                        placeholder="e.g., Hip Dysplasia"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold" htmlFor={`test-result-${index}`}>
-                        Result*
-                      </label>
-                      <input
-                        id={`test-result-${index}`}
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-md text-sm"
-                        value={test.result}
-                        onChange={(e) => handleTestChange(index, 'result', e.target.value)}
-                        placeholder="e.g., Clear, Carrier, Affected"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold" htmlFor={`test-date-${index}`}>
-                        Test Date
-                      </label>
-                      <input
-                        id={`test-date-${index}`}
-                        type="date"
-                        className="w-full px-3 py-2 border rounded-md text-sm"
-                        value={test.test_date}
-                        onChange={(e) => handleTestChange(index, 'test_date', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleAddTest}
-                className="w-full"
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="file" className="text-right">
+              File
+            </Label>
+            <Input
+              type="file"
+              id="file"
+              onChange={handleFileChange}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="status" className="text-right">
+              Status
+            </Label>
+            <div className="col-span-3 flex items-center space-x-2">
+              <Button
+                type="button"
+                variant="ghost"
+                className={status === "clear" ? "bg-muted" : ""}
+                onClick={() => setStatus("clear")}
               >
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Another Test
+                <CheckCircle
+                  className={status === "clear" ? "text-green-500" : ""}
+                />
+                Clear
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className={status === "carrier" ? "bg-muted" : ""}
+                onClick={() => setStatus("carrier")}
+              >
+                <Circle
+                  className={status === "carrier" ? "text-yellow-500" : ""}
+                />
+                Carrier
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className={status === "affected" ? "bg-muted" : ""}
+                onClick={() => setStatus("affected")}
+              >
+                <XCircle
+                  className={status === "affected" ? "text-red-500" : ""}
+                />
+                Affected
               </Button>
             </div>
-          </TabsContent>
-        </Tabs>
-        
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+          </div>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Importing..." : "Import"}
           </Button>
-          <Button 
-            onClick={activeTab === 'csv' ? handleCSVUpload : handleManualImport}
-            disabled={isImporting || (activeTab === 'csv' && !csvData)}
-          >
-            {isImporting ? (
-              <>
-                <div className="animate-spin h-4 w-4 mr-2 border-2 border-current border-t-transparent rounded-full" />
-                Importing...
-              </>
-            ) : (
-              <>
-                <FileUp className="h-4 w-4 mr-2" />
-                Import
-              </>
-            )}
-          </Button>
-        </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default GeneticImportDialog;
+export default GeneticImportDialog

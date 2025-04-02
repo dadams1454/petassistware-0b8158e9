@@ -9,7 +9,7 @@ import DialogFooterButtons from '@/components/dogs/components/profile/records/fo
 
 interface WeightEntryFormProps {
   dogId: string;
-  onSave: (data: any) => void;
+  onSave: (data: any) => Promise<any>;
   onCancel: () => void;
   initialData?: any;
 }

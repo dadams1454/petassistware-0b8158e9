@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Plus, TrendingUp } from 'lucide-react';
-import { WeightRecord, WeightUnitEnum } from '@/types/health';
+import { WeightRecord, WeightUnit } from '@/types/health';
 
 interface WeightTrackingSectionProps {
   dogId: string;
@@ -32,7 +32,7 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
   const chartData = sortedData.map(record => ({
     date: format(new Date(record.date), 'MMM d'),
     weight: record.weight,
-    unit: record.unit || record.weight_unit
+    unit: record.unit || record.weight_unit || 'lbs'
   }));
 
   // Format dates for display
@@ -73,7 +73,7 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
                   />
                   <Tooltip
                     formatter={(value: number, name: string) => [
-                      `${value} ${chartData[0]?.unit}`, 'Weight'
+                      `${value} ${chartData[0]?.unit || 'lbs'}`, 'Weight'
                     ]}
                   />
                   <Line 
@@ -158,7 +158,7 @@ const WeightTrackingSection: React.FC<WeightTrackingSectionProps> = ({
                 <TableRow key={record.id}>
                   <TableCell>{formatDate(record.date)}</TableCell>
                   <TableCell>
-                    {record.weight} {record.unit || record.weight_unit}
+                    {record.weight} {record.unit || record.weight_unit || 'lbs'}
                   </TableCell>
                   <TableCell>
                     {record.percent_change ? (

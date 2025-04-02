@@ -7,6 +7,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // Adding for compatibility with existing code
   date: string;
   notes?: string;
   percent_change?: number;
