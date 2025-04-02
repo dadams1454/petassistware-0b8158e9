@@ -1,6 +1,13 @@
 
 import React from 'react';
-import Dashboard from './Dashboard';
 
-// Re-export Dashboard component directly to maintain consistency
-export default Dashboard;
+const DashboardPage: React.FC = () => {
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      <p>Welcome to PetAssistWare Dashboard</p>
+    </div>
+  );
+};
+
+export default DashboardPage;
