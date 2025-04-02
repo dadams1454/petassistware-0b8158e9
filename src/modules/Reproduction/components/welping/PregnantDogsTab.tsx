@@ -1,126 +1,116 @@
 
 import React from 'react';
-import { 
-  Card, 
+import {
+  Card,
   CardContent,
-  CardFooter
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { Dog } from '@/types/dog';
-import { format, addDays, differenceInDays } from 'date-fns';
-import { Paw, Calendar, Dog as DogIcon } from 'lucide-react';
-import EmptyState from '@/components/common/EmptyState';
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CalendarDays, Dog, PawPrint, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useWelpingManagement } from "../../hooks/useWelpingManagement";
+import EmptyState from "@/components/common/EmptyState";
+import { format, addDays } from "date-fns";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
-interface PregnantDogsTabProps {
-  dogs: Dog[];
-  isLoading: boolean;
-}
-
-const PregnantDogsTab: React.FC<PregnantDogsTabProps> = ({ 
-  dogs,
-  isLoading
-}) => {
+const PregnantDogsTab = () => {
   const navigate = useNavigate();
-  
+  const { pregnantDogs, isLoading } = useWelpingManagement();
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-pulse text-center">
-          <p className="text-muted-foreground">Loading pregnant dogs...</p>
-        </div>
+      <div className="flex justify-center items-center p-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
-  
-  if (dogs.length === 0) {
+
+  if (!pregnantDogs || pregnantDogs.length === 0) {
     return (
       <EmptyState
-        title="No Pregnant Dogs"
-        description="There are no pregnant dogs currently registered in the system."
-        icon={<DogIcon className="h-10 w-10 text-muted-foreground" />}
+        icon={<Dog className="h-12 w-12 text-muted-foreground" />}
+        title="No pregnant dogs"
+        description="There are currently no dogs marked as pregnant in the system."
         action={{
-          label: "Start Breeding Prep",
-          onClick: () => navigate('/breeding-prep'),
+          label: "Add Pregnant Dog",
+          onClick: () => navigate("/reproductive-management"),
         }}
       />
     );
   }
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {dogs.map((dog) => {
-        // Calculate estimated due date (63 days after tie date)
-        const tieDate = dog.tie_date ? new Date(dog.tie_date) : null;
-        const dueDate = tieDate ? addDays(tieDate, 63) : null;
-        const daysUntilDue = dueDate ? differenceInDays(dueDate, new Date()) : null;
-        
+      {pregnantDogs.map((dog) => {
+        const dueDate = dog.tie_date
+          ? addDays(new Date(dog.tie_date), 63)
+          : undefined;
+          
         return (
           <Card key={dog.id} className="overflow-hidden">
-            <div className="relative h-40 bg-muted">
-              {dog.photo_url ? (
-                <img 
-                  src={dog.photo_url} 
-                  alt={dog.name} 
-                  className="h-full w-full object-cover" 
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center">
-                  <DogIcon className="h-16 w-16 text-muted-foreground" />
+            <CardHeader className="p-4 pb-2">
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={dog.photoUrl || ''} alt={dog.name} />
+                  <AvatarFallback>{dog.name.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle className="text-lg">{dog.name}</CardTitle>
+                  <CardDescription>
+                    {dog.breed || "Unknown breed"}
+                  </CardDescription>
                 </div>
-              )}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                <h3 className="text-white font-medium text-xl">{dog.name}</h3>
-                <p className="text-white/80 text-sm">{dog.breed}</p>
               </div>
-            </div>
-            <CardContent className="pt-4">
-              <div className="space-y-2">
-                {tieDate && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm flex items-center gap-1">
-                      <Calendar className="h-4 w-4" /> Breeding date:
-                    </span>
-                    <span className="text-sm font-medium">
-                      {format(tieDate, 'MMM d, yyyy')}
-                    </span>
-                  </div>
-                )}
-                {dueDate && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm flex items-center gap-1">
-                      <Paw className="h-4 w-4" /> Due date:
-                    </span>
-                    <span className="text-sm font-medium">
-                      {format(dueDate, 'MMM d, yyyy')}
+            </CardHeader>
+            <CardContent className="p-4 pt-2">
+              <div className="space-y-2 mt-2">
+                <div className="flex items-center text-sm">
+                  <CalendarDays className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">
+                    {dueDate
+                      ? `Due around ${format(dueDate, "PPP")}`
+                      : "Due date unknown"}
+                  </span>
+                </div>
+                
+                {dog.last_heat_date && (
+                  <div className="flex items-center text-sm">
+                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span>
+                      Last heat: {format(new Date(dog.last_heat_date), "MMM d, yyyy")}
                     </span>
                   </div>
                 )}
-                {daysUntilDue !== null && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Days until due:</span>
-                    <span className={`text-sm font-medium ${daysUntilDue <= 7 ? 'text-red-500' : ''}`}>
-                      {daysUntilDue}
-                    </span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Color:</span>
-                  <span className="text-sm font-medium">{dog.color || 'Unknown'}</span>
+                
+                <div className="flex mt-2">
+                  <Badge variant="outline" className="bg-pink-50 text-pink-800 border-pink-200">
+                    <PawPrint className="h-3 w-3 mr-1" />
+                    Pregnant
+                  </Badge>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between pt-0">
+            <CardFooter className="p-4 pt-0 flex justify-between">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate(`/dogs/${dog.id}/reproductive`)}
+                onClick={() => navigate(`/dogs/${dog.id}`)}
               >
-                View Reproductive Record
+                View Profile
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => navigate(`/reproductive-management/${dog.id}`)}
+              >
+                Manage Pregnancy
               </Button>
             </CardFooter>
           </Card>
-        )
+        );
       })}
     </div>
   );

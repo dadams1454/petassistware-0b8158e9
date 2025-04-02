@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dog, BarChart, Paw } from 'lucide-react';
+import { Dog, BarChart, PawPrint } from 'lucide-react';
 
 interface WelpingStatsCardProps {
   pregnantCount: number;
@@ -34,7 +34,7 @@ const WelpingStatsCard: React.FC<WelpingStatsCardProps> = ({
           
           <div className="flex items-center justify-between border-b pb-2">
             <div className="flex items-center">
-              <Paw className="h-5 w-5 mr-2 text-blue-500" />
+              <PawPrint className="h-5 w-5 mr-2 text-blue-500" />
               <span className="text-sm">Active Whelpings</span>
             </div>
             <span className="font-medium">{activeWelpingsCount}</span>

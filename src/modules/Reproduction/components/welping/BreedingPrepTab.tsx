@@ -25,7 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useBreedingPreparation } from '../../hooks/useBreedingPreparation';
 import { CalendarIcon, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '@/utils/ui';
+import { cn } from '@/lib/utils';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -83,7 +83,7 @@ const BreedingPrepTab: React.FC = () => {
   
   const onSubmit = async (values: BreedingFormValues) => {
     try {
-      await createBreedingRecord(values);
+      await createBreedingRecord(values as any);
       navigate('/welping');
     } catch (error) {
       console.error("Error creating breeding record:", error);
