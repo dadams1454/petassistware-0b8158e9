@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
@@ -7,7 +7,6 @@ import { SidebarProvider, SidebarTrigger, SidebarRail, SidebarInset } from '@/co
 import UserMenu from '@/components/common/navbar/UserMenu';
 import Sidebar from '@/components/common/Sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
-import { useTheme } from 'next-themes';
 
 interface MainLayoutProps {
   children?: React.ReactNode;
@@ -16,14 +15,6 @@ interface MainLayoutProps {
 
 // Internal layout component that uses the theme
 const MainLayoutContent: React.FC<MainLayoutProps> = ({ children, hideNavbar = false }) => {
-  const { setTheme } = useTheme();
-  
-  // Force dark theme for this application
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-    setTheme('dark');
-  }, [setTheme]);
-
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground w-full">
       {!hideNavbar && <Sidebar />}

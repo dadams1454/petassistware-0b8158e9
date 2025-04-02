@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,8 +8,15 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { useTheme } from 'next-themes';
 
 const Settings: React.FC = () => {
+  const { theme, setTheme } = useTheme();
+  
+  const handleDarkModeToggle = (checked: boolean) => {
+    setTheme(checked ? 'dark' : 'light');
+  };
+
   return (
     <PageContainer>
       <div className="container mx-auto py-6 px-4">
@@ -126,7 +133,11 @@ const Settings: React.FC = () => {
                     <Label htmlFor="dark-mode">Dark Mode</Label>
                     <div className="text-sm text-muted-foreground">Always use dark theme</div>
                   </div>
-                  <Switch id="dark-mode" defaultChecked />
+                  <Switch 
+                    id="dark-mode" 
+                    checked={theme === 'dark'}
+                    onCheckedChange={handleDarkModeToggle}
+                  />
                 </div>
                 
                 <div className="flex items-center justify-between">
