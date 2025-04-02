@@ -1,5 +1,5 @@
 
-import { WeightUnit } from '@/types/puppyTracking';
+import { WeightUnit } from '@/types/health';
 
 // Weight unit conversion factors to grams
 const CONVERSION_TO_GRAMS = {

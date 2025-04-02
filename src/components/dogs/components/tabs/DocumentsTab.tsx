@@ -4,12 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, Download, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { DogProfile } from '@/types/dog';
 
 interface DocumentsTabProps {
   dogId: string;
+  dog?: DogProfile;
 }
 
-const DocumentsTab: React.FC<DocumentsTabProps> = ({ dogId }) => {
+const DocumentsTab: React.FC<DocumentsTabProps> = ({ dogId, dog }) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">

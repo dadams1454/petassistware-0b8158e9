@@ -24,8 +24,16 @@ const processGeneticData = async (dogId: string): Promise<DogGenotype | null> =>
     dilution: 'No dilution',
     updated_at: new Date().toISOString(),
     healthMarkers: {
-      hip_dysplasia: { status: 'clear', testDate: '2023-01-15' },
-      elbow_dysplasia: { status: 'carrier', testDate: '2023-01-15' }
+      hip_dysplasia: { 
+        name: 'Hip Dysplasia',
+        status: 'clear', 
+        testDate: '2023-01-15' 
+      },
+      elbow_dysplasia: { 
+        name: 'Elbow Dysplasia',
+        status: 'carrier', 
+        testDate: '2023-01-15' 
+      }
     }
   };
 };

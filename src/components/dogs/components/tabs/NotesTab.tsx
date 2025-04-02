@@ -5,14 +5,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { DogProfile } from '@/types/dog';
 
 interface NotesTabProps {
   dogId: string;
   initialNotes?: string;
+  dog?: DogProfile;
 }
 
-const NotesTab: React.FC<NotesTabProps> = ({ dogId, initialNotes = '' }) => {
-  const [notes, setNotes] = useState(initialNotes);
+const NotesTab: React.FC<NotesTabProps> = ({ dogId, initialNotes = '', dog }) => {
+  const [notes, setNotes] = useState(initialNotes || (dog?.notes || ''));
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 

@@ -1,4 +1,3 @@
-
 export enum HealthRecordTypeEnum {
   Vaccination = 'vaccination',
   Examination = 'examination',
@@ -138,4 +137,3 @@ export enum WeightUnitEnum {
 
 // Export WeightUnit for compatibility with puppyTracking
 export type WeightUnit = 'oz' | 'lb' | 'kg' | 'g' | 'lbs';
-

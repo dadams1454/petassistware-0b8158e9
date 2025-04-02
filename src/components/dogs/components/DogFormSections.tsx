@@ -73,6 +73,7 @@ const DogFormSections = ({ form, watchBreed, colorOptions }: DogFormSectionsProp
             isPregnant={isPregnant}
             nextHeatDate={nextHeatDate}
             hasSchedulingConflict={hasSchedulingConflict}
+            dog={{ id: dogId } as any}
           />
         )}
       </TabsContent>

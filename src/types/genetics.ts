@@ -14,6 +14,7 @@ export interface DogGenotype {
   healthMarkers: Record<string, HealthMarker>;
   healthResults?: HealthResult[];
   breedComposition?: any;
+  colorProbabilities?: ColorProbability[];
 }
 
 export interface HealthMarker {

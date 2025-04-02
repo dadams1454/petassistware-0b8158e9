@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { DogGenotype, ColorProbability, GeneticHealthStatus } from '@/types/genetics';
+import { DogGenotype, ColorProbability, GeneticHealthStatus, HealthMarker } from '@/types/genetics';
 import { calculateColorProbabilities, calculateHealthRisks, calculateInbreedingCoefficient } from '@/components/genetics/utils/geneticCalculations';
 
 export const useGeneticPairing = (sireId?: string, damId?: string) => {
@@ -33,12 +33,28 @@ export const useGeneticPairing = (sireId?: string, damId?: string) => {
             
           if (sireError) throw sireError;
           
+          // Convert health results to the expected format
+          const healthMarkers: Record<string, HealthMarker> = {};
+          if (sireData?.health_results) {
+            Object.entries(sireData.health_results).forEach(([key, value]: [string, any]) => {
+              healthMarkers[key] = {
+                name: key,
+                status: value.status || 'unknown',
+                testDate: value.test_date || new Date().toISOString().slice(0, 10)
+              };
+            });
+          }
+          
+          // Get primary breed from breed composition if available
+          const breedName = sireData?.breed_composition?.primary?.breed || 'Unknown Breed';
+          
           setSireGenotype({
             dog_id: sireId,
-            healthMarkers: sireData?.health_results || {},
-            inbreedingCoefficient: sireData?.inbreeding_coefficient,
-            breed: sireData?.breed_composition?.primary?.breed,
             baseColor: 'Black', // Placeholder for testing
+            brownDilution: 'Unknown',
+            dilution: 'Unknown',
+            healthMarkers,
+            breed: breedName,
             ...sireData
           });
         }
@@ -53,12 +69,28 @@ export const useGeneticPairing = (sireId?: string, damId?: string) => {
             
           if (damError) throw damError;
           
+          // Convert health results to the expected format
+          const healthMarkers: Record<string, HealthMarker> = {};
+          if (damData?.health_results) {
+            Object.entries(damData.health_results).forEach(([key, value]: [string, any]) => {
+              healthMarkers[key] = {
+                name: key,
+                status: value.status || 'unknown',
+                testDate: value.test_date || new Date().toISOString().slice(0, 10)
+              };
+            });
+          }
+          
+          // Get primary breed from breed composition if available
+          const breedName = damData?.breed_composition?.primary?.breed || 'Unknown Breed';
+          
           setDamGenotype({
             dog_id: damId,
-            healthMarkers: damData?.health_results || {},
-            inbreedingCoefficient: damData?.inbreeding_coefficient,
-            breed: damData?.breed_composition?.primary?.breed,
             baseColor: 'Brown', // Placeholder for testing
+            brownDilution: 'Unknown',
+            dilution: 'Unknown',
+            healthMarkers,
+            breed: breedName,
             ...damData
           });
         }

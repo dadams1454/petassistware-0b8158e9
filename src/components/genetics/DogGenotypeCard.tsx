@@ -3,20 +3,22 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
-import { DogGenotype } from '@/types/genetics';
+import { DogGenotype, CompactGenotypeViewProps } from '@/types/genetics';
 import { AlertCircle, CheckCircle2, Dna } from 'lucide-react';
 import { HealthMarkersPanel } from './components/HealthMarkersPanel';
-import { CompactGenotypeViewProps } from '@/types/genetics';
 
 export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({ 
   genotype,
   showBreed = true,
   showColorTraits = true,
-  showHealthTests = false
+  showHealthTests = false,
+  showTitle = true,
+  showHealth = true,
+  showColor = true
 }) => {
   // Make sure we have a valid genotype object, even if it's empty
   const dogGenetics: DogGenotype = genotype || {
-    dogId: '',
+    dog_id: '',
     baseColor: 'unknown',
     brownDilution: 'unknown',
     dilution: 'unknown',
@@ -26,6 +28,10 @@ export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
   
   return (
     <div className="space-y-4">
+      {showTitle && dogGenetics.name && (
+        <h3 className="text-base font-semibold">{dogGenetics.name}</h3>
+      )}
+      
       {showBreed && dogGenetics.breed && (
         <div className="flex items-center">
           <span className="text-sm font-medium">Breed:</span>
@@ -35,7 +41,7 @@ export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
         </div>
       )}
       
-      {showColorTraits && (
+      {showColor && (
         <div className="space-y-2">
           <h4 className="text-sm font-semibold">Color Genetics</h4>
           <div className="grid grid-cols-3 gap-2 text-xs">
@@ -52,14 +58,56 @@ export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
               <span className="text-gray-600">{dogGenetics.dilution || 'Unknown'}</span>
             </div>
           </div>
+          
+          {dogGenetics.colorProbabilities && dogGenetics.colorProbabilities.length > 0 && (
+            <div className="mt-2">
+              <h4 className="text-sm font-semibold">Possible Colors</h4>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {dogGenetics.colorProbabilities.map((color, idx) => (
+                  <Badge key={idx} variant="outline" className="text-xs">
+                    {color.color} ({Math.round(color.probability * 100)}%)
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
       
-      {showHealthTests && (
-        <HealthMarkersPanel dogGenetics={dogGenetics} />
+      {showHealth && showHealthTests && dogGenetics.healthMarkers && Object.keys(dogGenetics.healthMarkers).length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold">Health Tests</h4>
+          <div className="space-y-1">
+            {Object.entries(dogGenetics.healthMarkers).map(([key, marker]) => (
+              <div key={key} className="flex items-center p-1 rounded hover:bg-gray-50">
+                {getStatusIcon(marker.status)}
+                <span className="ml-2 text-sm">{marker.name || key}</span>
+                <Badge variant="outline" className="ml-auto text-xs">
+                  {marker.status.replace('_', ' ')}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
+};
+
+// Helper function to get icon for genetic status
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'clear':
+      return <Check className="h-4 w-4 text-green-600" />;
+    case 'carrier':
+      return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+    case 'at_risk':
+    case 'affected':
+      return <XCircle className="h-4 w-4 text-red-600" />;
+    case 'unknown':
+    default:
+      return <HelpCircle className="h-4 w-4 text-gray-400" />;
+  }
 };
 
 interface DogGenotypeCardProps {

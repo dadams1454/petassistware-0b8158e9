@@ -13,6 +13,7 @@ import GeneticsTab from '../tabs/GeneticsTab';
 import CareTab from '../tabs/CareTab';
 import DailyCareTab from '../tabs/DailyCareTab';
 import ExerciseTab from '../tabs/ExerciseTab';
+import { UseFormReturn } from 'react-hook-form';
 
 interface DogProfileTabsProps {
   dog: DogProfile;
@@ -31,10 +32,16 @@ export interface HealthTabProps {
 
 export interface CareTabProps {
   dog: DogProfile;
+  isFullPage?: boolean;
 }
 
 export interface BreedingTabProps {
   dog: DogProfile;
+  form?: UseFormReturn<any>;
+  lastHeatDate?: Date | null;
+  isPregnant?: boolean;
+  nextHeatDate?: Date | null;
+  hasSchedulingConflict?: boolean;
 }
 
 export interface GalleryTabProps {
@@ -43,11 +50,14 @@ export interface GalleryTabProps {
 }
 
 export interface DocumentsTabProps {
-  dog: DogProfile;
+  dogId: string;
+  dog?: DogProfile;
 }
 
 export interface NotesTabProps {
-  dog: DogProfile;
+  dogId: string;
+  initialNotes?: string;
+  dog?: DogProfile;
 }
 
 export interface PedigreeTabProps {
@@ -114,11 +124,11 @@ const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="documents" className="mt-6">
-        <DocumentsTab dog={dog} />
+        <DocumentsTab dogId={dog.id} dog={dog} />
       </TabsContent>
 
       <TabsContent value="notes" className="mt-6">
-        <NotesTab dog={dog} />
+        <NotesTab dogId={dog.id} initialNotes={dog.notes} dog={dog} />
       </TabsContent>
 
       <TabsContent value="pedigree" className="mt-6">
