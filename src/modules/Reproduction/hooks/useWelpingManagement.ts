@@ -1,14 +1,18 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Dog } from '@/types/dog';
+import { Dog } from '@/types/reproductive';
 import { Litter } from '@/types/litter';
 
 export interface WelpingManagementState {
   pregnantDogs: Dog[];
   activeWelpings: any[];
+  activeLitters: any[]; // Add this property
   upcomingWelpings: any[];
   recentLitters: any[];
+  activeWelpingsCount: number; // Add this property
+  pregnantCount: number; // Add this property
+  totalPuppiesCount: number; // Add this property
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
@@ -38,28 +42,7 @@ export const useWelpingManagement = (): WelpingManagementState & {
         
       if (error) throw new Error(error.message);
       
-      // Map the data to match Dog type
-      const mappedDogs = data.map(dog => ({
-        id: dog.id,
-        name: dog.name,
-        photoUrl: dog.photo_url,
-        gender: dog.gender,
-        breed: dog.breed,
-        color: dog.color,
-        isPregnant: dog.is_pregnant,
-        lastHeatDate: dog.last_heat_date,
-        tieDate: dog.tie_date,
-        created_at: dog.created_at || new Date().toISOString(),
-        // Add other required properties from the Dog type with defaults
-        birthdate: dog.birthdate || null,
-        akc_registration: dog.akc_registration || null,
-        microchip: dog.microchip || null,
-        status: dog.status || 'Active',
-        notes: dog.notes || '',
-        owner_id: dog.owner_id || null
-      })) as Dog[];
-      
-      return mappedDogs;
+      return data as Dog[];
     }
   });
   
@@ -121,7 +104,6 @@ export const useWelpingManagement = (): WelpingManagementState & {
         .eq('id', litterId);
         
       if (error) throw new Error(error.message);
-      return "";
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['litters'] });
@@ -138,7 +120,6 @@ export const useWelpingManagement = (): WelpingManagementState & {
         .eq('id', litter.id);
         
       if (error) throw new Error(error.message);
-      return "";
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['litters'] });
@@ -158,7 +139,6 @@ export const useWelpingManagement = (): WelpingManagementState & {
         .eq('id', litter.id);
         
       if (error) throw new Error(error.message);
-      return "";
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['litters'] });
@@ -167,15 +147,16 @@ export const useWelpingManagement = (): WelpingManagementState & {
     },
   });
   
-  const deleteLitter = async (litterId: string) => {
+  // Modify the wrapper functions to match the expected Promise<void> return type
+  const deleteLitter = async (litterId: string): Promise<void> => {
     await deleteLitterMutation.mutateAsync(litterId);
   };
   
-  const updateLitterStatus = async (litter: Litter) => {
+  const updateLitterStatus = async (litter: Litter): Promise<void> => {
     await updateLitterStatusMutation.mutateAsync(litter);
   };
   
-  const markLitterAsWhelping = async (litter: Litter) => {
+  const markLitterAsWhelping = async (litter: Litter): Promise<void> => {
     await markLitterAsWhelpingMutation.mutateAsync(litter);
   };
   
@@ -183,11 +164,23 @@ export const useWelpingManagement = (): WelpingManagementState & {
   const isError = isErrorPregnant || isErrorActive || isErrorRecent;
   const error = errorPregnant || errorActive || errorRecent;
   
+  // Calculate some stats for the dashboard
+  const pregnantCount = pregnantDogs.length;
+  const activeWelpingsCount = activeWelpings.length;
+  const totalPuppiesCount = [...activeWelpings, ...recentLitters].reduce(
+    (total, litter: any) => total + (litter.puppy_count || 0), 
+    0
+  );
+  
   return {
     pregnantDogs,
     activeWelpings,
+    activeLitters: activeWelpings, // Map activeWelpings to activeLitters for backward compatibility
     upcomingWelpings: [],
     recentLitters,
+    pregnantCount,
+    activeWelpingsCount,
+    totalPuppiesCount,
     isLoading,
     isError,
     error,

@@ -96,7 +96,7 @@ const WelpingManagementPage: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="pregnant-dogs" className="pt-6">
-            <PregnantDogsTab dogs={pregnantDogs} isLoading={isLoading} />
+            <PregnantDogsTab isLoading={isLoading} />
           </TabsContent>
           
           <TabsContent value="litter-overview" className="pt-6">

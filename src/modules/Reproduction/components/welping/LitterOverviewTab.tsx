@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { 
   Card, 
   CardContent, 
   CardHeader, 
   CardTitle 
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Archive, CirclePlus, Folder, Loader2 } from 'lucide-react';
@@ -25,11 +24,24 @@ const LitterOverviewTab: React.FC = () => {
     isLoading, 
     createLitter, 
     updateLitter, 
-    deleteLitter, 
-    archiveLitter, 
-    unarchiveLitter,
+    deleteLitter: deleteLitterAsync, 
+    archiveLitter: archiveLitterAsync, 
+    unarchiveLitter: unarchiveLitterAsync,
     refetchLitters
   } = useLitterManagement();
+  
+  // Create wrapper functions with void return type
+  const deleteLitter = async (litterId: string): Promise<void> => {
+    await deleteLitterAsync(litterId);
+  };
+  
+  const archiveLitter = async (litter: Litter): Promise<void> => {
+    await archiveLitterAsync(litter);
+  };
+  
+  const unarchiveLitter = async (litter: Litter): Promise<void> => {
+    await unarchiveLitterAsync(litter);
+  };
   
   const handleCreateLitter = () => {
     setSelectedLitter(null);
@@ -90,6 +102,7 @@ const LitterOverviewTab: React.FC = () => {
     );
   }
   
+  // The rest of the component is the same
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

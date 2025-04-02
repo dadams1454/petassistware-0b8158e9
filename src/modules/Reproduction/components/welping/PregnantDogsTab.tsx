@@ -17,11 +17,18 @@ import { format, addDays } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
-const PregnantDogsTab = () => {
-  const navigate = useNavigate();
-  const { pregnantDogs, isLoading } = useWelpingManagement();
+interface PregnantDogsTabProps {
+  isLoading?: boolean;
+}
 
-  if (isLoading) {
+const PregnantDogsTab: React.FC<PregnantDogsTabProps> = ({ isLoading }) => {
+  const navigate = useNavigate();
+  const { pregnantDogs, isLoading: isLoadingHook } = useWelpingManagement();
+  
+  // Use the prop loading state or the hook loading state
+  const isDataLoading = isLoading || isLoadingHook;
+
+  if (isDataLoading) {
     return (
       <div className="flex justify-center items-center p-12">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -55,7 +62,7 @@ const PregnantDogsTab = () => {
             <CardHeader className="p-4 pb-2">
               <div className="flex items-center space-x-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={dog.photoUrl || ''} alt={dog.name} />
+                  <AvatarImage src={dog.photo_url || ''} alt={dog.name} />
                   <AvatarFallback>{dog.name.substring(0, 2)}</AvatarFallback>
                 </Avatar>
                 <div>
