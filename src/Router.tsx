@@ -15,6 +15,7 @@ import PuppyDashboard from './pages/puppies/PuppyDashboard';
 import NotFound from './pages/NotFound';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
+import Index from './pages/Index';
 
 const Router = () => {
   return (
@@ -24,7 +25,7 @@ const Router = () => {
           {/* Auth routes */}
           <Route path="/auth" element={<div>Login Page</div>} />
           {/* Public landing page */}
-          <Route path="/" element={<div>Home Page</div>} />
+          <Route path="/" element={<Index />} />
         </Route>
         
         <Route element={<MainLayout />}>

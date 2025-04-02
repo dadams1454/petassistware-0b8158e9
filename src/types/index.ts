@@ -27,8 +27,7 @@ import {
   SimpleDog, 
   Litter,
   Dog,
-  // Exclude WeightUnit to avoid conflict
-  // WeightUnit, 
+  // WeightUnit, // Exclude the conflicting type
   WeightUnitValue
 } from './litter';
 
@@ -37,7 +36,7 @@ export type { Puppy };
 export type { SimpleDog };
 export type { Litter };
 export type { Dog };
-// WeightUnit excluded to avoid conflict
+// WeightUnit excluded to avoid ambiguity
 export type { WeightUnitValue };
 
 // Not exporting organization, notification, subscription and adoption as they're missing
