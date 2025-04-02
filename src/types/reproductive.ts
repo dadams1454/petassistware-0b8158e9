@@ -1,5 +1,12 @@
 
-import { Dog } from './dog';
+import { Dog as BaseDog } from './dog';
+
+// Extend the base Dog type with reproductive-specific properties
+export interface Dog extends BaseDog {
+  is_pregnant?: boolean;
+  last_heat_date?: string;
+  tie_date?: string;
+}
 
 export interface HeatCycle {
   id: string;

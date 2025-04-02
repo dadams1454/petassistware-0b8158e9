@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Calendar, AlertCircle, Check } from 'lucide-react';
+import { format, addDays } from 'date-fns';
+import { Calendar, Clock, ThumbsUp, AlertTriangle, Heart } from 'lucide-react';
 
 interface BreedingTimingOptimizerProps {
   dog: any;
@@ -9,160 +10,102 @@ interface BreedingTimingOptimizerProps {
 }
 
 const BreedingTimingOptimizer: React.FC<BreedingTimingOptimizerProps> = ({ dog, heatCycle }) => {
-  const isReadyForBreeding = heatCycle.isInHeat && heatCycle.fertileDays?.start;
-  const isPreHeat = heatCycle.isPreHeat;
-
-  return (
-    <div className="space-y-6">
+  const { isInHeat, daysIntoCurrentHeat, fertileDays, recommendedBreedingDays } = heatCycle;
+  
+  if (!isInHeat) {
+    return (
       <Card>
         <CardHeader>
           <CardTitle>Breeding Timing Optimizer</CardTitle>
           <CardDescription>
-            Recommendations for optimal breeding times based on cycle analysis
+            Plan optimal breeding timing based on heat cycle data
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {isReadyForBreeding ? (
-            <>
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-                <div className="flex items-start">
-                  <Check className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 mr-3" />
-                  <div>
-                    <h3 className="font-medium text-green-800 dark:text-green-300">Ready for Breeding</h3>
-                    <p className="text-sm text-green-700 dark:text-green-400 mt-1">
-                      This female is currently in her fertile window. Consider breeding now for the highest chance of success.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                <AdviceCard 
-                  title="Optimal Timing"
-                  icon={<Calendar className="h-5 w-5 text-blue-500" />}
-                  description="Schedule breeding every 24-48 hours during the fertile window"
-                />
-                <AdviceCard 
-                  title="Signs to Watch"
-                  icon={<AlertCircle className="h-5 w-5 text-amber-500" />}
-                  description="Standing heat, softening of the vulva, straw-colored discharge"
-                />
-              </div>
-            </>
-          ) : isPreHeat ? (
-            <>
-              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
-                <div className="flex items-start">
-                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 mr-3" />
-                  <div>
-                    <h3 className="font-medium text-amber-800 dark:text-amber-300">Heat Approaching</h3>
-                    <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                      This female is approaching her heat cycle. Begin preparations and monitoring for signs of proestrus.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                <AdviceCard 
-                  title="Preparation"
-                  icon={<Calendar className="h-5 w-5 text-blue-500" />}
-                  description="Contact stud owner, prepare testing and documentation"
-                />
-                <AdviceCard 
-                  title="Early Signs"
-                  icon={<AlertCircle className="h-5 w-5 text-amber-500" />}
-                  description="Watch for swelling, blood-tinged discharge, and behavior changes"
-                />
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-10">
-              <Heart className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-medium text-lg">Not Currently in Breeding Window</h3>
-              <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                This female is not currently in heat. Use this time for health testing, nutritional preparation, and exercise to ensure optimal breeding condition.
-              </p>
-            </div>
-          )}
-          
-          <Card>
-            <CardHeader className="py-3">
-              <CardTitle className="text-sm">Breeding Recommendations</CardTitle>
-            </CardHeader>
-            <CardContent className="py-3 space-y-4">
-              <RecommendationItem 
-                title="Pre-Breeding Health Check"
-                description="Schedule a vet visit 2-4 weeks before expected heat"
-                status={isPreHeat ? "recommended" : "optional"}
-              />
-              <RecommendationItem 
-                title="Progesterone Testing"
-                description="Begin testing when vulvar swelling and discharge appear"
-                status={heatCycle.isInHeat ? "urgent" : "upcoming"}
-              />
-              <RecommendationItem 
-                title="Brucellosis Testing"
-                description="Required for both dam and sire before breeding"
-                status="required"
-              />
-              <RecommendationItem 
-                title="Post-Breeding Checkup"
-                description="3-4 weeks after breeding for pregnancy confirmation"
-                status={dog.breeding_status === "bred" ? "upcoming" : "future"}
-              />
-            </CardContent>
-          </Card>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+            <AlertTriangle className="h-12 w-12 mb-4 text-amber-500" />
+            <h3 className="text-lg font-medium">Not Currently in Heat</h3>
+            <p className="max-w-md mt-2">
+              This tool is only available when the dog is actively in heat. 
+              Record a heat cycle to enable breeding optimization.
+            </p>
+          </div>
         </CardContent>
       </Card>
-    </div>
-  );
-};
-
-interface AdviceCardProps {
-  title: string;
-  icon: React.ReactNode;
-  description: string;
-}
-
-const AdviceCard: React.FC<AdviceCardProps> = ({ title, icon, description }) => (
-  <div className="bg-card rounded-lg border p-4">
-    <div className="flex items-start">
-      <div className="mr-3">{icon}</div>
-      <div>
-        <h4 className="font-medium">{title}</h4>
-        <p className="text-sm text-muted-foreground mt-1">{description}</p>
-      </div>
-    </div>
-  </div>
-);
-
-interface RecommendationItemProps {
-  title: string;
-  description: string;
-  status: "required" | "recommended" | "optional" | "urgent" | "upcoming" | "future";
-}
-
-const RecommendationItem: React.FC<RecommendationItemProps> = ({ title, description, status }) => {
-  const statusClasses = {
-    required: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-    recommended: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-    optional: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-    urgent: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-    upcoming: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-    future: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
-  };
-
+    );
+  }
+  
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h4 className="text-sm font-medium">{title}</h4>
-        <p className="text-xs text-muted-foreground">{description}</p>
-      </div>
-      <span className={`text-xs px-2 py-1 rounded-full ${statusClasses[status]}`}>
-        {status}
-      </span>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Breeding Timing Optimizer</CardTitle>
+        <CardDescription>
+          Recommendations for optimal breeding timing based on current heat cycle
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="text-blue-800 font-medium flex items-center">
+            <Clock className="h-4 w-4 mr-2" />
+            Current Heat Status
+          </h3>
+          <p className="text-blue-700 mt-1">
+            Day {daysIntoCurrentHeat} of heat cycle
+          </p>
+        </div>
+        
+        {fertileDays?.start && fertileDays?.end && (
+          <div className="border rounded-lg p-4">
+            <h3 className="font-medium flex items-center">
+              <Calendar className="h-4 w-4 mr-2" />
+              Fertile Window
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Period when ovulation occurs and breeding has chance of success
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="border rounded p-3 text-center">
+                <div className="text-sm text-muted-foreground">Start</div>
+                <div className="font-medium">{format(fertileDays.start, 'MMM d, yyyy')}</div>
+              </div>
+              <div className="border rounded p-3 text-center">
+                <div className="text-sm text-muted-foreground">End</div>
+                <div className="font-medium">{format(fertileDays.end, 'MMM d, yyyy')}</div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {recommendedBreedingDays?.start && recommendedBreedingDays?.end && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h3 className="text-green-800 font-medium flex items-center">
+              <ThumbsUp className="h-4 w-4 mr-2" />
+              Optimal Breeding Days
+            </h3>
+            <p className="text-green-700 mt-1">
+              {format(recommendedBreedingDays.start, 'MMM d')} - {format(recommendedBreedingDays.end, 'MMM d')}
+            </p>
+            <p className="text-sm text-green-600 mt-2">
+              This is the ideal window for successful breeding
+            </p>
+          </div>
+        )}
+        
+        <div className="border-t pt-4">
+          <h3 className="font-medium mb-2">Breeding Recommendation</h3>
+          <div className="flex items-start space-x-3">
+            <div className="bg-primary/10 p-2 rounded-full">
+              <Heart className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p>
+                Schedule breeding attempts every 24-48 hours during the fertile window for the best chance of successful conception.
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

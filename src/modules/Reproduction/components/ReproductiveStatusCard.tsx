@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Baby, Clock, Info } from 'lucide-react';
 import { format } from 'date-fns';
-import { ReproductiveStatus, HeatStage } from '@/types/reproductive';
-import { Dog } from '@/types/dog';
+import { ReproductiveStatus, HeatStage, Dog } from '@/types/reproductive';
 
 interface ReproductiveStatusCardProps {
   dog: Dog;

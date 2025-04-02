@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { 
@@ -46,7 +45,7 @@ const ReproductiveTimeline: React.FC<ReproductiveTimelineProps> = ({
   const allEvents: TimelineEvent[] = [
     ...heatCycles.map(cycle => ({
       id: cycle.id,
-      type: 'heat',
+      type: 'heat' as const,
       title: 'Heat Cycle',
       date: new Date(cycle.start_date),
       description: cycle.end_date 
@@ -59,7 +58,7 @@ const ReproductiveTimeline: React.FC<ReproductiveTimelineProps> = ({
     
     ...breedingRecords.map(record => ({
       id: record.id,
-      type: 'breeding',
+      type: 'breeding' as const,
       title: 'Breeding',
       date: new Date(record.tie_date),
       description: `Sire: ${record.sire?.name || 'Unknown'} - ${record.breeding_method || 'Natural breeding'}`,
@@ -74,7 +73,7 @@ const ReproductiveTimeline: React.FC<ReproductiveTimelineProps> = ({
     
     ...pregnancyRecords.map(record => ({
       id: record.id,
-      type: 'pregnancy',
+      type: 'pregnancy' as const,
       title: 'Pregnancy Confirmed',
       date: new Date(record.confirmation_date || Date.now()),
       description: record.estimated_whelp_date 
@@ -88,7 +87,7 @@ const ReproductiveTimeline: React.FC<ReproductiveTimelineProps> = ({
       .filter(record => record.actual_whelp_date)
       .map(record => ({
         id: `whelp-${record.id}`,
-        type: 'whelping',
+        type: 'whelping' as const,
         title: 'Whelping',
         date: new Date(record.actual_whelp_date!),
         description: `${record.puppies_born || 0} puppies born, ${record.puppies_alive || 0} survived`,
@@ -99,7 +98,7 @@ const ReproductiveTimeline: React.FC<ReproductiveTimelineProps> = ({
       
     ...milestones.map(milestone => ({
       id: milestone.id,
-      type: 'milestone',
+      type: 'milestone' as const,
       title: milestone.milestone_type,
       date: new Date(milestone.milestone_date),
       description: milestone.notes || undefined,
