@@ -1,79 +1,49 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
-// Fix the type issues by properly handling the response data
-export async function fetchLatestPottyBreak(dogId: string) {
+export const getDogPottyBreaks = async (dogId: string, date: string) => {
   try {
-    // Fetch the latest potty break session that includes this dog
     const { data, error } = await supabase
-      .from('potty_break_dogs')
-      .select(`
-        session_id,
-        potty_break_sessions!inner(
-          id,
-          session_time,
-          notes,
-          created_at
-        )
-      `)
+      .from('potty_breaks')
+      .select('*')
       .eq('dog_id', dogId)
-      .order('created_at', { ascending: false })
-      .limit(1);
-    
+      .gte('session_time', `${date}T00:00:00`)
+      .lte('session_time', `${date}T23:59:59`)
+      .order('session_time', { ascending: false });
+      
     if (error) throw error;
     
-    if (!data || data.length === 0) {
-      return null;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching dog potty breaks:', error);
+    return [];
+  }
+};
+
+export const getLastPottyBreak = async (dogId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('potty_breaks')
+      .select('id, session_time, notes, created_at')
+      .eq('dog_id', dogId)
+      .order('session_time', { ascending: false })
+      .limit(1)
+      .single();
+      
+    if (error && error.code !== 'PGRST116') throw error;
+    
+    if (data) {
+      return {
+        session_time: data.session_time,
+        id: data.id,
+        notes: data.notes,
+        created_at: data.created_at
+      };
     }
     
-    // Safely extract session data
-    const session = data[0].potty_break_sessions;
-    if (!session) return null;
-    
-    // Return properly structured data
-    return {
-      session_time: session.session_time,
-      id: session.id,
-      notes: session.notes,
-      created_at: session.created_at
-    };
+    return null;
   } catch (error) {
-    console.error('Error fetching latest potty break:', error);
+    console.error('Error fetching last potty break:', error);
     return null;
   }
-}
-
-export async function logPottyBreak(dogId: string, sessionId: string, notes: string) {
-  try {
-    const { data, error } = await supabase
-      .from('potty_break_dogs')
-      .insert([
-        { dog_id: dogId, session_id: sessionId, notes: notes }
-      ])
-      .select();
-    
-    if (error) throw error;
-    
-    return data;
-  } catch (error) {
-    console.error('Error logging potty break:', error);
-    return null;
-  }
-}
-
-export async function updatePottyBreakNotes(dogId: string, sessionId: string, notes: string) {
-  try {
-    const { data, error } = await supabase
-      .from('potty_break_dogs')
-      .update({ notes: notes })
-      .eq('dog_id', dogId)
-      .eq('session_id', sessionId)
-      .select();
-    
-    if (error) throw error;
-    
-    return data;
-  } catch (error) {
-    console.error('Error updating potty break notes:', error);
-    return null;
-  }
-}
+};

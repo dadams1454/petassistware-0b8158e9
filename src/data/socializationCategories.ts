@@ -4,126 +4,120 @@ import { SocializationCategory, SocializationReactionObject } from '@/types/pupp
 export const SOCIALIZATION_CATEGORIES: SocializationCategory[] = [
   {
     id: 'people',
-    name: 'People Interactions',
-    description: 'Expose puppies to different types of people',
-    priority: 'high',
+    name: 'People',
+    description: 'Exposure to different types of people',
     recommended_experiences: 10,
+    priority: 'high',
     age_start_days: 21,
     age_end_days: 84,
     created_at: new Date().toISOString(),
     color: '#2563eb',
-    examples: ['children', 'adults', 'elderly', 'people with hats', 'people with glasses']
+    examples: ['Children', 'People with hats', 'People with beards', 'People in uniforms']
   },
   {
-    id: 'animals',
-    name: 'Animal Interactions',
-    description: 'Expose puppies to different types of animals',
-    priority: 'high',
+    id: 'surfaces',
+    name: 'Surfaces',
+    description: 'Walking on different surfaces and textures',
     recommended_experiences: 8,
+    priority: 'medium',
     age_start_days: 28,
     age_end_days: 84,
     created_at: new Date().toISOString(),
     color: '#16a34a',
-    examples: ['other dogs', 'cats', 'small animals']
-  },
-  {
-    id: 'environments',
-    name: 'New Environments',
-    description: 'Expose puppies to different environments',
-    priority: 'medium',
-    recommended_experiences: 8,
-    age_start_days: 35,
-    age_end_days: 84,
-    created_at: new Date().toISOString(),
-    color: '#ea580c',
-    examples: ['outdoors', 'car rides', 'different flooring']
+    examples: ['Carpet', 'Tile', 'Grass', 'Gravel', 'Wood floors']
   },
   {
     id: 'sounds',
-    name: 'Sounds & Noises',
-    description: 'Expose puppies to different sounds',
-    priority: 'medium',
-    recommended_experiences: 6,
-    age_start_days: 28,
+    name: 'Sounds',
+    description: 'Exposure to different sounds',
+    recommended_experiences: 8,
+    priority: 'high',
+    age_start_days: 21,
     age_end_days: 84,
     created_at: new Date().toISOString(),
     color: '#9333ea',
-    examples: ['vacuum', 'thunderstorms', 'music', 'traffic']
+    examples: ['Vacuum cleaner', 'Doorbell', 'Traffic', 'Thunder recording']
   },
   {
-    id: 'surfaces',
-    name: 'Different Surfaces',
-    description: 'Expose puppies to different surfaces',
-    priority: 'medium',
+    id: 'animals',
+    name: 'Animals',
+    description: 'Interaction with other animals',
     recommended_experiences: 6,
-    age_start_days: 35,
+    priority: 'medium',
+    age_start_days: 42,
+    age_end_days: 84,
+    created_at: new Date().toISOString(),
+    color: '#ea580c',
+    examples: ['Other dogs', 'Cats', 'Birds', 'Livestock (if relevant)']
+  },
+  {
+    id: 'environments',
+    name: 'Environments',
+    description: 'Visits to different locations',
+    recommended_experiences: 6,
+    priority: 'medium',
+    age_start_days: 49,
     age_end_days: 84,
     created_at: new Date().toISOString(),
     color: '#ca8a04',
-    examples: ['grass', 'carpet', 'tile', 'wood', 'metal']
+    examples: ['Car rides', 'Pet-friendly store', 'Park', 'Outdoor cafe']
   },
   {
     id: 'handling',
-    name: 'Handling & Grooming',
-    description: 'Get puppies used to being handled',
-    priority: 'high',
+    name: 'Handling',
+    description: 'Getting used to being handled',
     recommended_experiences: 10,
+    priority: 'high',
     age_start_days: 14,
     age_end_days: 84,
     created_at: new Date().toISOString(),
     color: '#0891b2',
-    examples: ['nail trimming', 'brushing', 'teeth cleaning', 'ear cleaning']
+    examples: ['Ears touched', 'Paws handled', 'Grooming', 'Teeth checking']
   },
   {
     id: 'objects',
-    name: 'Objects & Toys',
-    description: 'Expose puppies to different objects',
+    name: 'Objects',
+    description: 'Exposure to novel objects',
+    recommended_experiences: 8,
     priority: 'low',
-    recommended_experiences: 5,
     age_start_days: 28,
     age_end_days: 84,
     created_at: new Date().toISOString(),
     color: '#4f46e5',
-    examples: ['toys', 'common household items', 'moving objects']
+    examples: ['Umbrella', 'Rolling suitcase', 'Bicycle', 'Skateboard']
   }
 ];
 
-// These will be used for UI purposes but don't represent the actual reaction type values
-export const REACTION_OBJECTS: SocializationReactionObject[] = [
+// Export reaction objects for use in the UI
+export const SOCIALIZATION_REACTIONS: SocializationReactionObject[] = [
   {
     id: 'positive',
     name: 'Positive',
     color: '#16a34a',
-    description: 'Puppy showed curiosity, engagement, playfulness, or comfort'
+    description: 'Comfortable, happy, engaged'
   },
   {
     id: 'neutral',
     name: 'Neutral',
     color: '#3b82f6',
-    description: 'Puppy showed neither positive nor negative reaction'
+    description: 'Neither positive nor negative'
   },
   {
     id: 'negative',
     name: 'Negative',
     color: '#ef4444',
-    description: 'Puppy showed fear, anxiety, avoidance, or aggression'
+    description: 'Fearful, anxious, stressed'
   },
   {
-    id: 'cautious',
-    name: 'Cautious',
-    color: '#f59e0b',
-    description: 'Puppy showed hesitation but not outright fear'
+    id: 'mixed',
+    name: 'Mixed',
+    color: '#a16207',
+    description: 'Mixed reaction, both positive and negative elements'
   },
   {
-    id: 'very_positive',
-    name: 'Very Positive',
-    color: '#059669',
-    description: 'Puppy showed exceptional enthusiasm and comfort'
+    id: 'curious',
+    name: 'Curious',
+    color: '#7c3aed',
+    description: 'Interested and exploring but cautious'
   }
 ];
-
-// Helper function to get reaction object from reaction value
-export const getReactionObject = (reaction: string): SocializationReactionObject => {
-  const reactionObj = REACTION_OBJECTS.find(r => r.id === reaction);
-  return reactionObj || REACTION_OBJECTS[0]; // Default to positive if not found
-};

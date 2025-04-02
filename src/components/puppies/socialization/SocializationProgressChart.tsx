@@ -1,119 +1,100 @@
 
 import React from 'react';
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { SocializationCategory, SocializationProgress } from '@/types/puppyTracking';
-import { Card, CardContent } from '@/components/ui/card';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SocializationProgress } from '@/types/puppyTracking';
 
 interface SocializationProgressChartProps {
-  progress: SocializationProgress[];
-  categories: SocializationCategory[];
+  progressData: SocializationProgress[];
 }
 
 const SocializationProgressChart: React.FC<SocializationProgressChartProps> = ({ 
-  progress,
-  categories 
+  progressData 
 }) => {
-  const chartData = progress.map(item => {
-    const category = categories.find(c => c.id === item.category_id);
-    return {
-      categoryName: category?.name || item.categoryName,
-      completionPercentage: item.completion_percentage,
-      count: item.count,
-      target: item.target
-    };
-  });
-
-  // Get colors based on the categories
-  const getCategoryColor = (categoryId: string) => {
-    const category = categories.find(c => c.id === categoryId);
-    return category?.color || '#4f46e5'; // Default to indigo if color not found
+  // Only include categories with data
+  const filteredData = progressData.filter(item => item.count > 0);
+  
+  // Transform data for the chart
+  const chartData = filteredData.map(item => ({
+    name: item.category_name,
+    id: item.categoryId,
+    value: item.count,
+    completion: item.completion_percentage
+  }));
+  
+  // Colors for the chart
+  const COLORS = [
+    '#2563eb', // blue
+    '#16a34a', // green
+    '#9333ea', // purple
+    '#ea580c', // orange
+    '#ca8a04', // yellow
+    '#0891b2', // cyan
+    '#4f46e5', // indigo
+    '#db2777', // pink
+    '#65a30d', // lime
+    '#1e293b', // slate
+  ];
+  
+  // Custom tooltip component
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-background border rounded-md p-2 shadow-md">
+          <p className="font-medium">{data.name}</p>
+          <p className="text-sm">{data.value} experiences</p>
+          <p className="text-sm text-muted-foreground">
+            {data.completion}% complete
+          </p>
+        </div>
+      );
+    }
+    return null;
   };
-
-  // Color based on completion percentage
-  const getCompletionColor = (percentage: number) => {
-    if (percentage >= 100) return 'rgb(34, 197, 94)'; // Green for 100%+
-    if (percentage >= 75) return 'rgb(59, 130, 246)'; // Blue for 75%+
-    if (percentage >= 50) return 'rgb(249, 115, 22)'; // Orange for 50%+
-    return 'rgb(239, 68, 68)'; // Red for <50%
-  };
-
-  return (
-    <div className="space-y-6">
-      <Card className="overflow-hidden">
-        <CardContent className="p-2">
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                margin={{
-                  top: 20,
-                  right: 0,
-                  left: 0,
-                  bottom: 60,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="categoryName" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={70}
-                  interval={0}
-                />
-                <YAxis 
-                  unit="%" 
-                  domain={[0, 100]}
-                  label={{ 
-                    value: 'Completion %', 
-                    angle: -90, 
-                    position: 'insideLeft',
-                    style: { textAnchor: 'middle' }
-                  }}
-                />
-                <Tooltip formatter={(value: number) => [`${value}%`, 'Completion']} />
-                <Bar
-                  dataKey="completionPercentage"
-                  name="Completion"
-                  fill="rgb(79, 70, 229)"
-                  radius={[4, 4, 0, 0]}
-                  barSize={30}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+  
+  if (chartData.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Socialization Progress</CardTitle>
+        </CardHeader>
+        <CardContent className="h-64 flex items-center justify-center">
+          <p className="text-muted-foreground">No socialization data available</p>
         </CardContent>
       </Card>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {progress.map((item) => (
-          <Card key={item.category_id} className="overflow-hidden">
-            <CardContent className="p-4">
-              <div className="flex flex-col space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">{item.categoryName}</span>
-                  <span className="text-sm font-semibold">{item.completion_percentage}%</span>
-                </div>
-                
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    className="h-2.5 rounded-full" 
-                    style={{ 
-                      width: `${Math.min(item.completion_percentage || 0, 100)}%`,
-                      backgroundColor: getCompletionColor(item.completion_percentage || 0)
-                    }}
-                  />
-                </div>
-                
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{item.count} completed</span>
-                  <span>Target: {item.target}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    );
+  }
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Socialization by Category</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${entry.categoryId}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

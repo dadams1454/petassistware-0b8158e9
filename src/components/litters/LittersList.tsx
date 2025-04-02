@@ -9,6 +9,14 @@ import LitterCardView from './views/LitterCardView';
 import { Litter } from '@/types/litter'; 
 import { useLitterActions } from './hooks/useLitterActions';
 
+// Update the type to include "archived" status
+type LitterStatus = 'planned' | 'active' | 'completed' | 'archived';
+
+// Update the Litter interface to include the correct status type
+interface ExtendedLitter extends Litter {
+  status: LitterStatus;
+}
+
 interface LittersListProps {
   litters: Litter[];
   onEditLitter: (litter: Litter) => void;
@@ -42,9 +50,19 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
 
   // Organize litters by status and dam gender
   const organizedLitters: OrganizedLitters = useMemo(() => {
-    const activeLitters = litters.filter(litter => litter.status !== 'archived' && litter.dam?.gender === 'Female');
-    const otherActiveLitters = litters.filter(litter => litter.status !== 'archived' && litter.dam?.gender !== 'Female');
-    const archivedLitters = litters.filter(litter => litter.status === 'archived');
+    const typedLitters = litters as ExtendedLitter[];
+    
+    const activeLitters = typedLitters.filter(litter => 
+      litter.status !== 'archived' && litter.dam?.gender === 'Female'
+    );
+    
+    const otherActiveLitters = typedLitters.filter(litter => 
+      litter.status !== 'archived' && litter.dam?.gender !== 'Female'
+    );
+    
+    const archivedLitters = typedLitters.filter(litter => 
+      litter.status === 'archived'
+    );
 
     return {
       active: activeLitters,

@@ -27,6 +27,14 @@ interface Dam {
   }[];
 }
 
+// Type for sire data
+interface Sire {
+  id: string;
+  name: string;
+  breed: string;
+  color: string;
+}
+
 const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
   const [selectedDamId, setSelectedDamId] = useState<string | null>(null);
 
@@ -95,13 +103,16 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
   const puppiesPerLitterData = useMemo(() => {
     if (!litterDetails) return [];
     
-    return litterDetails.map(litter => ({
-      name: litter.litter_name || `Litter (${new Date(litter.birth_date).toLocaleDateString()})`,
-      count: litter.puppies.length,
-      male: litter.puppies.filter(puppy => puppy.gender?.toLowerCase() === 'male').length,
-      female: litter.puppies.filter(puppy => puppy.gender?.toLowerCase() === 'female').length,
-      sire: litter.sire?.name || 'Unknown'
-    }));
+    return litterDetails.map(litter => {
+      const sireData = litter.sire as Sire;
+      return {
+        name: litter.litter_name || `Litter (${new Date(litter.birth_date).toLocaleDateString()})`,
+        count: litter.puppies.length,
+        male: litter.puppies.filter(puppy => puppy.gender?.toLowerCase() === 'male').length,
+        female: litter.puppies.filter(puppy => puppy.gender?.toLowerCase() === 'female').length,
+        sire: sireData?.name || 'Unknown'
+      };
+    });
   }, [litterDetails]);
 
   // Generate comparison data for weight averages per litter
@@ -109,6 +120,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
     if (!litterDetails) return [];
     
     return litterDetails.map(litter => {
+      const sireData = litter.sire as Sire;
       const birthWeights = litter.puppies
         .filter(puppy => puppy.birth_weight)
         .map(puppy => parseFloat(puppy.birth_weight));
@@ -129,7 +141,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
         name: litter.litter_name || `Litter (${new Date(litter.birth_date).toLocaleDateString()})`,
         birthWeight: avgBirthWeight,
         currentWeight: avgCurrentWeight,
-        sire: litter.sire?.name || 'Unknown',
+        sire: sireData?.name || 'Unknown',
         puppyCount: litter.puppies.length
       };
     });

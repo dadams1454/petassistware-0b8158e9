@@ -36,8 +36,8 @@ export interface AgeGroup {
   startDay: number;
   endDay: number;
   color?: string;
-  careChecks?: string[];
-  milestones?: string[];
+  careChecks: string[];
+  milestones: string[];
 }
 
 // Extended age group data with puppy counts
@@ -104,16 +104,22 @@ export interface PuppyWeightRecord {
   notes?: string;
   created_at: string;
   updated_at?: string;
-  age_days?: number; // Adding age_days for compatibility
 }
 
 // Define WeightUnit type
-export type WeightUnit = 'g' | 'oz' | 'lbs' | 'kg';
+export type WeightUnit = 'g' | 'oz' | 'lbs' | 'kg' | 'lb';
 
 // Define WeightRecord for backward compatibility
-export interface WeightRecord extends PuppyWeightRecord {
-  dog_id: string; // Required by some components
+export interface WeightRecord {
+  id: string;
+  dog_id?: string; // Required by some components
   puppy_id?: string; // Make puppy_id optional for compatibility
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  created_at: string;
+  updated_at?: string;
   age_days?: number; // Add age_days property
   birth_date?: string; // Add birth_date property
 }
@@ -161,7 +167,7 @@ export interface PuppyVaccinationSchedule {
   vaccine_name?: string;
   administered?: boolean;
   administered_date?: string;
-  notes?: string; // Adding notes property that was missing
+  notes?: string;
   vaccination_date?: string; // Adding for compatibility
 }
 

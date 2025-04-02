@@ -51,7 +51,7 @@ const SocializationProgressTracker: React.FC<SocializationProgressTrackerProps> 
         
         <div className="space-y-4">
           {sortedProgress.map((progress) => (
-            <div key={progress.category_id} className="space-y-1">
+            <div key={progress.categoryId} className="space-y-1">
               <div className="flex justify-between items-center text-sm">
                 <div className="flex items-center gap-1.5">
                   {(progress.completion_percentage || 0) >= 100 ? (

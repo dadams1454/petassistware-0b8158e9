@@ -20,7 +20,7 @@ const SocializationCategoryList: React.FC<SocializationCategoryListProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {categories.map(category => {
-        const categoryProgress = progress.find(p => p.category_id === category.id);
+        const categoryProgress = progress.find(p => p.categoryId === category.id);
         const completionPercentage = categoryProgress?.completion_percentage || 0;
         const count = categoryProgress?.count || 0;
         const target = categoryProgress?.target || 0;

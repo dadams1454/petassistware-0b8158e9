@@ -4,7 +4,7 @@ export * from './customer';
 export * from './task';
 
 // Re-export from litter with explicit renaming to avoid ambiguity
-export { 
+export type { 
   SimpleDog, 
   Dog, 
   Puppy, 
@@ -16,7 +16,7 @@ export {
 } from './litter';
 
 // Export puppy tracking types
-export {
+export type {
   PuppyWithAge,
   AgeGroup,
   PuppyAgeGroupData,

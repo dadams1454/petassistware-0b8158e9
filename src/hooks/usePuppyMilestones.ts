@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PuppyMilestone } from '@/types/puppyTracking';
 
@@ -82,6 +82,60 @@ export function usePuppyMilestones(puppyId: string) {
     }
   }, []);
 
+  const markComplete = useCallback(async (milestoneId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('puppy_milestones')
+        .update({
+          is_completed: true,
+          completion_date: new Date().toISOString()
+        })
+        .eq('id', milestoneId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      setMilestones(prev => 
+        prev.map(m => m.id === milestoneId ? data : m)
+      );
+      
+      return data;
+    } catch (err) {
+      console.error('Error marking milestone as complete:', err);
+      throw err;
+    }
+  }, []);
+
+  // Compute derived milestone lists
+  const completedMilestones = useMemo(() => {
+    return milestones.filter(m => m.is_completed);
+  }, [milestones]);
+  
+  const upcomingMilestones = useMemo(() => {
+    const today = new Date();
+    const currentAgeDays = puppyBirthDate 
+      ? Math.floor((today.getTime() - new Date(puppyBirthDate).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+      
+    return milestones.filter(m => 
+      !m.is_completed && 
+      m.expected_age_days >= currentAgeDays
+    ).sort((a, b) => a.expected_age_days - b.expected_age_days);
+  }, [milestones, puppyBirthDate]);
+  
+  const overdueMilestones = useMemo(() => {
+    const today = new Date();
+    const currentAgeDays = puppyBirthDate 
+      ? Math.floor((today.getTime() - new Date(puppyBirthDate).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+      
+    return milestones.filter(m => 
+      !m.is_completed && 
+      m.expected_age_days < currentAgeDays
+    ).sort((a, b) => b.expected_age_days - a.expected_age_days);
+  }, [milestones, puppyBirthDate]);
+
   useEffect(() => {
     if (puppyId) {
       fetchMilestones();
@@ -90,10 +144,14 @@ export function usePuppyMilestones(puppyId: string) {
 
   return {
     milestones,
+    completedMilestones,
+    upcomingMilestones,
+    overdueMilestones,
     isLoading,
     error,
     addMilestone,
     deleteMilestone,
+    markComplete,
     puppyBirthDate,
     refreshMilestones: fetchMilestones
   };

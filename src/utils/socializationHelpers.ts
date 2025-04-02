@@ -1,6 +1,5 @@
 
 import { SocializationReaction, SocializationReactionObject } from '@/types/puppyTracking';
-import { REACTION_OBJECTS } from '@/data/socializationCategories';
 
 /**
  * Gets a reaction object from a reaction string
@@ -59,3 +58,25 @@ const getDefaultColorForReaction = (reaction: string): string => {
 const capitalize = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
+
+// Define reaction objects for UI display
+export const REACTION_OBJECTS: SocializationReactionObject[] = [
+  {
+    id: 'positive',
+    name: 'Positive',
+    color: '#16a34a',
+    description: 'Comfortable, happy, engaged'
+  },
+  {
+    id: 'neutral',
+    name: 'Neutral',
+    color: '#3b82f6',
+    description: 'Neither positive nor negative'
+  },
+  {
+    id: 'negative',
+    name: 'Negative',
+    color: '#ef4444',
+    description: 'Fearful, anxious, stressed'
+  }
+];
