@@ -32,6 +32,10 @@ export interface Dog {
   notes?: string;
   created_at: string;
   updated_at?: string;
+  // Add reproductive properties
+  is_pregnant?: boolean;
+  last_heat_date?: string;
+  tie_date?: string;
 }
 
 export enum DogGender {

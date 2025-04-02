@@ -1,8 +1,10 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
+  Dog,
   HeatCycle, 
   BreedingRecord, 
   PregnancyRecord, 
@@ -11,7 +13,6 @@ import {
   HeatStage,
   ReproductiveCycleData
 } from '@/types/reproductive';
-import { Dog } from '@/types/dog';
 import { 
   addDays, 
   differenceInDays, 

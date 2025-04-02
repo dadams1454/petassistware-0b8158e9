@@ -17,6 +17,10 @@ export interface Dog {
   dam_id?: string;
   sire_id?: string;
   owner_name?: string;
+  // Add reproductive properties
+  is_pregnant?: boolean;
+  last_heat_date?: string;
+  tie_date?: string;
 }
 
 export enum DogGender {

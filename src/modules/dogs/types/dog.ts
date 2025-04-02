@@ -32,6 +32,10 @@ export interface Dog {
   status?: DogStatus;
   owner_id?: string;
   tenant_id?: string;
+  // Add reproductive properties
+  is_pregnant?: boolean;
+  last_heat_date?: string;
+  tie_date?: string;
 }
 
 export interface DogProfile extends Dog {
