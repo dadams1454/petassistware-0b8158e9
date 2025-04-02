@@ -51,3 +51,11 @@ export interface PuppyCareLogProps {
   onSuccess?: () => void;
   onRefresh?: () => void;
 }
+
+export interface PuppyPhoto {
+  id: string;
+  puppy_id: string;
+  photo_url: string;
+  created_at: string;
+  is_main?: boolean;
+}

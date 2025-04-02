@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Image } from 'lucide-react';
+import { Image, PawPrint } from 'lucide-react';
 
 interface PuppyPhotoProps {
   photoUrl: string | null;
@@ -37,7 +37,7 @@ const PuppyPhoto: React.FC<PuppyPhotoProps> = ({
         </div>
       ) : (
         <div className={`flex items-center justify-center ${dimensions[size]} bg-muted rounded-md`}>
-          <Image className={`${iconSize[size]} text-muted-foreground`} />
+          <PawPrint className={`${iconSize[size]} text-muted-foreground`} />
         </div>
       )}
     </>

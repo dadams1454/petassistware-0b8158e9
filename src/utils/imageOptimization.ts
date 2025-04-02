@@ -1,21 +1,18 @@
 
 /**
- * Utility for optimizing images before upload
- */
-
-/**
- * Compresses an image file to reduce file size
- * @param file Original image file
- * @param maxWidth Maximum width for the compressed image
- * @param quality JPEG quality (0-1)
- * @param scale Scale factor for the image (0-1)
- * @returns A Promise that resolves to the compressed File
+ * Compresses an image file to reduce size while maintaining quality
+ * 
+ * @param file The image file to compress
+ * @param maxWidth Maximum width in pixels (default: 1200)
+ * @param quality Compression quality from 0 to 1 (default: 0.85)
+ * @param maxSizeRatio Maximum file size ratio compared to original (default: 1)
+ * @returns Promise that resolves to the compressed file
  */
 export const compressImage = async (
   file: File,
-  maxWidth: number = 1920,
-  quality: number = 0.8,
-  scale: number = 1.0
+  maxWidth = 1200,
+  quality = 0.85,
+  maxSizeRatio = 1
 ): Promise<File> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -23,20 +20,18 @@ export const compressImage = async (
     
     reader.onload = (event) => {
       const img = new Image();
-      img.src = event.target?.result as string;
       
       img.onload = () => {
-        // Calculate dimensions while maintaining aspect ratio
-        let width = img.width * scale;
-        let height = img.height * scale;
+        // Calculate new dimensions
+        let width = img.width;
+        let height = img.height;
         
         if (width > maxWidth) {
-          const ratio = maxWidth / width;
+          height = (height * maxWidth) / width;
           width = maxWidth;
-          height = height * ratio;
         }
         
-        // Create canvas and draw resized image
+        // Create canvas and context
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -47,53 +42,44 @@ export const compressImage = async (
           return;
         }
         
+        // Draw image to canvas
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Convert to blob with specified quality
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Could not create blob'));
-              return;
+        // Convert to blob
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Could not create blob'));
+            return;
+          }
+          
+          // Create new file
+          const compressedFile = new File(
+            [blob],
+            file.name,
+            {
+              type: 'image/jpeg',
+              lastModified: Date.now()
             }
-            
-            // Create new file from blob
-            const compressedFile = new File(
-              [blob],
-              file.name,
-              {
-                type: 'image/jpeg',
-                lastModified: Date.now(),
-              }
-            );
-            
+          );
+          
+          // If the compressed file is larger than the target size, just return the original
+          if (compressedFile.size > file.size * maxSizeRatio) {
+            resolve(file);
+          } else {
             resolve(compressedFile);
-          },
-          'image/jpeg',
-          quality
-        );
+          }
+        }, 'image/jpeg', quality);
       };
       
       img.onerror = () => {
-        reject(new Error('Error loading image'));
+        reject(new Error('Failed to load image'));
       };
+      
+      img.src = event.target?.result as string;
     };
     
     reader.onerror = () => {
-      reject(new Error('Error reading file'));
+      reject(new Error('Failed to read file'));
     };
   });
-};
-
-/**
- * Generates a thumbnail from a file
- * @param file Original image file
- * @param size Size of the thumbnail (width and height)
- * @returns A Promise that resolves to the thumbnail File
- */
-export const generateThumbnail = async (
-  file: File,
-  size: number = 200
-): Promise<File> => {
-  return compressImage(file, size, 0.7, 1.0);
 };
