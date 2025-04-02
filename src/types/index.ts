@@ -13,9 +13,12 @@ export { DogTypes };
 export * from './litter';
 export * from './genetics';
 
-// Handle health exports to avoid WeightUnit conflict
+// Handle health exports to include WeightUnit explicitly
+import { WeightUnit as HealthWeightUnit } from './health';
 import * as HealthTypes from './health';
 export { HealthTypes };
+// Export the WeightUnit from health explicitly to avoid conflicts
+export { HealthWeightUnit };
 
 // Export specific types from puppyTracking to avoid conflicts
 export * from './puppyTracking';
