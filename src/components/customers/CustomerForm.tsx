@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Tables } from '@/integrations/supabase/types';
 import { Form } from "@/components/ui/form";
 import { useCustomerForm } from './hooks/useCustomerForm';
 import PersonalInfoFields from './form-fields/PersonalInfoFields';
@@ -10,6 +9,8 @@ import LitterSelectionFields from './form-fields/LitterSelectionFields';
 import InterestedPuppyField from './form-fields/InterestedPuppyField';
 import NotesField from './form-fields/NotesField';
 import FormActions from './form-fields/FormActions';
+import { CustomerWithMeta } from '@/types/customer';
+import { Tables } from '@/integrations/supabase/types';
 
 type Customer = Tables<'customers'> & {
   metadata?: {
@@ -22,7 +23,7 @@ type Customer = Tables<'customers'> & {
 };
 
 interface CustomerFormProps {
-  customer?: Customer | null;
+  customer?: CustomerWithMeta | null;
   onSubmit: () => void;
   onCancel: () => void;
 }

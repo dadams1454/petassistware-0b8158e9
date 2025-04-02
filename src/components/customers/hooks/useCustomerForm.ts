@@ -1,24 +1,13 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Tables } from '@/integrations/supabase/types';
 import { customerFormSchema, CustomerFormValues } from '../schemas/customerFormSchema';
-
-type Customer = Tables<'customers'> & {
-  metadata?: {
-    customer_type?: 'new' | 'returning';
-    customer_since?: string;
-    interested_puppy_id?: string;
-    interested_litter_id?: string;
-    waitlist_type?: 'specific' | 'open';
-  }
-};
+import { CustomerWithMeta } from '@/types/customer';
 
 interface UseCustomerFormProps {
-  customer?: Customer;
+  customer?: CustomerWithMeta | null;
   onSubmitSuccess: () => void;
 }
 
