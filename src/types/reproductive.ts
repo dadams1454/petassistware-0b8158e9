@@ -53,12 +53,31 @@ export interface ReproductiveMilestone {
   created_at?: string;
 }
 
-export interface ReproductiveStatus {
+export enum ReproductiveStatus {
+  NORMAL = 'normal',
+  PRE_HEAT = 'pre-heat',
+  IN_HEAT = 'in-heat',
+  PREGNANT = 'pregnant',
+  WHELPING = 'whelping',
+  NURSING = 'nursing',
+  RECOVERY = 'recovery',
+  SPAYED = 'spayed',
+  NEUTERED = 'neutered'
+}
+
+export interface ReproductiveStatusRecord {
   id: string;
   dog_id: string;
-  status: 'normal' | 'in-heat' | 'pregnant' | 'nursing' | 'spayed' | 'neutered';
+  status: ReproductiveStatus;
   start_date: string;
   end_date?: string;
   notes?: string;
   created_at?: string;
+}
+
+export interface HeatStage {
+  day: number;
+  name: string;
+  description: string;
+  fertility: 'none' | 'low' | 'moderate' | 'high' | 'peak';
 }
