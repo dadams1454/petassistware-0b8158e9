@@ -17,10 +17,13 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onEdit,
   onDelete
 }) => {
+  // Safely handle user.profile which may be undefined
+  const fullName = user.profile?.full_name || user.name || 'N/A';
+  
   return (
     <tr>
       <td className="px-4 py-2">{user.email}</td>
-      <td className="px-4 py-2">{user.profile?.full_name || 'N/A'}</td>
+      <td className="px-4 py-2">{fullName}</td>
       <td className="px-4 py-2">{user.role || 'User'}</td>
       <td className="px-4 py-2">{user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</td>
       <td className="px-4 py-2 text-right">

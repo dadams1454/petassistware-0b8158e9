@@ -29,7 +29,6 @@ export const useGeneticDataImport = (dogId: string) => {
         dogId: result.dogId,
         provider: 'Embark',
         testsImported: result.testsImported,
-        importedTests: result.testsImported, // For backward compatibility
         errors: result.errors
       });
       
@@ -41,7 +40,6 @@ export const useGeneticDataImport = (dogId: string) => {
         dogId,
         provider: 'Embark',
         testsImported: 0,
-        importedTests: 0,
         errors: [`Failed to import: ${error.message}`]
       });
       return false;
@@ -66,7 +64,6 @@ export const useGeneticDataImport = (dogId: string) => {
         dogId: result.dogId,
         provider: 'Wisdom Panel',
         testsImported: result.testsImported,
-        importedTests: result.testsImported, // For backward compatibility
         errors: result.errors
       });
       
@@ -78,7 +75,6 @@ export const useGeneticDataImport = (dogId: string) => {
         dogId,
         provider: 'Wisdom Panel',
         testsImported: 0,
-        importedTests: 0,
         errors: [`Failed to import: ${error.message}`]
       });
       return false;
@@ -109,7 +105,6 @@ export const useGeneticDataImport = (dogId: string) => {
         dogId,
         provider: 'Manual Entry',
         testsImported: tests.length,
-        importedTests: tests.length, // For backward compatibility
         errors: []
       });
       
@@ -121,7 +116,6 @@ export const useGeneticDataImport = (dogId: string) => {
         dogId,
         provider: 'Manual Entry',
         testsImported: 0,
-        importedTests: 0,
         errors: [`Failed to import: ${error.message}`]
       });
       return false;

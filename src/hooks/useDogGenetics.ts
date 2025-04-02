@@ -22,7 +22,6 @@ export const useDogGenetics = (dogId: string) => {
         // If no data is returned, create a default object
         if (!data) {
           setGeneticData({
-            id: dogId, // Adding ID field
             dog_id: dogId,
             baseColor: 'Unknown',
             brownDilution: 'Unknown',
@@ -41,7 +40,6 @@ export const useDogGenetics = (dogId: string) => {
         
         // Set default data even on error
         setGeneticData({
-          id: dogId, // Adding ID field
           dog_id: dogId,
           baseColor: 'Unknown',
           brownDilution: 'Unknown',

@@ -49,7 +49,8 @@ export interface SimpleDog {
 
 export interface Litter {
   id: string;
-  litter_name?: string;
+  litter_name?: string; // Added this to match usage in LitterCard
+  name?: string; // Added this as an alias for litter_name
   dam_id?: string;
   sire_id?: string;
   dam?: SimpleDog;
@@ -73,6 +74,7 @@ export interface Litter {
   first_mating_date?: string;
   last_mating_date?: string;
   created_at?: string;
+  archived?: boolean; // Added this to match usage in LitterCard
 }
 
 export interface Dog {

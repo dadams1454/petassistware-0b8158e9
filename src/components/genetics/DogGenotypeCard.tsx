@@ -124,9 +124,9 @@ export const DogGenotypeCard: React.FC<DogGenotypeCardProps> = ({
   genotype // Allow passing genotype directly
 }) => {
   // Only fetch genetic data if it wasn't passed in
-  const { dogData, isLoading, error } = !genotype ? useDogGenetics(dogId) : { 
-    dogData: genotype, 
-    isLoading: false, 
+  const { geneticData, loading: isLoading, error } = !genotype ? useDogGenetics(dogId) : { 
+    geneticData: genotype, 
+    loading: false, 
     error: null 
   };
   
@@ -168,14 +168,14 @@ export const DogGenotypeCard: React.FC<DogGenotypeCardProps> = ({
     );
   }
   
-  // Use genotype if provided, otherwise use dogData from the hook
-  const geneticData = genotype || dogData;
+  // Use genotype if provided, otherwise use geneticData from the hook
+  const dogGeneticData = genotype || geneticData;
   
-  const hasGenetics = geneticData && (
-    geneticData.baseColor !== 'unknown' || 
-    geneticData.brownDilution !== 'unknown' || 
-    geneticData.dilution !== 'unknown' ||
-    (geneticData.healthMarkers && Object.keys(geneticData.healthMarkers).length > 0)
+  const hasGenetics = dogGeneticData && (
+    dogGeneticData.baseColor !== 'unknown' || 
+    dogGeneticData.brownDilution !== 'unknown' || 
+    dogGeneticData.dilution !== 'unknown' ||
+    (dogGeneticData.healthMarkers && Object.keys(dogGeneticData.healthMarkers).length > 0)
   );
   
   return (
@@ -189,7 +189,7 @@ export const DogGenotypeCard: React.FC<DogGenotypeCardProps> = ({
       <CardContent>
         {hasGenetics ? (
           <CompactGenotypeView 
-            genotype={geneticData}
+            genotype={dogGeneticData}
             showColorTraits={showColorTraits}
             showHealthTests={showHealthTests}
           />

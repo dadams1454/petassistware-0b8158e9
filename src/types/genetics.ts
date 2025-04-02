@@ -1,4 +1,3 @@
-
 // Dog Genotype Types
 export interface DogGenotype {
   dog_id: string;
@@ -62,15 +61,16 @@ export interface HealthRisk {
 
 export interface HealthWarning {
   condition: string;
-  message: string;
-  actionRequired: boolean;
-  severity: 'high' | 'medium' | 'low' | 'critical'; // Adding 'critical' severity
-  // Adding additional fields used in components
+  // Make these optional but keep them for backward compatibility
+  message?: string;
+  actionRequired?: boolean;
+  // Add new fields that are being used in components
   title?: string;
   description?: string;
   action?: string;
-  affectedPercentage?: number;
+  severity: 'high' | 'medium' | 'low' | 'critical'; // Adding 'critical' severity
   riskLevel?: string;
+  affectedPercentage?: number;
 }
 
 export interface HealthSummary {

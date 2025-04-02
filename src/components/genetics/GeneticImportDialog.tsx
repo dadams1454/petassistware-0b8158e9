@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { importEmbarkData, importWisdomPanelData } from '@/services/geneticsService';
+// Import from geneticsService/batchGeneticTests instead of geneticsService directly
+import { importEmbarkData, importWisdomPanelData } from '@/services/genetics/batchGeneticTests';
 import { GeneticImportResult } from '@/types/genetics';
 import { Dna, FileSymlink, File, Upload, AlertCircle } from 'lucide-react';
 
