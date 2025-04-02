@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -19,7 +18,7 @@ const WelpingPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('record');
   const [currentStep, setCurrentStep] = useState(id === 'new' ? 0 : 2); // Start at step 0 for new welping, step 2 for existing
-
+  
   const { data: litter, isLoading, error, refetch } = useQuery({
     queryKey: ['welping-litter', id],
     queryFn: async () => {
