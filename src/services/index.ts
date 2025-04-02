@@ -1,9 +1,13 @@
 
-// Export all service modules
-export * from './dailyCare';
-export * from './careService';
+// Re-export all services for easier imports
+export * from './akcRegistrationService';
 export * from './breedingRecommendationService';
-export * from './welpingService';
-export * from './healthIndicatorService';
-export * from './healthService';
+export * from './careService';
+export * from './contractService';
 export * from './eventService';
+export * from './healthService';
+export * from './healthIndicatorService';
+export * from './reservationService';
+export * from './vaccinationService';
+export * from './welpingService';
+export * from './geneticsService';
