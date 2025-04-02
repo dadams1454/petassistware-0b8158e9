@@ -1,162 +1,200 @@
-import React, { useState, useCallback } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { toast } from "@/hooks/use-toast"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { insertGeneticTest } from "@/services/geneticsService"
-import { CheckCircle, Circle, XCircle } from "lucide-react"
-import { GeneticHealthStatus } from "@/types/genetics"
 
-interface Props {
-  dogId: string
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { importEmbarkData, importWisdomPanelData } from '@/services/geneticsService';
+import { GeneticImportResult } from '@/types/genetics';
+import { Dna, FileSymlink, File, Upload, AlertCircle } from 'lucide-react';
+
+interface GeneticImportDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  dogId: string;
+  onImportComplete?: (result: GeneticImportResult) => void;
 }
 
-const GeneticImportDialog = ({ dogId }: Props) => {
-  const [open, setOpen] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
-  const [name, setName] = useState("")
-  const [status, setStatus] = useState<GeneticHealthStatus>("unknown");
-  const queryClient = useQueryClient()
-
-  const { mutate, isLoading } = useMutation({
-    mutationFn: async () => {
-      if (!file) {
-        throw new Error("No file selected")
-      }
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("dogId", dogId)
-      formData.append("name", name)
-      formData.append("status", status)
-      return insertGeneticTest(formData)
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Genetic test imported successfully",
-      })
-      queryClient.invalidateQueries({ queryKey: ["geneticTests", dogId] })
-      setOpen(false)
-      setFile(null)
-      setName("")
-      setStatus("unknown")
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      })
-    },
-  })
+export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
+  open,
+  onOpenChange,
+  dogId,
+  onImportComplete
+}) => {
+  const { toast } = useToast();
+  const [provider, setProvider] = useState<string>('embark');
+  const [importMethod, setImportMethod] = useState<string>('file');
+  const [apiKey, setApiKey] = useState<string>('');
+  const [file, setFile] = useState<File | null>(null);
+  const [accountId, setAccountId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0])
+      setFile(e.target.files[0]);
     }
-  }
+  };
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault()
-      mutate()
-    },
-    [mutate]
-  )
+  const handleImport = async () => {
+    if (!dogId) {
+      setError('Missing dog ID');
+      return;
+    }
+
+    if (importMethod === 'file' && !file) {
+      setError('Please select a file to import');
+      return;
+    }
+
+    if (importMethod === 'api' && (!apiKey || !accountId)) {
+      setError('API key and account ID are required for API import');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      let result: GeneticImportResult;
+
+      // For now, just use the placeholder implementations
+      // In a real app, you would parse the file data and send it to the API
+      if (provider === 'embark') {
+        result = await importEmbarkData(dogId, file);
+      } else if (provider === 'wisdom_panel') {
+        result = await importWisdomPanelData(dogId, file);
+      } else {
+        throw new Error(`Unsupported provider: ${provider}`);
+      }
+
+      if (result.success) {
+        toast({
+          title: 'Genetic data imported',
+          description: `Successfully imported ${result.testsImported} genetic tests from ${result.provider}.`,
+        });
+        onImportComplete?.(result);
+        onOpenChange(false);
+      } else {
+        setError(`Import failed: ${result.errors?.[0] || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error importing genetic data:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Import Genetic Test</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Import Genetic Test</DialogTitle>
+          <DialogTitle className="flex items-center">
+            <Dna className="h-5 w-5 mr-2" />
+            Import Genetic Test Results
+          </DialogTitle>
           <DialogDescription>
-            Upload a genetic test report to automatically fill in the results.
+            Import genetic testing results from popular testing providers or upload a file.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="col-span-3"
-              required
-            />
+
+        <div className="space-y-4 py-2">
+          <div className="space-y-2">
+            <Label>Testing Provider</Label>
+            <Select
+              value={provider}
+              onValueChange={setProvider}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select provider" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="embark">Embark</SelectItem>
+                <SelectItem value="wisdom_panel">Wisdom Panel</SelectItem>
+                <SelectItem value="optimal_selection">Optimal Selection</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="file" className="text-right">
-              File
-            </Label>
-            <Input
-              type="file"
-              id="file"
-              onChange={handleFileChange}
-              className="col-span-3"
-              required
-            />
+
+          <div className="space-y-2">
+            <Label>Import Method</Label>
+            <Select
+              value={importMethod}
+              onValueChange={setImportMethod}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select import method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="file">Upload File</SelectItem>
+                <SelectItem value="api">Connect API (beta)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="status" className="text-right">
-              Status
-            </Label>
-            <div className="col-span-3 flex items-center space-x-2">
-              <Button
-                type="button"
-                variant="ghost"
-                className={status === "clear" ? "bg-muted" : ""}
-                onClick={() => setStatus("clear")}
-              >
-                <CheckCircle
-                  className={status === "clear" ? "text-green-500" : ""}
+
+          {importMethod === 'file' && (
+            <div className="space-y-2">
+              <Label>Test Results File</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="file"
+                  onChange={handleFileChange}
+                  accept=".csv,.xlsx,.json,.pdf"
                 />
-                Clear
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className={status === "carrier" ? "bg-muted" : ""}
-                onClick={() => setStatus("carrier")}
-              >
-                <Circle
-                  className={status === "carrier" ? "text-yellow-500" : ""}
-                />
-                Carrier
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className={status === "affected" ? "bg-muted" : ""}
-                onClick={() => setStatus("affected")}
-              >
-                <XCircle
-                  className={status === "affected" ? "text-red-500" : ""}
-                />
-                Affected
-              </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Supported formats: CSV, Excel, PDF, or JSON export from your testing provider.
+              </p>
             </div>
-          </div>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Importing..." : "Import"}
+          )}
+
+          {importMethod === 'api' && (
+            <>
+              <div className="space-y-2">
+                <Label>API Key</Label>
+                <Input
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  type="password"
+                  placeholder="Enter your API key"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Account ID</Label>
+                <Input
+                  value={accountId}
+                  onChange={(e) => setAccountId(e.target.value)}
+                  placeholder="Enter your account ID"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Your API credentials can be found in your testing provider account settings.
+              </p>
+            </>
+          )}
+
+          {error && (
+            <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start">
+              <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+              <span className="text-sm">{error}</span>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
           </Button>
-        </form>
+          <Button onClick={handleImport} disabled={isLoading}>
+            {isLoading ? 'Importing...' : 'Import Data'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default GeneticImportDialog
+export default GeneticImportDialog;

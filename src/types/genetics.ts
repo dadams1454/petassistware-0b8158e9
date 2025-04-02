@@ -1,94 +1,75 @@
 
+// Dog Genotype Types
 export interface DogGenotype {
-  id?: string;
   dog_id: string;
-  created_at?: string;
-  updated_at?: string;
-  breed?: string;
   name?: string;
+  breed?: string;
   baseColor: string;
   brownDilution: string;
   dilution: string;
-  colorGenetics?: any;
-  traits?: any;
-  healthMarkers: Record<string, HealthMarker>;
-  healthResults?: HealthResult[];
-  breedComposition?: any;
-  colorProbabilities?: ColorProbability[];
   agouti?: string;
+  healthMarkers?: Record<string, HealthMarker>;
+  healthResults?: HealthResult[];
+  colorProbabilities?: ColorProbability[];
 }
 
 export interface HealthMarker {
-  id?: string;
-  name: string;
+  name?: string;
   status: GeneticHealthStatus;
-  description?: string;
-  inheritance?: string;
-  primary?: boolean;
   testDate?: string;
-  condition?: string;
-  source?: string;
+  lab?: string;
+  probability?: number;
 }
 
 export interface HealthResult {
   condition: string;
-  status: GeneticHealthStatus;
-  date?: string;
-  provider?: string;
+  result: string;
+  tested_date: string;
+  lab: string;
+  notes?: string;
 }
 
-export interface HealthWarning {
-  title: string;
-  description: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  test?: string;
-  action?: string;
-  condition: string;
-  risk?: string;
-  riskLevel: string;
-  affectedPercentage?: number;
-}
+export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'affected' | 'at risk' | 'unknown';
 
 export interface ColorProbability {
   color: string;
   probability: number;
-  genotype?: string;
   hex?: string;
 }
 
-export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'at risk' | 'affected' | 'unknown';
-
-export interface ManualTestEntry {
-  test_type: string;
-  name: string;
-  result: GeneticHealthStatus;
-  test_date: string;
-  date: string;
-  provider: string;
-  condition: string;
-}
-
-export interface TestResult {
-  test_type: string;
-  result: GeneticHealthStatus;
-  test_date: string;
-  provider: string;
-  name?: string;
-  condition?: string;
-  date?: string;
-  testId?: string;
-}
-
+// Import Result Types
 export interface GeneticImportResult {
-  dogId: string;
-  importedTests: TestResult[];
-  count: number;
   success: boolean;
-  errors?: string[];
-  provider: string;
+  dogId: string;
+  provider?: string;
   testsImported: number;
+  errors?: string[];
 }
 
+// Health Risk Types
+export interface HealthRisk {
+  condition: string;
+  status: GeneticHealthStatus;
+  probability: number;
+  severity: 'high' | 'medium' | 'low';
+}
+
+export interface HealthWarning {
+  condition: string;
+  message: string;
+  actionRequired: boolean;
+  severity: 'high' | 'medium' | 'low';
+}
+
+export interface HealthSummary {
+  atRiskCount: number;
+  carrierCount: number;
+  clearCount: number;
+  unknownCount: number;
+  totalTests: number;
+}
+
+// Component Props Types
 export interface CompactGenotypeViewProps {
   genotype: DogGenotype;
   title?: string;
@@ -103,19 +84,4 @@ export interface CompactGenotypeViewProps {
 export interface HistoricalCOIChartProps {
   dogId: string;
   generations?: number[];
-}
-
-export interface HealthRisk {
-  status: GeneticHealthStatus;
-  probability: number;
-  condition: string;
-  severity: string;
-}
-
-export interface HealthSummary {
-  atRiskCount: number;
-  carrierCount: number;
-  clearCount: number;
-  unknownCount: number;
-  totalTests: number;
 }

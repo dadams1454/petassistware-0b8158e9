@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusIcon } from '@heroicons/react/24/solid';
+import { Plus } from 'lucide-react';
 import VaccinationForm from './VaccinationForm';
 import { saveVaccinationSchedule, getVaccinationSchedules } from '@/services/vaccinationService';
 import { toast } from '@/hooks/use-toast';
@@ -87,7 +88,6 @@ const VaccinationDashboard: React.FC = () => {
         <CardContent>
           {isAdding ? (
             <VaccinationForm
-              puppyId={puppyId || ''}
               onSave={handleVaccinationSaved}
               onCancel={handleCancelAdd}
               onSubmit={handleSaveVaccination}
@@ -96,7 +96,7 @@ const VaccinationDashboard: React.FC = () => {
             <div>
               <div className="mb-4 flex justify-end">
                 <Button onClick={handleAddVaccination}>
-                  <PlusIcon className="h-5 w-5 mr-2" />
+                  <Plus className="h-5 w-5 mr-2" />
                   Add Vaccination
                 </Button>
               </div>

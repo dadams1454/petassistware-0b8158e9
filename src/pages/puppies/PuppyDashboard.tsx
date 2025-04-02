@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartBar, ChartLine, CalendarCheck, UserRound, Search } from 'lucide-react';
+import { BarChart, LineChart, Calendar, User, Search } from 'lucide-react';
 import { usePuppyDetail } from '@/hooks/usePuppyDetail';
 import { usePuppyData } from '@/hooks/puppies/usePuppyData';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
@@ -116,19 +115,19 @@ const PuppyDashboard: React.FC = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid grid-cols-4 md:w-[500px]">
               <TabsTrigger value="growth" className="flex items-center">
-                <ChartLine className="h-4 w-4 mr-2" />
+                <LineChart className="h-4 w-4 mr-2" />
                 Growth
               </TabsTrigger>
               <TabsTrigger value="vaccinations" className="flex items-center">
-                <CalendarCheck className="h-4 w-4 mr-2" />
+                <Calendar className="h-4 w-4 mr-2" />
                 Vaccinations
               </TabsTrigger>
               <TabsTrigger value="socialization" className="flex items-center">
-                <UserRound className="h-4 w-4 mr-2" />
+                <User className="h-4 w-4 mr-2" />
                 Socialization
               </TabsTrigger>
               <TabsTrigger value="overview" className="flex items-center">
-                <ChartBar className="h-4 w-4 mr-2" />
+                <BarChart className="h-4 w-4 mr-2" />
                 Overview
               </TabsTrigger>
             </TabsList>
@@ -138,7 +137,7 @@ const PuppyDashboard: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="vaccinations" className="pt-4">
-              <VaccinationDashboard puppyId={id || ''} />
+              <VaccinationDashboard />
             </TabsContent>
             
             <TabsContent value="socialization" className="pt-4">
