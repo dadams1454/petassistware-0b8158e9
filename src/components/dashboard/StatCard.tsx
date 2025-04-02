@@ -24,7 +24,7 @@ const StatCard: React.FC<StatCardProps> = ({
           {isLoading ? (
             <Skeleton className="h-12 w-16 mt-2" />
           ) : (
-            <p className="text-4xl font-bold mt-1">{value}</p>
+            <p className="text-4xl font-bold mt-1 text-foreground">{value}</p>
           )}
         </div>
       </CardContent>
