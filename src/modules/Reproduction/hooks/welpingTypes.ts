@@ -1,34 +1,21 @@
 
-import { Dog } from '@/types/reproductive';
+// Define types for our welping hooks
 import { Litter } from '@/types/litter';
-
-export interface WelpingManagementState {
-  pregnantDogs: Dog[];
-  activeWelpings: any[];
-  activeLitters: any[]; 
-  upcomingWelpings: any[];
-  recentLitters: any[];
-  activeWelpingsCount: number;
-  pregnantCount: number;
-  totalPuppiesCount: number;
-  isLoading: boolean;
-  isError: boolean;
-  error: Error | null;
-}
+import { Dog } from '@/types/reproductive';
 
 export interface WelpingQueryHookResult {
   pregnantDogs: Dog[];
-  activeWelpings: any[];
-  recentLitters: any[];
+  activeWelpings: Litter[];
+  recentLitters: Litter[];
   isLoadingPregnant: boolean;
   isErrorPregnant: boolean;
-  errorPregnant: Error | null;
+  errorPregnant: any;
   isLoadingActive: boolean;
   isErrorActive: boolean;
-  errorActive: Error | null;
+  errorActive: any;
   isLoadingRecent: boolean;
   isErrorRecent: boolean;
-  errorRecent: Error | null;
+  errorRecent: any;
 }
 
 export interface WelpingMutationHookResult {
@@ -37,8 +24,16 @@ export interface WelpingMutationHookResult {
   markLitterAsWhelping: (litter: Litter) => Promise<void>;
 }
 
-export interface WelpingStatsResult {
+export interface WelpingManagementState {
+  pregnantDogs: Dog[];
+  activeWelpings: Litter[];
+  activeLitters: Litter[]; // For backward compatibility
+  upcomingWelpings: Litter[]; // For backward compatibility
+  recentLitters: Litter[];
   pregnantCount: number;
   activeWelpingsCount: number;
   totalPuppiesCount: number;
+  isLoading: boolean;
+  isError: boolean;
+  error: any;
 }

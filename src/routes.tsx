@@ -43,7 +43,7 @@ import {
   WelpingManagementPage
 } from '@/modules/Reproduction';
 
-// Import WhelpingLiveSession component
+// Import Whelping components
 import WhelpingLiveSession from '@/modules/Reproduction/components/welping/WhelpingLiveSession';
 
 // Import LitterDetail component for consistent routing
