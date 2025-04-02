@@ -49,6 +49,18 @@ import WhelpingLiveSession from '@/modules/Reproduction/components/welping/Whelp
 // Import LitterDetail component for consistent routing
 import LitterDetail from '@/pages/LitterDetail';
 
+// Importing components for routes previously defined in App.tsx
+import CustomerDetails from '@/components/customers/CustomerDetails';
+import CustomerForm from '@/components/customers/CustomerForm';
+import CustomerDialog from '@/components/customers/CustomerDialog';
+import ContractsList from '@/components/contracts/ContractsList';
+import ContractForm from '@/components/contracts/ContractForm';
+import ContractPreviewDialog from '@/components/contracts/ContractPreviewDialog';
+import VaccinationsTab from '@/components/dogs/components/VaccinationsTab';
+import ReproductionRoutes from '@/modules/Reproduction/routes';
+import UserManagement from '@/pages/UserManagement';
+import ReproductiveManagementPage from '@/pages/ReproductiveManagementPage';
+
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
 const RegisterPage = () => <div>Register Page</div>;
@@ -82,10 +94,15 @@ export const appRoutes = (
       <Route path="/dogs/:id/edit" element={<DogEditPage />} />
       <Route path="/dogs/:id/weight" element={<DogWeightPage />} />
       <Route path="/dogs/:dogId/reproductive" element={<ReproductiveCyclePage />} />
+      <Route path="/dogs/new" element={<DogAddPage />} />
+      <Route path="/dogs/:dogId/edit" element={<DogEditPage />} />
+      <Route path="/reproductive-management/:dogId" element={<ReproductiveManagementPage />} />
+      <Route path="/vaccinations" element={<VaccinationsTab dogId="placeholder" />} />
       
       {/* CENTRALIZED REPRODUCTION ROUTES */}
       {/* Main Reproduction dashboard */}
       <Route path="/reproduction" element={<WelpingManagementPage />} />
+      <Route path="/reproduction/*" element={<ReproductionRoutes />} />
       
       {/* Breeding Management */}
       <Route path="/reproduction/breeding" element={<BreedingManagementPage />} />
@@ -115,6 +132,41 @@ export const appRoutes = (
       <Route path="/welping/:id/edit" element={<LitterDetail />} />
       <Route path="/welping/:id/logs" element={<LitterDetail />} />
       
+      {/* Customer routes */}
+      <Route path="/customers" element={<CustomersPage />} />
+      <Route path="/customers/new" element={
+        <CustomerDialog 
+          isOpen={true} 
+          onClose={() => {}} 
+          customer={null} 
+        />
+      } />
+      <Route path="/customers/:customerId" element={<CustomerDetails />} />
+      <Route path="/customers/:customerId/edit" element={
+        <CustomerForm 
+          onSubmit={() => {}} 
+          onCancel={() => {}} 
+        />
+      } />
+      
+      {/* Contract routes */}
+      <Route path="/contracts" element={<ContractsList />} />
+      <Route path="/contracts/new" element={
+        <ContractForm 
+          puppyId={null} 
+          onSubmit={() => {}} 
+          onCancel={() => {}} 
+        />
+      } />
+      <Route path="/contracts/:contractId" element={
+        <ContractPreviewDialog 
+          isOpen={true} 
+          onOpenChange={() => {}} 
+          contractData={null} 
+          onSignContract={async (signatureData: string) => Promise.resolve()} 
+        />
+      } />
+      
       {/* Operations routes */}
       <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/communications" element={<CommunicationsPage />} />
@@ -129,12 +181,10 @@ export const appRoutes = (
       <Route path="/users" element={<UsersPage />} />
       <Route path="/audit-logs" element={<AuditLogsPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/settings" element={<UserManagement />} />
       
       {/* Reservations routes */}
       <Route path="/reservations" element={<ReservationsPage />} />
-      
-      {/* Customers routes */}
-      <Route path="/customers" element={<CustomersPage />} />
       
       {/* Fallback route */}
       <Route path="*" element={<NotFoundPage />} />
