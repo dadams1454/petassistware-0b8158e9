@@ -10,3 +10,4 @@ export { default as WelpingLogTimeline } from './WelpingLogTimeline';
 export { default as WelpingLogForm } from './WelpingLogForm';
 export { default as PuppyBirthTable } from './PuppyBirthTable';
 export { default as WelpingSummaryCard } from './WelpingSummaryCard';
+export { default as WelpingTabContent } from './WelpingTabContent';
