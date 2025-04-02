@@ -1,5 +1,5 @@
 
-import { Json } from '@/types/supabase';
+import { Json } from './supabase';
 
 export interface Customer {
   id: string;
@@ -9,12 +9,20 @@ export interface Customer {
   phone?: string;
   address?: string;
   notes?: string;
-  metadata?: Json;
+  metadata?: CustomerMetadata;
   tenant_id?: string;
   created_at?: string;
 }
 
+export interface CustomerMetadata {
+  customer_type?: 'new' | 'returning';
+  customer_since?: string;
+  interested_puppy_id?: string;
+  interested_litter_id?: string;
+  waitlist_type?: 'specific' | 'open';
+}
+
 export interface CustomerWithMeta extends Customer {
-  // All properties are already handled in the base Customer interface
-  // Note: we're inheriting all properties from Customer including the optional ones
+  // CustomerWithMeta now inherits all properties from Customer
+  // Including the properly typed metadata field
 }

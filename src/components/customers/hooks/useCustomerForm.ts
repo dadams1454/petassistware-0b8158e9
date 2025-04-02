@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { customerFormSchema, CustomerFormValues } from '../schemas/customerFormSchema';
-import { CustomerWithMeta } from '@/types/customer';
+import { CustomerWithMeta, CustomerMetadata } from '@/types/customer';
 
 interface UseCustomerFormProps {
   customer?: CustomerWithMeta | null;
@@ -23,11 +24,11 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       phone: customer?.phone || '',
       address: customer?.address || '',
       notes: customer?.notes || '',
-      customer_type: customer?.metadata?.customer_type || 'new',
-      customer_since: customer?.metadata?.customer_since || '',
-      interested_puppy_id: customer?.metadata?.interested_puppy_id || 'none',
-      interested_litter_id: customer?.metadata?.interested_litter_id || 'none',
-      waitlist_type: customer?.metadata?.waitlist_type || 'specific',
+      customer_type: (customer?.metadata as CustomerMetadata)?.customer_type || 'new',
+      customer_since: (customer?.metadata as CustomerMetadata)?.customer_since || '',
+      interested_puppy_id: (customer?.metadata as CustomerMetadata)?.interested_puppy_id || 'none',
+      interested_litter_id: (customer?.metadata as CustomerMetadata)?.interested_litter_id || 'none',
+      waitlist_type: (customer?.metadata as CustomerMetadata)?.waitlist_type || 'specific',
     },
   });
 
@@ -47,7 +48,7 @@ export const useCustomerForm = ({ customer, onSubmitSuccess }: UseCustomerFormPr
       } = values;
       
       // Get previous puppy id from existing customer if updating
-      const previousPuppyId = customer?.metadata?.interested_puppy_id || null;
+      const previousPuppyId = (customer?.metadata as CustomerMetadata)?.interested_puppy_id || null;
       
       // Create metadata object
       const metadata = {

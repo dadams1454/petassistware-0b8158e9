@@ -1,410 +1,524 @@
 
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
-import WeightInput from '@/components/dogs/form/WeightInput';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, RotateCw, Utensils, FilePlus, Scale, Pill, List, Clock } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { PuppyWithAge } from '@/types/puppyTracking';
-
-// Form schema
-const careLogSchema = z.object({
-  care_type: z.enum(['feeding', 'potty', 'weight', 'medication', 'milestone', 'note']),
-  timestamp: z.string().default(() => new Date().toISOString()),
-  notes: z.string().optional(),
-  // Feeding specific
-  feeding_type: z.string().optional(),
-  feeding_amount: z.string().optional(),
-  feeding_unit: z.string().optional(),
-  // Weight specific
-  weight: z.string().optional(),
-  weight_unit: z.enum(['oz', 'g']).default('oz').optional(),
-  // Medication specific
-  medication_name: z.string().optional(),
-  medication_dosage: z.string().optional(),
-  medication_unit: z.string().optional(),
-  // Milestone specific
-  milestone_type: z.string().optional(),
-  milestone_title: z.string().optional(),
-});
-
-type CareLogFormValues = z.infer<typeof careLogSchema>;
+import { useToast } from '@/components/ui/use-toast';
+import { format } from 'date-fns';
+import { Milk, Droplet, PawPrint, Weight, Stethoscope, Plus } from 'lucide-react';
 
 interface PuppyCareLogProps {
   puppyId: string;
-  puppyInfo?: {
-    name: string;
-    age_days: number;
-    gender: string;
-    color: string;
-  };
-  onSuccess?: () => void;
-  onRefresh?: () => void;
+  onCareAdded?: () => void;
 }
 
-interface CareLogEntry {
+type CareType = 'feeding' | 'potty' | 'medication' | 'weight' | 'health';
+
+interface CareLog {
   id: string;
   puppy_id: string;
-  care_type: string;
+  care_type: CareType;
   timestamp: string;
-  created_at: string;
   notes?: string;
   details?: any;
+  created_at: string;
 }
 
-const PuppyCareLog: React.FC<PuppyCareLogProps> = ({
-  puppyId,
-  puppyInfo,
-  onSuccess,
-  onRefresh
-}) => {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState('feeding');
-  const [careLogs, setCareLogs] = useState<CareLogEntry[]>([]);
+const PuppyCareLog: React.FC<PuppyCareLogProps> = ({ puppyId, onCareAdded }) => {
+  const [activeTab, setActiveTab] = useState<CareType>('feeding');
   const [isLoading, setIsLoading] = useState(false);
-  
-  const form = useForm<CareLogFormValues>({
-    resolver: zodResolver(careLogSchema),
-    defaultValues: {
-      care_type: 'feeding',
-      timestamp: new Date().toISOString(),
-      notes: '',
-    }
+  const [careLogs, setCareLogs] = useState<CareLog[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  // Form states
+  const [feedingDetails, setFeedingDetails] = useState({
+    amount: '',
+    unit: 'ml',
+    type: 'formula',
+    notes: '',
   });
   
-  // Watch form values for conditional fields
-  const careType = form.watch('care_type');
+  const [pottyDetails, setPottyDetails] = useState({
+    type: 'urine',
+    successful: true,
+    notes: '',
+  });
   
-  // Load care logs
+  const [medicationDetails, setMedicationDetails] = useState({
+    medication: '',
+    dosage: '',
+    unit: 'ml',
+    method: 'oral',
+    notes: '',
+  });
+  
+  const [weightDetails, setWeightDetails] = useState({
+    weight: '',
+    unit: 'oz',
+    notes: '',
+  });
+  
+  const [healthDetails, setHealthDetails] = useState({
+    category: 'general',
+    notes: '',
+  });
+
   useEffect(() => {
     if (puppyId) {
       fetchCareLogs();
     }
   }, [puppyId]);
-  
+
   const fetchCareLogs = async () => {
     setIsLoading(true);
     try {
-      // Get care logs from various tables
-      const [feedingLogs, weightLogs, medicationLogs, milestoneLogs, generalLogs] = await Promise.all([
-        // Feeding logs
-        supabase
-          .from('feeding_records')
-          .select('*')
-          .eq('puppy_id', puppyId)
-          .order('timestamp', { ascending: false }),
-        
-        // Weight logs  
-        supabase
-          .from('weight_records')
-          .select('*')
-          .eq('puppy_id', puppyId)
-          .order('date', { ascending: false }),
-        
-        // Medication logs
-        supabase
-          .from('health_records')
-          .select('*')
-          .eq('puppy_id', puppyId)
-          .eq('record_type', 'medication')
-          .order('created_at', { ascending: false }),
-        
-        // Milestones
-        supabase
-          .from('puppy_milestones')
-          .select('*')
-          .eq('puppy_id', puppyId)
-          .order('milestone_date', { ascending: false }),
-        
-        // General notes/logs
-        supabase
-          .from('puppy_care_logs')
-          .select('*')
-          .eq('puppy_id', puppyId)
-          .order('timestamp', { ascending: false })
-      ]);
-      
-      // Transform to unified format
-      const allLogs: CareLogEntry[] = [
-        ...(feedingLogs.data || []).map((log: any) => ({
-          id: log.id,
-          puppy_id: log.puppy_id,
-          care_type: 'feeding',
-          timestamp: log.timestamp,
-          created_at: log.created_at,
-          notes: log.notes,
-          details: {
-            food_type: log.food_type,
-            amount_offered: log.amount_offered,
-            amount_consumed: log.amount_consumed
-          }
-        })),
-        
-        ...(weightLogs.data || []).map((log: any) => ({
-          id: log.id,
-          puppy_id: log.puppy_id,
-          care_type: 'weight',
-          timestamp: log.date,
-          created_at: log.created_at,
-          notes: log.notes,
-          details: {
-            weight: log.weight,
-            weight_unit: log.weight_unit,
-            percent_change: log.percent_change
-          }
-        })),
-        
-        ...(medicationLogs.data || []).map((log: any) => ({
-          id: log.id,
-          puppy_id: log.puppy_id,
-          care_type: 'medication',
-          timestamp: log.created_at,
-          created_at: log.created_at,
-          notes: log.record_notes,
-          details: {
-            medication_name: log.medication_name,
-            dosage: log.dosage,
-            dosage_unit: log.dosage_unit
-          }
-        })),
-        
-        ...(milestoneLogs.data || []).map((log: any) => ({
-          id: log.id,
-          puppy_id: log.puppy_id,
-          care_type: 'milestone',
-          timestamp: log.milestone_date,
-          created_at: log.created_at,
-          notes: log.notes,
-          details: {
-            milestone_type: log.milestone_type,
-            title: log.title || log.milestone_type
-          }
-        })),
-        
-        ...(generalLogs.data || []).map((log: any) => ({
-          id: log.id,
-          puppy_id: log.puppy_id,
-          care_type: log.care_type || 'note',
-          timestamp: log.timestamp,
-          created_at: log.created_at,
-          notes: log.notes,
-          details: log.details
-        }))
-      ];
-      
-      // Sort by timestamp (most recent first)
-      allLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      
-      setCareLogs(allLogs);
+      const { data, error } = await supabase
+        .from('puppy_care_logs')
+        .select('*')
+        .eq('puppy_id', puppyId)
+        .order('timestamp', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setCareLogs(data || []);
     } catch (error) {
       console.error('Error fetching care logs:', error);
       toast({
-        title: "Error",
-        description: "Failed to load care logs.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load care logs',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    
-    // Update care type in form
-    switch (value) {
-      case 'feeding':
-      case 'potty':
-      case 'weight':
-      case 'medication':
-      case 'milestone':
-      case 'note':
-        form.setValue('care_type', value as any);
-        break;
-      default:
-        break;
-    }
-  };
-  
-  // Handle form submission
-  const handleSubmit = async (values: CareLogFormValues) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
     
     try {
-      // Different logic based on care type
-      switch (values.care_type) {
+      let details;
+      switch (activeTab) {
         case 'feeding':
-          await handleFeedingLog(values);
+          details = feedingDetails;
           break;
         case 'potty':
-          await handlePottyLog(values);
-          break;
-        case 'weight':
-          await handleWeightLog(values);
+          details = pottyDetails;
           break;
         case 'medication':
-          await handleMedicationLog(values);
+          details = medicationDetails;
           break;
-        case 'milestone':
-          await handleMilestoneLog(values);
+        case 'weight':
+          details = weightDetails;
           break;
-        case 'note':
-          await handleNoteLog(values);
+        case 'health':
+          details = healthDetails;
           break;
       }
       
-      // Reset form
-      form.reset({
-        care_type: values.care_type,
+      const careLog = {
+        puppy_id: puppyId,
+        care_type: activeTab,
         timestamp: new Date().toISOString(),
-        notes: '',
-      });
+        details,
+        notes: details.notes || null,
+      };
+      
+      const { data, error } = await supabase
+        .from('puppy_care_logs')
+        .insert(careLog)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      // If it's a weight entry, also add to weight_records
+      if (activeTab === 'weight') {
+        const weightRecord = {
+          puppy_id: puppyId,
+          weight: parseFloat(weightDetails.weight),
+          weight_unit: weightDetails.unit,
+          date: new Date().toISOString().split('T')[0],
+          notes: weightDetails.notes || 'Regular weight check',
+        };
+        
+        const { error: weightError } = await supabase
+          .from('weight_records')
+          .insert(weightRecord);
+          
+        if (weightError) throw weightError;
+      }
       
       toast({
-        title: "Log Added",
-        description: `${values.care_type} log added successfully.`,
+        title: 'Care log added',
+        description: `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} record saved successfully`,
       });
       
-      // Refresh logs
-      await fetchCareLogs();
+      // Reset form based on type
+      switch (activeTab) {
+        case 'feeding':
+          setFeedingDetails({
+            amount: '',
+            unit: 'ml',
+            type: 'formula',
+            notes: '',
+          });
+          break;
+        case 'potty':
+          setPottyDetails({
+            type: 'urine',
+            successful: true,
+            notes: '',
+          });
+          break;
+        case 'medication':
+          setMedicationDetails({
+            medication: '',
+            dosage: '',
+            unit: 'ml',
+            method: 'oral',
+            notes: '',
+          });
+          break;
+        case 'weight':
+          setWeightDetails({
+            weight: '',
+            unit: 'oz',
+            notes: '',
+          });
+          break;
+        case 'health':
+          setHealthDetails({
+            category: 'general',
+            notes: '',
+          });
+          break;
+      }
       
-      if (onSuccess) onSuccess();
+      // Refresh logs
+      fetchCareLogs();
+      
+      // Call onCareAdded callback if provided
+      if (onCareAdded) {
+        onCareAdded();
+      }
+      
     } catch (error: any) {
       console.error('Error adding care log:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to add care log.",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to add care log',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
-  // Handle specific log types
-  const handleFeedingLog = async (values: CareLogFormValues) => {
-    await supabase
-      .from('feeding_records')
-      .insert({
-        puppy_id: puppyId,
-        timestamp: values.timestamp,
-        food_type: values.feeding_type || 'Milk',
-        amount_offered: values.feeding_amount || '',
-        notes: values.notes,
-        staff_id: 'system' // Placeholder
-      });
-  };
-  
-  const handlePottyLog = async (values: CareLogFormValues) => {
-    await supabase
-      .from('puppy_care_logs')
-      .insert({
-        puppy_id: puppyId,
-        care_type: 'potty',
-        timestamp: values.timestamp,
-        notes: values.notes,
-        details: {
-          success: true
-        }
-      });
-  };
-  
-  const handleWeightLog = async (values: CareLogFormValues) => {
-    if (!values.weight) throw new Error("Weight is required");
-    
-    await supabase
-      .from('weight_records')
-      .insert({
-        puppy_id: puppyId,
-        weight: parseFloat(values.weight),
-        weight_unit: values.weight_unit || 'oz',
-        date: values.timestamp,
-        notes: values.notes
-      });
-  };
-  
-  const handleMedicationLog = async (values: CareLogFormValues) => {
-    if (!values.medication_name) throw new Error("Medication name is required");
-    
-    await supabase
-      .from('health_records')
-      .insert({
-        puppy_id: puppyId,
-        record_type: 'medication',
-        visit_date: new Date(values.timestamp).toISOString().split('T')[0],
-        medication_name: values.medication_name,
-        dosage: values.medication_dosage,
-        dosage_unit: values.medication_unit,
-        record_notes: values.notes,
-        title: `Medication: ${values.medication_name}`
-      });
-  };
-  
-  const handleMilestoneLog = async (values: CareLogFormValues) => {
-    if (!values.milestone_type) throw new Error("Milestone type is required");
-    
-    await supabase
-      .from('puppy_milestones')
-      .insert({
-        puppy_id: puppyId,
-        milestone_type: values.milestone_type,
-        title: values.milestone_title || values.milestone_type,
-        milestone_date: values.timestamp,
-        notes: values.notes
-      });
-  };
-  
-  const handleNoteLog = async (values: CareLogFormValues) => {
-    await supabase
-      .from('puppy_care_logs')
-      .insert({
-        puppy_id: puppyId,
-        care_type: 'note',
-        timestamp: values.timestamp,
-        notes: values.notes
-      });
-  };
-  
-  // Format timestamp for display
-  const formatTimestamp = (timestamp: string) => {
-    try {
-      return format(parseISO(timestamp), 'MMM d, yyyy h:mm a');
-    } catch (error) {
-      return timestamp;
+
+  const renderForm = () => {
+    switch (activeTab) {
+      case 'feeding':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="feeding-amount">Amount</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="feeding-amount"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    placeholder="Amount"
+                    value={feedingDetails.amount}
+                    onChange={(e) => setFeedingDetails({ ...feedingDetails, amount: e.target.value })}
+                    required
+                  />
+                  <Select
+                    value={feedingDetails.unit}
+                    onValueChange={(value) => setFeedingDetails({ ...feedingDetails, unit: value })}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue placeholder="Unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ml">ml</SelectItem>
+                      <SelectItem value="oz">oz</SelectItem>
+                      <SelectItem value="cc">cc</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="feeding-type">Type</Label>
+                <Select
+                  value={feedingDetails.type}
+                  onValueChange={(value) => setFeedingDetails({ ...feedingDetails, type: value })}
+                >
+                  <SelectTrigger id="feeding-type">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="formula">Formula</SelectItem>
+                    <SelectItem value="mother's milk">Mother's Milk</SelectItem>
+                    <SelectItem value="supplement">Supplement</SelectItem>
+                    <SelectItem value="solid food">Solid Food</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="feeding-notes">Notes</Label>
+              <Textarea
+                id="feeding-notes"
+                placeholder="Add any notes about this feeding"
+                value={feedingDetails.notes}
+                onChange={(e) => setFeedingDetails({ ...feedingDetails, notes: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+      case 'potty':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="potty-type">Type</Label>
+              <Select
+                value={pottyDetails.type}
+                onValueChange={(value) => setPottyDetails({ ...pottyDetails, type: value })}
+              >
+                <SelectTrigger id="potty-type">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="urine">Urine</SelectItem>
+                  <SelectItem value="stool">Stool</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Successful?</Label>
+              <div className="flex space-x-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="successful-yes"
+                    name="successful"
+                    checked={pottyDetails.successful}
+                    onChange={() => setPottyDetails({ ...pottyDetails, successful: true })}
+                  />
+                  <Label htmlFor="successful-yes">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="successful-no"
+                    name="successful"
+                    checked={!pottyDetails.successful}
+                    onChange={() => setPottyDetails({ ...pottyDetails, successful: false })}
+                  />
+                  <Label htmlFor="successful-no">No</Label>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="potty-notes">Notes</Label>
+              <Textarea
+                id="potty-notes"
+                placeholder="Add any notes about this potty break"
+                value={pottyDetails.notes}
+                onChange={(e) => setPottyDetails({ ...pottyDetails, notes: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+      case 'medication':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="medication-name">Medication</Label>
+              <Input
+                id="medication-name"
+                placeholder="Medication name"
+                value={medicationDetails.medication}
+                onChange={(e) => setMedicationDetails({ ...medicationDetails, medication: e.target.value })}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="medication-dosage">Dosage</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="medication-dosage"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Dosage"
+                    value={medicationDetails.dosage}
+                    onChange={(e) => setMedicationDetails({ ...medicationDetails, dosage: e.target.value })}
+                    required
+                  />
+                  <Select
+                    value={medicationDetails.unit}
+                    onValueChange={(value) => setMedicationDetails({ ...medicationDetails, unit: value })}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue placeholder="Unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ml">ml</SelectItem>
+                      <SelectItem value="mg">mg</SelectItem>
+                      <SelectItem value="cc">cc</SelectItem>
+                      <SelectItem value="drops">drops</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="medication-method">Method</Label>
+                <Select
+                  value={medicationDetails.method}
+                  onValueChange={(value) => setMedicationDetails({ ...medicationDetails, method: value })}
+                >
+                  <SelectTrigger id="medication-method">
+                    <SelectValue placeholder="Method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="oral">Oral</SelectItem>
+                    <SelectItem value="topical">Topical</SelectItem>
+                    <SelectItem value="injectable">Injectable</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="medication-notes">Notes</Label>
+              <Textarea
+                id="medication-notes"
+                placeholder="Add any notes about this medication"
+                value={medicationDetails.notes}
+                onChange={(e) => setMedicationDetails({ ...medicationDetails, notes: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+      case 'weight':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="col-span-3 space-y-2">
+                <Label htmlFor="weight-value">Weight</Label>
+                <Input
+                  id="weight-value"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Weight"
+                  value={weightDetails.weight}
+                  onChange={(e) => setWeightDetails({ ...weightDetails, weight: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="weight-unit">Unit</Label>
+                <Select
+                  value={weightDetails.unit}
+                  onValueChange={(value) => setWeightDetails({ ...weightDetails, unit: value })}
+                >
+                  <SelectTrigger id="weight-unit">
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="oz">oz</SelectItem>
+                    <SelectItem value="g">g</SelectItem>
+                    <SelectItem value="lbs">lbs</SelectItem>
+                    <SelectItem value="kg">kg</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="weight-notes">Notes</Label>
+              <Textarea
+                id="weight-notes"
+                placeholder="Add any notes about this weight check"
+                value={weightDetails.notes}
+                onChange={(e) => setWeightDetails({ ...weightDetails, notes: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+      case 'health':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="health-category">Category</Label>
+              <Select
+                value={healthDetails.category}
+                onValueChange={(value) => setHealthDetails({ ...healthDetails, category: value })}
+              >
+                <SelectTrigger id="health-category">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">General Observation</SelectItem>
+                  <SelectItem value="concern">Health Concern</SelectItem>
+                  <SelectItem value="checkup">Routine Checkup</SelectItem>
+                  <SelectItem value="developmental">Developmental</SelectItem>
+                  <SelectItem value="emergency">Emergency</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="health-notes">Notes</Label>
+              <Textarea
+                id="health-notes"
+                placeholder="Describe the health observation or issue"
+                value={healthDetails.notes}
+                onChange={(e) => setHealthDetails({ ...healthDetails, notes: e.target.value })}
+                required
+                rows={4}
+              />
+            </div>
+          </div>
+        );
+      default:
+        return null;
     }
   };
-  
-  // Get care type icon
-  const getCareTypeIcon = (type: string) => {
+
+  const getCareTypeIcon = (type: CareType) => {
     switch (type) {
       case 'feeding':
-        return <Utensils className="h-4 w-4" />;
+        return <Milk className="h-5 w-5 text-blue-500" />;
       case 'potty':
-        return <FilePlus className="h-4 w-4" />;
-      case 'weight':
-        return <Scale className="h-4 w-4" />;
+        return <Droplet className="h-5 w-5 text-yellow-500" />;
       case 'medication':
-        return <Pill className="h-4 w-4" />;
-      case 'milestone':
-        return <List className="h-4 w-4" />;
-      case 'note':
+        return <Stethoscope className="h-5 w-5 text-purple-500" />;
+      case 'weight':
+        return <Weight className="h-5 w-5 text-green-500" />;
+      case 'health':
+        return <PawPrint className="h-5 w-5 text-red-500" />;
       default:
-        return <FilePlus className="h-4 w-4" />;
+        return <Plus className="h-5 w-5" />;
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    try {
+      return format(new Date(timestamp), 'h:mm a - MMM d, yyyy');
+    } catch (e) {
+      return timestamp;
     }
   };
 
@@ -412,424 +526,85 @@ const PuppyCareLog: React.FC<PuppyCareLogProps> = ({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <span>Care Log for {puppyInfo?.name || 'Puppy'}</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => fetchCareLogs()}
-              disabled={isLoading}
-            >
-              <RotateCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-          </CardTitle>
-          {puppyInfo && (
-            <div className="text-sm text-muted-foreground">
-              {puppyInfo.gender}, {puppyInfo.color}, {puppyInfo.age_days} days old
-            </div>
-          )}
+          <CardTitle className="text-xl">Add Care Log</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid grid-cols-6">
-              <TabsTrigger value="feeding">
-                <Utensils className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Feeding</span>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as CareType)}>
+            <TabsList className="grid grid-cols-5 mb-4">
+              <TabsTrigger value="feeding" className="flex items-center gap-1">
+                <Milk className="h-4 w-4" /> Feeding
               </TabsTrigger>
-              <TabsTrigger value="potty">
-                <FilePlus className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Potty</span>
+              <TabsTrigger value="potty" className="flex items-center gap-1">
+                <Droplet className="h-4 w-4" /> Potty
               </TabsTrigger>
-              <TabsTrigger value="weight">
-                <Scale className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Weight</span>
+              <TabsTrigger value="medication" className="flex items-center gap-1">
+                <Stethoscope className="h-4 w-4" /> Meds
               </TabsTrigger>
-              <TabsTrigger value="medication">
-                <Pill className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Meds</span>
+              <TabsTrigger value="weight" className="flex items-center gap-1">
+                <Weight className="h-4 w-4" /> Weight
               </TabsTrigger>
-              <TabsTrigger value="milestone">
-                <List className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Milestone</span>
-              </TabsTrigger>
-              <TabsTrigger value="note">
-                <FilePlus className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Note</span>
+              <TabsTrigger value="health" className="flex items-center gap-1">
+                <PawPrint className="h-4 w-4" /> Health
               </TabsTrigger>
             </TabsList>
-            
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mt-4">
-                {/* Common fields for all care types */}
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="timestamp"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Date & Time</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="datetime-local"
-                            {...field}
-                            value={field.value ? new Date(field.value).toISOString().slice(0, 16) : ''}
-                            onChange={(e) => field.onChange(new Date(e.target.value).toISOString())}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                {/* Feeding specific fields */}
-                <TabsContent value="feeding" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="feeding_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Food Type</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select food type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Milk">Milk</SelectItem>
-                              <SelectItem value="Formula">Formula</SelectItem>
-                              <SelectItem value="Wet Food">Wet Food</SelectItem>
-                              <SelectItem value="Kibble">Kibble</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="feeding_amount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Amount</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="e.g., 10ml" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Enter any additional notes"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-                
-                {/* Potty specific fields */}
-                <TabsContent value="potty" className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Potty Notes</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Enter any potty details (urine, stool, etc.)"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-                
-                {/* Weight specific fields */}
-                <TabsContent value="weight" className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="weight"
-                    render={({ field }) => (
-                      <WeightInput
-                        form={form}
-                        name="weight"
-                        label="Weight"
-                        defaultUnit="oz"
-                      />
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Enter any additional notes"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-                
-                {/* Medication specific fields */}
-                <TabsContent value="medication" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="medication_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Medication</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Medication name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="medication_dosage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Dosage</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="e.g., 0.5ml" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Enter any additional notes"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-                
-                {/* Milestone specific fields */}
-                <TabsContent value="milestone" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="milestone_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Milestone Type</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select milestone" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="eyes_open">Eyes Open</SelectItem>
-                              <SelectItem value="ears_open">Ears Open</SelectItem>
-                              <SelectItem value="first_walk">First Walk</SelectItem>
-                              <SelectItem value="first_bark">First Bark</SelectItem>
-                              <SelectItem value="solid_food">First Solid Food</SelectItem>
-                              <SelectItem value="teeth">First Teeth</SelectItem>
-                              <SelectItem value="social">Social Development</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="milestone_title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Title</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Milestone title" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Enter any additional notes"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-                
-                {/* Note specific fields */}
-                <TabsContent value="note" className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Enter general notes about the puppy"
-                            className="min-h-[100px]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </TabsContent>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full sm:w-auto"
-                  disabled={isSubmitting}
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  {isSubmitting ? 'Saving...' : 'Add Log Entry'}
+
+            <form onSubmit={handleSubmit}>
+              <div className="py-2">
+                {renderForm()}
+              </div>
+              <div className="flex justify-end mt-4">
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save'}
                 </Button>
-              </form>
-            </Form>
+              </div>
+            </form>
           </Tabs>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
-          <CardTitle>Care History</CardTitle>
+          <CardTitle className="text-xl">Recent Care Logs</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-4">
-              <RotateCw className="h-6 w-6 animate-spin" />
-            </div>
+            <div className="text-center py-4">Loading care logs...</div>
           ) : careLogs.length === 0 ? (
-            <div className="text-center text-muted-foreground p-4">
-              No care logs found for this puppy.
-            </div>
+            <div className="text-center py-4 text-muted-foreground">No care logs recorded yet</div>
           ) : (
-            <ScrollArea className="h-[400px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date/Time</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {careLogs.map((log) => (
-                    <TableRow key={`${log.id}-${log.care_type}`}>
-                      <TableCell className="whitespace-nowrap">
-                        <div className="flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {formatTimestamp(log.timestamp)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          {getCareTypeIcon(log.care_type)}
-                          <span className="ml-1 capitalize">{log.care_type}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {log.care_type === 'feeding' && log.details && (
-                          <span>
-                            {log.details.food_type || 'Food'} 
-                            {log.details.amount_offered && ` (${log.details.amount_offered})`}
-                          </span>
-                        )}
-                        
-                        {log.care_type === 'weight' && log.details && (
-                          <span>
-                            {log.details.weight} {log.details.weight_unit}
-                            {log.details.percent_change && log.details.percent_change !== 0 && (
-                              <span className={log.details.percent_change > 0 ? "text-green-600" : "text-red-600"}>
-                                {" "}({log.details.percent_change > 0 ? "+" : ""}{log.details.percent_change}%)
-                              </span>
-                            )}
-                          </span>
-                        )}
-                        
-                        {log.care_type === 'medication' && log.details && (
-                          <span>
-                            {log.details.medication_name}
-                            {log.details.dosage && ` (${log.details.dosage}${log.details.dosage_unit || ''})`}
-                          </span>
-                        )}
-                        
-                        {log.care_type === 'milestone' && log.details && (
-                          <span>
-                            {log.details.title || log.details.milestone_type || 'Milestone'}
-                          </span>
-                        )}
-                        
-                        {(log.care_type === 'potty' || log.care_type === 'note' || !log.details) && (
-                          <span>{log.notes || 'No details'}</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+            <div className="space-y-4">
+              {careLogs.map((log) => (
+                <div 
+                  key={log.id} 
+                  className="p-3 border rounded-md flex items-start gap-3"
+                >
+                  <div className="mt-1">{getCareTypeIcon(log.care_type)}</div>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <h4 className="font-medium capitalize">{log.care_type}</h4>
+                      <span className="text-sm text-muted-foreground">
+                        {formatTimestamp(log.timestamp)}
+                      </span>
+                    </div>
+                    {log.details && (
+                      <div className="mt-1 text-sm">
+                        {Object.entries(log.details)
+                          .filter(([key]) => key !== 'notes')
+                          .map(([key, value]) => (
+                            <span key={key} className="mr-3">
+                              <span className="capitalize">{key}:</span>{' '}
+                              <span className="font-medium">{value as string}</span>
+                            </span>
+                          ))}
+                      </div>
+                    )}
+                    {log.notes && (
+                      <div className="mt-1 text-sm text-muted-foreground">{log.notes}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
