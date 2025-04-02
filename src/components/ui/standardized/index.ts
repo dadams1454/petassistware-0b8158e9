@@ -9,6 +9,7 @@ import PageHeader from './PageHeader';
 import ActionButton from './ActionButton';
 import ConfirmDialog from './ConfirmDialog';
 import SectionHeader from './SectionHeader';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export {
   ErrorState,
@@ -20,5 +21,6 @@ export {
   PageHeader,
   ActionButton,
   ConfirmDialog,
-  SectionHeader
+  SectionHeader,
+  Skeleton
 };

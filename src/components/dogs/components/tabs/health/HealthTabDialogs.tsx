@@ -35,8 +35,8 @@ const HealthTabDialogs: React.FC = () => {
         open={weightDialogOpen}
         onOpenChange={setWeightDialogOpen}
         dogId={dogId}
-        onSave={(data) => handleSaveWeight(data)}
-        initialData={null} // Adding the initialData prop with correct type
+        onSave={handleSaveWeight}
+        initialData={null}
       />
       
       <HealthIndicatorDialog
