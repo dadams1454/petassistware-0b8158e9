@@ -1,134 +1,133 @@
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { WeightRecord } from '../types/dog';
 
 export const useWeightTracking = (dogId: string) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // Fetch weight records
-  const { 
-    data: weightHistory, 
-    isLoading, 
-    error, 
-    refetch 
-  } = useQuery({
-    queryKey: ['dogWeightHistory', dogId],
-    queryFn: async () => {
-      if (!dogId) return [];
+  const [weightHistory, setWeightHistory] = useState<WeightRecord[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchWeightHistory = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        if (!dogId) {
+          setIsLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('dog_weights')
+          .select('*')
+          .eq('dog_id', dogId)
+          .order('date', { ascending: true });
+
+        if (error) {
+          throw error;
+        }
+
+        const formattedData: WeightRecord[] = data.map(record => ({
+          id: record.id,
+          dogId: record.dog_id,
+          weight: record.weight,
+          date: record.date,
+          unit: record.unit || 'lb',
+          notes: record.notes || ''
+        }));
+
+        setWeightHistory(formattedData);
+      } catch (err) {
+        console.error('Error fetching weight history:', err);
+        setError('Failed to load weight history. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWeightHistory();
+  }, [dogId]);
+
+  const addWeightRecord = async (record: Omit<WeightRecord, 'id'>) => {
+    try {
+      setError(null);
       
       const { data, error } = await supabase
-        .from('weight_records')
-        .select('*')
-        .eq('dog_id', dogId)
-        .order('date', { ascending: false });
-      
+        .from('dog_weights')
+        .insert([
+          {
+            dog_id: record.dogId,
+            weight: record.weight,
+            date: record.date,
+            unit: record.unit,
+            notes: record.notes
+          }
+        ])
+        .select()
+        .single();
+
       if (error) {
-        toast({
-          title: 'Error fetching weight history',
-          description: error.message,
-          variant: 'destructive',
-        });
         throw error;
       }
-      
-      return data as WeightRecord[];
-    },
-    enabled: !!dogId,
-  });
-  
-  // Add weight record
-  const addWeightMutation = useMutation({
-    mutationFn: async (weightData: Partial<WeightRecord>) => {
-      if (!dogId) throw new Error('Dog ID is required');
-      
-      const newWeightRecord = {
-        ...weightData,
-        dog_id: dogId,
+
+      const newRecord: WeightRecord = {
+        id: data.id,
+        dogId: data.dog_id,
+        weight: data.weight,
+        date: data.date,
+        unit: data.unit,
+        notes: data.notes
       };
-      
-      const { data, error } = await supabase
-        .from('weight_records')
-        .insert(newWeightRecord)
-        .select();
-      
-      if (error) throw error;
-      return data[0];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dogWeightHistory', dogId] });
-      toast({
-        title: 'Weight record added',
-        description: 'The weight record has been successfully added.',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error adding weight record',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-  
-  // Calculate growth stats
-  const growthStats = useMemo(() => {
-    if (!weightHistory || weightHistory.length < 2) {
+
+      setWeightHistory([...weightHistory, newRecord]);
+      return newRecord;
+    } catch (err) {
+      console.error('Error adding weight record:', err);
+      setError('Failed to add weight record. Please try again.');
+      return null;
+    }
+  };
+
+  // Calculate statistics with useMemo
+  const weightStats = useMemo(() => {
+    if (weightHistory.length === 0) {
       return {
-        averageGrowthRate: null,
-        totalGrowth: null,
-        recentGrowth: null,
+        currentWeight: null,
+        previousWeight: null,
+        weightChange: null,
+        averageWeight: null
       };
     }
-    
-    const sortedRecords = [...weightHistory].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+
+    const sortedHistory = [...weightHistory].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     
-    const firstRecord = sortedRecords[0];
-    const lastRecord = sortedRecords[sortedRecords.length - 1];
-    const secondLastRecord = sortedRecords.length > 1 ? sortedRecords[sortedRecords.length - 2] : null;
+    const currentWeight = sortedHistory[0];
+    const previousWeight = sortedHistory.length > 1 ? sortedHistory[1] : null;
     
-    // Convert to common unit (lbs) for calculation
-    const convertToLbs = (weight: number, unit: string) => {
-      switch (unit.toLowerCase()) {
-        case 'oz': return weight / 16;
-        case 'kg': return weight * 2.20462;
-        case 'g': return weight * 0.00220462;
-        default: return weight; // Already in lbs
-      }
-    };
+    const weightChange = previousWeight 
+      ? currentWeight.weight - previousWeight.weight 
+      : null;
     
-    const firstWeightLbs = convertToLbs(firstRecord.weight, firstRecord.weight_unit);
-    const lastWeightLbs = convertToLbs(lastRecord.weight, lastRecord.weight_unit);
-    
-    const totalGrowth = lastWeightLbs - firstWeightLbs;
-    const daysDiff = (new Date(lastRecord.date).getTime() - new Date(firstRecord.date).getTime()) / (1000 * 60 * 60 * 24);
-    const averageGrowthRate = daysDiff > 0 ? totalGrowth / daysDiff : 0;
-    
-    let recentGrowth = null;
-    if (secondLastRecord) {
-      const secondLastWeightLbs = convertToLbs(secondLastRecord.weight, secondLastRecord.weight_unit);
-      recentGrowth = lastWeightLbs - secondLastWeightLbs;
-    }
-    
+    const totalWeight = weightHistory.reduce((sum, record) => sum + record.weight, 0);
+    const averageWeight = totalWeight / weightHistory.length;
+
     return {
-      averageGrowthRate,
-      totalGrowth,
-      recentGrowth,
+      currentWeight,
+      previousWeight,
+      weightChange,
+      averageWeight
     };
   }, [weightHistory]);
-  
+
   return {
     weightHistory,
     isLoading,
     error,
-    refetch,
-    addWeightRecord: addWeightMutation.mutate,
-    isAdding: addWeightMutation.isPending,
-    growthStats,
+    addWeightRecord,
+    weightStats
   };
 };

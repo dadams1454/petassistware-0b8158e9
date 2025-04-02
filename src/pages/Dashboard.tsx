@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { 
-  DashboardContent, 
-  DashboardOverview, 
-  DashboardTabs 
-} from '@/components/dashboard';
+import DashboardOverview from '@/components/dashboard/DashboardOverview';
+import DashboardTabs from '@/components/dashboard/DashboardTabs';
+import DashboardContent from '@/components/dashboard/DashboardContent';
 import PageContainer from '@/components/common/PageContainer';
 
 const Dashboard = () => {
