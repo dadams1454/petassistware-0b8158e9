@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -10,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 ChartJS.register(
   CategoryScale,
@@ -107,7 +108,6 @@ const WeightTrackingGraph: React.FC<WeightTrackingGraphProps> = ({ puppyId, pupp
         toast({
           title: "Weight recorded",
           description: `${weight} ${weightUnit} recorded for ${puppyName}`,
-          variant: "default",
         });
         setNewWeight('');
         fetchWeightData(); // Refresh data
@@ -204,8 +204,7 @@ const WeightTrackingGraph: React.FC<WeightTrackingGraphProps> = ({ puppyId, pupp
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <DatePicker
-                mode="single"
-                selected={weightDate}
+                date={weightDate}
                 onSelect={setWeightDate}
                 initialFocus
               />
