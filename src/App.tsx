@@ -6,12 +6,12 @@ import WelpingManagementPage from './modules/Reproduction/pages/WelpingManagemen
 import BreedingManagementPage from './modules/Reproduction/pages/BreedingManagementPage';
 import ReproductiveCyclePage from './modules/Reproduction/pages/ReproductiveCyclePage';
 import WhelpingLiveSession from './modules/Reproduction/components/welping/WhelpingLiveSession';
-import DashboardPage from './pages/DashboardPage';
 import WelpingPage from './pages/WelpingPage';
+import DashboardPage from './pages/DashboardPage';
 
-// Import the dog-related pages we just created
+// Import dog-related pages
 import DogProfilePage from './pages/DogProfilePage';
-import DogManagementPage from './pages/DogManagementPage';
+import DogManagementPage from './pages/DogManagementPage'; 
 import NewDogPage from './pages/NewDogPage';
 import EditDogPage from './pages/EditDogPage';
 
