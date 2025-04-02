@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +10,7 @@ import { useWelping } from '@/pages/Welping/hooks/useWelping';
 import WelpingLogForm from '@/pages/Welping/components/WelpingLogForm';
 import WelpingLogTimeline from '@/pages/Welping/components/WelpingLogTimeline';
 import AddWelpingPuppyDialog from '@/pages/Welping/components/AddWelpingPuppyDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 const WhelpingLiveSession: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,8 +72,8 @@ const WhelpingLiveSession: React.FC = () => {
       // Update the welping_records table if it exists
       try {
         await updateWelping({
-          end_time: format(new Date(), 'HH:mm'),
           status: 'completed'
+          // Remove end_time as it doesn't exist in the Litter type
         });
       } catch (updateError) {
         console.log('Could not update welping_records (table may not exist)', updateError);

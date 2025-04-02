@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { customSupabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 export const useInspections = () => {
@@ -15,7 +16,7 @@ export const useInspections = () => {
   const fetchInspections = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await customSupabase
+      const { data, error } = await supabase
         .from('compliance_inspections')
         .select('*')
         .order('inspection_date', { ascending: false });
@@ -39,7 +40,7 @@ export const useInspections = () => {
     try {
       if (inspectionData.id) {
         // Update existing inspection
-        const { error } = await customSupabase
+        const { error } = await supabase
           .from('compliance_inspections')
           .update(inspectionData)
           .eq('id', inspectionData.id);
@@ -52,7 +53,7 @@ export const useInspections = () => {
         });
       } else {
         // Insert new inspection
-        const { error } = await customSupabase
+        const { error } = await supabase
           .from('compliance_inspections')
           .insert(inspectionData);
 
