@@ -28,7 +28,8 @@ export const usePuppySocialization = (puppyId: string) => {
       return data.map(record => ({
         id: record.id,
         puppy_id: record.puppy_id,
-        category_id: record.category,
+        category: record.category,
+        category_id: record.category, // For compatibility with both field names
         experience: record.experience,
         experience_date: record.experience_date,
         reaction: record.reaction,
@@ -42,7 +43,7 @@ export const usePuppySocialization = (puppyId: string) => {
   // Add new socialization experience
   const addExperienceMutation = useMutation({
     mutationFn: async (newExperience: {
-      category_id: string;
+      category: string;
       experience: string;
       experience_date: string;
       reaction?: string;
@@ -52,7 +53,7 @@ export const usePuppySocialization = (puppyId: string) => {
         .from('socialization_records')
         .insert({
           puppy_id: puppyId,
-          category: newExperience.category_id,
+          category: newExperience.category,
           experience: newExperience.experience,
           experience_date: newExperience.experience_date,
           reaction: newExperience.reaction,
@@ -114,7 +115,7 @@ export const usePuppySocialization = (puppyId: string) => {
     isLoading,
     error,
     addExperience: (data: {
-      category_id: string;
+      category: string;
       experience: string;
       experience_date: string;
       reaction?: string;

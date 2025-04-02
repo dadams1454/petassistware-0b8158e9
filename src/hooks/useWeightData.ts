@@ -3,22 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
-import { WeightUnit } from '@/types/dog';
-
-export type WeightRecord = {
-  id: string;
-  weight: number;
-  weight_unit: WeightUnit;
-  date: string;
-  notes?: string;
-  created_at: string;
-  puppy_id?: string;
-  dog_id?: string;
-  percent_change?: number;
-  // We'll derive these fields if needed
-  age_days?: number;
-  formatted_date?: string;
-};
+import { WeightUnit, WeightRecord } from '@/types/puppyTracking';
 
 export type WeightDataHookResult = {
   weightData: WeightRecord[];
@@ -59,7 +44,7 @@ export function useWeightData(puppyId?: string, dogId?: string, birthDate?: stri
       if (error) throw error;
       
       // Process the data to add age calculations and formatting
-      const processedData = data.map((record) => {
+      const processedData: WeightRecord[] = data.map((record) => {
         const birthDateObj = birthDate ? new Date(birthDate) : null;
         const recordDateObj = new Date(record.date);
         
@@ -70,9 +55,10 @@ export function useWeightData(puppyId?: string, dogId?: string, birthDate?: stri
         
         return {
           ...record,
+          weight_unit: record.weight_unit as WeightUnit,
           age_days: ageDays,
           formatted_date: format(recordDateObj, 'MMM d, yyyy')
-        };
+        } as WeightRecord;
       });
       
       setWeightData(processedData);
@@ -98,9 +84,23 @@ export function useWeightData(puppyId?: string, dogId?: string, birthDate?: stri
     notes?: string;
   }): Promise<boolean> => {
     try {
-      const recordData = puppyId 
-        ? { puppy_id: puppyId, ...data }
-        : { dog_id: dogId, ...data };
+      // Create record data with either puppy_id or dog_id
+      let recordData: any;
+      
+      if (puppyId) {
+        recordData = { 
+          puppy_id: puppyId, 
+          dog_id: '00000000-0000-0000-0000-000000000000', // Required field with default
+          ...data 
+        };
+      } else if (dogId) {
+        recordData = { 
+          dog_id: dogId, 
+          ...data 
+        };
+      } else {
+        throw new Error('Either puppyId or dogId must be provided');
+      }
       
       const { error } = await supabase.from('weight_records').insert(recordData);
       

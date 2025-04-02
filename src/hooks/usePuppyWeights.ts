@@ -47,7 +47,7 @@ export const usePuppyWeights = (puppyId: string) => {
       if (weightError) throw weightError;
       
       // Process and format the weight data
-      const processedData = weightRecords.map((record: WeightRecord) => {
+      const processedData = weightRecords.map((record: any) => {
         // Calculate age in days if we have a birth date
         let ageInDays = 0;
         if (birthDate) {
@@ -61,14 +61,14 @@ export const usePuppyWeights = (puppyId: string) => {
           dog_id: record.dog_id,
           puppy_id: record.puppy_id,
           weight: record.weight,
-          weight_unit: record.weight_unit,
+          weight_unit: record.weight_unit as WeightUnit,
           unit: record.weight_unit, // For compatibility
           date: record.date,
           age: ageInDays,
           notes: record.notes,
           created_at: record.created_at,
           birth_date: birthDate
-        };
+        } as WeightData;
       });
       
       setWeightData(processedData);
@@ -89,16 +89,18 @@ export const usePuppyWeights = (puppyId: string) => {
   // Function to add a new weight record
   const addWeightRecord = async (data: Omit<WeightData, 'id' | 'age'>) => {
     try {
+      const recordData = {
+        puppy_id: puppyId,
+        dog_id: data.dog_id || '00000000-0000-0000-0000-000000000000', // Required field with default
+        weight: data.weight,
+        weight_unit: data.weight_unit,
+        date: data.date,
+        notes: data.notes,
+      };
+        
       const { error } = await supabase
         .from('weight_records')
-        .insert({
-          puppy_id: puppyId,
-          dog_id: data.dog_id || '00000000-0000-0000-0000-000000000000', // Required field, use placeholder if not provided
-          weight: data.weight,
-          weight_unit: data.weight_unit || data.unit,
-          date: data.date,
-          notes: data.notes,
-        });
+        .insert(recordData);
         
       if (error) throw error;
       
