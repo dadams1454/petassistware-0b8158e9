@@ -33,6 +33,7 @@ import Litters from '@/pages/Litters';
 import LitterDetail from '@/pages/LitterDetail';
 import BatchPuppyEntry from '@/pages/BatchPuppyEntry';
 import PuppyTestingDashboard from '@/pages/PuppyTestingDashboard';
+import Whelping from '@/pages/Whelping';
 
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
@@ -86,6 +87,7 @@ export const appRoutes = (
       <Route path="/breeding-prep" element={<BreedingPrepPage />} />
       <Route path="/welping-dashboard" element={<WelpingDashboard />} />
       <Route path="/welping/:id" element={<WelpingPage />} />
+      <Route path="/welping" element={<Whelping />} />
       
       {/* Operations routes */}
       <Route path="/calendar" element={<Calendar />} />

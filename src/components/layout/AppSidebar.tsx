@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,7 +53,7 @@ const AppSidebar = () => {
     { title: 'Facility', href: '/facility', icon: Building2 },
     { title: 'Compliance', href: '/compliance', icon: Scale },
     { title: 'Breeding Prep', href: '/breeding-prep', icon: ClipboardList },
-    { title: 'Welping', href: '/welping-dashboard', icon: Baby },
+    { title: 'Welping', href: '/welping', icon: Baby },
   ];
   
   const adminMenuItems = [
