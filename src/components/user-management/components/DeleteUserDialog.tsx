@@ -14,37 +14,40 @@ import { UserWithProfile } from '@/types/user';
 
 interface DeleteUserDialogProps {
   user: UserWithProfile | null;
+  isOpen: boolean;
   onClose: () => void;
   onConfirm: (userId: string) => void;
 }
 
-export function DeleteUserDialog({ user, onClose, onConfirm }: DeleteUserDialogProps) {
-  if (!user) return null;
-
+export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
+  user,
+  isOpen,
+  onClose,
+  onConfirm,
+}) => {
   const handleConfirm = () => {
-    onConfirm(user.id);
+    if (user) {
+      onConfirm(user.id);
+    }
   };
 
-  const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email;
-
   return (
-    <AlertDialog open={!!user} onOpenChange={onClose}>
+    <AlertDialog open={isOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogTitle>Delete User</AlertDialogTitle>
           <AlertDialogDescription>
-            This will deactivate the user <strong>{fullName}</strong> from your organization.
-            <br /><br />
-            They will no longer have access to your organization's data.
+            Are you sure you want to delete the user{' '}
+            <strong>{user?.email}</strong>? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={handleConfirm} className="bg-destructive text-destructive-foreground">
-            Deactivate User
+            Delete
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
-}
+};

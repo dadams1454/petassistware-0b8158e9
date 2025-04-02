@@ -1,46 +1,36 @@
 
 import React from 'react';
-import { UserPlus, LogOut, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/standardized';
-import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { UserPlus, LogOut } from 'lucide-react';
 
 interface UserManagementHeaderProps {
   onOpenInvite: () => void;
-  onSignOutAllUsers: () => void;
+  onSignOutAllUsers?: () => void;
 }
 
-export const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({ 
-  onOpenInvite, 
-  onSignOutAllUsers 
+export const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
+  onOpenInvite,
+  onSignOutAllUsers,
 }) => {
-  const navigate = useNavigate();
-
-  const handleBackToDashboard = () => {
-    navigate('/dashboard');
-  };
-
   return (
-    <PageHeader
-      title="User Management"
-      subtitle="Manage users and their roles in your organization"
-      backLink="/dashboard"
-      action={
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleBackToDashboard} className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          <Button variant="destructive" onClick={onSignOutAllUsers} className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <PageHeader
+        title="User Management"
+        subtitle="Manage user accounts and permissions"
+      />
+      <div className="flex gap-2">
+        {onSignOutAllUsers && (
+          <Button variant="outline" onClick={onSignOutAllUsers}>
+            <LogOut className="h-4 w-4 mr-2" />
             Sign Out All Users
           </Button>
-          <Button onClick={onOpenInvite} className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
-            Invite User
-          </Button>
-        </div>
-      }
-    />
+        )}
+        <Button onClick={onOpenInvite}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Invite User
+        </Button>
+      </div>
+    </div>
   );
 };

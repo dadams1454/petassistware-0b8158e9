@@ -1,47 +1,68 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { TableCell, TableRow } from '@/components/ui/table';
 import { Edit, Trash2 } from 'lucide-react';
 import { UserWithProfile } from '@/types/user';
+import { formatDistanceToNow } from 'date-fns';
 
-export interface UserTableRowProps {
+interface UserTableRowProps {
   user: UserWithProfile;
   isCurrentUser: boolean;
   onEdit: (user: UserWithProfile) => void;
-  onDelete: (userId: string) => Promise<void>;
+  onDelete: (userId: string) => void;
 }
 
 const UserTableRow: React.FC<UserTableRowProps> = ({
   user,
   isCurrentUser,
   onEdit,
-  onDelete
+  onDelete,
 }) => {
-  // Using firstName and lastName directly instead of profile.full_name
-  const fullName = user.first_name && user.last_name 
-    ? `${user.first_name} ${user.last_name}` 
-    : user.email || 'N/A';
-  
+  const userCreated = user.created_at ? new Date(user.created_at) : new Date();
+  const timeAgo = formatDistanceToNow(userCreated, { addSuffix: true });
+
+  const handleEdit = () => {
+    onEdit(user);
+  };
+
+  const handleDelete = () => {
+    if (isCurrentUser) {
+      return;
+    }
+    onDelete(user.id);
+  };
+
   return (
-    <tr>
-      <td className="px-4 py-2">{user.email}</td>
-      <td className="px-4 py-2">{fullName}</td>
-      <td className="px-4 py-2">{user.role || 'User'}</td>
-      <td className="px-4 py-2">{user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</td>
-      <td className="px-4 py-2 text-right">
-        <Button variant="ghost" size="sm" onClick={() => onEdit(user)}>
-          <Edit className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => onDelete(user.id)}
-          disabled={isCurrentUser}
-        >
-          <Trash2 className="h-4 w-4 text-red-500" />
-        </Button>
-      </td>
-    </tr>
+    <TableRow>
+      <TableCell>{user.email}</TableCell>
+      <TableCell>{user.name || 'Not set'}</TableCell>
+      <TableCell>{user.role || 'User'}</TableCell>
+      <TableCell className="hidden md:table-cell">{timeAgo}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end space-x-2">
+          <Button
+            onClick={handleEdit}
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+          >
+            <Edit className="h-4 w-4" />
+            <span className="sr-only">Edit</span>
+          </Button>
+          <Button
+            onClick={handleDelete}
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            disabled={isCurrentUser}
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Delete</span>
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 };
 

@@ -16,13 +16,13 @@ import BreedingPrepPage from './modules/Reproduction/pages/BreedingManagementPag
 import LitterDetailsPage from './modules/Reproduction/pages/LitterDetailsPage';
 import NewLitterPage from './modules/Reproduction/pages/NewLitterPage';
 import Breeding from './modules/Reproduction/pages/BreedingDashboard';
-import ReproductiveManagementPage from './modules/Reproduction/pages/ReproductionManagementPage';
+import ReproductiveManagementPage from './pages/ReproductiveManagementPage';
 import ContractsPage from './components/contracts/ContractsList';
 import ContractDetailsPage from './components/contracts/ContractPreviewDialog';
 import NewContractPage from './components/contracts/ContractForm';
 import FacilityPage from './components/facility/FacilityTasksList';
 import CommunicationsPage from './components/communications/CommunicationHistory';
-import SettingsPage from './components/user-management/UserTable';
+import UserManagement from './pages/UserManagement';
 import VaccinationsPage from './components/dogs/components/VaccinationsTab';
 import ReproductionRoutes from './modules/Reproduction/routes';
 import { ThemeProvider } from './components/theme-provider';
@@ -41,18 +41,19 @@ const App: React.FC = () => {
             <Route path="dogs/:dogId" element={<DogDetailPage />} />
             <Route path="dogs/:dogId/edit" element={<EditDogPage />} />
             <Route path="customers" element={<Customers />} />
-            <Route path="customers/new" element={<NewCustomerPage />} />
+            {/* Pass required props as empty objects for now */}
+            <Route path="customers/new" element={<NewCustomerPage isOpen={true} onClose={() => {}} />} />
             <Route path="customers/:customerId" element={<CustomerDetails />} />
-            <Route path="customers/:customerId/edit" element={<CustomerForm />} />
+            <Route path="customers/:customerId/edit" element={<CustomerForm onSubmit={() => {}} onCancel={() => {}} />} />
             <Route path="reservations" element={<ReservationPage />} />
             <Route path="reproductive-management/:dogId" element={<ReproductiveManagementPage />} />
             <Route path="contracts" element={<ContractsPage />} />
-            <Route path="contracts/new" element={<NewContractPage />} />
-            <Route path="contracts/:contractId" element={<ContractDetailsPage />} />
+            <Route path="contracts/new" element={<NewContractPage puppyId={null} onSubmit={() => {}} onCancel={() => {}} />} />
+            <Route path="contracts/:contractId" element={<ContractDetailsPage isOpen={true} onOpenChange={() => {}} contractData={null} onSignContract={() => {}} />} />
             <Route path="communications" element={<CommunicationsPage />} />
-            <Route path="facility" element={<FacilityPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="vaccinations" element={<VaccinationsPage />} />
+            <Route path="facility" element={<FacilityPage tasks={[]} onEdit={() => {}} onRefresh={() => {}} />} />
+            <Route path="settings" element={<UserManagement />} />
+            <Route path="vaccinations" element={<VaccinationsPage dogId="placeholder" />} />
             
             {/* Centralized Reproduction Module */}
             <Route path="reproduction/*" element={<ReproductionRoutes />} />
