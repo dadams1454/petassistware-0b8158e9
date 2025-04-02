@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -59,7 +60,7 @@ const AppSidebar = () => {
   const adminMenuItems = [
     { title: 'Users', href: '/users', icon: Users },
     { title: 'Audit Logs', href: '/audit-logs', icon: Shield },
-    { title: 'Settings', href: '/admin-setup', icon: Settings },
+    { title: 'Settings', href: '/settings', icon: Settings },
   ];
   
   // Only show admin items to admins or owners

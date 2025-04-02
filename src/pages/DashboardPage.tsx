@@ -2,8 +2,7 @@
 import React from 'react';
 import Dashboard from './Dashboard';
 
-// This is a simple wrapper around the Dashboard component to maintain backward compatibility
-// with code that imports DashboardPage
+// This is a simple wrapper around the Dashboard component for naming consistency
 const DashboardPage: React.FC = () => {
   return <Dashboard />;
 };

@@ -7,33 +7,33 @@ import MainLayout from '@/layouts/MainLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 
 // Pages
-import Dashboard from '@/pages/Dashboard';
-import DogDetail from '@/pages/DogDetail';
-import DogProfile from '@/pages/DogProfile';
-import WeightTracking from '@/pages/WeightTracking';
-import WelpingDashboard from '@/pages/WelpingDashboard';
+import DashboardPage from '@/pages/Dashboard';
+import DogDetailPage from '@/pages/DogDetail';
+import DogProfilePage from '@/pages/DogProfile';
+import WeightTrackingPage from '@/pages/WeightTracking';
+import WelpingDashboardPage from '@/pages/WelpingDashboard';
 import WelpingPage from '@/pages/WelpingPage';
-import PuppyDashboard from '@/pages/puppies/PuppyDashboard';
-import Index from '@/pages/Index';
-import NotFound from '@/pages/NotFound';
-import Compliance from '@/pages/Compliance';
-import Calendar from '@/pages/Calendar';
-import Communications from '@/pages/Communications';
-import Contracts from '@/pages/Contracts';
-import Finances from '@/pages/Finances';
-import Facility from '@/pages/Facility';
+import PuppyDashboardPage from '@/pages/puppies/PuppyDashboard';
+import IndexPage from '@/pages/Index';
+import NotFoundPage from '@/pages/NotFound';
+import CompliancePage from '@/pages/Compliance';
+import CalendarPage from '@/pages/Calendar';
+import CommunicationsPage from '@/pages/Communications';
+import ContractsPage from '@/pages/Contracts';
+import FinancesPage from '@/pages/Finances';
+import FacilityPage from '@/pages/Facility';
 import BreedingPrepPage from '@/pages/BreedingPrepPage';
-import Users from '@/pages/Users';
-import AuditLogs from '@/pages/AuditLogs';
-import Settings from '@/pages/Settings';
-import Reservations from '@/pages/Reservations';
-import Customers from '@/pages/Customers';
-import Profile from '@/pages/Profile';
-import Litters from '@/pages/Litters';
-import LitterDetail from '@/pages/LitterDetail';
-import BatchPuppyEntry from '@/pages/BatchPuppyEntry';
-import PuppyTestingDashboard from '@/pages/PuppyTestingDashboard';
-import Whelping from '@/pages/Whelping';
+import UsersPage from '@/pages/Users';
+import AuditLogsPage from '@/pages/AuditLogs';
+import SettingsPage from '@/pages/Settings';
+import ReservationsPage from '@/pages/Reservations';
+import CustomersPage from '@/pages/Customers';
+import ProfilePage from '@/pages/Profile';
+import LittersPage from '@/pages/Litters';
+import LitterDetailPage from '@/pages/LitterDetail';
+import BatchPuppyEntryPage from '@/pages/BatchPuppyEntry';
+import PuppyTestingDashboardPage from '@/pages/PuppyTestingDashboard';
+import WelpingLandingPage from '@/pages/Whelping';
 
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
@@ -54,64 +54,64 @@ export const appRoutes = (
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       {/* Public landing page */}
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<IndexPage />} />
     </Route>
     
     {/* Protected routes */}
     <Route element={<MainLayout />}>
       {/* Dashboard */}
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       
       {/* Profile */}
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/profile" element={<ProfilePage />} />
       
       {/* Dogs routes */}
       <Route path="/dogs" element={<DogsPage />} />
       <Route path="/dogs/add" element={<AddDogPage />} />
-      <Route path="/dogs/:id" element={<DogDetail />} />
+      <Route path="/dogs/:id" element={<DogDetailPage />} />
       <Route path="/dogs/:id/edit" element={<EditDogPage />} />
-      <Route path="/dogs/:id/profile" element={<DogProfile />} />
-      <Route path="/dogs/:id/weight" element={<WeightTracking />} />
+      <Route path="/dogs/:id/profile" element={<DogProfilePage />} />
+      <Route path="/dogs/:id/weight" element={<WeightTrackingPage />} />
       <Route path="/dogs/add-multiple" element={<AddDogsPage />} />
       
       {/* Litters routes */}
-      <Route path="/litters" element={<Litters />} />
-      <Route path="/litters/:id" element={<LitterDetail />} />
-      <Route path="/litter/:litterId/add-puppies" element={<BatchPuppyEntry />} />
-      <Route path="/litter/:litterId/puppy-testing" element={<PuppyTestingDashboard />} />
+      <Route path="/litters" element={<LittersPage />} />
+      <Route path="/litters/:id" element={<LitterDetailPage />} />
+      <Route path="/litter/:litterId/add-puppies" element={<BatchPuppyEntryPage />} />
+      <Route path="/litter/:litterId/puppy-testing" element={<PuppyTestingDashboardPage />} />
       
       {/* Puppies routes */}
-      <Route path="/puppies/:id" element={<PuppyDashboard />} />
+      <Route path="/puppies/:id" element={<PuppyDashboardPage />} />
       
       {/* Breeding/Welping routes */}
       <Route path="/breeding-prep" element={<BreedingPrepPage />} />
-      <Route path="/welping-dashboard" element={<WelpingDashboard />} />
+      <Route path="/welping-dashboard" element={<WelpingDashboardPage />} />
       <Route path="/welping/:id" element={<WelpingPage />} />
-      <Route path="/welping" element={<Whelping />} />
+      <Route path="/welping" element={<WelpingLandingPage />} />
       
       {/* Operations routes */}
-      <Route path="/calendar" element={<Calendar />} />
-      <Route path="/communications" element={<Communications />} />
-      <Route path="/contracts" element={<Contracts />} />
-      <Route path="/finances" element={<Finances />} />
-      <Route path="/facility" element={<Facility />} />
+      <Route path="/calendar" element={<CalendarPage />} />
+      <Route path="/communications" element={<CommunicationsPage />} />
+      <Route path="/contracts" element={<ContractsPage />} />
+      <Route path="/finances" element={<FinancesPage />} />
+      <Route path="/facility" element={<FacilityPage />} />
       
       {/* Compliance route */}
-      <Route path="/compliance" element={<Compliance />} />
+      <Route path="/compliance" element={<CompliancePage />} />
       
       {/* Administration routes */}
-      <Route path="/users" element={<Users />} />
-      <Route path="/audit-logs" element={<AuditLogs />} />
-      <Route path="/settings" element={<Settings />} />
+      <Route path="/users" element={<UsersPage />} />
+      <Route path="/audit-logs" element={<AuditLogsPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
       
       {/* Reservations routes */}
-      <Route path="/reservations" element={<Reservations />} />
+      <Route path="/reservations" element={<ReservationsPage />} />
       
       {/* Customers routes */}
-      <Route path="/customers" element={<Customers />} />
+      <Route path="/customers" element={<CustomersPage />} />
       
       {/* Fallback route */}
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Route>
   </Route>
 );
