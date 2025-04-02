@@ -2,9 +2,5 @@
 import React from 'react';
 import Dashboard from './Dashboard';
 
-// This is a simple wrapper around the Dashboard component for naming consistency
-const DashboardPage: React.FC = () => {
-  return <Dashboard />;
-};
-
-export default DashboardPage;
+// Re-export Dashboard component directly to maintain consistency
+export default Dashboard;

@@ -7,7 +7,7 @@ import MainLayout from '@/layouts/MainLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 
 // Pages
-import DashboardPage from '@/pages/Dashboard';
+import Dashboard from '@/pages/Dashboard';
 import DogDetailPage from '@/pages/DogDetail';
 import DogProfilePage from '@/pages/DogProfile';
 import WeightTrackingPage from '@/pages/WeightTracking';
@@ -60,7 +60,7 @@ export const appRoutes = (
     {/* Protected routes */}
     <Route element={<MainLayout />}>
       {/* Dashboard */}
-      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       
       {/* Profile */}
       <Route path="/profile" element={<ProfilePage />} />

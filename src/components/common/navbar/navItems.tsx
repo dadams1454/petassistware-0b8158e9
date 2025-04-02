@@ -100,7 +100,7 @@ export const navItems = [
   },
   {
     title: 'Welping',
-    href: '/welping-dashboard',
+    href: '/welping',
     icon: Baby,
     description: 'Manage whelping and puppy care'
   },
@@ -118,7 +118,7 @@ export const navItems = [
   },
   {
     title: 'Settings',
-    href: '/admin-setup',
+    href: '/settings',
     icon: Settings,
     description: 'Configure your kennel settings'
   }
