@@ -1,56 +1,86 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DogBasicInfo from './DogBasicInfo';
-import DogHealthRecords from './DogHealthRecords';
-import DogBreedingInfo from './DogBreedingInfo';
-import DogDocuments from './DogDocuments';
-import GeneticAnalysisTab from '../tabs/GeneticAnalysisTab';
-import MedicalExpenses from '@/components/finances/MedicalExpenses';
+import OverviewTab from '../tabs/OverviewTab';
+import HealthTab from '../tabs/HealthTab';
+import DocumentsTab from '../tabs/DocumentsTab';
+import GeneticsTab from '../tabs/GeneticsTab';
+import NotesTab from '../tabs/NotesTab';
+import BreedingTab from '../tabs/BreedingTab';
+import GalleryTab from '../tabs/GalleryTab';
+import OwnershipTab from '../tabs/OwnershipTab';
+import { UserWithAuth } from '@/types';
 
 interface DogProfileTabsProps {
-  dog: any;
+  currentDog: any;
+  activeTab?: string;
+  onTabChange?: (value: string) => void;
+  currentUser?: UserWithAuth;
 }
 
-const DogProfileTabs: React.FC<DogProfileTabsProps> = ({ dog }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+const DogProfileTabs: React.FC<DogProfileTabsProps> = ({
+  currentDog,
+  activeTab = 'overview',
+  onTabChange,
+  currentUser
+}) => {
+  const dogId = currentDog?.id || '';
+  const dogName = currentDog?.name || 'Dog';
   
+  const handleTabChange = (value: string) => {
+    if (onTabChange) {
+      onTabChange(value);
+    }
+    
+    // Save last tab in localStorage
+    if (dogId) {
+      localStorage.setItem(`lastDogTab_${dogId}`, value);
+    }
+  };
+
   return (
-    <Tabs 
-      value={activeTab} 
-      onValueChange={setActiveTab}
-      className="mt-6"
-    >
-      <TabsList className="grid w-full grid-cols-5">
+    <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
+      <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="health">Health</TabsTrigger>
         <TabsTrigger value="genetics">Genetics</TabsTrigger>
         <TabsTrigger value="breeding">Breeding</TabsTrigger>
+        <TabsTrigger value="ownership">Ownership</TabsTrigger>
+        <TabsTrigger value="gallery">Gallery</TabsTrigger>
         <TabsTrigger value="documents">Documents</TabsTrigger>
+        <TabsTrigger value="notes">Notes</TabsTrigger>
       </TabsList>
-      
-      <TabsContent value="overview" className="mt-6">
-        <DogBasicInfo dog={dog} />
+
+      <TabsContent value="overview" className="py-4">
+        <OverviewTab currentDog={currentDog} />
       </TabsContent>
-      
-      <TabsContent value="health" className="mt-6 space-y-8">
-        <DogHealthRecords dogId={dog.id} />
-        
-        <div className="pt-4">
-          <MedicalExpenses dogId={dog.id} />
-        </div>
+
+      <TabsContent value="health" className="py-4">
+        <HealthTab currentDog={currentDog} />
       </TabsContent>
-      
-      <TabsContent value="genetics" className="mt-6">
-        <GeneticAnalysisTab dogId={dog.id} currentDog={dog} />
+
+      <TabsContent value="genetics" className="py-4">
+        <GeneticsTab dogId={currentDog?.id} dogName={currentDog?.name} />
       </TabsContent>
-      
-      <TabsContent value="breeding" className="mt-6">
-        <DogBreedingInfo dog={dog} />
+
+      <TabsContent value="breeding" className="py-4">
+        <BreedingTab currentDog={currentDog} />
       </TabsContent>
-      
-      <TabsContent value="documents" className="mt-6">
-        <DogDocuments dogId={dog.id} />
+
+      <TabsContent value="ownership" className="py-4">
+        <OwnershipTab currentDog={currentDog} currentUser={currentUser} />
+      </TabsContent>
+
+      <TabsContent value="gallery" className="py-4">
+        <GalleryTab dogId={currentDog?.id} />
+      </TabsContent>
+
+      <TabsContent value="documents" className="py-4">
+        <DocumentsTab dogId={currentDog?.id} dogName={currentDog?.name} />
+      </TabsContent>
+
+      <TabsContent value="notes" className="py-4">
+        <NotesTab dogId={currentDog?.id} />
       </TabsContent>
     </Tabs>
   );

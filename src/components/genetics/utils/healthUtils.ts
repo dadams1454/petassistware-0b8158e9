@@ -1,5 +1,67 @@
-
 import { DogGenotype, HealthMarker, HealthWarning } from '@/types/genetics';
+
+// Add these missing utility functions at the top of the file
+export const formatConditionName = (condition: string): string => {
+  // Convert snake_case or camelCase to Title Case with spaces
+  return condition
+    .replace(/_/g, ' ')
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^\w/, c => c.toUpperCase())
+    .trim();
+};
+
+export const getResultWithColorProps = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'clear':
+      return { 
+        color: 'text-green-700',
+        bgColor: 'bg-green-100'
+      };
+    case 'carrier':
+      return {
+        color: 'text-yellow-700',
+        bgColor: 'bg-yellow-100'  
+      };
+    case 'at_risk':
+    case 'affected':
+      return {
+        color: 'text-red-700',
+        bgColor: 'bg-red-100'
+      };
+    default:
+      return {
+        color: 'text-gray-700',
+        bgColor: 'bg-gray-100'
+      };
+  }
+};
+
+export const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  } catch (e) {
+    return dateString;
+  }
+};
+
+export const getStatusColor = (status: string): string => {
+  switch (status.toLowerCase()) {
+    case 'clear':
+      return '#4ade80'; // green
+    case 'carrier':
+      return '#facc15'; // yellow
+    case 'at_risk':
+    case 'affected':
+      return '#f87171'; // red
+    default:
+      return '#e5e7eb'; // gray
+  }
+};
 
 export const generateRiskAssessment = (breed: string, healthMarkers: Record<string, HealthMarker>) => {
   const affectedConditions: string[] = [];

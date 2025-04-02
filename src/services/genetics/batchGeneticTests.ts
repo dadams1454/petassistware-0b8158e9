@@ -8,6 +8,8 @@ export const importGeneticTestsFromCSV = async (dogId: string, file: File): Prom
     // Mock implementation to satisfy type checking 
     return {
       success: true,
+      dogId: dogId,
+      importedTests: [],
       provider: 'CSV Import',
       testsImported: 5,
       count: 5,
@@ -17,6 +19,8 @@ export const importGeneticTestsFromCSV = async (dogId: string, file: File): Prom
     console.error('Error importing genetic tests from CSV:', error);
     return {
       success: false,
+      dogId: dogId,
+      importedTests: [],
       provider: 'CSV Import',
       testsImported: 0,
       errors: [error instanceof Error ? error.message : 'Unknown error']
@@ -29,6 +33,8 @@ export const importEmbarkData = async (dogId: string, file?: File): Promise<Gene
   // Implementation code would be here
   return {
     success: true,
+    dogId: dogId,
+    importedTests: [],
     provider: 'Embark',
     testsImported: 8,
     count: 8,
@@ -40,6 +46,8 @@ export const importWisdomPanelData = async (dogId: string, file?: File): Promise
   // Implementation code would be here
   return {
     success: true,
+    dogId: dogId,
+    importedTests: [],
     provider: 'Wisdom Panel',
     testsImported: 6,
     count: 6,
@@ -53,6 +61,8 @@ export const batchImportGeneticTests = async (dogId: string, testData: any[] = [
     // Implementation code would be here
     return {
       success: true,
+      dogId: dogId,
+      importedTests: [],
       provider: 'Batch Import',
       testsImported: testData.length || 0,
       count: testData.length || 0,
@@ -62,6 +72,8 @@ export const batchImportGeneticTests = async (dogId: string, testData: any[] = [
     console.error('Error batch importing genetic tests:', error);
     return {
       success: false,
+      dogId: dogId,
+      importedTests: [],
       provider: 'Batch Import', 
       testsImported: 0,
       errors: [error instanceof Error ? error.message : 'Unknown error']

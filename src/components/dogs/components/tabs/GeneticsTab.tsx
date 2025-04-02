@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
@@ -134,7 +135,12 @@ const GeneticsTab: React.FC<GeneticsTabProps> = ({ dogId, dogName }) => {
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <DogGenotypeCard dogId={dogId} showHealthTests showColorTraits />
+            <DogGenotypeCard 
+              dogId={dogId} 
+              showHealthTests 
+              showColorTraits 
+              genotype={geneticData} // Pass genotype directly to fix the error
+            />
             
             <Card>
               <CardHeader className="pb-0">

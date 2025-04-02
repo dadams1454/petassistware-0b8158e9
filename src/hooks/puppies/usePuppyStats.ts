@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PuppyManagementStats, PuppyWithAge } from '@/types/puppyTracking';
@@ -40,6 +39,25 @@ export const usePuppyStats = () => {
       
       if (puppiesError) throw puppiesError;
       
+      // Transform the puppies data to include ageInDays
+      const typedPuppies: PuppyWithAge[] = (puppies || []).map(puppy => {
+        // Calculate age in days
+        let ageInDays = 0;
+        
+        const birthDate = puppy.birth_date || puppy.litters?.birth_date;
+        if (birthDate) {
+          const birthDateTime = new Date(birthDate).getTime();
+          const now = new Date().getTime();
+          ageInDays = Math.floor((now - birthDateTime) / (1000 * 60 * 60 * 24));
+        }
+        
+        return {
+          ...puppy,
+          ageInDays,
+          collar_color: puppy.color
+        } as PuppyWithAge;
+      });
+      
       // Get active litters
       const { data: litters, error: littersError } = await supabase
         .from('litters')
@@ -68,55 +86,13 @@ export const usePuppyStats = () => {
       
       if (weightChecksError) throw weightChecksError;
       
-      // Process puppies data for stats
-      const typedPuppies = puppies as PuppyWithAge[];
-      
-      // Calculate basic stats
+      // Calculate basic stats from the typed puppies
       const totalPuppies = typedPuppies.length;
       const availablePuppies = typedPuppies.filter(p => p.status === 'Available').length;
       const reservedPuppies = typedPuppies.filter(p => p.status === 'Reserved').length;
       const soldPuppies = typedPuppies.filter(p => p.status === 'Sold').length;
       const maleCount = typedPuppies.filter(p => p.gender === 'male' || p.gender === 'Male').length;
       const femaleCount = typedPuppies.filter(p => p.gender === 'female' || p.gender === 'Female').length;
-      
-      // Group puppies by color
-      const puppiesByColor: Record<string, number> = {};
-      typedPuppies.forEach(puppy => {
-        if (puppy.color) {
-          puppiesByColor[puppy.color] = (puppiesByColor[puppy.color] || 0) + 1;
-        }
-      });
-      
-      // Group puppies by age (in weeks)
-      const puppiesByAge: Record<string, number> = {
-        '0-2 weeks': 0,
-        '2-4 weeks': 0,
-        '4-8 weeks': 0,
-        '8-12 weeks': 0,
-        '12+ weeks': 0
-      };
-      
-      typedPuppies.forEach(puppy => {
-        let ageInDays = 0;
-        
-        if (puppy.birth_date) {
-          const birthDate = new Date(puppy.birth_date);
-          const today = new Date();
-          ageInDays = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24));
-        }
-        
-        if (ageInDays <= 14) {
-          puppiesByAge['0-2 weeks']++;
-        } else if (ageInDays <= 28) {
-          puppiesByAge['2-4 weeks']++;
-        } else if (ageInDays <= 56) {
-          puppiesByAge['4-8 weeks']++;
-        } else if (ageInDays <= 84) {
-          puppiesByAge['8-12 weeks']++;
-        } else {
-          puppiesByAge['12+ weeks']++;
-        }
-      });
       
       // Calculate average weight
       let totalWeight = 0;
@@ -136,7 +112,36 @@ export const usePuppyStats = () => {
         }
       });
       
-      const averageWeight = weightCount > 0 ? (totalWeight / weightCount) : 0;
+      // Group puppies by color
+      const puppiesByColor: Record<string, number> = {};
+      typedPuppies.forEach(puppy => {
+        if (puppy.color) {
+          puppiesByColor[puppy.color] = (puppiesByColor[puppy.color] || 0) + 1;
+        }
+      });
+      
+      // Group puppies by age (in weeks)
+      const puppiesByAge: Record<string, number> = {
+        '0-2 weeks': 0,
+        '2-4 weeks': 0,
+        '4-8 weeks': 0,
+        '8-12 weeks': 0,
+        '12+ weeks': 0
+      };
+      
+      typedPuppies.forEach(puppy => {
+        if (puppy.ageInDays <= 14) {
+          puppiesByAge['0-2 weeks']++;
+        } else if (puppy.ageInDays <= 28) {
+          puppiesByAge['2-4 weeks']++;
+        } else if (puppy.ageInDays <= 56) {
+          puppiesByAge['4-8 weeks']++;
+        } else if (puppy.ageInDays <= 84) {
+          puppiesByAge['8-12 weeks']++;
+        } else {
+          puppiesByAge['12+ weeks']++;
+        }
+      });
       
       // Update the stats state
       setStats({

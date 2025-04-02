@@ -38,7 +38,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   const [activeTab, setActiveTab] = useState<string>('csv');
   const [csvData, setCsvData] = useState<string>('');
   const [manualTests, setManualTests] = useState<ManualTestEntry[]>([
-    { name: '', result: '', date: new Date().toISOString().split('T')[0], importSource: 'manual' }
+    { name: '', result: '', date: new Date().toISOString().split('T')[0], importSource: 'manual', provider: 'manual' }
   ]);
   const [importResult, setImportResult] = useState<{success?: boolean; errors?: string[]}>({});
   
@@ -66,7 +66,12 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   
   const handleManualImport = async () => {
     // Filter out empty tests
-    const validTests = manualTests.filter(test => test.name && test.result);
+    const validTests = manualTests
+      .filter(test => test.name && test.result)
+      .map(test => ({
+        ...test,
+        provider: test.provider || 'manual'
+      })) as Omit<TestResult, 'testId'>[];
     
     if (validTests.length === 0) {
       setImportResult({
@@ -115,7 +120,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   };
   
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Import Genetic Test Results</DialogTitle>

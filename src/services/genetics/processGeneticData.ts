@@ -22,6 +22,7 @@ export async function processGeneticData(dogId: string): Promise<DogGenotype | n
     // Map database fields to DogGenotype
     const genotype: DogGenotype = {
       dogId,
+      // Create base properties with defaults even if they don't exist in the database
       baseColor: data.base_color || 'unknown',
       brownDilution: data.brown_dilution || 'unknown',
       dilution: data.dilution || 'unknown',
@@ -62,13 +63,24 @@ export async function processGeneticData(dogId: string): Promise<DogGenotype | n
       }
     }
     
-    // Process color genetics if available
-    if (data.color_genetics) {
+    // Process color genetics if available - this might not be in the database schema
+    // so we'll handle it safely
+    if (data.color_genetics || data.traits || data.trait_results) {
       try {
-        genotype.baseColor = data.color_genetics.base_color || genotype.baseColor;
-        genotype.brownDilution = data.color_genetics.brown_dilution || genotype.brownDilution;
-        genotype.dilution = data.color_genetics.dilution || genotype.dilution;
-        genotype.healthMarkers = data.color_genetics.markers || {};
+        // Try to extract from different possible fields
+        const colorData = data.color_genetics || data.traits || data.trait_results;
+        
+        if (colorData) {
+          const parsedColorData = typeof colorData === 'string' 
+            ? JSON.parse(colorData) 
+            : colorData;
+            
+          // Assign known color traits if they exist
+          if (parsedColorData.base_color) genotype.baseColor = parsedColorData.base_color;
+          if (parsedColorData.brown_dilution) genotype.brownDilution = parsedColorData.brown_dilution;
+          if (parsedColorData.dilution) genotype.dilution = parsedColorData.dilution;
+          if (parsedColorData.markers) genotype.healthMarkers = parsedColorData.markers;
+        }
       } catch (e) {
         console.error('Error parsing color genetics:', e);
       }

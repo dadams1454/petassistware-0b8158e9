@@ -19,13 +19,11 @@ export const useGeneticDataImport = (dogId: string) => {
       const blob = new Blob([csvData], { type: 'text/csv' });
       const file = new File([blob], 'genetic-data.csv', { type: 'text/csv' });
       
-      // Call the service to process the CSV
-      // Note: We need to mock this because importGeneticTestsFromCSV may not actually exist
-      // const result = await importGeneticTestsFromCSV(dogId, file);
-      
       // Mock implementation for now
       const result: GeneticImportResult = {
         success: true,
+        dogId: dogId,
+        importedTests: [],
         provider: 'CSV Import',
         testsImported: 5,
         count: 5,
@@ -38,6 +36,8 @@ export const useGeneticDataImport = (dogId: string) => {
       console.error('Error importing from CSV:', error);
       const errorResult: GeneticImportResult = {
         success: false,
+        dogId: dogId,
+        importedTests: [],
         provider: 'CSV Import',
         testsImported: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']
@@ -61,6 +61,8 @@ export const useGeneticDataImport = (dogId: string) => {
       console.error('Error importing manual tests:', error);
       const errorResult: GeneticImportResult = {
         success: false,
+        dogId: dogId,
+        importedTests: [],
         provider: 'Manual Import',
         testsImported: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']
@@ -82,6 +84,8 @@ export const useGeneticDataImport = (dogId: string) => {
       console.error('Error importing from Embark:', error);
       const errorResult: GeneticImportResult = {
         success: false,
+        dogId: dogId,
+        importedTests: [],
         provider: 'Embark',
         testsImported: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']
@@ -103,6 +107,8 @@ export const useGeneticDataImport = (dogId: string) => {
       console.error('Error importing from Wisdom Panel:', error);
       const errorResult: GeneticImportResult = {
         success: false,
+        dogId: dogId,
+        importedTests: [],
         provider: 'Wisdom Panel',
         testsImported: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']

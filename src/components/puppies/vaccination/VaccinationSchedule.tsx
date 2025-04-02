@@ -33,6 +33,7 @@ const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
   } = usePuppyVaccinations(puppyId);
   
   const handleMarkComplete = (vaccination: VaccinationScheduleItem) => {
+    // Create a proper VaccinationRecord from VaccinationScheduleItem
     addVaccination({
       vaccination_type: vaccination.vaccination_type,
       vaccination_date: new Date().toISOString().split('T')[0],
@@ -67,18 +68,28 @@ const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
     );
   }
   
+  // Ensure all vaccination records have the necessary properties
+  const processedVaccinations = vaccinations.map(vax => {
+    return {
+      ...vax,
+      // Ensure all required fields are present
+      created_at: vax.created_at || new Date().toISOString(),
+      due_date: vax.due_date || vax.vaccination_date
+    } as VaccinationScheduleItem;
+  });
+  
   // Group vaccinations by status
-  const overdueVaccinations = vaccinations.filter(vax => 
+  const overdueVaccinations = processedVaccinations.filter(vax => 
     vax.is_completed === false && 
     new Date(vax.due_date) < new Date()
   );
   
-  const upcomingVaccinations = vaccinations.filter(vax => 
+  const upcomingVaccinations = processedVaccinations.filter(vax => 
     vax.is_completed === false && 
     new Date(vax.due_date) >= new Date()
   );
   
-  const completedVaccinations = vaccinations.filter(vax => 
+  const completedVaccinations = processedVaccinations.filter(vax => 
     vax.is_completed === true
   );
   
