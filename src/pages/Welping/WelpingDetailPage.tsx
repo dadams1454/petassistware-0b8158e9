@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { PageHeader, LoadingState, ErrorState } from '@/components/ui/standardized';
 import PageContainer from '@/components/common/PageContainer';
 import { useWelping } from './hooks/useWelping';
-import { WelpingTabContent, LitterDetailsCard, WelpingProgressCard } from './components';
+import { LitterDetailsCard, WelpingProgressCard } from './components';
+import WelpingTabContent from '@/components/welping/WelpingTabContent';
 
 const WelpingDetailPage = () => {
   const { id } = useParams<{ id: string }>();

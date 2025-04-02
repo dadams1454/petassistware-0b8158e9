@@ -1,14 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
 
 interface WelpingLogFormProps {
   litterId: string;
@@ -16,51 +14,58 @@ interface WelpingLogFormProps {
 }
 
 const WelpingLogForm: React.FC<WelpingLogFormProps> = ({ litterId, onSave }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm({
     defaultValues: {
-      time: format(new Date(), 'HH:mm'),
-      type: 'observation',
-      description: '',
-      action: '',
-      puppyId: ''
+      eventType: 'note',
+      notes: '',
+      puppyDetails: {
+        gender: '',
+        color: '',
+        weight: ''
+      }
     }
   });
   
-  // Fetch puppies for this litter
-  const { data: puppies } = useQuery({
-    queryKey: ['puppies', litterId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('puppies')
-        .select('id, name, color, gender')
-        .eq('litter_id', litterId)
-        .order('birth_order', { ascending: true });
-        
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!litterId
-  });
-  
-  const logTypes = [
-    { value: 'observation', label: 'General Observation' },
-    { value: 'contraction', label: 'Contraction' },
-    { value: 'birth', label: 'Puppy Birth' },
-    { value: 'complication', label: 'Complication' },
-    { value: 'medication', label: 'Medication Given' },
-    { value: 'temperature', label: 'Temperature Reading' },
-    { value: 'intervention', label: 'Medical Intervention' }
-  ];
+  const eventType = form.watch('eventType');
+  const showPuppyDetails = eventType === 'puppy_born';
   
   const handleSubmit = async (data: any) => {
-    await onSave(data);
-    form.reset({
-      time: format(new Date(), 'HH:mm'),
-      type: 'observation',
-      description: '',
-      action: '',
-      puppyId: ''
-    });
+    try {
+      setIsSubmitting(true);
+      
+      // Format data for API
+      const currentTime = new Date().toISOString();
+      
+      const logEntry = {
+        timestamp: currentTime,
+        event_type: data.eventType,
+        notes: data.notes,
+        puppy_details: showPuppyDetails ? {
+          gender: data.puppyDetails.gender,
+          color: data.puppyDetails.color,
+          weight: data.puppyDetails.weight
+        } : undefined
+      };
+      
+      await onSave(logEntry);
+      
+      // Reset form
+      form.reset({
+        eventType: 'note',
+        notes: '',
+        puppyDetails: {
+          gender: '',
+          color: '',
+          weight: ''
+        }
+      });
+    } catch (error) {
+      console.error('Error saving log entry:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (
@@ -68,36 +73,25 @@ const WelpingLogForm: React.FC<WelpingLogFormProps> = ({ litterId, onSave }) => 
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="time"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Time</FormLabel>
-              <FormControl>
-                <Input type="time" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="type"
+          name="eventType"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Event Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select event type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {logTypes.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="start">Start of Whelping</SelectItem>
+                  <SelectItem value="contraction">Contraction</SelectItem>
+                  <SelectItem value="puppy_born">Puppy Born</SelectItem>
+                  <SelectItem value="end">End of Whelping</SelectItem>
+                  <SelectItem value="note">Note</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -105,44 +99,76 @@ const WelpingLogForm: React.FC<WelpingLogFormProps> = ({ litterId, onSave }) => 
           )}
         />
         
-        {form.watch('type') === 'birth' && (
-          <FormField
-            control={form.control}
-            name="puppyId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Puppy</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+        {showPuppyDetails && (
+          <div className="space-y-4 p-4 bg-muted/50 rounded-md">
+            <h4 className="text-sm font-medium">Puppy Details</h4>
+            
+            <FormField
+              control={form.control}
+              name="puppyDetails.gender"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gender</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="puppyDetails.color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Color</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select puppy" />
-                    </SelectTrigger>
+                    <Input {...field} placeholder="Puppy color" />
                   </FormControl>
-                  <SelectContent>
-                    {puppies?.map(puppy => (
-                      <SelectItem key={puppy.id} value={puppy.id}>
-                        {puppy.name} ({puppy.color}, {puppy.gender})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="puppyDetails.weight"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Weight (oz)</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="number" step="0.1" placeholder="0.0" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         )}
         
         <FormField
           control={form.control}
-          name="description"
+          name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Notes</FormLabel>
               <FormControl>
                 <Textarea 
                   {...field} 
+                  placeholder="Add any additional information" 
                   rows={3}
-                  placeholder="Describe what happened" 
                 />
               </FormControl>
               <FormMessage />
@@ -150,26 +176,10 @@ const WelpingLogForm: React.FC<WelpingLogFormProps> = ({ litterId, onSave }) => 
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="action"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Action Taken (if any)</FormLabel>
-              <FormControl>
-                <Textarea 
-                  {...field} 
-                  rows={2}
-                  placeholder="Describe any actions taken" 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="flex justify-end">
-          <Button type="submit">Add Log Entry</Button>
+        <div className="pt-2">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Add Event'}
+          </Button>
         </div>
       </form>
     </Form>

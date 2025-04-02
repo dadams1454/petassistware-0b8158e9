@@ -10,7 +10,7 @@ import { useWelping } from './hooks/useWelping';
 const WelpingCreatePage = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const { createWelping } = useWelping();
+  const { createWelping, isCreating } = useWelping();
   
   const handleWelpingCreated = (litterId: string) => {
     if (litterId) {

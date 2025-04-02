@@ -1,126 +1,101 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { Baby, AlertCircle, Eye, Thermometer, Pill, Clock, Activity } from 'lucide-react';
-import { WelpingObservation, Puppy } from '../types';
+import { Puppy } from '@/types/litter';
+import { Activity, Calendar, Clock, MessageSquare } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { WelpingLogEntry } from '../hooks/useWelping';
 
 interface WelpingLogTimelineProps {
-  logs: WelpingObservation[];
+  logs: WelpingLogEntry[];
   puppies: Puppy[];
 }
 
 const WelpingLogTimeline: React.FC<WelpingLogTimelineProps> = ({ logs, puppies }) => {
-  const sortedLogs = [...logs].sort((a, b) => {
-    const dateA = new Date(`2000-01-01T${a.observation_time}`);
-    const dateB = new Date(`2000-01-01T${b.observation_time}`);
-    return dateB.getTime() - dateA.getTime();
-  });
+  // Sort logs by timestamp
+  const sortedLogs = [...logs].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
   
-  const getIconForLogType = (type: string) => {
-    switch (type) {
-      case 'birth':
-        return <Baby className="h-5 w-5 text-green-500" />;
-      case 'complication':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
-      case 'observation':
-        return <Eye className="h-5 w-5 text-blue-500" />;
-      case 'temperature':
-        return <Thermometer className="h-5 w-5 text-amber-500" />;
-      case 'medication':
-        return <Pill className="h-5 w-5 text-purple-500" />;
+  // Function to get puppy details
+  const getPuppyDetails = (puppyId?: string) => {
+    if (!puppyId) return null;
+    return puppies.find(puppy => puppy.id === puppyId);
+  };
+  
+  // Get icon for event type
+  const getEventIcon = (eventType: string) => {
+    switch (eventType) {
+      case 'start':
+        return <Calendar className="h-5 w-5 text-blue-500" />;
       case 'contraction':
-        return <Activity className="h-5 w-5 text-indigo-500" />;
+        return <Activity className="h-5 w-5 text-yellow-500" />;
+      case 'puppy_born':
+        return <Activity className="h-5 w-5 text-green-500" />;
+      case 'end':
+        return <Clock className="h-5 w-5 text-purple-500" />;
       default:
-        return <Clock className="h-5 w-5 text-gray-500" />;
+        return <MessageSquare className="h-5 w-5 text-gray-500" />;
     }
   };
   
-  const getPuppyName = (puppyId: string | undefined) => {
-    if (!puppyId) return 'Unknown puppy';
-    const puppy = puppies.find(p => p.id === puppyId);
-    return puppy ? puppy.name : 'Unknown puppy';
-  };
-  
-  const getLogTypeLabel = (type: string) => {
-    switch (type) {
-      case 'birth':
-        return 'Puppy Birth';
-      case 'complication':
-        return 'Complication';
-      case 'observation':
-        return 'Observation';
-      case 'temperature':
-        return 'Temperature Reading';
-      case 'medication':
-        return 'Medication';
+  // Get event label
+  const getEventLabel = (log: WelpingLogEntry) => {
+    switch (log.event_type) {
+      case 'start':
+        return 'Whelping Started';
       case 'contraction':
         return 'Contraction';
-      case 'intervention':
-        return 'Medical Intervention';
+      case 'puppy_born': {
+        const puppy = getPuppyDetails(log.puppy_id);
+        return puppy 
+          ? `Puppy Born: ${puppy.name || `#${puppy.birth_order || ''}`}` 
+          : 'Puppy Born';
+      }
+      case 'end':
+        return 'Whelping Completed';
       default:
-        return type.charAt(0).toUpperCase() + type.slice(1);
+        return 'Note';
     }
   };
-
-  if (sortedLogs.length === 0) {
+  
+  if (logs.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-        <h3 className="text-lg font-medium mb-2">No Logs Yet</h3>
-        <p>
-          Add log entries to track the whelping process.<br />
-          Record contractions, births, and other observations.
-        </p>
-      </div>
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-muted-foreground">No whelping events have been recorded yet.</p>
+        </CardContent>
+      </Card>
     );
   }
-
+  
   return (
-    <div className="relative">
-      <div className="absolute inset-y-0 left-5 w-0.5 bg-gray-200" />
-      
-      <div className="space-y-6">
-        {sortedLogs.map((log) => (
-          <div key={log.id} className="relative pl-10">
-            <div className="absolute left-0 top-1 flex items-center justify-center h-10 w-10 rounded-full bg-white border border-gray-200">
-              {getIconForLogType(log.observation_type || 'observation')}
+    <div className="space-y-4">
+      {sortedLogs.map(log => (
+        <div key={log.id} className="flex gap-4">
+          <div className="mt-1">{getEventIcon(log.event_type)}</div>
+          <div className="flex-1 space-y-1">
+            <div className="flex justify-between">
+              <h4 className="font-medium">{getEventLabel(log)}</h4>
+              <time className="text-sm text-muted-foreground">
+                {format(new Date(log.timestamp), 'h:mm a')}
+              </time>
             </div>
-            
-            <div className="bg-white p-4 border border-gray-200 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center">
-                  <span className="font-medium mr-2">
-                    {getLogTypeLabel(log.observation_type || 'observation')}
-                  </span>
-                  {log.puppy_id && (
-                    <span className="text-sm px-2 py-0.5 bg-primary/10 text-primary rounded-full">
-                      {getPuppyName(log.puppy_id)}
-                    </span>
-                  )}
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  {log.observation_time}
+            {log.notes && <p className="text-sm text-muted-foreground">{log.notes}</p>}
+            {log.event_type === 'puppy_born' && log.puppy_details && (
+              <div className="text-sm mt-1">
+                <span className="text-muted-foreground">
+                  {[
+                    log.puppy_details.gender,
+                    log.puppy_details.color,
+                    log.puppy_details.weight ? `${log.puppy_details.weight} oz` : null
+                  ].filter(Boolean).join(', ')}
                 </span>
               </div>
-              
-              <p className="text-sm mb-2">
-                {log.description}
-              </p>
-              
-              {log.action_taken && (
-                <div className="mt-2 text-sm">
-                  <p className="font-medium text-sm">Action taken:</p>
-                  <p className="text-muted-foreground">{log.action_taken}</p>
-                </div>
-              )}
-              
-              <div className="text-xs text-muted-foreground mt-2">
-                {format(new Date(log.created_at), 'MMM d, yyyy')}
-              </div>
-            </div>
+            )}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 };

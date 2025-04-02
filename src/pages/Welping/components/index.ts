@@ -8,3 +8,6 @@ export { default as WelpingStepper } from './WelpingStepper';
 export { default as WelpingEditForm } from './WelpingEditForm';
 export { default as WelpingLogTimeline } from './WelpingLogTimeline';
 export { default as WelpingLogForm } from './WelpingLogForm';
+export { default as PuppyBirthTable } from './PuppyBirthTable';
+export { default as WelpingSummaryCard } from './WelpingSummaryCard';
+
