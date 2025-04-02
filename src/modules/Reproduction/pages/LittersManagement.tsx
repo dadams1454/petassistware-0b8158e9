@@ -1,250 +1,266 @@
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, differenceInDays, isAfter } from 'date-fns';
-import { Baby, Plus, Search, Heart, Puppy } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Litter } from '@/types/litter';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { 
+  PlusCircle, 
+  MoreVertical, 
+  Baby, 
+  Heart, 
+  FileText, 
+  ArchiveIcon,
+  CalendarIcon
+} from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 
-const LittersManagement: React.FC = () => {
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState('active');
+interface Litter {
+  id: string;
+  name: string;
+  dam_id: string;
+  sire_id: string;
+  whelp_date: string;
+  expected_date?: string;
+  status: 'planned' | 'active' | 'completed' | 'archived';
+  puppy_count?: number;
+  created_at: string;
+  dam?: {
+    name: string;
+  };
+  sire?: {
+    name: string;
+  };
+  documentsUrl?: string; // Changed from documents_url to documentsUrl
+}
+
+const useLitters = () => {
+  const [litters, setLitters] = useState<Litter[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // Fetch litters data
-  const { data: allLitters = [], isLoading } = useQuery({
-    queryKey: ['litters'],
-    queryFn: async () => {
+  const fetchLitters = async () => {
+    try {
+      setIsLoading(true);
+      
       const { data, error } = await supabase
         .from('litters')
         .select(`
           *,
-          dam:dam_id(*),
-          sire:sire_id(*),
-          puppies:puppies(*)
+          dam:dam_id(name),
+          sire:sire_id(name)
         `)
-        .order('birth_date', { ascending: false });
-        
+        .order('created_at', { ascending: false });
+      
       if (error) throw error;
-      return data as Litter[];
+      
+      setLitters(data || []);
+    } catch (err: any) {
+      console.error('Error fetching litters:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-  });
-  
-  // Filter and group litters
-  const filterLitters = (litters: Litter[]) => {
-    return litters.filter(litter => {
-      // Filter by search term
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = searchTerm === '' || 
-        (litter.litter_name && litter.litter_name.toLowerCase().includes(searchLower)) ||
-        (litter.dam?.name && litter.dam.name.toLowerCase().includes(searchLower)) ||
-        (litter.sire?.name && litter.sire.name.toLowerCase().includes(searchLower));
-      
-      // Filter by status if not "all"
-      const matchesStatus = statusFilter === 'all' || litter.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
   };
   
-  // Group litters by active/archive status
-  const today = new Date();
-  const activeLitters = filterLitters(allLitters.filter(litter => {
-    const birthDate = new Date(litter.birth_date);
-    const puppyAge = differenceInDays(today, birthDate);
-    // Puppies less than 12 weeks old are considered active
-    return puppyAge < 84 && litter.status !== 'archived';
-  }));
+  useEffect(() => {
+    fetchLitters();
+  }, []);
   
-  const archivedLitters = filterLitters(allLitters.filter(litter => {
-    const birthDate = new Date(litter.birth_date);
-    const puppyAge = differenceInDays(today, birthDate);
-    // Puppies more than 12 weeks old or explicitly archived
-    return puppyAge >= 84 || litter.status === 'archived';
-  }));
+  return { litters, isLoading, error, refetch: fetchLitters };
+};
+
+const LittersManagement: React.FC = () => {
+  const { litters, isLoading, error, refetch } = useLitters();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('active');
   
-  // For active whelping, look for litters less than 1 week old
-  const activeWhelping = filterLitters(allLitters.filter(litter => {
-    const birthDate = new Date(litter.birth_date);
-    const puppyAge = differenceInDays(today, birthDate);
-    return puppyAge <= 7;
-  }));
+  const filteredLitters = litters.filter(litter => {
+    if (activeTab === 'all') return true;
+    return litter.status === activeTab;
+  });
   
-  // For planned litters (future birth dates)
-  const plannedLitters = filterLitters(allLitters.filter(litter => {
-    return isAfter(new Date(litter.birth_date), today);
-  }));
+  const handleCreateLitter = () => {
+    navigate('/reproduction/litters/new');
+  };
   
-  const displayedLitters = activeTab === 'active' 
-    ? activeLitters 
-    : activeTab === 'archived' 
-      ? archivedLitters 
-      : activeTab === 'whelping' 
-        ? activeWhelping
-        : plannedLitters;
+  const handleViewLitter = (litterId: string) => {
+    navigate(`/reproduction/litters/${litterId}`);
+  };
   
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Litter Management</h2>
-        <Button onClick={() => navigate('/reproduction/litters/new')}>
-          <Plus className="mr-2 h-4 w-4" /> Add Litter
+  const handleArchiveLitter = async (litterId: string) => {
+    try {
+      const { error } = await supabase
+        .from('litters')
+        .update({ status: 'archived' })
+        .eq('id', litterId);
+      
+      if (error) throw error;
+      
+      refetch();
+    } catch (err) {
+      console.error('Error archiving litter:', err);
+    }
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">Error loading litters: {error}</p>
+        <Button variant="outline" onClick={refetch} className="mt-4">
+          Try Again
         </Button>
       </div>
-      
-      {/* Filters and search */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search litters..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Select
-              value={statusFilter}
-              onValueChange={setStatusFilter}
-            >
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Litter tabs and listings */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="active" className="flex gap-2 items-center">
-            <Baby className="h-4 w-4" /> 
-            <span>Active ({activeLitters.length})</span>
-          </TabsTrigger>
-          <TabsTrigger value="whelping" className="flex gap-2 items-center">
-            <Heart className="h-4 w-4" /> 
-            <span>Whelping ({activeWhelping.length})</span>
-          </TabsTrigger>
-          <TabsTrigger value="planned" className="flex gap-2 items-center">
-            <Calendar className="h-4 w-4" /> 
-            <span>Planned ({plannedLitters.length})</span>
-          </TabsTrigger>
-          <TabsTrigger value="archived" className="flex gap-2 items-center">
-            <Archive className="h-4 w-4" /> 
-            <span>Archived ({archivedLitters.length})</span>
-          </TabsTrigger>
+    );
+  }
+  
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Litters Management</h1>
+          <p className="text-muted-foreground">Manage your litters and puppy records</p>
+        </div>
+        <Button onClick={handleCreateLitter}>
+          <PlusCircle className="h-4 w-4 mr-2" />
+          New Litter
+        </Button>
+      </div>
+
+      <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="active">Active</TabsTrigger>
+          <TabsTrigger value="planned">Planned</TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsTrigger value="archived">Archived</TabsTrigger>
+          <TabsTrigger value="all">All</TabsTrigger>
         </TabsList>
         
-        <TabsContent value={activeTab} className="pt-6">
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-pulse text-center">
-                <p className="text-muted-foreground">Loading litters...</p>
-              </div>
-            </div>
-          ) : displayedLitters.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedLitters.map((litter) => (
-                <Card key={litter.id} className="overflow-hidden">
-                  <div className="h-40 bg-gray-100 flex items-center justify-center">
-                    {litter.documents_url ? (
-                      <img 
-                        src={litter.documents_url} 
-                        alt={litter.litter_name || 'Litter Photo'} 
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <Puppy className="h-16 w-16 text-gray-400" />
-                    )}
-                  </div>
-                  <CardContent className="p-6">
-                    <h3 className="font-semibold text-lg">
-                      {litter.litter_name || 'Unnamed Litter'}
-                    </h3>
-                    
-                    <div className="mt-2 space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Dam:</span>
-                        <span>{litter.dam?.name || 'Unknown'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Sire:</span>
-                        <span>{litter.sire?.name || 'Unknown'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Birth Date:</span>
-                        <span>{format(new Date(litter.birth_date), 'MMM d, yyyy')}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Puppies:</span>
-                        <span>
-                          {litter.puppies?.length || 0} 
-                          {litter.male_count !== undefined && litter.female_count !== undefined && (
-                            ` (${litter.male_count}M/${litter.female_count}F)`
-                          )}
-                        </span>
-                      </div>
-                      {activeTab === 'active' && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Age:</span>
-                          <span>
-                            {differenceInDays(today, new Date(litter.birth_date))} days
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="mt-4 flex">
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={() => navigate(`/reproduction/litters/${litter.id}`)}
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+        <TabsContent value={activeTab} className="mt-6">
+          {filteredLitters.length === 0 ? (
+            <div className="text-center py-12 border rounded-lg bg-muted/10">
+              <Baby className="h-12 w-12 mx-auto text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-medium">No {activeTab} litters found</h3>
+              <p className="text-muted-foreground mt-2">
+                {activeTab === 'planned' 
+                  ? 'Start planning your next breeding by creating a new litter'
+                  : activeTab === 'active'
+                  ? 'Create a new litter to track your ongoing whelping'
+                  : 'Previous litters will appear here'}
+              </p>
+              <Button className="mt-6" onClick={handleCreateLitter}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                New Litter
+              </Button>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <Baby className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-medium">No litters found</h3>
-              <p className="mt-2 text-muted-foreground">
-                {activeTab === 'active' 
-                  ? "You don't have any active litters at the moment."
-                  : activeTab === 'whelping'
-                    ? "No active whelping sessions. Start a new whelping session when a dam gives birth."
-                    : activeTab === 'planned'
-                      ? "No planned litters. Add a litter with a future birth date to start planning."
-                      : "No archived litters found."}
-              </p>
-              <Button className="mt-4" onClick={() => navigate('/reproduction/litters/new')}>
-                <Plus className="mr-2 h-4 w-4" /> Create New Litter
-              </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredLitters.map((litter) => (
+                <Card key={litter.id} className="overflow-hidden">
+                  <div className="aspect-video relative bg-muted/20">
+                    {litter.documentsUrl ? (
+                      <img 
+                        src={litter.documentsUrl} 
+                        alt={litter.name} 
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Baby className="h-16 w-16 text-muted-foreground/40" />
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2">
+                      <Badge className={
+                        litter.status === 'active' 
+                          ? 'bg-green-500' 
+                          : litter.status === 'planned' 
+                          ? 'bg-blue-500' 
+                          : litter.status === 'completed'
+                          ? 'bg-purple-500'
+                          : 'bg-gray-500'
+                      }>
+                        {litter.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardHeader className="p-4">
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{litter.name || 'Unnamed Litter'}</CardTitle>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleViewLitter(litter.id)}>
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/reproduction/litters/${litter.id}/edit`)}>
+                            Edit Litter
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleArchiveLitter(litter.id)}>
+                            Archive
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <CardDescription>
+                      {litter.dam?.name && litter.sire?.name
+                        ? `${litter.dam.name} × ${litter.sire.name}`
+                        : 'Unknown parentage'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Date</p>
+                        <div className="flex items-center">
+                          <CalendarIcon className="h-3 w-3 mr-1" />
+                          <p className="text-sm">
+                            {litter.whelp_date 
+                              ? format(new Date(litter.whelp_date), 'MMM d, yyyy')
+                              : litter.expected_date
+                              ? `Due ${format(new Date(litter.expected_date), 'MMM d, yyyy')}`
+                              : 'Date not set'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Puppies</p>
+                        <div className="flex items-center">
+                          <Baby className="h-3 w-3 mr-1" />
+                          <p className="text-sm">
+                            {typeof litter.puppy_count === 'number' 
+                              ? `${litter.puppy_count} ${litter.puppy_count === 1 ? 'puppy' : 'puppies'}`
+                              : '—'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-4 border-t">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full"
+                      onClick={() => handleViewLitter(litter.id)}
+                    >
+                      View Details
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>

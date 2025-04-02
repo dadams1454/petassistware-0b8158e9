@@ -1,282 +1,427 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { format, differenceInDays, addDays } from 'date-fns';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Baby, Calendar, Heart, ArrowRight } from 'lucide-react';
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent, 
+  CardFooter 
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Calendar, 
+  Clock, 
+  Heart, 
+  AlertTriangle, 
+  Baby, 
+  Plus, 
+  ArrowRight,
+  StethoscopeIcon
+} from 'lucide-react';
+import { format, addDays, differenceInDays } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ReproductiveDog {
+  id: string;
+  name: string;
+  gender: string;
+  status?: 'in_heat' | 'pregnant' | 'normal';
+  last_heat_date?: string;
+  next_heat_date?: string;
+  breeding_date?: string;
+  due_date?: string;
+}
+
+const useReproductiveStatus = () => {
+  const [dogsInHeat, setDogsInHeat] = useState<ReproductiveDog[]>([]);
+  const [pregnantDogs, setPregnantDogs] = useState<ReproductiveDog[]>([]);
+  const [upcomingCycles, setUpcomingCycles] = useState<ReproductiveDog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const fetchReproductiveData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch dogs with reproductive data
+      const { data, error } = await supabase
+        .from('dogs')
+        .select(`
+          id,
+          name,
+          gender,
+          reproductive_status:reproductive_status(
+            status,
+            last_heat_date,
+            next_heat_date,
+            breeding_date,
+            due_date
+          )
+        `)
+        .eq('gender', 'Female');
+      
+      if (error) throw error;
+      
+      // Process data into categories
+      const inHeat: ReproductiveDog[] = [];
+      const pregnant: ReproductiveDog[] = [];
+      const upcoming: ReproductiveDog[] = [];
+      
+      data?.forEach(dog => {
+        const status = dog.reproductive_status?.[0]?.status;
+        
+        if (status === 'in_heat') {
+          inHeat.push({
+            id: dog.id,
+            name: dog.name,
+            gender: dog.gender,
+            status: 'in_heat',
+            last_heat_date: dog.reproductive_status?.[0]?.last_heat_date,
+            next_heat_date: dog.reproductive_status?.[0]?.next_heat_date
+          });
+        } else if (status === 'pregnant') {
+          pregnant.push({
+            id: dog.id,
+            name: dog.name,
+            gender: dog.gender,
+            status: 'pregnant',
+            breeding_date: dog.reproductive_status?.[0]?.breeding_date,
+            due_date: dog.reproductive_status?.[0]?.due_date
+          });
+        } else if (dog.reproductive_status?.[0]?.next_heat_date) {
+          // If next heat date is within 30 days, add to upcoming
+          const nextHeat = new Date(dog.reproductive_status[0].next_heat_date);
+          const daysUntil = differenceInDays(nextHeat, new Date());
+          
+          if (daysUntil >= 0 && daysUntil <= 30) {
+            upcoming.push({
+              id: dog.id,
+              name: dog.name,
+              gender: dog.gender,
+              status: 'normal',
+              last_heat_date: dog.reproductive_status?.[0]?.last_heat_date,
+              next_heat_date: dog.reproductive_status?.[0]?.next_heat_date
+            });
+          }
+        }
+      });
+      
+      setDogsInHeat(inHeat);
+      setPregnantDogs(pregnant);
+      setUpcomingCycles(upcoming);
+    } catch (err: any) {
+      console.error('Error fetching reproductive data:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    fetchReproductiveData();
+  }, []);
+  
+  return {
+    dogsInHeat,
+    pregnantDogs,
+    upcomingCycles,
+    isLoading,
+    error,
+    refetch: fetchReproductiveData
+  };
+};
 
 const ReproductiveDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { 
+    dogsInHeat, 
+    pregnantDogs, 
+    upcomingCycles, 
+    isLoading, 
+    error 
+  } = useReproductiveStatus();
   
-  // Fetch active litters
-  const { data: litters = [], isLoading: isLittersLoading } = useQuery({
-    queryKey: ['active-litters'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('litters')
-        .select(`
-          *,
-          dam:dam_id(id, name, breed, color, photo_url),
-          sire:sire_id(id, name, breed, color, photo_url),
-          puppies:puppies(*)
-        `)
-        .order('birth_date', { ascending: false })
-        .limit(5);
-        
-      if (error) throw error;
-      return data;
-    }
-  });
-  
-  // Fetch dogs in heat or pregnant
-  const { data: reproductiveDogs = [], isLoading: isDogsLoading } = useQuery({
-    queryKey: ['reproductive-dogs'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*')
-        .eq('gender', 'Female')
-        .or('is_pregnant.eq.true,last_heat_date.gte.' + format(addDays(new Date(), -21), 'yyyy-MM-dd'))
-        .order('last_heat_date', { ascending: false })
-        .limit(5);
-        
-      if (error) throw error;
-      return data;
-    }
-  });
-  
-  // Fetch upcoming heat cycles based on previous cycles
-  const { data: upcomingHeat = [], isLoading: isHeatLoading } = useQuery({
-    queryKey: ['upcoming-heat'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*, heat_cycles(*)')
-        .eq('gender', 'Female')
-        .not('is_pregnant', 'eq', true)
-        .order('last_heat_date', { ascending: true })
-        .limit(5);
-        
-      if (error) throw error;
-      
-      // Filter to dogs that might be coming into heat in the next 30 days
-      // This is a client-side calculation based on average cycles or last heat date
-      return data.filter(dog => {
-        if (!dog.last_heat_date) return false;
-        
-        const lastHeat = new Date(dog.last_heat_date);
-        const today = new Date();
-        const daysSinceLastHeat = differenceInDays(today, lastHeat);
-        
-        // Assume average cycle of ~180 days if no other data
-        // If dog had heat 150-210 days ago, they might be due soon
-        return daysSinceLastHeat > 150 && daysSinceLastHeat < 210;
-      });
-    }
-  });
-  
-  const isLoading = isLittersLoading || isDogsLoading || isHeatLoading;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   
   return (
-    <div className="space-y-6">
-      {/* Active Whelping and Pregnancies */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Baby className="mr-2 h-5 w-5 text-purple-500" />
-            Active Litters & Pregnancies
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center py-4">
-              <div className="animate-pulse">Loading dashboard data...</div>
-            </div>
-          ) : (
-            <>
-              {litters.length > 0 ? (
-                <div className="space-y-4">
-                  {litters.slice(0, 3).map(litter => (
-                    <div key={litter.id} className="flex justify-between border-b pb-2">
-                      <div>
-                        <h3 className="font-medium">{litter.litter_name || 'Unnamed Litter'}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {litter.dam?.name || 'Unknown Dam'} × {litter.sire?.name || 'Unknown Sire'}
-                        </p>
-                        <p className="text-sm">
-                          Birth: {format(new Date(litter.birth_date), 'MMM d, yyyy')}
-                        </p>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => navigate(`/reproduction/litters/${litter.id}`)}
-                      >
-                        View
-                      </Button>
-                    </div>
-                  ))}
-                  
-                  {litters.length > 3 && (
-                    <Button 
-                      variant="ghost" 
-                      className="w-full mt-2" 
-                      onClick={() => navigate('/reproduction/litters')}
-                    >
-                      View all {litters.length} litters <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-muted-foreground">No active litters</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => navigate('/reproduction/litters/new')} 
-                    className="mt-2"
-                  >
-                    Create Litter
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Reproductive Dashboard</h1>
+          <p className="text-muted-foreground">Monitor reproductive cycles and pregnancy status</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/reproduction/breeding')}>
+            <Heart className="h-4 w-4 mr-2" />
+            Breeding Management
+          </Button>
+          <Button onClick={() => navigate('/reproduction/welping')}>
+            <Baby className="h-4 w-4 mr-2" />
+            Whelping Management
+          </Button>
+        </div>
+      </div>
       
-      {/* Reproductive Status Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Heart className="mr-2 h-5 w-5 text-pink-500" />
-              Dogs in Heat / Pregnant
+          <CardHeader className="bg-red-50 dark:bg-red-950/20">
+            <CardTitle className="flex items-center text-red-700 dark:text-red-400">
+              <Heart className="h-5 w-5 mr-2" /> 
+              Dogs in Heat
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-4">
-                <div className="animate-pulse">Loading reproductive status...</div>
+          <CardContent className="p-0">
+            {dogsInHeat.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-muted-foreground">No dogs currently in heat</p>
               </div>
             ) : (
-              <>
-                {reproductiveDogs.length > 0 ? (
-                  <div className="space-y-4">
-                    {reproductiveDogs.map(dog => (
-                      <div key={dog.id} className="flex justify-between border-b pb-2">
-                        <div>
-                          <h3 className="font-medium">{dog.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {dog.breed}, {dog.color}
-                          </p>
-                          <div className="flex items-center mt-1">
-                            <div className={`w-2 h-2 rounded-full mr-2 ${dog.is_pregnant ? 'bg-purple-500' : 'bg-pink-500'}`}></div>
-                            <span className="text-sm">
-                              {dog.is_pregnant ? 'Pregnant' : 'In heat'}
-                              {dog.last_heat_date && !dog.is_pregnant && ` (${differenceInDays(new Date(), new Date(dog.last_heat_date))} days)`}
-                            </span>
-                          </div>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => navigate(`/dogs/${dog.id}`)}
-                        >
-                          View
-                        </Button>
+              <ul className="divide-y">
+                {dogsInHeat.map(dog => (
+                  <li key={dog.id} className="p-4 hover:bg-muted/50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium">{dog.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Heat started: {dog.last_heat_date 
+                            ? format(new Date(dog.last_heat_date), 'MMM d, yyyy')
+                            : 'Unknown'}
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">No dogs currently in heat or pregnant</p>
-                  </div>
-                )}
-              </>
+                      <Badge className="bg-red-100 text-red-800 hover:bg-red-200">In Heat</Badge>
+                    </div>
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto mt-2 text-sm"
+                      onClick={() => navigate(`/dogs/${dog.id}/reproductive`)}
+                    >
+                      Manage Heat Cycle
+                    </Button>
+                  </li>
+                ))}
+              </ul>
             )}
           </CardContent>
+          <CardFooter className="border-t p-4">
+            <Button 
+              variant="ghost" 
+              className="w-full"
+              onClick={() => navigate('/reproduction/breeding')}
+            >
+              View All Heat Cycles
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardFooter>
         </Card>
         
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="mr-2 h-5 w-5 text-blue-500" />
+          <CardHeader className="bg-pink-50 dark:bg-pink-950/20">
+            <CardTitle className="flex items-center text-pink-700 dark:text-pink-400">
+              <StethoscopeIcon className="h-5 w-5 mr-2" /> 
+              Pregnant Dogs
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {pregnantDogs.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-muted-foreground">No dogs currently pregnant</p>
+              </div>
+            ) : (
+              <ul className="divide-y">
+                {pregnantDogs.map(dog => (
+                  <li key={dog.id} className="p-4 hover:bg-muted/50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium">{dog.name}</h3>
+                        <div className="text-sm space-y-1 mt-1">
+                          <p className="text-muted-foreground flex items-center">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Due: {dog.due_date 
+                              ? format(new Date(dog.due_date), 'MMM d, yyyy')
+                              : 'Unknown'}
+                          </p>
+                          {dog.due_date && (
+                            <p className="text-muted-foreground flex items-center">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {calculateTimeUntilDue(dog.due_date)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-200">Pregnant</Badge>
+                    </div>
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto mt-2 text-sm"
+                      onClick={() => navigate(`/dogs/${dog.id}/reproductive`)}
+                    >
+                      View Pregnancy Details
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+          <CardFooter className="border-t p-4">
+            <Button 
+              variant="ghost" 
+              className="w-full"
+              onClick={() => navigate('/reproduction/welping')}
+            >
+              Whelping Management
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        <Card>
+          <CardHeader className="bg-blue-50 dark:bg-blue-950/20">
+            <CardTitle className="flex items-center text-blue-700 dark:text-blue-400">
+              <Calendar className="h-5 w-5 mr-2" /> 
               Upcoming Heat Cycles
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-4">
-                <div className="animate-pulse">Loading upcoming cycles...</div>
+          <CardContent className="p-0">
+            {upcomingCycles.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-muted-foreground">No upcoming heat cycles</p>
               </div>
             ) : (
-              <>
-                {upcomingHeat.length > 0 ? (
-                  <div className="space-y-4">
-                    {upcomingHeat.map(dog => {
-                      const lastHeat = new Date(dog.last_heat_date);
-                      const estimatedNextHeat = addDays(lastHeat, 180);
-                      
-                      return (
-                        <div key={dog.id} className="flex justify-between border-b pb-2">
-                          <div>
-                            <h3 className="font-medium">{dog.name}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {dog.breed}, {dog.color}
+              <ul className="divide-y">
+                {upcomingCycles.map(dog => (
+                  <li key={dog.id} className="p-4 hover:bg-muted/50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium">{dog.name}</h3>
+                        <div className="text-sm space-y-1 mt-1">
+                          <p className="text-muted-foreground flex items-center">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Expected: {dog.next_heat_date 
+                              ? format(new Date(dog.next_heat_date), 'MMM d, yyyy')
+                              : 'Unknown'}
+                          </p>
+                          {dog.next_heat_date && (
+                            <p className="text-muted-foreground flex items-center">
+                              <Clock className="h-3 w-3 mr-1" />
+                              In {calculateDaysUntil(dog.next_heat_date)} days
                             </p>
-                            <p className="text-sm">
-                              Est. next heat: ~{format(estimatedNextHeat, 'MMM d, yyyy')}
-                            </p>
-                          </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => navigate(`/dogs/${dog.id}`)}
-                          >
-                            View
-                          </Button>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">No upcoming heat cycles predicted</p>
-                  </div>
-                )}
-              </>
+                      </div>
+                      <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                        {dog.next_heat_date && calculateDaysUntil(dog.next_heat_date) <= 7 
+                          ? 'Imminent' 
+                          : 'Upcoming'}
+                      </Badge>
+                    </div>
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto mt-2 text-sm"
+                      onClick={() => navigate(`/dogs/${dog.id}/reproductive`)}
+                    >
+                      View Heat Cycle History
+                    </Button>
+                  </li>
+                ))}
+              </ul>
             )}
           </CardContent>
+          <CardFooter className="border-t p-4">
+            <Button 
+              variant="ghost" 
+              className="w-full"
+              onClick={() => navigate('/reproduction/breeding')}
+            >
+              Breeding Preparation
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </CardFooter>
         </Card>
       </div>
       
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button onClick={() => navigate('/reproduction/breeding')}>
-              <Heart className="mr-2 h-4 w-4" />
-              Breeding Management
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Litters</CardTitle>
+            <CardDescription>Your recently whelped litters</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-6">
+              <Baby className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="mt-4 text-muted-foreground">No recent litters found</p>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate('/reproduction/litters')}
+            >
+              View All Litters
             </Button>
-            <Button onClick={() => navigate('/reproduction/welping')}>
-              <Stethoscope className="mr-2 h-4 w-4" />
-              Whelping Management
+          </CardFooter>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Planned Breedings</CardTitle>
+            <CardDescription>Your scheduled breeding plans</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-6">
+              <Heart className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="mt-4 text-muted-foreground">No planned breedings</p>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t">
+            <Button 
+              className="w-full"
+              onClick={() => navigate('/reproduction/breeding/new')}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Plan New Breeding
             </Button>
-            <Button onClick={() => navigate('/reproduction/litters/new')}>
-              <Baby className="mr-2 h-4 w-4" />
-              Create New Litter
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
+};
+
+// Helper function to calculate days until due date
+const calculateTimeUntilDue = (dueDate: string) => {
+  const due = new Date(dueDate);
+  const today = new Date();
+  const daysLeft = differenceInDays(due, today);
+  
+  if (daysLeft < 0) {
+    return `Overdue by ${Math.abs(daysLeft)} days`;
+  } else if (daysLeft === 0) {
+    return 'Due today!';
+  } else if (daysLeft <= 7) {
+    return `${daysLeft} days left`;
+  } else {
+    const weeks = Math.floor(daysLeft / 7);
+    const remainingDays = daysLeft % 7;
+    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'}${remainingDays > 0 ? `, ${remainingDays} ${remainingDays === 1 ? 'day' : 'days'}` : ''} left`;
+  }
+};
+
+// Helper function to calculate days until a date
+const calculateDaysUntil = (date: string) => {
+  const targetDate = new Date(date);
+  const today = new Date();
+  return Math.max(0, differenceInDays(targetDate, today));
 };
 
 export default ReproductiveDashboard;

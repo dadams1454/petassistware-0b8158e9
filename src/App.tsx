@@ -4,27 +4,26 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Dogs from './pages/Dogs';
-import DogDetails from './pages/DogDetails';
+import DogDetailPage from './modules/dogs/pages/DogDetailPage';
 import Customers from './pages/Customers';
-import CustomerDetails from './pages/CustomerDetails';
-import Litters from './pages/Litters';
-import ReservationPage from './pages/ReservationPage';
+import CustomerDetails from './components/customers/CustomerDetails';
+import ReservationPage from './components/reservations/ReservationList';
 import NewDogPage from './pages/NewDogPage';
 import EditDogPage from './pages/EditDogPage';
-import CustomerForm from './pages/CustomerForm';
-import NewCustomerPage from './pages/NewCustomerPage';
-import BreedingPrepPage from './pages/BreedingPrepPage';
-import LitterDetailsPage from './pages/LitterDetailsPage';
-import NewLitterPage from './pages/NewLitterPage';
-import Breeding from './pages/Breeding';
-import ReproductiveManagementPage from './pages/ReproductiveManagementPage';
-import ContractsPage from './pages/ContractsPage';
-import ContractDetailsPage from './pages/ContractDetailsPage';
-import NewContractPage from './pages/NewContractPage';
-import FacilityPage from './pages/FacilityPage';
-import CommunicationsPage from './pages/CommunicationsPage';
-import SettingsPage from './pages/SettingsPage';
-import VaccinationsPage from './pages/VaccinationsPage';
+import CustomerForm from './components/customers/CustomerForm';
+import NewCustomerPage from './components/customers/CustomerDialog';
+import BreedingPrepPage from './modules/Reproduction/pages/BreedingManagementPage';
+import LitterDetailsPage from './modules/Reproduction/pages/LitterDetailsPage';
+import NewLitterPage from './modules/Reproduction/pages/NewLitterPage';
+import Breeding from './modules/Reproduction/pages/BreedingDashboard';
+import ReproductiveManagementPage from './modules/Reproduction/pages/ReproductionManagementPage';
+import ContractsPage from './components/contracts/ContractsList';
+import ContractDetailsPage from './components/contracts/ContractPreviewDialog';
+import NewContractPage from './components/contracts/ContractForm';
+import FacilityPage from './components/facility/FacilityTasksList';
+import CommunicationsPage from './components/communications/CommunicationHistory';
+import SettingsPage from './components/user-management/UserTable';
+import VaccinationsPage from './components/dogs/components/VaccinationsTab';
 import ReproductionRoutes from './modules/Reproduction/routes';
 import { ThemeProvider } from './components/theme-provider';
 import { Toaster } from './components/ui/toaster';
@@ -39,7 +38,7 @@ const App: React.FC = () => {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="dogs" element={<Dogs />} />
             <Route path="dogs/new" element={<NewDogPage />} />
-            <Route path="dogs/:dogId" element={<DogDetails />} />
+            <Route path="dogs/:dogId" element={<DogDetailPage />} />
             <Route path="dogs/:dogId/edit" element={<EditDogPage />} />
             <Route path="customers" element={<Customers />} />
             <Route path="customers/new" element={<NewCustomerPage />} />
