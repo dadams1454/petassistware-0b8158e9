@@ -8,7 +8,6 @@ import AuthLayout from '@/layouts/AuthLayout';
 
 // Pages
 import DashboardPage from '@/pages/DashboardPage';
-import DogDetailPage from '@/pages/DogDetail';
 import WeightTrackingPage from '@/pages/WeightTracking';
 import WelpingPage from '@/pages/WelpingPage';
 import PuppyDetailPage from '@/pages/puppies/PuppyDashboard';
@@ -32,15 +31,20 @@ import LitterDetailPage from '@/pages/LitterDetail';
 import BatchPuppyEntryPage from '@/pages/BatchPuppyEntry';
 import PuppyTestingPage from '@/pages/PuppyTestingDashboard';
 
+// Import consolidated Dogs Module
+import {
+  DogListPage,
+  DogAddPage,
+  DogDetailPage,
+  DogEditPage,
+  DogWeightPage
+} from '@/modules/dogs';
+
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
 const RegisterPage = () => <div>Register Page</div>;
 const ForgotPasswordPage = () => <div>Forgot Password Page</div>;
 const ResetPasswordPage = () => <div>Reset Password Page</div>;
-const AddDogPage = () => <div>Add Dog Page</div>;
-const EditDogPage = () => <div>Edit Dog Page</div>;
-const DogsPage = () => <div>Dogs Page</div>;
-const AddDogsPage = () => <div>Add Dogs Page</div>;
 
 export const appRoutes = (
   <Route>
@@ -62,13 +66,12 @@ export const appRoutes = (
       {/* Profile */}
       <Route path="/profile" element={<ProfilePage />} />
       
-      {/* Dogs routes */}
-      <Route path="/dogs" element={<DogsPage />} />
-      <Route path="/dogs/add" element={<AddDogPage />} />
+      {/* Dogs routes - now using the consolidated Dogs Module */}
+      <Route path="/dogs" element={<DogListPage />} />
+      <Route path="/dogs/add" element={<DogAddPage />} />
       <Route path="/dogs/:id" element={<DogDetailPage />} />
-      <Route path="/dogs/:id/edit" element={<EditDogPage />} />
-      <Route path="/dogs/:id/weight" element={<WeightTrackingPage />} />
-      <Route path="/dogs/add-multiple" element={<AddDogsPage />} />
+      <Route path="/dogs/:id/edit" element={<DogEditPage />} />
+      <Route path="/dogs/:id/weight" element={<DogWeightPage />} />
       
       {/* Litters routes */}
       <Route path="/litters" element={<LittersPage />} />
