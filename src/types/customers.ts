@@ -9,6 +9,7 @@ export interface Customer {
   notes?: string;
   created_at?: string;
   tenant_id?: string;
+  metadata?: any;
 }
 
 export interface CustomerWithMeta extends Customer {
@@ -25,6 +26,8 @@ export interface CustomerFilter {
   search?: string;
   status?: string[];
   dateRange?: [Date | null, Date | null];
+  type?: string;
+  interestedInPuppies?: boolean;
 }
 
 export type SortField = 'name' | 'created_at' | 'status';

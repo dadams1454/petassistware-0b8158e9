@@ -7,7 +7,7 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
   const [puppiesByAgeGroup, setPuppiesByAgeGroup] = useState<Record<string, PuppyWithAge[]>>({});
   
   useEffect(() => {
-    // Load age groups (in a real app, this might come from an API)
+    // Load age groups
     setAgeGroups(DEFAULT_AGE_GROUPS || []);
     
     // Group puppies by age
@@ -21,10 +21,11 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       
       // Add puppies to appropriate age groups
       puppies.forEach(puppy => {
-        if (typeof puppy.ageInDays !== 'number') return;
+        const age_days = puppy.age_days;
+        if (typeof age_days !== 'number') return;
         
         const ageGroup = DEFAULT_AGE_GROUPS.find(
-          group => puppy.ageInDays >= group.startDay && puppy.ageInDays <= group.endDay
+          group => age_days >= group.startDay! && age_days <= group.endDay!
         );
         
         if (ageGroup) {

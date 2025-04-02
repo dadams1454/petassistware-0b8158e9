@@ -2,7 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const UserManagement: React.FC = () => {
+interface UserManagementProps {
+  tenantId?: string;
+}
+
+const UserManagement: React.FC<UserManagementProps> = ({ tenantId }) => {
   return (
     <Card>
       <CardHeader>
@@ -11,6 +15,7 @@ const UserManagement: React.FC = () => {
       <CardContent>
         <p className="text-muted-foreground">
           Manage user accounts and permissions here
+          {tenantId && <span> for tenant {tenantId}</span>}
         </p>
       </CardContent>
     </Card>

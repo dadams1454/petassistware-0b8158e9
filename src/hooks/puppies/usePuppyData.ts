@@ -32,22 +32,22 @@ export const usePuppyData = () => {
         const enrichedPuppies: PuppyWithAge[] = data.map(puppy => {
           // Use puppy birth_date if available, otherwise fallback to litter birth_date
           const birthDate = puppy.birth_date || (puppy.litters?.birth_date);
-          let ageInDays = 0;
-          let ageInWeeks = 0;
+          let age_days = 0;
+          let age_weeks = 0;
           let ageDescription = 'Unknown age';
 
           if (birthDate) {
             const today = new Date();
             const birthDateTime = new Date(birthDate);
-            ageInDays = differenceInDays(today, birthDateTime);
-            ageInWeeks = differenceInWeeks(today, birthDateTime);
+            age_days = differenceInDays(today, birthDateTime);
+            age_weeks = differenceInWeeks(today, birthDateTime);
             
-            if (ageInDays < 30) {
-              ageDescription = `${ageInDays} days old`;
-            } else if (ageInWeeks < 16) {
-              ageDescription = `${ageInWeeks} weeks old`;
+            if (age_days < 30) {
+              ageDescription = `${age_days} days old`;
+            } else if (age_weeks < 16) {
+              ageDescription = `${age_weeks} weeks old`;
             } else {
-              const months = Math.floor(ageInDays / 30);
+              const months = Math.floor(age_days / 30);
               ageDescription = `${months} months old`;
             }
           }
@@ -63,10 +63,14 @@ export const usePuppyData = () => {
             photo_url: puppy.photo_url,
             litter_id: puppy.litter_id,
             current_weight: puppy.current_weight,
-            ageInDays,
-            ageInWeeks,
+            age_days,
+            age_weeks,
+            ageInDays: age_days, // Add ageInDays for backward compatibility
+            ageInWeeks: age_weeks, // Add ageInWeeks for backward compatibility
             ageDescription,
-            litters: puppy.litters
+            litters: puppy.litters,
+            created_at: puppy.created_at || '',
+            updated_at: puppy.updated_at || '',
           } as PuppyWithAge;
         });
 

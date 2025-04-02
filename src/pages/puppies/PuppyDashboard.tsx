@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -103,7 +104,7 @@ const PuppyDashboard: React.FC = () => {
                 {puppy.name || `Puppy #${puppy.birth_order || ''}`}
               </h1>
               <p className="text-muted-foreground">
-                Growth and development tracking dashboard - {puppy.ageInDays} days old
+                Growth and development tracking dashboard - {puppy.age_days} days old
               </p>
             </div>
             
@@ -168,9 +169,7 @@ const PuppyDashboard: React.FC = () => {
                       <p className="font-medium">
                         {puppy.birth_date 
                           ? format(new Date(puppy.birth_date), 'MMM d, yyyy')
-                          : puppy.litter?.birth_date 
-                            ? format(new Date(puppy.litter.birth_date), 'MMM d, yyyy')
-                            : 'Unknown'}
+                          : 'Unknown'}
                       </p>
                     </div>
                     <div>
@@ -187,7 +186,7 @@ const PuppyDashboard: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Microchip ID</p>
-                      <p className="font-medium">{puppy.microchip_id || 'Not recorded'}</p>
+                      <p className="font-medium">{puppy.microchip_number || 'Not recorded'}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -282,16 +281,14 @@ const PuppyDashboard: React.FC = () => {
                             {puppy.name || `Puppy #${puppy.id.slice(0, 4)}`}
                           </TableCell>
                           <TableCell>
-                            {puppy.litters?.name || puppy.litter_id.slice(0, 8)}
+                            {puppy.litter_id.slice(0, 8)}
                           </TableCell>
                           <TableCell>
                             {puppy.birth_date 
                               ? format(new Date(puppy.birth_date), 'MMM d, yyyy')
-                              : puppy.litters?.birth_date 
-                                ? format(new Date(puppy.litters.birth_date), 'MMM d, yyyy')
-                                : 'Unknown'}
+                              : 'Unknown'}
                           </TableCell>
-                          <TableCell>{puppy.ageInDays} days</TableCell>
+                          <TableCell>{puppy.age_days} days</TableCell>
                           <TableCell>{puppy.current_weight || 'Not recorded'}</TableCell>
                           <TableCell>
                             <StatusBadge status={puppy.status} />

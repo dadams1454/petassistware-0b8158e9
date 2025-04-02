@@ -11,10 +11,15 @@ export const usePuppyStats = (): {
 } => {
   const [stats, setStats] = useState<PuppyManagementStats>({
     totalPuppies: 0,
+    totalLitters: 0,
     activeLitters: 0,
     availablePuppies: 0,
+    reservedPuppies: 0,
+    puppiesByAgeGroup: [],
+    recentWeightChecks: 0,
     upcomingVaccinations: 0,
-    recentWeightChecks: 0
+    weightCompletionRate: 0,
+    vaccinationCompletionRate: 0
   });
   
   const [isLoading, setIsLoading] = useState(true);
@@ -71,16 +76,27 @@ export const usePuppyStats = (): {
       // Calculate counts
       const totalPuppies = puppiesData?.length || 0;
       const availablePuppies = puppiesData?.filter(p => p.status === 'Available')?.length || 0;
+      const reservedPuppies = puppiesData?.filter(p => p.status === 'Reserved')?.length || 0;
+      const totalLitters = littersData?.length || 0;
       const activeLitters = littersData?.length || 0;
       const upcomingVaccinations = vaccinationsData?.length || 0;
       const recentWeightChecks = weightChecksData?.length || 0;
 
+      // Calculate completion rates (placeholder values for now)
+      const weightCompletionRate = 85; // placeholder
+      const vaccinationCompletionRate = 90; // placeholder
+
       setStats({
         totalPuppies,
+        totalLitters,
         activeLitters,
         availablePuppies,
+        reservedPuppies,
+        puppiesByAgeGroup: [], // This would need to be populated from elsewhere
         upcomingVaccinations,
-        recentWeightChecks
+        recentWeightChecks,
+        weightCompletionRate,
+        vaccinationCompletionRate
       });
     } catch (err) {
       console.error('Error fetching puppy stats:', err);

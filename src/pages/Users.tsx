@@ -2,7 +2,7 @@
 import React from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
-import { UserManagement } from '@/components/admin/UserManagement';
+import UserManagement from '@/components/admin/UserManagement';
 
 const Users: React.FC = () => {
   return (

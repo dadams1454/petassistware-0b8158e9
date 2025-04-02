@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CustomerForm from './CustomerForm';
-import { CustomerWithMeta } from '@/pages/Customers';
+import { CustomerWithMeta } from '@/types/customers';
 
 interface CustomerDialogProps {
   isOpen: boolean;
