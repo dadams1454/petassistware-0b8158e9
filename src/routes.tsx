@@ -17,14 +17,12 @@ import CommunicationsPage from '@/pages/Communications';
 import ContractsPage from '@/pages/Contracts';
 import FinancesPage from '@/pages/Finances';
 import FacilityPage from '@/pages/Facility';
-import BreedingPrepPage from '@/pages/BreedingPrepPage';
 import UsersPage from '@/pages/Users';
 import AuditLogsPage from '@/pages/AuditLogs';
 import SettingsPage from '@/pages/Settings';
 import ReservationsPage from '@/pages/Reservations';
 import CustomersPage from '@/pages/Customers';
 import ProfilePage from '@/pages/Profile';
-import LittersPage from '@/pages/Litters';
 import LitterDetailPage from '@/pages/LitterDetail';
 import BatchPuppyEntryPage from '@/pages/BatchPuppyEntry';
 import PuppyTestingPage from '@/pages/PuppyTestingDashboard';
@@ -38,7 +36,15 @@ import {
   DogWeightPage
 } from '@/modules/dogs';
 
-// Import Welping Module
+// Import Reproduction Module
+import {
+  ReproductiveCyclePage,
+  BreedingManagementPage,
+  LitterManagementPage,
+  WelpingManagementPage
+} from '@/modules/Reproduction';
+
+// Import Welping Module (legacy pages - will be redirected)
 import {
   WelpingDashboardPage,
   WelpingCreatePage,
@@ -46,9 +52,6 @@ import {
   WelpingEditPage,
   WelpingLogPage
 } from '@/pages/Welping';
-
-// Import Reproduction Module
-import { ReproductiveCyclePage } from '@/modules/Reproduction';
 
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
@@ -84,14 +87,20 @@ export const appRoutes = (
       <Route path="/dogs/:id/weight" element={<DogWeightPage />} />
       <Route path="/dogs/:dogId/reproductive" element={<ReproductiveCyclePage />} />
       
-      {/* Litters routes */}
-      <Route path="/litters" element={<LittersPage />} />
+      {/* New Unified Reproduction Module */}
+      <Route path="/reproduction" element={<WelpingManagementPage />} />
+      <Route path="/reproduction/breeding" element={<BreedingManagementPage />} />
+      <Route path="/reproduction/litters" element={<LitterManagementPage />} />
+      
+      {/* Legacy routes for backwards compatibility - redirect to new module */}
+      <Route path="/litters" element={<LitterManagementPage />} />
       <Route path="/litters/:id" element={<LitterDetailPage />} />
       <Route path="/litter/:litterId/add-puppies" element={<BatchPuppyEntryPage />} />
       <Route path="/litter/:litterId/puppy-testing" element={<PuppyTestingPage />} />
+      <Route path="/breeding-prep" element={<BreedingManagementPage />} />
       
-      {/* Welping routes - now using the consolidated Welping Module */}
-      <Route path="/welping" element={<WelpingDashboardPage />} />
+      {/* Legacy Welping routes - for backwards compatibility */}
+      <Route path="/welping" element={<WelpingManagementPage />} />
       <Route path="/welping/new" element={<WelpingCreatePage />} />
       <Route path="/welping/:id" element={<WelpingDetailPage />} />
       <Route path="/welping/:id/edit" element={<WelpingEditPage />} />
@@ -103,7 +112,6 @@ export const appRoutes = (
       <Route path="/contracts" element={<ContractsPage />} />
       <Route path="/finances" element={<FinancesPage />} />
       <Route path="/facility" element={<FacilityPage />} />
-      <Route path="/breeding-prep" element={<BreedingPrepPage />} />
       
       {/* Compliance route */}
       <Route path="/compliance" element={<CompliancePage />} />

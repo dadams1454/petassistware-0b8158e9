@@ -1,7 +1,7 @@
 
 import { Dog as BaseDog } from './dog';
 
-// Extend the base Dog type with reproductive-specific properties
+// Export the Dog type from reproductive.ts
 export interface Dog extends BaseDog {
   is_pregnant?: boolean;
   last_heat_date?: string;
@@ -110,3 +110,37 @@ export type ReproductiveCycleData = {
   gestationDays?: number | null;
   estimatedDueDate?: Date | null;
 };
+
+export type TimelineEvent = {
+  id: string;
+  type: 'whelping' | 'heat' | 'breeding' | 'pregnancy' | 'milestone';
+  title: string;
+  date: Date;
+  description: string;
+  icon: JSX.Element;
+  color: string;
+};
+
+export type BreedingPreparation = {
+  dam?: Dog;
+  sire?: Dog;
+  plannedTieDate?: Date;
+  checklistItems: BreedingChecklistItem[];
+  notes?: string;
+};
+
+export type BreedingChecklistItem = {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  dueDate?: Date;
+  category: 'supplies' | 'medical' | 'facility' | 'documentation';
+};
+
+export interface BreedingPrepFormData {
+  damId: string;
+  sireId: string;
+  plannedTieDate: string;
+  notes?: string;
+}
