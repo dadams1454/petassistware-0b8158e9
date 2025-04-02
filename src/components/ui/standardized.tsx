@@ -88,6 +88,9 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 // Export PageHeader component to fix imports
 export { default as PageHeader } from './standardized/PageHeader';
 
+// Explicitly export Skeleton to ensure it's available
+export { Skeleton } from '@/components/ui/skeleton';
+
 // Update LoadingState component to accept all the props that are being used in the codebase
 export interface LoadingStateProps {
   message?: string;
