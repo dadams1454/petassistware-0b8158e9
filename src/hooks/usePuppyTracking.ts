@@ -1,7 +1,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { PuppyManagementStats } from '@/types/puppyTracking';
+import { PuppyManagementStats, PuppyWithAge } from '@/types/puppyTracking';
 import { supabase } from '@/integrations/supabase/client';
+import { usePuppyData } from '@/hooks/puppies/usePuppyData';
+import { usePuppyAgeGroups } from '@/hooks/puppies/usePuppyAgeGroups';
 
 export const usePuppyTracking = () => {
   const [stats, setStats] = useState<PuppyManagementStats>({
@@ -12,6 +14,10 @@ export const usePuppyTracking = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  
+  // Get puppy data and age groups
+  const { puppies, isLoading: isPuppiesLoading, error: puppiesError } = usePuppyData();
+  const { ageGroups, puppiesByAgeGroup } = usePuppyAgeGroups(puppies || []);
   
   const fetchStats = useCallback(async () => {
     try {
@@ -51,7 +57,7 @@ export const usePuppyTracking = () => {
       oneWeekAgo.setDate(now.getDate() - 7);
       
       const { count: recentWeightChecks, error: weightsError } = await supabase
-        .from('puppy_weights')
+        .from('weight_records')
         .select('*', { count: 'exact', head: true })
         .gte('date', oneWeekAgo.toISOString().split('T')[0]);
       
@@ -83,7 +89,21 @@ export const usePuppyTracking = () => {
   // Add refreshStats alias for compatibility
   const refreshStats = refresh;
   
-  return { stats, isLoading, error, refresh, refreshStats };
+  // Combine loading states
+  const isAllLoading = isLoading || isPuppiesLoading;
+  // Combine errors
+  const combinedError = error || puppiesError;
+  
+  return { 
+    stats, 
+    puppies: puppies || [],
+    ageGroups: ageGroups || [],
+    puppiesByAgeGroup: puppiesByAgeGroup || {},
+    isLoading: isAllLoading, 
+    error: combinedError, 
+    refresh, 
+    refreshStats 
+  };
 };
 
 export default usePuppyTracking;

@@ -1,17 +1,25 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { WeightData, WeightRecord } from '@/types/puppyTracking';
-import { toast } from '@/components/ui/use-toast';
+import { WeightData, WeightRecord, WeightUnit } from '@/types/health';
+import { useToast } from '@/components/ui/use-toast';
 
-export const usePuppyWeights = (puppyId: string) => {
-  const [weightData, setWeightData] = useState<WeightData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+export const usePuppyWeights = (puppyId: string): {
+  weightData: WeightData;
+  refresh: () => Promise<void>;
+  addWeightRecord: (data: Omit<WeightRecord, 'id' | 'created_at'>) => Promise<boolean>;
+  updateWeightRecord: (id: string, data: Partial<WeightRecord>) => Promise<boolean>;
+  deleteWeightRecord: (id: string) => Promise<boolean>;
+} => {
+  const [weightData, setWeightData] = useState<WeightData>({
+    weights: [],
+    isLoading: true,
+    error: null
+  });
+  const { toast } = useToast();
   
   const fetchWeightData = async () => {
-    setIsLoading(true);
-    setError(null);
+    setWeightData(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
       // First get the puppy record to get the birth date
@@ -47,7 +55,7 @@ export const usePuppyWeights = (puppyId: string) => {
       if (weightError) throw weightError;
       
       // Process and format the weight data
-      const processedData = weightRecords.map((record: any) => {
+      const processedWeights: WeightRecord[] = weightRecords.map((record: any) => {
         // Calculate age in days if we have a birth date
         let ageInDays = 0;
         if (birthDate) {
@@ -62,21 +70,27 @@ export const usePuppyWeights = (puppyId: string) => {
           puppy_id: record.puppy_id,
           weight: record.weight,
           weight_unit: record.weight_unit as WeightUnit,
-          unit: record.weight_unit, // For compatibility
           date: record.date,
-          age: ageInDays,
           notes: record.notes,
           created_at: record.created_at,
-          birth_date: birthDate
-        } as WeightData;
+          birth_date: birthDate,
+          age_days: ageInDays,
+          formatted_date: new Date(record.date).toLocaleDateString()
+        };
       });
       
-      setWeightData(processedData);
+      setWeightData({
+        weights: processedWeights,
+        isLoading: false,
+        error: null
+      });
     } catch (err) {
       console.error('Error fetching puppy weight data:', err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch weight data'));
-    } finally {
-      setIsLoading(false);
+      setWeightData({
+        weights: [],
+        isLoading: false,
+        error: err instanceof Error ? err : new Error('Failed to fetch weight data')
+      });
     }
   };
   
@@ -87,11 +101,11 @@ export const usePuppyWeights = (puppyId: string) => {
   }, [puppyId]);
   
   // Function to add a new weight record
-  const addWeightRecord = async (data: Omit<WeightData, 'id' | 'age'>) => {
+  const addWeightRecord = async (data: Omit<WeightRecord, 'id' | 'created_at'>): Promise<boolean> => {
     try {
       const recordData = {
         puppy_id: puppyId,
-        dog_id: data.dog_id || '00000000-0000-0000-0000-000000000000', // Required field with default
+        dog_id: data.dog_id || null,
         weight: data.weight,
         weight_unit: data.weight_unit,
         date: data.date,
@@ -123,13 +137,13 @@ export const usePuppyWeights = (puppyId: string) => {
   };
   
   // Function to update an existing weight record
-  const updateWeightRecord = async (id: string, data: Partial<WeightData>) => {
+  const updateWeightRecord = async (id: string, data: Partial<WeightRecord>): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('weight_records')
         .update({
           weight: data.weight,
-          weight_unit: data.weight_unit || data.unit,
+          weight_unit: data.weight_unit,
           date: data.date,
           notes: data.notes,
         })
@@ -156,7 +170,7 @@ export const usePuppyWeights = (puppyId: string) => {
   };
   
   // Function to delete a weight record
-  const deleteWeightRecord = async (id: string) => {
+  const deleteWeightRecord = async (id: string): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('weight_records')
@@ -185,8 +199,6 @@ export const usePuppyWeights = (puppyId: string) => {
   
   return {
     weightData,
-    isLoading,
-    error,
     refresh: fetchWeightData,
     addWeightRecord,
     updateWeightRecord,

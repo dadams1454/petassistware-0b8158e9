@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { addWeightRecord, getWeightHistory, deleteWeightRecord } from '@/services/healthService';
-import { WeightRecord, WeightUnitEnum } from '@/types/health';
+import { WeightRecord, WeightUnit } from '@/types/health';
 import { useToast } from '@/hooks/use-toast';
 
 export interface GrowthStats {

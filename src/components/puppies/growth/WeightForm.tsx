@@ -1,41 +1,55 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useWeightData } from '@/hooks/useWeightData';
-import { WeightUnit } from '@/types/puppyTracking';
-import { WeightFormProps } from '@/components/litters/puppies/weight/types';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { WeightUnit } from '@/types/health';
 
-const WeightForm: React.FC<WeightFormProps> = ({ 
-  puppyId = '', 
-  birthDate,
+interface WeightFormProps {
+  puppyId: string;
+  onSubmit: (data: any) => Promise<boolean>;
+  onCancel: () => void;
+  defaultUnit?: WeightUnit;
+  birthDate?: string;
+  onSuccess?: () => void;
+  isSubmitting?: boolean;
+}
+
+const WeightForm: React.FC<WeightFormProps> = ({
+  puppyId,
   onSubmit,
   onCancel,
+  defaultUnit = 'lbs',
+  birthDate,
   onSuccess,
-  defaultUnit = 'oz',
   isSubmitting = false
 }) => {
-  const [weight, setWeight] = useState<string>('');
+  const [weight, setWeight] = useState('');
   const [weightUnit, setWeightUnit] = useState<WeightUnit>(defaultUnit);
-  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [notes, setNotes] = useState<string>('');
-  const [submitting, setSubmitting] = useState(isSubmitting);
-  
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [notes, setNotes] = useState('');
+  const [localSubmitting, setLocalSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!weight || !date) {
-      alert('Please enter weight and date');
+    if (!weight || isNaN(parseFloat(weight))) {
+      alert('Please enter a valid weight');
       return;
     }
     
-    setSubmitting(true);
+    setLocalSubmitting(true);
     
     try {
       const success = await onSubmit({
+        puppy_id: puppyId,
         weight: parseFloat(weight),
         weight_unit: weightUnit,
         date,
@@ -43,93 +57,80 @@ const WeightForm: React.FC<WeightFormProps> = ({
         birth_date: birthDate
       });
       
-      if (success) {
-        // Reset form if needed
-        setWeight('');
-        setDate(new Date().toISOString().split('T')[0]);
-        setNotes('');
-        if (onSuccess) {
-          onSuccess();
-        }
+      if (success && onSuccess) {
+        onSuccess();
       }
     } catch (error) {
-      console.error('Error adding weight record:', error);
+      console.error('Error submitting weight:', error);
       alert('Failed to save weight record');
     } finally {
-      setSubmitting(false);
+      setLocalSubmitting(false);
     }
   };
-  
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Record Weight</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="weight">Weight</Label>
-              <Input
-                id="weight"
-                type="number"
-                step="0.01"
-                min="0"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder="Enter weight"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="weight-unit">Unit</Label>
-              <Select value={weightUnit} onValueChange={(value) => setWeightUnit(value as WeightUnit)}>
-                <SelectTrigger id="weight-unit">
-                  <SelectValue placeholder="Select unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="oz">Ounces (oz)</SelectItem>
-                  <SelectItem value="g">Grams (g)</SelectItem>
-                  <SelectItem value="lbs">Pounds (lbs)</SelectItem>
-                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Input
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional notes about this weight measurement"
-            />
-          </div>
-          
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? 'Saving...' : 'Save Weight'}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="weight">Weight</Label>
+          <Input
+            id="weight"
+            type="number"
+            step="0.01"
+            min="0"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            placeholder="Enter weight"
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="weight-unit">Unit</Label>
+          <Select value={weightUnit} onValueChange={(value: WeightUnit) => setWeightUnit(value)}>
+            <SelectTrigger id="weight-unit">
+              <SelectValue placeholder="Select unit" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+              <SelectItem value="kg">Kilograms (kg)</SelectItem>
+              <SelectItem value="g">Grams (g)</SelectItem>
+              <SelectItem value="oz">Ounces (oz)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="date">Date</Label>
+        <Input
+          id="date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes (optional)</Label>
+        <Input
+          id="notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Any notes about this weight measurement"
+        />
+      </div>
+      
+      <div className="flex gap-2 justify-end pt-2">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting || localSubmitting}>
+          {isSubmitting || localSubmitting ? 'Saving...' : 'Save'}
+        </Button>
+      </div>
+    </form>
   );
 };
 

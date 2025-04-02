@@ -1,26 +1,28 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { HealthRecord, HealthRecordTypeEnum, WeightUnitEnum } from '@/types/health';
-import { WeightRecord } from '@/types/puppyTracking';
+import { HealthRecord, HealthRecordTypeEnum, WeightRecord, WeightUnit } from '@/types/health';
 
 // Fix the issue with record type incompatibility
-export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>) => {
+export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>): Promise<HealthRecord> => {
   try {
     // Ensure record_type is a valid enum value
     const validatedRecord = {
       ...record,
       // Convert string record_type to enum if needed
-      record_type: record.record_type ? record.record_type : HealthRecordTypeEnum.Other,
+      record_type: record.record_type || HealthRecordTypeEnum.Other,
       // Set default values for required fields
       vet_name: record.vet_name || 'Unknown', // This addresses the required property issue
+      visit_date: record.visit_date || new Date().toISOString().split('T')[0], // Required field
     };
     
     const { data, error } = await supabase
       .from('health_records')
-      .insert(validatedRecord);
+      .insert(validatedRecord)
+      .select()
+      .single();
     
     if (error) throw error;
-    return data;
+    return data as HealthRecord;
   } catch (error) {
     console.error('Error adding health record:', error);
     throw error;
@@ -28,7 +30,7 @@ export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created
 };
 
 // Fix bulk insert of health records
-export const bulkAddHealthRecords = async (records: Omit<HealthRecord, 'id' | 'created_at'>[]) => {
+export const bulkAddHealthRecords = async (records: Omit<HealthRecord, 'id' | 'created_at'>[]): Promise<HealthRecord[]> => {
   if (!records || records.length === 0) return [];
   
   try {
@@ -37,17 +39,20 @@ export const bulkAddHealthRecords = async (records: Omit<HealthRecord, 'id' | 'c
       ...record,
       record_type: record.record_type || HealthRecordTypeEnum.Other,
       vet_name: record.vet_name || 'Unknown', // Required field
+      visit_date: record.visit_date || new Date().toISOString().split('T')[0], // Required field
     }));
     
-    // Handle one record at a time to avoid type issues
-    const results = [];
+    // Handle records in batches to avoid type issues
+    const results: HealthRecord[] = [];
     for (const record of validatedRecords) {
       const { data, error } = await supabase
         .from('health_records')
-        .insert(record);
+        .insert(record)
+        .select()
+        .single();
       
       if (error) throw error;
-      results.push(data);
+      if (data) results.push(data as HealthRecord);
     }
     
     return results;
@@ -96,27 +101,28 @@ export const getHealthRecordsByType = async (dogId: string, recordType: HealthRe
   }
 };
 
-export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>) => {
+export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>): Promise<HealthRecord> => {
   try {
     const { data, error } = await supabase
       .from('health_records')
       .update(updates)
       .eq('id', id)
-      .select();
+      .select()
+      .single();
     
     if (error) {
       console.error('Error updating health record:', error);
       throw error;
     }
     
-    return data;
+    return data as HealthRecord;
   } catch (error) {
     console.error('Error in updateHealthRecord:', error);
     throw error;
   }
 };
 
-export const deleteHealthRecord = async (id: string) => {
+export const deleteHealthRecord = async (id: string): Promise<void> => {
   try {
     const { error } = await supabase
       .from('health_records')
@@ -146,8 +152,8 @@ export const getUpcomingVaccinations = async (dogId: string, daysAhead: number =
       .select('*')
       .eq('dog_id', dogId)
       .eq('record_type', HealthRecordTypeEnum.Vaccination)
-      .gte('next_due_date', today.toISOString())
-      .lte('next_due_date', futureDate.toISOString());
+      .gte('next_due_date', today.toISOString().split('T')[0])
+      .lte('next_due_date', futureDate.toISOString().split('T')[0]);
     
     if (error) {
       console.error('Error fetching upcoming vaccinations:', error);
@@ -172,8 +178,8 @@ export const getUpcomingMedications = async (dogId?: string, daysAhead: number =
       .from('health_records')
       .select('*')
       .eq('record_type', HealthRecordTypeEnum.Medication)
-      .gte('next_due_date', today.toISOString())
-      .lte('next_due_date', futureDate.toISOString());
+      .gte('next_due_date', today.toISOString().split('T')[0])
+      .lte('next_due_date', futureDate.toISOString().split('T')[0]);
     
     // Add filter for specific dog if provided
     if (dogId) {
@@ -205,8 +211,8 @@ export const getExpiringMedications = async (dogId?: string, daysAhead: number =
       .from('health_records')
       .select('*')
       .eq('record_type', HealthRecordTypeEnum.Medication)
-      .gte('expiration_date', today.toISOString())
-      .lte('expiration_date', futureDate.toISOString());
+      .gte('expiration_date', today.toISOString().split('T')[0])
+      .lte('expiration_date', futureDate.toISOString().split('T')[0]);
     
     // Add filter for specific dog if provided
     if (dogId) {
@@ -237,7 +243,7 @@ export const addWeightRecord = async (record: Omit<WeightRecord, 'id' | 'created
         dog_id: record.dog_id,
         weight: record.weight,
         date: record.date,
-        weight_unit: record.weight_unit || WeightUnitEnum.Pounds
+        weight_unit: record.weight_unit || 'lbs' as WeightUnit
       })
       .select()
       .single();

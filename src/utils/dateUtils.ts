@@ -1,94 +1,83 @@
 
 /**
- * Format a date for display
+ * Utility functions for handling dates safely in TypeScript
  */
-export const formatDateForDisplay = (date: Date | string): string => {
-  if (!date) return '';
+
+/**
+ * Safely convert a value to an ISO string date
+ * @param value - Any value that might be a date
+ * @returns ISO string date or null
+ */
+export const toISOStringOrNull = (value: unknown): string | null => {
+  if (!value) return null;
   
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  
+  // Try to convert to a date if it's a string
+  if (typeof value === 'string') {
+    try {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString();
+      }
+    } catch (e) {
+      console.error('Invalid date string:', value);
+    }
+  }
+  
+  return null;
 };
 
 /**
- * Format a date for database storage (ISO format)
+ * Safely format a date to YYYY-MM-DD
+ * @param value - Any value that might be a date
+ * @returns Formatted date string or null
  */
-export const formatDateForDatabase = (date: Date | string): string => {
-  if (!date) return '';
+export const formatDateToYYYYMMDD = (value: unknown): string | null => {
+  const isoString = toISOStringOrNull(value);
+  if (!isoString) return null;
   
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toISOString();
+  return isoString.split('T')[0];
 };
 
 /**
- * Get a formatted date string for "today"
+ * Checks if a value is a valid date
+ * @param value - Any value to check
+ * @returns boolean indicating if the value is a valid date
  */
-export const getTodayFormatted = (): string => {
-  return formatDateForDisplay(new Date());
+export const isValidDate = (value: unknown): boolean => {
+  if (!value) return false;
+  
+  if (value instanceof Date) {
+    return !isNaN(value.getTime());
+  }
+  
+  if (typeof value === 'string') {
+    try {
+      const date = new Date(value);
+      return !isNaN(date.getTime());
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  return false;
 };
 
 /**
- * Calculate the difference in days between two dates
+ * Safely calculates age in days between two dates
+ * @param startDate - Birth date or start date
+ * @param endDate - Current date or end date to compare against
+ * @returns Age in days or null if dates are invalid
  */
-export const daysBetween = (start: Date | string, end: Date | string): number => {
-  const startDate = typeof start === 'string' ? new Date(start) : start;
-  const endDate = typeof end === 'string' ? new Date(end) : end;
+export const calculateAgeInDays = (startDate: unknown, endDate: unknown = new Date()): number | null => {
+  if (!isValidDate(startDate) || !isValidDate(endDate)) return null;
   
-  const differenceInTime = endDate.getTime() - startDate.getTime();
-  return Math.floor(differenceInTime / (1000 * 3600 * 24));
-};
-
-/**
- * Add days to a date
- */
-export const addDays = (date: Date | string, days: number): Date => {
-  const d = typeof date === 'string' ? new Date(date) : new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-};
-
-/**
- * Check if a date is in the past
- */
-export const isDateInPast = (date: Date | string): boolean => {
-  const checkDate = typeof date === 'string' ? new Date(date) : date;
-  const today = new Date();
+  const start = startDate instanceof Date ? startDate : new Date(startDate as string);
+  const end = endDate instanceof Date ? endDate : new Date(endDate as string);
   
-  // Reset time part for comparing just the date
-  today.setHours(0, 0, 0, 0);
-  checkDate.setHours(0, 0, 0, 0);
-  
-  return checkDate < today;
-};
-
-/**
- * Check if a date is in the future
- */
-export const isDateInFuture = (date: Date | string): boolean => {
-  const checkDate = typeof date === 'string' ? new Date(date) : date;
-  const today = new Date();
-  
-  // Reset time part for comparing just the date
-  today.setHours(0, 0, 0, 0);
-  checkDate.setHours(0, 0, 0, 0);
-  
-  return checkDate > today;
-};
-
-/**
- * Format a date as YYYY-MM-DD (for input[type="date"])
- */
-export const formatDateForInput = (date: Date | string): string => {
-  if (!date) return '';
-  
-  const d = typeof date === 'string' ? new Date(date) : date;
-  
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  
-  return `${year}-${month}-${day}`;
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 };

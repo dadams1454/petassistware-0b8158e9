@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { WeightData } from '@/types/health';
+import { WeightData, WeightRecord, WeightUnit } from '@/types/health';
 
 // Generated mock data for average breed weights
-const generateBreedAverageData = (breed: string): WeightData[] => {
+const generateBreedAverageData = (breed: string): WeightData => {
   // This would typically come from an API or database
   // For now, we're generating mock data based on the breed
   
-  const mockData: WeightData[] = [
+  const mockWeights: WeightRecord[] = [
     {
       id: '1',
       dog_id: 'avg-newfoundland',
@@ -115,40 +115,49 @@ const generateBreedAverageData = (breed: string): WeightData[] => {
   ];
   
   // Apply breed-specific scaling
+  let scaledWeights = [...mockWeights];
+  
   if (breed.toLowerCase().includes('newfoundland')) {
-    return mockData;
+    // Use default weights
   } else if (breed.toLowerCase().includes('labrador')) {
-    return mockData.map(d => ({
+    scaledWeights = mockWeights.map(d => ({
       ...d,
       weight: d.weight * 0.7 // Labs grow slightly slower than Newfoundlands
     }));
   } else if (breed.toLowerCase().includes('german shepherd')) {
-    return mockData.map(d => ({
+    scaledWeights = mockWeights.map(d => ({
       ...d,
       weight: d.weight * 0.65
     }));
   } else if (breed.toLowerCase().includes('golden retriever')) {
-    return mockData.map(d => ({
+    scaledWeights = mockWeights.map(d => ({
       ...d,
       weight: d.weight * 0.6
     }));
   } else {
     // Default for unspecified breeds - use medium size dog average
-    return mockData.map(d => ({
+    scaledWeights = mockWeights.map(d => ({
       ...d,
       weight: d.weight * 0.5
     }));
   }
+  
+  return {
+    weights: scaledWeights,
+    isLoading: false,
+    error: null
+  };
 };
 
 export const usePuppyBreedAverages = (breed: string) => {
-  const [averageWeights, setAverageWeights] = useState<WeightData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [averageWeights, setAverageWeights] = useState<WeightData>({
+    weights: [],
+    isLoading: true,
+    error: null
+  });
   
   useEffect(() => {
     const fetchAverageData = async () => {
-      setIsLoading(true);
       try {
         // In a real application, this would be an API call
         // For now, we're using mock data
@@ -156,18 +165,16 @@ export const usePuppyBreedAverages = (breed: string) => {
         setAverageWeights(data);
       } catch (err) {
         console.error('Error fetching breed average weights:', err);
-        setError(err instanceof Error ? err : new Error('Failed to fetch data'));
-      } finally {
-        setIsLoading(false);
+        setAverageWeights({
+          weights: [],
+          isLoading: false,
+          error: err instanceof Error ? err : new Error('Failed to fetch data')
+        });
       }
     };
     
     fetchAverageData();
   }, [breed]);
   
-  return {
-    averageWeights,
-    isLoading,
-    error
-  };
+  return averageWeights;
 };

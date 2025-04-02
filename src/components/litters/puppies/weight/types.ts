@@ -1,6 +1,5 @@
 
-import { WeightUnit } from '@/types/puppyTracking';
-import { WeightRecord } from '@/types/health';
+import { WeightUnit, WeightRecord } from '@/types/health';
 
 export interface WeightFormProps {
   onSubmit: (data: {
