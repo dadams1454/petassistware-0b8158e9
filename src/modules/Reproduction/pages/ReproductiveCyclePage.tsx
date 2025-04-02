@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Baby, Clock, ArrowLeft } from 'lucide-react';
@@ -78,6 +77,11 @@ const ReproductiveCyclePage: React.FC = () => {
     );
   }
 
+  const dogWithRequiredFields = {
+    ...reproData.dog,
+    created_at: reproData.dog.created_at || new Date().toISOString(),
+  };
+
   return (
     <PageContainer>
       <div className="container mx-auto py-6 space-y-6">
@@ -88,12 +92,12 @@ const ReproductiveCyclePage: React.FC = () => {
         
         <PageHeader 
           title="Reproductive Management"
-          subtitle={`${reproData.dog.name} • ${reproData.dog.breed}`}
+          subtitle={`${dogWithRequiredFields.name} • ${dogWithRequiredFields.breed}`}
         />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <ReproductiveStatusCard 
-            dog={reproData.dog}
+            dog={dogWithRequiredFields}
             status={reproData.status}
             nextHeatDate={reproData.nextHeatDate}
             daysUntilNextHeat={reproData.daysUntilNextHeat}
@@ -133,7 +137,7 @@ const ReproductiveCyclePage: React.FC = () => {
               
               <TabsContent value="heat" className="mt-6">
                 <HeatCycleTracker 
-                  dog={reproData.dog}
+                  dog={dogWithRequiredFields}
                   heatCycles={reproData.heatCycles}
                   status={reproData.status}
                   currentHeatCycle={reproData.currentHeatCycle}
@@ -146,7 +150,7 @@ const ReproductiveCyclePage: React.FC = () => {
               
               <TabsContent value="breeding" className="mt-6">
                 <BreedingManagement 
-                  dog={reproData.dog}
+                  dog={dogWithRequiredFields}
                   status={reproData.status}
                   heatCycles={reproData.heatCycles}
                   breedingRecords={reproData.breedingRecords}
@@ -156,7 +160,7 @@ const ReproductiveCyclePage: React.FC = () => {
               
               <TabsContent value="pregnancy" className="mt-6">
                 <PregnancyTracker 
-                  dog={reproData.dog}
+                  dog={dogWithRequiredFields}
                   status={reproData.status}
                   pregnancyRecords={reproData.pregnancyRecords}
                   breedingRecords={reproData.breedingRecords}

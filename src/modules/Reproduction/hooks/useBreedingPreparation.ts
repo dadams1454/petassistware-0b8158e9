@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,11 +64,12 @@ export const useBreedingPreparation = () => {
     }
   };
 
-  // Create default breeding checklist items
+  // Update the checklist items to include the required fields
   const getDefaultChecklistItems = (): BreedingChecklistItem[] => {
     return [
       {
         id: '1',
+        task: 'Vet Checkup for Dam',
         title: 'Vet Checkup for Dam',
         description: 'Schedule pre-breeding health check for the dam',
         completed: false,
@@ -77,6 +77,7 @@ export const useBreedingPreparation = () => {
       },
       {
         id: '2',
+        task: 'Vet Checkup for Sire',
         title: 'Vet Checkup for Sire',
         description: 'Schedule pre-breeding health check for the sire',
         completed: false,
@@ -84,6 +85,7 @@ export const useBreedingPreparation = () => {
       },
       {
         id: '3',
+        task: 'Update Vaccinations',
         title: 'Update Vaccinations',
         description: 'Ensure both dam and sire are up to date on vaccinations',
         completed: false,
@@ -91,6 +93,7 @@ export const useBreedingPreparation = () => {
       },
       {
         id: '4',
+        task: 'Prepare Whelping Box',
         title: 'Prepare Whelping Box',
         description: 'Set up and sanitize whelping box',
         completed: false,
@@ -98,6 +101,7 @@ export const useBreedingPreparation = () => {
       },
       {
         id: '5',
+        task: 'Gather Whelping Supplies',
         title: 'Gather Whelping Supplies',
         description: 'Prepare thermometer, clean towels, heating pad, etc.',
         completed: false,
@@ -105,6 +109,7 @@ export const useBreedingPreparation = () => {
       },
       {
         id: '6',
+        task: 'Update AKC Registration',
         title: 'Update AKC Registration',
         description: 'Ensure both dam and sire have current AKC registrations',
         completed: false,
@@ -112,6 +117,7 @@ export const useBreedingPreparation = () => {
       },
       {
         id: '7',
+        task: 'Prepare Facility',
         title: 'Prepare Facility',
         description: 'Clean and prepare quiet area for whelping',
         completed: false,
@@ -120,11 +126,11 @@ export const useBreedingPreparation = () => {
     ];
   };
 
-  // Create a new breeding record
+  // Update the createBreedingRecord function to handle the form data correctly
   const createBreedingRecord = useMutation({
     mutationFn: async (formData: BreedingPrepFormData) => {
       // Calculate estimated due date (63 days from tie date)
-      const tieDate = new Date(formData.plannedTieDate);
+      const tieDate = formData.plannedTieDate || new Date(formData.plannedDate);
       const estimatedDueDate = format(addDays(tieDate, 63), 'yyyy-MM-dd');
       
       const breedingData = {
