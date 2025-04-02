@@ -174,7 +174,7 @@ export const useGeneticPairing = (sireDogId?: string, damDogId?: string) => {
 
   // Calculate breed compatibility
   const calculateBreedCompatibility = (sire: DogGenotype, dam: DogGenotype): number => {
-    if (sire.breed === dam.breed) return 1.0;
+    if ((sire.breed || '') === (dam.breed || '')) return 1.0;
     return 0.5; // Simple placeholder
   };
 

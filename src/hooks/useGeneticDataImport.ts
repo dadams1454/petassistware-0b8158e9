@@ -40,6 +40,7 @@ export const useGeneticDataImport = (dogId: string) => {
         importedTests: [],
         provider: 'CSV Import',
         testsImported: 0,
+        count: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']
       };
       setImportResults(errorResult);
@@ -65,6 +66,7 @@ export const useGeneticDataImport = (dogId: string) => {
         importedTests: [],
         provider: 'Manual Import',
         testsImported: 0,
+        count: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']
       };
       setImportResults(errorResult);
@@ -88,6 +90,7 @@ export const useGeneticDataImport = (dogId: string) => {
         importedTests: [],
         provider: 'Embark',
         testsImported: 0,
+        count: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']
       };
       setImportResults(errorResult);
@@ -111,6 +114,7 @@ export const useGeneticDataImport = (dogId: string) => {
         importedTests: [],
         provider: 'Wisdom Panel',
         testsImported: 0,
+        count: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error']
       };
       setImportResults(errorResult);

@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
@@ -12,6 +11,7 @@ import { toast } from 'sonner';
 import { useToast } from '@/hooks/use-toast';
 import { useDogDetail } from '@/components/dogs/hooks/useDogDetail';
 import { formatDistanceToNow } from 'date-fns';
+import { generateRiskAssessment } from '@/components/genetics/utils/healthUtils';
 
 // Import genetics components
 import { DogGenotypeCard } from '@/components/genetics/DogGenotypeCard';
@@ -21,7 +21,6 @@ import { HistoricalCOIChart } from '@/components/genetics/components/HistoricalC
 import { MultiTraitMatrix } from '@/components/genetics/components/MultiTraitMatrix';
 import GeneticReportGenerator from '@/components/genetics/components/GeneticReportGenerator';
 import { GeneticImportDialog } from '@/components/genetics/components/GeneticImportDialog';
-import { generateRiskAssessment } from '@/components/genetics/utils/healthUtils';
 
 export interface GeneticsTabProps {
   dogId: string;

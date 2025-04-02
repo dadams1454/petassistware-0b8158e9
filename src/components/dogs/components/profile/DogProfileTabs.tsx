@@ -9,6 +9,7 @@ import NotesTab from '../tabs/NotesTab';
 import BreedingTab from '../tabs/BreedingTab';
 import GalleryTab from '../tabs/GalleryTab';
 import DailyCareTab from '../tabs/DailyCareTab';
+import { DogProfile } from '@/types/dog';
 
 // Define custom UserWithAuth type here instead of importing from @/types
 interface UserWithAuth {
@@ -17,8 +18,21 @@ interface UserWithAuth {
   role?: string;
 }
 
+// Update all tab props to include currentDog
+export interface OverviewTabProps {
+  currentDog: DogProfile;
+}
+
+export interface HealthTabProps {
+  currentDog: DogProfile;
+}
+
+export interface BreedingTabProps {
+  currentDog: DogProfile;
+}
+
 interface DogProfileTabsProps {
-  currentDog: any;
+  currentDog: DogProfile;
   activeTab?: string;
   onTabChange?: (value: string) => void;
   currentUser?: UserWithAuth;

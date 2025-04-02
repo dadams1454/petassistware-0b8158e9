@@ -1,3 +1,4 @@
+
 // Types for puppy tracking
 
 export interface PuppyWithAge {
@@ -30,12 +31,12 @@ export interface PuppyWithAge {
 
 // Default age groups for puppies
 export const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
-  { name: 'Neonatal', min: 0, max: 14 },
-  { name: 'Transitional', min: 15, max: 21 },
-  { name: 'Socialization', min: 22, max: 49 },
-  { name: 'Juvenile', min: 50, max: 84 },
-  { name: 'Adolescent', min: 85, max: 180 },
-  { name: 'Young Adult', min: 181, max: 365 }
+  { id: 'neonatal', name: 'Neonatal', min: 0, max: 14 },
+  { id: 'transitional', name: 'Transitional', min: 15, max: 21 },
+  { id: 'socialization', name: 'Socialization', min: 22, max: 49 },
+  { id: 'juvenile', name: 'Juvenile', min: 50, max: 84 },
+  { id: 'adolescent', name: 'Adolescent', min: 85, max: 180 },
+  { id: 'young_adult', name: 'Young Adult', min: 181, max: 365 }
 ];
 
 export interface PuppyAgeGroupData {
@@ -50,6 +51,7 @@ export interface PuppyAgeGroupData {
 }
 
 export interface PuppyAgeGroup {
+  id: string;
   name: string;
   min: number;
   max: number;

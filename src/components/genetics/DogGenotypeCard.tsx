@@ -3,9 +3,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDogGenetics } from '@/hooks/useDogGenetics';
-import { DogGenotype, CompactGenotypeViewProps } from '@/types/genetics';
+import { DogGenotype } from '@/types/genetics';
 import { AlertCircle, CheckCircle2, Dna } from 'lucide-react';
 import { HealthMarkersPanel } from './components/HealthMarkersPanel';
+import { CompactGenotypeViewProps } from '@/types/genetics';
 
 export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({ 
   genotype,

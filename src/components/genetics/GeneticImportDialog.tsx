@@ -38,7 +38,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   const [activeTab, setActiveTab] = useState<string>('csv');
   const [csvData, setCsvData] = useState<string>('');
   const [manualTests, setManualTests] = useState<ManualTestEntry[]>([
-    { name: '', result: '', date: new Date().toISOString().split('T')[0], importSource: 'manual', provider: 'manual' }
+    { test_type: '', result: '', test_date: new Date().toISOString().split('T')[0], provider: 'manual' }
   ]);
   const [importResult, setImportResult] = useState<{success?: boolean; errors?: string[]}>({});
   
@@ -67,7 +67,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   const handleManualImport = async () => {
     // Filter out empty tests
     const validTests = manualTests
-      .filter(test => test.name && test.result)
+      .filter(test => test.test_type && test.result)
       .map(test => ({
         ...test,
         provider: test.provider || 'manual'
@@ -76,7 +76,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
     if (validTests.length === 0) {
       setImportResult({
         success: false,
-        errors: ['Please provide at least one valid test with name and result']
+        errors: ['Please provide at least one valid test with test type and result']
       });
       return;
     }
@@ -92,7 +92,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   const handleAddTest = () => {
     setManualTests([
       ...manualTests,
-      { name: '', result: '', date: new Date().toISOString().split('T')[0], importSource: 'manual' }
+      { test_type: '', result: '', test_date: new Date().toISOString().split('T')[0], provider: 'manual' }
     ]);
   };
   
@@ -113,7 +113,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
     if (!open) {
       // Reset form state when dialog closes
       setCsvData('');
-      setManualTests([{ name: '', result: '', date: new Date().toISOString().split('T')[0], importSource: 'manual' }]);
+      setManualTests([{ test_type: '', result: '', test_date: new Date().toISOString().split('T')[0], provider: 'manual' }]);
       setImportResult({});
     }
     onOpenChange(open);
@@ -159,7 +159,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
                   <FileUp className="h-8 w-8 text-muted-foreground mb-2" />
                   <h3 className="text-sm font-semibold mb-1">Upload CSV File</h3>
                   <p className="text-xs text-muted-foreground mb-4">
-                    CSV should have columns: name, result, date
+                    CSV should have columns: test_type, result, test_date
                   </p>
                   
                   <div>
@@ -209,15 +209,15 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold" htmlFor={`test-name-${index}`}>
-                        Test Name*
+                      <label className="text-xs font-semibold" htmlFor={`test-type-${index}`}>
+                        Test Type*
                       </label>
                       <input
-                        id={`test-name-${index}`}
+                        id={`test-type-${index}`}
                         type="text"
                         className="w-full px-3 py-2 border rounded-md text-sm"
-                        value={test.name}
-                        onChange={(e) => handleTestChange(index, 'name', e.target.value)}
+                        value={test.test_type}
+                        onChange={(e) => handleTestChange(index, 'test_type', e.target.value)}
                         placeholder="e.g., Hip Dysplasia"
                       />
                     </div>
@@ -244,8 +244,8 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
                         id={`test-date-${index}`}
                         type="date"
                         className="w-full px-3 py-2 border rounded-md text-sm"
-                        value={test.date}
-                        onChange={(e) => handleTestChange(index, 'date', e.target.value)}
+                        value={test.test_date}
+                        onChange={(e) => handleTestChange(index, 'test_date', e.target.value)}
                       />
                     </div>
                   </div>
@@ -290,3 +290,5 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
     </Dialog>
   );
 };
+
+export default GeneticImportDialog;

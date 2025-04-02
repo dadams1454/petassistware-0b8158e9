@@ -1,199 +1,91 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { VaccinationScheduleItem } from '@/types/puppyTracking';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Check, Plus, AlertTriangle, Calendar } from 'lucide-react';
-import { usePuppyVaccinations } from '@/hooks/usePuppyVaccinations';
-import { LoadingState, EmptyState } from '@/components/ui/standardized';
-import { VaccinationScheduleItem, VaccinationRecord } from '@/types/puppyTracking';
+import { Calendar, Check, AlertTriangle } from 'lucide-react';
 
-interface VaccinationScheduleProps {
-  puppyId: string;
-  onAddVaccination: () => void;
+export interface VaccinationScheduleProps {
+  vaccinations: VaccinationScheduleItem[];
+  onRefresh: () => Promise<void>;
+  status: string;
 }
 
-const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({ 
-  puppyId,
-  onAddVaccination
+const VaccinationSchedule: React.FC<VaccinationScheduleProps> = ({
+  vaccinations,
+  onRefresh,
+  status
 }) => {
-  const { 
-    vaccinations, 
-    isLoading, 
-    error,
-    addVaccination
-  } = usePuppyVaccinations(puppyId);
-  
-  const handleMarkComplete = (vaccination: VaccinationScheduleItem) => {
-    // Create a proper VaccinationRecord from VaccinationScheduleItem
-    addVaccination({
-      vaccination_type: vaccination.vaccination_type,
-      vaccination_date: new Date().toISOString().split('T')[0],
-      notes: vaccination.notes,
-      due_date: vaccination.due_date,
-      created_at: new Date().toISOString()
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
     });
   };
-  
-  if (isLoading) {
-    return <LoadingState message="Loading vaccination schedule..." />;
-  }
-  
-  if (error) {
-    return (
-      <div className="text-destructive p-4">
-        Error loading vaccination data: {(error as Error).message}
-      </div>
-    );
-  }
-  
-  if (vaccinations.length === 0) {
-    return (
-      <EmptyState
-        title="No Vaccinations Scheduled"
-        description="No vaccinations have been scheduled for this puppy yet."
-        action={{
-          label: "Add Vaccination",
-          onClick: onAddVaccination
-        }}
-      />
-    );
-  }
-  
-  // Ensure all vaccination records have the necessary properties
-  const processedVaccinations = vaccinations.map(vax => {
-    return {
-      ...vax,
-      // Ensure all required fields are present
-      created_at: vax.created_at || new Date().toISOString(),
-      due_date: vax.due_date || vax.vaccination_date
-    } as VaccinationScheduleItem;
-  });
-  
-  // Group vaccinations by status
-  const overdueVaccinations = processedVaccinations.filter(vax => 
-    vax.is_completed === false && 
-    new Date(vax.due_date) < new Date()
-  );
-  
-  const upcomingVaccinations = processedVaccinations.filter(vax => 
-    vax.is_completed === false && 
-    new Date(vax.due_date) >= new Date()
-  );
-  
-  const completedVaccinations = processedVaccinations.filter(vax => 
-    vax.is_completed === true
-  );
-  
+
   return (
-    <Card>
-      <CardContent className="p-0">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="font-semibold">Vaccination Schedule</h3>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={onAddVaccination}
-          >
-            <Plus className="h-4 w-4 mr-1" /> 
-            Add
-          </Button>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">
+          {status === 'upcoming' ? 'Upcoming Vaccinations' : 
+           status === 'overdue' ? 'Overdue Vaccinations' : 
+           'Completed Vaccinations'}
+        </h2>
+        <Button size="sm" variant="outline" onClick={onRefresh}>
+          Refresh
+        </Button>
+      </div>
+
+      {vaccinations.length === 0 ? (
+        <Card>
+          <CardContent className="py-6">
+            <div className="text-center text-gray-500">
+              <p>No {status} vaccinations found.</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {vaccinations.map((vaccination) => (
+            <Card key={vaccination.id} className="overflow-hidden">
+              <div className={`h-1 ${
+                status === 'overdue' ? 'bg-red-500' : 
+                status === 'upcoming' ? 'bg-amber-500' : 
+                'bg-green-500'
+              }`}></div>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-medium">{vaccination.vaccination_type}</h3>
+                    <div className="flex items-center text-sm text-gray-500 mt-1">
+                      <Calendar className="h-3.5 w-3.5 mr-1" />
+                      {formatDate(vaccination.due_date)}
+                    </div>
+                  </div>
+                  <div>
+                    {status === 'completed' ? (
+                      <span className="inline-flex items-center text-sm bg-green-50 text-green-700 px-2 py-1 rounded">
+                        <Check className="h-3.5 w-3.5 mr-1" />
+                        Complete
+                      </span>
+                    ) : status === 'overdue' ? (
+                      <span className="inline-flex items-center text-sm bg-red-50 text-red-700 px-2 py-1 rounded">
+                        <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+                        Overdue
+                      </span>
+                    ) : (
+                      <Button size="sm">Mark Complete</Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-        
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Vaccination</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Notes</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {/* Overdue Vaccinations */}
-              {overdueVaccinations.map((vax) => (
-                <TableRow key={vax.id} className="bg-destructive/5">
-                  <TableCell className="font-medium">{vax.vaccination_type}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 flex items-center gap-1 w-fit">
-                      <AlertTriangle className="h-3 w-3" />
-                      Overdue
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(vax.due_date).toLocaleDateString()}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{vax.notes}</TableCell>
-                  <TableCell className="text-right">
-                    <Button size="sm" onClick={() => handleMarkComplete(vax)}>
-                      <Check className="h-4 w-4 mr-1" />
-                      Complete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              
-              {/* Upcoming Vaccinations */}
-              {upcomingVaccinations.map((vax) => (
-                <TableRow key={vax.id}>
-                  <TableCell className="font-medium">{vax.vaccination_type}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1 w-fit">
-                      <Calendar className="h-3 w-3" />
-                      Scheduled
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(vax.due_date).toLocaleDateString()}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{vax.notes}</TableCell>
-                  <TableCell className="text-right">
-                    <Button size="sm" variant="outline" onClick={() => handleMarkComplete(vax)}>
-                      <Check className="h-4 w-4 mr-1" />
-                      Complete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              
-              {/* Completed Vaccinations */}
-              {completedVaccinations.map((vax) => (
-                <TableRow key={vax.id} className="bg-green-50/30">
-                  <TableCell className="font-medium">{vax.vaccination_type}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 w-fit">
-                      <Check className="h-3 w-3" />
-                      Complete
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{vax.due_date ? new Date(vax.due_date).toLocaleDateString() : 'N/A'}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{vax.notes}</TableCell>
-                  <TableCell className="text-right">
-                    <Button size="sm" variant="ghost" disabled>
-                      Completed
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              
-              {vaccinations.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                    No vaccinations scheduled
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

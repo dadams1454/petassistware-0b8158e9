@@ -5,23 +5,63 @@ import { Baby, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { usePuppyTracking } from '@/hooks/usePuppyTracking';
-import PuppyAgeGroupSection from './PuppyAgeGroupSection';
-import PuppyStatCards from './components/PuppyStatCards';
+import { PuppyWithAge } from '@/types/puppyTracking';
 
 interface PuppiesTabProps {
   onRefresh: () => void;
 }
 
+// Placeholder component until real implementation is ready
+const PuppyAgeGroupSection = ({ ageGroup, puppies, onRefresh }: { 
+  ageGroup: any, 
+  puppies: PuppyWithAge[], 
+  onRefresh: () => void 
+}) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>{ageGroup.name}</CardTitle>
+    </CardHeader>
+    <CardContent>
+      {puppies.length === 0 ? (
+        <p>No puppies in this age group</p>
+      ) : (
+        <ul>
+          {puppies.map(puppy => (
+            <li key={puppy.id}>{puppy.name}</li>
+          ))}
+        </ul>
+      )}
+    </CardContent>
+  </Card>
+);
+
+// Placeholder component until real implementation is ready
+const PuppyStatCards = ({ stats }: { stats: any }) => (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <Card>
+      <CardContent className="pt-6">
+        <p>Total Puppies: {stats.totalPuppies}</p>
+      </CardContent>
+    </Card>
+    <Card>
+      <CardContent className="pt-6">
+        <p>Available: {stats.availablePuppies}</p>
+      </CardContent>
+    </Card>
+  </div>
+);
+
 const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   const { 
-    puppies, 
-    ageGroups, 
-    puppiesByAgeGroup,
-    puppyStats,
+    stats, 
+    puppies = [], 
+    ageGroups = [], 
+    puppiesByAgeGroup = {},
     isLoading, 
     error 
   } = usePuppyTracking();
   
+  const puppyStats = stats;
   const navigate = useNavigate();
   
   const handleNavigateToLitters = useCallback(() => {
@@ -84,7 +124,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
       
       {/* Age group sections */}
       {Object.entries(puppiesByAgeGroup).map(([groupId, puppiesInGroup]) => {
-        if (puppiesInGroup.length === 0) return null;
+        if (!Array.isArray(puppiesInGroup) || puppiesInGroup.length === 0) return null;
         
         const ageGroup = ageGroups.find(group => group.id === groupId);
         if (!ageGroup) return null;

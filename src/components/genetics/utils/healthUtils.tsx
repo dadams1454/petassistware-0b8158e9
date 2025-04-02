@@ -2,7 +2,7 @@
 import React from 'react';
 import { Syringe, Stethoscope, Pill, Activity, AlertCircle, FileText, Scissors } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
-import { DogGenotype, GeneticHealthStatus } from '@/types/genetics';
+import { DogGenotype, GeneticHealthStatus, HealthMarker, HealthWarning } from '@/types/genetics';
 
 export const getHealthRecordIcon = (recordType: string) => {
   switch (recordType) {
@@ -109,30 +109,83 @@ export function formatDate(dateString?: string): string {
  * Get result with color properties for UI display
  */
 export function getResultWithColorProps(status: string) {
-  const statusMap: Record<string, { color: string, bgColor: string, label: string }> = {
-    'clear': { 
-      color: 'text-green-700', 
-      bgColor: 'bg-green-100', 
-      label: 'Clear' 
-    },
-    'carrier': { 
-      color: 'text-yellow-700', 
-      bgColor: 'bg-yellow-100', 
-      label: 'Carrier' 
-    },
-    'affected': { 
-      color: 'text-red-700', 
-      bgColor: 'bg-red-100', 
-      label: 'Affected' 
-    },
-    'unknown': { 
-      color: 'text-gray-700', 
-      bgColor: 'bg-gray-100', 
-      label: 'Unknown' 
-    }
-  };
+  const statusLower = status.toLowerCase();
   
-  return statusMap[status.toLowerCase()] || statusMap.unknown;
+  // Match status to appropriate styling
+  switch (statusLower) {
+    case 'clear':
+    case 'normal':
+    case 'negative':
+      return { 
+        color: 'text-green-700', 
+        bgColor: 'bg-green-100',
+        textColor: 'text-green-700',
+        borderColor: 'border-green-200',
+        label: 'Clear'
+      };
+      
+    case 'carrier':
+    case 'abnormal':
+    case 'suspicious':
+      return { 
+        color: 'text-yellow-700', 
+        bgColor: 'bg-yellow-100',
+        textColor: 'text-yellow-700',
+        borderColor: 'border-yellow-200',
+        label: 'Carrier'
+      };
+      
+    case 'at_risk':
+    case 'at risk':
+    case 'affected':
+    case 'positive':
+      return { 
+        color: 'text-red-700', 
+        bgColor: 'bg-red-100',
+        textColor: 'text-red-700',
+        borderColor: 'border-red-200',
+        label: 'Affected'
+      };
+      
+    case 'likely_clear':
+    case 'likely clear':
+      return { 
+        color: 'text-emerald-700', 
+        bgColor: 'bg-emerald-100',
+        textColor: 'text-emerald-700',
+        borderColor: 'border-emerald-200',
+        label: 'Likely Clear'
+      };
+      
+    case 'likely_carrier':
+    case 'likely carrier':
+      return { 
+        color: 'text-amber-700', 
+        bgColor: 'bg-amber-100',
+        textColor: 'text-amber-700',
+        borderColor: 'border-amber-200',
+        label: 'Likely Carrier'
+      };
+      
+    case 'inconclusive':
+    case 'pending':
+      return { 
+        color: 'text-purple-700', 
+        bgColor: 'bg-purple-100',
+        textColor: 'text-purple-700',
+        borderColor: 'border-purple-200',
+        label: 'Inconclusive'
+      };
+      
+    default:
+      return { 
+        color: 'text-gray-700', 
+        bgColor: 'bg-gray-100',
+        textColor: 'text-gray-700',
+        borderColor: 'border-gray-200',
+        label: 'Unknown'
+      };
+  }
 }
 
 /**
@@ -198,4 +251,64 @@ export function calculateRiskLevel(test: any): 'high' | 'medium' | 'low' {
     return 'medium';
   }
   return 'low';
+}
+
+/**
+ * Generate a risk assessment based on breed and health markers
+ */
+export function generateRiskAssessment(breed: string, healthMarkers: Record<string, HealthMarker> = {}) {
+  // Default response structure
+  const result = {
+    hasIssues: false,
+    breedName: breed,
+    affectedConditions: [] as string[],
+    carrierConditions: [] as string[],
+    missingTests: [] as string[],
+    overallRiskLevel: 'low' as 'low' | 'medium' | 'high'
+  };
+  
+  // Common breed-specific conditions that should be tested
+  const breedRecommendedTests: Record<string, string[]> = {
+    'newfoundland': ['hip_dysplasia', 'elbow_dysplasia', 'cardiac', 'cystinuria'],
+    'labrador retriever': ['exercise_induced_collapse', 'centronuclear_myopathy', 'progressive_retinal_atrophy'],
+    'german shepherd': ['degenerative_myelopathy', 'hip_dysplasia', 'elbow_dysplasia'],
+    'golden retriever': ['progressive_retinal_atrophy', 'hip_dysplasia', 'elbow_dysplasia'],
+    'border collie': ['collie_eye_anomaly', 'neuronal_ceroid_lipofuscinosis']
+  };
+  
+  // Normalized breed name for lookup
+  const normalizedBreed = breed.toLowerCase();
+  const recommendedTests = breedRecommendedTests[normalizedBreed] || [];
+  
+  // Analyze health markers
+  Object.entries(healthMarkers).forEach(([condition, marker]) => {
+    if (marker.status === 'affected') {
+      result.affectedConditions.push(formatConditionName(condition));
+      result.hasIssues = true;
+    } else if (marker.status === 'carrier') {
+      result.carrierConditions.push(formatConditionName(condition));
+      result.hasIssues = true;
+    }
+  });
+  
+  // Check for missing recommended tests
+  recommendedTests.forEach(test => {
+    const hasTest = Object.keys(healthMarkers).some(key => 
+      key.toLowerCase() === test.toLowerCase()
+    );
+    
+    if (!hasTest) {
+      result.missingTests.push(formatConditionName(test));
+      result.hasIssues = true;
+    }
+  });
+  
+  // Determine overall risk level
+  if (result.affectedConditions.length > 0) {
+    result.overallRiskLevel = 'high';
+  } else if (result.carrierConditions.length > 0) {
+    result.overallRiskLevel = 'medium';
+  }
+  
+  return result;
 }

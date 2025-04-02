@@ -23,6 +23,7 @@ export const importGeneticTestsFromCSV = async (dogId: string, file: File): Prom
       importedTests: [],
       provider: 'CSV Import',
       testsImported: 0,
+      count: 0,
       errors: [error instanceof Error ? error.message : 'Unknown error']
     };
   }
@@ -76,6 +77,7 @@ export const batchImportGeneticTests = async (dogId: string, testData: any[] = [
       importedTests: [],
       provider: 'Batch Import', 
       testsImported: 0,
+      count: 0,
       errors: [error instanceof Error ? error.message : 'Unknown error']
     };
   }
