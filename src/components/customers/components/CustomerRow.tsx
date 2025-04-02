@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Customer } from '../types/customer';
-import { truncate } from '@/lib/utils';
+import { truncate } from '@/utils/utils'; // Updated import path
 
 interface CustomerRowProps {
   customer: Customer;

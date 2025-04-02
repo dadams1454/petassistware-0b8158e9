@@ -62,7 +62,7 @@ const PregnantDogsTab: React.FC<PregnantDogsTabProps> = ({ isLoading }) => {
             <CardHeader className="p-4 pb-2">
               <div className="flex items-center space-x-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={dog.photo_url || ''} alt={dog.name} />
+                  <AvatarImage src={dog.photoUrl || ''} alt={dog.name} />
                   <AvatarFallback>{dog.name.substring(0, 2)}</AvatarFallback>
                 </Avatar>
                 <div>

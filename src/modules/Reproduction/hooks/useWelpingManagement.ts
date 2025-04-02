@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dog } from '@/types/reproductive';
@@ -42,7 +41,21 @@ export const useWelpingManagement = (): WelpingManagementState & {
         
       if (error) throw new Error(error.message);
       
-      return data as Dog[];
+      // Map the data to match the Dog type with appropriate property names
+      const mappedDogs: Dog[] = data.map(dog => ({
+        id: dog.id,
+        name: dog.name,
+        photoUrl: dog.photo_url, // Map photo_url to photoUrl
+        gender: dog.gender,
+        is_pregnant: dog.is_pregnant,
+        last_heat_date: dog.last_heat_date,
+        tie_date: dog.tie_date,
+        breed: dog.breed,
+        color: dog.color,
+        created_at: dog.created_at
+      }));
+      
+      return mappedDogs;
     }
   });
   
