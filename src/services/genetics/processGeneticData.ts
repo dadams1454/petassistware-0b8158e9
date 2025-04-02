@@ -1,167 +1,130 @@
 
-import { DogGenotype, HealthMarker } from '@/types/genetics';
+import { DogGenotype, GeneticImportResult, HealthMarker, GeneticHealthStatus } from '@/types/genetics';
+import { saveGeneticTest } from '../geneticsService';
 
-// Helper to extract color genetics from various data sources
-export const extractColorGenetics = (rawData: any): DogGenotype['colorGenetics'] => {
-  // Default structure
-  const colorGenetics: DogGenotype['colorGenetics'] = {
-    base_color: 'Unknown',
-    brown_dilution: 'Unknown',
-    dilution: 'Unknown',
-    patterns: []
+export function processGenericLabData(data: any, dogId: string): GeneticImportResult {
+  // Safety check in case colorGenetics is not defined
+  const colorData = data.colorGenetics || {};
+  
+  // Create a DogGenotype object based on the imported data
+  const genotype: DogGenotype = {
+    id: dogId,
+    dog_id: dogId,
+    baseColor: colorData.baseColor || 'Unknown',
+    brownDilution: colorData.brownDilution || 'Unknown',
+    dilution: colorData.dilution || 'Unknown',
+    agouti: colorData.agouti || 'Unknown',
+    // Add other properties as needed
   };
-  
-  // Try to extract from different formats based on the testing company
-  try {
-    if (!rawData) return colorGenetics;
-    
-    // If the data already contains extracted color data
-    if (rawData.colorGenetics) {
-      return {
-        ...colorGenetics,
-        ...rawData.colorGenetics
-      };
-    }
-    
-    // Extract from EmbarkVet format
-    if (rawData.traits && rawData.traits.coat_color) {
-      const traitData = rawData.traits.coat_color;
-      return {
-        base_color: traitData.base_color || 'Unknown',
-        brown_dilution: traitData.brown_dilution || 'Unknown',
-        dilution: traitData.dilution || 'Unknown',
-        patterns: traitData.patterns || []
-      };
-    }
-    
-    // Extract from WisdomPanel format
-    if (rawData.trait_results && rawData.trait_results.coat_colors) {
-      const traitData = rawData.trait_results.coat_colors;
-      return {
-        base_color: traitData.primary_color || 'Unknown',
-        brown_dilution: traitData.modifiers?.brown || 'Unknown',
-        dilution: traitData.modifiers?.dilution || 'Unknown',
-        patterns: traitData.patterns || []
-      };
-    }
-    
-    // Return default if no matching format found
-    return colorGenetics;
-  } catch (error) {
-    console.error('Error extracting color genetics:', error);
-    return colorGenetics;
-  }
-};
 
-// Helper to extract health test results
-export const extractHealthMarkers = (rawData: any): DogGenotype['healthMarkers'] => {
-  const healthMarkers: DogGenotype['healthMarkers'] = {};
+  // Process health markers
+  const healthMarkers: Record<string, HealthMarker> = {};
   
-  try {
-    if (!rawData) return healthMarkers;
-    
-    // If data already contains extracted health markers
-    if (rawData.healthMarkers) {
-      return rawData.healthMarkers;
-    }
-    
-    // Try to extract from different formats
-    const healthData = 
-      rawData.health_results || 
-      rawData.health_traits || 
-      rawData.health_markers ||
-      {};
-    
-    // Extract from common format - iterate through all health tests
-    Object.entries(healthData).forEach(([condition, data]: [string, any]) => {
-      healthMarkers[condition] = {
-        name: condition, // Add name field
-        status: data.status || data.result || 'unknown',
-        testDate: data.test_date || data.date || new Date().toISOString().slice(0, 10),
-        source: data.source || data.provider || 'genetic_test'
-      };
-    });
-    
-    return healthMarkers;
-  } catch (error) {
-    console.error('Error extracting health markers:', error);
-    return healthMarkers;
-  }
-};
+  // Count successfully processed tests
+  let testCount = 0;
+  const errors: string[] = [];
 
-// Helper to extract trait information
-export const extractTraits = (rawData: any): DogGenotype['traits'] => {
-  const traits: DogGenotype['traits'] = {};
-  
-  try {
-    if (!rawData) return traits;
-    
-    // If data already contains traits
-    if (rawData.traits) {
-      return rawData.traits;
-    }
-    
-    // Extract from trait_results which contains physical traits data
-    const traitData = rawData.trait_results || {};
-    
-    // Filter out coat colors (handled separately) and extract remaining traits
-    Object.entries(traitData).forEach(([trait, data]: [string, any]) => {
-      if (trait !== 'coat_colors' && trait !== 'color_genetics') {
-        traits[trait] = {
-          value: data.value || data.result || 'unknown',
-          description: data.description || ''
+  // Process health test data if available
+  if (data.healthTests && Array.isArray(data.healthTests)) {
+    data.healthTests.forEach((test: any) => {
+      try {
+        if (!test.name || !test.result) {
+          errors.push(`Invalid test data: missing name or result for test ${JSON.stringify(test)}`);
+          return;
+        }
+
+        const status = mapResultToStatus(test.result);
+        
+        healthMarkers[test.name] = {
+          status,
+          testDate: test.date || new Date().toISOString(),
+          lab: test.lab || 'Unknown',
+          source: test.source || 'Generic Import' // Adding source
         };
+        
+        testCount++;
+      } catch (error) {
+        errors.push(`Error processing test "${test.name}": ${error}`);
       }
     });
-    
-    return traits;
-  } catch (error) {
-    console.error('Error extracting traits:', error);
-    return traits;
   }
-};
+  
+  // Add traits data if available
+  if (data.traits) {
+    genotype.traits = data.traits;
+  }
 
-// Process raw genetic data into standardized format
-export const processGeneticData = (rawData: any): DogGenotype => {
+  // Save the genotype data to the database
   try {
-    const colorGenetics = extractColorGenetics(rawData);
-    const healthMarkers = extractHealthMarkers(rawData);
-    const traits = extractTraits(rawData);
-    
-    const baseColor = colorGenetics?.base_color || 'Unknown';
-    const brownDilution = colorGenetics?.brown_dilution || 'Unknown';
-    const dilution = colorGenetics?.dilution || 'Unknown';
+    // Save genetic data
+    saveGeneticTest({
+      dog_id: dogId,
+      ...genotype,
+      health_markers: healthMarkers
+    });
     
     return {
-      id: rawData.id,
-      dog_id: rawData.dog_id,
-      created_at: rawData.created_at,
-      baseColor: baseColor,
-      brownDilution: brownDilution,
-      dilution: dilution,
-      colorGenetics,
-      healthMarkers,
-      traits,
-      // Include other fields as needed
-      breedComposition: rawData.breed_composition || {}
+      success: true,
+      dogId,
+      testsImported: testCount,
+      importedTests: testCount,
+      errors: errors.length > 0 ? errors : undefined
     };
   } catch (error) {
-    console.error('Error processing genetic data:', error);
     return {
-      id: rawData.id,
-      dog_id: rawData.dog_id,
-      baseColor: 'Unknown',
-      brownDilution: 'Unknown',
-      dilution: 'Unknown',
-      colorGenetics: {
-        base_color: 'Unknown',
-        brown_dilution: 'Unknown',
-        dilution: 'Unknown',
-        patterns: []
-      },
-      healthMarkers: {},
-      traits: {},
-      breedComposition: {}
+      success: false,
+      dogId,
+      testsImported: 0,
+      importedTests: 0,
+      errors: [`Failed to save genetic data: ${error}`]
     };
   }
-};
+}
+
+// Helper function to map test results to standardized status
+function mapResultToStatus(result: string): GeneticHealthStatus {
+  const lowerResult = result.toLowerCase();
+  
+  if (lowerResult.includes('clear') || lowerResult.includes('normal') || lowerResult.includes('negative')) {
+    return 'clear';
+  }
+  
+  if (lowerResult.includes('carrier')) {
+    return 'carrier';
+  }
+  
+  if (lowerResult.includes('at risk') || lowerResult.includes('at-risk')) {
+    return 'at_risk';
+  }
+  
+  if (lowerResult.includes('affected') || lowerResult.includes('positive')) {
+    return 'affected';
+  }
+  
+  return 'unknown';
+}
+
+// Embark-specific processing
+export function processEmbarkData(data: any, dogId: string): GeneticImportResult {
+  // Example implementation
+  // In a real implementation, this would parse Embark's specific data format
+  return {
+    success: true,
+    dogId,
+    testsImported: 0,
+    importedTests: 0,
+    errors: ['Embark data processing not fully implemented']
+  };
+}
+
+// Wisdom Panel-specific processing
+export function processWisdomPanelData(data: any, dogId: string): GeneticImportResult {
+  // Example implementation
+  return {
+    success: true,
+    dogId,
+    testsImported: 0,
+    importedTests: 0,
+    errors: ['Wisdom Panel data processing not fully implemented']
+  };
+}

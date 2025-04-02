@@ -2,6 +2,7 @@
 // Dog Genotype Types
 export interface DogGenotype {
   dog_id: string;
+  id?: string; // Adding id field
   name?: string;
   breed?: string;
   baseColor: string;
@@ -11,6 +12,9 @@ export interface DogGenotype {
   healthMarkers?: Record<string, HealthMarker>;
   healthResults?: HealthResult[];
   colorProbabilities?: ColorProbability[];
+  colorGenetics?: any; // Adding colorGenetics field
+  traits?: any; // Adding traits field
+  updated_at?: string; // Adding updated_at field
 }
 
 export interface HealthMarker {
@@ -19,6 +23,7 @@ export interface HealthMarker {
   testDate?: string;
   lab?: string;
   probability?: number;
+  source?: string; // Adding source field
 }
 
 export interface HealthResult {
@@ -43,6 +48,7 @@ export interface GeneticImportResult {
   dogId: string;
   provider?: string;
   testsImported: number;
+  importedTests?: number; // Adding importedTests field for compatibility
   errors?: string[];
 }
 
@@ -58,7 +64,13 @@ export interface HealthWarning {
   condition: string;
   message: string;
   actionRequired: boolean;
-  severity: 'high' | 'medium' | 'low';
+  severity: 'high' | 'medium' | 'low' | 'critical'; // Adding 'critical' severity
+  // Adding additional fields used in components
+  title?: string;
+  description?: string;
+  action?: string;
+  affectedPercentage?: number;
+  riskLevel?: string;
 }
 
 export interface HealthSummary {
@@ -84,4 +96,12 @@ export interface CompactGenotypeViewProps {
 export interface HistoricalCOIChartProps {
   dogId: string;
   generations?: number[];
+}
+
+// Adding TestResult for useGeneticDataImport
+export interface TestResult {
+  id: string;
+  name: string;
+  result: string;
+  date: string;
 }

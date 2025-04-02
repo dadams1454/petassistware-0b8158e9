@@ -12,7 +12,7 @@ const SummaryTabContent: React.FC = () => {
           <CardTitle>Health Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert variant="info">
+          <Alert variant="warning">
             <AlertCircle className="h-4 w-4 mr-2" />
             <AlertDescription>
               Health summary data is currently loading or unavailable. Please check back later.

@@ -2,56 +2,51 @@
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ChevronRight, Calendar } from 'lucide-react';
-import { formatDateForDisplay } from '@/utils/dateUtils';
-import { useNavigate } from 'react-router-dom';
+import { Edit, Archive, Trash2, RefreshCw } from 'lucide-react';
+import { Litter } from '@/types/litter';
 
-interface LitterCardProps {
-  id: string;
-  name: string;
-  breed: string;
-  birthDate?: string | null;
-  puppiesCount: number;
+export interface LitterCardProps {
+  litter: Litter;
+  onEditLitter: (litter: Litter) => void;
+  onDeleteLitter: (litter: Litter) => void;
+  onArchiveLitter: (litter: Litter) => void;
+  onUnarchiveLitter: (litter: Litter) => void;
 }
 
 const LitterCard: React.FC<LitterCardProps> = ({
-  id,
-  name,
-  breed,
-  birthDate,
-  puppiesCount,
+  litter,
+  onEditLitter,
+  onDeleteLitter,
+  onArchiveLitter,
+  onUnarchiveLitter
 }) => {
-  const navigate = useNavigate();
-
-  const handleViewLitter = () => {
-    navigate(`/litters/${id}`);
-  };
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{name}</CardTitle>
+        <CardTitle>{litter.name || 'Unnamed Litter'}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-1">
-          <p className="text-sm"><span className="font-semibold">Breed:</span> {breed}</p>
-          {birthDate && (
-            <p className="text-sm">
-              <span className="font-semibold">Birth Date:</span> {formatDateForDisplay(birthDate)}
-            </p>
-          )}
-          <p className="text-sm"><span className="font-semibold">Puppies:</span> {puppiesCount}</p>
-        </div>
+        <p>Placeholder litter card content</p>
       </CardContent>
-      <CardFooter className="justify-between items-center">
-        <Badge variant="secondary">
-          <Calendar className="h-4 w-4 mr-2" />
-          {breed}
-        </Badge>
-        <Button variant="outline" size="sm" onClick={handleViewLitter}>
-          View Litter
-          <ChevronRight className="ml-2 h-4 w-4" />
+      <CardFooter className="flex justify-end space-x-2">
+        <Button variant="outline" size="sm" onClick={() => onEditLitter(litter)}>
+          <Edit className="h-4 w-4 mr-2" />
+          Edit
+        </Button>
+        {litter.archived ? (
+          <Button variant="outline" size="sm" onClick={() => onUnarchiveLitter(litter)}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Unarchive
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" onClick={() => onArchiveLitter(litter)}>
+            <Archive className="h-4 w-4 mr-2" />
+            Archive
+          </Button>
+        )}
+        <Button variant="destructive" size="sm" onClick={() => onDeleteLitter(litter)}>
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
         </Button>
       </CardFooter>
     </Card>
