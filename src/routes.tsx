@@ -7,10 +7,8 @@ import MainLayout from '@/layouts/MainLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 
 // Pages
-import DashboardPage from '@/pages/DashboardPage';
+import DashboardPage from '@/pages/Dashboard';
 import WeightTrackingPage from '@/pages/WeightTracking';
-import WelpingPage from '@/pages/WelpingPage';
-import PuppyDetailPage from '@/pages/puppies/PuppyDashboard';
 import IndexPage from '@/pages/Index';
 import NotFoundPage from '@/pages/NotFound';
 import CompliancePage from '@/pages/Compliance';
@@ -39,6 +37,15 @@ import {
   DogEditPage,
   DogWeightPage
 } from '@/modules/dogs';
+
+// Import Welping Module
+import {
+  WelpingDashboardPage,
+  WelpingCreatePage,
+  WelpingDetailPage,
+  WelpingEditPage,
+  WelpingLogPage
+} from '@/pages/Welping';
 
 // Placeholder components for routes that aren't implemented yet
 const LoginPage = () => <div>Login Page</div>;
@@ -79,13 +86,12 @@ export const appRoutes = (
       <Route path="/litter/:litterId/add-puppies" element={<BatchPuppyEntryPage />} />
       <Route path="/litter/:litterId/puppy-testing" element={<PuppyTestingPage />} />
       
-      {/* Puppies routes */}
-      <Route path="/puppies/:id" element={<PuppyDetailPage />} />
-      
-      {/* Breeding/Welping routes */}
-      <Route path="/breeding-prep" element={<BreedingPrepPage />} />
-      <Route path="/welping" element={<WelpingPage />} />
-      <Route path="/welping/:id" element={<WelpingPage />} />
+      {/* Welping routes - now using the consolidated Welping Module */}
+      <Route path="/welping" element={<WelpingDashboardPage />} />
+      <Route path="/welping/new" element={<WelpingCreatePage />} />
+      <Route path="/welping/:id" element={<WelpingDetailPage />} />
+      <Route path="/welping/:id/edit" element={<WelpingEditPage />} />
+      <Route path="/welping/:id/logs" element={<WelpingLogPage />} />
       
       {/* Operations routes */}
       <Route path="/calendar" element={<CalendarPage />} />
@@ -93,6 +99,7 @@ export const appRoutes = (
       <Route path="/contracts" element={<ContractsPage />} />
       <Route path="/finances" element={<FinancesPage />} />
       <Route path="/facility" element={<FacilityPage />} />
+      <Route path="/breeding-prep" element={<BreedingPrepPage />} />
       
       {/* Compliance route */}
       <Route path="/compliance" element={<CompliancePage />} />
