@@ -18,10 +18,10 @@ import AuthLayout from './layouts/AuthLayout';
 import Index from './pages/Index';
 import WelpingDashboard from './pages/WelpingDashboard';
 import WelpingPage from './pages/WelpingPage';
+import Compliance from './pages/Compliance';
 
 // Placeholder components for routes that aren't fully implemented yet
 const BreedingPrepPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Breeding Preparation</h1><p className="mt-4">This feature is coming soon...</p></div>;
-const CompliancePage = () => <div className="p-8"><h1 className="text-2xl font-bold">Compliance Management</h1><p className="mt-4">This feature is coming soon...</p></div>;
 const FacilityPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Facility Management</h1><p className="mt-4">This feature is coming soon...</p></div>;
 const FinancesPage = () => <div className="p-8"><h1 className="text-2xl font-bold">Financial Management</h1><p className="mt-4">This feature is coming soon...</p></div>;
 const UsersPage = () => <div className="p-8"><h1 className="text-2xl font-bold">User Management</h1><p className="mt-4">This feature is coming soon...</p></div>;
@@ -77,8 +77,8 @@ const Router = () => {
           <Route path="/finances" element={<FinancesPage />} />
           <Route path="/facility" element={<FacilityPage />} />
           
-          {/* Compliance route */}
-          <Route path="/compliance" element={<CompliancePage />} />
+          {/* Compliance route - Now using the actual Compliance component */}
+          <Route path="/compliance" element={<Compliance />} />
           
           {/* Breeding/Welping routes */}
           <Route path="/breeding-prep" element={<BreedingPrepPage />} />
