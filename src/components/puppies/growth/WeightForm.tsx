@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useWeightData } from '@/hooks/useWeightData';
-import { WeightUnit } from '@/types/puppyTracking';
+import { WeightUnit } from '@/types/health';
 
 interface WeightFormProps {
   puppyId: string;
@@ -57,11 +57,11 @@ const WeightForm: React.FC<WeightFormProps> = ({
         setWeight('');
         setDate(new Date().toISOString().split('T')[0]);
         setNotes('');
-        setIsSubmitting(false);
       }
     } catch (error) {
       console.error('Error adding weight record:', error);
       alert('Failed to save weight record');
+    } finally {
       setIsSubmitting(false);
     }
   };

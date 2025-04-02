@@ -1,111 +1,110 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { DogGenotype, CompactGenotypeViewProps } from '@/types/genetics';
-import { formatConditionName } from '../utils/healthUtils';
+import { Badge } from '@/components/ui/badge';
+import { Check, AlertTriangle, XCircle, HelpCircle } from 'lucide-react';
+import { DogGenotype, CompactGenotypeViewProps, GeneticHealthStatus } from '@/types/genetics';
 
-// Create a utility function to get health summary data if not available
-const getHealthSummaryData = (genotype: DogGenotype) => {
-  if (!genotype || !genotype.healthMarkers) {
-    return {
-      clearCount: 0,
-      carrierCount: 0,
-      atRiskCount: 0,
-      totalTests: 0,
-      healthScore: 100,
-      topRisks: []
-    };
+// Helper function to get icon for genetic status
+const getStatusIcon = (status: GeneticHealthStatus) => {
+  switch (status) {
+    case 'clear':
+      return <Check className="h-4 w-4 text-green-600" />;
+    case 'carrier':
+      return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+    case 'at_risk':
+    case 'affected':
+      return <XCircle className="h-4 w-4 text-red-600" />;
+    case 'unknown':
+    default:
+      return <HelpCircle className="h-4 w-4 text-gray-400" />;
   }
-  
-  let clearCount = 0;
-  let carrierCount = 0;
-  let atRiskCount = 0;
-  let totalTests = Object.keys(genotype.healthMarkers).length;
-  
-  Object.values(genotype.healthMarkers).forEach(marker => {
-    if (marker.status === 'clear') {
-      clearCount++;
-    } else if (marker.status === 'carrier') {
-      carrierCount++;
-    } else if (marker.status === 'at_risk' || marker.status === 'at risk') {
-      atRiskCount++;
-    }
-  });
-  
-  // Calculate health score (basic algorithm)
-  const healthScore = Math.max(0, 100 - (carrierCount * 5) - (atRiskCount * 15));
-  
-  return {
-    clearCount,
-    carrierCount,
-    atRiskCount,
-    totalTests,
-    healthScore
-  };
 };
 
-const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
+export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({ 
   genotype,
+  title,
+  showBreed = true,
+  showColorTraits = true,
+  showHealthTests = false,
+  showTitle = true,
   showHealth = true,
-  showColor = true,
-  showTitle = true
+  showColor = true
 }) => {
-  if (!genotype) {
-    return (
-      <Card className="border-dashed border-gray-300 bg-gray-50">
-        <CardContent className="p-4 text-center text-gray-500">
-          No genetic data available
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const healthSummary = getHealthSummaryData(genotype);
-
+  // Make sure we have a valid genotype object, even if it's empty
+  const dogGenetics: DogGenotype = genotype || {
+    dog_id: '',
+    baseColor: 'unknown',
+    brownDilution: 'unknown',
+    dilution: 'unknown',
+    healthMarkers: {},
+    healthResults: []
+  };
+  
   return (
-    <Card>
-      <CardContent className="p-4">
-        {showTitle && (
-          <h3 className="font-medium mb-2">{genotype.name || 'Genetic Profile'}</h3>
-        )}
-        
-        {showColor && genotype.baseColor && (
-          <div className="mb-3">
-            <span className="text-sm font-medium block">Color:</span>
-            <div className="flex items-center mt-1">
-              <div 
-                className="w-4 h-4 rounded-full mr-2" 
-                style={{ 
-                  backgroundColor: genotype.colorProbabilities?.[0]?.hex || '#6b7280',
-                  border: '1px solid #ddd'
-                }} 
-              />
-              <span>{genotype.baseColor}</span>
+    <div className="space-y-4">
+      {showTitle && title && (
+        <h3 className="text-base font-semibold">{title}</h3>
+      )}
+      
+      {showBreed && dogGenetics.breed && (
+        <div className="flex items-center">
+          <span className="text-sm font-medium">Breed:</span>
+          <Badge variant="outline" className="ml-2">
+            {dogGenetics.breed}
+          </Badge>
+        </div>
+      )}
+      
+      {showColor && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold">Color Genetics</h4>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="bg-gray-50 p-2 rounded">
+              <span className="font-medium block">Base Color</span>
+              <span className="text-gray-600">{dogGenetics.baseColor || 'Unknown'}</span>
+            </div>
+            <div className="bg-gray-50 p-2 rounded">
+              <span className="font-medium block">Brown Dilution</span>
+              <span className="text-gray-600">{dogGenetics.brownDilution || 'Unknown'}</span>
+            </div>
+            <div className="bg-gray-50 p-2 rounded">
+              <span className="font-medium block">Dilution</span>
+              <span className="text-gray-600">{dogGenetics.dilution || 'Unknown'}</span>
             </div>
           </div>
-        )}
-        
-        {showHealth && healthSummary.totalTests > 0 && (
-          <div>
-            <span className="text-sm font-medium block mt-2">Health Status:</span>
-            <div className="space-y-1 mt-1">
-              <div className="flex justify-between text-sm">
-                <span className="text-green-600">Clear:</span>
-                <span>{healthSummary.clearCount}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-amber-600">Carrier:</span>
-                <span>{healthSummary.carrierCount}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-red-600">At Risk:</span>
-                <span>{healthSummary.atRiskCount}</span>
+          
+          {dogGenetics.colorProbabilities && dogGenetics.colorProbabilities.length > 0 && (
+            <div className="mt-2">
+              <h4 className="text-sm font-semibold">Possible Colors</h4>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {dogGenetics.colorProbabilities.map((color, idx) => (
+                  <Badge key={idx} variant="outline" className="text-xs">
+                    {color.color} ({Math.round(color.probability * 100)}%)
+                  </Badge>
+                ))}
               </div>
             </div>
+          )}
+        </div>
+      )}
+      
+      {showHealth && showHealthTests && dogGenetics.healthMarkers && Object.keys(dogGenetics.healthMarkers).length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold">Health Tests</h4>
+          <div className="space-y-1">
+            {Object.entries(dogGenetics.healthMarkers).map(([key, marker]) => (
+              <div key={key} className="flex items-center p-1 rounded hover:bg-gray-50">
+                {getStatusIcon(marker.status)}
+                <span className="ml-2 text-sm">{marker.name || key}</span>
+                <Badge variant="outline" className="ml-auto text-xs">
+                  {marker.status.replace('_', ' ')}
+                </Badge>
+              </div>
+            ))}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 };
 

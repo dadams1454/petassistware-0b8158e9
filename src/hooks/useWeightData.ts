@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
-import { WeightUnit, WeightRecord } from '@/types/puppyTracking';
+import { WeightUnit, WeightRecord } from '@/types/health';
 
 export type WeightDataHookResult = {
   weightData: WeightRecord[];
@@ -14,6 +14,7 @@ export type WeightDataHookResult = {
     weight_unit: WeightUnit;
     date: string;
     notes?: string;
+    birth_date?: string;
   }) => Promise<boolean>;
   refetch: () => Promise<void>;
 };
@@ -82,24 +83,21 @@ export function useWeightData(puppyId?: string, dogId?: string, birthDate?: stri
     weight_unit: WeightUnit;
     date: string;
     notes?: string;
+    birth_date?: string;
   }): Promise<boolean> => {
     try {
       // Create record data with either puppy_id or dog_id
-      let recordData: any;
+      let recordData: any = { ...data };
       
       if (puppyId) {
-        recordData = { 
-          puppy_id: puppyId, 
-          dog_id: '00000000-0000-0000-0000-000000000000', // Required field with default
-          ...data 
-        };
-      } else if (dogId) {
-        recordData = { 
-          dog_id: dogId, 
-          ...data 
-        };
-      } else {
-        throw new Error('Either puppyId or dogId must be provided');
+        recordData.puppy_id = puppyId;
+        if (!dogId) {
+          recordData.dog_id = null;
+        }
+      } 
+      
+      if (dogId) {
+        recordData.dog_id = dogId;
       }
       
       const { error } = await supabase.from('weight_records').insert(recordData);

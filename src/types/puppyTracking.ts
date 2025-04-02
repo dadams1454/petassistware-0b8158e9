@@ -19,6 +19,7 @@ export interface PuppyManagementStats {
   activeLitters: number;
   upcomingVaccinations: number;
   recentWeightChecks: number;
+  availablePuppies?: number;
 }
 
 export interface PuppyWithAge {
@@ -37,39 +38,10 @@ export interface PuppyWithAge {
   litters?: any;
 }
 
-export type WeightUnit = "lbs" | "kg" | "g" | "oz";
+export type WeightUnit = 'oz' | 'lb' | 'kg' | 'g' | 'lbs';
 
-export interface PuppyWeightRecord {
-  id: string;
-  puppy_id: string;
-  weight: number;
-  weight_unit: string;
-  date: string;
-  notes?: string;
-  created_at: string;
-}
-
-export interface WeightRecord {
-  id: string;
-  puppy_id?: string;
-  dog_id?: string;
-  weight: number;
-  weight_unit: WeightUnit;
-  date: string;
-  notes?: string;
-  created_at: string;
-  percent_change?: number;
-  age_days?: number;
-  formatted_date?: string;
-  birth_date?: string;
-  unit?: WeightUnit; // For compatibility
-}
-
-export interface WeightData extends WeightRecord {
-  birth_date?: string;
-  age_days?: number;
-  formatted_date?: string;
-}
+// Importing the common weight record from health.ts
+export type { WeightRecord, WeightData } from '@/types/health';
 
 export interface PuppyMilestone {
   id: string;
@@ -90,12 +62,19 @@ export interface SocializationCategory {
   id: string;
   name: string;
   description?: string;
+  color?: string;
+  examples?: string[];
+  importance?: number;
 }
 
 export interface SocializationProgress {
   puppy_id: string;
   category_id: string;
   progress_level: number;
+  categoryName?: string;
+  completionPercentage?: number;
+  count?: number;
+  target?: number;
 }
 
 export interface SocializationExperience {
@@ -110,7 +89,12 @@ export interface SocializationExperience {
   created_at: string;
 }
 
-export type SocializationReaction = 'Positive' | 'Neutral' | 'Negative';
+export interface SocializationReaction {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+}
 
 export interface VaccinationScheduleItem {
   id: string;
@@ -122,6 +106,8 @@ export interface VaccinationScheduleItem {
   created_at: string;
   is_completed?: boolean;
   completed?: boolean;
+  administered_by?: string;
+  lot_number?: string;
 }
 
 export interface VaccinationRecord {
@@ -131,9 +117,12 @@ export interface VaccinationRecord {
   due_date: string;
   vaccination_date?: string;
   completed?: boolean;
+  vaccination_type?: string;
+  administered_by?: string;
+  lot_number?: string;
+  notes?: string;
 }
 
 // Export the existing puppy age groups to maintain compatibility
 export { puppyAgeGroups as DEFAULT_AGE_GROUPS } from '@/data/puppyAgeGroups';
 export interface PuppyAgeGroup extends PuppyAgeGroupData {}
-

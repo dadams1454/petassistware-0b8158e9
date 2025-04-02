@@ -1,11 +1,17 @@
 
-import { WeightUnit, WeightRecord } from '@/types/puppyTracking';
+import { WeightUnit, WeightRecord } from '@/types/health';
 
 export interface WeightFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: {
+    weight: number;
+    weight_unit: WeightUnit;
+    date: string;
+    notes?: string;
+    birth_date?: string;
+  }) => Promise<boolean>;
   onCancel: () => void;
   defaultUnit: WeightUnit;
-  isSubmitting: boolean;
+  isSubmitting?: boolean;
 }
 
 export interface WeightChartViewProps {

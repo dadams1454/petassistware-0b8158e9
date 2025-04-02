@@ -60,17 +60,28 @@ export interface HealthRecord {
   created_at?: string;
 }
 
+// The primary WeightRecord definition that will be used across the app
 export interface WeightRecord {
   id: string;
-  dog_id: string;
+  puppy_id?: string;
+  dog_id?: string;
   weight: number;
   weight_unit: string;
   unit?: string; // Alias for compatibility with existing components
   date: string;
   notes?: string;
-  created_at: string;
+  created_at?: string;
   percent_change?: number;
   birth_date?: string; // For puppy weight tracking
+  age_days?: number;
+  formatted_date?: string;
+}
+
+// For backwards compatibility with code that expects WeightData
+export interface WeightData extends WeightRecord {
+  birth_date?: string;
+  age_days?: number;
+  formatted_date?: string;
 }
 
 export interface HealthIndicator {
@@ -125,5 +136,6 @@ export enum WeightUnitEnum {
   Ounces = 'oz'
 }
 
-// For backwards compatibility
-export type WeightUnit = string;
+// Export WeightUnit for compatibility with puppyTracking
+export type WeightUnit = 'oz' | 'lb' | 'kg' | 'g' | 'lbs';
+
