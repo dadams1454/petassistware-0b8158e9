@@ -14,6 +14,7 @@ const getStatusIcon = (status: string) => {
     case 'carrier':
       return <AlertTriangle className="h-4 w-4 text-amber-500" />;
     case 'at_risk':
+    case 'at risk':
     case 'affected':
       return <XCircle className="h-4 w-4 text-red-600" />;
     case 'unknown':
@@ -109,27 +110,11 @@ export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
   );
 };
 
-// Helper function to get icon for genetic status
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'clear':
-      return <Check className="h-4 w-4 text-green-600" />;
-    case 'carrier':
-      return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-    case 'at_risk':
-    case 'affected':
-      return <XCircle className="h-4 w-4 text-red-600" />;
-    case 'unknown':
-    default:
-      return <HelpCircle className="h-4 w-4 text-gray-400" />;
-  }
-};
-
 interface DogGenotypeCardProps {
   dogId: string;
   showHealthTests?: boolean;
   showColorTraits?: boolean;
-  genotype?: DogGenotype; // Make genotype optional
+  genotype?: DogGenotype; // Allow passing genotype directly
 }
 
 export const DogGenotypeCard: React.FC<DogGenotypeCardProps> = ({ 
@@ -223,3 +208,5 @@ export const DogGenotypeCard: React.FC<DogGenotypeCardProps> = ({
     </Card>
   );
 };
+
+export default DogGenotypeCard;

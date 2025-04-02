@@ -7,7 +7,7 @@ import { HistoricalCOIChartProps } from '@/types/genetics';
 import { formatDate } from '../utils/healthUtils';
 import { supabase } from '@/integrations/supabase/client';
 
-export const HistoricalCOIChart: React.FC<HistoricalCOIChartProps> = ({ dogId }) => {
+export const HistoricalCOIChart: React.FC<HistoricalCOIChartProps> = ({ dogId, generations = [] }) => {
   const [coiData, setCOIData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

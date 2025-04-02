@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useWeightData } from '@/hooks/useWeightData';
-import { WeightUnit } from '@/types/health';
+import { WeightUnit } from '@/types/puppyTracking';
 import { WeightFormProps } from '@/components/litters/puppies/weight/types';
 
 const WeightForm: React.FC<WeightFormProps> = ({ 
@@ -14,6 +14,7 @@ const WeightForm: React.FC<WeightFormProps> = ({
   birthDate,
   onSubmit,
   onCancel,
+  onSuccess,
   defaultUnit = 'oz',
   isSubmitting = false
 }) => {
@@ -47,6 +48,9 @@ const WeightForm: React.FC<WeightFormProps> = ({
         setWeight('');
         setDate(new Date().toISOString().split('T')[0]);
         setNotes('');
+        if (onSuccess) {
+          onSuccess();
+        }
       }
     } catch (error) {
       console.error('Error adding weight record:', error);

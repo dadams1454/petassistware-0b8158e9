@@ -1,5 +1,6 @@
 
-import { WeightUnit, WeightRecord } from '@/types/health';
+import { WeightUnit } from '@/types/puppyTracking';
+import { WeightRecord } from '@/types/health';
 
 export interface WeightFormProps {
   onSubmit: (data: {
@@ -14,6 +15,7 @@ export interface WeightFormProps {
   isSubmitting?: boolean;
   puppyId?: string;
   birthDate?: string;
+  onSuccess?: () => void;
 }
 
 export interface WeightChartViewProps {
@@ -31,6 +33,9 @@ export interface WeightTrackerProps {
   puppyId: string;
   onAddSuccess?: () => void;
   birthDate?: string;
+  isAddingWeight?: boolean;
+  onCancelAdd?: () => void;
+  onWeightAdded?: () => void;
 }
 
 // Use export type for re-exporting types to avoid isolatedModules error

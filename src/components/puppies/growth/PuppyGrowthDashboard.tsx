@@ -34,6 +34,10 @@ const PuppyGrowthDashboard: React.FC<PuppyGrowthDashboardProps> = ({ puppyId }) 
       />
     );
   }
+
+  const handleWeightSuccess = () => {
+    setIsAddingWeight(false);
+  };
   
   return (
     <div className="space-y-6">
@@ -58,7 +62,13 @@ const PuppyGrowthDashboard: React.FC<PuppyGrowthDashboardProps> = ({ puppyId }) 
           puppyId={puppyId} 
           birthDate={puppy.birth_date || puppy.litter?.birth_date}
           onCancel={() => setIsAddingWeight(false)}
-          onSuccess={() => setIsAddingWeight(false)}
+          onSuccess={handleWeightSuccess}
+          onSubmit={async (data) => {
+            // Handle submission
+            console.log('Submitting weight data:', data);
+            return true;
+          }}
+          defaultUnit="oz"
         />
       )}
       

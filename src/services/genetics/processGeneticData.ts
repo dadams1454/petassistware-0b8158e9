@@ -1,5 +1,5 @@
 
-import { DogGenotype } from '@/types/genetics';
+import { DogGenotype, HealthMarker } from '@/types/genetics';
 
 // Helper to extract color genetics from various data sources
 export const extractColorGenetics = (rawData: any): DogGenotype['colorGenetics'] => {
@@ -75,6 +75,7 @@ export const extractHealthMarkers = (rawData: any): DogGenotype['healthMarkers']
     // Extract from common format - iterate through all health tests
     Object.entries(healthData).forEach(([condition, data]: [string, any]) => {
       healthMarkers[condition] = {
+        name: condition, // Add name field
         status: data.status || data.result || 'unknown',
         testDate: data.test_date || data.date || new Date().toISOString().slice(0, 10),
         source: data.source || data.provider || 'genetic_test'
@@ -127,10 +128,17 @@ export const processGeneticData = (rawData: any): DogGenotype => {
     const healthMarkers = extractHealthMarkers(rawData);
     const traits = extractTraits(rawData);
     
+    const baseColor = colorGenetics?.base_color || 'Unknown';
+    const brownDilution = colorGenetics?.brown_dilution || 'Unknown';
+    const dilution = colorGenetics?.dilution || 'Unknown';
+    
     return {
       id: rawData.id,
       dog_id: rawData.dog_id,
       created_at: rawData.created_at,
+      baseColor: baseColor,
+      brownDilution: brownDilution,
+      dilution: dilution,
       colorGenetics,
       healthMarkers,
       traits,
@@ -142,6 +150,9 @@ export const processGeneticData = (rawData: any): DogGenotype => {
     return {
       id: rawData.id,
       dog_id: rawData.dog_id,
+      baseColor: 'Unknown',
+      brownDilution: 'Unknown',
+      dilution: 'Unknown',
       colorGenetics: {
         base_color: 'Unknown',
         brown_dilution: 'Unknown',

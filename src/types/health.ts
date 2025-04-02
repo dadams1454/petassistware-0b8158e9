@@ -1,140 +1,24 @@
+export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg' | 'lb';
 
-export enum HealthRecordTypeEnum {
-  Vaccination = 'vaccination',
-  Examination = 'examination',
-  Medication = 'medication',
-  Surgery = 'surgery',
-  Other = 'other',
-  Observation = 'observation',
-  Deworming = 'deworming',
-  Grooming = 'grooming',
-  Dental = 'dental',
-  Allergy = 'allergy',
-  Test = 'test'
-}
-
-export interface HealthRecord {
-  id: string;
-  dog_id: string;
-  record_type: HealthRecordTypeEnum;
-  title: string;
-  description?: string;
-  performed_by?: string;
-  date?: string;
-  visit_date: string; // Required for db insert
-  next_due_date?: string;
-  document_url?: string;
-  
-  // Medication fields
-  medication_name?: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency?: string;
-  duration?: number;
-  duration_unit?: string;
-  start_date?: string;
-  end_date?: string;
-  prescription_number?: string;
-  expiration_date?: string; // Added for MedicationTracker component
-  
-  // Vaccination fields
-  vaccine_name?: string;
-  manufacturer?: string;
-  lot_number?: string;
-  administration_route?: string;
-  
-  // Examination fields
-  examination_type?: string;
-  findings?: string;
-  recommendations?: string;
-  follow_up_date?: string;
-  
-  // Surgery fields
-  procedure_name?: string;
-  surgeon?: string;
-  anesthesia_used?: string;
-  recovery_notes?: string;
-  
-  // For database
-  vet_name?: string;
-  created_at?: string;
-}
-
-// The primary WeightRecord definition that will be used across the app
 export interface WeightRecord {
   id: string;
-  puppy_id?: string;
   dog_id?: string;
+  puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
-  unit?: string; // Alias for compatibility with existing components
   date: string;
   notes?: string;
-  created_at?: string;
   percent_change?: number;
-  birth_date?: string; // For puppy weight tracking
-  age_days?: number;
-  formatted_date?: string;
-}
-
-// For backwards compatibility with code that expects WeightData
-export interface WeightData extends WeightRecord {
+  created_at?: string;
   birth_date?: string;
   age_days?: number;
   formatted_date?: string;
 }
 
-export interface HealthIndicator {
-  id: string;
-  dog_id: string;
-  date: string;
-  energy?: string;
-  appetite?: string;
-  stool_consistency?: string;
-  abnormal: boolean;
-  notes?: string;
-  created_at: string;
-  created_by?: string;
+export interface WeightData {
+  weights: WeightRecord[];
+  isLoading: boolean;
+  error: Error | null;
 }
 
-// Add missing enums for health indicators
-export enum AppetiteLevelEnum {
-  Excellent = 'excellent',
-  Good = 'good',
-  Fair = 'fair',
-  Poor = 'poor',
-  None = 'none'
-}
-
-export enum EnergyLevelEnum {
-  Hyperactive = 'hyperactive',
-  High = 'high',
-  Normal = 'normal',
-  Low = 'low',
-  Lethargic = 'lethargic',
-  VeryHigh = 'very_high',
-  VeryLow = 'very_low'
-}
-
-export enum StoolConsistencyEnum {
-  Normal = 'normal',
-  Soft = 'soft',
-  Loose = 'loose',
-  Watery = 'watery',
-  Hard = 'hard',
-  Mucousy = 'mucousy',
-  Bloody = 'bloody',
-  Solid = 'solid',
-  SemiSolid = 'semi_solid'
-}
-
-// Add weight unit enum
-export enum WeightUnitEnum {
-  Pounds = 'lbs',
-  Kilograms = 'kg',
-  Grams = 'g',
-  Ounces = 'oz'
-}
-
-// Export WeightUnit for compatibility with puppyTracking
-export type WeightUnit = 'oz' | 'lb' | 'g' | 'kg' | 'lbs';
+// Other health-related interfaces can be added here

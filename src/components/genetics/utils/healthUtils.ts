@@ -8,6 +8,33 @@ export const formatConditionName = (condition: string): string => {
     .replace(/\b\w/g, l => l.toUpperCase());
 };
 
+export const formatDate = (dateString: string): string => {
+  // Format a date string to a readable format
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  } catch (e) {
+    return dateString;
+  }
+};
+
+export const getResultWithColorProps = (status: GeneticHealthStatus) => {
+  switch (status) {
+    case 'clear':
+      return { color: 'text-green-700', bgColor: 'bg-green-100' };
+    case 'carrier':
+      return { color: 'text-amber-700', bgColor: 'bg-amber-100' };
+    case 'at_risk':
+    case 'at risk':
+    case 'affected':
+      return { color: 'text-red-700', bgColor: 'bg-red-100' };
+    case 'unknown':
+    default:
+      return { color: 'text-gray-700', bgColor: 'bg-gray-100' };
+  }
+};
+
 export const generateHealthSummary = (healthMarkers: Record<string, HealthMarker>): HealthSummary => {
   let atRiskCount = 0;
   let carrierCount = 0;
@@ -17,6 +44,7 @@ export const generateHealthSummary = (healthMarkers: Record<string, HealthMarker
   Object.values(healthMarkers).forEach(marker => {
     switch (marker.status) {
       case 'at_risk':
+      case 'at risk':
       case 'affected':
         atRiskCount++;
         break;
@@ -58,7 +86,7 @@ export const calculateHealthRisks = (healthMarkers: Record<string, HealthMarker>
   const risks: HealthRisk[] = [];
   
   Object.entries(healthMarkers).forEach(([conditionKey, marker]) => {
-    if (marker.status === 'at_risk' || marker.status === 'affected') {
+    if (marker.status === 'at_risk' || marker.status === 'at risk' || marker.status === 'affected') {
       risks.push({
         status: marker.status,
         probability: 1.0,
@@ -99,7 +127,7 @@ export const generateHealthWarnings = (healthMarkers: Record<string, HealthMarke
   Object.values(healthMarkers).forEach(marker => {
     summary.totalTests++;
     
-    if (marker.status === 'at_risk' || marker.status === 'affected') {
+    if (marker.status === 'at_risk' || marker.status === 'at risk' || marker.status === 'affected') {
       summary.atRiskCount++;
     } else if (marker.status === 'carrier') {
       summary.carrierCount++;
@@ -118,5 +146,7 @@ export default {
   generateHealthSummary,
   generateRiskSummary,
   calculateHealthRisks,
-  generateHealthWarnings
+  generateHealthWarnings,
+  formatDate,
+  getResultWithColorProps
 };

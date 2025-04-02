@@ -1,5 +1,5 @@
 
-import { SocializationCategory } from '@/types/puppyTracking';
+import { SocializationCategory, SocializationReaction } from '@/types/puppyTracking';
 
 export const socializationCategories: SocializationCategory[] = [
   {
@@ -64,7 +64,7 @@ export const socializationCategories: SocializationCategory[] = [
 export const SOCIALIZATION_CATEGORIES = socializationCategories;
 
 // Export socialization reactions for compatibility
-export const SOCIALIZATION_REACTIONS = [
+export const SOCIALIZATION_REACTIONS: SocializationReaction[] = [
   {
     id: 'curious',
     name: 'Curious',

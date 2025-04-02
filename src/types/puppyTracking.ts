@@ -1,3 +1,4 @@
+
 /**
  * Types related to puppy tracking functionality
  */
@@ -37,7 +38,7 @@ export interface PuppyWithAge {
   litters?: any;
 }
 
-export type WeightUnit = 'oz' | 'lb' | 'kg' | 'g' | 'lbs';
+export type WeightUnit = 'oz' | 'lb' | 'g' | 'kg' | 'lbs';
 
 // Importing the common weight record from health.ts
 export type { WeightRecord, WeightData } from '@/types/health';
@@ -123,5 +124,7 @@ export interface VaccinationRecord {
 }
 
 // Export the existing puppy age groups to maintain compatibility
+export { socializationCategories as DEFAULT_SOCIALIZATION_CATEGORIES } from '@/data/socializationCategories';
+export { SOCIALIZATION_REACTIONS } from '@/data/socializationCategories';
 export { puppyAgeGroups as DEFAULT_AGE_GROUPS } from '@/data/puppyAgeGroups';
 export interface PuppyAgeGroup extends PuppyAgeGroupData {}

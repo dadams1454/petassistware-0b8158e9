@@ -146,7 +146,7 @@ export const GeneticImportDialog: React.FC<GeneticImportDialogProps> = ({
   };
   
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Import Genetic Test Results</DialogTitle>

@@ -56,7 +56,7 @@ export interface ColorProbability {
   hex?: string;
 }
 
-export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'affected' | 'unknown';
+export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'at risk' | 'affected' | 'unknown';
 
 export interface ManualTestEntry {
   test_type: string;
@@ -102,7 +102,7 @@ export interface CompactGenotypeViewProps {
 
 export interface HistoricalCOIChartProps {
   dogId: string;
-  generations: number[];
+  generations?: number[];
 }
 
 export interface HealthRisk {
