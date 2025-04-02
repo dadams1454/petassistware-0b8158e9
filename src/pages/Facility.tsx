@@ -3,10 +3,10 @@ import React from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FacilityDailyChecklist } from '@/components/facility/FacilityDailyChecklist';
-import { DogLetOutTab } from '@/components/facility/DogLetOutTab';
-import { InventoryManagement } from '@/components/facility/InventoryManagement';
-import { MaintenanceSchedule } from '@/components/facility/MaintenanceSchedule';
+import FacilityDailyChecklist from '@/components/facility/FacilityDailyChecklist';
+import DogLetOutTab from '@/components/facility/DogLetOutTab';
+import InventoryManagement from '@/components/facility/InventoryManagement';
+import MaintenanceSchedule from '@/components/facility/MaintenanceSchedule';
 
 const Facility: React.FC = () => {
   return (
