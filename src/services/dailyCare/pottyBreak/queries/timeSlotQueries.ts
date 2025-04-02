@@ -29,11 +29,12 @@ export const getPottyBreaksByDogAndTimeSlot2 = async (date: Date): Promise<Recor
     
     data.forEach(item => {
       const dogId = item.dog_id;
-      const sessionTime = item.potty_break_sessions?.session_time;
+      // Added safety check for potty_break_sessions
+      const sessionTimeObj = item.potty_break_sessions;
       
-      if (dogId && sessionTime) {
+      if (dogId && sessionTimeObj && sessionTimeObj.session_time) {
         // Convert the ISO timestamp to a formatted time string
-        const date = new Date(sessionTime);
+        const date = new Date(sessionTimeObj.session_time);
         const hours = date.getHours();
         const timeSlot = `${hours === 0 ? 12 : hours > 12 ? hours - 12 : hours}:00 ${hours >= 12 ? 'PM' : 'AM'}`;
         

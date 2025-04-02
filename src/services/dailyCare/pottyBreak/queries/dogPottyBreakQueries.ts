@@ -19,6 +19,17 @@ export const getPottyBreaksByDogAndDate = async (dogId: string, date: string): P
 
   // Transform the data to return just the potty breaks with proper date/time format
   return (data || []).map(item => {
+    if (!item.potty_break_sessions) {
+      console.warn('Missing potty_break_sessions data for item:', item);
+      return {
+        id: 'unknown',
+        date: 'unknown',
+        time: 'unknown',
+        created_at: new Date().toISOString(),
+        potty_break_dogs: [{ dog_id: dogId, session_id: 'unknown' }]
+      };
+    }
+    
     const session = item.potty_break_sessions;
     const sessionDate = new Date(session.session_time);
     return {

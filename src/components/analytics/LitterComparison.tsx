@@ -191,7 +191,7 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
               <SelectValue placeholder="Select a dam to view breeding history" />
             </SelectTrigger>
             <SelectContent>
-              {dams.map(dam => (
+              {dams && dams.map(dam => (
                 <SelectItem key={dam.id} value={dam.id}>
                   {dam.name} ({dam.litters?.length || 0} litters)
                 </SelectItem>

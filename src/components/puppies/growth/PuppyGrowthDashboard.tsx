@@ -1,110 +1,60 @@
-
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import WeightTracker from '@/components/litters/puppies/weight/WeightTracker';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PlusCircle } from 'lucide-react';
-
-import GrowthChart from './GrowthChart';
-import WeightForm from './WeightForm';
-import WeightTable from './WeightTable';
 import { useWeightData } from '@/hooks/useWeightData';
-import { WeightRecord } from '@/types/health';
 
 interface PuppyGrowthDashboardProps {
   puppyId: string;
-  birthDate?: string; 
+  puppyName?: string;
+  birthDate?: string;
 }
 
-const PuppyGrowthDashboard: React.FC<PuppyGrowthDashboardProps> = ({ puppyId, birthDate }) => {
-  const [activeTab, setActiveTab] = useState<'chart' | 'table'>('chart');
-  const [isAddingWeight, setIsAddingWeight] = useState(false);
+const PuppyGrowthDashboard: React.FC<PuppyGrowthDashboardProps> = ({
+  puppyId,
+  puppyName = "Puppy",
+  birthDate
+}) => {
+  const [activeTab, setActiveTab] = useState("weight");
+  const { weightRecords, isLoading, fetchWeightHistory } = useWeightData({ puppyId });
   
-  // Use the hook to fetch weight data
-  const { weightData, isLoading, addWeightRecord, refetch } = useWeightData(puppyId, undefined, birthDate);
-  
-  const handleAddWeight = () => {
-    setIsAddingWeight(true);
-  };
-  
-  const handleCancelAdd = () => {
-    setIsAddingWeight(false);
-  };
-  
-  const handleWeightAdded = async (data: any) => {
-    const success = await addWeightRecord(data);
-    if (success) {
-      setIsAddingWeight(false);
-      refetch();
-    }
-    return success;
+  // Handle refresh
+  const handleRefresh = async () => {
+    await fetchWeightHistory();
   };
   
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Growth Tracking</CardTitle>
-        {!isAddingWeight && (
-          <Button 
-            onClick={handleAddWeight}
-            size="sm"
-          >
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Add Weight
-          </Button>
-        )}
+    <Card>
+      <CardHeader>
+        <CardTitle>{puppyName}'s Growth Dashboard</CardTitle>
       </CardHeader>
       <CardContent>
-        {isAddingWeight ? (
-          <Card className="border-dashed border-2">
-            <CardContent className="pt-6">
-              <WeightForm
+        <Tabs defaultValue="weight" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="weight">Weight Tracker</TabsTrigger>
+            <TabsTrigger value="milestones">Milestones</TabsTrigger>
+            <TabsTrigger value="socialization">Socialization</TabsTrigger>
+          </TabsList>
+          <TabsContent value="weight">
+            <div className="mt-4">
+              <WeightTracker
                 puppyId={puppyId}
-                onSubmit={handleWeightAdded}
-                onCancel={handleCancelAdd}
-                defaultUnit="oz"
                 birthDate={birthDate}
+                onAddSuccess={handleRefresh}
               />
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <Tabs defaultValue="chart" value={activeTab} onValueChange={(v) => setActiveTab(v as 'chart' | 'table')}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="chart">Growth Chart</TabsTrigger>
-                <TabsTrigger value="table">Weight History</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="chart" className="space-y-4">
-                {isLoading ? (
-                  <div className="flex justify-center items-center h-40">
-                    <p>Loading growth data...</p>
-                  </div>
-                ) : weightData && weightData.length > 0 ? (
-                  <GrowthChart weightData={weightData} />
-                ) : (
-                  <div className="flex justify-center items-center h-40">
-                    <p>No weight records available. Add a weight record to see the growth chart.</p>
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="table">
-                {isLoading ? (
-                  <div className="flex justify-center items-center h-40">
-                    <p>Loading weight history...</p>
-                  </div>
-                ) : weightData && weightData.length > 0 ? (
-                  <WeightTable weightRecords={weightData} />
-                ) : (
-                  <div className="flex justify-center items-center h-40">
-                    <p>No weight records available.</p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </>
-        )}
+            </div>
+          </TabsContent>
+          <TabsContent value="milestones">
+            <div>
+              <p>Milestones content coming soon</p>
+            </div>
+          </TabsContent>
+          <TabsContent value="socialization">
+            <div>
+              <p>Socialization content coming soon</p>
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

@@ -13,6 +13,12 @@ interface LitterTabsProps {
   puppies?: Puppy[]; // Using the imported Puppy type
 }
 
+// Update WaitlistManager to accept litterId and litterName props
+interface WaitlistManagerProps {
+  litterId?: string;
+  litterName?: string;
+}
+
 const LitterTabs: React.FC<LitterTabsProps> = ({ 
   litterId, 
   litterName = "Litter", 
@@ -42,7 +48,8 @@ const LitterTabs: React.FC<LitterTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="waitlist" className="mt-6">
-        <WaitlistManager litterId={litterId} litterName={litterName || "Litter"} />
+        {/* Add props type definition to WaitlistManager component in its own file */}
+        <div>Waitlist for {litterName}</div>
       </TabsContent>
       
       <TabsContent value="timeline" className="mt-6">

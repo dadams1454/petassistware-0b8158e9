@@ -1,143 +1,142 @@
-
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
+import React, { useState, useEffect, useCallback } from 'react';
+import PageContainer from '@/components/common/PageContainer';
+import CareTracker from '@/components/dogs/components/care/CareTracker';
+import { DogCareStatus } from '@/types/dailyCare';
+import { fetchDogCareStatus } from '@/services/dailyCare/dogCareService';
+import { addDays, format, subDays } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Calendar, ClipboardList, Users, Clock, ListChecks } from 'lucide-react';
-import { EmptyState } from '@/components/ui/standardized';
-import { useRefresh } from '@/contexts/RefreshContext';
-import { DailyCareProvider } from '@/contexts/dailyCare';
-import DogTimeTable from '@/components/dogs/components/care/table/DogTimeTable';
-import { useDailyCare } from '@/contexts/dailyCare';
-import { useRefreshData } from '@/hooks/useRefreshData';
-import { useNavigate } from 'react-router-dom';
-import DogLetOutTab from '@/components/facility/DogLetOutTab';
-import CareAssignmentTab from '@/components/dogs/components/care/admin/CareAssignmentTab';
-import CareTaskScheduler from '@/components/dogs/components/care/admin/CareTaskScheduler';
-import StaffHoursTracker from '@/components/dogs/components/care/admin/StaffHoursTracker';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
-const DailyCareContent: React.FC = () => {
-  const { fetchAllDogsWithCareStatus } = useDailyCare();
-  const { currentDate } = useRefresh();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('timetable');
+// Update CareTrackerComponent to include onRefreshDogs prop
+interface CareTrackerComponentProps {
+  onRefreshDogs?: (showLoading?: boolean) => Promise<any>;
+}
 
-  // Use the centralized refresh hook
-  const { 
-    data: dogStatuses, 
-    isLoading, 
-    refresh: handleRefresh 
-  } = useRefreshData({
-    key: 'dogCare',
-    fetchData: async () => {
-      return await fetchAllDogsWithCareStatus(currentDate, true);
-    },
-    dependencies: [currentDate],
-    loadOnMount: true
-  });
+const DailyCare: React.FC = () => {
+  const [dogsStatus, setDogsStatus] = useState<DogCareStatus[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  const handleNavigateToDogs = () => {
-    navigate('/dogs');
+  const handleRefreshDogs = useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setIsRefreshing(true);
+    }
+    
+    try {
+      const formattedDate = format(currentDate, 'yyyy-MM-dd');
+      const status = await fetchDogCareStatus(formattedDate);
+      setDogsStatus(status);
+      return status;
+    } catch (error) {
+      console.error('Error refreshing dog status:', error);
+      return [];
+    } finally {
+      if (showLoading) {
+        setIsRefreshing(false);
+      }
+    }
+  }, [currentDate]);
+
+  useEffect(() => {
+    handleRefreshDogs();
+  }, [handleRefreshDogs]);
+
+  const handlePreviousDay = () => {
+    setCurrentDate(prevDate => subDays(prevDate, 1));
+  };
+
+  const handleNextDay = () => {
+    setCurrentDate(prevDate => addDays(prevDate, 1));
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setCurrentDate(date);
+      setIsDatePickerOpen(false);
+    }
+  };
+
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            Team Management Center
-          </h1>
-          <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Manage staff assignments, track hours, and schedule care tasks
-          </p>
-        </div>
-        <Button onClick={() => handleRefresh(true)} className="gap-2" disabled={isLoading}>
-          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh Data
-        </Button>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 mb-6">
-          <TabsTrigger value="timetable" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span>Time Table</span>
-          </TabsTrigger>
-          <TabsTrigger value="staff-hours" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <span>Staff Hours</span>
-          </TabsTrigger>
-          <TabsTrigger value="assignments" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>Staff Assignments</span>
-          </TabsTrigger>
-          <TabsTrigger value="scheduler" className="flex items-center gap-2">
-            <ListChecks className="h-4 w-4" />
-            <span>Task Scheduler</span>
-          </TabsTrigger>
-          <TabsTrigger value="dogletout" className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4" />
-            <span>Dog Let Out</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="timetable" className="mt-0">
-          {isLoading ? (
-            <Card className="p-8">
-              <div className="flex justify-center items-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              </div>
-            </Card>
-          ) : dogStatuses && dogStatuses.length > 0 ? (
-            <div className="space-y-6">
-              <DogTimeTable 
-                dogsStatus={dogStatuses} 
-                onRefresh={() => handleRefresh(true)} 
-                isRefreshing={isLoading}
-                currentDate={currentDate}
+    <PageContainer>
+      <div className="container mx-auto py-6">
+        <h1 className="text-3xl font-bold mb-6">Daily Care</h1>
+        
+        {/* Date Navigation */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handlePreviousDay}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="relative">
+              <Button
+                variant={isToday(currentDate) ? "default" : "outline"}
+                onClick={() => setIsDatePickerOpen(true)}
+                className="min-w-[180px]"
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {format(currentDate, 'MMMM d, yyyy')}
+                {isToday(currentDate) && " (Today)"}
+              </Button>
+              
+              <DatePicker
+                date={currentDate}
+                onSelect={handleDateChange}
+                open={isDatePickerOpen}
+                onOpenChange={setIsDatePickerOpen}
               />
             </div>
-          ) : (
-            <Card className="p-8">
-              <EmptyState
-                icon={<Users className="h-12 w-12 text-muted-foreground" />}
-                title="No Dogs Found"
-                description="Add dogs to your kennel to start tracking their daily care activities."
-                action={{
-                  label: "Add Dogs",
-                  onClick: handleNavigateToDogs
-                }}
-              />
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="staff-hours" className="mt-0">
-          <StaffHoursTracker />
-        </TabsContent>
-
-        <TabsContent value="assignments" className="mt-0">
-          <CareAssignmentTab dogStatuses={dogStatuses || []} isLoading={isLoading} onRefresh={handleRefresh} />
-        </TabsContent>
-
-        <TabsContent value="scheduler" className="mt-0">
-          <CareTaskScheduler dogStatuses={dogStatuses || []} isLoading={isLoading} onRefresh={handleRefresh} />
-        </TabsContent>
-
-        <TabsContent value="dogletout" className="mt-0">
-          <DogLetOutTab onRefreshDogs={handleRefresh} />
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-};
-
-// Wrap the component with the DailyCareProvider
-const DailyCare: React.FC = () => {
-  return (
-    <DailyCareProvider>
-      <DailyCareContent />
-    </DailyCareProvider>
+            
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handleNextDay}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <Button 
+            variant="outline" 
+            onClick={() => handleRefreshDogs(true)}
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+        </div>
+        
+        {/* Care Tracker Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <CareTracker 
+              dogsStatus={dogsStatus}
+              onRefresh={handleRefreshDogs}
+              isRefreshing={isRefreshing}
+              currentDate={currentDate}
+            />
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              {/* A component that doesn't need onRefreshDogs */}
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageContainer>
   );
 };
 

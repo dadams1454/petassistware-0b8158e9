@@ -8,7 +8,7 @@ export const socializationCategories: SocializationCategory[] = [
     description: 'Exposure to different types of people',
     color: 'blue',
     examples: ['Men with beards', 'People with hats', 'Children', 'Elderly'],
-    importance: 5
+    importance: 'high'
   },
   {
     id: '2',
@@ -16,7 +16,7 @@ export const socializationCategories: SocializationCategory[] = [
     description: 'Exposure to other animals',
     color: 'green',
     examples: ['Other dogs', 'Cats', 'Livestock', 'Wildlife'],
-    importance: 5
+    importance: 'high'
   },
   {
     id: '3',
@@ -24,7 +24,7 @@ export const socializationCategories: SocializationCategory[] = [
     description: 'Exposure to different environments',
     color: 'amber',
     examples: ['Parks', 'Urban areas', 'Rural areas', 'Bodies of water'],
-    importance: 4
+    importance: 'medium'
   },
   {
     id: '4',
@@ -32,7 +32,7 @@ export const socializationCategories: SocializationCategory[] = [
     description: 'Exposure to different sounds',
     color: 'purple',
     examples: ['Thunderstorms', 'Fireworks', 'Traffic', 'Construction noise'],
-    importance: 4
+    importance: 'medium'
   },
   {
     id: '5',
@@ -40,7 +40,7 @@ export const socializationCategories: SocializationCategory[] = [
     description: 'Walking on different surfaces',
     color: 'stone',
     examples: ['Grass', 'Gravel', 'Wood', 'Metal grates', 'Slippery floors'],
-    importance: 3
+    importance: 'low'
   },
   {
     id: '6',
@@ -48,7 +48,7 @@ export const socializationCategories: SocializationCategory[] = [
     description: 'Exposure to novel objects',
     color: 'cyan',
     examples: ['Umbrellas', 'Vacuum cleaners', 'Bicycles', 'Skateboards'],
-    importance: 3
+    importance: 'low'
   },
   {
     id: '7',
@@ -56,14 +56,14 @@ export const socializationCategories: SocializationCategory[] = [
     description: 'Tolerance of different types of handling',
     color: 'pink',
     examples: ['Nail trimming', 'Ear cleaning', 'Bathing', 'Teeth brushing'],
-    importance: 4
+    importance: 'medium'
   }
 ];
 
 // Export for backward compatibility
 export const SOCIALIZATION_CATEGORIES = socializationCategories;
 
-// Export socialization reactions for compatibility
+// Update socialization reactions to match the type in puppyTracking.ts
 export const SOCIALIZATION_REACTIONS: SocializationReaction[] = [
   {
     id: 'curious',

@@ -2,7 +2,7 @@
 import React from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { WaitlistManager } from '@/components/waitlist/WaitlistManager';
+import WaitlistManager from '@/components/waitlist/WaitlistManager';
 
 const Reservations: React.FC = () => {
   return (

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CustomerForm from './CustomerForm';
-import { CustomerWithMeta } from '@/types/customers';
+import { Customer, CustomerWithMeta } from '@/types/customers';
 
 interface CustomerDialogProps {
   isOpen: boolean;
@@ -31,7 +31,7 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
         <CustomerForm
-          customer={customer}
+          customer={customer as Customer}
           onSubmit={() => {
             if (onSuccess) onSuccess();
             onClose();

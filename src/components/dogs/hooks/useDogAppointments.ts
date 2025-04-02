@@ -8,7 +8,7 @@ export function useDogAppointments(dogs: DogProfile[]) {
   // Fetch all events
   const { data: allEvents } = useQuery({
     queryKey: ['events'],
-    queryFn: fetchEvents,
+    queryFn: () => fetchEvents(),
   });
   
   // Get upcoming appointments for each dog

@@ -31,7 +31,7 @@ const RequirementsDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       const { data, error } = await customSupabase
-        .from<ComplianceRequirementRow>('compliance_requirements')
+        .from<ComplianceRequirementRow, ComplianceRequirementRow>('compliance_requirements')
         .select('*');
       
       if (error) throw error;
@@ -126,7 +126,7 @@ const RequirementsDashboard: React.FC = () => {
       if (selectedRequirement) {
         // Update existing requirement
         const { error } = await customSupabase
-          .from<ComplianceRequirementRow>('compliance_requirements')
+          .from<ComplianceRequirementRow, ComplianceRequirementRow>('compliance_requirements')
           .update(updatedData)
           .eq('id', selectedRequirement.id);
 
@@ -139,7 +139,7 @@ const RequirementsDashboard: React.FC = () => {
       } else {
         // Insert new requirement
         const { error } = await customSupabase
-          .from<ComplianceRequirementRow>('compliance_requirements')
+          .from<ComplianceRequirementRow, ComplianceRequirementRow>('compliance_requirements')
           .insert(updatedData);
 
         if (error) throw error;
@@ -269,8 +269,7 @@ const RequirementsDashboard: React.FC = () => {
                 <TabsTrigger value="overdue">Overdue</TabsTrigger>
                 <TabsTrigger value="completed">Completed</TabsTrigger>
               </TabsList>
-            </Tabs>
-          </CardHeader>
+            </TabsHeader>
           <CardContent>
             {isLoading ? (
               <div className="flex justify-center py-8">

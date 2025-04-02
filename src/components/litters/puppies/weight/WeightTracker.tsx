@@ -1,26 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useWeightData } from '@/hooks/useWeightData';
 import WeightForm from '@/components/puppies/growth/WeightForm';
 import { WeightTrackerProps } from './types';
+import { WeightUnit } from '@/types/puppyTracking';
 
 const WeightTracker: React.FC<WeightTrackerProps> = ({
   puppyId,
   birthDate,
   onAddSuccess
 }) => {
-  const { weightData, isLoading, addWeightRecord } = useWeightData(puppyId);
+  const { weightRecords, isLoading, addWeightRecord } = useWeightData({ puppyId });
   const [chartData, setChartData] = useState<any[]>([]);
   const [isAddingWeight, setIsAddingWeight] = useState(false);
   
   // Format weight data for chart
   useEffect(() => {
-    if (!weightData) return;
+    if (!weightRecords) return;
     
-    const formattedData = weightData.map(record => {
+    const formattedData = weightRecords.map(record => {
       // Calculate age from birthDate and record.date if needed
       const age = birthDate && record.date ? 
         Math.floor((new Date(record.date).getTime() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24)) : 
@@ -34,16 +34,17 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
     });
     
     setChartData(formattedData);
-  }, [weightData, birthDate]);
+  }, [weightRecords, birthDate]);
   
   const handleWeightSubmit = async (data: any) => {
     try {
       await addWeightRecord({
         weight: parseFloat(data.weight),
-        weight_unit: data.weight_unit,
+        weight_unit: data.weight_unit as WeightUnit,
         date: data.date,
         notes: data.notes,
-        birth_date: birthDate
+        dog_id: '', // Empty string as it's required but we're tracking a puppy
+        updated_at: new Date().toISOString()
       });
       
       setIsAddingWeight(false);
@@ -83,7 +84,7 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
     );
   }
   
-  if (!weightData || weightData.length === 0) {
+  if (!weightRecords || weightRecords.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground mb-2">No weight records found</p>

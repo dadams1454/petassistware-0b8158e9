@@ -1,221 +1,139 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { SocializationCategory, SocializationReaction } from '@/types/puppyTracking';
 import { SOCIALIZATION_CATEGORIES, SOCIALIZATION_REACTIONS } from '@/data/socializationCategories';
-
-const formSchema = z.object({
-  category_id: z.string({
-    required_error: "Please select a category"
-  }),
-  experience: z.string().min(3, {
-    message: "Experience description must be at least 3 characters"
-  }),
-  experience_date: z.date({
-    required_error: "Please select a date"
-  }),
-  reaction: z.string().optional(),
-  notes: z.string().optional()
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface SocializationFormProps {
-  onSubmit: (data: FormValues) => void;
-  isSubmitting: boolean;
-  onCancel?: () => void;
+  puppyId: string;
+  onSubmit: (data: {
+    category: string;
+    experience: string;
+    date: string;
+    reaction?: string;
+    notes?: string;
+  }) => Promise<void>;
+  onCancel: () => void;
 }
 
-const SocializationForm: React.FC<SocializationFormProps> = ({ 
-  onSubmit, 
-  isSubmitting,
+const SocializationForm: React.FC<SocializationFormProps> = ({
+  puppyId,
+  onSubmit,
   onCancel
 }) => {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      category_id: '',
-      experience: '',
-      experience_date: new Date(),
-      reaction: '',
-      notes: ''
+  const { register, handleSubmit, reset } = useForm();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submitForm = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        category: selectedCategory || '',
+        experience: data.experience,
+        date: data.date,
+        reaction: selectedReaction || '',
+        notes: data.notes
+      });
+      reset();
+      setSelectedCategory(null);
+      setSelectedReaction(null);
+    } catch (error) {
+      console.error("Error submitting socialization record:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-  });
-  
-  const selectedCategory = form.watch('category_id');
-  const category = SOCIALIZATION_CATEGORIES.find(c => c.id === selectedCategory);
-  
-  const handleSubmit = (values: FormValues) => {
-    onSubmit(values);
   };
-  
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="category_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category*</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {SOCIALIZATION_CATEGORIES.map(category => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {category && (
-          <div className="text-sm p-3 bg-muted/50 rounded-md">
-            <p className="font-medium">{category.name}</p>
-            <p className="text-muted-foreground">{category.description}</p>
-            {category.examples && category.examples.length > 0 && (
-              <div className="mt-1">
-                <span className="text-xs text-muted-foreground">
-                  Examples: {category.examples.join(', ')}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-        
-        <FormField
-          control={form.control}
-          name="experience"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Experience*</FormLabel>
-              <FormControl>
-                <Input placeholder="What did the puppy experience?" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="experience_date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date*</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) => date > new Date()}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="reaction"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Puppy's Reaction</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="How did the puppy react?" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {SOCIALIZATION_REACTIONS.map(reaction => (
-                    <SelectItem key={reaction.id} value={reaction.id}>
-                      {reaction.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Additional observations or details..."
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="flex justify-end space-x-2 pt-2">
-          {onCancel && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onCancel}
-              disabled={isSubmitting}
+    <form onSubmit={handleSubmit(submitForm)} className="space-y-6">
+      {/* Category field */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Category</label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {SOCIALIZATION_CATEGORIES.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              className={`p-2 border rounded text-center transition-colors ${
+                selectedCategory === category.id ? 
+                `bg-${category.color}-100 border-${category.color}-500 text-${category.color}-700` : 
+                'hover:bg-gray-50'
+              }`}
+              onClick={() => setSelectedCategory(category.id)}
             >
-              Cancel
-            </Button>
-          )}
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Experience"}
-          </Button>
+              {category.name}
+            </button>
+          ))}
         </div>
-      </form>
-    </Form>
+      </div>
+      
+      {/* Experience field */}
+      <div>
+        <Label htmlFor="experience">Experience</Label>
+        <Input
+          id="experience"
+          type="text"
+          placeholder="Describe the experience"
+          {...register("experience", { required: true })}
+        />
+      </div>
+      
+      {/* Date field */}
+      <div>
+        <Label htmlFor="date">Date</Label>
+        <Input
+          id="date"
+          type="date"
+          {...register("date", { required: true })}
+        />
+      </div>
+      
+      {/* Reaction field */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Reaction</label>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          {SOCIALIZATION_REACTIONS.map((reaction) => (
+            <button
+              key={reaction.id}
+              type="button"
+              className={`p-2 border rounded text-center transition-colors ${
+                selectedReaction === reaction.id ? 
+                `bg-${reaction.color}-100 border-${reaction.color}-500 text-${reaction.color}-700` : 
+                'hover:bg-gray-50'
+              }`}
+              onClick={() => setSelectedReaction(reaction.id)}
+            >
+              {reaction.name}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Notes field */}
+      <div>
+        <Label htmlFor="notes">Notes</Label>
+        <Input
+          id="notes"
+          type="text"
+          placeholder="Any notes about this experience"
+          {...register("notes")}
+        />
+      </div>
+      
+      {/* Submit/Cancel buttons */}
+      <div className="flex justify-end space-x-2">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Add Experience"}
+        </Button>
+      </div>
+    </form>
   );
 };
 

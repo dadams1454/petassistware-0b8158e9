@@ -43,7 +43,7 @@ const LicenseManagement: React.FC = () => {
     setIsLoading(true);
     try {
       const { data, error } = await customSupabase
-        .from<LicenseRow>('licenses')
+        .from<LicenseRow, LicenseRow>('licenses')
         .select('*');
       
       if (error) throw error;
@@ -123,7 +123,7 @@ const LicenseManagement: React.FC = () => {
       if (selectedLicense) {
         // Update existing license
         const { error } = await customSupabase
-          .from<LicenseRow>('licenses')
+          .from<LicenseRow, LicenseRow>('licenses')
           .update(updatedData)
           .eq('id', selectedLicense.id);
 
@@ -136,7 +136,7 @@ const LicenseManagement: React.FC = () => {
       } else {
         // Insert new license
         const { error } = await customSupabase
-          .from<LicenseRow>('licenses')
+          .from<LicenseRow, LicenseRow>('licenses')
           .insert(updatedData);
 
         if (error) throw error;
