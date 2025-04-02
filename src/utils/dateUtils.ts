@@ -70,3 +70,25 @@ export const formatDateToYYYYMMDD = (date: Date | null | undefined): string | nu
     return null;
   }
 };
+
+/**
+ * Calculate age in weeks and days from a birthdate
+ */
+export const calculateAge = (birthDate: string | Date | null | undefined): { weeks: number; days: number } => {
+  if (!birthDate) return { weeks: 0, days: 0 };
+  
+  try {
+    const birth = typeof birthDate === 'string' ? new Date(birthDate) : birthDate;
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - birth.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    const weeks = Math.floor(diffDays / 7);
+    const days = diffDays % 7;
+    
+    return { weeks, days };
+  } catch (error) {
+    console.error('Error calculating age:', error);
+    return { weeks: 0, days: 0 };
+  }
+};

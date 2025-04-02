@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -6,13 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Baby, Check, Dog, Heart, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import BackButton from '@/components/common/BackButton';
 import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { createLitter } from '@/services/litterService';
 
 interface WelpingStepGuideProps {
   currentStep: number;
@@ -27,6 +27,7 @@ const WelpingStepGuide: React.FC<WelpingStepGuideProps> = ({ currentStep, setCur
   const [birthDate, setBirthDate] = useState<Date | undefined>(new Date());
   const [litterName, setLitterName] = useState<string>('');
   const [isCreating, setIsCreating] = useState(false);
+  const { user } = useAuth();
   
   // Fetch female dogs for dam selection
   const { data: femaleDogs } = useQuery({
@@ -85,48 +86,29 @@ const WelpingStepGuide: React.FC<WelpingStepGuideProps> = ({ currentStep, setCur
     setIsCreating(true);
     
     try {
-      // Format date for database
-      const formattedDate = birthDate.toISOString().split('T')[0];
+      const result = await createLitter({
+        damId: selectedDamId,
+        sireId: selectedSireId || undefined,
+        birthDate: birthDate,
+        litterName: litterName,
+        userId: user?.id
+      });
       
-      // Create the litter
-      const { data, error } = await supabase
-        .from('litters')
-        .insert({
-          dam_id: selectedDamId,
-          sire_id: selectedSireId || null,
-          birth_date: formattedDate,
-          litter_name: litterName || null,
-          breeder_id: '00000000-0000-0000-0000-000000000000', // This would be the current user's ID
-          status: 'active'
-        })
-        .select();
+      if (result.success && result.litterId) {
+        toast({
+          title: "Litter Created",
+          description: "You can now begin recording puppies for this litter",
+        });
         
-      if (error) throw error;
-      
-      // Update the dam's status to reflect the whelping
-      await supabase
-        .from('dogs')
-        .update({ 
-          is_pregnant: false
-        })
-        .eq('id', selectedDamId);
-      
-      toast({
-        title: "Litter Created",
-        description: "You can now begin recording puppies for this litter",
-      });
-      
-      // Navigate to the new litter
-      if (data && data[0]) {
-        onLitterCreated(data[0].id);
+        // Navigate to the new litter
+        onLitterCreated(result.litterId);
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "There was a problem creating the litter. Please try again.",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      console.error("Error creating litter:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem creating the litter. Please try again.",
-        variant: "destructive"
-      });
     } finally {
       setIsCreating(false);
     }

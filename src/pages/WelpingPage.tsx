@@ -12,6 +12,7 @@ import WelpingStepGuide from '@/components/welping/WelpingStepGuide';
 import LoadingState from '@/components/welping/LoadingState';
 import ErrorState from '@/components/welping/ErrorState';
 import PageContainer from '@/components/common/PageContainer';
+import { getLitterById } from '@/services/litterService';
 
 const WelpingPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,19 +34,9 @@ const WelpingPage = () => {
       
       if (!id) throw new Error('Litter ID is required');
       
-      const { data, error } = await supabase
-        .from('litters')
-        .select(`
-          *,
-          dam:dogs!litters_dam_id_fkey(id, name, breed, color, photo_url),
-          sire:dogs!litters_sire_id_fkey(id, name, breed, color, photo_url),
-          puppies!puppies_litter_id_fkey(*)
-        `)
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      return data as unknown as Litter;
+      const result = await getLitterById(id);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     },
     enabled: !!id
   });
