@@ -109,18 +109,18 @@ export interface PuppyWeightRecord {
 export type WeightUnit = 'g' | 'oz' | 'lbs' | 'kg' | 'lb';
 
 // Define WeightRecord for backward compatibility
-export interface WeightRecord {
+export interface WeightRecord extends Partial<PuppyWeightRecord> {
   id: string;
-  dog_id?: string; // Required by some components
-  puppy_id?: string; // Make puppy_id optional for compatibility
+  dog_id?: string;
+  puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
   date: string;
   notes?: string;
   created_at: string;
   updated_at?: string;
-  age_days?: number; // Add age_days property
-  birth_date?: string; // Add birth_date property
+  age_days?: number;
+  birth_date?: string;
 }
 
 // Health tracking for puppies
@@ -191,8 +191,16 @@ export interface SocializationCategory {
 // Update the socialization reaction types
 export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'very_positive' | 'fearful' | 'cautious' | 'very_fearful';
 
-// Update socialization reaction interface to be an object instead of just a string
+// Socialization reaction interface
 export interface SocializationReaction {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+}
+
+// Add the SocializationReactionObject interface that matches the same structure as SocializationReaction
+export interface SocializationReactionObject {
   id: string;
   name: string;
   color: string;

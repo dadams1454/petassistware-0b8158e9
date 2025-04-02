@@ -15,6 +15,6 @@ export interface Customer {
 }
 
 export interface CustomerWithMeta extends Customer {
-  // Making address optional already handled in the base Customer interface
-  metadata?: Json;
+  // All properties are already handled in the base Customer interface
+  // Note: we're inheriting all properties from Customer including the optional ones
 }

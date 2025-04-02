@@ -1,7 +1,7 @@
 
 // Re-export types from various files
-export * from './customer';
-export * from './task';
+export type * from './customer';
+export type * from './task';
 
 // Re-export from litter with explicit renaming to avoid ambiguity
 export type { 
