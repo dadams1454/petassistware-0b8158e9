@@ -30,7 +30,7 @@ interface WeightData {
   weight_unit: string;
 }
 
-interface WeightTrackingGraphProps {
+export interface WeightTrackingGraphProps {
   puppyId: string;
   puppyName: string;
   birthDate?: string;

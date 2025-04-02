@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, subDays } from 'date-fns';
@@ -42,7 +41,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Plus, RefreshCw, Edit, Trash2 } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
-import PuppyCareLog from './PuppyCareLog';
+import PuppyCareLog from '@/components/puppies/dashboard/PuppyCareLog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SectionHeader } from '@/components/ui/standardized';
@@ -116,6 +115,7 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
     enabled: !!puppies && puppies.length > 0 && !!dateRange?.from && !!dateRange?.to,
   });
 
+  // Fix the useMutation typing to include isPending property (renamed from isLoading in recent versions)
   const addPuppyMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase
@@ -269,6 +269,11 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
     return diffInDays;
   };
 
+  // Fix the refetch handling
+  const handleRefresh = () => {
+    refetch().catch(console.error);
+  };
+
   if (isLoading) return <div>Loading puppies...</div>;
   if (error) return <div>Error: {(error as Error).message}</div>;
 
@@ -378,7 +383,7 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
                 />
               </PopoverContent>
             </Popover>
-            <Button onClick={() => refetch()} disabled={isLoading}>
+            <Button onClick={handleRefresh} disabled={isLoading}>
               <RefreshCw className="mr-2 h-4 w-4" /> Refresh
             </Button>
           </div>
@@ -387,7 +392,7 @@ const WelpingDashboard: React.FC<WelpingDashboardProps> = ({ litterId }) => {
             <PuppyCareLog
               key={puppy.id}
               puppyId={puppy.id}
-              puppyName={puppy.name} 
+              puppyName={puppy.name}
               puppyGender={puppy.gender}
               puppyColor={puppy.color}
               puppyAge={calculateAgeInDays(puppy.created_at)}

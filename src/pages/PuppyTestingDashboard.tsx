@@ -479,10 +479,18 @@ const PuppyTestingDashboard = () => {
                 <TabsTrigger value="weight">Weight Tracking</TabsTrigger>
                 <TabsTrigger value="milestones">Milestones</TabsTrigger>
               </TabsList>
+              
               <TabsContent value="care">
                 <PuppyCareLog 
                   puppyId={selectedPuppyId} 
-                  onSuccess={handleCareLogAdded} 
+                  puppyName={getSelectedPuppy()?.name || 'Puppy'}
+                  puppyGender={getSelectedPuppy()?.gender || 'Unknown'}
+                  puppyColor={getSelectedPuppy()?.color || 'Unknown'}
+                  puppyAge={litter?.birth_date 
+                    ? differenceInDays(new Date(), new Date(litter.birth_date))
+                    : 0}
+                  onSuccess={handleCareLogAdded}
+                  onRefresh={() => fetchCareLogs()}
                 />
               </TabsContent>
               <TabsContent value="weight">

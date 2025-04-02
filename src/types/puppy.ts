@@ -30,3 +30,24 @@ export interface Puppy {
   updated_at?: string;
   is_test_data?: boolean;
 }
+
+export interface PuppyWeight {
+  id: string;
+  puppy_id: string;
+  weight_grams: number;
+  weight_unit: string;
+  weight_date: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PuppyCareLogProps {
+  puppyId: string;
+  puppyName: string;
+  puppyGender: string;
+  puppyColor: string;
+  puppyAge: number;
+  onSuccess?: () => void;
+  onRefresh?: () => void;
+}
