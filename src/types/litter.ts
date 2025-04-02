@@ -73,7 +73,7 @@ export interface Litter {
   sire_id: string;
   birth_date: string;
   expected_go_home_date?: string;
-  status?: 'active' | 'completed' | 'planned';
+  status?: 'active' | 'completed' | 'planned' | 'archived';
   male_count?: number;
   female_count?: number;
   puppy_count?: number;

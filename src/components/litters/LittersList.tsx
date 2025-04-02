@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { Columns, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,12 +8,9 @@ import LitterCardView from './views/LitterCardView';
 import { Litter } from '@/types/litter'; 
 import { useLitterActions } from './hooks/useLitterActions';
 
-// Update the type to include "archived" status
-type LitterStatus = 'planned' | 'active' | 'completed' | 'archived';
-
-// Update the Litter interface to include the correct status type
-interface ExtendedLitter extends Litter {
-  status: LitterStatus;
+// Use the updated Litter type that includes 'archived' status
+interface ExtendedLitter extends Omit<Litter, 'status'> {
+  status: 'planned' | 'active' | 'completed' | 'archived';
 }
 
 interface LittersListProps {
@@ -50,6 +46,7 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
 
   // Organize litters by status and dam gender
   const organizedLitters: OrganizedLitters = useMemo(() => {
+    // Treat all litters as having the expanded status type
     const typedLitters = litters as ExtendedLitter[];
     
     const activeLitters = typedLitters.filter(litter => 
@@ -65,9 +62,9 @@ const LittersList: React.FC<LittersListProps> = ({ litters, onEditLitter, onRefr
     );
 
     return {
-      active: activeLitters,
-      other: otherActiveLitters,
-      archived: archivedLitters
+      active: activeLitters as Litter[],
+      other: otherActiveLitters as Litter[],
+      archived: archivedLitters as Litter[]
     };
   }, [litters]);
 

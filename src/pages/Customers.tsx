@@ -6,10 +6,20 @@ import CustomersList from '@/components/customers/CustomersList';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import CustomerDialog from '@/components/customers/CustomerDialog';
-import { CustomerWithMeta, CustomerFilter, SortField, SortOrder } from '@/types/customers';
+import { CustomerWithMeta } from '@/types/customer';
 
-// Export types for other components
-export type { CustomerWithMeta, CustomerFilter, SortField, SortOrder };
+// Export types for other components using alias to avoid conflict
+import { 
+  CustomerFilter, 
+  SortField, 
+  SortOrder 
+} from '@/types/customers';
+
+export type { 
+  CustomerFilter, 
+  SortField, 
+  SortOrder 
+};
 
 const Customers: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -54,6 +64,8 @@ const Customers: React.FC = () => {
           isOpen={isDialogOpen}
           onClose={handleDialogClose}
           customer={selectedCustomer}
+          // Added trigger to support contracts/CustomerSelector
+          trigger={undefined}
         />
       </div>
     </PageContainer>

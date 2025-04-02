@@ -8,11 +8,9 @@ import { DatePicker } from '@/components/ui/date-picker';
 
 const DailyCare: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const handleDateSelect = (newDate: Date) => {
     setDate(newDate);
-    setIsDatePickerOpen(false);
   };
 
   return (

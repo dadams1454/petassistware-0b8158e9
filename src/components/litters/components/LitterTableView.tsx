@@ -1,113 +1,108 @@
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Litter } from '@/types/litter';
+import { 
+  MoreHorizontal, 
+  Pencil, 
+  Trash, 
+  Archive, 
+  RotateCcw
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Archive, Unarchive } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-type LitterStatus = 'planned' | 'active' | 'completed' | 'archived';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Litter } from '@/types/litter';
 
 interface LitterTableViewProps {
   litters: Litter[];
   onEditLitter: (litter: Litter) => void;
   onDeleteLitter: (litter: Litter) => void;
-  onArchiveLitter: (litter: Litter) => void;
-  onUnarchiveLitter: (litter: Litter) => void;
+  onArchiveLitter: (litter: Litter) => Promise<void>;
+  onUnarchiveLitter: (litter: Litter) => Promise<void>;
 }
 
-const LitterTableView: React.FC<LitterTableViewProps> = ({
-  litters,
-  onEditLitter,
+const LitterTableView: React.FC<LitterTableViewProps> = ({ 
+  litters, 
+  onEditLitter, 
   onDeleteLitter,
   onArchiveLitter,
   onUnarchiveLitter
 }) => {
   return (
-    <div className="w-full">
-      <Table>
-        <TableCaption>A list of your recent litters.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Litter Name</TableHead>
-            <TableHead>Dam</TableHead>
-            <TableHead>Sire</TableHead>
-            <TableHead>Birth Date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {litters.map((litter) => {
-            const isArchived = (litter.status as LitterStatus) === 'archived';
-
-            return (
-              <TableRow key={litter.id}>
-                <TableCell className="font-medium">{litter.litter_name || 'N/A'}</TableCell>
-                <TableCell>{litter.dam?.name || 'N/A'}</TableCell>
-                <TableCell>{litter.sire?.name || 'N/A'}</TableCell>
-                <TableCell>
-                  {litter.birth_date
-                    ? new Date(litter.birth_date).toLocaleDateString()
-                    : 'N/A'}
-                </TableCell>
-                <TableCell>{litter.status || 'N/A'}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEditLitter(litter)}
-                    >
-                      <Edit className="h-4 w-4" />
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Name
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Dam
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Sire
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Birth Date
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Puppies
+            </th>
+            <th className="relative px-6 py-3">
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {litters.map((litter) => (
+            <tr key={litter.id}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {litter.litter_name || 'Unnamed Litter'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {litter.dam?.name || 'Unknown'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {litter.sire?.name || 'Unknown'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {new Date(litter.birth_date).toLocaleDateString()}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {litter.puppy_count || 0}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDeleteLitter(litter)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                    {isArchived ? (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onUnarchiveLitter(litter)}
-                      >
-                        <Unarchive className="h-4 w-4" />
-                      </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onEditLitter(litter)}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    {litter.status === 'archived' ? (
+                      <DropdownMenuItem onClick={() => onUnarchiveLitter(litter)}>
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Unarchive
+                      </DropdownMenuItem>
                     ) : (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onArchiveLitter(litter)}
-                        className={cn(isArchived && "hidden")}
-                      >
-                        <Archive className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenuItem onClick={() => onArchiveLitter(litter)}>
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive
+                      </DropdownMenuItem>
                     )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={6} className="text-center">
-              {litters.length} litters in total
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+                    <DropdownMenuItem onClick={() => onDeleteLitter(litter)}>
+                      <Trash className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

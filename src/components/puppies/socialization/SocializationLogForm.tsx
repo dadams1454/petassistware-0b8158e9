@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,7 @@ import { SocializationCategory, SocializationReaction } from '@/types/puppyTrack
 interface SocializationLogFormProps {
   puppyId: string;
   categories: SocializationCategory[];
-  reactions: SocializationReaction[];
+  reactions: string[];
   onSubmit: (data: {
     category_id: string;
     experience: string;
@@ -161,8 +160,11 @@ const SocializationLogForm: React.FC<SocializationLogFormProps> = ({
                 </FormControl>
                 <SelectContent>
                   {reactions.map((reaction) => (
-                    <SelectItem key={reaction.id} value={reaction.id}>
-                      {reaction.name}
+                    <SelectItem 
+                      key={reaction} 
+                      value={reaction}
+                    >
+                      {reaction.charAt(0).toUpperCase() + reaction.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>

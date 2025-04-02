@@ -104,7 +104,11 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
     if (!litterDetails) return [];
     
     return litterDetails.map(litter => {
-      const sireData = litter.sire as Sire;
+      // Fix: Access the first element of the array instead of treating it as an object
+      const sireData = Array.isArray(litter.sire) && litter.sire.length > 0 
+        ? litter.sire[0] 
+        : { name: 'Unknown', id: '', breed: '', color: '' };
+        
       return {
         name: litter.litter_name || `Litter (${new Date(litter.birth_date).toLocaleDateString()})`,
         count: litter.puppies.length,
@@ -120,7 +124,11 @@ const LitterComparison: React.FC<LitterComparisonProps> = ({ className }) => {
     if (!litterDetails) return [];
     
     return litterDetails.map(litter => {
-      const sireData = litter.sire as Sire;
+      // Fix: Access the first element of the array instead of treating it as an object
+      const sireData = Array.isArray(litter.sire) && litter.sire.length > 0 
+        ? litter.sire[0] 
+        : { name: 'Unknown', id: '', breed: '', color: '' };
+        
       const birthWeights = litter.puppies
         .filter(puppy => puppy.birth_weight)
         .map(puppy => parseFloat(puppy.birth_weight));

@@ -1,4 +1,3 @@
-
 import { Litter } from './litter';
 
 // Basic puppy information with additional age properties
@@ -189,16 +188,16 @@ export interface SocializationCategory {
   examples?: string[];
 }
 
-// Socialization reaction interface
-export interface SocializationReactionObject {
+// Update the socialization reaction types
+export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'very_positive' | 'fearful' | 'cautious' | 'very_fearful';
+
+// Update socialization reaction interface to be an object instead of just a string
+export interface SocializationReaction {
   id: string;
   name: string;
   color: string;
-  description: string;
+  description?: string;
 }
-
-// Socialization reaction type
-export type SocializationReaction = 'positive' | 'neutral' | 'negative';
 
 // Socialization experience records
 export interface SocializationExperience {
@@ -207,7 +206,7 @@ export interface SocializationExperience {
   category_id: string;
   experience_type: string;
   experience_date: string;
-  reaction: SocializationReaction;
+  reaction: SocializationReactionType;
   notes?: string;
   created_at: string;
   updated_at?: string;
