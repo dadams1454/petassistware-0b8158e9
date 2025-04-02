@@ -1,44 +1,38 @@
 
 import React from 'react';
-import { Calendar } from '@/components/ui/calendar';
-import DashboardCard from '@/components/dashboard/DashboardCard';
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
-interface CalendarSidebarProps {
-  selectedDate: Date | undefined;
-  setSelectedDate: (date: Date | undefined) => void;
-  eventDates: Date[];
-}
-
-const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ 
-  selectedDate, 
-  setSelectedDate, 
-  eventDates 
-}) => {
+const CalendarSidebar: React.FC = () => {
   return (
-    <DashboardCard className="md:col-span-1" noPadding={false}>
-      <Calendar
-        mode="single"
-        selected={selectedDate}
-        onSelect={setSelectedDate}
-        className="w-full pointer-events-auto"
-        modifiers={{
-          hasEvent: (date) => 
-            eventDates.some(eventDate => 
-              eventDate.getDate() === date.getDate() && 
-              eventDate.getMonth() === date.getMonth() && 
-              eventDate.getFullYear() === date.getFullYear()
-            )
-        }}
-        modifiersStyles={{
-          hasEvent: {
-            fontWeight: 'bold',
-            backgroundColor: 'rgb(243 244 246)',
-            color: 'rgb(79 70 229)'
-          }
-        }}
-      />
-    </DashboardCard>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Upcoming Events</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm">
+            <p className="text-muted-foreground">No upcoming events</p>
+          </div>
+          <Button size="sm" className="w-full mt-4">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Event
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm space-y-2">
+            <p className="text-muted-foreground">Filter options will appear here</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

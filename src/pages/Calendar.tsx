@@ -1,8 +1,14 @@
+
 import React from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
-import { CalendarSidebar } from '@/components/calendar/CalendarSidebar';
-import { EventList } from '@/components/calendar/EventList';
+import CalendarSidebar from '@/components/calendar/CalendarSidebar';
+import EventList from '@/components/calendar/EventList';
+import { Event, NewEvent, EVENT_TYPES } from '@/types/events';
+
+// Export the types for other components to use
+export type { Event, NewEvent };
+export { EVENT_TYPES };
 
 const Calendar: React.FC = () => {
   return (

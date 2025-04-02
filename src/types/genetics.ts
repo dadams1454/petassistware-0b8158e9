@@ -1,7 +1,8 @@
+
 // Dog Genotype Types
 export interface DogGenotype {
   dog_id: string;
-  id?: string; // Adding id field
+  id?: string;
   name?: string;
   breed?: string;
   baseColor: string;
@@ -11,9 +12,9 @@ export interface DogGenotype {
   healthMarkers?: Record<string, HealthMarker>;
   healthResults?: HealthResult[];
   colorProbabilities?: ColorProbability[];
-  colorGenetics?: any; // Adding colorGenetics field
-  traits?: any; // Adding traits field
-  updated_at?: string; // Adding updated_at field
+  colorGenetics?: any;
+  traits?: any;
+  updated_at?: string;
 }
 
 export interface HealthMarker {
@@ -22,7 +23,7 @@ export interface HealthMarker {
   testDate?: string;
   lab?: string;
   probability?: number;
-  source?: string; // Adding source field
+  source?: string;
 }
 
 export interface HealthResult {
@@ -47,7 +48,7 @@ export interface GeneticImportResult {
   dogId: string;
   provider?: string;
   testsImported: number;
-  importedTests?: number; // Adding importedTests field for compatibility
+  importedTests?: number;
   errors?: string[];
 }
 
@@ -61,14 +62,12 @@ export interface HealthRisk {
 
 export interface HealthWarning {
   condition: string;
-  // Make these optional but keep them for backward compatibility
   message?: string;
   actionRequired?: boolean;
-  // Add new fields that are being used in components
   title?: string;
   description?: string;
   action?: string;
-  severity: 'high' | 'medium' | 'low' | 'critical'; // Adding 'critical' severity
+  severity: 'high' | 'medium' | 'low' | 'critical';
   riskLevel?: string;
   affectedPercentage?: number;
 }
@@ -98,7 +97,7 @@ export interface HistoricalCOIChartProps {
   generations?: number[];
 }
 
-// Adding TestResult for useGeneticDataImport
+// Testing types
 export interface TestResult {
   id: string;
   name: string;

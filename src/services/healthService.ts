@@ -2,82 +2,21 @@
 import { supabase } from '@/integrations/supabase/client';
 import { HealthRecord, HealthRecordTypeEnum, WeightRecord, WeightUnit } from '@/types/health';
 
-// Fix the issue with record type incompatibility
-export const addHealthRecord = async (record: Omit<HealthRecord, 'id' | 'created_at'>): Promise<HealthRecord> => {
-  try {
-    // Ensure record_type is a valid enum value
-    const validatedRecord = {
-      ...record,
-      // Convert string record_type to enum if needed
-      record_type: record.record_type || HealthRecordTypeEnum.Other,
-      // Set default values for required fields
-      vet_name: record.vet_name || 'Unknown', // This addresses the required property issue
-      visit_date: record.visit_date || new Date().toISOString().split('T')[0], // Required field
-    };
-    
-    const { data, error } = await supabase
-      .from('health_records')
-      .insert(validatedRecord)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as HealthRecord;
-  } catch (error) {
-    console.error('Error adding health record:', error);
-    throw error;
-  }
-};
-
-// Fix bulk insert of health records
-export const bulkAddHealthRecords = async (records: Omit<HealthRecord, 'id' | 'created_at'>[]): Promise<HealthRecord[]> => {
-  if (!records || records.length === 0) return [];
-  
-  try {
-    // Ensure all records have required fields and valid types
-    const validatedRecords = records.map(record => ({
-      ...record,
-      record_type: record.record_type || HealthRecordTypeEnum.Other,
-      vet_name: record.vet_name || 'Unknown', // Required field
-      visit_date: record.visit_date || new Date().toISOString().split('T')[0], // Required field
-    }));
-    
-    // Handle records in batches to avoid type issues
-    const results: HealthRecord[] = [];
-    for (const record of validatedRecords) {
-      const { data, error } = await supabase
-        .from('health_records')
-        .insert(record)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      if (data) results.push(data as HealthRecord);
-    }
-    
-    return results;
-  } catch (error) {
-    console.error('Error bulk adding health records:', error);
-    throw error;
-  }
-};
-
+// Health record functions
 export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> => {
   try {
     const { data, error } = await supabase
       .from('health_records')
       .select('*')
-      .eq('dog_id', dogId);
+      .eq('dog_id', dogId)
+      .order('visit_date', { ascending: false });
+      
+    if (error) throw error;
     
-    if (error) {
-      console.error('Error fetching health records:', error);
-      throw error;
-    }
-    
-    return data as HealthRecord[] || [];
+    return data as HealthRecord[];
   } catch (error) {
-    console.error('Error in getHealthRecords:', error);
-    throw error;
+    console.error('Error fetching health records:', error);
+    return [];
   }
 };
 
@@ -87,38 +26,50 @@ export const getHealthRecordsByType = async (dogId: string, recordType: HealthRe
       .from('health_records')
       .select('*')
       .eq('dog_id', dogId)
-      .eq('record_type', recordType);
+      .eq('record_type', recordType)
+      .order('visit_date', { ascending: false });
+      
+    if (error) throw error;
     
-    if (error) {
-      console.error(`Error fetching health records of type ${recordType}:`, error);
-      throw error;
-    }
-    
-    return data as HealthRecord[] || [];
+    return data as HealthRecord[];
   } catch (error) {
-    console.error(`Error in getHealthRecordsByType for type ${recordType}:`, error);
-    throw error;
+    console.error(`Error fetching ${recordType} records:`, error);
+    return [];
   }
 };
 
-export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>): Promise<HealthRecord> => {
+export const addHealthRecord = async (record: Partial<HealthRecord>): Promise<HealthRecord> => {
   try {
     const { data, error } = await supabase
       .from('health_records')
-      .update(updates)
-      .eq('id', id)
+      .insert(record)
       .select()
       .single();
-    
-    if (error) {
-      console.error('Error updating health record:', error);
-      throw error;
-    }
+      
+    if (error) throw error;
     
     return data as HealthRecord;
   } catch (error) {
-    console.error('Error in updateHealthRecord:', error);
-    throw error;
+    console.error('Error adding health record:', error);
+    throw new Error('Failed to add health record');
+  }
+};
+
+export const updateHealthRecord = async (id: string, record: Partial<HealthRecord>): Promise<HealthRecord> => {
+  try {
+    const { data, error } = await supabase
+      .from('health_records')
+      .update(record)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return data as HealthRecord;
+  } catch (error) {
+    console.error('Error updating health record:', error);
+    throw new Error('Failed to update health record');
   }
 };
 
@@ -128,155 +79,90 @@ export const deleteHealthRecord = async (id: string): Promise<void> => {
       .from('health_records')
       .delete()
       .eq('id', id);
-    
-    if (error) {
-      console.error('Error deleting health record:', error);
-      throw error;
-    }
-    
-    return;
+      
+    if (error) throw error;
   } catch (error) {
-    console.error('Error in deleteHealthRecord:', error);
-    throw error;
+    console.error('Error deleting health record:', error);
+    throw new Error('Failed to delete health record');
   }
 };
 
-export const getUpcomingVaccinations = async (dogId: string, daysAhead: number = 30): Promise<HealthRecord[]> => {
+// Weight record functions
+export const getWeightHistory = async (id: string, isPuppy: boolean = false): Promise<WeightRecord[]> => {
   try {
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + daysAhead);
+    const field = isPuppy ? 'puppy_id' : 'dog_id';
     
     const { data, error } = await supabase
-      .from('health_records')
+      .from('weight_records')
       .select('*')
-      .eq('dog_id', dogId)
-      .eq('record_type', HealthRecordTypeEnum.Vaccination)
-      .gte('next_due_date', today.toISOString().split('T')[0])
-      .lte('next_due_date', futureDate.toISOString().split('T')[0]);
+      .eq(field, id)
+      .order('date', { ascending: false });
+      
+    if (error) throw error;
     
-    if (error) {
-      console.error('Error fetching upcoming vaccinations:', error);
-      throw error;
-    }
-    
-    return data as HealthRecord[] || [];
+    return (data || []).map(record => ({
+      ...record,
+      unit: record.weight_unit // For compatibility
+    })) as WeightRecord[];
   } catch (error) {
-    console.error('Error in getUpcomingVaccinations:', error);
-    throw error;
+    console.error('Error fetching weight history:', error);
+    return [];
   }
 };
 
-// Add getUpcomingMedications function
-export const getUpcomingMedications = async (dogId?: string, daysAhead: number = 30): Promise<HealthRecord[]> => {
-  try {
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + daysAhead);
-    
-    let query = supabase
-      .from('health_records')
-      .select('*')
-      .eq('record_type', HealthRecordTypeEnum.Medication)
-      .gte('next_due_date', today.toISOString().split('T')[0])
-      .lte('next_due_date', futureDate.toISOString().split('T')[0]);
-    
-    // Add filter for specific dog if provided
-    if (dogId) {
-      query = query.eq('dog_id', dogId);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching upcoming medications:', error);
-      throw error;
-    }
-    
-    return data as HealthRecord[] || [];
-  } catch (error) {
-    console.error('Error in getUpcomingMedications:', error);
-    throw error;
-  }
-};
-
-// Add getExpiringMedications function
-export const getExpiringMedications = async (dogId?: string, daysAhead: number = 30): Promise<HealthRecord[]> => {
-  try {
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + daysAhead);
-    
-    let query = supabase
-      .from('health_records')
-      .select('*')
-      .eq('record_type', HealthRecordTypeEnum.Medication)
-      .gte('expiration_date', today.toISOString().split('T')[0])
-      .lte('expiration_date', futureDate.toISOString().split('T')[0]);
-    
-    // Add filter for specific dog if provided
-    if (dogId) {
-      query = query.eq('dog_id', dogId);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching expiring medications:', error);
-      throw error;
-    }
-    
-    return data as HealthRecord[] || [];
-  } catch (error) {
-    console.error('Error in getExpiringMedications:', error);
-    throw error;
-  }
-};
-
-// Add weight record related functions
 export const addWeightRecord = async (record: Omit<WeightRecord, 'id' | 'created_at'>): Promise<WeightRecord> => {
   try {
+    // Make sure we have both weight_unit and unit fields for compatibility
+    const recordToInsert = {
+      ...record,
+      weight_unit: record.weight_unit || record.unit,
+      unit: record.unit || record.weight_unit
+    };
+
     const { data, error } = await supabase
       .from('weight_records')
-      .insert({
-        ...record,
-        dog_id: record.dog_id,
-        weight: record.weight,
-        date: record.date,
-        weight_unit: record.weight_unit || 'lbs' as WeightUnit
-      })
+      .insert(recordToInsert)
       .select()
       .single();
+      
+    if (error) throw error;
     
-    if (error) {
-      console.error('Error adding weight record:', error);
-      throw error;
-    }
-    
-    return data as WeightRecord;
+    return {
+      ...data,
+      unit: data.weight_unit // For compatibility
+    } as WeightRecord;
   } catch (error) {
-    console.error('Error in addWeightRecord:', error);
-    throw error;
+    console.error('Error adding weight record:', error);
+    throw new Error('Failed to add weight record');
   }
 };
 
-export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> => {
+export const updateWeightRecord = async (id: string, record: Partial<WeightRecord>): Promise<WeightRecord> => {
   try {
+    // Make sure we have both weight_unit and unit fields for compatibility
+    const recordToUpdate = { ...record };
+    if (record.weight_unit && !record.unit) {
+      recordToUpdate.unit = record.weight_unit;
+    } else if (record.unit && !record.weight_unit) {
+      recordToUpdate.weight_unit = record.unit;
+    }
+
     const { data, error } = await supabase
       .from('weight_records')
-      .select('*')
-      .eq('dog_id', dogId)
-      .order('date', { ascending: false });
+      .update(recordToUpdate)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) throw error;
     
-    if (error) {
-      console.error('Error fetching weight history:', error);
-      throw error;
-    }
-    
-    return data as WeightRecord[] || [];
+    return {
+      ...data,
+      unit: data.weight_unit // For compatibility
+    } as WeightRecord;
   } catch (error) {
-    console.error('Error in getWeightHistory:', error);
-    throw error;
+    console.error('Error updating weight record:', error);
+    throw new Error('Failed to update weight record');
   }
 };
 
@@ -286,13 +172,51 @@ export const deleteWeightRecord = async (id: string): Promise<void> => {
       .from('weight_records')
       .delete()
       .eq('id', id);
-    
-    if (error) {
-      console.error('Error deleting weight record:', error);
-      throw error;
-    }
+      
+    if (error) throw error;
   } catch (error) {
-    console.error('Error in deleteWeightRecord:', error);
-    throw error;
+    console.error('Error deleting weight record:', error);
+    throw new Error('Failed to delete weight record');
+  }
+};
+
+// Helper function to convert weight between units
+export const convertWeight = (weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number => {
+  if (fromUnit === toUnit) return weight;
+  
+  // Convert to grams first as a common unit
+  let weightInGrams: number;
+  
+  switch (fromUnit) {
+    case 'g':
+      weightInGrams = weight;
+      break;
+    case 'kg':
+      weightInGrams = weight * 1000;
+      break;
+    case 'oz':
+      weightInGrams = weight * 28.3495;
+      break;
+    case 'lb':
+    case 'lbs':
+      weightInGrams = weight * 453.592;
+      break;
+    default:
+      return weight;
+  }
+  
+  // Convert from grams to target unit
+  switch (toUnit) {
+    case 'g':
+      return weightInGrams;
+    case 'kg':
+      return weightInGrams / 1000;
+    case 'oz':
+      return weightInGrams / 28.3495;
+    case 'lb':
+    case 'lbs':
+      return weightInGrams / 453.592;
+    default:
+      return weight;
   }
 };

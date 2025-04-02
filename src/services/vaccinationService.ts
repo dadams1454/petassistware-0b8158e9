@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 // Define types for vaccination schedules
-interface VaccinationSchedule {
+export interface VaccinationSchedule {
   id: string;
   puppy_id: string;
   dog_id?: string;
@@ -19,24 +19,15 @@ interface VaccinationSchedule {
  */
 export const getVaccinationSchedules = async (puppyId: string): Promise<VaccinationSchedule[]> => {
   try {
-    // Mock response since the actual DB table might not exist
-    // In a real implementation, we would query the database
-    return Promise.resolve([
-      {
-        id: '1',
-        puppy_id: puppyId,
-        vaccine_name: 'Distemper',
-        due_date: new Date().toISOString(),
-        administered: false
-      },
-      {
-        id: '2',
-        puppy_id: puppyId,
-        vaccine_name: 'Parvovirus',
-        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        administered: false
-      }
-    ]);
+    const { data, error } = await supabase
+      .from('puppy_vaccination_schedule')
+      .select('*')
+      .eq('puppy_id', puppyId)
+      .order('due_date', { ascending: true });
+      
+    if (error) throw error;
+    
+    return data as VaccinationSchedule[];
   } catch (error) {
     console.error('Error fetching vaccination schedules:', error);
     throw new Error('Failed to fetch vaccination schedules');
@@ -48,17 +39,15 @@ export const getVaccinationSchedules = async (puppyId: string): Promise<Vaccinat
  */
 export const saveVaccinationSchedule = async (data: Partial<VaccinationSchedule>): Promise<VaccinationSchedule> => {
   try {
-    // Mock success since the actual DB table might not exist
-    // In a real implementation, we would insert into the database
-    return Promise.resolve({
-      id: data.id || Math.random().toString(36).substring(7),
-      puppy_id: data.puppy_id || '',
-      vaccine_name: data.vaccine_name || '',
-      due_date: data.due_date || new Date().toISOString(),
-      administered: data.administered || false,
-      administered_date: data.administered_date,
-      notes: data.notes
-    });
+    const { data: savedData, error } = await supabase
+      .from('puppy_vaccination_schedule')
+      .insert(data)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return savedData as VaccinationSchedule;
   } catch (error) {
     console.error('Error saving vaccination schedule:', error);
     throw new Error('Failed to save vaccination schedule');
@@ -70,16 +59,16 @@ export const saveVaccinationSchedule = async (data: Partial<VaccinationSchedule>
  */
 export const updateVaccinationSchedule = async (id: string, data: Partial<VaccinationSchedule>): Promise<VaccinationSchedule> => {
   try {
-    // Mock success since the actual DB table might not exist
-    return Promise.resolve({
-      id,
-      puppy_id: data.puppy_id || '',
-      vaccine_name: data.vaccine_name || '',
-      due_date: data.due_date || new Date().toISOString(),
-      administered: data.administered || false,
-      administered_date: data.administered_date,
-      notes: data.notes
-    });
+    const { data: updatedData, error } = await supabase
+      .from('puppy_vaccination_schedule')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return updatedData as VaccinationSchedule;
   } catch (error) {
     console.error('Error updating vaccination schedule:', error);
     throw new Error('Failed to update vaccination schedule');
@@ -91,10 +80,63 @@ export const updateVaccinationSchedule = async (id: string, data: Partial<Vaccin
  */
 export const deleteVaccinationSchedule = async (id: string): Promise<void> => {
   try {
-    // Mock success since the actual DB table might not exist
-    return Promise.resolve();
+    const { error } = await supabase
+      .from('puppy_vaccination_schedule')
+      .delete()
+      .eq('id', id);
+      
+    if (error) throw error;
+    
+    return;
   } catch (error) {
     console.error('Error deleting vaccination schedule:', error);
     throw new Error('Failed to delete vaccination schedule');
+  }
+};
+
+/**
+ * Log a completed vaccination
+ */
+export const logVaccination = async (data: {
+  puppy_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  lot_number?: string;
+  administered_by?: string;
+  notes?: string;
+}): Promise<any> => {
+  try {
+    const { data: savedData, error } = await supabase
+      .from('puppy_vaccinations')
+      .insert(data)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    return savedData;
+  } catch (error) {
+    console.error('Error logging vaccination:', error);
+    throw new Error('Failed to log vaccination');
+  }
+};
+
+/**
+ * Get all completed vaccinations for a puppy
+ */
+export const getPuppyVaccinations = async (puppyId: string): Promise<any[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('puppy_vaccinations')
+      .select('*')
+      .eq('puppy_id', puppyId)
+      .order('vaccination_date', { ascending: false });
+      
+    if (error) throw error;
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching puppy vaccinations:', error);
+    throw new Error('Failed to fetch puppy vaccinations');
   }
 };

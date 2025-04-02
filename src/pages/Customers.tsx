@@ -1,23 +1,26 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { PageHeader } from '@/components/ui/standardized';
 import CustomersList from '@/components/customers/CustomersList';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import CustomerDialog from '@/components/customers/CustomerDialog';
-import { useState } from 'react';
+import { CustomerWithMeta, CustomerFilter, SortField, SortOrder } from '@/types/customers';
+
+// Export types for other components
+export type { CustomerWithMeta, CustomerFilter, SortField, SortOrder };
 
 const Customers: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerWithMeta | null>(null);
 
   const handleAddCustomer = () => {
     setSelectedCustomer(null);
     setIsDialogOpen(true);
   };
 
-  const handleEditCustomer = (customer: any) => {
+  const handleEditCustomer = (customer: CustomerWithMeta) => {
     setSelectedCustomer(customer);
     setIsDialogOpen(true);
   };

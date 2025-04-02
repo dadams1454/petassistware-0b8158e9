@@ -7,7 +7,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
-  unit?: WeightUnit; // Adding for compatibility with existing code
+  unit?: WeightUnit; // Added for compatibility with existing code
   date: string;
   notes?: string;
   percent_change?: number;
@@ -108,4 +108,31 @@ export interface HealthRecord {
   reminder_sent?: boolean;
 }
 
-// Other health-related interfaces can be added here
+export interface HealthIndicator {
+  id: string;
+  dog_id: string;
+  date: string;
+  appetite?: AppetiteLevelEnum;
+  energy?: EnergyLevelEnum;
+  stool_consistency?: StoolConsistencyEnum;
+  abnormal: boolean;
+  notes?: string;
+  alert_generated?: boolean;
+  created_at?: string;
+  created_by?: string;
+}
+
+export interface GrowthStats {
+  totalGain?: number;
+  daysTracked?: number;
+  growthPerDay?: number;
+  growthPerWeek?: number;
+  growthPerMonth?: number;
+  initialWeight?: number;
+  currentWeight?: number;
+  percentageGain?: number;
+  percentChange?: number;
+  averageGrowthRate?: number;
+  projectedWeight?: number;
+  weightGoal?: number;
+}
