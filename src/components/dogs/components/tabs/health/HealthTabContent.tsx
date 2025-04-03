@@ -15,6 +15,7 @@ const HealthTabContent: React.FC = () => {
     activeTab, 
     setActiveTab, 
     isLoading,
+    dogId,
     openAddHealthIndicatorDialog 
   } = useHealthTabContext();
   
@@ -40,17 +41,17 @@ const HealthTabContent: React.FC = () => {
         
         <TabsContent value="indicators" className="space-y-4 pt-4">
           <HealthIndicatorDashboard 
-            dogId={useHealthTabContext().dogId} 
+            dogId={dogId} 
             onAddClick={openAddHealthIndicatorDialog}
           />
         </TabsContent>
         
         <TabsContent value="vaccinations" className="pt-4">
-          <VaccinationsTabContent />
+          <VaccinationsTabContent dogId={dogId} />
         </TabsContent>
         
         <TabsContent value="examinations" className="pt-4">
-          <ExaminationsTabContent />
+          <ExaminationsTabContent dogId={dogId} />
         </TabsContent>
         
         <TabsContent value="medications" className="pt-4">

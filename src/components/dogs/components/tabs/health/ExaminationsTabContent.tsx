@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Stethoscope } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
 import HealthRecordsList from '@/components/dogs/components/profile/records/HealthRecordsList';
-import HealthRecordForm from '@/components/dogs/components/profile/records/HealthRecordForm';
 
 export interface ExaminationsTabContentProps {
   dogId: string;
@@ -17,21 +16,13 @@ const ExaminationsTabContent: React.FC<ExaminationsTabContentProps> = ({ dogId }
     healthRecords, 
     isLoading, 
     error, 
-    setShowAddRecordDialog, 
-    setRecordToEdit,
-    setRecordToDelete,
-    setSelectedRecordType 
+    openAddExaminationDialog 
   } = useHealthTabContext();
   
   // Filter for examination records
   const examinationRecords = healthRecords.filter(
     record => record.record_type === HealthRecordTypeEnum.Examination
   );
-
-  const handleAddExamination = () => {
-    setSelectedRecordType(HealthRecordTypeEnum.Examination);
-    setShowAddRecordDialog(true);
-  };
 
   if (isLoading) {
     return <LoadingState message="Loading examination records..." />;
@@ -53,7 +44,7 @@ const ExaminationsTabContent: React.FC<ExaminationsTabContentProps> = ({ dogId }
         title="No Examination Records"
         description="Add your dog's examination records to keep track of their health history."
         action={
-          <Button onClick={handleAddExamination}>
+          <Button onClick={openAddExaminationDialog}>
             Add Examination
           </Button>
         }
@@ -65,7 +56,7 @@ const ExaminationsTabContent: React.FC<ExaminationsTabContentProps> = ({ dogId }
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Examinations</h3>
-        <Button onClick={handleAddExamination}>
+        <Button onClick={openAddExaminationDialog}>
           Add Examination
         </Button>
       </div>

@@ -56,7 +56,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
     <Card className="overflow-hidden hover:shadow-md transition-shadow">
       <div className="flex items-center border-b p-4 bg-muted/30">
         <Avatar className="h-12 w-12 mr-3">
-          <AvatarImage src={puppy.photo_url || undefined} alt={puppy.name || 'Puppy'} />
+          <AvatarImage src={puppy.photo_url as string || undefined} alt={puppy.name || 'Puppy'} />
           <AvatarFallback className="bg-primary/10 text-primary">
             {getInitials()}
           </AvatarFallback>

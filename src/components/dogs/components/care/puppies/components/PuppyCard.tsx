@@ -30,6 +30,9 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, className }) => {
     ? "bg-blue-100 text-blue-800" 
     : "bg-pink-100 text-pink-800";
 
+  // Get photo_url safely
+  const photoUrl = (puppy as any).photo_url || undefined;
+
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
@@ -59,26 +62,30 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, className }) => {
         </div>
         
         <div className="flex gap-2 pt-2">
-          <Link 
-            to={`/litters/${puppy.litter_id}/puppies/${puppy.id}`}
-            className="text-xs flex items-center gap-1 text-primary hover:underline"
-          >
-            <PawPrint className="h-3 w-3" /> View Details
-          </Link>
-          
-          <Link 
-            to={`/litters/${puppy.litter_id}/puppies/${puppy.id}/weight`}
-            className="text-xs flex items-center gap-1 text-primary hover:underline"
-          >
-            <Scale className="h-3 w-3" /> Weight Tracking
-          </Link>
-          
-          <Link 
-            to={`/litters/${puppy.litter_id}/puppies/${puppy.id}/chart`}
-            className="text-xs flex items-center gap-1 text-primary hover:underline"
-          >
-            <BarChart className="h-3 w-3" /> Growth Charts
-          </Link>
+          {puppy.litter_id && (
+            <>
+              <Link 
+                to={`/litters/${puppy.litter_id}/puppies/${puppy.id}`}
+                className="text-xs flex items-center gap-1 text-primary hover:underline"
+              >
+                <PawPrint className="h-3 w-3" /> View Details
+              </Link>
+              
+              <Link 
+                to={`/litters/${puppy.litter_id}/puppies/${puppy.id}/weight`}
+                className="text-xs flex items-center gap-1 text-primary hover:underline"
+              >
+                <Scale className="h-3 w-3" /> Weight Tracking
+              </Link>
+              
+              <Link 
+                to={`/litters/${puppy.litter_id}/puppies/${puppy.id}/chart`}
+                className="text-xs flex items-center gap-1 text-primary hover:underline"
+              >
+                <BarChart className="h-3 w-3" /> Growth Charts
+              </Link>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

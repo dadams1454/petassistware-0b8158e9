@@ -1,186 +1,177 @@
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
-import { HealthRecord } from '@/types/health';
-import { getHealthRecordIcon, getHealthRecordColor, getRecordTypeLabel } from '../utils/healthRecordUtils';
-import { useHealthTabContext } from '../../tabs/health/HealthTabContext';
+import { MoreHorizontal, FileText, Syringe, Stethoscope, Pill, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { HealthRecord } from '@/types/health';
+import { useHealthTabContext } from '../../tabs/health/HealthTabContext';
 
 interface HealthRecordsListProps {
   records: HealthRecord[];
-  onEdit?: (record: HealthRecord) => void;
-  onDelete?: (recordId: string) => void;
-  recordType?: string;
+  recordType: string;
   emptyMessage?: string;
 }
 
 const HealthRecordsList: React.FC<HealthRecordsListProps> = ({
   records,
-  onEdit,
-  onDelete,
   recordType,
-  emptyMessage = 'No records found'
+  emptyMessage = "No records found."
 }) => {
   const { setRecordToEdit, setRecordToDelete } = useHealthTabContext();
-
-  // Filter records by type if provided
-  const filteredRecords = recordType 
-    ? records.filter(record => record.record_type === recordType)
-    : records;
-
-  // Sort records by visit date (newest first)
-  const sortedRecords = [...filteredRecords].sort((a, b) => {
-    const dateA = new Date(a.visit_date || a.date || a.created_at);
-    const dateB = new Date(b.visit_date || b.date || b.created_at);
-    return dateB.getTime() - dateA.getTime();
-  });
-
-  if (sortedRecords.length === 0) {
-    return <div className="text-center text-muted-foreground py-6">{emptyMessage}</div>;
+  
+  if (records.length === 0) {
+    return <p className="text-sm text-muted-foreground italic">{emptyMessage}</p>;
   }
-
-  const handleEdit = (record: HealthRecord) => {
-    if (onEdit) {
-      onEdit(record);
-    } else if (setRecordToEdit) {
-      setRecordToEdit(record);
+  
+  // Sort records by date, newest first
+  const sortedRecords = [...records].sort(
+    (a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime()
+  );
+  
+  // Function to get type-specific icon
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'vaccination':
+        return <Syringe className="h-4 w-4 mr-2" />;
+      case 'examination':
+        return <Stethoscope className="h-4 w-4 mr-2" />;
+      case 'medication':
+        return <Pill className="h-4 w-4 mr-2" />;
+      case 'surgery':
+        return <Scissors className="h-4 w-4 mr-2" />;
+      default:
+        return <FileText className="h-4 w-4 mr-2" />;
     }
   };
-
-  const handleDelete = (recordId: string) => {
-    if (onDelete) {
-      onDelete(recordId);
-    } else if (setRecordToDelete) {
-      setRecordToDelete(recordId);
-    }
+  
+  const handleEditRecord = (record: HealthRecord) => {
+    setRecordToEdit(record);
   };
-
+  
+  const handleDeleteRecord = (recordId: string) => {
+    setRecordToDelete(recordId);
+  };
+  
   return (
     <div className="space-y-4">
       {sortedRecords.map((record) => (
-        <div 
-          key={record.id} 
-          className="p-4 border rounded-md shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div className="flex justify-between items-start">
-            <div className="flex items-center">
-              <div className={`mr-3 ${getHealthRecordColor(record.record_type)}`}>
-                {getHealthRecordIcon(record.record_type)}
+        <Card key={record.id} className="overflow-hidden">
+          <CardContent className="p-0">
+            <div className="p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center">
+                  {getTypeIcon(recordType)}
+                  <h3 className="font-medium">{record.title}</h3>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm text-muted-foreground mr-2">
+                    {format(new Date(record.visit_date), 'MMM d, yyyy')}
+                  </span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEditRecord(record)}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDeleteRecord(record.id)}
+                        className="text-red-600"
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-              <div>
-                <h4 className="font-medium text-base">{record.title || getRecordTypeLabel(record.record_type)}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {format(new Date(record.visit_date || record.date || record.created_at), 'PPP')}
-                  {record.vet_name && ` • ${record.vet_name}`}
-                </p>
+              
+              {/* Vaccination specific fields */}
+              {recordType === 'vaccination' && record.vaccine_name && (
+                <div className="mt-2">
+                  <p className="text-sm">
+                    <span className="font-medium">Vaccine:</span> {record.vaccine_name}
+                  </p>
+                  {record.manufacturer && (
+                    <p className="text-sm">
+                      <span className="font-medium">Manufacturer:</span> {record.manufacturer}
+                    </p>
+                  )}
+                  {record.lot_number && (
+                    <p className="text-sm">
+                      <span className="font-medium">Lot:</span> {record.lot_number}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Examination specific fields */}
+              {recordType === 'examination' && (
+                <div className="mt-2">
+                  {record.examination_type && (
+                    <p className="text-sm">
+                      <span className="font-medium">Exam type:</span> {record.examination_type}
+                    </p>
+                  )}
+                  {record.findings && (
+                    <p className="text-sm">
+                      <span className="font-medium">Findings:</span> {record.findings}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Medication specific fields */}
+              {recordType === 'medication' && (
+                <div className="mt-2">
+                  {record.medication_name && (
+                    <p className="text-sm">
+                      <span className="font-medium">Medication:</span> {record.medication_name}
+                    </p>
+                  )}
+                  {record.dosage && (
+                    <p className="text-sm">
+                      <span className="font-medium">Dosage:</span> {record.dosage} {record.dosage_unit || ''}
+                    </p>
+                  )}
+                  {record.frequency && (
+                    <p className="text-sm">
+                      <span className="font-medium">Frequency:</span> {record.frequency}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Common fields */}
+              <div className="mt-2">
+                {record.vet_name && (
+                  <p className="text-sm">
+                    <span className="font-medium">Veterinarian:</span> {record.vet_name}
+                  </p>
+                )}
+                {record.next_due_date && (
+                  <p className="text-sm text-orange-600">
+                    <span className="font-medium">Next due:</span> {format(new Date(record.next_due_date), 'MMM d, yyyy')}
+                  </p>
+                )}
+                {record.record_notes && (
+                  <div className="mt-2">
+                    <p className="text-sm text-muted-foreground">{record.record_notes}</p>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex space-x-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 w-8 p-0" 
-                onClick={() => handleEdit(record)}
-              >
-                <Edit className="h-4 w-4" />
-                <span className="sr-only">Edit</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 w-8 p-0 text-destructive hover:text-destructive" 
-                onClick={() => handleDelete(record.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Delete</span>
-              </Button>
-            </div>
-          </div>
-          
-          {record.record_notes || record.description && (
-            <div className="mt-2 text-sm">
-              {record.record_notes || record.description}
-            </div>
-          )}
-          
-          {/* Record-type specific details */}
-          {record.record_type === HealthRecordTypeEnum.Vaccination && (
-            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              {record.vaccine_name && (
-                <div className="col-span-2">
-                  <span className="font-medium">Vaccine:</span> {record.vaccine_name}
-                </div>
-              )}
-              {record.manufacturer && (
-                <div>
-                  <span className="font-medium">Manufacturer:</span> {record.manufacturer}
-                </div>
-              )}
-              {record.lot_number && (
-                <div>
-                  <span className="font-medium">Lot Number:</span> {record.lot_number}
-                </div>
-              )}
-            </div>
-          )}
-          
-          {record.record_type === HealthRecordTypeEnum.Medication && (
-            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              {record.medication_name && (
-                <div className="col-span-2">
-                  <span className="font-medium">Medication:</span> {record.medication_name}
-                </div>
-              )}
-              {record.dosage && (
-                <div>
-                  <span className="font-medium">Dosage:</span> {record.dosage} {record.dosage_unit}
-                </div>
-              )}
-              {record.frequency && (
-                <div>
-                  <span className="font-medium">Frequency:</span> {record.frequency}
-                </div>
-              )}
-              {record.start_date && (
-                <div>
-                  <span className="font-medium">Start Date:</span> {format(new Date(record.start_date), 'PP')}
-                </div>
-              )}
-              {record.end_date && (
-                <div>
-                  <span className="font-medium">End Date:</span> {format(new Date(record.end_date), 'PP')}
-                </div>
-              )}
-            </div>
-          )}
-          
-          {record.record_type === HealthRecordTypeEnum.Surgery && (
-            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              {record.procedure_name && (
-                <div className="col-span-2">
-                  <span className="font-medium">Procedure:</span> {record.procedure_name}
-                </div>
-              )}
-              {record.surgeon && (
-                <div>
-                  <span className="font-medium">Surgeon:</span> {record.surgeon}
-                </div>
-              )}
-              {record.anesthesia_used && (
-                <div>
-                  <span className="font-medium">Anesthesia:</span> {record.anesthesia_used}
-                </div>
-              )}
-            </div>
-          )}
-          
-          {record.next_due_date && (
-            <div className="mt-2 text-sm font-medium">
-              Next due: {format(new Date(record.next_due_date), 'PP')}
-            </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );

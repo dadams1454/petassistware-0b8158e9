@@ -1,120 +1,83 @@
 
 import React from 'react';
-import { FileText, Thermometer, Syringe, Pill, Scissors, Eye, Stethoscope, AlertTriangle, Tooth } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
+import { Syringe, Stethoscope, Pill, Scissors, FileText } from 'lucide-react';
 
-export const getRecordTypeIcon = (recordType: string) => {
-  switch (recordType) {
-    case HealthRecordTypeEnum.Vaccination:
-      return <Syringe className="h-4 w-4" />;
-    
-    case HealthRecordTypeEnum.Examination:
-      return <Thermometer className="h-4 w-4" />;
-    
-    case HealthRecordTypeEnum.Medication:
-      return <Pill className="h-4 w-4" />;
-    
-    case HealthRecordTypeEnum.Surgery:
-      return <Scissors className="h-4 w-4" />;
-    
-    case HealthRecordTypeEnum.Observation:
-      return <Eye className="h-4 w-4" />;
-      
-    case HealthRecordTypeEnum.Dental:
-      return <Tooth className="h-4 w-4" />;
-      
-    case HealthRecordTypeEnum.Test:
-      return <Stethoscope className="h-4 w-4" />;
-      
-    case HealthRecordTypeEnum.Allergy:
-      return <AlertTriangle className="h-4 w-4" />;
-    
-    default:
-      return <FileText className="h-4 w-4" />;
-  }
-};
-
-export const getRecordTypeColor = (recordType: string): string => {
-  switch (recordType) {
-    case HealthRecordTypeEnum.Vaccination:
-      return 'text-blue-500';
-    
-    case HealthRecordTypeEnum.Examination:
-      return 'text-green-500';
-    
-    case HealthRecordTypeEnum.Medication:
-      return 'text-purple-500';
-    
-    case HealthRecordTypeEnum.Surgery:
-      return 'text-red-500';
-    
-    case HealthRecordTypeEnum.Dental:
-      return 'text-amber-500';
-      
-    case HealthRecordTypeEnum.Allergy:
-      return 'text-yellow-500';
-      
-    case HealthRecordTypeEnum.Test:
-      return 'text-cyan-500';
-      
-    case HealthRecordTypeEnum.Observation:
-      return 'text-gray-500';
-    
-    default:
-      return 'text-gray-500';
-  }
-};
-
-export const getHealthRecordIcon = getRecordTypeIcon;
-export const getHealthRecordColor = getRecordTypeColor;
-
+// Define record type options with icons and labels
 export const recordTypeOptions = [
-  { value: HealthRecordTypeEnum.Examination, label: 'Examination' },
-  { value: HealthRecordTypeEnum.Vaccination, label: 'Vaccination' },
-  { value: HealthRecordTypeEnum.Medication, label: 'Medication' },
-  { value: HealthRecordTypeEnum.Surgery, label: 'Surgery' },
-  { value: HealthRecordTypeEnum.Dental, label: 'Dental' },
-  { value: HealthRecordTypeEnum.Allergy, label: 'Allergy' },
-  { value: HealthRecordTypeEnum.Test, label: 'Test' },
-  { value: HealthRecordTypeEnum.Observation, label: 'Observation' },
-  { value: HealthRecordTypeEnum.Deworming, label: 'Deworming' },
-  { value: HealthRecordTypeEnum.Grooming, label: 'Grooming' },
-  { value: HealthRecordTypeEnum.Other, label: 'Other' }
+  {
+    value: HealthRecordTypeEnum.Examination,
+    label: 'Examination',
+    icon: <Stethoscope className="h-4 w-4 mr-2" />,
+    description: 'Regular check-ups and health examinations'
+  },
+  {
+    value: HealthRecordTypeEnum.Vaccination,
+    label: 'Vaccination',
+    icon: <Syringe className="h-4 w-4 mr-2" />,
+    description: 'Vaccines and immunizations'
+  },
+  {
+    value: HealthRecordTypeEnum.Medication,
+    label: 'Medication',
+    icon: <Pill className="h-4 w-4 mr-2" />,
+    description: 'Prescribed medications and treatments'
+  },
+  {
+    value: HealthRecordTypeEnum.Surgery,
+    label: 'Surgery',
+    icon: <Scissors className="h-4 w-4 mr-2" />,
+    description: 'Surgical procedures'
+  },
+  {
+    value: HealthRecordTypeEnum.Other,
+    label: 'Other',
+    icon: <FileText className="h-4 w-4 mr-2" />,
+    description: 'Other health-related records'
+  }
 ];
 
-export const getRecordTypeLabel = (recordType: string) => {
-  switch (recordType) {
-    case HealthRecordTypeEnum.Vaccination:
-      return 'Vaccination';
-    
-    case HealthRecordTypeEnum.Examination:
-      return 'Examination';
-    
-    case HealthRecordTypeEnum.Medication:
-      return 'Medication';
-    
-    case HealthRecordTypeEnum.Surgery:
-      return 'Surgery';
-    
-    case HealthRecordTypeEnum.Observation:
-      return 'Observation';
-      
-    case HealthRecordTypeEnum.Dental:
-      return 'Dental';
-      
-    case HealthRecordTypeEnum.Allergy:
-      return 'Allergy';
-      
-    case HealthRecordTypeEnum.Test:
-      return 'Test';
-      
-    case HealthRecordTypeEnum.Deworming:
-      return 'Deworming';
-      
-    case HealthRecordTypeEnum.Grooming:
-      return 'Grooming';
-    
-    default:
-      return recordType.charAt(0).toUpperCase() + recordType.slice(1);
-  }
+// Helper function to get record type label
+export const getRecordTypeLabel = (type: string): string => {
+  const option = recordTypeOptions.find(option => option.value === type);
+  return option ? option.label : 'Unknown';
+};
+
+// Helper function to get record type icon
+export const getRecordTypeIcon = (type: string): React.ReactNode => {
+  const option = recordTypeOptions.find(option => option.value === type);
+  return option ? option.icon : <FileText className="h-4 w-4 mr-2" />;
+};
+
+// Helper function to format a date from ISO string to a readable format
+export const formatDate = (dateString: string): string => {
+  if (!dateString) return 'Not specified';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+// Helper to check if a record is due soon (within the next 30 days)
+export const isDueSoon = (dueDate: string | null | undefined): boolean => {
+  if (!dueDate) return false;
+  
+  const today = new Date();
+  const due = new Date(dueDate);
+  const diffTime = due.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays > 0 && diffDays <= 30;
+};
+
+// Helper to check if a record is overdue
+export const isOverdue = (dueDate: string | null | undefined): boolean => {
+  if (!dueDate) return false;
+  
+  const today = new Date();
+  const due = new Date(dueDate);
+  
+  return due < today;
 };

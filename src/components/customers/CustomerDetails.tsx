@@ -43,14 +43,21 @@ const CustomerDetails: React.FC = () => {
   const customerName = customer ? `${customer.first_name} ${customer.last_name}` : 'Unknown Customer';
   
   // Parse metadata for additional fields
-  const metadata = customer?.metadata || {};
-  const { 
-    preferred_contact_method, 
-    interested_in, 
-    city, 
-    state, 
-    zip 
-  } = typeof metadata === 'object' ? metadata : {};
+  let preferredContactMethod = '';
+  let interestedIn = '';
+  let city = '';
+  let state = '';
+  let zip = '';
+  
+  // Safely parse the metadata object
+  if (customer?.metadata && typeof customer.metadata === 'object') {
+    const metadata = customer.metadata as Record<string, any>;
+    preferredContactMethod = metadata.preferred_contact_method || '';
+    interestedIn = metadata.interested_in || '';
+    city = metadata.city || '';
+    state = metadata.state || '';
+    zip = metadata.zip || '';
+  }
 
   return (
     <div className="container mx-auto py-6">
@@ -116,11 +123,11 @@ const CustomerDetails: React.FC = () => {
             <dl className="space-y-4">
               <div>
                 <dt className="text-sm text-muted-foreground">Preferred Contact Method</dt>
-                <dd>{preferred_contact_method || 'Not specified'}</dd>
+                <dd>{preferredContactMethod || 'Not specified'}</dd>
               </div>
               <div>
                 <dt className="text-sm text-muted-foreground">Interested In</dt>
-                <dd>{interested_in || 'Not specified'}</dd>
+                <dd>{interestedIn || 'Not specified'}</dd>
               </div>
             </dl>
           </CardContent>

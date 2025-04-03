@@ -3,6 +3,13 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getPottyBreaksByDogAndTimeSlot } from '@/services/dailyCare/pottyBreak/queries/timeSlotQueries';
 
+interface PottyBreak {
+  id: string;
+  session_time: string;
+  notes: string;
+  created_at: string;
+}
+
 // Fixing function by adding a dummy date parameter
 export const usePottyBreakData = (dogId: string, timeSlot: string, date = new Date()) => {
   const [pottyBreakData, setPottyBreakData] = useState<Record<string, string[]>>({});
@@ -11,7 +18,7 @@ export const usePottyBreakData = (dogId: string, timeSlot: string, date = new Da
     queryKey: ['pottyBreaks', dogId, timeSlot, date],
     queryFn: async () => {
       const data = await getPottyBreaksByDogAndTimeSlot(dogId, timeSlot);
-      return data;
+      return data as PottyBreak[];
     },
     enabled: !!dogId && !!timeSlot
   });
