@@ -339,5 +339,3 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
   
   return data.map(record => mapToWeightRecord(record));
 };
-
-// Note: No duplicate exports at the end of the file anymore
