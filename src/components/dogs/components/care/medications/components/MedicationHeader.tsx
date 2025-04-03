@@ -1,28 +1,24 @@
 
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 import { MedicationHeaderProps } from '../types/medicationTypes';
-import { SkeletonLoader } from '@/components/ui/standardized';
 
 const MedicationHeader: React.FC<MedicationHeaderProps> = ({ 
   title, 
-  description,
-  isLoading = false
+  description, 
+  isLoading = false 
 }) => {
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        <SkeletonLoader variant="default" width="w-3/4" className="h-5" />
-        <SkeletonLoader variant="default" width="w-5/6" className="h-4" /> 
-      </div>
-    );
-  }
-  
   return (
-    <div>
-      <h3 className="text-lg font-medium text-purple-800 dark:text-purple-300">{title}</h3>
-      <p className="text-sm text-purple-600 dark:text-purple-400">
-        {description}
-      </p>
+    <div className="flex flex-col space-y-1">
+      <div className="flex items-center">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        {isLoading && (
+          <Loader2 className="ml-2 h-4 w-4 animate-spin text-muted-foreground" />
+        )}
+      </div>
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      )}
     </div>
   );
 };

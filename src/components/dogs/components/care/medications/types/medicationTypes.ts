@@ -9,8 +9,8 @@ export interface MedicationInfo {
   frequency: MedicationFrequency;
   notes?: string;
   isPreventative: boolean;
-  startDate: string;    // Added this property to support medication status checks
-  endDate?: string | null; // Added this property to support medication status checks
+  startDate: string;
+  endDate?: string | null;
 }
 
 export interface ProcessedMedicationLogs {
@@ -46,9 +46,15 @@ export interface MedicationHeaderProps {
   isLoading?: boolean;
 }
 
+// Props for filter component
+export interface MedicationFilterProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
 // Props for status display component
 export interface MedicationStatusDisplayProps {
-  status: MedicationStatus | MedicationStatusResult | 'incomplete';
+  status: MedicationStatus | MedicationStatusResult | 'incomplete' | string;
   statusColor: string;
   label?: string;
   isLoading?: boolean;
@@ -66,10 +72,4 @@ export interface LastMedicationInfoProps {
   name: string;
   lastAdministered?: string;
   frequency: MedicationFrequency;
-}
-
-// Props for medication filter component
-export interface MedicationFilterProps {
-  value: string;
-  onChange: (value: string) => void;
 }

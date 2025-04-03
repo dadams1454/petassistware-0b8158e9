@@ -1,93 +1,94 @@
 
-// Common type definitions used across the application
+/**
+ * Common type definitions used across the application
+ */
 
-// Standardized weight unit type used throughout the application
-export type WeightUnit = 'lb' | 'kg' | 'oz' | 'g';
+// Weight related types
+export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
+export type WeightUnitWithLegacy = WeightUnit | 'lbs';
 
-// Extended weight unit type for backward compatibility
-export type WeightUnitWithLegacy = WeightUnit | 'lbs' | 'kgs' | 'pounds' | 'kilograms' | 'ounces' | 'grams';
-
-// Weight unit option for dropdowns
+// Weight unit option for dropdowns and UI
 export interface WeightUnitOption {
   value: WeightUnit;
   label: string;
+  code: string;
+  name: string;
 }
 
-// Available weight units for dropdowns
+// Weight units array for use in dropdowns
 export const weightUnits: WeightUnitOption[] = [
-  { value: 'lb', label: 'Pounds (lb)' },
-  { value: 'kg', label: 'Kilograms (kg)' },
-  { value: 'oz', label: 'Ounces (oz)' },
-  { value: 'g', label: 'Grams (g)' }
+  { value: 'lb', code: 'lb', label: 'Pound (lb)', name: 'Pounds' },
+  { value: 'kg', code: 'kg', label: 'Kilogram (kg)', name: 'Kilograms' },
+  { value: 'oz', code: 'oz', label: 'Ounce (oz)', name: 'Ounces' },
+  { value: 'g', code: 'g', label: 'Gram (g)', name: 'Grams' }
 ];
 
 /**
- * Standardizes weight unit values from various sources
- * This helps when data might come with different casing or formats (lbs vs lb)
+ * Standardize a weight unit to ensure it's a valid one
  */
-export function standardizeWeightUnit(unit: string): WeightUnit {
+export const standardizeWeightUnit = (unit?: string): WeightUnit => {
+  if (!unit) return 'lb';
+  
   const normalizedUnit = unit.toLowerCase();
   
-  if (normalizedUnit === 'lbs' || normalizedUnit === 'lb' || normalizedUnit === 'pound' || normalizedUnit === 'pounds') {
-    return 'lb';
-  } else if (normalizedUnit === 'kg' || normalizedUnit === 'kgs' || normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') {
-    return 'kg';
-  } else if (normalizedUnit === 'oz' || normalizedUnit === 'ounce' || normalizedUnit === 'ounces') {
-    return 'oz';
-  } else if (normalizedUnit === 'g' || normalizedUnit === 'gram' || normalizedUnit === 'grams') {
-    return 'g';
-  }
+  if (normalizedUnit === 'lbs') return 'lb';
+  if (normalizedUnit === 'oz' || normalizedUnit === 'ounce' || normalizedUnit === 'ounces') return 'oz';
+  if (normalizedUnit === 'g' || normalizedUnit === 'gram' || normalizedUnit === 'grams') return 'g';
+  if (normalizedUnit === 'kg' || normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') return 'kg';
   
-  // Default to lb if unknown unit is provided
-  console.warn(`Unknown weight unit: ${unit}, defaulting to lb`);
-  return 'lb';
-}
+  return 'lb'; // Default fallback
+};
+
+/**
+ * Get the full name of a weight unit
+ */
+export const getWeightUnitName = (unit: WeightUnit): string => {
+  const unitOption = weightUnits.find(u => u.value === unit);
+  return unitOption?.name || 'Pounds';
+};
 
 /**
  * Format weight with appropriate unit
  */
-export function formatWeightWithUnit(weight: number, unit: WeightUnit): string {
-  return `${weight} ${getWeightUnitName(unit)}`;
-}
-
-/**
- * Get display name for weight unit
- */
-export function getWeightUnitName(unit: WeightUnit): string {
-  switch (unit) {
-    case 'lb': return 'lb';
-    case 'kg': return 'kg';
-    case 'oz': return 'oz';
-    case 'g': return 'g';
-    default: return unit;
-  }
-}
+export const formatWeightWithUnit = (weight: number, unit: WeightUnit): string => {
+  return `${weight} ${unit}`;
+};
 
 /**
  * Convert weight between different units
  */
-export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number {
-  // If units are the same, return the original weight
+export const convertWeight = (weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number => {
   if (fromUnit === toUnit) return weight;
-
-  // Convert to grams as an intermediate unit
-  let gramsWeight: number;
   
-  // Convert from original unit to grams
+  // Convert to grams first (base unit)
+  let weightInGrams = weight;
+  
   switch (fromUnit) {
-    case 'lb': gramsWeight = weight * 453.592; break;
-    case 'kg': gramsWeight = weight * 1000; break;
-    case 'oz': gramsWeight = weight * 28.3495; break;
-    case 'g': gramsWeight = weight; break;
-    default: gramsWeight = weight; break;
+    case 'lb':
+      weightInGrams = weight * 453.592;
+      break;
+    case 'oz':
+      weightInGrams = weight * 28.3495;
+      break;
+    case 'kg':
+      weightInGrams = weight * 1000;
+      break;
+    case 'g':
+      weightInGrams = weight;
+      break;
   }
   
   // Convert from grams to target unit
   switch (toUnit) {
-    case 'lb': return gramsWeight / 453.592;
-    case 'kg': return gramsWeight / 1000;
-    case 'oz': return gramsWeight / 28.3495;
-    case 'g': return gramsWeight;
-    default: return gramsWeight;
+    case 'lb':
+      return weightInGrams / 453.592;
+    case 'oz':
+      return weightInGrams / 28.3495;
+    case 'kg':
+      return weightInGrams / 1000;
+    case 'g':
+      return weightInGrams;
+    default:
+      return weight;
   }
-}
+};

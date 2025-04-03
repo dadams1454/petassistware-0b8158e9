@@ -41,62 +41,66 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
         });
         
         // Group logs by dog and medication name
-        const groupedLogs: Record<string, Record<string, any[]>> = {};
+        const groupedLogs: Record<string, any[]> = {};
         
-        data.forEach(log => {
-          const dogId = log.dog_id;
-          const medicationName = log.task_name;
-          const key = `${dogId}-${medicationName}`;
+        if (data && Array.isArray(data)) {
+          data.forEach(log => {
+            const dogId = log.dog_id;
+            const medicationName = log.task_name;
+            const key = `${dogId}-${medicationName}`;
+            
+            if (!groupedLogs[key]) {
+              groupedLogs[key] = [];
+            }
+            
+            groupedLogs[key].push(log);
+          });
           
-          if (!groupedLogs[key]) {
-            groupedLogs[key] = [];
-          }
-          
-          groupedLogs[key].push(log);
-        });
-        
-        // Process grouped logs into medication info
-        Object.entries(groupedLogs).forEach(([key, logs]) => {
-          const [dogId, medicationName] = key.split('-');
-          
-          // Sort logs by timestamp to get the most recent one
-          logs.sort((a, b) => isAfter(parseISO(a.timestamp), parseISO(b.timestamp)) ? -1 : 1);
-          
-          // Latest log
-          const latestLog = logs[0];
-          
-          // Extract medication metadata
-          const metadata = latestLog.medication_metadata || {};
-          
-          // Determine if preventative
-          const isPreventative = metadata.preventative === true;
-          
-          // Extract frequency information
-          const frequency = metadata.frequency || 'daily';
-          
-          // Extract start_date and end_date if available
-          const startDate = metadata.start_date || latestLog.timestamp;
-          const endDate = metadata.end_date || null;
-          
-          // Create medication info object
-          const medicationInfo: MedicationInfo = {
-            id: medicationName,
-            name: medicationName,
-            lastAdministered: latestLog.timestamp,
-            frequency: frequency as MedicationFrequency,
-            notes: latestLog.notes,
-            isPreventative,
-            startDate,
-            endDate
-          };
-          
-          // Add to appropriate category
-          if (isPreventative) {
-            processedLogs[dogId].preventative.push(medicationInfo);
-          } else {
-            processedLogs[dogId].other.push(medicationInfo);
-          }
-        });
+          // Process grouped logs into medication info
+          Object.entries(groupedLogs).forEach(([key, logs]) => {
+            if (!Array.isArray(logs) || logs.length === 0) return;
+            
+            const [dogId, medicationName] = key.split('-');
+            
+            // Sort logs by timestamp to get the most recent one
+            logs.sort((a, b) => isAfter(parseISO(a.timestamp), parseISO(b.timestamp)) ? -1 : 1);
+            
+            // Latest log
+            const latestLog = logs[0];
+            
+            // Extract medication metadata
+            const metadata = latestLog.medication_metadata || {};
+            
+            // Determine if preventative
+            const isPreventative = metadata.preventative === true;
+            
+            // Extract frequency information
+            const frequency = metadata.frequency || 'daily';
+            
+            // Extract start_date and end_date if available
+            const startDate = metadata.start_date || latestLog.timestamp;
+            const endDate = metadata.end_date || null;
+            
+            // Create medication info object
+            const medicationInfo: MedicationInfo = {
+              id: medicationName,
+              name: medicationName,
+              lastAdministered: latestLog.timestamp,
+              frequency: frequency as MedicationFrequency,
+              notes: latestLog.notes,
+              isPreventative,
+              startDate,
+              endDate
+            };
+            
+            // Add to appropriate category
+            if (isPreventative) {
+              processedLogs[dogId].preventative.push(medicationInfo);
+            } else {
+              processedLogs[dogId].other.push(medicationInfo);
+            }
+          });
+        }
         
         setMedicationLogs(processedLogs);
       } catch (err) {
