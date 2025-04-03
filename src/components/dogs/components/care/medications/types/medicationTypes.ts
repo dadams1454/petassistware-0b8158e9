@@ -20,6 +20,15 @@ export interface ProcessedMedicationLogs {
   };
 }
 
+export interface MedicationMetadata {
+  preventative: boolean;
+  frequency: MedicationFrequency;
+  start_date: string;
+  end_date?: string | null;
+  dosage?: number;
+  dosage_unit?: string;
+}
+
 export interface MedicationsLogProps {
   dogs: DogCareStatus[];
   onRefresh: () => void;
@@ -73,3 +82,24 @@ export interface LastMedicationInfoProps {
   lastAdministered?: string;
   frequency: MedicationFrequency;
 }
+
+// Props for medication form component
+export interface MedicationFormProps {
+  dogId: string;
+  onSuccess: () => void;
+  onCancel?: () => void;
+  initialData?: any;
+}
+
+export interface MedicationFormData {
+  medicationName: string;
+  dosage: string;
+  dosageUnit: string;
+  frequency: string;
+  administrationRoute: string;
+  startDate: Date;
+  endDate?: Date | null;
+  preventative?: boolean;
+  notes?: string;
+}
+

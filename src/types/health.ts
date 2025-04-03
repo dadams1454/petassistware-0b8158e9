@@ -67,6 +67,31 @@ export interface HealthRecord {
   // For backward compatibility
   date?: string;
   description?: string;
+  // Medication specific fields
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string | null;
+  duration?: number;
+  duration_unit?: string;
+  administration_route?: string;
+  // Vaccine specific fields
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  expiration_date?: string;
+  // Examination specific fields
+  examination_type?: string;
+  follow_up_date?: string | null;
+  // Surgery specific fields
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
+  // Staff information
+  performed_by?: string;
 }
 
 // Health indicator interface
@@ -94,11 +119,13 @@ export interface Medication {
   frequency: string;
   administration_route: string;
   start_date: string;
-  end_date?: string;
+  end_date?: string | null;
   is_active: boolean;
   notes?: string;
   last_administered?: string;
   created_at?: string;
+  // For puppy medications compatibility
+  puppy_id?: string;
 }
 
 // Medication administration interface
@@ -122,6 +149,8 @@ export interface HealthCertificate {
   file_url?: string;
   notes?: string;
   created_at?: string;
+  // For puppy health certificates compatibility
+  puppy_id?: string;
 }
 
 // Weight data interface
@@ -133,6 +162,22 @@ export interface WeightData {
   unit?: WeightUnit;
   notes?: string;
   created_at?: string;
+}
+
+// Weight record interface for both dogs and puppies
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  weight: number;
+  date: string;
+  weight_unit: string;
+  notes?: string;
+  percent_change?: number;
+  created_at?: string;
+  puppy_id?: string;
+  // For calculations
+  birth_date?: string;
+  unit?: WeightUnit;
 }
 
 // Helper functions for health record types
@@ -216,14 +261,17 @@ export const mapToHealthRecord = (data: any): HealthRecord => {
 };
 
 // Helper for mapping data to weight records
-export const mapToWeightRecord = (data: any): WeightData => {
+export const mapToWeightRecord = (data: any): WeightRecord => {
   return {
     id: data.id,
     dog_id: data.dog_id,
     weight: data.weight,
     date: data.date,
-    unit: data.unit || data.weight_unit,
+    weight_unit: data.weight_unit || data.unit,
     notes: data.notes,
-    created_at: data.created_at
+    percent_change: data.percent_change,
+    created_at: data.created_at,
+    puppy_id: data.puppy_id
   };
 };
+

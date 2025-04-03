@@ -1,46 +1,47 @@
 
 import React from 'react';
-import { Pill, Clock, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+import { LastMedicationInfoProps } from '../types/medicationTypes';
 
-interface LastMedicationInfoProps {
-  name: string;
-  lastAdministered: string | null;
-  frequency: string;
-}
-
-const LastMedicationInfo: React.FC<LastMedicationInfoProps> = ({
-  name,
+const LastMedicationInfo: React.FC<LastMedicationInfoProps> = ({ 
+  name, 
   lastAdministered,
-  frequency
+  frequency 
 }) => {
-  if (!name) return null;
+  const getLastAdministeredText = () => {
+    if (!lastAdministered) return 'Never administered';
+    
+    try {
+      return formatDistanceToNow(new Date(lastAdministered), { addSuffix: true });
+    } catch (error) {
+      console.error('Date parsing error:', error);
+      return 'Date error';
+    }
+  };
+  
+  const getFrequencyText = () => {
+    switch (frequency) {
+      case 'daily':
+        return 'Daily';
+      case 'twice-daily':
+        return 'Twice daily';
+      case 'weekly':
+        return 'Weekly';
+      case 'biweekly':
+        return 'Every 2 weeks';
+      case 'monthly':
+        return 'Monthly';
+      case 'as-needed':
+        return 'As needed';
+      default:
+        return frequency;
+    }
+  };
   
   return (
     <div className="mt-3 pt-2 border-t text-xs text-muted-foreground">
-      <div className="flex items-center">
-        <Pill className="h-3 w-3 mr-1 text-purple-500" />
-        <span className="font-medium text-purple-600">
-          Last: {name}
-        </span>
-      </div>
-      <div className="flex items-center mt-1">
-        <Clock className="h-3 w-3 mr-1" />
-        <span>
-          {lastAdministered ? 
-            format(new Date(lastAdministered), 'MMM d, h:mm a') : 
-            'No date recorded'}
-        </span>
-      </div>
-      {frequency && (
-        <div className="flex items-center mt-1">
-          <Calendar className="h-3 w-3 mr-1" />
-          <span>
-            {frequency.charAt(0).toUpperCase() + 
-             frequency.slice(1)}
-          </span>
-        </div>
-      )}
+      <p>Last dose: <span className="font-medium">{getLastAdministeredText()}</span></p>
+      <p>Frequency: <span className="font-medium">{getFrequencyText()}</span></p>
     </div>
   );
 };

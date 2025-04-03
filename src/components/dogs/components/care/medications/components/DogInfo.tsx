@@ -1,33 +1,28 @@
 
 import React from 'react';
-
-interface DogInfoProps {
-  dogName: string;
-  dogPhoto?: string;
-  breed: string;
-}
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DogInfoProps } from '../types/medicationTypes';
 
 const DogInfo: React.FC<DogInfoProps> = ({ dogName, dogPhoto, breed }) => {
+  // Get initials for the avatar fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part.charAt(0))
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+  
   return (
-    <div className="flex items-center">
-      {dogPhoto ? (
-        <img 
-          src={dogPhoto} 
-          alt={dogName} 
-          className="h-10 w-10 rounded-full object-cover mr-3" 
-        />
-      ) : (
-        <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-          <span className="text-primary font-bold">
-            {dogName.charAt(0)}
-          </span>
-        </div>
-      )}
+    <div className="flex items-center space-x-3">
+      <Avatar className="h-8 w-8 border">
+        <AvatarImage src={dogPhoto || undefined} alt={dogName} />
+        <AvatarFallback>{getInitials(dogName)}</AvatarFallback>
+      </Avatar>
       <div>
-        <h3 className="font-medium">{dogName}</h3>
-        <p className="text-xs text-muted-foreground">
-          {breed}
-        </p>
+        <p className="font-medium text-sm leading-tight">{dogName}</p>
+        {breed && <p className="text-xs text-muted-foreground leading-tight">{breed}</p>}
       </div>
     </div>
   );

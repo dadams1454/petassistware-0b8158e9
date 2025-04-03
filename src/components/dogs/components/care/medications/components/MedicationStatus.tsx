@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { MedicationStatus, isComplexStatus, getStatusValue } from '@/utils/medicationUtils';
+import { Loader2 } from 'lucide-react';
 import { MedicationStatusDisplayProps } from '../types/medicationTypes';
+import { isComplexStatus, getStatusValue } from '@/utils/medicationUtils';
 
 const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({ 
   status, 
@@ -11,67 +12,31 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
   isLoading = false
 }) => {
   if (isLoading) {
-    return <Skeleton className="h-6 w-20" />;
+    return (
+      <div className="flex items-center">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
+      </div>
+    );
   }
 
-  // If it's a complex status object, extract the status string
-  const statusText = isComplexStatus(status) 
-    ? status.status
-    : typeof status === 'string' 
-      ? status 
-      : 'Unknown';
-
-  // Format the status text for display
-  const formattedStatus = (() => {
-    // If it's a simple string like 'incomplete', just capitalize it
-    if (typeof status === 'string') {
-      return status.charAt(0).toUpperCase() + status.slice(1);
-    }
-    
-    // Otherwise, handle the known enum values
-    switch (statusText) {
-      case MedicationStatus.Current:
-        return 'Current';
-      case MedicationStatus.Due:
-        return 'Due';
-      case MedicationStatus.Overdue:
-        return 'Overdue';
-      case MedicationStatus.Upcoming:
-        return 'Upcoming';
-      case MedicationStatus.Completed:
-        return 'Completed';
-      case MedicationStatus.Active:
-        return 'Active';
-      case MedicationStatus.Expired:
-        return 'Expired';
-      case MedicationStatus.Missed:
-        return 'Missed';
-      default:
-        return 'Unknown';
-    }
-  })();
-
-  // Add additional info for overdue or due soon medications
-  const additionalInfo = (() => {
-    if (!isComplexStatus(status)) return null;
-    
-    if (status.status === MedicationStatus.Overdue && status.daysOverdue) {
-      return ` (${status.daysOverdue} days)`;
-    }
-    
-    if ((status.status === MedicationStatus.Current || status.status === MedicationStatus.Upcoming) 
-        && status.daysUntilDue) {
-      return ` (in ${status.daysUntilDue} days)`;
-    }
-    
-    return null;
-  })();
+  // Get display text based on status
+  let displayText = '';
+  
+  if (isComplexStatus(status)) {
+    displayText = status.statusLabel || getStatusValue(status);
+  } else {
+    displayText = status.charAt(0).toUpperCase() + status.slice(1);
+  }
+  
+  // Allow overriding the display text with a label prop
+  if (label) {
+    displayText = label;
+  }
 
   return (
     <Badge className={statusColor}>
-      {label ? `${label}: ` : ''}
-      {formattedStatus}
-      {additionalInfo}
+      {displayText}
     </Badge>
   );
 };

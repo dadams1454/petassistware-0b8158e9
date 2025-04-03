@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { isAfter, parseISO, format } from 'date-fns';
+import { isAfter, parseISO } from 'date-fns';
 import { DogCareStatus } from '@/types/dailyCare';
 import { MedicationInfo, ProcessedMedicationLogs } from '../types/medicationTypes';
 import { MedicationFrequency } from '@/utils/medicationUtils';
