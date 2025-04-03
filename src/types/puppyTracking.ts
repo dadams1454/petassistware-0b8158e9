@@ -12,6 +12,9 @@ export interface PuppyMilestone {
   completion_date?: string;
   notes?: string;
   created_at: string;
+  // Adding compatibility fields
+  category?: string;
+  description?: string;
 }
 
 export interface WeightRecord {
@@ -24,9 +27,13 @@ export interface WeightRecord {
   notes?: string;
   percent_change?: number;
   created_at?: string;
+  // Adding compatibility fields
+  unit?: WeightUnitValue;
+  birth_date?: string;
+  age_days?: number;
 }
 
-export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
+export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg' | 'lbs';
 
 export interface SocializationCategory {
   id: string;
@@ -34,6 +41,7 @@ export interface SocializationCategory {
   description?: string;
   examples?: string[];
   color?: string;
+  recommended_experiences?: string[]; // For compatibility
 }
 
 export interface SocializationExperience {
@@ -45,6 +53,10 @@ export interface SocializationExperience {
   reaction?: string;
   notes?: string;
   created_at: string;
+  // Adding compatibility fields
+  category?: string;
+  experience_date?: string; // For compatibility with existing code
+  experience_type?: string; // For compatibility
 }
 
 export interface HealthRecord {
@@ -163,6 +175,9 @@ export interface VaccinationRecord {
   date: string;
   next_due?: string;
   notes?: string;
+  vaccination_type?: string; // Added for compatibility
+  vaccination_date?: string; // Added for compatibility
+  administered_by?: string; // Added for compatibility
 }
 
 export interface PuppyVaccinationRecord extends VaccinationRecord {
@@ -176,6 +191,8 @@ export interface VaccinationScheduleItem {
   due_date: string;
   administered: boolean;
   notes?: string;
+  vaccination_type?: string; // Added for compatibility
+  vaccination_date?: string; // Added for compatibility
 }
 
 export interface SocializationReactionType {
@@ -202,4 +219,9 @@ export interface SocializationProgress {
   count: number;
   progress: number;
   color?: string;
+  // Added for compatibility with existing code
+  categoryId?: string;
+  categoryName?: string;
+  completion_percentage?: number;
+  target?: number;
 }

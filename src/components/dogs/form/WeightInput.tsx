@@ -15,7 +15,7 @@ interface WeightInputProps {
   defaultUnit?: WeightUnit;
 }
 
-const WeightInput = ({ form, name, label, defaultUnit = 'lbs' as WeightUnit }: WeightInputProps) => {
+const WeightInput = ({ form, name, label, defaultUnit = 'lb' }: WeightInputProps) => {
   const [inputError, setInputError] = useState<string | null>(null);
   const [unit, setUnit] = useState<WeightUnit>(defaultUnit);
   
@@ -73,6 +73,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' as WeightUnit }: W
 
   const getIncrementAmount = (): number => {
     switch (unit) {
+      case 'lb':
       case 'lbs': return 0.1;
       case 'kg': return 0.1;
       case 'oz': return 0.5;
@@ -83,6 +84,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' as WeightUnit }: W
 
   const getDefaultIncrement = (): string => {
     switch (unit) {
+      case 'lb':
       case 'lbs': return '0.1';
       case 'kg': return '0.1';
       case 'oz': return '0.5';
@@ -93,6 +95,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' as WeightUnit }: W
 
   const formatWeight = (value: number): string => {
     switch (unit) {
+      case 'lb':
       case 'lbs':
       case 'kg':
         return value.toFixed(1);
@@ -122,6 +125,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' as WeightUnit }: W
         // First convert current unit to grams (base unit)
         let weightInGrams: number;
         switch (unit) {
+          case 'lb':
           case 'lbs': weightInGrams = numValue * 453.59; break;
           case 'kg': weightInGrams = numValue * 1000; break;
           case 'oz': weightInGrams = numValue * 28.35; break;
@@ -131,6 +135,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' as WeightUnit }: W
         
         // Then convert from grams to new unit
         switch (newUnit) {
+          case 'lb':
           case 'lbs': convertedWeight = weightInGrams / 453.59; break;
           case 'kg': convertedWeight = weightInGrams / 1000; break;
           case 'oz': convertedWeight = weightInGrams / 28.35; break;
@@ -201,6 +206,12 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lbs' as WeightUnit }: W
                   <SelectValue placeholder="Unit" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="lb">
+                    <div className="flex items-center gap-2">
+                      <Scale className="h-4 w-4" />
+                      <span>lb</span>
+                    </div>
+                  </SelectItem>
                   <SelectItem value="lbs">
                     <div className="flex items-center gap-2">
                       <Scale className="h-4 w-4" />

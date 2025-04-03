@@ -46,10 +46,15 @@ export enum HealthRecordTypeEnum {
   MEDICATION = 'medication',
   SURGERY = 'surgery',
   TEST = 'test',
-  OTHER = 'other'
+  OTHER = 'other',
+  OBSERVATION = 'observation',
+  DEWORMING = 'deworming',
+  GROOMING = 'grooming',
+  DENTAL = 'dental',
+  ALLERGY = 'allergy'
 }
 
-export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
+export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg' | 'lbs';
 
 export interface WeightRecord {
   id: string;
@@ -57,6 +62,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -81,6 +87,9 @@ export interface VaccinationRecord {
   date: string;
   next_due?: string;
   notes?: string;
+  vaccination_type?: string; // Added for backward compatibility
+  vaccination_date?: string; // Added for backward compatibility
+  administered_by?: string; // Added for backward compatibility
 }
 
 export interface HealthCondition {
@@ -104,7 +113,10 @@ export enum EnergyLevelEnum {
   HIGH = 'high',
   NORMAL = 'normal',
   LOW = 'low',
-  LETHARGIC = 'lethargic'
+  LETHARGIC = 'lethargic',
+  VERY_HIGH = 'very_high',
+  VERY_LOW = 'very_low',
+  HYPERACTIVE = 'hyperactive'
 }
 
 export enum StoolConsistencyEnum {
@@ -113,7 +125,11 @@ export enum StoolConsistencyEnum {
   LOOSE = 'loose',
   WATERY = 'watery',
   HARD = 'hard',
-  NONE = 'none'
+  NONE = 'none',
+  MUCOUSY = 'mucousy',
+  BLOODY = 'bloody',
+  SOLID = 'solid',
+  SEMI_SOLID = 'semi_solid'
 }
 
 export interface WeightData {

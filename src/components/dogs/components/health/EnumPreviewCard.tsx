@@ -29,7 +29,7 @@ const EnumPreviewCard: React.FC = () => {
   const stoolConsistencies = enumToArray(StoolConsistencyEnum);
   
   // Weight units is a union type, not an enum
-  const weightUnits: WeightUnit[] = ['oz', 'g', 'lbs', 'kg', 'lb'];
+  const weightUnits: WeightUnit[] = ['oz', 'g', 'lb', 'kg', 'lbs'];
   
   return (
     <Card>

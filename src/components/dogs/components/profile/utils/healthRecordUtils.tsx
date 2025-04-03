@@ -5,15 +5,15 @@ import { HealthRecordTypeEnum } from '@/types/health';
 
 export const getHealthRecordIcon = (recordType: string) => {
   switch (recordType) {
-    case HealthRecordTypeEnum.Vaccination:
+    case HealthRecordTypeEnum.VACCINATION:
       return <Syringe className="h-5 w-5" />;
-    case HealthRecordTypeEnum.Examination:
+    case HealthRecordTypeEnum.EXAMINATION:
       return <Stethoscope className="h-5 w-5" />;
-    case HealthRecordTypeEnum.Medication:
+    case HealthRecordTypeEnum.MEDICATION:
       return <Pill className="h-5 w-5" />;
-    case HealthRecordTypeEnum.Surgery:
+    case HealthRecordTypeEnum.SURGERY:
       return <Scissors className="h-5 w-5" />;
-    case HealthRecordTypeEnum.Observation:
+    case HealthRecordTypeEnum.OBSERVATION:
       return <AlertCircle className="h-5 w-5" />;
     default:
       return <FileText className="h-5 w-5" />;
@@ -22,15 +22,15 @@ export const getHealthRecordIcon = (recordType: string) => {
 
 export const getHealthRecordColor = (recordType: string) => {
   switch (recordType) {
-    case HealthRecordTypeEnum.Vaccination:
+    case HealthRecordTypeEnum.VACCINATION:
       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-    case HealthRecordTypeEnum.Examination:
+    case HealthRecordTypeEnum.EXAMINATION:
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-    case HealthRecordTypeEnum.Medication:
+    case HealthRecordTypeEnum.MEDICATION:
       return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-    case HealthRecordTypeEnum.Surgery:
+    case HealthRecordTypeEnum.SURGERY:
       return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-    case HealthRecordTypeEnum.Observation:
+    case HealthRecordTypeEnum.OBSERVATION:
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300';
     default:
       return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
