@@ -1,4 +1,3 @@
-
 import { format, addDays, differenceInDays, parseISO } from 'date-fns';
 
 // Define MedicationFrequency enum
@@ -11,9 +10,6 @@ export enum MedicationFrequency {
   Annual = 'annual',
   AsNeeded = 'as_needed'
 }
-
-// Export the MedicationFrequency enum for components to use
-export { MedicationFrequency };
 
 // Define MedicationStatus enum
 export enum MedicationStatus {
