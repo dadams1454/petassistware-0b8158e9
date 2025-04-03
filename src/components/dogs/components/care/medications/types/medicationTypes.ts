@@ -1,5 +1,5 @@
 
-import { MedicationFrequency, MedicationStatus, MedicationStatusResult } from '@/utils/medicationUtils';
+import { MedicationStatus, MedicationStatusResult } from '@/types/health';
 
 export interface MedicationInfo {
   id: string;
@@ -12,6 +12,7 @@ export interface MedicationInfo {
   lastAdministered?: string;
   notes?: string;
   isPreventative: boolean;
+  medication_name?: string;
 }
 
 export interface MedicationLogFormValues {
@@ -24,7 +25,7 @@ export interface MedicationLogFormValues {
 export interface MedicationDisplayProps {
   dogId: string;
   medicationName: string;
-  status: MedicationStatus | MedicationStatusResult;
+  status: MedicationStatus | MedicationStatusResult | string;
   lastAdministered?: string;
   frequency?: string;
   dosage?: string;
@@ -34,20 +35,25 @@ export interface MedicationDisplayProps {
 }
 
 export interface MedicationsLogProps {
-  dogId: string;
+  dogId?: string;
+  dogs?: DogCareStatus[];
   onRefresh?: () => void;
 }
 
 export interface DogInfoProps {
   dogId: string;
   dogName?: string;
+  dogPhoto?: string;
+  breed?: string;
   showPhoto?: boolean;
 }
 
 export interface LastMedicationInfoProps {
   dogId: string;
-  medicationName: string;
+  medicationName?: string;
+  name?: string;
   lastAdministered?: string;
+  frequency?: string;
 }
 
 export interface MedicationFilterProps {
@@ -63,6 +69,8 @@ export interface MedicationFilterProps {
 export interface MedicationHeaderProps {
   title: string;
   subtitle?: string;
+  description?: string;
+  isLoading?: boolean;
   action?: React.ReactNode;
 }
 
@@ -71,4 +79,13 @@ export interface ProcessedMedicationLogs {
     preventative: MedicationInfo[];
     other: MedicationInfo[];
   };
+}
+
+export interface DogCareStatus {
+  dog_id: string;
+  dog_name: string;
+  dog_photo?: string;
+  breed?: string;
+  last_medication?: string;
+  last_medication_date?: string;
 }

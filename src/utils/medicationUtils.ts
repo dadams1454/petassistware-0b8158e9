@@ -1,137 +1,135 @@
 
-import { MedicationStatus, MedicationStatusResult } from '@/types/health';
+import { MedicationStatus, MedicationStatusResult, MedicationFrequency } from '../types/health';
+import { differenceInDays, parseISO, isValid, isAfter, isBefore, addDays } from 'date-fns';
 
-// Define MedicationFrequency type for export
-export type MedicationFrequency = 'daily' | 'twice_daily' | 'weekly' | 'biweekly' | 'monthly' | 'as_needed' | 'quarterly' | 'annually';
-
-// Export MedicationFrequency as an enum for use with switch statements
-export const MedicationFrequency = {
-  Daily: 'daily' as const,
-  TwiceDaily: 'twice_daily' as const,
-  Weekly: 'weekly' as const,
-  Biweekly: 'biweekly' as const,
-  Monthly: 'monthly' as const,
-  AsNeeded: 'as_needed' as const,
-  Quarterly: 'quarterly' as const,
-  Annual: 'annually' as const
+// Check if a value is a complex status object
+export const isComplexStatus = (status: any): status is MedicationStatusResult => {
+  return status !== null && 
+         typeof status === 'object' && 
+         'status' in status &&
+         'statusColor' in status;
 };
 
-// Export these types so they're available to components
-export type { MedicationStatus, MedicationStatusResult };
-
-/**
- * Get medication status based on start/end dates and frequency
- */
-export const getMedicationStatus = (medication: any): MedicationStatusResult => {
-  if (!medication) {
-    return {
-      status: 'inactive',
-      statusColor: 'bg-gray-200 text-gray-800',
-      statusLabel: 'Inactive'
-    };
+// Get status value from various status types
+export const getStatusValue = (status: string | MedicationStatusResult): string => {
+  if (isComplexStatus(status)) {
+    return status.status;
   }
+  return status;
+};
 
+// Get color for different status types
+export const getStatusColor = (status: string | MedicationStatus): string => {
+  if (!status) return "bg-gray-200 text-gray-700";
+  
+  switch (status) {
+    case 'active':
+      return "bg-green-100 text-green-800";
+    case 'pending':
+      return "bg-blue-100 text-blue-800";
+    case 'completed':
+      return "bg-slate-100 text-slate-800";
+    case 'expired':
+      return "bg-red-100 text-red-800";
+    case 'discontinued':
+      return "bg-slate-100 text-slate-800";
+    case 'upcoming':
+      return "bg-amber-100 text-amber-800";
+    case 'due':
+      return "bg-orange-100 text-orange-800";
+    case 'overdue':
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-200 text-gray-700";
+  }
+};
+
+// Calculate medication status based on date ranges
+export const calculateMedicationStatus = (startDate?: string, endDate?: string): MedicationStatusResult => {
   const today = new Date();
-  const startDate = medication.start_date ? new Date(medication.start_date) : null;
-  const endDate = medication.end_date ? new Date(medication.end_date) : null;
-
-  // Status based on dates
-  if (startDate && startDate > today) {
-    return {
-      status: 'pending',
-      statusColor: 'bg-blue-100 text-blue-800',
-      statusLabel: 'Pending'
+  
+  if (!startDate) {
+    return { 
+      status: 'unknown', 
+      statusColor: getStatusColor('unknown'),
+      statusLabel: 'Unknown' 
     };
   }
-
-  if (endDate && endDate < today) {
-    return {
-      status: 'completed',
-      statusColor: 'bg-green-100 text-green-800',
-      statusLabel: 'Completed'
+  
+  const start = parseISO(startDate);
+  if (!isValid(start)) {
+    return { 
+      status: 'unknown', 
+      statusColor: getStatusColor('unknown'),
+      statusLabel: 'Invalid Date' 
     };
   }
-
-  if (medication.is_active === false) {
+  
+  // Check if medication has ended
+  if (endDate) {
+    const end = parseISO(endDate);
+    if (isValid(end) && isBefore(end, today)) {
+      return { 
+        status: 'completed', 
+        statusColor: getStatusColor('completed'),
+        statusLabel: 'Completed' 
+      };
+    }
+  }
+  
+  // Not started yet
+  if (isAfter(start, today)) {
+    const daysUntilStart = differenceInDays(start, today);
+    let status: MedicationStatus = 'upcoming';
+    
+    // Due within 3 days
+    if (daysUntilStart <= 3) {
+      status = 'due';
+    }
+    
     return {
-      status: 'discontinued',
-      statusColor: 'bg-orange-100 text-orange-800',
-      statusLabel: 'Discontinued'
+      status,
+      statusColor: getStatusColor(status),
+      statusLabel: `Starts in ${daysUntilStart} day${daysUntilStart !== 1 ? 's' : ''}`,
+      dueDate: startDate
     };
   }
-
+  
+  // Active medication
   return {
     status: 'active',
-    statusColor: 'bg-blue-500 text-white',
+    statusColor: getStatusColor('active'),
     statusLabel: 'Active'
   };
 };
 
-/**
- * Determine if the status is a complex object or a simple string
- */
-export const isComplexStatus = (status: any): status is MedicationStatusResult => {
-  return typeof status === 'object' && status !== null && 'statusLabel' in status;
-};
-
-/**
- * Extract the status value from a status object or return the status if it's a string
- */
-export const getStatusValue = (status: string | MedicationStatusResult): string => {
-  if (typeof status === 'string') {
-    return status;
-  }
-  
-  return status.status || '';
-};
-
-/**
- * Get color class for a status
- */
-export const getStatusColor = (status: string | MedicationStatusResult): string => {
-  if (isComplexStatus(status)) {
-    return status.statusColor;
-  }
-  
-  // Default colors for string statuses
-  switch (status) {
-    case 'active':
-      return 'bg-blue-500 text-white';
-    case 'completed':
-      return 'bg-green-100 text-green-800';
-    case 'pending':
-      return 'bg-blue-100 text-blue-800';
-    case 'discontinued':
-      return 'bg-orange-100 text-orange-800';
-    case 'inactive':
-      return 'bg-gray-200 text-gray-800';
-    default:
-      return 'bg-gray-200 text-gray-800';
-  }
-};
-
-/**
- * Get time slots for a medication frequency
- */
-export const getTimeSlotsForFrequency = (frequency: MedicationFrequency): string[] => {
+// Get medication frequency display text
+export const getMedicationFrequencyText = (frequency: string): string => {
   switch (frequency) {
-    case 'daily':
-      return ['08:00'];
-    case 'twice_daily':
-      return ['08:00', '20:00'];
-    case 'weekly':
-      return ['08:00'];
-    case 'biweekly':
-      return ['08:00'];
-    case 'monthly':
-      return ['08:00'];
-    case 'as_needed':
-      return [];
-    case 'quarterly':
-      return ['08:00'];
-    case 'annually':
-      return ['08:00'];
+    case MedicationFrequency.ONCE:
+      return 'Once';
+    case MedicationFrequency.DAILY:
+      return 'Daily';
+    case MedicationFrequency.TWICE_DAILY:
+      return 'Twice daily';
+    case MedicationFrequency.THREE_TIMES_DAILY:
+      return 'Three times daily';
+    case MedicationFrequency.EVERY_OTHER_DAY:
+      return 'Every other day';
+    case MedicationFrequency.WEEKLY:
+      return 'Weekly';
+    case MedicationFrequency.BIWEEKLY:
+      return 'Every 2 weeks';
+    case MedicationFrequency.MONTHLY:
+      return 'Monthly';
+    case MedicationFrequency.AS_NEEDED:
+      return 'As needed';
+    case MedicationFrequency.CUSTOM:
+      return 'Custom';
     default:
-      return ['08:00'];
+      return frequency;
   }
 };
+
+// Export the MedicationFrequency enum for components to use
+export { MedicationFrequency };

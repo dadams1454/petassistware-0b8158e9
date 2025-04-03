@@ -30,8 +30,8 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
         <div className="flex justify-between items-center">
           <div>
             <h3 className="font-medium">{puppy.name || `Puppy #${puppy.id.substring(0, 4)}`}</h3>
-            {puppy.litter_name && (
-              <p className="text-xs text-muted-foreground">{puppy.litter_name}</p>
+            {puppy.litter_id && (
+              <p className="text-xs text-muted-foreground">Litter: {puppy.litter_id.substring(0, 8)}</p>
             )}
           </div>
           <Badge variant={puppy.status === 'Available' ? 'default' : 'secondary'} className="capitalize">

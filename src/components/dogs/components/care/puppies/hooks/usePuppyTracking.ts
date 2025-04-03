@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from 'react';
 import { usePuppyData } from '@/hooks/puppies/usePuppyData';
 import { usePuppyAgeGroups } from '@/hooks/puppies/usePuppyAgeGroups';
 import { usePuppyStats } from '@/hooks/puppies/usePuppyStats';

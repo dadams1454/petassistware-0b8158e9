@@ -1,78 +1,83 @@
 
-import { WeightUnit } from '@/types/common';
-
 export enum DogGender {
-  Male = 'Male',
-  Female = 'Female'
+  Male = 'male',
+  Female = 'female'
 }
 
 export enum DogStatus {
   Active = 'active',
   Inactive = 'inactive',
-  Sold = 'sold',
   Deceased = 'deceased',
-  Rehomed = 'rehomed',
-  Guardian = 'guardian'
+  Sold = 'sold',
+  Rehomed = 'rehomed'
 }
 
-export interface Dog {
+export interface DogProfile {
   id: string;
   name: string;
-  breed?: string;
-  gender?: DogGender;
-  birthdate?: string;
+  breed: string;
   color?: string;
-  weight?: number;
-  microchip_number?: string;
-  registration_number?: string;
+  gender?: string;
+  birthdate?: string;
   photo_url?: string;
-  notes?: string;
-  created_at: string;
-  updated_at?: string;
-  status?: DogStatus;
-  owner_id?: string;
-  tenant_id?: string;
-  // Add reproductive properties
+  weight?: number;
+  weight_unit?: string; // Added for compatibility
   is_pregnant?: boolean;
   last_heat_date?: string;
   tie_date?: string;
-}
-
-export interface DogProfile extends Dog {
-  pedigree?: boolean;
-  requires_special_handling?: boolean;
-  potty_alert_threshold?: number;
-  max_time_between_breaks?: number;
-  is_pregnant?: boolean;
-  last_heat_date?: string;
-  tie_date?: string;
-  litter_number?: number;
   vaccination_type?: string;
   vaccination_notes?: string;
   last_vaccination_date?: string;
-  weight_unit?: WeightUnit;
-}
-
-export interface HealthRecord {
-  id: string;
-  dog_id: string;
-  title: string;
-  record_type: string;
-  visit_date: string;
-  record_notes?: string;
-  vet_name: string;
-  document_url?: string;
-  next_due_date?: string;
-  created_at: string;
+  requires_special_handling?: boolean;
+  pedigree?: boolean;
+  litter_number?: number;
+  owner_id?: string;
+  notes?: string;
+  microchip_number?: string;
+  registration_number?: string;
+  registration_organization?: string;
+  microchip_location?: string;
+  reproductive_status?: string;
+  status?: DogStatus; // Added for compatibility
+  potty_alert_threshold?: number;
+  max_time_between_breaks?: number;
 }
 
 export interface WeightRecord {
   id: string;
   dog_id: string;
   weight: number;
-  weight_unit: WeightUnit;
-  unit?: WeightUnit; // For backward compatibility
+  weight_unit: string;
+  unit?: string; // Added for compatibility
   date: string;
   notes?: string;
+  percent_change?: number;
   created_at: string;
+}
+
+export interface HealthRecord {
+  id: string;
+  dog_id: string;
+  record_type: string;
+  title?: string;
+  visit_date: string;
+  vet_name: string;
+  description?: string;
+  document_url?: string;
+  record_notes?: string;
+  created_at: string;
+}
+
+export interface GrowthStats {
+  percentChange: number;
+  averageGrowthRate: number;
+  weightGoal: number | null;
+  onTrack: boolean | null;
+  totalGrowth?: number | null;
+  currentWeight?: number;
+  weightUnit?: string;
+  averageGrowth?: number;
+  growthRate?: number;
+  lastWeekGrowth?: number;
+  projectedWeight?: number;
 }

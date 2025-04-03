@@ -8,7 +8,7 @@ export interface WelpingLog {
   timestamp: string;
   puppy_id?: string;
   notes?: string;
-  puppy_details?: any;
+  puppy_details?: Json;
   created_at: string;
 }
 

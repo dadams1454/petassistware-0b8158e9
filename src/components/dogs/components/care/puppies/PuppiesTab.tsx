@@ -5,7 +5,7 @@ import { Baby, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { usePuppyTracking } from './hooks/usePuppyTracking';
-import { PuppyWithAge } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 import PuppyAgeGroupSection from './PuppyAgeGroupSection';
 
 interface PuppiesTabProps {
@@ -37,7 +37,10 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     availablePuppies = 0,
     isLoading, 
     error,
-    stats = {} 
+    total = { count: 0, male: 0, female: 0 },
+    byGender = { male: 0, female: 0, unknown: 0 },
+    byStatus = {},
+    byAgeGroup = {}
   } = usePuppyTracking();
   
   const navigate = useNavigate();
@@ -95,25 +98,30 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     );
   }
 
+  // Create a stats object for the stat cards
+  const stats = {
+    totalPuppies,
+    availablePuppies,
+    byGender,
+    byStatus
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats cards */}
-      <PuppyStatCards stats={{ totalPuppies, availablePuppies, ...stats }} />
+      <PuppyStatCards stats={stats} />
       
       {/* Age group sections */}
-      {Object.entries(puppiesByAgeGroup).map(([groupId, puppiesInGroup]) => {
-        if (!Array.isArray(puppiesInGroup) || puppiesInGroup.length === 0) return null;
+      {ageGroups.map((ageGroup) => {
+        const puppiesInGroup = puppiesByAgeGroup[ageGroup.id] || [];
         
-        // Find the age group with the matching ID
-        const ageGroup = ageGroups.find((group) => group.id === groupId);
-        
-        if (!ageGroup) return null;
+        if (puppiesInGroup.length === 0) return null;
         
         return (
           <PuppyAgeGroupSection
             key={ageGroup.id}
             ageGroup={ageGroup}
-            puppies={puppiesInGroup as PuppyWithAge[]}
+            puppies={puppiesInGroup}
             onRefresh={onRefresh}
           />
         );

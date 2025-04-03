@@ -6,9 +6,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import HeatCycleMonitor from './breeding/HeatCycleMonitor';
 import { format } from 'date-fns';
+import { HeatCycle, HeatIntensity } from '@/types/reproductive';
 
 export interface HeatCycleManagementProps {
   dogId: string;
+  onHeatCycleAdded?: (data: Partial<HeatCycle>) => Promise<void>;
 }
 
 interface HeatCycleInput {
@@ -16,9 +18,10 @@ interface HeatCycleInput {
   start_date: string;
   end_date: string | null;
   notes: string | null;
+  intensity?: HeatIntensity;
 }
 
-const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
+const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeatCycleAdded }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -34,6 +37,7 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
     const startDate = formData.get('start_date') as string;
     const endDate = formData.get('end_date') as string || null;
     const notes = formData.get('notes') as string || null;
+    const intensity = formData.get('intensity') as HeatIntensity || HeatIntensity.Moderate;
     
     try {
       setLoading(true);
@@ -43,10 +47,20 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
         dog_id: dogId,
         start_date: startDate,
         end_date: endDate || null,
-        notes: notes || null
+        notes: notes || null,
+        intensity
       };
       
-      // Insert the heat cycle record
+      if (onHeatCycleAdded) {
+        // Use the provided handler if available
+        await onHeatCycleAdded(heatCycleData);
+        toast.success('Heat cycle recorded successfully');
+        setShowDialog(false);
+        setRefreshCounter(prev => prev + 1);
+        return;
+      }
+      
+      // Default behavior using supabase directly
       const { error } = await supabase
         .from('heat_cycles')
         .insert(heatCycleData);
@@ -103,6 +117,22 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
                   name="end_date"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="intensity" className="text-sm font-medium">
+                  Intensity
+                </label>
+                <select
+                  id="intensity"
+                  name="intensity"
+                  defaultValue={HeatIntensity.Moderate}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value={HeatIntensity.Light}>Light</option>
+                  <option value={HeatIntensity.Moderate}>Moderate</option>
+                  <option value={HeatIntensity.Heavy}>Heavy</option>
+                </select>
               </div>
               
               <div className="space-y-2">
