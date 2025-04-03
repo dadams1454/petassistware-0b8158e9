@@ -57,7 +57,9 @@ export {
   EnergyLevelEnum,
   StoolConsistencyEnum,
   healthRecordTypeToString,
-  stringToHealthRecordType
+  stringToHealthRecordType,
+  mapToHealthRecord,
+  mapToWeightRecord
 } from './health';
 
 // Export common functions and types
@@ -71,7 +73,8 @@ export {
   standardizeWeightUnit,
   formatWeightWithUnit,
   getWeightUnitName,
-  weightUnits
+  weightUnits,
+  convertWeight
 } from './common';
 
 // Export medication utilities

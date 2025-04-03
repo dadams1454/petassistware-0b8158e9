@@ -55,3 +55,52 @@ export const getWeightUnitName = (unit: WeightUnit | string | null | undefined):
   const unitObj = weightUnits.find(u => u.code === standardUnit);
   return unitObj ? unitObj.name : 'Pounds';
 };
+
+// Convert weight between different units
+export const convertWeight = (
+  weight: number,
+  fromUnit: WeightUnit | string,
+  toUnit: WeightUnit | string
+): number => {
+  if (fromUnit === toUnit) {
+    return weight;
+  }
+
+  // Standardize the units
+  const standardFromUnit = standardizeWeightUnit(fromUnit);
+  const standardToUnit = standardizeWeightUnit(toUnit);
+  
+  // Convert to grams first (base unit)
+  let weightInGrams = 0;
+  
+  switch (standardFromUnit) {
+    case 'g':
+      weightInGrams = weight;
+      break;
+    case 'kg':
+      weightInGrams = weight * 1000;
+      break;
+    case 'oz':
+      weightInGrams = weight * 28.3495;
+      break;
+    case 'lb':
+      weightInGrams = weight * 453.59237;
+      break;
+    default:
+      weightInGrams = weight;
+  }
+  
+  // Convert from grams to target unit
+  switch (standardToUnit) {
+    case 'g':
+      return weightInGrams;
+    case 'kg':
+      return weightInGrams / 1000;
+    case 'oz':
+      return weightInGrams / 28.3495;
+    case 'lb':
+      return weightInGrams / 453.59237;
+    default:
+      return weight;
+  }
+};
