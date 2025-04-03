@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { standardizeWeightUnit, WeightUnit } from '@/types/common';
 
 export const usePuppyWeightRecord = (puppyId: string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -11,21 +12,25 @@ export const usePuppyWeightRecord = (puppyId: string) => {
   const addWeightMutation = useMutation({
     mutationFn: async (weightData: {
       weight: number;
-      weight_unit: string;
+      weight_unit: WeightUnit;
       date: string;
       notes?: string;
     }) => {
       setIsSubmitting(true);
       
       try {
-        // Add weight record - use dog_id field for puppy weight records
+        const standardUnit = standardizeWeightUnit(weightData.weight_unit);
+        
+        // Add weight record - we need to provide both dog_id and puppy_id
         // The weight_records table uses dog_id field for both dogs and puppies
         const { data, error } = await supabase
           .from('weight_records')
           .insert({
-            dog_id: puppyId, // Using dog_id instead of puppy_id
+            dog_id: puppyId, // Required field - use puppy_id as dog_id
+            puppy_id: puppyId, // Track specifically that this is a puppy
             weight: weightData.weight,
-            weight_unit: weightData.weight_unit,
+            weight_unit: standardUnit,
+            unit: standardUnit, // Add unit field for compatibility
             date: weightData.date,
             notes: weightData.notes || null
           })
@@ -38,7 +43,7 @@ export const usePuppyWeightRecord = (puppyId: string) => {
         await supabase
           .from('puppies')
           .update({ 
-            current_weight: `${weightData.weight} ${weightData.weight_unit}`
+            current_weight: `${weightData.weight} ${standardUnit}`
           })
           .eq('id', puppyId);
         
@@ -72,7 +77,7 @@ export const usePuppyWeightRecord = (puppyId: string) => {
   
   const addWeightRecord = async (data: {
     weight: number;
-    weight_unit: string;
+    weight_unit: WeightUnit;
     date: string;
     notes?: string;
   }) => {

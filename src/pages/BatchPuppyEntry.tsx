@@ -1,373 +1,261 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Plus, Trash2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
-import { PlusCircle, Trash2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
+import PageContainer from '@/components/common/PageContainer';
+import { standardizeWeightUnit } from '@/types/common';
 
-interface PuppyEntry {
-  id: string;
-  name: string;
-  gender: 'Male' | 'Female';
-  color: string;
-  birth_weight: string;
-  weight_unit: 'oz' | 'g';
-  notes: string;
-}
+const puppySchema = z.object({
+  name: z.string().min(2, {
+    message: "Puppy name must be at least 2 characters.",
+  }),
+  birth_date: z.string().nonempty({
+    message: "Birth date is required.",
+  }),
+  birth_weight: z.string().optional(),
+  weight_unit: z.enum(['lb', 'kg', 'oz', 'g']).optional(),
+  gender: z.enum(['Male', 'Female']).optional(),
+  color: z.string().optional(),
+});
 
-const BatchPuppyEntry = () => {
-  const { litterId } = useParams<{ litterId: string }>();
+const batchPuppySchema = z.object({
+  puppies: z.array(puppySchema).min(1, {
+    message: "At least one puppy is required.",
+  }),
+});
+
+type PuppySchema = z.infer<typeof puppySchema>;
+type BatchPuppyFormValues = z.infer<typeof batchPuppySchema>;
+
+const BatchPuppyEntry: React.FC = () => {
+  const { id: puppyId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isTestMode, setIsTestMode] = useState(false);
-  const [litterInfo, setLitterInfo] = useState<any>(null);
-  const [puppyEntries, setPuppyEntries] = useState<PuppyEntry[]>([
-    {
-      id: crypto.randomUUID(),
-      name: 'Puppy 1',
-      gender: 'Male',
-      color: '',
-      birth_weight: '',
-      weight_unit: 'oz',
-      notes: '',
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<BatchPuppyFormValues>({
+    resolver: zodResolver(batchPuppySchema),
+    defaultValues: {
+      puppies: [{ name: '', birth_date: '', birth_weight: '', gender: 'Male', color: '' }],
     },
-  ]);
+  });
 
-  React.useEffect(() => {
-    if (litterId) {
-      fetchLitterInfo();
-    }
-  }, [litterId]);
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "puppies",
+  });
 
-  const fetchLitterInfo = async () => {
+  const handleSubmit = async (data: BatchPuppyFormValues) => {
+    setIsSubmitting(true);
     try {
-      const { data: litter, error } = await supabase
-        .from('litters')
-        .select(`
-          *,
-          dam:dam_id(id, name),
-          sire:sire_id(id, name)
-        `)
-        .eq('id', litterId)
-        .single();
-
-      if (error) throw error;
-      setLitterInfo(litter);
-    } catch (error) {
-      console.error('Error fetching litter:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch litter information',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const addNewPuppy = () => {
-    setPuppyEntries([
-      ...puppyEntries,
-      {
-        id: crypto.randomUUID(),
-        name: `Puppy ${puppyEntries.length + 1}`,
-        gender: 'Male',
-        color: '',
-        birth_weight: '',
-        weight_unit: 'oz',
-        notes: '',
-      },
-    ]);
-  };
-
-  const removePuppy = (id: string) => {
-    if (puppyEntries.length > 1) {
-      setPuppyEntries(puppyEntries.filter(puppy => puppy.id !== id));
-    } else {
-      toast({
-        title: 'Cannot Remove',
-        description: 'You must have at least one puppy entry',
-      });
-    }
-  };
-
-  const updatePuppyField = (id: string, field: keyof PuppyEntry, value: any) => {
-    setPuppyEntries(
-      puppyEntries.map(puppy => (puppy.id === id ? { ...puppy, [field]: value } : puppy))
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // Validate entries
-      const invalidEntries = puppyEntries.filter(
-        puppy => !puppy.name || !puppy.gender || !puppy.color || !puppy.birth_weight
-      );
-
-      if (invalidEntries.length > 0) {
-        throw new Error('Please fill in all required fields for each puppy');
+      if (!puppyId) {
+        toast({
+          title: "Error",
+          description: "Litter ID is required.",
+          variant: "destructive",
+        });
+        return;
       }
 
-      // Prepare puppy data for insertion
-      const puppyData = puppyEntries.map((puppy, index) => ({
-        name: puppy.name,
-        gender: puppy.gender,
-        color: puppy.color,
-        birth_weight: puppy.birth_weight,
-        weight_unit: puppy.weight_unit,
-        notes: puppy.notes,
-        litter_id: litterId,
-        birth_date: new Date().toISOString().split('T')[0],
-        birth_order: index + 1,
-        status: 'Available',
-        is_test_data: isTestMode,
-      }));
+      // Process each puppy
+      for (const puppy of data.puppies) {
+        // Insert the puppy into the database
+        const { data: newPuppy, error: puppyError } = await supabase
+          .from('puppies')
+          .insert({
+            litter_id: puppyId,
+            name: puppy.name,
+            birth_date: puppy.birth_date,
+            gender: puppy.gender,
+            color: puppy.color,
+          })
+          .select()
+          .single();
 
-      // Insert all puppies in a batch
-      const { data, error } = await supabase.from('puppies').insert(puppyData).select();
+        if (puppyError) {
+          console.error('Error adding puppy:', puppyError);
+          toast({
+            title: "Error",
+            description: `Failed to add puppy ${puppy.name}: ${puppyError.message}`,
+            variant: "destructive",
+          });
+          continue; // Skip to the next puppy
+        }
 
-      if (error) throw error;
-
-      // Create initial weight records for each puppy
-      const weightRecords = data.map(puppy => ({
-        puppy_id: puppy.id,
-        weight: parseFloat(puppy.birth_weight),
-        weight_unit: puppy.weight_unit,
-        date: new Date().toISOString().split('T')[0],
-        notes: 'Initial birth weight',
-      }));
-
-      // Insert weight records
-      const { error: weightError } = await supabase.from('weight_records').insert(weightRecords);
-
-      if (weightError) throw weightError;
-
-      // Update the litter with puppy counts
-      const maleCount = puppyEntries.filter(puppy => puppy.gender === 'Male').length;
-      const femaleCount = puppyEntries.filter(puppy => puppy.gender === 'Female').length;
-
-      const { error: litterError } = await supabase
-        .from('litters')
-        .update({
-          male_count: maleCount,
-          female_count: femaleCount,
-          puppy_count: puppyEntries.length,
-          status: 'active',
-        })
-        .eq('id', litterId);
-
-      if (litterError) throw litterError;
+        // If birth weight is provided, create a weight record
+        if (puppy.birth_weight && parseFloat(puppy.birth_weight) > 0) {
+          const weight = parseFloat(puppy.birth_weight);
+          const unit = puppy.weight_unit || 'oz'; // Default to oz if not specified
+          
+          const weightData = {
+            dog_id: puppyId, // Required field for the Supabase schema
+            puppy_id: puppyId,
+            weight: weight,
+            weight_unit: unit,
+            unit: unit, // Add unit field for compatibility
+            date: puppy.birth_date,
+            notes: 'Birth weight'
+          };
+          
+          const { error: weightError } = await supabase
+            .from('weight_records')
+            .insert(weightData);
+          
+          if (weightError) {
+            console.error('Error adding weight record:', weightError);
+          }
+        }
+      }
 
       toast({
-        title: 'Success!',
-        description: `${puppyEntries.length} puppies have been added to the litter`,
+        title: "Success",
+        description: "Puppies added successfully!",
       });
-
-      // Navigate to the litter detail page
-      navigate(`/litters/${litterId}`);
-    } catch (error: any) {
+      navigate(`/litters/${puppyId}`);
+    } catch (error) {
       console.error('Error adding puppies:', error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to add puppies',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to add puppies. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Add New Puppies</h1>
-          <p className="text-muted-foreground">
-            Batch add puppies to {litterInfo?.litter_name || 'the litter'}
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className={isTestMode ? "text-amber-500 font-medium" : "text-muted-foreground"}>
-            Test Mode
-          </span>
-          <Switch 
-            checked={isTestMode} 
-            onCheckedChange={setIsTestMode} 
-            className={isTestMode ? "bg-amber-500" : ""}
-          />
-          {isTestMode && (
-            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
-              TEST DATA
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {litterInfo && (
-        <Card className="bg-muted/50">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-medium">Dam:</h3>
-                <p>{litterInfo.dam?.name || 'Unknown'}</p>
-              </div>
-              <div>
-                <h3 className="font-medium">Sire:</h3>
-                <p>{litterInfo.sire?.name || 'Unknown'}</p>
-              </div>
-              <div>
-                <h3 className="font-medium">Birth Date:</h3>
-                <p>{new Date(litterInfo.birth_date).toLocaleDateString()}</p>
-              </div>
-              <div>
-                <h3 className="font-medium">Litter Name:</h3>
-                <p>{litterInfo.litter_name || 'Unnamed Litter'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          {puppyEntries.map((puppy, index) => (
-            <Card key={puppy.id} className={index % 2 === 0 ? "border-blue-200" : "border-pink-200"}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg">
-                    Puppy #{index + 1} 
-                    <Badge 
-                      variant="outline" 
-                      className={puppy.gender === 'Male' ? "ml-2 bg-blue-100 text-blue-800 border-blue-300" : "ml-2 bg-pink-100 text-pink-800 border-pink-300"}
-                    >
-                      {puppy.gender}
-                    </Badge>
-                  </CardTitle>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => removePuppy(puppy.id)}
-                    className="h-8 w-8 text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
+    <PageContainer>
+      <div className="container mx-auto py-10">
+        <h1 className="text-2xl font-bold mb-4">Batch Puppy Entry</h1>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            {fields.map((item, index) => (
+              <div key={item.id} className="border p-4 rounded-md">
+                <h2 className="text-lg font-semibold mb-2">Puppy #{index + 1}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor={`name-${puppy.id}`}>Name/ID</Label>
-                    <Input
-                      id={`name-${puppy.id}`}
-                      value={puppy.name}
-                      onChange={e => updatePuppyField(puppy.id, 'name', e.target.value)}
-                      placeholder="Puppy name or ID"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`gender-${puppy.id}`}>Gender</Label>
-                    <Select
-                      value={puppy.gender}
-                      onValueChange={value => updatePuppyField(puppy.id, 'gender', value as 'Male' | 'Female')}
-                    >
-                      <SelectTrigger id={`gender-${puppy.id}`}>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`color-${puppy.id}`}>Color/Markings</Label>
-                    <Input
-                      id={`color-${puppy.id}`}
-                      value={puppy.color}
-                      onChange={e => updatePuppyField(puppy.id, 'color', e.target.value)}
-                      placeholder="Color and markings"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="col-span-2 space-y-2">
-                      <Label htmlFor={`weight-${puppy.id}`}>Birth Weight</Label>
-                      <Input
-                        id={`weight-${puppy.id}`}
-                        value={puppy.birth_weight}
-                        onChange={e => updatePuppyField(puppy.id, 'birth_weight', e.target.value)}
-                        placeholder="Birth weight"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`unit-${puppy.id}`}>Unit</Label>
-                      <Select
-                        value={puppy.weight_unit}
-                        onValueChange={value => updatePuppyField(puppy.id, 'weight_unit', value as 'oz' | 'g')}
-                      >
-                        <SelectTrigger id={`unit-${puppy.id}`}>
-                          <SelectValue placeholder="Unit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="oz">oz</SelectItem>
-                          <SelectItem value="g">g</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor={`notes-${puppy.id}`}>Notes</Label>
-                    <Textarea
-                      id={`notes-${puppy.id}`}
-                      value={puppy.notes}
-                      onChange={e => updatePuppyField(puppy.id, 'notes', e.target.value)}
-                      placeholder="Additional notes"
-                      rows={2}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name={`puppies.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Puppy Name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`puppies.${index}.birth_date`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Birth Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`puppies.${index}.birth_weight`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Birth Weight</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="Birth Weight" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`puppies.${index}.weight_unit`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Weight Unit</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select unit" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="lb">Pounds (lb)</SelectItem>
+                            <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                            <SelectItem value="oz">Ounces (oz)</SelectItem>
+                            <SelectItem value="g">Grams (g)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`puppies.${index}.gender`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Gender</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Male">Male</SelectItem>
+                            <SelectItem value="Female">Female</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`puppies.${index}.color`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Color</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Color" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={addNewPuppy} 
-            className="w-full flex items-center justify-center gap-2"
-          >
-            <PlusCircle className="h-4 w-4" /> Add Another Puppy
-          </Button>
-
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => navigate(`/litters/${litterId}`)}
-              disabled={isLoading}
-            >
-              Cancel
+                <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)} className="mt-2">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Remove
+                </Button>
+              </div>
+            ))}
+            <Button type="button" variant="secondary" size="sm" onClick={() => append({ name: '', birth_date: '', birth_weight: '', gender: 'Male', color: '' })}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Puppy
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save All Puppies'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
-          </div>
-        </div>
-      </form>
-    </div>
+          </form>
+        </Form>
+      </div>
+    </PageContainer>
   );
 };
 

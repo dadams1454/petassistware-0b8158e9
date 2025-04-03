@@ -1,8 +1,19 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { WeightData, WeightRecord, WeightUnit } from '@/types/health';
+import { WeightUnit } from '@/types/common';
+import { WeightRecord } from '@/types/puppyTracking';
 import { useToast } from '@/components/ui/use-toast';
+
+export interface WeightData {
+  weight: number;
+  unit: WeightUnit;
+  date: string;
+  age?: number;
+  weights?: WeightRecord[];
+  isLoading?: boolean;
+  error?: Error | null;
+}
 
 export const usePuppyWeights = (puppyId: string): {
   weightData: WeightData;
@@ -12,10 +23,14 @@ export const usePuppyWeights = (puppyId: string): {
   deleteWeightRecord: (id: string) => Promise<boolean>;
 } => {
   const [weightData, setWeightData] = useState<WeightData>({
+    weight: 0,
+    unit: 'oz',
+    date: new Date().toISOString(),
     weights: [],
     isLoading: true,
     error: null
   });
+  
   const { toast } = useToast();
   
   const fetchWeightData = async () => {
@@ -49,7 +64,7 @@ export const usePuppyWeights = (puppyId: string): {
       const { data: weightRecords, error: weightError } = await supabase
         .from('weight_records')
         .select('*')
-        .eq('puppy_id', puppyId)
+        .eq('dog_id', puppyId)
         .order('date', { ascending: true });
         
       if (weightError) throw weightError;
@@ -70,6 +85,7 @@ export const usePuppyWeights = (puppyId: string): {
           puppy_id: record.puppy_id,
           weight: record.weight,
           weight_unit: record.weight_unit as WeightUnit,
+          unit: record.weight_unit as WeightUnit, // Ensure unit is set
           date: record.date,
           notes: record.notes,
           created_at: record.created_at,
@@ -79,18 +95,31 @@ export const usePuppyWeights = (puppyId: string): {
         };
       });
       
+      // Set the latest weight as the current weight
+      const latestWeight = processedWeights.length > 0 
+        ? processedWeights[processedWeights.length - 1] 
+        : null;
+        
       setWeightData({
+        weight: latestWeight?.weight || 0,
+        unit: (latestWeight?.unit || latestWeight?.weight_unit || 'oz') as WeightUnit,
+        date: latestWeight?.date || new Date().toISOString(),
+        age: latestWeight?.age_days,
         weights: processedWeights,
         isLoading: false,
         error: null
       });
     } catch (err) {
       console.error('Error fetching puppy weight data:', err);
-      setWeightData({
+      setWeightData(prev => ({
+        ...prev,
+        weight: 0,
+        unit: 'oz',
+        date: new Date().toISOString(),
         weights: [],
         isLoading: false,
         error: err instanceof Error ? err : new Error('Failed to fetch weight data')
-      });
+      }));
     }
   };
   
@@ -104,10 +133,11 @@ export const usePuppyWeights = (puppyId: string): {
   const addWeightRecord = async (data: Omit<WeightRecord, 'id' | 'created_at'>): Promise<boolean> => {
     try {
       const recordData = {
+        dog_id: puppyId, // Required field
         puppy_id: puppyId,
-        dog_id: data.dog_id || null,
         weight: data.weight,
         weight_unit: data.weight_unit,
+        unit: data.weight_unit, // Set both for compatibility
         date: data.date,
         notes: data.notes,
       };
@@ -139,14 +169,17 @@ export const usePuppyWeights = (puppyId: string): {
   // Function to update an existing weight record
   const updateWeightRecord = async (id: string, data: Partial<WeightRecord>): Promise<boolean> => {
     try {
+      // Ensure both unit and weight_unit are updated
+      const updateData = {
+        ...data,
+        // If either unit or weight_unit is updated, update both
+        ...(data.unit ? { weight_unit: data.unit } : {}),
+        ...(data.weight_unit ? { unit: data.weight_unit } : {})
+      };
+      
       const { error } = await supabase
         .from('weight_records')
-        .update({
-          weight: data.weight,
-          weight_unit: data.weight_unit,
-          date: data.date,
-          notes: data.notes,
-        })
+        .update(updateData)
         .eq('id', id);
         
       if (error) throw error;

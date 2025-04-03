@@ -1,3 +1,4 @@
+
 import { WeightUnit as CommonWeightUnit } from './common';
 
 export type WeightUnit = CommonWeightUnit;
@@ -32,6 +33,12 @@ export interface PuppyAgeGroupData {
   ageRange: string;
   description: string;
   imageUrl: string;
+  id: string; // Adding id property
+  name: string; // Adding name property
+  startDay: number; // Adding startDay property
+  endDay: number; // Adding endDay property
+  milestones?: string[]; // Adding milestones property
+  careChecks?: string[]; // Adding careChecks property
 }
 
 export interface PuppyManagementStats {
@@ -46,6 +53,10 @@ export interface PuppyManagementStats {
   netProfit: number;
   puppyStatusCounts: { [key: string]: number };
   totalCount?: number;  // Added for backward compatibility
+  byStatus?: { [key: string]: number }; // Added for compatibility
+  activeLitters?: number; // Added for compatibility
+  upcomingVaccinations?: number; // Added for compatibility
+  recentWeightChecks?: number; // Added for compatibility
 }
 
 export interface WeightRecord {
@@ -61,17 +72,23 @@ export interface WeightRecord {
   percent_change?: number;
   birth_date?: string; // For calculating age
   age_days?: number;
+  formatted_date?: string; // For display
 }
 
 export interface SocializationCategory {
   id: string;
   name: string;
+  color?: string; // Adding color property
+  description?: string; // Adding description property
+  examples?: string[]; // Adding examples property
 }
 
 export interface SocializationReactionObject {
   id: string;
   name: string;
   color: string;
+  description?: string; // Adding description property
+  emoji?: string; // Adding emoji property
 }
 
 export interface SocializationReaction {
@@ -83,6 +100,11 @@ export interface SocializationReaction {
 export interface SocializationProgress {
   category: SocializationCategory;
   progress: number;
+  categoryId?: string; // For backward compatibility
+  categoryName?: string; // For backward compatibility
+  completion_percentage?: number; // For backward compatibility
+  count?: number; // For backward compatibility
+  target?: number; // For backward compatibility
 }
 
 export interface SocializationRecord {
@@ -94,4 +116,69 @@ export interface SocializationRecord {
   reaction_id?: string;
   notes?: string;
   created_at: string;
+}
+
+// Add missing interfaces needed by other components
+export interface SocializationExperience {
+  id: string;
+  puppy_id: string;
+  category_id: string;
+  category_name: string;
+  experience: string;
+  experience_date: string;
+  reaction_id?: string;
+  reaction_name?: string;
+  reaction_color?: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface PuppyMilestone {
+  id: string;
+  puppy_id: string;
+  title: string;
+  milestone_type: string;
+  expected_age_days: number;
+  description?: string;
+  is_completed: boolean;
+  completion_date?: string;
+  milestone_category?: string; // For compatibility
+  notes?: string;
+  photo_url?: string;
+}
+
+export interface VaccinationScheduleItem {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  due_date: string;
+  scheduled_date?: string; // For compatibility
+  administered: boolean;
+  vaccine_name?: string;
+  notes?: string;
+  created_at?: string;
+}
+
+export type VaccinationSchedule = VaccinationScheduleItem;
+
+export interface VaccinationRecord {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  administered_by?: string;
+  lot_number?: string;
+  notes?: string;
+  created_at?: string;
+}
+
+// For AgeGroup
+export interface AgeGroup {
+  id: string;
+  name: string;
+  startDay: number;
+  endDay: number;
+  description: string;
+  imageUrl: string;
+  milestones: string[];
 }

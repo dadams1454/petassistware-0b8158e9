@@ -1,76 +1,85 @@
 
 import React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { WeightRecord } from '@/types/puppyTracking';
+import { WeightUnit } from '@/types/common';
 
 const formSchema = z.object({
   weight: z.coerce.number().positive('Weight must be a positive number'),
-  weight_unit: z.enum(['oz', 'g', 'lbs', 'kg']),
-  date: z.string().min(1, 'Date is required'),
+  weight_unit: z.enum(['oz', 'g', 'lb', 'kg'] as const),
+  date: z.string().nonempty('Date is required'),
   notes: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type WeightFormValues = z.infer<typeof formSchema>;
 
 interface WeightTrackerFormProps {
-  puppyId: string;
-  onSubmit: (record: Omit<WeightRecord, 'id' | 'created_at'>) => Promise<void>;
+  onSubmit: (data: WeightFormValues) => void;
   onCancel: () => void;
-  initialData?: Partial<WeightRecord>;
+  isLoading?: boolean;
 }
 
-const WeightTrackerForm: React.FC<WeightTrackerFormProps> = ({
-  puppyId,
-  onSubmit,
-  onCancel,
-  initialData,
+const WeightTrackerForm: React.FC<WeightTrackerFormProps> = ({ 
+  onSubmit, 
+  onCancel, 
+  isLoading = false 
 }) => {
-  const form = useForm<FormValues>({
+  const form = useForm<WeightFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      weight: initialData?.weight || 0,
-      weight_unit: (initialData?.weight_unit as 'oz' | 'g' | 'lbs' | 'kg') || 'oz',
-      date: initialData?.date || new Date().toISOString().split('T')[0],
-      notes: initialData?.notes || '',
+      weight: undefined,
+      weight_unit: 'oz',
+      date: new Date().toISOString().split('T')[0],
+      notes: '',
     },
   });
 
-  const handleSubmit = async (values: FormValues) => {
-    try {
-      await onSubmit({
-        puppy_id: puppyId,
-        weight: values.weight,
-        weight_unit: values.weight_unit,
-        date: values.date,
-        notes: values.notes || '',
-        dog_id: puppyId, // Set dog_id to puppyId to make TypeScript happy
-        updated_at: new Date().toISOString(), // Add required updated_at field
-      });
-      form.reset();
-    } catch (error) {
-      console.error('Error submitting weight record:', error);
-    }
-  };
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date</FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  {...field}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
           <FormField
             control={form.control}
             name="weight"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex-1">
                 <FormLabel>Weight</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" {...field} />
+                  <Input
+                    placeholder="Enter weight"
+                    type="number"
+                    step="0.1"
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseFloat(e.target.value) : '';
+                      field.onChange(value);
+                    }}
+                    value={field.value || ''}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -81,9 +90,12 @@ const WeightTrackerForm: React.FC<WeightTrackerFormProps> = ({
             control={form.control}
             name="weight_unit"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full md:w-1/3">
                 <FormLabel>Unit</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={(value) => field.onChange(value as WeightUnit)}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select unit" />
@@ -92,7 +104,7 @@ const WeightTrackerForm: React.FC<WeightTrackerFormProps> = ({
                   <SelectContent>
                     <SelectItem value="oz">Ounces (oz)</SelectItem>
                     <SelectItem value="g">Grams (g)</SelectItem>
-                    <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                    <SelectItem value="lb">Pounds (lb)</SelectItem>
                     <SelectItem value="kg">Kilograms (kg)</SelectItem>
                   </SelectContent>
                 </Select>
@@ -104,37 +116,36 @@ const WeightTrackerForm: React.FC<WeightTrackerFormProps> = ({
 
         <FormField
           control={form.control}
-          name="date"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes (Optional)</FormLabel>
+              <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea placeholder="Add any notes about this weight measurement" {...field} />
+                <Textarea
+                  placeholder="Optional notes about this weight measurement"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+        <div className="flex justify-end space-x-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             Cancel
           </Button>
-          <Button type="submit">Save Weight Record</Button>
+          <Button 
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Saving...' : 'Save Weight'}
+          </Button>
         </div>
       </form>
     </Form>

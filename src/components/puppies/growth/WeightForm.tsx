@@ -1,136 +1,114 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { WeightUnit } from '@/types/health';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WeightUnit } from '@/types/common';
+import { Textarea } from '@/components/ui/textarea';
+
+const formSchema = z.object({
+  weight: z.coerce.number().positive('Weight must be a positive number'),
+  weight_unit: z.enum(['lb', 'kg', 'oz', 'g'] as const),
+  notes: z.string().optional(),
+});
+
+type WeightFormValues = z.infer<typeof formSchema>;
 
 interface WeightFormProps {
-  puppyId: string;
-  onSubmit: (data: any) => Promise<boolean>;
-  onCancel: () => void;
+  onSubmit: (data: WeightFormValues) => void;
   defaultUnit?: WeightUnit;
-  birthDate?: string;
-  onSuccess?: () => void;
-  isSubmitting?: boolean;
 }
 
-const WeightForm: React.FC<WeightFormProps> = ({
-  puppyId,
-  onSubmit,
-  onCancel,
-  defaultUnit = 'lbs',
-  birthDate,
-  onSuccess,
-  isSubmitting = false
-}) => {
-  const [weight, setWeight] = useState('');
-  const [weightUnit, setWeightUnit] = useState<WeightUnit>(defaultUnit);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [notes, setNotes] = useState('');
-  const [localSubmitting, setLocalSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!weight || isNaN(parseFloat(weight))) {
-      alert('Please enter a valid weight');
-      return;
-    }
-    
-    setLocalSubmitting(true);
-    
-    try {
-      const success = await onSubmit({
-        puppy_id: puppyId,
-        weight: parseFloat(weight),
-        weight_unit: weightUnit,
-        date,
-        notes,
-        birth_date: birthDate
-      });
-      
-      if (success && onSuccess) {
-        onSuccess();
-      }
-    } catch (error) {
-      console.error('Error submitting weight:', error);
-      alert('Failed to save weight record');
-    } finally {
-      setLocalSubmitting(false);
-    }
-  };
+const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, defaultUnit = 'oz' }) => {
+  const form = useForm<WeightFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      weight: undefined,
+      weight_unit: defaultUnit,
+      notes: '',
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="weight">Weight</Label>
-          <Input
-            id="weight"
-            type="number"
-            step="0.01"
-            min="0"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            placeholder="Enter weight"
-            required
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+          <FormField
+            control={form.control}
+            name="weight"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>Weight</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter weight"
+                    type="number"
+                    step="0.1"
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseFloat(e.target.value) : '';
+                      field.onChange(value);
+                    }}
+                    value={field.value || ''}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="weight_unit"
+            render={({ field }) => (
+              <FormItem className="w-full md:w-1/3">
+                <FormLabel>Unit</FormLabel>
+                <Select
+                  onValueChange={(value) => field.onChange(value as WeightUnit)}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="oz">Ounces (oz)</SelectItem>
+                    <SelectItem value="g">Grams (g)</SelectItem>
+                    <SelectItem value="lb">Pounds (lb)</SelectItem>
+                    <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="weight-unit">Unit</Label>
-          <Select value={weightUnit} onValueChange={(value: WeightUnit) => setWeightUnit(value)}>
-            <SelectTrigger id="weight-unit">
-              <SelectValue placeholder="Select unit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="lbs">Pounds (lbs)</SelectItem>
-              <SelectItem value="kg">Kilograms (kg)</SelectItem>
-              <SelectItem value="g">Grams (g)</SelectItem>
-              <SelectItem value="oz">Ounces (oz)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Optional notes about this weight measurement"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notes (optional)</Label>
-        <Input
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Any notes about this weight measurement"
-        />
-      </div>
-      
-      <div className="flex gap-2 justify-end pt-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSubmitting || localSubmitting}>
-          {isSubmitting || localSubmitting ? 'Saving...' : 'Save'}
-        </Button>
-      </div>
-    </form>
+
+        <Button type="submit">Save Weight</Button>
+      </form>
+    </Form>
   );
 };
 
