@@ -4,6 +4,9 @@
 // Weight units supported by the application
 export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
 
+// Include legacy weight unit type for backward compatibility
+export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+
 // Standard weight unit options for select inputs
 export const weightUnits = [
   { code: 'lb', name: 'Pounds' },

@@ -1,46 +1,42 @@
 
-// Re-export all type definitions with proper handling of duplicate names
+// Export all types from across the application
+// This file functions as a central hub for importing types
+
+// Dog-related types
+export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord, Litter } from './dog';
+export { DogGender, HealthRecordTypeEnum, DocumentType } from './dog';
 
 // Common types
-export * from './common';
+export type { WeightUnit, WeightUnitWithLegacy } from './common';
+export { standardizeWeightUnit, weightUnits } from './common';
 
-// Weight related types
-export type {
-  WeightRecord,
+// Health-related types
+export type { 
+  Medication, 
+  MedicationStatus, 
+  MedicationStatusResult,
+  VaccinationSchedule,
   GrowthStats,
-  WeightTracking
-} from './weight';
-
-// Dog related types
-export type {
-  Dog,
-  DogGender,
-  DogStatus,
-  DogProfile,
-  HealthRecord,
-  HealthRecordTypeEnum,
-  DocumentType
-} from './dog';
-
-// Health related types (different from Dog health types)
-export type {
-  Medication,
-  MedicationStatus,
-  MedicationLog,
-  MedicationFrequency,
-  MedicationAdministrationRoute,
-  MedicationStatusResult
+  HealthIndicator,
+  HealthAlert
 } from './health';
+export { AppetiteEnum, stringToHealthRecordType } from './health';
 
-// Reproductive and breeding types
+// Breeding and reproductive types
+export * from './breeding';
 export * from './reproductive';
 
-// Litter and puppy tracking
+// Litter and puppy types
 export * from './litter';
-export * from './welping';
 
-// Puppy tracking with all its specialized types
+// Puppy tracking types
 export * from './puppyTracking';
 
-// Socialization tracking
-export * from './socialization';
+// Facility types
+export * from './facility';
+
+// User and staff types
+export * from './user';
+
+// Utility type for form values
+export type WeightUnitValue = 'lb' | 'kg' | 'g' | 'oz' | 'lbs';

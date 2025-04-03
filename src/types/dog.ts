@@ -1,23 +1,58 @@
 
 import { WeightUnit } from './common';
 
+// Define Dog Gender as enum
+export enum DogGender {
+  Male = 'Male',
+  Female = 'Female'
+}
+
+// Health record type enum
+export enum HealthRecordTypeEnum {
+  Examination = 'examination',
+  Vaccination = 'vaccination',
+  Medication = 'medication',
+  Surgery = 'surgery',
+  Laboratory = 'laboratory',
+  Imaging = 'imaging',
+  Dental = 'dental',
+  Allergy = 'allergy',
+  Emergency = 'emergency',
+  Preventive = 'preventive'
+}
+
+// Document type enum
+export enum DocumentType {
+  Registration = 'registration',
+  Health = 'health',
+  Genetic = 'genetic',
+  Vaccination = 'vaccination',
+  Contract = 'contract',
+  Insurance = 'insurance',
+  Pedigree = 'pedigree',
+  Other = 'other'
+}
+
 // Base dog interface
 export interface Dog {
   id: string;
   name: string;
   breed: string;
-  gender: 'Male' | 'Female';
+  gender: DogGender | string; // Accept string for backward compatibility
   color?: string;
   birthdate?: string;
   weight?: number;
   weight_unit?: WeightUnit;
   registration_number?: string;
+  registration_organization?: string;
   microchip_number?: string;
+  microchip_location?: string;
   owner_id?: string;
   notes?: string;
   photo_url?: string;
   created_at?: string;
   pedigree?: boolean;
+  status?: string;
   // Health & breeding fields
   last_vaccination_date?: string;
   vaccination_type?: string;
@@ -29,6 +64,7 @@ export interface Dog {
   potty_alert_threshold?: number;
   max_time_between_breaks?: number;
   requires_special_handling?: boolean;
+  group_ids?: string[];
 }
 
 // Expanded dog profile with additional data
@@ -52,23 +88,46 @@ export interface DogProfile extends Dog {
 export interface HealthRecord {
   id: string;
   dog_id: string;
-  record_type: string;
+  record_type: HealthRecordTypeEnum | string; // Use enum or string
   title: string;
   date: string;
+  visit_date?: string; // For backwards compatibility
   description?: string;
   vet_name?: string;
   performed_by?: string;
   document_url?: string;
   notes?: string;
+  record_notes?: string; // For backwards compatibility
   follow_up_date?: string;
+  next_due_date?: string; // For scheduling future appointments
   created_at?: string;
-  // Custom fields based on record type
+  // Vaccination-specific fields
   vaccination_type?: string;
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  expiration_date?: string;
+  // Medication-specific fields
   medication_name?: string;
   dosage?: number;
   dosage_unit?: string;
   frequency?: string;
-  expiration_date?: string;
+  administration_route?: string;
+  start_date?: string;
+  end_date?: string;
+  duration?: number;
+  duration_unit?: string;
+  // Exam-specific fields
+  examination_type?: string;
+  findings?: string;
+  recommendations?: string;
+  // Surgery-specific fields
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
+  // Prescription fields
+  prescription_number?: string;
 }
 
 // Vaccination record
@@ -87,10 +146,13 @@ export interface WeightRecord {
   dog_id: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
   created_at: string;
+  puppy_id?: string;
+  age_days?: number;
 }
 
 // Heat cycle record

@@ -1,217 +1,68 @@
 
-// Medication status and frequency types
-export enum MedicationStatus {
-  Active = 'active',
-  Pending = 'pending',
-  Overdue = 'overdue',
-  Completed = 'completed',
-  Due = 'due',
-}
+import { MedicationStatus, MedicationStatusResult } from '@/types/health';
 
-export enum MedicationFrequency {
-  Daily = 'daily',
-  TwiceDaily = 'twice-daily',
-  Weekly = 'weekly',
-  Biweekly = 'biweekly',
-  Monthly = 'monthly',
-  Quarterly = 'quarterly',
-  Annual = 'annually',
-  AsNeeded = 'as-needed',
-  Custom = 'custom',
-}
-
-// Complex status result including color information
-export interface MedicationStatusResult {
-  status: MedicationStatus | 'incomplete';
-  statusLabel: string;
-  statusColor: string;
-}
-
-export interface StatusWithColor {
-  status: string;
-  statusColor: string;
-}
-
-export function isComplexStatus(
-  status: MedicationStatus | MedicationStatusResult | string | StatusWithColor
-): status is MedicationStatusResult | StatusWithColor {
-  return typeof status === 'object' && 'statusColor' in status;
-}
-
-export function getStatusValue(
-  status: MedicationStatus | MedicationStatusResult | string | StatusWithColor
-): string {
-  if (isComplexStatus(status)) {
-    return 'status' in status ? status.status : status.toString();
-  }
-  return status;
-}
-
-export function getStatusColor(status: MedicationStatus | string): string {
-  switch (status) {
-    case MedicationStatus.Active:
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-    case MedicationStatus.Pending:
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-    case MedicationStatus.Due:
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-    case MedicationStatus.Overdue:
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-    case MedicationStatus.Completed:
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-    case 'incomplete':
-      return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
-    default:
-      return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
-  }
-}
-
-export function getMedicationStatus(
-  startDate: string,
-  endDate: string | null | undefined,
-  lastAdministered: string | undefined,
-  frequency: MedicationFrequency | string
-): MedicationStatus | MedicationStatusResult {
-  const now = new Date();
-  const start = new Date(startDate);
-  const end = endDate ? new Date(endDate) : null;
-
-  // Not started yet
-  if (start > now) {
+/**
+ * Get medication status based on start/end dates and frequency
+ */
+export const getMedicationStatus = (medication: any): MedicationStatusResult | MedicationStatus => {
+  if (!medication) {
     return {
-      status: MedicationStatus.Pending,
-      statusLabel: 'Pending',
-      statusColor: getStatusColor(MedicationStatus.Pending)
+      status: 'inactive',
+      statusColor: 'bg-gray-200 text-gray-800',
+      statusLabel: 'Inactive'
     };
   }
 
-  // Ended
-  if (end && end < now) {
+  const today = new Date();
+  const startDate = medication.start_date ? new Date(medication.start_date) : null;
+  const endDate = medication.end_date ? new Date(medication.end_date) : null;
+
+  // Status based on dates
+  if (startDate && startDate > today) {
     return {
-      status: MedicationStatus.Completed,
-      statusLabel: 'Completed',
-      statusColor: getStatusColor(MedicationStatus.Completed)
+      status: 'pending',
+      statusColor: 'bg-blue-100 text-blue-800',
+      statusLabel: 'Pending'
     };
   }
 
-  // Active but check if it's due
-  if (!lastAdministered) {
+  if (endDate && endDate < today) {
     return {
-      status: MedicationStatus.Due,
-      statusLabel: 'Due Now',
-      statusColor: getStatusColor(MedicationStatus.Due)
+      status: 'completed',
+      statusColor: 'bg-green-100 text-green-800',
+      statusLabel: 'Completed'
     };
   }
 
-  const lastAdmin = new Date(lastAdministered);
-  const nextDueDate = calculateNextDueDate(lastAdmin, frequency);
-
-  // Overdue
-  if (nextDueDate < now) {
+  if (medication.is_active === false) {
     return {
-      status: MedicationStatus.Overdue,
-      statusLabel: 'Overdue',
-      statusColor: getStatusColor(MedicationStatus.Overdue)
+      status: 'discontinued',
+      statusColor: 'bg-orange-100 text-orange-800',
+      statusLabel: 'Discontinued'
     };
   }
 
-  // Due today (within 24 hours)
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  if (nextDueDate <= tomorrow) {
-    return {
-      status: MedicationStatus.Due,
-      statusLabel: 'Due Today',
-      statusColor: getStatusColor(MedicationStatus.Due)
-    };
-  }
-
-  // Active and on schedule
   return {
-    status: MedicationStatus.Active,
-    statusLabel: 'Active',
-    statusColor: getStatusColor(MedicationStatus.Active)
+    status: 'active',
+    statusColor: 'bg-blue-500 text-white',
+    statusLabel: 'Active'
   };
-}
+};
 
-export function calculateNextDueDate(
-  lastAdministered: Date,
-  frequency: MedicationFrequency | string
-): Date {
-  const nextDue = new Date(lastAdministered);
-  
-  switch (frequency) {
-    case MedicationFrequency.Daily:
-    case 'daily':
-      nextDue.setDate(nextDue.getDate() + 1);
-      break;
-    case MedicationFrequency.TwiceDaily:
-    case 'twice-daily':
-      nextDue.setHours(nextDue.getHours() + 12);
-      break;
-    case MedicationFrequency.Weekly:
-    case 'weekly':
-      nextDue.setDate(nextDue.getDate() + 7);
-      break;
-    case MedicationFrequency.Biweekly:
-    case 'biweekly':
-      nextDue.setDate(nextDue.getDate() + 14);
-      break;
-    case MedicationFrequency.Monthly:
-    case 'monthly':
-      nextDue.setMonth(nextDue.getMonth() + 1);
-      break;
-    case MedicationFrequency.Quarterly:
-    case 'quarterly':
-      nextDue.setMonth(nextDue.getMonth() + 3);
-      break;
-    case MedicationFrequency.Annual:
-    case 'annually':
-      nextDue.setFullYear(nextDue.getFullYear() + 1);
-      break;
-    case MedicationFrequency.AsNeeded:
-    case 'as-needed':
-      // For as-needed, set a far future date
-      nextDue.setFullYear(nextDue.getFullYear() + 10);
-      break;
-    default:
-      // Default to daily if unknown
-      nextDue.setDate(nextDue.getDate() + 1);
+/**
+ * Determine if the status is a complex object or a simple string
+ */
+export const isComplexStatus = (status: any): status is MedicationStatusResult => {
+  return typeof status === 'object' && status !== null && 'statusLabel' in status;
+};
+
+/**
+ * Extract the status value from a status object or return the status if it's a string
+ */
+export const getStatusValue = (status: string | MedicationStatusResult): string => {
+  if (typeof status === 'string') {
+    return status;
   }
   
-  return nextDue;
-}
-
-export function getTimeSlotsForFrequency(
-  frequency: MedicationFrequency | string
-): string[] {
-  switch (frequency) {
-    case MedicationFrequency.Daily:
-    case 'daily':
-      return ['Morning'];
-    case MedicationFrequency.TwiceDaily:
-    case 'twice-daily':
-      return ['Morning', 'Evening'];
-    case MedicationFrequency.Weekly:
-    case 'weekly':
-      return ['Weekly'];
-    case MedicationFrequency.Biweekly:
-    case 'biweekly':
-      return ['Biweekly'];
-    case MedicationFrequency.Monthly:
-    case 'monthly':
-      return ['Monthly'];
-    case MedicationFrequency.Quarterly:
-    case 'quarterly':
-      return ['Quarterly'];
-    case MedicationFrequency.Annual:
-    case 'annually':
-      return ['Annually'];
-    case MedicationFrequency.AsNeeded:
-    case 'as-needed':
-      return ['As Needed'];
-    default:
-      return ['Custom'];
-  }
-}
-
+  return status.status || '';
+};

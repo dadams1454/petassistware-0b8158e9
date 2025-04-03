@@ -1,26 +1,19 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { formatWeight } from '@/utils/weightUtils';
+import { UseFormReturn } from 'react-hook-form';
+import { WeightUnit } from '@/types/common';
 import { InputWithLabel } from '@/components/ui/input-with-label';
 import { SelectWithLabel } from '@/components/ui/select-with-label';
 import { DatePickerWithLabel } from '@/components/ui/date-picker-with-label';
 import { TextareaWithLabel } from '@/components/ui/textarea-with-label';
-import { Button } from '@/components/ui/button';
-import { formatWeight } from '@/utils/weightUtils';
-import { useForm, UseFormReturn } from 'react-hook-form';
-import { WeightUnitValue } from '@/types/index';
-
-// Weight units with appropriate display names
-const weightUnits = [
-  { value: 'lb', label: 'Pounds (lb)' },
-  { value: 'kg', label: 'Kilograms (kg)' },
-  { value: 'g', label: 'Grams (g)' },
-  { value: 'oz', label: 'Ounces (oz)' }
-];
+import { weightUnits } from '@/types/common';
 
 export interface WeightFormValues {
   weight?: number;
-  unit?: WeightUnitValue;
+  unit?: WeightUnit;
   date?: Date;
   notes?: string;
 }
@@ -32,7 +25,7 @@ interface WeightEntryFormProps {
   form: UseFormReturn<WeightFormValues>;
   isSubmitting?: boolean;
   currentWeight?: number;
-  currentUnit?: WeightUnitValue;
+  currentUnit?: WeightUnit;
 }
 
 const WeightEntryForm: React.FC<WeightEntryFormProps> = ({

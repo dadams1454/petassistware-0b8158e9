@@ -42,7 +42,14 @@ export enum ReproductiveStatus {
   Pregnant = 'pregnant',
   Breeding = 'breeding',
   Whelping = 'whelping',
-  Lactating = 'lactating'
+  Lactating = 'lactating',
+  // Add missing statuses from errors
+  Nursing = 'nursing',
+  Altered = 'altered',
+  Recovery = 'recovery',
+  NotInHeat = 'not_in_heat',
+  Intact = 'intact',
+  PreHeat = 'pre_heat'
 }
 
 // Breeding event data
@@ -70,6 +77,11 @@ export interface PregnancyRecord {
   breeding_record_id?: string;
   confirmation_date?: string;
   due_date?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
   notes?: string;
   status: 'pending' | 'confirmed' | 'completed' | 'unsuccessful';
   created_by?: string;
@@ -91,6 +103,12 @@ export interface ReproductiveCycleData {
   dueDate: string | null;
   isLoading: boolean;
   error: Error | null;
+  // Additional fields from errors
+  daysUntilNextHeat?: number;
+  fertilityWindow?: { start: string; end: string };
+  gestationDays?: number;
+  estimatedDueDate?: string;
+  milestones?: any[];
 }
 
 // Reproductive milestone
@@ -99,6 +117,7 @@ export interface ReproductiveMilestone {
   dog_id: string;
   milestone_type: string;
   milestone_date: string;
+  date?: string; // Compatibility field
   notes?: string;
   created_by?: string;
   created_at: string;
