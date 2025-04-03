@@ -1,150 +1,78 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PuppyManagementStats } from '@/types/puppyTracking';
 
-export function usePuppyStats() {
-  const [stats, setStats] = useState<PuppyManagementStats>({
-    totalCount: 0,
-    byStatus: {},
-    byGender: {
-      male: 0,
-      female: 0,
-      unknown: 0
-    },
-    byColor: {},
-    byAgeGroup: {},
-    weightRanges: {
-      min: 0,
-      max: 0,
-      avg: 0,
-      unit: 'oz'
-    },
-    adoptionRate: 0,
-    reservationRate: 0,
+export const usePuppyStats = () => {
+  const { 
+    data: stats, 
+    isLoading, 
+    error 
+  } = useQuery({
+    queryKey: ['puppyStats'],
+    queryFn: async (): Promise<PuppyManagementStats> => {
+      try {
+        // Get counts by status
+        const { data: statusCounts, error: statusError } = await supabase
+          .from('puppies')
+          .select('status')
+          .not('status', 'is', null);
+          
+        if (statusError) {
+          console.error('Error fetching puppy status counts:', statusError);
+          return getDefaultStats();
+        }
+        
+        // Get gender counts
+        const { data: genderCounts, error: genderError } = await supabase
+          .from('puppies')
+          .select('gender')
+          .not('gender', 'is', null);
+          
+        if (genderError) {
+          console.error('Error fetching puppy gender counts:', genderError);
+          return getDefaultStats();
+        }
+
+        // Calculate stats
+        const totalPuppies = statusCounts.length;
+        const availablePuppies = statusCounts.filter(p => p.status === 'Available').length;
+        const reservedPuppies = statusCounts.filter(p => p.status === 'Reserved').length;
+        const soldPuppies = statusCounts.filter(p => p.status === 'Sold').length;
+        
+        const maleCount = genderCounts.filter(p => p.gender === 'Male').length;
+        const femaleCount = genderCounts.filter(p => p.gender === 'Female').length;
+        
+        return {
+          totalPuppies,
+          availablePuppies,
+          reservedPuppies,
+          soldPuppies,
+          maleCount,
+          femaleCount,
+          weightUnit: 'oz' // Default unit
+        };
+      } catch (err) {
+        console.error('Exception in usePuppyStats:', err);
+        return getDefaultStats();
+      }
+    }
+  });
+  
+  // Provide default stats if query fails
+  const getDefaultStats = (): PuppyManagementStats => ({
     totalPuppies: 0,
-    totalLitters: 0,
-    activeLitters: 0,
     availablePuppies: 0,
     reservedPuppies: 0,
-    upcomingVaccinations: 0,
-    recentWeightChecks: 0,
-    puppiesByAgeGroup: {},
-    weightCompletionRate: 0,
-    vaccinationCompletionRate: 0
+    soldPuppies: 0,
+    maleCount: 0,
+    femaleCount: 0,
+    weightUnit: 'oz'
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchPuppyStats = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Fetch basic puppy counts
-      const { data: puppiesData, error: puppiesError } = await supabase
-        .from('puppies')
-        .select('id, status, birth_date, gender, color', { count: 'exact' });
-
-      if (puppiesError) throw puppiesError;
-
-      // Fetch litter counts
-      const { data: littersData, error: littersError } = await supabase
-        .from('litters')
-        .select('id, status', { count: 'exact' });
-
-      if (littersError) throw littersError;
-
-      // Calculate statistics
-      const totalPuppies = puppiesData?.length || 0;
-      const availablePuppies = puppiesData?.filter(p => p.status === 'Available').length || 0;
-      const reservedPuppies = puppiesData?.filter(p => p.status === 'Reserved').length || 0;
-      const totalLitters = littersData?.length || 0;
-      const activeLitters = littersData?.filter(l => l.status === 'active').length || 0;
-      
-      // Calculate gender distribution
-      const maleCount = puppiesData?.filter(p => p.gender?.toLowerCase() === 'male').length || 0;
-      const femaleCount = puppiesData?.filter(p => p.gender?.toLowerCase() === 'female').length || 0;
-      const unknownGenderCount = totalPuppies - maleCount - femaleCount;
-      
-      // Calculate color distribution
-      const byColor: Record<string, number> = {};
-      puppiesData?.forEach(puppy => {
-        if (puppy.color) {
-          byColor[puppy.color] = (byColor[puppy.color] || 0) + 1;
-        }
-      });
-      
-      // Calculate status distribution
-      const byStatus: Record<string, number> = {};
-      puppiesData?.forEach(puppy => {
-        if (puppy.status) {
-          byStatus[puppy.status] = (byStatus[puppy.status] || 0) + 1;
-        }
-      });
-
-      // Mock data for now - will be implemented in future
-      const upcomingVaccinations = Math.floor(Math.random() * 10);
-      const recentWeightChecks = Math.floor(Math.random() * totalPuppies);
-      
-      // Create empty puppiesByAgeGroup for now
-      const puppiesByAgeGroup: Record<string, number> = {};
-      const byAgeGroup: Record<string, number> = {};
-      
-      // Mock completion rates
-      const weightCompletionRate = Math.round(Math.random() * 100);
-      const vaccinationCompletionRate = Math.round(Math.random() * 100);
-      
-      // Mock adoption rates
-      const adoptionRate = totalPuppies > 0 ? Math.round((reservedPuppies / totalPuppies) * 100) : 0;
-      const reservationRate = totalPuppies > 0 ? Math.round((availablePuppies / totalPuppies) * 100) : 0;
-
-      setStats({
-        totalCount: totalPuppies,
-        byStatus,
-        byGender: {
-          male: maleCount,
-          female: femaleCount,
-          unknown: unknownGenderCount
-        },
-        byColor,
-        byAgeGroup,
-        weightRanges: {
-          min: 0,
-          max: 0,
-          avg: 0,
-          unit: 'oz'
-        },
-        adoptionRate,
-        reservationRate,
-        totalPuppies,
-        totalLitters,
-        activeLitters,
-        availablePuppies,
-        reservedPuppies,
-        upcomingVaccinations,
-        recentWeightChecks,
-        puppiesByAgeGroup,
-        weightCompletionRate,
-        vaccinationCompletionRate
-      });
-
-    } catch (err) {
-      console.error('Error fetching puppy stats:', err);
-      setError(err as Error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchPuppyStats();
-  }, [fetchPuppyStats]);
-
+  
   return {
-    stats,
+    stats: stats || getDefaultStats(),
     isLoading,
-    error,
-    refreshStats: fetchPuppyStats
+    error
   };
-}
+};

@@ -1,48 +1,42 @@
 
-/**
- * Common types used across the application
- */
+// Common type definitions used across the application
 
-/**
- * Standard weight unit type used throughout the application
- * Using union type instead of enum for better type safety
- */
+// Weight unit types - standardized across the application
 export type WeightUnit = 'lb' | 'kg' | 'oz' | 'g';
+export type WeightUnitWithLegacy = WeightUnit | 'lbs'; // For backward compatibility 
 
-/**
- * For backward compatibility with older code that uses 'lbs' instead of 'lb'
- */
-export type WeightUnitWithLegacy = WeightUnit | 'lbs';
-
-/**
- * Helper function to standardize weight units
- * Converts legacy units to standard format
- */
+// Helper to standardize weight units
 export const standardizeWeightUnit = (unit: string): WeightUnit => {
-  if (unit === 'lbs') return 'lb';
-  if (['lb', 'kg', 'oz', 'g'].includes(unit)) return unit as WeightUnit;
-  return 'lb'; // Default to lb if unknown unit
+  switch (unit?.toLowerCase()) {
+    case 'lb':
+    case 'lbs':
+    case 'pound':
+    case 'pounds':
+      return 'lb';
+    case 'kg':
+    case 'kgs':
+    case 'kilogram':
+    case 'kilograms':
+      return 'kg';
+    case 'oz':
+    case 'ozs':
+    case 'ounce':
+    case 'ounces':
+      return 'oz';
+    case 'g':
+    case 'gs':
+    case 'gram':
+    case 'grams':
+      return 'g';
+    default:
+      return 'lb'; // Default to lb
+  }
 };
 
-/**
- * Helper function to format weight with unit
- */
-export const formatWeightWithUnit = (weight: number, unit: WeightUnitWithLegacy): string => {
-  const standardUnit = standardizeWeightUnit(unit);
-  return `${weight} ${standardUnit}`;
-};
-
-/**
- * Helper function to get human-readable weight unit name
- */
-export const getWeightUnitName = (unit: WeightUnitWithLegacy): string => {
-  const unitMap: Record<string, string> = {
-    'g': 'Grams',
-    'kg': 'Kilograms',
-    'oz': 'Ounces',
-    'lb': 'Pounds',
-    'lbs': 'Pounds'
-  };
-
-  return unitMap[unit] || 'Pounds';
-};
+// Weight units for display in UI
+export const weightUnits = [
+  { value: 'lb', label: 'Pounds (lb)' },
+  { value: 'kg', label: 'Kilograms (kg)' },
+  { value: 'oz', label: 'Ounces (oz)' },
+  { value: 'g', label: 'Grams (g)' }
+];

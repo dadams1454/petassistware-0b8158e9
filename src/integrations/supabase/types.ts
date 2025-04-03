@@ -246,6 +246,57 @@ export type Database = {
         }
         Relationships: []
       }
+      breeding_records: {
+        Row: {
+          breeding_date: string
+          created_at: string
+          created_by: string | null
+          dog_id: string
+          id: string
+          method: string | null
+          notes: string | null
+          sire_id: string | null
+          success: boolean | null
+        }
+        Insert: {
+          breeding_date: string
+          created_at?: string
+          created_by?: string | null
+          dog_id: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          sire_id?: string | null
+          success?: boolean | null
+        }
+        Update: {
+          breeding_date?: string
+          created_at?: string
+          created_by?: string | null
+          dog_id?: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          sire_id?: string | null
+          success?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "breeding_records_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "breeding_records_sire_id_fkey"
+            columns: ["sire_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       care_activities: {
         Row: {
           activity_type: string
@@ -2668,6 +2719,92 @@ export type Database = {
         }
         Relationships: []
       }
+      potty_breaks: {
+        Row: {
+          created_at: string
+          dog_id: string
+          id: string
+          notes: string | null
+          session_time: string
+          time_slot_id: string
+        }
+        Insert: {
+          created_at?: string
+          dog_id: string
+          id?: string
+          notes?: string | null
+          session_time?: string
+          time_slot_id: string
+        }
+        Update: {
+          created_at?: string
+          dog_id?: string
+          id?: string
+          notes?: string | null
+          session_time?: string
+          time_slot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "potty_breaks_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pregnancy_records: {
+        Row: {
+          breeding_record_id: string | null
+          confirmation_date: string | null
+          created_at: string
+          created_by: string | null
+          dog_id: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          status: string
+        }
+        Insert: {
+          breeding_record_id?: string | null
+          confirmation_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          dog_id: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+        }
+        Update: {
+          breeding_record_id?: string | null
+          confirmation_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          dog_id?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pregnancy_records_breeding_record_id_fkey"
+            columns: ["breeding_record_id"]
+            isOneToOne: false
+            referencedRelation: "breeding_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pregnancy_records_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       puppies: {
         Row: {
           akc_litter_number: string | null
@@ -3148,6 +3285,85 @@ export type Database = {
           },
         ]
       }
+      puppy_weights: {
+        Row: {
+          age_days: number | null
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          puppy_id: string
+          weight: number
+          weight_unit: string
+        }
+        Insert: {
+          age_days?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          notes?: string | null
+          puppy_id: string
+          weight: number
+          weight_unit: string
+        }
+        Update: {
+          age_days?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          puppy_id?: string
+          weight?: number
+          weight_unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "puppy_weights_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reproductive_milestones: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dog_id: string
+          id: string
+          milestone_date: string
+          milestone_type: string
+          notes: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dog_id: string
+          id?: string
+          milestone_date: string
+          milestone_type: string
+          notes?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dog_id?: string
+          id?: string
+          milestone_date?: string
+          milestone_type?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reproductive_milestones_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservation_status_history: {
         Row: {
           changed_at: string
@@ -3292,6 +3508,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      time_slot_dogs: {
+        Row: {
+          created_at: string
+          dog_id: string
+          id: string
+          time_slot_id: string
+        }
+        Insert: {
+          created_at?: string
+          dog_id: string
+          id?: string
+          time_slot_id: string
+        }
+        Update: {
+          created_at?: string
+          dog_id?: string
+          id?: string
+          time_slot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_slot_dogs_dog_id_fkey"
+            columns: ["dog_id"]
+            isOneToOne: false
+            referencedRelation: "dogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_slot_dogs_time_slot_id_fkey"
+            columns: ["time_slot_id"]
+            isOneToOne: false
+            referencedRelation: "time_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_slots: {
+        Row: {
+          created_at: string
+          id: string
+          time: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          time: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          time?: string
+        }
+        Relationships: []
       }
       transactions: {
         Row: {
