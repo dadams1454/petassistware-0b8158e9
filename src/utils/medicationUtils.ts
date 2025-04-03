@@ -4,6 +4,18 @@ import { MedicationStatus, MedicationStatusResult } from '@/types/health';
 // Define MedicationFrequency type for export
 export type MedicationFrequency = 'daily' | 'twice_daily' | 'weekly' | 'biweekly' | 'monthly' | 'as_needed';
 
+// Export MedicationFrequency as an enum for use with switch statements
+export const MedicationFrequency = {
+  Daily: 'daily' as const,
+  TwiceDaily: 'twice_daily' as const,
+  Weekly: 'weekly' as const,
+  Biweekly: 'biweekly' as const,
+  Monthly: 'monthly' as const,
+  AsNeeded: 'as_needed' as const,
+  Quarterly: 'quarterly' as const,
+  Annual: 'annually' as const
+};
+
 // Export these types so they're available to components
 export type { MedicationStatus, MedicationStatusResult };
 

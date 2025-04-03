@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { Bell, Calendar, AlertTriangle, Check, Clock } from 'lucide-react';
@@ -10,7 +9,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { getUpcomingMedications, getExpiringMedications, updateHealthRecord } from '@/services/healthService';
 import { HealthRecord, HealthRecordTypeEnum } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { MedicationFrequency, MedicationStatus } from '@/utils/medicationUtils';
+import { MedicationFrequency } from '@/utils/medicationUtils';
 
 interface MedicationTrackerProps {
   dogId?: string; // Optional: if provided, only shows medications for this dog
@@ -59,26 +58,21 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
       
       switch (frequencyStr) {
         case MedicationFrequency.Daily:
-        case 'daily':
           nextDueDate.setDate(today.getDate() + 1);
           break;
         case MedicationFrequency.Weekly:
-        case 'weekly':
           nextDueDate.setDate(today.getDate() + 7);
           break;
         case 'biweekly':
           nextDueDate.setDate(today.getDate() + 14);
           break;
         case MedicationFrequency.Monthly:
-        case 'monthly':
           nextDueDate.setMonth(today.getMonth() + 1);
           break;
         case MedicationFrequency.Quarterly:
-        case 'quarterly':
           nextDueDate.setMonth(today.getMonth() + 3);
           break;
         case MedicationFrequency.Annual:
-        case 'annually':
           nextDueDate.setFullYear(today.getFullYear() + 1);
           break;
         default:
