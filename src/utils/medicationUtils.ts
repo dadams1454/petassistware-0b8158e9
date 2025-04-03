@@ -1,10 +1,13 @@
 
 import { MedicationStatus, MedicationStatusResult } from '@/types/health';
 
+// Define MedicationFrequency type for export
+export type MedicationFrequency = 'daily' | 'twice_daily' | 'weekly' | 'biweekly' | 'monthly' | 'as_needed';
+
 /**
  * Get medication status based on start/end dates and frequency
  */
-export const getMedicationStatus = (medication: any): MedicationStatusResult | MedicationStatus => {
+export const getMedicationStatus = (medication: any): MedicationStatusResult => {
   if (!medication) {
     return {
       status: 'inactive',
@@ -65,4 +68,51 @@ export const getStatusValue = (status: string | MedicationStatusResult): string 
   }
   
   return status.status || '';
+};
+
+/**
+ * Get color class for a status
+ */
+export const getStatusColor = (status: string | MedicationStatusResult): string => {
+  if (isComplexStatus(status)) {
+    return status.statusColor;
+  }
+  
+  // Default colors for string statuses
+  switch (status) {
+    case 'active':
+      return 'bg-blue-500 text-white';
+    case 'completed':
+      return 'bg-green-100 text-green-800';
+    case 'pending':
+      return 'bg-blue-100 text-blue-800';
+    case 'discontinued':
+      return 'bg-orange-100 text-orange-800';
+    case 'inactive':
+      return 'bg-gray-200 text-gray-800';
+    default:
+      return 'bg-gray-200 text-gray-800';
+  }
+};
+
+/**
+ * Get time slots for a medication frequency
+ */
+export const getTimeSlotsForFrequency = (frequency: MedicationFrequency): string[] => {
+  switch (frequency) {
+    case 'daily':
+      return ['08:00'];
+    case 'twice_daily':
+      return ['08:00', '20:00'];
+    case 'weekly':
+      return ['08:00'];
+    case 'biweekly':
+      return ['08:00'];
+    case 'monthly':
+      return ['08:00'];
+    case 'as_needed':
+      return [];
+    default:
+      return ['08:00'];
+  }
 };

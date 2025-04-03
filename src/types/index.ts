@@ -3,7 +3,7 @@
 // This file functions as a central hub for importing types
 
 // Dog-related types
-export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord, Litter } from './dog';
+export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord, Litter, HeatCycle } from './dog';
 export { DogGender, HealthRecordTypeEnum, DocumentType } from './dog';
 
 // Common types
@@ -18,19 +18,60 @@ export type {
   VaccinationSchedule,
   GrowthStats,
   HealthIndicator,
-  HealthAlert
+  HealthAlert,
+  HealthCertificate,
+  MedicationAdministration
 } from './health';
-export { AppetiteEnum, stringToHealthRecordType } from './health';
+export { 
+  AppetiteEnum, 
+  EnergyLevelEnum, 
+  StoolConsistencyEnum,
+  stringToHealthRecordType,
+  mapToHealthRecord,
+  mapToWeightRecord
+} from './health';
 
 // Breeding and reproductive types
-export * from './breeding';
-export * from './reproductive';
+export { 
+  ReproductiveStatus, 
+  normalizeBreedingRecord
+} from './reproductive';
+export type { 
+  BreedingRecord, 
+  PregnancyRecord, 
+  ReproductiveMilestone, 
+  ReproductiveCycleData,
+  BreedingChecklistItem,
+  BreedingPrepFormData,
+  HeatIntensity,
+  HeatStage
+} from './reproductive';
 
 // Litter and puppy types
-export * from './litter';
+export type { 
+  Litter as LitterType, 
+  LitterWithDogs, 
+  Puppy, 
+  PuppyWithAge,
+  WhelpingRecord,
+  WhelpingLogEntry,
+  WhelpingObservation,
+  PuppyMilestone
+} from './litter';
 
 // Puppy tracking types
-export * from './puppyTracking';
+export type { 
+  PuppyAgeGroup, 
+  PuppyAgeGroupData, 
+  PuppyManagementStats,
+  SocializationRecord,
+  SocializationReactionType,
+  SocializationCategory,
+  SocializationCategoryOption,
+  SocializationReactionOption,
+  SocializationProgress,
+  PuppyCareLog
+} from './puppyTracking';
 
 // Facility types
 export * from './facility';

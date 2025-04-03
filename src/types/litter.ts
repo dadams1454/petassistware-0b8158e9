@@ -1,106 +1,126 @@
 
-// Basic types for core puppy/litter management
+import { Dog } from './dog';
 
-export interface SimpleDog {
-  id: string;
-  name: string;
-  breed?: string;
-  color?: string;
-  gender?: 'Male' | 'Female';
-  photo_url?: string;
-  birthdate?: Date | string;
-  registration_number?: string;
-}
-
-export interface Dog extends SimpleDog {
-  // Additional dog properties
-  weight?: number;
-  microchip_number?: string;
-  pedigree?: boolean;
-  notes?: string;
-  vaccination_type?: string;
-  last_vaccination_date?: Date | string;
-  owner_id?: string;
-  created_at?: Date | string;
-  // Add reproductive status properties
-  is_pregnant?: boolean;
-  breeding_status?: string;
-  last_heat_date?: string;
-  tie_date?: string;
-}
-
-export interface Puppy {
-  id: string;
-  name: string;
-  gender: 'Male' | 'Female';
-  color: string;
-  birth_date: string;
-  litter_id: string;
-  microchip_number?: string;
-  photo_url?: string;
-  current_weight?: string;
-  status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
-  birth_order?: number;
-  birth_weight?: string;
-  birth_time?: string;
-  presentation?: string;
-  assistance_required?: boolean;
-  assistance_notes?: string;
-  sale_price?: number;
-  notes?: string;
-  vaccination_dates?: string;
-  deworming_dates?: string;
-  vet_check_dates?: string;
-  akc_litter_number?: string;
-  akc_registration_number?: string;
-  health_notes?: string;
-  weight_notes?: string;
-}
-
-export interface PuppyWithAge extends Puppy {
-  age_in_weeks: number;
-  age_days: number;
-  // For backward compatibility
-  ageInDays?: number;
-  age_weeks?: number;
-  litters?: {
-    id: string;
-    name?: string;
-    birth_date: string;
-  };
-  birth_order?: number;
-}
-
+// Litter interface
 export interface Litter {
   id: string;
-  litter_name?: string;
+  litter_name: string;
   dam_id: string;
-  sire_id: string;
+  sire_id?: string;
   birth_date: string;
-  expected_go_home_date?: string;
-  status?: 'active' | 'completed' | 'planned' | 'archived';
+  whelp_date?: string;
+  puppy_count?: number;
+  status: 'active' | 'completed' | 'planned' | 'archived';
+  notes?: string;
+  created_at?: string;
   male_count?: number;
   female_count?: number;
-  puppy_count?: number;
+  breeding_notes?: string;
   akc_litter_number?: string;
   akc_registration_number?: string;
   akc_registration_date?: string;
   akc_verified?: boolean;
-  notes?: string;
-  breeding_notes?: string;
-  created_at?: string;
-  // Add missing properties to resolve errors
-  dam?: Dog;
-  sire?: Dog;
-  puppies?: Puppy[];
-  archived?: boolean;
-  name?: string;
+  expected_go_home_date?: string;
 }
 
+// Extended litter interface with Dogs
 export interface LitterWithDogs extends Litter {
-  dam?: Dog;
+  dam: Dog;
   sire?: Dog;
   puppies?: Puppy[];
 }
 
-export type WeightUnitValue = 'oz' | 'g' | 'lbs' | 'kg' | 'lb';
+// Puppy interface
+export interface Puppy {
+  id: string;
+  name: string;
+  litter_id?: string;
+  birth_date: string;
+  birth_weight?: string;
+  birth_order?: number;
+  gender: 'Male' | 'Female';
+  color?: string;
+  status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
+  microchip_number?: string;
+  akc_registration_number?: string;
+  akc_litter_number?: string;
+  notes?: string;
+  photo_url?: string;
+  created_at?: string;
+  birth_time?: string;
+  assistance_required?: boolean;
+  assistance_notes?: string;
+  eyes_open_date?: string;
+  ears_open_date?: string;
+  first_walk_date?: string;
+  fully_mobile_date?: string;
+  current_weight?: string;
+  sale_price?: number;
+  reservation_date?: string;
+  deworming_dates?: string;
+  vaccination_dates?: string;
+  vet_check_dates?: string;
+  presentation?: string;
+}
+
+// Puppy with calculated age
+export interface PuppyWithAge extends Puppy {
+  age: number;
+  ageInDays: number;
+  ageInWeeks: number;
+  developmentalStage: string;
+  weightHistory?: any[];
+  litter?: Litter;
+}
+
+// Whelping record interface
+export interface WhelpingRecord {
+  id: string;
+  litter_id: string;
+  birth_date: string;
+  start_time: string;
+  end_time?: string;
+  total_puppies: number;
+  males: number;
+  females: number;
+  attended_by?: string;
+  complications?: boolean;
+  complication_notes?: string;
+  notes?: string;
+  status: 'in-progress' | 'completed';
+  created_at?: string;
+}
+
+// Whelping log entry interface
+export interface WhelpingLogEntry {
+  id: string;
+  litter_id: string;
+  puppy_id?: string;
+  event_type: string;
+  timestamp: string;
+  notes?: string;
+  puppy_details?: any;
+  created_at: string;
+}
+
+// Whelping observation interface
+export interface WhelpingObservation {
+  id: string;
+  welping_record_id: string;
+  puppy_id?: string;
+  observation_type: string;
+  observation_time: string;
+  description: string;
+  action_taken?: string;
+  created_at?: string;
+}
+
+// Puppy tracking milestone
+export interface PuppyMilestone {
+  id?: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
+  notes?: string;
+  created_at?: string;
+}
