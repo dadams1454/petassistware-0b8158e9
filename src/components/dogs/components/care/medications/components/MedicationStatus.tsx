@@ -4,7 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { MedicationStatus as MedicationStatusEnum } from '@/utils/medicationUtils';
 
 interface MedicationStatusDisplayProps {
-  status: MedicationStatusEnum | 'incomplete' | 'current' | 'due_soon' | 'overdue';
+  status: MedicationStatusEnum | 'incomplete' | 'current' | 'due_soon' | 'overdue' | {
+    status: 'incomplete' | MedicationStatusEnum;
+    statusColor: string;
+  };
   statusColor?: string;
   showLabel?: boolean;
 }
@@ -17,8 +20,15 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
   const getStatusColor = (): string => {
     if (statusColor) return statusColor;
     
+    // Handle complex status object
+    if (typeof status === 'object' && 'status' in status && 'statusColor' in status) {
+      return status.statusColor;
+    }
+    
     // Default colors based on status
-    switch (status) {
+    const statusValue = typeof status === 'object' ? status.status : status;
+    
+    switch (statusValue) {
       case MedicationStatusEnum.Active:
       case 'current':
         return 'bg-green-100 text-green-800 border-green-300';
@@ -40,7 +50,10 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
   };
 
   const getDisplayLabel = () => {
-    switch (status) {
+    // Handle complex status object
+    const statusValue = typeof status === 'object' && 'status' in status ? status.status : status;
+    
+    switch (statusValue) {
       case MedicationStatusEnum.Active:
         return 'Active';
       case MedicationStatusEnum.Completed:

@@ -1,175 +1,108 @@
 
-import { formatDateToYYYYMMDD } from './dateUtils';
+import { format, addDays, addWeeks, addMonths, addQuarters, addYears } from 'date-fns';
 
+// Medication status enum
 export enum MedicationStatus {
   Active = 'active',
-  Completed = 'completed',
   Upcoming = 'upcoming',
-  Expired = 'expired',
-  Missed = 'missed'
+  Completed = 'completed',
+  Missed = 'missed',
+  Expired = 'expired'
 }
 
+// Medication frequency enum
 export enum MedicationFrequency {
-  Once = 'once',
   Daily = 'daily',
-  BID = 'bid', // Twice daily
-  TID = 'tid', // Three times daily
-  QID = 'qid', // Four times daily
   Weekly = 'weekly',
-  Biweekly = 'biweekly',
   Monthly = 'monthly',
+  Quarterly = 'quarterly',
+  Annual = 'annual',
   AsNeeded = 'as_needed',
   Custom = 'custom'
 }
 
 /**
- * Get the status of a medication based on its dates and administration history
+ * Get the status of a medication based on its attributes
  */
 export const getMedicationStatus = (
   startDate: string | Date,
-  endDate: string | Date | null | undefined,
-  lastAdministered: string | Date | null | undefined,
-  frequency: string
-): MedicationStatus => {
-  const now = new Date();
+  endDate: string | Date | undefined | null,
+  lastAdministered: string | Date | undefined | null,
+  frequency: string,
+  currentDate = new Date()
+): MedicationStatus | { status: 'incomplete' | MedicationStatus; statusColor: string } => {
   const start = new Date(startDate);
   const end = endDate ? new Date(endDate) : null;
-  const lastAdmin = lastAdministered ? new Date(lastAdministered) : null;
+  const lastGiven = lastAdministered ? new Date(lastAdministered) : null;
   
-  // If medication hasn't started yet
-  if (start > now) {
-    return MedicationStatus.Upcoming;
-  }
-  
-  // If medication has been completed
-  if (end && end < now) {
+  // If medication is expired
+  if (end && end < currentDate) {
     return MedicationStatus.Completed;
   }
   
-  // If medication is current but overdue
-  if (isOverdue(lastAdmin, frequency, now)) {
+  // If not started yet
+  if (start > currentDate) {
+    return MedicationStatus.Upcoming;
+  }
+  
+  // If actively being administered
+  if (!lastGiven) {
+    return { status: 'incomplete', statusColor: 'bg-slate-100 text-slate-800 border-slate-300' };
+  }
+  
+  // Calculate next due date based on frequency and last administered
+  const nextDue = calculateNextDueDate(lastGiven, frequency);
+  
+  // Check if medication is overdue
+  if (nextDue < currentDate) {
     return MedicationStatus.Missed;
   }
   
-  // If medication is active and not overdue
   return MedicationStatus.Active;
 };
 
 /**
- * Determine if a medication is overdue based on last administration and frequency
- */
-const isOverdue = (
-  lastAdministered: Date | null, 
-  frequency: string, 
-  now: Date
-): boolean => {
-  if (!lastAdministered) {
-    return true; // No administration record means it's overdue
-  }
-  
-  const daysSinceLastAdmin = Math.floor(
-    (now.getTime() - lastAdministered.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  
-  switch (frequency.toLowerCase()) {
-    case 'once':
-      return false; // Once-only medications are never overdue after administration
-    case 'daily':
-      return daysSinceLastAdmin > 1;
-    case 'bid': // Twice daily
-      return daysSinceLastAdmin > 0.5;
-    case 'tid': // Three times daily
-      return daysSinceLastAdmin > 0.33;
-    case 'qid': // Four times daily
-      return daysSinceLastAdmin > 0.25;
-    case 'weekly':
-      return daysSinceLastAdmin > 7;
-    case 'biweekly':
-      return daysSinceLastAdmin > 14;
-    case 'monthly':
-      return daysSinceLastAdmin > 30;
-    case 'as_needed':
-      return false; // As-needed medications are never overdue
-    default:
-      return daysSinceLastAdmin > 1; // Default to daily
-  }
-};
-
-/**
- * Get the times of day for medication administration based on frequency
+ * Get time slots for the given frequency
  */
 export const getTimeSlotsForFrequency = (frequency: string): string[] => {
-  switch (frequency.toLowerCase()) {
-    case 'once':
-      return ['9:00 AM'];
-    case 'daily':
-      return ['9:00 AM'];
-    case 'bid': // Twice daily
-      return ['9:00 AM', '9:00 PM'];
-    case 'tid': // Three times daily
-      return ['8:00 AM', '2:00 PM', '8:00 PM'];
-    case 'qid': // Four times daily
-      return ['8:00 AM', '12:00 PM', '4:00 PM', '8:00 PM'];
-    case 'weekly':
-      return ['Monday 9:00 AM'];
-    case 'biweekly':
-      return ['Monday 9:00 AM (every 2 weeks)'];
-    case 'monthly':
-      return ['1st of month 9:00 AM'];
-    case 'as_needed':
-      return ['As needed'];
+  switch (frequency) {
+    case MedicationFrequency.Daily:
+      return ['Morning', 'Afternoon', 'Evening'];
+    case MedicationFrequency.Weekly:
+      return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    case MedicationFrequency.Monthly:
+      return Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`);
+    case MedicationFrequency.Quarterly:
+      return ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'];
+    case MedicationFrequency.Annual:
+      return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    case MedicationFrequency.AsNeeded:
+      return ['As Needed'];
     default:
-      return ['9:00 AM'];
+      return ['Custom'];
   }
 };
 
 /**
- * Calculate the next due date/time for a medication
+ * Calculate the next due date based on the frequency
  */
 export const calculateNextDueDate = (
-  lastAdministered: string | Date | null | undefined,
-  frequency: string,
-  startDate: string | Date
+  lastAdministered: Date,
+  frequency: string
 ): Date => {
-  const start = new Date(startDate);
-  
-  // If no last administration, use start date
-  if (!lastAdministered) {
-    return start;
-  }
-  
-  const lastAdmin = new Date(lastAdministered);
-  const nextDue = new Date(lastAdmin);
-  
-  switch (frequency.toLowerCase()) {
-    case 'once':
-      return lastAdmin; // No next due date for once-only medications
-    case 'daily':
-      nextDue.setDate(nextDue.getDate() + 1);
-      break;
-    case 'bid': // Twice daily
-      nextDue.setHours(nextDue.getHours() + 12);
-      break;
-    case 'tid': // Three times daily
-      nextDue.setHours(nextDue.getHours() + 8);
-      break;
-    case 'qid': // Four times daily
-      nextDue.setHours(nextDue.getHours() + 6);
-      break;
-    case 'weekly':
-      nextDue.setDate(nextDue.getDate() + 7);
-      break;
-    case 'biweekly':
-      nextDue.setDate(nextDue.getDate() + 14);
-      break;
-    case 'monthly':
-      nextDue.setMonth(nextDue.getMonth() + 1);
-      break;
-    case 'as_needed':
-      return new Date(); // For as-needed, use current date
+  switch (frequency) {
+    case MedicationFrequency.Daily:
+      return addDays(lastAdministered, 1);
+    case MedicationFrequency.Weekly:
+      return addWeeks(lastAdministered, 1);
+    case MedicationFrequency.Monthly:
+      return addMonths(lastAdministered, 1);
+    case MedicationFrequency.Quarterly:
+      return addQuarters(lastAdministered, 1);
+    case MedicationFrequency.Annual:
+      return addYears(lastAdministered, 1);
     default:
-      nextDue.setDate(nextDue.getDate() + 1); // Default to daily
+      // Default to daily for unrecognized frequencies
+      return addDays(lastAdministered, 1);
   }
-  
-  return nextDue;
 };

@@ -17,17 +17,31 @@ export interface PuppyWithAge {
   birth_weight?: number | string;
   weight_unit?: WeightUnit;
   growth_percentage?: number;
+  litters?: any; // For related litter data
 }
 
 export interface PuppyAgeGroupData {
+  id: string; // Unique identifier for age group
   label: string;
+  name: string; // Display name
   min_age: number;
   max_age: number;
+  startDay: number; // Start day of age range
+  endDay: number; // End day of age range
+  description?: string;
   puppies: PuppyWithAge[];
+  careChecks?: string[];
+  milestones?: string[];
 }
 
 export interface PuppyManagementStats {
   total: number;
+  totalPuppies: number; // Total count of puppies
+  availablePuppies: number; // Available puppies count
+  reservedPuppies: number; // Reserved puppies count
+  soldPuppies: number; // Sold puppies count
+  isLoading?: boolean; // Loading state
+  error?: Error; // Error state
   byGender: {
     male: number;
     female: number;
@@ -48,6 +62,8 @@ export interface SocializationCategory {
   id: string;
   name: string;
   description?: string;
+  color?: string; // Color for UI display
+  examples?: string[]; // Example experiences
 }
 
 export interface SocializationReaction {
@@ -55,6 +71,7 @@ export interface SocializationReaction {
   name: string;
   description?: string;
   positive: boolean;
+  color?: string; // Color for UI display
 }
 
 export interface SocializationReactionObject {
@@ -76,9 +93,17 @@ export interface SocializationCategoryOption {
 
 export interface SocializationExperience {
   id: string;
-  name: string;
-  category_id: string;
+  puppy_id: string;
+  name?: string; // Name of experience
+  category: string;
+  category_id?: string;
   description?: string;
+  experience?: string;
+  experience_date?: string;
+  experience_type?: string;
+  reaction?: string;
+  notes?: string;
+  created_at: string;
 }
 
 export interface SocializationRecord {
@@ -102,6 +127,14 @@ export interface SocializationProgress {
     percentage: number;
   }[];
   overall_percentage: number;
+  
+  // Fields for UI rendering
+  category?: string;
+  categoryId?: string;
+  categoryName?: string;
+  count?: number;
+  target?: number;
+  completion_percentage?: number;
 }
 
 export interface PuppyMilestone {
@@ -109,6 +142,12 @@ export interface PuppyMilestone {
   puppy_id: string;
   milestone_type: string;
   milestone_date: string;
+  title?: string;
+  description?: string;
+  expected_age_days?: number;
+  completion_date?: string;
+  is_completed?: boolean;
+  category?: string;
   notes?: string;
   created_at: string;
 }
@@ -118,6 +157,8 @@ export interface VaccinationScheduleItem {
   puppy_id: string;
   vaccination_type: string;
   due_date: string;
+  vaccination_date?: string;
+  scheduled_date?: string;
   notes?: string;
   created_at: string;
 }
@@ -134,8 +175,17 @@ export interface VaccinationRecord {
 }
 
 export interface VaccinationSchedule {
+  id?: string;
+  puppy_id?: string;
+  vaccination_type?: string;
+  scheduled_date?: string;
+  due_date?: string;
+  administered?: boolean;
+  notes?: string;
+  created_at?: string;
   upcoming: VaccinationScheduleItem[];
   completed: VaccinationRecord[];
+  vaccine_name?: string;
 }
 
 export interface WeightRecord {
@@ -149,8 +199,12 @@ export interface WeightRecord {
   notes?: string;
   created_at: string;
   percent_change?: number;
+  birth_date?: string; // For age calculation
 }
 
 export interface PuppyWeightRecord extends WeightRecord {
   birth_date?: string;
 }
+
+// Type alias for backward compatibility
+export type SocializationReactionType = SocializationReaction;

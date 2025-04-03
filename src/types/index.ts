@@ -34,7 +34,8 @@ export type {
   VaccinationRecord,
   VaccinationSchedule,
   WeightRecord,
-  PuppyWeightRecord
+  PuppyWeightRecord,
+  SocializationReactionType
 } from './puppyTracking';
 
 // Export health types
@@ -45,7 +46,6 @@ export type {
   MedicationAdministration,
   HealthCertificate,
   WeightData,
-  HealthRecordType,
   WeightRecord as HealthWeightRecord,
   WeightUnit
 } from './health';
