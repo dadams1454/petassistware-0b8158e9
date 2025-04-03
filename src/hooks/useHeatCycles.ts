@@ -5,6 +5,14 @@ import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays } from 'date-fns';
 import { HeatCycle, HeatIntensity } from '@/types/reproductive';
 
+// Helper to ensure intensity is a valid HeatIntensity value
+const validateHeatIntensity = (intensity: string | null): HeatIntensity => {
+  if (intensity === 'mild' || intensity === 'moderate' || intensity === 'strong') {
+    return intensity;
+  }
+  return 'moderate'; // Default fallback
+};
+
 export const useHeatCycles = (dogId: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -29,7 +37,7 @@ export const useHeatCycles = (dogId: string) => {
       // Transform data to ensure it matches HeatCycle type
       return (data || []).map(cycle => ({
         ...cycle,
-        intensity: cycle.intensity as HeatIntensity
+        intensity: validateHeatIntensity(cycle.intensity)
       })) as HeatCycle[];
     }
   });
@@ -70,12 +78,7 @@ export const useHeatCycles = (dogId: string) => {
   const addHeatCycle = useMutation({
     mutationFn: async (cycleData: Partial<HeatCycle>) => {
       // Ensure intensity is a valid HeatIntensity value
-      let intensityValue: HeatIntensity | null = null;
-      if (cycleData.intensity) {
-        if (['mild', 'moderate', 'strong'].includes(cycleData.intensity)) {
-          intensityValue = cycleData.intensity as HeatIntensity;
-        }
-      }
+      const intensityValue = validateHeatIntensity(cycleData.intensity || null);
       
       const { data, error } = await supabase
         .from('heat_cycles')
@@ -122,12 +125,7 @@ export const useHeatCycles = (dogId: string) => {
       const { id, data: cycleData } = updates;
       
       // Ensure intensity is a valid HeatIntensity value
-      let intensityValue: HeatIntensity | null = null;
-      if (cycleData.intensity) {
-        if (['mild', 'moderate', 'strong'].includes(cycleData.intensity)) {
-          intensityValue = cycleData.intensity as HeatIntensity;
-        }
-      }
+      const intensityValue = validateHeatIntensity(cycleData.intensity || null);
       
       const { data, error } = await supabase
         .from('heat_cycles')
@@ -168,9 +166,6 @@ export const useHeatCycles = (dogId: string) => {
     error,
     averageCycleLength,
     addHeatCycle: addHeatCycle.mutateAsync,
-    updateHeatCycle: updateHeatCycle.mutateAsync,
-    isAdding: addHeatCycle.isPending,
-    isUpdating: updateHeatCycle.isPending,
-    refetch
+    updateHeatCycle: updateHeatCycle.mutateAsync
   };
 };

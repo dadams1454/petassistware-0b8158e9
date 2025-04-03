@@ -1,136 +1,118 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MedicationInfo, ProcessedMedicationLogs } from '../types/medicationTypes';
+import { isAfter, parseISO, format } from 'date-fns';
 import { DogCareStatus } from '@/types/dailyCare';
+import { MedicationInfo, ProcessedMedicationLogs } from '../types/medicationTypes';
 import { MedicationFrequency } from '@/utils/medicationUtils';
 
 export const useMedicationLogs = (dogs: DogCareStatus[]) => {
-  const [processedMedicationLogs, setProcessedMedicationLogs] = useState<ProcessedMedicationLogs>({});
+  const [medicationLogs, setMedicationLogs] = useState<ProcessedMedicationLogs>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!dogs || dogs.length === 0) {
-      setProcessedMedicationLogs({});
-      setIsLoading(false);
-      return;
-    }
-
+    if (!dogs.length) return;
+    
     const fetchMedicationLogs = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
-        // Get dog IDs for query
         const dogIds = dogs.map(dog => dog.dog_id);
         
-        // Fetch medication logs for these dogs from daily_care_logs where category is 'medications'
+        // Fetch all medication records for the provided dogs
         const { data, error } = await supabase
           .from('daily_care_logs')
           .select('*')
           .in('dog_id', dogIds)
-          .eq('category', 'medications')
-          .order('timestamp', { ascending: false });
+          .eq('category', 'medications');
         
-        if (error) throw new Error(error.message);
+        if (error) throw error;
         
-        // Process the medication logs by dog
-        const medicationsByDog: ProcessedMedicationLogs = {};
+        // Process the medication logs
+        const processedLogs: ProcessedMedicationLogs = {};
         
-        // Initialize each dog's medication record, even if they have no medications
         dogIds.forEach(dogId => {
-          medicationsByDog[dogId] = {
+          processedLogs[dogId] = {
             preventative: [],
             other: []
           };
         });
         
-        // If we have medication data, process it
-        if (data && data.length > 0) {
-          // Group medications by dog
-          dogIds.forEach(dogId => {
-            // Get logs for this specific dog
-            const dogLogs = data.filter(log => log.dog_id === dogId) || [];
-            
-            // Group medications by name (to get the most recent entry for each medication)
-            const medicationsByName: Record<string, MedicationInfo> = {};
-            
-            // Create a map of medications by name
-            dogLogs.forEach(log => {
-              // Extract medication type (preventative or not) from the task name or notes
-              const isPreventative = 
-                (log.notes && log.notes.toLowerCase().includes('preventative')) || 
-                (log.task_name.toLowerCase().includes('heartworm')) ||
-                (log.task_name.toLowerCase().includes('flea')) ||
-                (log.task_name.toLowerCase().includes('tick')) ||
-                (log.task_name.toLowerCase().includes('prevention'));
-              
-              // Parse frequency from task_name if available
-              let frequency = MedicationFrequency.Monthly; // Default
-              if (log.task_name.includes('(Daily)')) frequency = MedicationFrequency.Daily;
-              if (log.task_name.includes('(Weekly)')) frequency = MedicationFrequency.Weekly;
-              if (log.task_name.includes('(Monthly)')) frequency = MedicationFrequency.Monthly;
-              if (log.task_name.includes('(Quarterly)')) frequency = MedicationFrequency.Quarterly;
-              if (log.task_name.includes('(Annual)')) frequency = MedicationFrequency.Annual;
-              
-              // Clean medication name (remove frequency information)
-              let cleanName = log.task_name;
-              if (cleanName.includes('(')) {
-                cleanName = cleanName.substring(0, cleanName.indexOf('(')).trim();
-              }
-              
-              // Extract start_date and end_date from metadata if available
-              let startDate = log.timestamp;
-              let endDate = null;
-              
-              if (log.medication_metadata && typeof log.medication_metadata === 'object') {
-                if (log.medication_metadata.start_date) {
-                  startDate = log.medication_metadata.start_date;
-                }
-                if (log.medication_metadata.end_date) {
-                  endDate = log.medication_metadata.end_date;
-                }
-              }
-              
-              if (!medicationsByName[cleanName] || new Date(log.timestamp) > new Date(medicationsByName[cleanName].lastAdministered)) {
-                medicationsByName[cleanName] = {
-                  id: log.id,
-                  name: cleanName,
-                  lastAdministered: log.timestamp,
-                  frequency: frequency,
-                  notes: log.notes,
-                  isPreventative: isPreventative,
-                  startDate: startDate,
-                  endDate: endDate
-                };
-              }
-            });
-            
-            // Convert to array and sort by medication name
-            const allMedications = Object.values(medicationsByName).sort((a: MedicationInfo, b: MedicationInfo) => 
-              a.name.localeCompare(b.name)
-            );
-            
-            // Separate into preventative and other medications
-            medicationsByDog[dogId] = {
-              preventative: allMedications.filter((med: MedicationInfo) => med.isPreventative),
-              other: allMedications.filter((med: MedicationInfo) => !med.isPreventative)
-            };
-          });
-        }
+        // Group logs by dog and medication name
+        const groupedLogs: Record<string, Record<string, any[]>> = {};
         
-        setProcessedMedicationLogs(medicationsByDog);
-      } catch (err: any) {
+        data.forEach(log => {
+          const dogId = log.dog_id;
+          const medicationName = log.task_name;
+          const key = `${dogId}-${medicationName}`;
+          
+          if (!groupedLogs[key]) {
+            groupedLogs[key] = [];
+          }
+          
+          groupedLogs[key].push(log);
+        });
+        
+        // Process grouped logs into medication info
+        Object.entries(groupedLogs).forEach(([key, logs]) => {
+          const [dogId, medicationName] = key.split('-');
+          
+          // Sort logs by timestamp to get the most recent one
+          logs.sort((a, b) => isAfter(parseISO(a.timestamp), parseISO(b.timestamp)) ? -1 : 1);
+          
+          // Latest log
+          const latestLog = logs[0];
+          
+          // Extract medication metadata
+          const metadata = latestLog.medication_metadata || {};
+          
+          // Determine if preventative
+          const isPreventative = metadata.preventative === true;
+          
+          // Extract frequency information
+          const frequency = metadata.frequency || 'daily';
+          
+          // Extract start_date and end_date if available
+          const startDate = metadata.start_date || latestLog.timestamp;
+          const endDate = metadata.end_date || null;
+          
+          // Create medication info object
+          const medicationInfo: MedicationInfo = {
+            id: medicationName,
+            name: medicationName,
+            lastAdministered: latestLog.timestamp,
+            frequency: frequency as MedicationFrequency,
+            notes: latestLog.notes,
+            isPreventative,
+            startDate,
+            endDate
+          };
+          
+          // Add to appropriate category
+          if (isPreventative) {
+            processedLogs[dogId].preventative.push(medicationInfo);
+          } else {
+            processedLogs[dogId].other.push(medicationInfo);
+          }
+        });
+        
+        setMedicationLogs(processedLogs);
+      } catch (err) {
         console.error('Error fetching medication logs:', err);
-        setError(err.message);
+        setError(err as Error);
       } finally {
         setIsLoading(false);
       }
     };
-
+    
     fetchMedicationLogs();
   }, [dogs]);
-
-  return { processedMedicationLogs, isLoading, error };
+  
+  return {
+    medicationLogs,
+    isLoading,
+    error
+  };
 };

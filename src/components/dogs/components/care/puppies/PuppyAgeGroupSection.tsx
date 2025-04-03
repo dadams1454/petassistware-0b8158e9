@@ -1,11 +1,10 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, ListChecks, Baby } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 import PuppyCard from './PuppyCard';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 interface PuppyAgeGroupSectionProps {
   ageGroup: PuppyAgeGroupData;
@@ -13,62 +12,76 @@ interface PuppyAgeGroupSectionProps {
   onRefresh: () => void;
 }
 
-const PuppyAgeGroupSection: React.FC<PuppyAgeGroupSectionProps> = ({ 
-  ageGroup, 
+const PuppyAgeGroupSection: React.FC<PuppyAgeGroupSectionProps> = ({
+  ageGroup,
   puppies,
   onRefresh
 }) => {
-  const [isOpen, setIsOpen] = React.useState(true);
-  
-  if (puppies.length === 0) return null;
-  
+  if (!puppies.length) return null;
+
+  // Sort puppies by age, youngest first
+  const sortedPuppies = [...puppies].sort((a, b) => a.ageInDays - b.ageInDays);
+
+  // Get color for badge
+  const getBadgeColorClass = () => {
+    switch (ageGroup.color) {
+      case 'blue': return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
+      case 'purple': return 'bg-purple-100 text-purple-800 hover:bg-purple-100';
+      case 'green': return 'bg-green-100 text-green-800 hover:bg-green-100';
+      case 'amber': return 'bg-amber-100 text-amber-800 hover:bg-amber-100';
+      case 'orange': return 'bg-orange-100 text-orange-800 hover:bg-orange-100';
+      default: return 'bg-slate-100 text-slate-800 hover:bg-slate-100';
+    }
+  };
+
   return (
-    <Card className="overflow-hidden">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CardHeader className="pb-0">
-          <CollapsibleTrigger asChild>
-            <div className="flex items-center justify-between cursor-pointer py-2">
-              <CardTitle className="flex items-center">
-                <Baby className="h-5 w-5 mr-2 text-primary" />
-                {ageGroup.name} ({puppies.length})
-              </CardTitle>
-              <Button variant="ghost" size="sm">
-                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
-            </div>
-          </CollapsibleTrigger>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl">
+            {ageGroup.name}
+            <Badge className={`ml-2 ${getBadgeColorClass()}`}>
+              {puppies.length} {puppies.length === 1 ? 'puppy' : 'puppies'}
+            </Badge>
+          </CardTitle>
+          <div className="text-sm text-muted-foreground">
+            {ageGroup.startDay}-{ageGroup.endDay} days
+          </div>
+        </div>
+        {ageGroup.description && (
           <p className="text-sm text-muted-foreground mt-1">{ageGroup.description}</p>
-        </CardHeader>
-        
-        <CollapsibleContent>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {puppies.map((puppy) => (
-                <PuppyCard 
-                  key={puppy.id} 
-                  puppy={puppy} 
-                  ageGroup={ageGroup}
-                  onRefresh={onRefresh} 
-                />
+        )}
+      </CardHeader>
+      
+      <CardContent>
+        {/* Care checks section */}
+        {ageGroup.careChecks && ageGroup.careChecks.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-sm font-medium mb-2">Care Focus</h4>
+            <div className="flex flex-wrap gap-1">
+              {ageGroup.careChecks.map((check, index) => (
+                <Badge key={index} variant="outline" className="bg-slate-50">
+                  {check}
+                </Badge>
               ))}
             </div>
-            
-            <div className="mt-4 pt-3 border-t">
-              <h4 className="text-sm font-medium mb-2 flex items-center">
-                <ListChecks className="h-4 w-4 mr-1 text-muted-foreground" />
-                Care Checklist
-              </h4>
-              <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
-                {ageGroup.careChecks?.map((check, index) => (
-                  <li key={index}>{check}</li>
-                )) || (
-                  <li>No care checks defined for this age group</li>
-                )}
-              </ul>
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
+          </div>
+        )}
+        
+        <Separator className="my-4" />
+        
+        {/* Puppies Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          {sortedPuppies.map(puppy => (
+            <PuppyCard 
+              key={puppy.id} 
+              puppy={puppy} 
+              ageGroup={ageGroup}
+              onRefresh={onRefresh}
+            />
+          ))}
+        </div>
+      </CardContent>
     </Card>
   );
 };

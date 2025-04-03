@@ -34,27 +34,12 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     soldPuppies,
     isLoading,
     error,
-    // Additional stats for other components that might need them
-    stats: {
-      totalPuppies,
-      availablePuppies,
-      reservedPuppies,
-      soldPuppies,
-      byGender,
-      byStatus,
-      byAgeGroup
-    },
-    // Required by PuppyManagementStats interface
     total: {
       count: totalPuppies,
       male: byGender.male || 0,
       female: byGender.female || 0
     },
-    byGender: {
-      male: byGender.male || 0,
-      female: byGender.female || 0,
-      unknown: byGender.unknown || 0
-    },
+    byGender,
     byStatus,
     byAgeGroup
   };
