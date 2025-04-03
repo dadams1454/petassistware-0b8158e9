@@ -19,11 +19,7 @@ const weightEntrySchema = z.object({
   }).positive({
     message: 'Weight must be greater than 0',
   }),
-  unit: z.custom<WeightUnit>((val) => {
-    return ['oz', 'g', 'lbs', 'kg', 'lb'].includes(val as string);
-  }, {
-    message: 'Please select a valid weight unit',
-  }),
+  unit: z.enum(['oz', 'g', 'lbs', 'kg', 'lb']),
   notes: z.string().optional(),
 });
 
@@ -52,7 +48,9 @@ export const useWeightEntryForm = ({ dogId, onSave, initialData }: UseWeightEntr
     setIsSubmitting(true);
     try {
       // Format the data for the API, safely converting Date to string
-      const formattedDate = formatDateToYYYYMMDD(values.date) || new Date().toISOString().split('T')[0];
+      const formattedDate = values.date instanceof Date 
+        ? formatDateToYYYYMMDD(values.date) 
+        : new Date().toISOString().split('T')[0];
       
       const weightRecord = {
         dog_id: dogId,
@@ -77,6 +75,6 @@ export const useWeightEntryForm = ({ dogId, onSave, initialData }: UseWeightEntr
   return {
     form,
     isSubmitting,
-    handleSubmit: form.handleSubmit(handleSubmit)
+    handleSubmit: handleSubmit
   };
 };

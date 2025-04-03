@@ -25,10 +25,22 @@ const WeightEntryForm: React.FC<WeightEntryFormProps> = ({
     onSave,
     initialData
   });
+
+  // Function to normalize weight data before submission
+  const handleFormSubmit = form.handleSubmit(async (values) => {
+    // Ensure both weight_unit and unit are set to the same value
+    const normalizedValues = {
+      ...values,
+      unit: values.unit,
+      weight_unit: values.unit
+    };
+    
+    return handleSubmit(normalizedValues);
+  });
   
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleFormSubmit} className="space-y-4">
         <WeightDatePicker form={form} />
         <div className="flex gap-4">
           <WeightValueInput form={form} />

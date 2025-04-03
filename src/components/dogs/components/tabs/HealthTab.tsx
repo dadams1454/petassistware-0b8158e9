@@ -14,7 +14,7 @@ import { HealthTabProps } from '../profile/DogProfileTabs';
 
 // Inner component to use context
 const HealthTabContent: React.FC = () => {
-  const { activeTab, setActiveTab, isLoading } = useHealthTabContext();
+  const { activeTab, setActiveTab, isLoading, dogId } = useHealthTabContext();
   
   if (isLoading) {
     return <LoadingState message="Loading health data..." />;
@@ -43,11 +43,11 @@ const HealthTabContent: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="vaccinations" className="pt-4">
-          <VaccinationsTabContent />
+          <VaccinationsTabContent dogId={dogId} />
         </TabsContent>
         
         <TabsContent value="examinations" className="pt-4">
-          <ExaminationsTabContent />
+          <ExaminationsTabContent dogId={dogId} />
         </TabsContent>
         
         <TabsContent value="medications" className="pt-4">

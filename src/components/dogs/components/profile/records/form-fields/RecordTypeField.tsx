@@ -3,6 +3,7 @@ import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HealthRecordTypeEnum } from '@/types/health';
+import { recordTypeOptions } from '../../utils/healthRecordUtils';
 
 interface RecordTypeFieldProps {
   form: any;
@@ -36,17 +37,9 @@ const RecordTypeField: React.FC<RecordTypeFieldProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value={HealthRecordTypeEnum.Examination}>Examination</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Vaccination}>Vaccination</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Medication}>Medication</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Surgery}>Surgery</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Dental}>Dental</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Allergy}>Allergy</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Test}>Test</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Observation}>Observation</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Deworming}>Deworming</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Grooming}>Grooming</SelectItem>
-              <SelectItem value={HealthRecordTypeEnum.Other}>Other</SelectItem>
+              {recordTypeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <FormMessage />

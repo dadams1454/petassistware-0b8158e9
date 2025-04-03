@@ -1,137 +1,79 @@
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import React from 'react';
+import { useHealthTabContext } from './HealthTabContext';
+import { LoadingState, ErrorState, EmptyState } from '@/components/ui/standardized';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Syringe } from 'lucide-react';
+import { HealthRecordTypeEnum } from '@/types/health';
 import HealthRecordsList from '@/components/dogs/components/profile/records/HealthRecordsList';
 import HealthRecordForm from '@/components/dogs/components/profile/records/HealthRecordForm';
-import { HealthRecordTypeEnum } from '@/types/health';
 
-interface VaccinationsTabContentProps {
+export interface VaccinationsTabContentProps {
   dogId: string;
 }
 
 const VaccinationsTabContent: React.FC<VaccinationsTabContentProps> = ({ dogId }) => {
-  const [isAdding, setIsAdding] = useState(false);
-  const queryClient = useQueryClient();
+  const { 
+    healthRecords, 
+    isLoading, 
+    error, 
+    setShowAddRecordDialog, 
+    setRecordToEdit,
+    setRecordToDelete,
+    setSelectedRecordType 
+  } = useHealthTabContext();
+  
+  // Filter for vaccination records
+  const vaccinationRecords = healthRecords.filter(
+    record => record.record_type === HealthRecordTypeEnum.Vaccination
+  );
 
-  // Fetch vaccination records
-  const { data: vaccinations, isLoading } = useQuery({
-    queryKey: ['vaccinations', dogId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('health_records')
-        .select('*')
-        .eq('dog_id', dogId)
-        .eq('record_type', HealthRecordTypeEnum.Vaccination)
-        .order('visit_date', { ascending: false });
-        
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Add vaccination record mutation
-  const { mutateAsync: addVaccination, isPending: isAddingVaccination } = useMutation({
-    mutationFn: async (vaccinationData: any) => {
-      const { data, error } = await supabase
-        .from('health_records')
-        .insert([{
-          ...vaccinationData,
-          record_type: HealthRecordTypeEnum.Vaccination
-        }])
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vaccinations', dogId] });
-      toast({
-        title: "Vaccination added",
-        description: "The vaccination record has been saved successfully."
-      });
-      setIsAdding(false);
-    },
-    onError: (error) => {
-      console.error("Error adding vaccination:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add vaccination record.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Delete vaccination record mutation
-  const { mutateAsync: deleteVaccination } = useMutation({
-    mutationFn: async (recordId: string) => {
-      const { error } = await supabase
-        .from('health_records')
-        .delete()
-        .eq('id', recordId);
-        
-      if (error) throw error;
-      return recordId;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vaccinations', dogId] });
-      toast({
-        title: "Vaccination deleted",
-        description: "The vaccination record has been removed."
-      });
-    },
-    onError: (error) => {
-      console.error("Error deleting vaccination:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete vaccination record.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const handleAddVaccination = async (data: any) => {
-    await addVaccination({
-      ...data,
-      dog_id: dogId
-    });
+  const handleAddVaccination = () => {
+    setSelectedRecordType(HealthRecordTypeEnum.Vaccination);
+    setShowAddRecordDialog(true);
   };
 
-  const handleDeleteVaccination = async (recordId: string) => {
-    if (window.confirm("Are you sure you want to delete this vaccination record?")) {
-      await deleteVaccination(recordId);
-    }
-  };
+  if (isLoading) {
+    return <LoadingState message="Loading vaccination records..." />;
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="Error Loading Records"
+        message={error instanceof Error ? error.message : String(error)}
+      />
+    );
+  }
+
+  if (vaccinationRecords.length === 0) {
+    return (
+      <EmptyState
+        icon={<Syringe className="h-12 w-12 text-muted-foreground" />}
+        title="No Vaccination Records"
+        description="Add your dog's vaccination records to keep track of their health history."
+        action={
+          <Button onClick={handleAddVaccination}>
+            Add Vaccination
+          </Button>
+        }
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {!isAdding && (
-        <div className="flex justify-end">
-          <Button onClick={() => setIsAdding(true)} size="sm">
-            <Plus className="h-4 w-4 mr-1" /> Add Vaccination
-          </Button>
-        </div>
-      )}
-
-      {isAdding && (
-        <HealthRecordForm
-          dogId={dogId}
-          recordType={HealthRecordTypeEnum.Vaccination}
-          onSubmit={handleAddVaccination}
-          onCancel={() => setIsAdding(false)}
-          isSubmitting={isAddingVaccination}
-        />
-      )}
-
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Vaccinations</h3>
+        <Button onClick={handleAddVaccination}>
+          Add Vaccination
+        </Button>
+      </div>
+      
       <HealthRecordsList
-        records={vaccinations || []}
-        isLoading={isLoading}
-        onDelete={handleDeleteVaccination}
-        emptyMessage="No vaccination records found. Click 'Add Vaccination' to create one."
+        records={vaccinationRecords}
+        recordType={HealthRecordTypeEnum.Vaccination}
+        emptyMessage="No vaccination records found."
       />
     </div>
   );
