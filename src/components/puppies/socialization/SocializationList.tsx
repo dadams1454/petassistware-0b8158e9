@@ -3,9 +3,10 @@ import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, SearchX, Loader2 } from 'lucide-react';
-import { SocializationExperience, SocializationReactionObject } from '@/types/puppyTracking';
+import { Trash2, SearchX, Loader2, AlertCircle } from 'lucide-react';
+import { SocializationExperience } from '@/types/puppyTracking';
 import { Badge } from '@/components/ui/badge';
+import { getReactionObjectForUI } from '@/utils/socializationHelpers';
 
 interface SocializationListProps {
   experiences: SocializationExperience[];
@@ -13,15 +14,6 @@ interface SocializationListProps {
   error?: string | null;
   onDelete: (id: string) => void;
 }
-
-const REACTION_MAP: Record<string, SocializationReactionObject> = {
-  'very_positive': { id: 'very_positive', name: 'Very Positive', emoji: '😄', color: 'text-green-600' },
-  'positive': { id: 'positive', name: 'Positive', emoji: '🙂', color: 'text-green-500' },
-  'neutral': { id: 'neutral', name: 'Neutral', emoji: '😐', color: 'text-gray-500' },
-  'cautious': { id: 'cautious', name: 'Cautious', emoji: '😟', color: 'text-yellow-500' },
-  'fearful': { id: 'fearful', name: 'Fearful', emoji: '😨', color: 'text-orange-500' },
-  'very_fearful': { id: 'very_fearful', name: 'Very Fearful', emoji: '😱', color: 'text-red-500' },
-};
 
 const SocializationList: React.FC<SocializationListProps> = ({
   experiences,
@@ -66,7 +58,7 @@ const SocializationList: React.FC<SocializationListProps> = ({
   return (
     <div className="space-y-4">
       {experiences.map((experience) => {
-        const reactionInfo = REACTION_MAP[experience.reaction || 'neutral'];
+        const reactionInfo = getReactionObjectForUI(experience.reaction || 'neutral');
         
         return (
           <Card key={experience.id} className="overflow-hidden">
@@ -91,7 +83,7 @@ const SocializationList: React.FC<SocializationListProps> = ({
                   
                   {experience.reaction && (
                     <div className="flex items-center gap-1.5 mb-2">
-                      <span className={reactionInfo.color}>
+                      <span className={reactionInfo.color.startsWith('#') ? '' : reactionInfo.color}>
                         {reactionInfo.emoji} {reactionInfo.name}
                       </span>
                     </div>

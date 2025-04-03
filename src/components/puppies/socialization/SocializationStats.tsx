@@ -9,6 +9,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { SocializationExperience } from '@/types/puppyTracking';
 import SocializationProgressTracker from './SocializationProgressTracker';
+import { REACTION_EMOJI_MAP } from '@/utils/socializationHelpers';
 
 interface SocializationStatsProps {
   experiences: SocializationExperience[];
@@ -103,12 +104,12 @@ const SocializationStats: React.FC<SocializationStatsProps> = ({ experiences }) 
             <div className="space-y-4">
               {stats.reactionDistribution.map(({ type, count, percentage }) => {
                 const reactionInfo = {
-                  'very_positive': { name: 'Very Positive', emoji: '😄', color: 'bg-green-600' },
-                  'positive': { name: 'Positive', emoji: '🙂', color: 'bg-green-500' },
-                  'neutral': { name: 'Neutral', emoji: '😐', color: 'bg-gray-500' },
-                  'cautious': { name: 'Cautious', emoji: '😟', color: 'bg-yellow-500' },
-                  'fearful': { name: 'Fearful', emoji: '😨', color: 'bg-orange-500' },
-                  'very_fearful': { name: 'Very Fearful', emoji: '😱', color: 'bg-red-500' }
+                  'very_positive': { name: 'Very Positive', emoji: REACTION_EMOJI_MAP['very_positive'] || '😄', color: 'bg-green-600' },
+                  'positive': { name: 'Positive', emoji: REACTION_EMOJI_MAP['positive'] || '🙂', color: 'bg-green-500' },
+                  'neutral': { name: 'Neutral', emoji: REACTION_EMOJI_MAP['neutral'] || '😐', color: 'bg-gray-500' },
+                  'cautious': { name: 'Cautious', emoji: REACTION_EMOJI_MAP['cautious'] || '😟', color: 'bg-yellow-500' },
+                  'fearful': { name: 'Fearful', emoji: REACTION_EMOJI_MAP['fearful'] || '😨', color: 'bg-orange-500' },
+                  'very_fearful': { name: 'Very Fearful', emoji: REACTION_EMOJI_MAP['very_fearful'] || '😱', color: 'bg-red-500' }
                 }[type] || { name: type, emoji: '❓', color: 'bg-blue-500' };
                 
                 return (

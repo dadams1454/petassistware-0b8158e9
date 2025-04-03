@@ -4,33 +4,20 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+import { SocializationCategory, SocializationReactionType } from '@/types/puppyTracking';
+import { REACTION_EMOJI_MAP } from '@/utils/socializationHelpers';
+import { 
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SocializationReactionObject } from '@/types/puppyTracking';
+import { SOCIALIZATION_CATEGORIES } from '@/data/socializationCategories';
 
 interface SocializationExperienceFormProps {
   puppyId: string;
@@ -38,23 +25,13 @@ interface SocializationExperienceFormProps {
   onCancel?: () => void;
 }
 
-const SOCIALIZATION_CATEGORIES = [
-  { id: 'people', name: 'People' },
-  { id: 'animals', name: 'Animals' },
-  { id: 'environments', name: 'Environments' },
-  { id: 'sounds', name: 'Sounds' },
-  { id: 'handling', name: 'Handling' },
-  { id: 'surfaces', name: 'Surfaces' },
-  { id: 'objects', name: 'Objects' },
-];
-
-const REACTION_TYPES: SocializationReactionObject[] = [
-  { id: 'very_positive', name: 'Very Positive', emoji: '😄', color: 'text-green-600' },
-  { id: 'positive', name: 'Positive', emoji: '🙂', color: 'text-green-500' },
-  { id: 'neutral', name: 'Neutral', emoji: '😐', color: 'text-gray-500' },
-  { id: 'cautious', name: 'Cautious', emoji: '😟', color: 'text-yellow-500' },
-  { id: 'fearful', name: 'Fearful', emoji: '😨', color: 'text-orange-500' },
-  { id: 'very_fearful', name: 'Very Fearful', emoji: '😱', color: 'text-red-500' },
+const REACTION_TYPES: Array<{id: SocializationReactionType, name: string, emoji: string, color: string}> = [
+  { id: 'very_positive', name: 'Very Positive', emoji: REACTION_EMOJI_MAP['very_positive'] || '😄', color: 'text-green-600' },
+  { id: 'positive', name: 'Positive', emoji: REACTION_EMOJI_MAP['positive'] || '🙂', color: 'text-green-500' },
+  { id: 'neutral', name: 'Neutral', emoji: REACTION_EMOJI_MAP['neutral'] || '😐', color: 'text-gray-500' },
+  { id: 'cautious', name: 'Cautious', emoji: REACTION_EMOJI_MAP['cautious'] || '😟', color: 'text-yellow-500' },
+  { id: 'fearful', name: 'Fearful', emoji: REACTION_EMOJI_MAP['fearful'] || '😨', color: 'text-orange-500' },
+  { id: 'very_fearful', name: 'Very Fearful', emoji: REACTION_EMOJI_MAP['very_fearful'] || '😱', color: 'text-red-500' },
 ];
 
 const experienceSchema = z.object({
@@ -78,7 +55,10 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
   onCancel 
 }) => {
   const defaultValues: ExperienceFormValues = {
-    category: SOCIALIZATION_CATEGORIES[0],
+    category: {
+      id: SOCIALIZATION_CATEGORIES[0].id,
+      name: SOCIALIZATION_CATEGORIES[0].name
+    },
     experience: '',
     experience_date: new Date(),
     reaction: 'neutral',
@@ -115,7 +95,10 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
                   onValueChange={(value) => {
                     const category = SOCIALIZATION_CATEGORIES.find(cat => cat.id === value);
                     if (category) {
-                      field.onChange(category);
+                      field.onChange({
+                        id: category.id,
+                        name: category.name
+                      });
                     }
                   }}
                   defaultValue={field.value.id}

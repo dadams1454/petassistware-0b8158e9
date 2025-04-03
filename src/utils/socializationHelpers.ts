@@ -47,6 +47,17 @@ export const REACTION_OBJECTS: SocializationReaction[] = [
   }
 ];
 
+// Map from reaction IDs to emoji representations for UI display
+export const REACTION_EMOJI_MAP: Record<string, string> = {
+  'very_positive': '😄',
+  'positive': '🙂',
+  'neutral': '😐',
+  'cautious': '😟',
+  'fearful': '😨',
+  'very_fearful': '😱',
+  'negative': '😔'
+};
+
 /**
  * Gets a reaction object from a reaction string
  * This is a helper function to bridge the string enum type and the UI objects
@@ -59,6 +70,13 @@ export const getReactionObject = (reaction: string): SocializationReaction => {
     color: getDefaultColorForReaction(reaction),
     description: `${capitalize(reaction)} reaction`
   };
+};
+
+/**
+ * Gets the emoji for a reaction
+ */
+export const getReactionEmoji = (reaction: string): string => {
+  return REACTION_EMOJI_MAP[reaction] || '❓';
 };
 
 /**
@@ -88,14 +106,32 @@ export const getReactionId = (reaction: string): string => {
 const getDefaultColorForReaction = (reaction: string): string => {
   switch (reaction) {
     case 'positive':
+    case 'very_positive':
       return '#16a34a';
     case 'negative':
+    case 'very_fearful':
+    case 'fearful':
       return '#ef4444';
     case 'neutral':
       return '#3b82f6';
+    case 'cautious':
+      return '#eab308';
     default:
       return '#9ca3af';
   }
+};
+
+/**
+ * Gets a reaction object formatted for UI components
+ */
+export const getReactionObjectForUI = (reaction: string): {id: string, name: string, emoji: string, color: string} => {
+  const reactionObj = getReactionObject(reaction);
+  return {
+    id: reactionObj.id,
+    name: reactionObj.name,
+    emoji: getReactionEmoji(reaction),
+    color: reactionObj.color
+  };
 };
 
 /**

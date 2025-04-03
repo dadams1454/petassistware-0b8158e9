@@ -1,77 +1,60 @@
 
 import React from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { SocializationProgress } from '@/types/puppyTracking';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface SocializationProgressTrackerProps {
   progressData: SocializationProgress[];
   overallProgress: number;
 }
 
-const SocializationProgressTracker: React.FC<SocializationProgressTrackerProps> = ({ 
+const SocializationProgressTracker: React.FC<SocializationProgressTrackerProps> = ({
   progressData,
   overallProgress
 }) => {
-  // Sort categories by completion percentage (descending)
-  const sortedProgress = [...progressData].sort((a, b) => 
-    (b.completion_percentage || 0) - (a.completion_percentage || 0)
-  );
-  
-  const getProgressBarColor = (percentage: number): string => {
-    if (percentage >= 80) return 'bg-green-500';
-    if (percentage >= 50) return 'bg-amber-500';
-    return 'bg-blue-500';
+  const getCategoryColorClass = (category: string): string => {
+    const colorMap: Record<string, string> = {
+      'people': 'bg-blue-500',
+      'animals': 'bg-green-500',
+      'environments': 'bg-amber-500',
+      'sounds': 'bg-purple-500',
+      'handling': 'bg-pink-500',
+      'surfaces': 'bg-red-500',
+      'objects': 'bg-indigo-500',
+      'travel': 'bg-cyan-500'
+    };
+
+    return colorMap[category] || 'bg-gray-500';
   };
-  
+
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex justify-between items-center">
-          <span>Socialization Progress</span>
-          <span className="text-lg">{overallProgress}%</span>
-        </CardTitle>
-        <CardDescription>
-          Overall socialization progress across all categories
-        </CardDescription>
+      <CardHeader>
+        <CardTitle>Experience Categories</CardTitle>
       </CardHeader>
-      
       <CardContent>
-        <Progress
-          value={overallProgress}
-          className={`h-2 mb-6 ${getProgressBarColor(overallProgress)}`}
-        />
-        
-        <div className="space-y-4">
-          {sortedProgress.map((progress) => (
-            <div key={progress.categoryId} className="space-y-1">
-              <div className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-1.5">
-                  {(progress.completion_percentage || 0) >= 100 ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  ) : (progress.completion_percentage || 0) < 30 ? (
-                    <AlertCircle className="h-4 w-4 text-amber-500" />
-                  ) : null}
-                  <span>{progress.categoryName}</span>
+        {progressData.length === 0 ? (
+          <p className="text-muted-foreground text-center py-4">
+            No category data available yet
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {progressData.map((item) => {
+              const colorClass = getCategoryColorClass(item.category);
+              
+              return (
+                <div key={item.category} className="space-y-1">
+                  <div className="flex justify-between items-center text-sm">
+                    <span>{item.categoryName}</span>
+                    <span className="font-medium">{item.count}/{item.target}</span>
+                  </div>
+                  <Progress value={item.completion_percentage} className={`h-1.5 ${colorClass}`} />
                 </div>
-                <span className="font-medium">
-                  {progress.count}/{progress.target}
-                </span>
-              </div>
-              <Progress
-                value={progress.completion_percentage}
-                className={`h-1.5 ${getProgressBarColor(progress.completion_percentage || 0)}`}
-              />
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
