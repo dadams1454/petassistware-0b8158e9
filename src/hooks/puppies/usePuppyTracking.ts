@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { differenceInDays } from 'date-fns';
 import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats } from '@/types/puppyTracking';
@@ -9,132 +9,120 @@ import { standardizeWeightUnit } from '@/types/common';
 const defaultAgeGroups: PuppyAgeGroupData[] = [
   {
     id: 'newborn',
-    name: 'Newborn',
-    description: 'Eyes closed, focused on nursing and sleeping',
-    startDay: 0,
-    endDay: 14,
-    careChecks: ['temperature', 'weight', 'feeding'],
-    milestones: ['Eyes open around day 10-14', 'Beginning to hear sounds']
+    label: 'Newborn',
+    minAge: 0,
+    maxAge: 14,
+    description: 'Puppies from birth to 2 weeks',
+    color: '#AADEA7' // Light green
   },
   {
     id: 'transitional',
-    name: 'Transitional',
-    description: 'Eyes open, ears opening, beginning to walk',
-    startDay: 15,
-    endDay: 21,
-    careChecks: ['temperature', 'weight', 'feeding'],
-    milestones: ['First steps', 'Beginning to socialize', 'Teeth starting to emerge']
+    label: 'Transitional',
+    minAge: 15,
+    maxAge: 21,
+    description: 'Puppies from 2-3 weeks',
+    color: '#C6E3B9' // Pale green
   },
   {
     id: 'socialization',
-    name: 'Socialization',
-    description: 'Active, exploring, socializing with littermates',
-    startDay: 22,
-    endDay: 49,
-    careChecks: ['weight', 'deworming', 'vaccination'],
-    milestones: ['Start weaning', 'Active play', 'Sensitive period for socialization']
+    label: 'Socialization',
+    minAge: 22,
+    maxAge: 49,
+    description: 'Puppies from 3-7 weeks',
+    color: '#FEE8A0' // Light yellow
   },
   {
-    id: 'juvenile',
-    name: 'Juvenile',
-    description: 'Ready for new homes, basic training beginning',
-    startDay: 50,
-    endDay: 84,
-    careChecks: ['weight', 'vaccination', 'microchip'],
-    milestones: ['Most vaccinations done', 'Ready for adoption', 'Initial training']
+    id: 'early-training',
+    label: 'Early Training',
+    minAge: 50,
+    maxAge: 84,
+    description: 'Puppies from 7-12 weeks',
+    color: '#FDD4B8' // Light orange
   },
   {
     id: 'adolescent',
-    name: 'Adolescent',
-    description: 'Growing quickly, training continues',
-    startDay: 85,
-    endDay: 180,
-    careChecks: ['weight', 'vaccination', 'training'],
-    milestones: ['Adult teeth coming in', 'May test boundaries', 'Growth spurts']
+    label: 'Adolescent',
+    minAge: 85,
+    maxAge: 365,
+    description: 'Puppies from 12 weeks to 1 year',
+    color: '#FFB7B7' // Light red
   }
 ];
 
+/**
+ * Hook for tracking and managing puppies with age calculations
+ * @returns Puppy management stats and data
+ */
 export const usePuppyTracking = (): PuppyManagementStats => {
   const [puppies, setPuppies] = useState<PuppyWithAge[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<any>(null);
-  
-  useEffect(() => {
-    const fetchPuppies = async () => {
-      setIsLoading(true);
-      
-      try {
-        // Fetch all puppies that have a birth date
-        const { data, error } = await supabase
-          .from('puppies')
-          .select(`
-            id, 
-            name, 
-            gender, 
-            color, 
-            birth_date, 
-            litter_id, 
-            microchip_number, 
-            photo_url, 
-            current_weight,
-            weight_unit,
-            status, 
-            birth_order, 
-            birth_weight, 
-            notes, 
-            created_at,
-            litters:litter_id (
-              id,
-              litter_name,
-              birth_date
-            )
-          `)
-          .not('birth_date', 'is', null)
-          .order('birth_date', { ascending: false });
+
+  const fetchPuppies = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('puppies')
+        .select(`
+          *,
+          litters(id, birth_date)
+        `)
+        .order('birth_date', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch weight history for each puppy
+      const puppiesWithAge = data.map(puppy => {
+        // Calculate age based on birth date
+        const birthDate = puppy.birth_date 
+          ? new Date(puppy.birth_date) 
+          : puppy.litters?.birth_date 
+            ? new Date(puppy.litters.birth_date)
+            : new Date();
         
-        if (error) throw error;
+        const currentDate = new Date();
+        const ageInDays = differenceInDays(currentDate, birthDate);
         
-        // Calculate age for each puppy
-        const puppiesWithAge = data.map((puppy: any) => {
-          const birthDate = puppy.birth_date ? new Date(puppy.birth_date) : null;
-          const ageInDays = birthDate ? differenceInDays(new Date(), birthDate) : 0;
-          
-          return {
-            ...puppy,
-            age_days: ageInDays, // Primary age field
-            age_in_weeks: Math.floor(ageInDays / 7),
-            // For backward compatibility
-            ageInDays: ageInDays,
-            age_weeks: Math.floor(ageInDays / 7),
-            // Standardize weight unit if present
-            weight_unit: puppy.weight_unit ? standardizeWeightUnit(puppy.weight_unit) : 'lb'
-          } as PuppyWithAge;
-        });
+        return {
+          ...puppy,
+          // Standard age fields
+          age_days: ageInDays,
+          age_in_weeks: Math.floor(ageInDays / 7),
+          // For backward compatibility
+          ageInDays: ageInDays,
+          age_weeks: Math.floor(ageInDays / 7),
+          // Standardize weight unit if present
+          weight_unit: puppy.weight_unit ? standardizeWeightUnit(puppy.weight_unit) : 'lb'
+        } as PuppyWithAge;
+      });
         
-        setPuppies(puppiesWithAge);
-      } catch (error) {
-        console.error('Error fetching puppies:', error);
-        setError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchPuppies();
+      setPuppies(puppiesWithAge);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching puppies:', err);
+      setError(err);
+      setLoading(false);
+    }
   }, []);
-  
-  // Organize puppies by age group
+
+  // Fetch puppies on component mount
+  useEffect(() => {
+    fetchPuppies();
+  }, [fetchPuppies]);
+
+  // Group puppies by age
+  const ageGroups = defaultAgeGroups;
   const puppiesByAgeGroup: Record<string, PuppyWithAge[]> = {};
   
-  // Initialize all age groups
-  defaultAgeGroups.forEach(group => {
+  // Initialize age groups
+  ageGroups.forEach(group => {
     puppiesByAgeGroup[group.id] = [];
   });
   
   // Sort puppies into age groups
   puppies.forEach(puppy => {
-    const ageGroup = defaultAgeGroups.find(group => 
-      puppy.age_days >= group.startDay && puppy.age_days <= group.endDay
+    const ageGroup = ageGroups.find(
+      group => puppy.age_days >= group.minAge && puppy.age_days <= group.maxAge
     );
     
     if (ageGroup) {
@@ -142,53 +130,73 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     }
   });
   
-  // Count puppies by status
-  const availablePuppies = puppies.filter(p => p.status === 'Available').length;
-  const reservedPuppies = puppies.filter(p => p.status === 'Reserved').length;
-  const soldPuppies = puppies.filter(p => p.status === 'Sold').length;
-  
-  // Count puppies by gender
-  const maleCount = puppies.filter(p => p.gender?.toLowerCase() === 'male').length;
-  const femaleCount = puppies.filter(p => p.gender?.toLowerCase() === 'female').length;
-  const unknownGenderCount = puppies.filter(p => !p.gender).length;
-  
-  // Count puppies by age group
-  const byAgeGroup = defaultAgeGroups.reduce((acc, group) => {
-    acc[group.id] = (puppiesByAgeGroup[group.id] || []).length;
-    return acc;
-  }, {} as Record<string, number>);
+  // Calculate statistics
+  const totalPuppies = puppies.length;
   
   // Count by status
-  const byStatus = puppies.reduce((acc, puppy) => {
+  const byStatus: Record<string, number> = {};
+  
+  // Count by gender
+  const byGender = {
+    male: 0,
+    female: 0,
+    unknown: 0
+  };
+  
+  // Count by age group
+  const byAgeGroup: Record<string, number> = {};
+  ageGroups.forEach(group => {
+    byAgeGroup[group.id] = puppiesByAgeGroup[group.id].length;
+  });
+  
+  // Process puppies for stats
+  puppies.forEach(puppy => {
+    // Status counts
     const status = puppy.status || 'Unknown';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+    byStatus[status] = (byStatus[status] || 0) + 1;
+    
+    // Gender counts
+    if (puppy.gender === 'Male') {
+      byGender.male++;
+    } else if (puppy.gender === 'Female') {
+      byGender.female++;
+    } else {
+      byGender.unknown++;
+    }
+  });
+  
+  // Calculate available and reserved counts
+  const availablePuppies = byStatus['Available'] || 0;
+  const reservedPuppies = byStatus['Reserved'] || 0;
+  const soldPuppies = byStatus['Sold'] || 0;
   
   return {
     puppies,
+    ageGroups,
     puppiesByAgeGroup,
-    ageGroups: defaultAgeGroups,
-    totalPuppies: puppies.length,
+    totalPuppies,
     availablePuppies,
     reservedPuppies,
     soldPuppies,
-    isLoading,
+    isLoading: loading,
     error,
-    // Additional stats for dashboard
+    stats: {
+      totalPuppies,
+      availablePuppies,
+      reservedPuppies,
+      soldPuppies,
+      byGender,
+      byStatus,
+      byAgeGroup
+    },
+    // Required fields for PuppyManagementStats
     total: {
-      count: puppies.length,
-      male: maleCount,
-      female: femaleCount
+      count: totalPuppies,
+      male: byGender.male || 0,
+      female: byGender.female || 0
     },
-    byGender: {
-      male: maleCount,
-      female: femaleCount,
-      unknown: unknownGenderCount
-    },
+    byGender,
     byStatus,
-    byAgeGroup,
-    // Required by types but not actively used
-    stats: {}
+    byAgeGroup
   };
 };

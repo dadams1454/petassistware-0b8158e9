@@ -1,99 +1,64 @@
 
 /**
- * Utility functions for UUID validation and generation
+ * Generates a new UUID v4
+ * @returns A valid UUID v4 string
  */
-import { v4 as uuidv4 } from 'uuid';
-
-// Improved RegEx for validating properly formatted UUIDs that strictly follows RFC4122
-export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-/**
- * Basic validation - returns boolean
- * @param uuid UUID string to validate
- * @returns boolean indicating if the UUID is valid
- */
-export const isValidUUID = (uuid: string | null | undefined): boolean => {
-  if (!uuid) return false;
-  return UUID_REGEX.test(uuid);
-};
+export function generateUUID(): string {
+  // Implementation of RFC4122 version 4 compliant UUID generator
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 /**
- * More detailed validation with error messages
- * @param input UUID string to validate
- * @returns Object with validation result and error message if any
+ * Validates if a string is a properly formatted UUID
+ * @param uuid String to validate
+ * @returns Boolean indicating if the string is a valid UUID
  */
-export const validateUUID = (input: string | null | undefined) => {
-  if (!input) {
-    return { valid: false, error: "UUID cannot be empty" };
-  }
-  
-  // First check: Does it look like a UUID?
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input)) {
-    return { valid: false, error: "Invalid UUID format" };
-  }
-  
-  // Second check: Is it a valid v4 UUID?
-  const parts = input.split('-');
-  const variant = parseInt(parts[3].charAt(0), 16);
-  const version = parseInt(parts[2].charAt(0), 16);
-  
-  if (version !== 4) {
-    return { valid: false, error: "UUID must be version 4" };
-  }
-  
-  if (variant < 8 || variant > 11) { // 8, 9, a, b
-    return { valid: false, error: "UUID has invalid variant" };
-  }
-  
-  return { valid: true, error: null };
-};
+export function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
 
 /**
- * Attempt to repair common UUID format issues
- * @param malformedUUID Potentially malformed UUID string
- * @returns Repaired UUID string or null if repair failed
+ * Creates a UUID from components
+ * Primarily used for deterministic UUID generation when needed
  */
-export const attemptUUIDRepair = (malformedUUID?: string | null): string | null => {
-  if (!malformedUUID) return null;
-  
-  // Handle common mistakes
-  let repaired = malformedUUID.trim();
-  
-  // Remove any hidden characters or invisible spaces
-  repaired = repaired.replace(/\s+/g, '');
-  
-  // Add missing hyphens if length is right
-  if (/^[0-9a-f]{32}$/i.test(repaired)) {
-    repaired = repaired.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5");
-  }
-  
-  // Remove any extra characters that might have been copied
-  repaired = repaired.replace(/[^0-9a-f-]/gi, '');
-  
-  // Check if repair was successful
-  return isValidUUID(repaired) ? repaired : null;
-};
+export function uuidFromComponents(
+  timeLow: string,
+  timeMid: string, 
+  timeHiAndVersion: string,
+  clockSeqHiAndReserved: string, 
+  clockSeqLow: string, 
+  node: string
+): string {
+  return `${timeLow}-${timeMid}-${timeHiAndVersion}-${clockSeqHiAndReserved}${clockSeqLow}-${node}`;
+}
 
 /**
- * Generate a new valid UUID
- * @returns A RFC4122 compliant UUID string
+ * Tries to parse a string into a UUID, cleaning it if possible
+ * @param input Potential UUID string 
+ * @returns Valid UUID or null if cannot be converted
  */
-export const generateUUID = (): string => {
-  return uuidv4();
-};
-
-/**
- * Safely handle a UUID for database operations
- * @param uuid UUID to sanitize
- * @returns Valid UUID or null
- */
-export const sanitizeUUID = (uuid: string | null | undefined): string | null => {
-  if (!uuid) return null;
+export function parseUUID(input: string): string | null {
+  if (!input) return null;
   
-  // First try direct validation
-  if (isValidUUID(uuid)) return uuid;
+  // If it's already a valid UUID, return it
+  if (isValidUUID(input)) return input;
   
-  // If not valid, try to repair it
-  const repaired = attemptUUIDRepair(uuid);
-  return repaired;
-};
+  // Try removing any non-hex characters and add dashes in the right places
+  const cleanedInput = input.replace(/[^0-9a-f]/gi, '');
+  
+  // If we don't have enough characters after cleaning, it's not a UUID
+  if (cleanedInput.length !== 32) return null;
+  
+  // Format into UUID pattern
+  const formatted = `${cleanedInput.substring(0, 8)}-${cleanedInput.substring(8, 12)}-${cleanedInput.substring(12, 16)}-${cleanedInput.substring(16, 20)}-${cleanedInput.substring(20, 32)}`;
+  
+  // Verify it's valid
+  if (isValidUUID(formatted)) return formatted;
+  
+  return null;
+}

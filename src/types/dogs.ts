@@ -19,13 +19,25 @@ export interface Dog {
   dam_id?: string;
   sire_id?: string;
   owner_name?: string;
-  // Add reproductive properties
+  // Reproductive properties
   is_pregnant?: boolean;
   last_heat_date?: string;
   tie_date?: string;
-  // Add weight fields
+  // Weight fields
   weight?: number;
   weight_unit?: WeightUnit;
+  // Additional fields for extended dog profiles
+  birthdate?: string; // For compatibility with API
+  photo_url?: string;
+  pedigree?: boolean;
+  requires_special_handling?: boolean;
+  potty_alert_threshold?: number;
+  max_time_between_breaks?: number;
+  litter_number?: number;
+  vaccination_type?: string;
+  vaccination_notes?: string;
+  last_vaccination_date?: string;
+  tenant_id?: string;
 }
 
 export enum DogGender {
