@@ -2822,6 +2822,141 @@ export type Database = {
           },
         ]
       }
+      puppy_health_certificates: {
+        Row: {
+          certificate_type: string
+          created_at: string
+          expiry_date: string | null
+          file_url: string | null
+          id: string
+          issue_date: string
+          issuer: string
+          notes: string | null
+          puppy_id: string
+        }
+        Insert: {
+          certificate_type: string
+          created_at?: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          issue_date: string
+          issuer: string
+          notes?: string | null
+          puppy_id: string
+        }
+        Update: {
+          certificate_type?: string
+          created_at?: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          issue_date?: string
+          issuer?: string
+          notes?: string | null
+          puppy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "puppy_health_certificates_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      puppy_medication_administrations: {
+        Row: {
+          administered_at: string
+          administered_by: string
+          created_at: string
+          id: string
+          medication_id: string
+          notes: string | null
+        }
+        Insert: {
+          administered_at: string
+          administered_by: string
+          created_at?: string
+          id?: string
+          medication_id: string
+          notes?: string | null
+        }
+        Update: {
+          administered_at?: string
+          administered_by?: string
+          created_at?: string
+          id?: string
+          medication_id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "puppy_medication_administrations_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "puppy_medications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      puppy_medications: {
+        Row: {
+          administration_route: string
+          created_at: string
+          dosage: number
+          dosage_unit: string
+          end_date: string | null
+          frequency: string
+          id: string
+          is_active: boolean
+          last_administered: string | null
+          medication_name: string
+          notes: string | null
+          puppy_id: string
+          start_date: string
+        }
+        Insert: {
+          administration_route: string
+          created_at?: string
+          dosage: number
+          dosage_unit: string
+          end_date?: string | null
+          frequency: string
+          id?: string
+          is_active?: boolean
+          last_administered?: string | null
+          medication_name: string
+          notes?: string | null
+          puppy_id: string
+          start_date: string
+        }
+        Update: {
+          administration_route?: string
+          created_at?: string
+          dosage?: number
+          dosage_unit?: string
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_administered?: string | null
+          medication_name?: string
+          notes?: string | null
+          puppy_id?: string
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "puppy_medications_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       puppy_milestones: {
         Row: {
           created_at: string

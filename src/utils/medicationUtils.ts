@@ -1,138 +1,104 @@
 
-import { format, addDays, addMonths, addYears } from 'date-fns';
+import { format, addDays, addMonths, isAfter, isBefore, isToday } from 'date-fns';
 
 export enum MedicationFrequency {
   DAILY = 'daily',
+  TWICE_DAILY = 'twice-daily',
   WEEKLY = 'weekly',
+  BIWEEKLY = 'biweekly',
   MONTHLY = 'monthly',
   QUARTERLY = 'quarterly',
   ANNUAL = 'annual',
-  CUSTOM = 'custom'
+  AS_NEEDED = 'as-needed'
 }
 
-export type MedicationStatus = 'current' | 'due_soon' | 'overdue' | 'incomplete';
-
-// Generate daily time slots
-export const getDailyTimeSlots = (): string[] => {
-  return [
-    '6:00 AM', '8:00 AM', '10:00 AM', '12:00 PM', 
-    '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM', '10:00 PM'
-  ];
-};
-
-// Generate weekly time slots
-export const getWeeklyTimeSlots = (): string[] => {
-  return [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-  ];
-};
-
-// Generate monthly time slots
-export const getMonthlyTimeSlots = (): string[] => {
-  return [
-    '1st of month', '5th of month', '10th of month', '15th of month', 
-    '20th of month', '25th of month', 'Last day of month'
-  ];
-};
-
-// Generate quarterly time slots
-export const getQuarterlyTimeSlots = (): string[] => {
-  return ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'];
-};
-
-// Generate annual time slots
-export const getAnnualTimeSlots = (): string[] => {
-  return [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-};
-
-// Get appropriate time slots based on frequency
-export const getTimeSlotsForFrequency = (frequency: MedicationFrequency): string[] => {
-  switch (frequency) {
-    case MedicationFrequency.DAILY:
-      return getDailyTimeSlots();
-    case MedicationFrequency.WEEKLY:
-      return getWeeklyTimeSlots();
-    case MedicationFrequency.MONTHLY:
-      return getMonthlyTimeSlots();
-    case MedicationFrequency.QUARTERLY:
-      return getQuarterlyTimeSlots();
-    case MedicationFrequency.ANNUAL:
-      return getAnnualTimeSlots();
-    default:
-      return getDailyTimeSlots();
-  }
-};
-
-// Calculate next due date based on frequency and last administered date
-export const calculateNextDueDate = (lastDate: Date, frequency: MedicationFrequency): Date => {
+export const getNextDueDate = (lastAdministeredDate: string, frequency: string): Date => {
+  const lastDate = new Date(lastAdministeredDate);
+  
   switch (frequency) {
     case MedicationFrequency.DAILY:
       return addDays(lastDate, 1);
+    case MedicationFrequency.TWICE_DAILY:
+      // 12 hours later, but we'll simplify to half a day
+      return new Date(lastDate.getTime() + 12 * 60 * 60 * 1000);
     case MedicationFrequency.WEEKLY:
       return addDays(lastDate, 7);
+    case MedicationFrequency.BIWEEKLY:
+      return addDays(lastDate, 14);
     case MedicationFrequency.MONTHLY:
       return addMonths(lastDate, 1);
     case MedicationFrequency.QUARTERLY:
       return addMonths(lastDate, 3);
     case MedicationFrequency.ANNUAL:
-      return addYears(lastDate, 1);
-    case MedicationFrequency.CUSTOM:
-      // For custom frequencies, you'd need additional logic
-      return lastDate;
+      return addMonths(lastDate, 12);
+    case MedicationFrequency.AS_NEEDED:
     default:
-      return lastDate;
+      // For as-needed, we don't really have a next due date
+      return new Date(lastDate.getTime() + 365 * 24 * 60 * 60 * 1000); // Far in the future
   }
 };
 
-// Check if medication is due based on frequency and last administered date
-export const isMedicationDue = (lastDate: string | null, frequency: MedicationFrequency): boolean => {
-  if (!lastDate) return true; // If never administered, it's due
+export const getMedicationStatus = (
+  lastAdministeredDate: string | null, 
+  frequency: string
+): { status: 'due' | 'overdue' | 'upcoming' | 'completed' | 'active' | 'incomplete', statusColor: string } => {
   
-  const today = new Date();
-  const nextDueDate = calculateNextDueDate(new Date(lastDate), frequency);
+  if (!lastAdministeredDate) {
+    return {
+      status: 'incomplete',
+      statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+    };
+  }
   
-  return today >= nextDueDate;
+  const now = new Date();
+  const nextDueDate = getNextDueDate(lastAdministeredDate, frequency);
+  
+  // Due today
+  if (isToday(nextDueDate)) {
+    return {
+      status: 'due',
+      statusColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+    };
+  }
+  
+  // Overdue
+  if (isBefore(nextDueDate, now)) {
+    return {
+      status: 'overdue',
+      statusColor: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+    };
+  }
+  
+  // Upcoming (due within the next 3 days)
+  const threeDaysFromNow = addDays(now, 3);
+  if (isBefore(nextDueDate, threeDaysFromNow)) {
+    return {
+      status: 'upcoming',
+      statusColor: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+    };
+  }
+  
+  // Active and on schedule
+  return {
+    status: 'active',
+    statusColor: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+  };
 };
 
-// Get medication status with detailed information
-export const getMedicationStatus = (lastDate: string | null, frequency: MedicationFrequency) => {
-  if (!lastDate) {
-    return {
-      status: 'incomplete' as MedicationStatus,
-      statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300',
-      lastAdministered: 'Never',
-      nextDue: 'Now'
-    };
+export const formatDosage = (dosage: number, unit: string): string => {
+  return `${dosage} ${unit}`;
+};
+
+export const calculateWeightBasedDosage = (
+  baselineDosage: number,
+  baselineWeight: number,
+  currentWeight: number,
+  unit: string
+): string => {
+  if (!baselineDosage || !baselineWeight || !currentWeight) {
+    return "N/A";
   }
   
-  const today = new Date();
-  const nextDueDate = calculateNextDueDate(new Date(lastDate), frequency);
-  const lastAdministered = format(new Date(lastDate), 'MMM d, yyyy');
-  const nextDue = format(nextDueDate, 'MMM d, yyyy');
-  
-  if (today > nextDueDate) {
-    return {
-      status: 'overdue' as MedicationStatus,
-      statusColor: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-      lastAdministered,
-      nextDue
-    };
-  } else if (today.getTime() + (7 * 24 * 60 * 60 * 1000) >= nextDueDate.getTime()) {
-    return {
-      status: 'due_soon' as MedicationStatus,
-      statusColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-      lastAdministered,
-      nextDue
-    };
-  } else {
-    return {
-      status: 'current' as MedicationStatus,
-      statusColor: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      lastAdministered,
-      nextDue
-    };
-  }
+  const calculatedDosage = (baselineDosage / baselineWeight) * currentWeight;
+  return `${calculatedDosage.toFixed(2)} ${unit}`;
 };

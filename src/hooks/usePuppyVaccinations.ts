@@ -1,109 +1,148 @@
-import { useState, useEffect } from 'react';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { PuppyVaccinationSchedule } from '@/types/puppyTracking';
+import { useToast } from '@/hooks/use-toast';
 
-export function usePuppyVaccinationSchedule(puppyId: string) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [schedule, setSchedule] = useState<PuppyVaccinationSchedule[]>([]);
+export interface VaccinationSchedule {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  scheduled_date: string;
+  administered: boolean;
+  administered_date?: string;
+  notes?: string;
+  created_at: string;
+}
 
-  useEffect(() => {
-    fetchVaccinationSchedule();
-  }, [puppyId]);
-
-  const fetchVaccinationSchedule = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
+export const usePuppyVaccinationSchedule = (puppyId: string) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Fetch vaccination schedule
+  const { 
+    data = [], 
+    isLoading, 
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['vaccination-schedule', puppyId],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('puppy_vaccination_schedule')
         .select('*')
         .eq('puppy_id', puppyId)
-        .order('scheduled_date');
-
+        .order('scheduled_date', { ascending: true });
+      
       if (error) throw error;
-
-      setSchedule(data || []);
-    } catch (err) {
-      console.error('Error fetching vaccination schedule:', err);
-      setError(err as Error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const addVaccinationScheduleItem = async (
-    newItem: Omit<PuppyVaccinationSchedule, 'id' | 'created_at' | 'updated_at'>
-  ) => {
-    try {
-      const { error } = await supabase
+      return data as VaccinationSchedule[];
+    },
+    enabled: !!puppyId
+  });
+  
+  // Add vaccination schedule
+  const addVaccinationSchedule = useMutation({
+    mutationFn: async (scheduleData: Omit<VaccinationSchedule, 'id' | 'created_at'>) => {
+      const { data, error } = await supabase
         .from('puppy_vaccination_schedule')
-        .insert([newItem]);
-
+        .insert({
+          puppy_id: puppyId,
+          vaccination_type: scheduleData.vaccination_type,
+          scheduled_date: scheduleData.scheduled_date,
+          administered: scheduleData.administered,
+          administered_date: scheduleData.administered_date,
+          notes: scheduleData.notes
+        })
+        .select();
+        
       if (error) throw error;
-
-      // Refresh schedule after adding
-      fetchVaccinationSchedule();
-      return { success: true };
-    } catch (err) {
-      console.error('Error adding vaccination schedule item:', err);
-      return { success: false, error: err };
+      return data[0] as VaccinationSchedule;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Vaccination Scheduled",
+        description: "Vaccination has been scheduled successfully"
+      });
+      queryClient.invalidateQueries({ queryKey: ['vaccination-schedule', puppyId] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to schedule vaccination: ${(error as Error).message}`,
+        variant: "destructive"
+      });
     }
-  };
-
-  const updateVaccinationSchedule = async (
-    scheduleId: string,
-    updates: Partial<PuppyVaccinationSchedule>
-  ) => {
-    try {
-      // Make sure notes is defined for compatibility
-      const updatesWithNotes = {
-        ...updates,
-        notes: updates.notes || ''
-      };
-
-      const { error } = await supabase
+  });
+  
+  // Update vaccination schedule
+  const updateVaccinationSchedule = useMutation({
+    mutationFn: async (id: string, updates: Partial<VaccinationSchedule>) => {
+      const { data, error } = await supabase
         .from('puppy_vaccination_schedule')
-        .update(updatesWithNotes)
-        .eq('id', scheduleId);
-
+        .update(updates)
+        .eq('id', id)
+        .select();
+        
       if (error) throw error;
-
-      // Refresh schedule after update
-      fetchVaccinationSchedule();
-      return { success: true };
-    } catch (err) {
-      console.error('Error updating vaccination schedule:', err);
-      return { success: false, error: err };
+      return data[0] as VaccinationSchedule;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Vaccination Updated",
+        description: "Vaccination schedule has been updated successfully"
+      });
+      queryClient.invalidateQueries({ queryKey: ['vaccination-schedule', puppyId] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update vaccination: ${(error as Error).message}`,
+        variant: "destructive"
+      });
     }
-  };
-
-  const deleteVaccinationScheduleItem = async (scheduleId: string) => {
-    try {
+  });
+  
+  // Delete vaccination schedule
+  const deleteVaccinationSchedule = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('puppy_vaccination_schedule')
         .delete()
-        .eq('id', scheduleId);
-
+        .eq('id', id);
+        
       if (error) throw error;
-
-      // Refresh schedule after deletion
-      fetchVaccinationSchedule();
-      return { success: true };
-    } catch (err) {
-      console.error('Error deleting vaccination schedule item:', err);
-      return { success: false, error: err };
+      return id;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Vaccination Deleted",
+        description: "Vaccination schedule has been deleted successfully"
+      });
+      queryClient.invalidateQueries({ queryKey: ['vaccination-schedule', puppyId] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete vaccination: ${(error as Error).message}`,
+        variant: "destructive"
+      });
     }
+  });
+  
+  // Helper to construct the actual update call in TypeScript-friendly way
+  const updateVaccinationScheduleHelper = async (id: string, updates: Partial<VaccinationSchedule>) => {
+    return updateVaccinationSchedule.mutateAsync(id, updates);
   };
-
+  
   return {
-    schedule,
+    schedule: data,
     isLoading,
     error,
-    fetchVaccinationSchedule,
-    addVaccinationScheduleItem,
-    updateVaccinationSchedule,
-    deleteVaccinationScheduleItem
+    refetch,
+    addVaccinationSchedule: addVaccinationSchedule.mutateAsync,
+    updateVaccinationSchedule: updateVaccinationScheduleHelper,
+    deleteVaccinationSchedule: deleteVaccinationSchedule.mutateAsync,
+    isAdding: addVaccinationSchedule.isPending,
+    isUpdating: updateVaccinationSchedule.isPending,
+    isDeleting: deleteVaccinationSchedule.isPending
   };
-}
+};
