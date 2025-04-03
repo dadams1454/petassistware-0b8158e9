@@ -104,3 +104,26 @@ export interface TestResult {
   result: string;
   date: string;
 }
+
+// Genetic Pairing Types
+export interface GeneticPairingResult {
+  sireGenotype: DogGenotype | null;
+  damGenotype: DogGenotype | null;
+  colorProbabilities: ColorProbability[];
+  healthRisks: Record<string, { status: string; probability: number }>;
+  inbreedingCoefficient: number;
+  compatibilityScore: number;
+  healthSummary: HealthSummary;
+  recommendations: string[];
+}
+
+export interface BreedingPlan {
+  id: string;
+  sireId: string;
+  damId: string;
+  plannedDate?: string;
+  notes?: string;
+  status: 'planned' | 'in-progress' | 'completed' | 'cancelled';
+  compatibilityScore?: number;
+  created_at: string;
+}

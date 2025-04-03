@@ -17,9 +17,10 @@ interface DogSelectorProps {
   name: string;
   label: string;
   filterGender?: 'Male' | 'Female';
+  onChange?: (dogId: string) => void;
 }
 
-const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGender }) => {
+const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGender, onChange }) => {
   const { data: dogs, isLoading } = useQuery({
     queryKey: ['dogs', filterGender],
     queryFn: async () => {
@@ -52,22 +53,26 @@ const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGend
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          {label && <FormLabel>{label}</FormLabel>}
           <Select 
-            onValueChange={field.onChange} 
+            onValueChange={(value) => {
+              field.onChange(value);
+              onChange && onChange(value);
+            }} 
             value={field.value || "none"}
             disabled={isLoading}
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder={`Select ${label}`} />
+                <SelectValue placeholder={`Select ${label || 'Dog'}`} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
               <SelectItem value="none">None Selected</SelectItem>
               {dogs?.map(dog => (
                 <SelectItem key={dog.id} value={dog.id}>
-                  {dog.name} ({dog.breed})
+                  {dog.name} ({dog.breed || 'Unknown'})
+                  {dog.gender ? ` • ${dog.gender}` : ''}
                 </SelectItem>
               ))}
             </SelectContent>

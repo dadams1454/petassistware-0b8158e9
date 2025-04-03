@@ -11,6 +11,7 @@ import ViewWelpingPage from './pages/ViewWelpingPage';
 import LitterDetailsPage from './pages/LitterDetailsPage';
 import NewLitterPage from './pages/NewLitterPage';
 import WhelpingLiveSession from './components/welping/WhelpingLiveSession';
+import GeneticPairingAnalysisPage from '@/pages/GeneticPairingAnalysisPage';
 
 // Create legacy route redirects to maintain backward compatibility
 const LegacyRedirects = () => (
@@ -31,6 +32,7 @@ const ReproductionRoutes = () => {
       <Route path="/" element={<ReproductionManagementPage />}>
         <Route path="dashboard" element={<ReproductiveDashboard />} />
         <Route path="breeding" element={<BreedingDashboard />} />
+        <Route path="breeding/pairing-analysis" element={<GeneticPairingAnalysisPage />} />
         <Route path="welping" element={<WelpingManagementPage />} />
         <Route path="welping/new" element={<NewWelpingPage />} />
         <Route path="welping/:welpingId" element={<ViewWelpingPage />} />
