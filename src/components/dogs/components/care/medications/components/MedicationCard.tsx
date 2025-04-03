@@ -39,12 +39,12 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   
   // Get status for display
   const heartwormStatus = heartwormMed 
-    ? getMedicationStatus(heartwormMed.startDate, heartwormMed.endDate, heartwormMed.lastAdministered, heartwormMed.frequency)
-    : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+    ? getMedicationStatus(heartwormMed)
+    : { status: 'incomplete', statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', statusLabel: 'Not Started' };
     
   const fleaTickStatus = fleaTickMed
-    ? getMedicationStatus(fleaTickMed.startDate, fleaTickMed.endDate, fleaTickMed.lastAdministered, fleaTickMed.frequency)
-    : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+    ? getMedicationStatus(fleaTickMed)
+    : { status: 'incomplete', statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', statusLabel: 'Not Started' };
   
   // Check if any other medications are ongoing
   const hasOtherMeds = otherMeds.length > 0;

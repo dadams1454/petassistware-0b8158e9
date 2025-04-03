@@ -4,6 +4,9 @@ import { MedicationStatus, MedicationStatusResult } from '@/types/health';
 // Define MedicationFrequency type for export
 export type MedicationFrequency = 'daily' | 'twice_daily' | 'weekly' | 'biweekly' | 'monthly' | 'as_needed';
 
+// Export these types so they're available to components
+export { MedicationStatus, MedicationStatusResult };
+
 /**
  * Get medication status based on start/end dates and frequency
  */

@@ -34,12 +34,17 @@ export interface HeatStage {
   index: number;
 }
 
-// Reproductive status enum
+// Reproductive status enum - expanded to include all needed statuses
 export enum ReproductiveStatus {
   PreHeat = 'pre-heat',
   InHeat = 'in-heat',
   Pregnant = 'pregnant',
-  Inactive = 'inactive'
+  Inactive = 'inactive',
+  Nursing = 'nursing',
+  Recovery = 'recovery',
+  Whelping = 'whelping',
+  Altered = 'altered',
+  NotInHeat = 'not-in-heat'
 }
 
 // Breeding record
@@ -53,6 +58,12 @@ export interface BreedingRecord {
   notes?: string;
   created_at: string;
   created_by?: string;
+  // Additional properties that are used in the codebase
+  tie_date?: string;
+  breeding_method?: string;
+  is_successful?: boolean;
+  estimated_due_date?: string;
+  heat_cycle_id?: string;
 }
 
 // Pregnancy record
@@ -66,6 +77,12 @@ export interface PregnancyRecord {
   notes?: string;
   created_at: string;
   created_by?: string;
+  // Additional fields used in the codebase
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 // Reproductive milestone
@@ -101,6 +118,10 @@ export interface ReproductiveCycleData {
   pregnancyRecord?: PregnancyRecord;
   gestationDays: number;
   dueDate?: string;
+  // Additional properties used in the codebase
+  currentHeatCycle?: HeatCycle;
+  fertilityWindow?: { start: string; end: string };
+  estimatedDueDate?: string;
 }
 
 // Breeding checklist item
@@ -111,6 +132,8 @@ export interface BreedingChecklistItem {
   isCompleted: boolean;
   dueBeforeBreeding: boolean;
   category: string;
+  // Additional property used in the codebase
+  task?: string;
 }
 
 // Breeding preparation form data
@@ -123,6 +146,11 @@ export interface BreedingPrepFormData {
   genetic_tests_reviewed: boolean;
   method: string;
   notes: string;
+  // Legacy property names used in code
+  damId?: string;
+  sireId?: string;
+  plannedDate?: string;
+  plannedTieDate?: string;
 }
 
 // Normalize breeding record function

@@ -1,21 +1,19 @@
 
-// Common type definitions used across the application
+// Weight unit type definitions
+export type WeightUnit = 'kg' | 'g' | 'lb' | 'oz';
 
-// Weight units supported by the application
-export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
-
-// Include legacy weight unit type for backward compatibility
+// Legacy type for backwards compatibility
 export type WeightUnitWithLegacy = WeightUnit | 'lbs';
 
-// Standard weight unit options for select inputs
-export const weightUnits = [
+// Array of available weight units
+export const weightUnits: { code: WeightUnit; name: string }[] = [
   { code: 'lb', name: 'Pounds' },
   { code: 'kg', name: 'Kilograms' },
   { code: 'g', name: 'Grams' },
   { code: 'oz', name: 'Ounces' }
 ];
 
-// Helper to standardize weight unit
+// Helper function to standardize weight unit
 export function standardizeWeightUnit(unit: string): WeightUnit {
   switch (unit.toLowerCase()) {
     case 'kg':

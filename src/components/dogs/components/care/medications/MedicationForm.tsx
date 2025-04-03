@@ -1,20 +1,22 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Switch } from '@/components/ui/switch';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { MedicationFormProps } from './types/medicationTypes';
-import { MedicationFrequency } from '@/utils/medicationUtils';
-
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Form,
   FormControl,
@@ -24,32 +26,37 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { 
+  MedicationFrequency,
+} from '@/utils/medicationUtils';
+import { useAuth } from '@/contexts/AuthProvider';
+import { 
+  MedicationFrequencyOptions, 
+  AdministrationRouteOptions, 
+  DosageUnitOptions, 
+  DurationUnitOptions 
+} from './constants';
 
 const formSchema = z.object({
-  medicationName: z.string().min(1, { message: "Medication name is required" }),
-  dosage: z.string().min(1, { message: "Dosage is required" }),
-  dosageUnit: z.string().min(1, { message: "Dosage unit is required" }),
-  frequency: z.string().min(1, { message: "Frequency is required" }),
-  startDate: z.date({ required_error: "Start date is required" }),
-  endDate: z.date().optional().nullable(),
-  administrationRoute: z.string().min(1, { message: "Administration route is required" }),
+  name: z.string().min(1, { message: 'Medication name is required' }),
+  dosage: z.string().optional(),
+  dosage_unit: z.string().optional(),
+  frequency: z.string().min(1, { message: 'Frequency is required' }),
+  administration_route: z.string().optional(),
+  start_date: z.string().min(1, { message: 'Start date is required' }),
+  end_date: z.string().optional(),
+  duration: z.string().optional(),
+  duration_unit: z.string().optional(),
   preventative: z.boolean().default(false),
   notes: z.string().optional(),
 });
 
-export type FormData = z.infer<typeof formSchema>;
+interface MedicationFormProps {
+  dogId: string;
+  onSuccess: () => void;
+  onCancel: () => void;
+  initialData?: any;
+}
 
 const MedicationForm: React.FC<MedicationFormProps> = ({ 
   dogId, 
@@ -57,122 +64,90 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
   onCancel,
   initialData 
 }) => {
-  const { toast } = useToast();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const form = useForm<FormData>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData ? {
-      medicationName: initialData.medication_name,
-      dosage: initialData.dosage?.toString() || '',
-      dosageUnit: initialData.dosage_unit || 'mg',
-      frequency: initialData.frequency || 'daily',
-      startDate: initialData.start_date ? new Date(initialData.start_date) : new Date(),
-      endDate: initialData.end_date ? new Date(initialData.end_date) : null,
-      administrationRoute: initialData.administration_route || 'oral',
-      preventative: initialData.preventative || false,
-      notes: initialData.notes || ''
-    } : {
-      medicationName: '',
-      dosage: '',
-      dosageUnit: 'mg',
-      frequency: 'daily',
-      startDate: new Date(),
-      endDate: null,
-      administrationRoute: 'oral',
-      preventative: false,
-      notes: ''
+    defaultValues: {
+      name: initialData?.name || '',
+      dosage: initialData?.dosage?.toString() || '',
+      dosage_unit: initialData?.dosage_unit || '',
+      frequency: initialData?.frequency || 'daily',
+      administration_route: initialData?.administration_route || '',
+      start_date: initialData?.start_date ? format(new Date(initialData.start_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+      end_date: initialData?.end_date ? format(new Date(initialData.end_date), 'yyyy-MM-dd') : '',
+      duration: initialData?.duration?.toString() || '',
+      duration_unit: initialData?.duration_unit || 'days',
+      preventative: initialData?.preventative || false,
+      notes: initialData?.notes || '',
     }
   });
-  
-  const handleSubmit = async (data: FormData) => {
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to add medications.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      // Prepare metadata for the medication
-      const medicationMetadata = {
-        preventative: data.preventative,
-        frequency: data.frequency,
-        start_date: data.startDate.toISOString(),
-        end_date: data.endDate ? data.endDate.toISOString() : null,
-        dosage: parseFloat(data.dosage),
-        dosage_unit: data.dosageUnit
-      };
-      
-      // Log the medication in the daily care logs
+      // Log the medication to the daily care logs
       const { error } = await supabase
         .from('daily_care_logs')
         .insert({
           dog_id: dogId,
+          created_by: user.id,
           category: 'medications',
-          task_name: data.medicationName,
-          notes: data.notes,
+          task_name: values.name,
+          notes: values.notes,
           timestamp: new Date().toISOString(),
-          medication_metadata: medicationMetadata
+          medication_metadata: {
+            preventative: values.preventative,
+            frequency: values.frequency,
+            start_date: values.start_date,
+            end_date: values.end_date || null,
+            dosage: parseFloat(values.dosage || '0'),
+            dosage_unit: values.dosage_unit,
+          }
         });
       
       if (error) throw error;
       
       toast({
-        title: "Medication Logged",
-        description: `${data.medicationName} has been logged successfully.`
+        title: "Success",
+        description: "Medication record has been added.",
       });
       
       onSuccess();
     } catch (error) {
-      console.error('Error logging medication:', error);
+      console.error('Error submitting medication:', error);
       toast({
         title: "Error",
-        description: "Failed to log medication. Please try again.",
-        variant: "destructive"
+        description: "Failed to add medication. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
-  };
-  
-  const frequencyOptions = [
-    { value: MedicationFrequency.Daily, label: 'Once Daily' },
-    { value: MedicationFrequency.TwiceDaily, label: 'Twice Daily' },
-    { value: MedicationFrequency.Weekly, label: 'Weekly' },
-    { value: MedicationFrequency.Biweekly, label: 'Every 2 Weeks' },
-    { value: MedicationFrequency.Monthly, label: 'Monthly' },
-    { value: MedicationFrequency.AsNeeded, label: 'As Needed (PRN)' }
-  ];
-
-  const routeOptions = [
-    { value: 'oral', label: 'Oral' },
-    { value: 'topical', label: 'Topical' },
-    { value: 'injection', label: 'Injection' },
-    { value: 'subcutaneous', label: 'Subcutaneous' },
-    { value: 'intramuscular', label: 'Intramuscular' },
-    { value: 'intravenous', label: 'Intravenous' },
-    { value: 'inhalation', label: 'Inhalation' },
-    { value: 'otic', label: 'Otic (Ear)' },
-    { value: 'ophthalmic', label: 'Ophthalmic (Eye)' }
-  ];
-
-  const dosageUnitOptions = [
-    { value: 'mg', label: 'mg' },
-    { value: 'mL', label: 'mL' },
-    { value: 'tablet', label: 'tablet' },
-    { value: 'capsule', label: 'capsule' },
-    { value: 'drop', label: 'drop' },
-    { value: 'µg', label: 'µg (mcg)' },
-    { value: 'IU', label: 'IU' }
-  ];
+  }
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="medicationName"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Medication Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter medication name" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -187,7 +162,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <FormItem>
                 <FormLabel>Dosage</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter dosage amount" {...field} />
+                  <Input {...field} type="number" step="0.01" min="0" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -196,10 +171,10 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
           
           <FormField
             control={form.control}
-            name="dosageUnit"
+            name="dosage_unit"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Dosage Unit</FormLabel>
+                <FormLabel>Unit</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
@@ -210,7 +185,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {dosageUnitOptions.map((option) => (
+                    {DosageUnitOptions.map(option => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -239,7 +214,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {frequencyOptions.map((option) => (
+                  {MedicationFrequencyOptions.map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -253,7 +228,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
         
         <FormField
           control={form.control}
-          name="administrationRoute"
+          name="administration_route"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Administration Route</FormLabel>
@@ -267,7 +242,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {routeOptions.map((option) => (
+                  {AdministrationRouteOptions.map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -279,40 +254,16 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
           )}
         />
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="startDate"
+            name="start_date"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel>Start Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={`w-full pl-3 text-left font-normal ${
-                          !field.value ? "text-muted-foreground" : ""
-                        }`}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormControl>
+                  <Input {...field} type="date" />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -320,40 +271,57 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
           
           <FormField
             control={form.control}
-            name="endDate"
+            name="end_date"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel>End Date (Optional)</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={`w-full pl-3 text-left font-normal ${
-                          !field.value ? "text-muted-foreground" : ""
-                        }`}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>No end date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value || undefined}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormDescription>
-                  Leave blank for ongoing medications
-                </FormDescription>
+                <FormControl>
+                  <Input {...field} type="date" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="duration"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Duration (Optional)</FormLabel>
+                <FormControl>
+                  <Input {...field} type="number" min="1" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="duration_unit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Duration Unit</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {DurationUnitOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -364,19 +332,19 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
           control={form.control}
           name="preventative"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
-                <FormLabel>Preventative Medication</FormLabel>
-                <FormDescription>
-                  Mark if this is a preventative medication (e.g., heartworm, flea treatment)
-                </FormDescription>
-              </div>
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
-                <Switch
+                <Checkbox
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Preventative Medication</FormLabel>
+                <FormDescription>
+                  Mark as a routine preventative medication (e.g. heartworm, flea & tick)
+                </FormDescription>
+              </div>
             </FormItem>
           )}
         />
@@ -389,7 +357,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <FormLabel>Notes (Optional)</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Special instructions or additional details"
+                  placeholder="Add any additional notes about this medication"
                   className="resize-none"
                   {...field}
                 />
@@ -400,11 +368,9 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
         />
         
         <div className="flex justify-end space-x-2 pt-4">
-          {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-          )}
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Saving...' : 'Save Medication'}
           </Button>

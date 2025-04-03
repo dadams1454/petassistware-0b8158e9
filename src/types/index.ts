@@ -48,6 +48,7 @@ export type {
 } from './reproductive';
 
 // Litter and puppy types
+export { Dog } from './litter';
 export type { 
   Litter as LitterType, 
   LitterWithDogs, 
@@ -56,7 +57,8 @@ export type {
   WhelpingRecord,
   WhelpingLogEntry,
   WhelpingObservation,
-  PuppyMilestone
+  PuppyMilestone,
+  SimpleDog
 } from './litter';
 
 // Puppy tracking types
@@ -70,14 +72,22 @@ export type {
   SocializationCategoryOption,
   SocializationReactionOption,
   SocializationProgress,
-  PuppyCareLog
+  PuppyCareLog,
+  SocializationExperience,
+  WeightRecord as PuppyWeightRecord,
+  VaccinationScheduleItem,
+  VaccinationRecord,
 } from './puppyTracking';
+export { PuppyWithAge } from './puppyTracking';
 
 // Facility types
 export * from './facility';
 
 // User and staff types
 export * from './user';
+
+// Socialization types
+export * from './socialization';
 
 // Utility type for form values
 export type WeightUnitValue = 'lb' | 'kg' | 'g' | 'oz' | 'lbs';

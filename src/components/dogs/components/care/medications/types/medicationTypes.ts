@@ -1,105 +1,34 @@
 
-import { DogCareStatus } from '@/types/dailyCare';
-import { MedicationFrequency, MedicationStatus, MedicationStatusResult } from '@/utils/medicationUtils';
+import { MedicationStatus, MedicationStatusResult } from '@/utils/medicationUtils';
 
 export interface MedicationInfo {
   id: string;
   name: string;
-  lastAdministered: string;
-  frequency: MedicationFrequency;
-  notes?: string;
-  isPreventative: boolean;
-  startDate: string;
-  endDate?: string | null;
-}
-
-export interface ProcessedMedicationLogs {
-  [dogId: string]: {
-    preventative: MedicationInfo[];
-    other: MedicationInfo[];
-  };
-}
-
-export interface MedicationMetadata {
-  preventative: boolean;
-  frequency: MedicationFrequency;
-  start_date: string;
-  end_date?: string | null;
   dosage?: number;
   dosage_unit?: string;
-}
-
-export interface MedicationsLogProps {
-  dogs: DogCareStatus[];
-  onRefresh: () => void;
-}
-
-// Props for the medications tab component
-export interface MedicationsTabProps {
-  dogStatuses: DogCareStatus[] | null;
-  onRefreshDogs: () => void;
-}
-
-// Props for the medication card component
-export interface MedicationCardProps {
-  dog: DogCareStatus;
-  preventativeMeds: MedicationInfo[];
-  otherMeds: MedicationInfo[];
-  onSuccess: () => void;
-}
-
-// Props for the header component
-export interface MedicationHeaderProps {
-  title: string;
-  description: string;
-  isLoading?: boolean;
-}
-
-// Props for filter component
-export interface MedicationFilterProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-// Props for status display component
-export interface MedicationStatusDisplayProps {
-  status: MedicationStatus | MedicationStatusResult | 'incomplete' | string;
-  statusColor: string;
-  label?: string;
-  isLoading?: boolean;
-}
-
-// Props for dog info component
-export interface DogInfoProps {
-  dogName: string;
-  dogPhoto: string | null;
-  breed: string | null;
-}
-
-// Props for last medication info component
-export interface LastMedicationInfoProps {
-  name: string;
-  lastAdministered?: string;
-  frequency: MedicationFrequency;
-}
-
-// Props for medication form component
-export interface MedicationFormProps {
-  dogId: string;
-  onSuccess: () => void;
-  onCancel?: () => void;
-  initialData?: any;
-}
-
-export interface MedicationFormData {
-  medicationName: string;
-  dosage: string;
-  dosageUnit: string;
   frequency: string;
-  administrationRoute: string;
-  startDate: Date;
-  endDate?: Date | null;
-  preventative?: boolean;
+  startDate: string;
+  endDate?: string;
+  lastAdministered?: string;
+  notes?: string;
+  isPreventative: boolean;
+}
+
+export interface MedicationLogFormValues {
+  medication_id: string;
+  administered_at: string;
+  administered_by: string;
   notes?: string;
 }
 
+export interface MedicationDisplayProps {
+  dogId: string;
+  medicationName: string;
+  status: MedicationStatus | MedicationStatusResult;
+  lastAdministered?: string;
+  frequency?: string;
+  dosage?: string;
+  route?: string;
+  notes?: string;
+  onLogAdministration?: () => void;
+}

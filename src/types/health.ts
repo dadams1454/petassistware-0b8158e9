@@ -1,5 +1,6 @@
 
 import { WeightUnit } from './common';
+export { WeightUnit };
 
 // Health record type enum
 export enum HealthRecordTypeEnum {
@@ -44,7 +45,11 @@ export enum StoolConsistencyEnum {
   Soft = 'soft',
   Normal = 'normal',
   Hard = 'hard',
-  None = 'none'
+  None = 'none',
+  Loose = 'loose',
+  Watery = 'watery',
+  Mucousy = 'mucousy',
+  Bloody = 'bloody'
 }
 
 // Health indicator interface
@@ -126,6 +131,11 @@ export interface Medication {
   active: boolean;
   notes?: string;
   created_at: string;
+  // Additional properties used in the codebase
+  medication_name?: string;
+  last_administered?: string;
+  is_active?: boolean;
+  puppy_id?: string;
 }
 
 // MedicationAdministration interface
@@ -167,6 +177,8 @@ export interface HealthRecord {
   follow_up_date?: string;
   next_due_date?: string;
   created_at?: string;
+  // Compatibility with older code that uses 'date'
+  date?: string;
   // Vaccination-specific fields
   vaccination_type?: string;
   vaccine_name?: string;
@@ -242,6 +254,7 @@ export const mapToHealthRecord = (data: any): HealthRecord => {
     record_type: stringToHealthRecordType(data.record_type),
     title: data.title || '',
     visit_date: data.visit_date || data.date || '',
+    date: data.visit_date || data.date || '', // For backwards compatibility
     description: data.description || '',
     vet_name: data.vet_name || '',
     performed_by: data.performed_by || '',
@@ -287,6 +300,7 @@ export interface WeightRecord {
   dog_id: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -302,6 +316,7 @@ export const mapToWeightRecord = (data: any): WeightRecord => {
     dog_id: data.dog_id || '',
     weight: parseFloat(data.weight) || 0,
     weight_unit: standardizeWeightUnit(data.weight_unit || data.unit || 'lb'),
+    unit: standardizeWeightUnit(data.weight_unit || data.unit || 'lb'), // For backward compatibility
     date: data.date || '',
     notes: data.notes || '',
     percent_change: data.percent_change || null,

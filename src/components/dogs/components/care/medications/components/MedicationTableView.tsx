@@ -73,12 +73,12 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
               
               // Get status for display
               const heartwormStatus = heartwormMed 
-                ? getMedicationStatus(heartwormMed.startDate, heartwormMed.endDate, heartwormMed.lastAdministered, heartwormMed.frequency)
-                : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+                ? getMedicationStatus(heartwormMed)
+                : { status: 'incomplete', statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', statusLabel: 'Not Started' };
                 
               const fleaTickStatus = fleaTickMed
-                ? getMedicationStatus(fleaTickMed.startDate, fleaTickMed.endDate, fleaTickMed.lastAdministered, fleaTickMed.frequency)
-                : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+                ? getMedicationStatus(fleaTickMed)
+                : { status: 'incomplete', statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', statusLabel: 'Not Started' };
               
               // Get most recent medication for last administered column
               const allMeds = [...(Array.isArray(dogPreventativeMeds) ? dogPreventativeMeds : []), ...(Array.isArray(dogOtherMeds) ? dogOtherMeds : [])];

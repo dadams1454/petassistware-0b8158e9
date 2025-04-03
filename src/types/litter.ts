@@ -1,5 +1,16 @@
 
 import { Dog } from './dog';
+// Re-export Dog so it's available to components that import from this file
+export { Dog };
+
+// Simple dog interface for minimal dog info (used in litter management)
+export interface SimpleDog {
+  id: string;
+  name: string;
+  breed?: string;
+  gender?: string;
+  color?: string;
+}
 
 // Litter interface
 export interface Litter {
@@ -21,6 +32,11 @@ export interface Litter {
   akc_registration_date?: string;
   akc_verified?: boolean;
   expected_go_home_date?: string;
+  // Additional properties needed for proper typing
+  dam?: Dog;
+  sire?: Dog;
+  puppies?: Puppy[];
+  archived?: boolean;
 }
 
 // Extended litter interface with Dogs

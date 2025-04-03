@@ -65,6 +65,8 @@ export interface Dog {
   max_time_between_breaks?: number;
   requires_special_handling?: boolean;
   group_ids?: string[];
+  // Additional fields used in other parts of the code
+  sire_id?: string;
 }
 
 // Expanded dog profile with additional data
@@ -82,6 +84,8 @@ export interface DogProfile extends Dog {
   litters?: Litter[];
   // Gallery
   photos?: { id: string; url: string }[];
+  // Additional fields for compatibility
+  vaccination_notes?: string;
 }
 
 // Health record interface for dogs
