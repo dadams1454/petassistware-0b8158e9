@@ -10,13 +10,15 @@ import { downloadContract } from '@/utils/contracts/download';
 interface ContractPreviewDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  contractId: string; // Changed from contractData to contractId
+  contractId: string;
+  onSignContract?: (signatureData: string) => Promise<void>;
 }
 
 const ContractPreviewDialog: React.FC<ContractPreviewDialogProps> = ({
   isOpen,
   onOpenChange,
-  contractId
+  contractId,
+  onSignContract
 }) => {
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<Contract | null>(null);
@@ -61,6 +63,25 @@ const ContractPreviewDialog: React.FC<ContractPreviewDialogProps> = ({
       toast({
         title: 'Download Failed',
         description: 'Failed to download the contract',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSignContract = async (signatureData: string) => {
+    if (!onSignContract) return;
+    
+    try {
+      await onSignContract(signatureData);
+      toast({
+        title: 'Contract Signed',
+        description: 'The contract has been signed successfully',
+      });
+    } catch (err) {
+      console.error('Error signing contract:', err);
+      toast({
+        title: 'Signing Failed',
+        description: 'Failed to sign the contract',
         variant: 'destructive',
       });
     }
@@ -155,6 +176,7 @@ const ContractPreviewDialog: React.FC<ContractPreviewDialogProps> = ({
           >
             Close
           </Button>
+          
           <Button 
             onClick={handleDownload} 
             disabled={!contract || loading}
@@ -162,6 +184,16 @@ const ContractPreviewDialog: React.FC<ContractPreviewDialogProps> = ({
             <Download className="h-4 w-4 mr-2" />
             Download
           </Button>
+          
+          {onSignContract && contract && (
+            <Button 
+              onClick={() => handleSignContract('signature-placeholder')}
+              className="ml-2"
+              disabled={loading}
+            >
+              Sign Contract
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

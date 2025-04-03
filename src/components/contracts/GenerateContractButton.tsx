@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { FileText } from 'lucide-react';
-import { ContractData } from '@/utils/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import ContractPreviewDialog from './ContractPreviewDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +20,7 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
 }) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [generatedContractId, setGeneratedContractId] = useState<string | null>(null);
   
   const { data: puppy, isLoading: isPuppyLoading } = useQuery({
     queryKey: ['puppy', puppyId],
@@ -69,21 +69,7 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
 
   const isLoading = isPuppyLoading || isCustomerLoading || isBreederLoading;
   
-  const getContractData = (): ContractData => {
-    return {
-      breederName: breederProfile ? `${breederProfile.first_name} ${breederProfile.last_name}` : '',
-      breederBusinessName: breederProfile?.business_name || 'Not specified',
-      customerName: customer ? `${customer.first_name} ${customer.last_name}` : '',
-      puppyName: puppy?.name,
-      puppyDob: puppy?.birth_date,
-      salePrice: puppy?.sale_price,
-      contractDate: new Date().toISOString(),
-      microchipNumber: puppy?.microchip_number,
-      template: 'standard'
-    };
-  };
-
-  const handleOpenContractDialog = () => {
+  const handleOpenContractDialog = async () => {
     if (!puppy || !customer || !breederProfile) {
       toast({
         title: "Missing Information",
@@ -93,24 +79,49 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
       return;
     }
     
-    setIsDialogOpen(true);
-  };
-  
-  const handleSignContract = async (signatureData: string): Promise<void> => {
     try {
-      // Record the contract signing in the database
-      const { error } = await supabase
+      // Generate a new contract in the database
+      const { data, error } = await supabase
         .from('contracts')
         .insert({
           puppy_id: puppyId,
           customer_id: customerId,
           contract_date: new Date().toISOString(),
-          signed_date: new Date().toISOString(),
-          signed_by: customer?.email || 'Unknown',
-          signature_data: signatureData,
-          status: 'signed',
+          price: puppy.sale_price,
+          status: 'draft',
           contract_type: 'sale'
-        });
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Set the generated contract ID and open the dialog
+      setGeneratedContractId(data.id);
+      setIsDialogOpen(true);
+    } catch (error) {
+      console.error('Error generating contract:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate contract. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleSignContract = async (signatureData: string): Promise<void> => {
+    if (!generatedContractId) return;
+    
+    try {
+      // Record the contract signing in the database
+      const { error } = await supabase
+        .from('contracts')
+        .update({
+          signed: true,
+          signed_date: new Date().toISOString(),
+          status: 'signed'
+        })
+        .eq('id', generatedContractId);
         
       if (error) throw error;
       
@@ -132,9 +143,18 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
           })
           .eq('id', reservations[0].id);
       }
+      
+      toast({
+        title: "Contract Signed",
+        description: "Contract has been successfully signed and recorded."
+      });
     } catch (error) {
       console.error('Error saving contract signature:', error);
-      throw error;
+      toast({
+        title: "Error",
+        description: "Failed to sign contract. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -149,11 +169,11 @@ const GenerateContractButton: React.FC<GenerateContractButtonProps> = ({
         Generate Contract
       </Button>
       
-      {isDialogOpen && (
+      {isDialogOpen && generatedContractId && (
         <ContractPreviewDialog
           isOpen={isDialogOpen}
           onOpenChange={setIsDialogOpen}
-          contractData={getContractData()}
+          contractId={generatedContractId}
           onSignContract={handleSignContract}
         />
       )}

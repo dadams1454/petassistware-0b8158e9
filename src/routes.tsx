@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Route } from 'react-router-dom';
 
@@ -162,8 +161,7 @@ export const appRoutes = (
         <ContractPreviewDialog 
           isOpen={true} 
           onOpenChange={() => {}} 
-          contractData={null} 
-          onSignContract={async (signatureData: string) => Promise.resolve()} 
+          contractId="placeholder"
         />
       } />
       

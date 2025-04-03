@@ -30,7 +30,10 @@ export enum EnergyLevelEnum {
   High = 'high',
   Normal = 'normal',
   Low = 'low',
-  Lethargic = 'lethargic'
+  Lethargic = 'lethargic',
+  // Add compatibility for older code
+  VeryHigh = 'hyperactive',
+  VeryLow = 'lethargic'
 }
 
 export enum StoolConsistencyEnum {
@@ -40,7 +43,10 @@ export enum StoolConsistencyEnum {
   Watery = 'watery',
   Hard = 'hard',
   Mucousy = 'mucousy',
-  Bloody = 'bloody'
+  Bloody = 'bloody',
+  // Add compatibility for older code
+  Solid = 'normal',
+  SemiSolid = 'soft'
 }
 
 export interface HealthRecord {
@@ -102,6 +108,8 @@ export interface WeightRecord {
   notes?: string;
   created_at: string;
   percent_change?: number;
+  // Add for compatibility
+  age_days?: number;
 }
 
 export interface WeightData {
@@ -109,6 +117,8 @@ export interface WeightData {
   unit: WeightUnit;
   date: string;
   age?: number;
+  // Add for compatibility with other code
+  weights?: number[];
 }
 
 export interface HealthIndicator {
@@ -123,4 +133,42 @@ export interface HealthIndicator {
   created_by?: string;
   created_at?: string;
   alert_generated?: boolean;
+}
+
+// Add missing types
+export interface Medication {
+  id: string;
+  dog_id: string;
+  name: string;
+  dosage: number;
+  dosage_unit: string;
+  frequency: string;
+  start_date: string;
+  end_date?: string;
+  administration_route: string;
+  notes?: string;
+  created_at: string;
+  is_active: boolean;
+}
+
+export interface MedicationAdministration {
+  id: string;
+  medication_id: string;
+  administered_at: string;
+  administered_by: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface HealthCertificate {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  certificate_type: string;
+  issue_date: string;
+  expiry_date?: string;
+  issuer: string;
+  file_url?: string;
+  notes?: string;
+  created_at: string;
 }
