@@ -3,23 +3,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Litter } from '@/types/litter';
-import { WelpingObservation } from '@/services/welpingService';
+import { WelpingLog, WelpingObservation } from '@/types/reproductive';
 
-// Define the WelpingLogEntry type here
-export interface WelpingLogEntry {
-  id: string;
-  litter_id: string;
-  timestamp: string;
-  event_type: 'start' | 'contraction' | 'puppy_born' | 'note' | 'end';
-  puppy_id?: string;
-  notes?: string;
-  puppy_details?: {
-    gender?: string;
-    color?: string;
-    weight?: number;
-    weight_unit?: string;
-  };
-}
+export type WelpingLogEntry = WelpingLog;
 
 export const useWelping = (litterId?: string) => {
   const queryClient = useQueryClient();
@@ -114,7 +100,7 @@ export const useWelping = (litterId?: string) => {
 
   // Mutation to create a new welping record
   const createMutation = useMutation({
-    mutationFn: async (litterData: Omit<Litter, 'id'>) => {
+    mutationFn: async (litterData: Partial<Litter> & {breeder_id: string; birth_date: string}) => {
       setIsCreating(true);
       
       try {

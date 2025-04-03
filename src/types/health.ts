@@ -1,106 +1,19 @@
 
-export interface HealthRecord {
-  id: string;
-  dog_id?: string;
-  puppy_id?: string;
-  record_type: HealthRecordTypeEnum;
-  title: string;
-  description?: string;
-  visit_date: string;
-  date?: string; // Added for backward compatibility
-  next_due_date?: string;
-  vet_name?: string;
-  performed_by?: string;
-  document_url?: string;
-  notes?: string;
-  created_at?: string;
-  // Medication specific fields
-  medication_name?: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency?: string;
-  duration?: number;
-  duration_unit?: string;
-  start_date?: string;
-  end_date?: string;
-  // Vaccination specific fields
-  vaccine_name?: string;
-  lot_number?: string;
-  manufacturer?: string;
-  administration_route?: string;
-  // Examination specific fields
-  examination_type?: string;
-  findings?: string;
-  recommendations?: string;
-  follow_up_date?: string;
-  // Surgery specific fields
-  procedure_name?: string;
-  surgeon?: string;
-  anesthesia_used?: string;
-  recovery_notes?: string;
-}
-
+// Health record types
 export enum HealthRecordTypeEnum {
   VACCINATION = 'vaccination',
   EXAMINATION = 'examination',
   MEDICATION = 'medication',
   SURGERY = 'surgery',
-  TEST = 'test',
-  OTHER = 'other',
   OBSERVATION = 'observation',
   DEWORMING = 'deworming',
   GROOMING = 'grooming',
   DENTAL = 'dental',
-  ALLERGY = 'allergy'
+  ALLERGY = 'allergy',
+  TEST = 'test',
+  OTHER = 'other'
 }
 
-export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg' | 'lbs';
-
-export interface WeightRecord {
-  id: string;
-  dog_id?: string;
-  puppy_id?: string;
-  weight: number;
-  weight_unit: WeightUnit;
-  unit?: WeightUnit; // For backward compatibility
-  date: string;
-  notes?: string;
-  percent_change?: number;
-  created_at?: string;
-}
-
-export interface HealthMarker {
-  status: 'clear' | 'carrier' | 'at_risk';
-  description: string;
-}
-
-export interface HealthProfile {
-  markers: Record<string, HealthMarker>;
-  vaccinations: VaccinationRecord[];
-  weights: WeightRecord[];
-  conditions: HealthCondition[];
-}
-
-export interface VaccinationRecord {
-  id: string;
-  name: string;
-  date: string;
-  next_due?: string;
-  notes?: string;
-  vaccination_type?: string; // Added for backward compatibility
-  vaccination_date?: string; // Added for backward compatibility
-  administered_by?: string; // Added for backward compatibility
-}
-
-export interface HealthCondition {
-  id: string;
-  name: string;
-  diagnosed_date: string;
-  status: 'active' | 'managed' | 'resolved';
-  notes?: string;
-}
-
-// Add missing enums referenced in the codebase
 export enum AppetiteLevelEnum {
   EXCELLENT = 'excellent',
   GOOD = 'good',
@@ -110,33 +23,106 @@ export enum AppetiteLevelEnum {
 }
 
 export enum EnergyLevelEnum {
+  HYPERACTIVE = 'hyperactive',
+  VERY_HIGH = 'very_high',
   HIGH = 'high',
   NORMAL = 'normal',
   LOW = 'low',
-  LETHARGIC = 'lethargic',
-  VERY_HIGH = 'very_high',
   VERY_LOW = 'very_low',
-  HYPERACTIVE = 'hyperactive'
+  LETHARGIC = 'lethargic'
 }
 
 export enum StoolConsistencyEnum {
   NORMAL = 'normal',
+  SOLID = 'solid',
+  SEMI_SOLID = 'semi_solid',
   SOFT = 'soft',
   LOOSE = 'loose',
   WATERY = 'watery',
-  HARD = 'hard',
-  NONE = 'none',
-  MUCOUSY = 'mucousy',
   BLOODY = 'bloody',
-  SOLID = 'solid',
-  SEMI_SOLID = 'semi_solid'
+  MUCOUSY = 'mucousy',
+  HARD = 'hard'
 }
 
-export interface WeightData {
+export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg' | 'lb';
+
+export interface HealthRecord {
   id: string;
-  weight: number;
-  unit: WeightUnit;
+  dog_id?: string;
+  record_type: HealthRecordTypeEnum;
+  title?: string;
+  visit_date: string;
+  vet_name: string;
+  vet_clinic?: string;
+  description?: string;
+  findings?: string;
+  recommendations?: string;
+  document_url?: string;
+  follow_up_date?: string;
+  reminder_sent?: boolean;
+  record_notes?: string;
+  recovery_notes?: string;
+  performed_by?: string;
+  // Vaccination specific
+  vaccine_name?: string;
+  lot_number?: string;
+  manufacturer?: string;
+  expiration_date?: string;
+  // Medication specific
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  administration_route?: string;
+  start_date?: string;
+  end_date?: string;
+  duration?: number;
+  duration_unit?: string;
+  prescription_number?: string;
+  next_due_date?: string;
+  // Examination specific
+  examination_type?: string;
+  // Surgery specific
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  created_at?: string;
+}
+
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
   date: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  notes?: string;
+  created_at: string;
+  percent_change?: number;
   age_days?: number;
   birth_date?: string;
+}
+
+export interface HealthIndicator {
+  id: string;
+  dog_id: string;
+  date: string;
+  appetite?: AppetiteLevelEnum;
+  energy?: EnergyLevelEnum;
+  stool_consistency?: StoolConsistencyEnum;
+  abnormal?: boolean;
+  notes?: string;
+  created_at: string;
+  created_by?: string;
+  alert_generated?: boolean;
+}
+
+export interface HealthAlert {
+  id: string;
+  dog_id: string;
+  indicator_id: string;
+  status: 'active' | 'resolved';
+  resolved?: boolean;
+  resolved_at?: string;
+  created_at: string;
 }

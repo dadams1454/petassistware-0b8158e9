@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { useWeightData } from '@/hooks/useWeightData';
 import WeightForm from '@/components/puppies/growth/WeightForm';
 import { WeightTrackerProps } from './types';
-import { WeightUnit } from '@/types/puppyTracking';
+import { WeightUnit } from '@/types/health';
 
 const WeightTracker: React.FC<WeightTrackerProps> = ({
   puppyId,
@@ -41,11 +41,11 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
       await addWeightRecord({
         weight: parseFloat(data.weight),
         weight_unit: data.weight_unit as WeightUnit,
+        unit: data.weight_unit as WeightUnit, // For backward compatibility
         date: data.date,
         notes: data.notes,
         dog_id: '', // Empty string as it's required but we're tracking a puppy
         puppy_id: puppyId, // Add puppy_id as required
-        updated_at: new Date().toISOString()
       });
       
       setIsAddingWeight(false);

@@ -109,6 +109,18 @@ export interface ReproductiveCycleData {
     start: Date;
     end: Date;
   };
+  // Additional properties for backward compatibility
+  dog?: any;
+  heatCycles?: HeatCycle[];
+  breedingRecords?: BreedingRecord[];
+  pregnancyRecords?: PregnancyRecord[];
+  milestones?: ReproductiveMilestone[];
+  status?: string;
+  currentHeatCycle?: HeatCycle;
+  fertilityWindow?: any;
+  gestationDays?: number;
+  estimatedDueDate?: Date;
+  averageCycleLength?: number;
 }
 
 export interface BreedingPrepFormData {
@@ -124,9 +136,10 @@ export interface BreedingChecklistItem {
   title: string;
   completed: boolean;
   description?: string;
+  task?: string; // Added for backward compatibility
 }
 
-// Add necessary whelping types
+// Define WelpingLog with correct types
 export interface WelpingLog {
   id: string;
   litter_id: string;
@@ -166,4 +179,12 @@ export interface WelpingStats {
   activeWelpingsCount: number;
   totalPuppiesCount: number;
   upcomingWelpingsCount?: number;
+}
+
+export interface WelpingObservation {
+  id: string;
+  welping_id: string;
+  observation_time: string;
+  notes: string;
+  created_at?: string;
 }

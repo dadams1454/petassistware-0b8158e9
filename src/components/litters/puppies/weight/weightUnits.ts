@@ -12,10 +12,10 @@ const CONVERSION_TO_GRAMS = {
 
 // List of weight units for selection
 export const weightUnits = [
-  { value: 'oz', label: 'Ounces (oz)' },
-  { value: 'g', label: 'Grams (g)' },
-  { value: 'lbs', label: 'Pounds (lbs)' },
-  { value: 'kg', label: 'Kilograms (kg)' }
+  { value: 'oz' as WeightUnit, label: 'Ounces (oz)' },
+  { value: 'g' as WeightUnit, label: 'Grams (g)' },
+  { value: 'lbs' as WeightUnit, label: 'Pounds (lbs)' },
+  { value: 'kg' as WeightUnit, label: 'Kilograms (kg)' }
 ];
 
 // Convert weight between units
