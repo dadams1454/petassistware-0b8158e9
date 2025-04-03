@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import PageContainer from '@/components/common/PageContainer';
 import { useParams } from 'react-router-dom';
 import WeightTrackingSection from '@/components/dogs/components/health/WeightTrackingSection';
@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDogDetail } from '@/components/dogs/hooks/useDogDetail';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
 import { useWeightTracking } from '@/components/dogs/hooks/useWeightTracking';
-import { useState } from 'react';
+import WeightEntryDialog from '@/modules/dogs/components/dialogs/WeightEntryDialog';
 
 const WeightTracking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,8 +28,8 @@ const WeightTracking: React.FC = () => {
     setWeightDialogOpen(true);
   };
   
-  const handleSaveWeight = (data: any) => {
-    addWeightRecord(data);
+  const handleSaveWeight = async (data: any) => {
+    await addWeightRecord(data);
     setWeightDialogOpen(false);
   };
   
@@ -59,6 +59,13 @@ const WeightTracking: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      <WeightEntryDialog
+        open={weightDialogOpen}
+        onOpenChange={setWeightDialogOpen}
+        onSave={handleSaveWeight}
+        dogId={dogId}
+      />
     </PageContainer>
   );
 };
