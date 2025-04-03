@@ -59,7 +59,7 @@ export const useBreedingRecords = (dogId: string) => {
 
   // Add breeding record mutation
   const addBreedingRecord = useMutation({
-    mutationFn: async (record: Omit<BreedingRecord, 'id' | 'created_at'>) => {
+    mutationFn: async (record: any) => {
       try {
         // Determine whether to use dam_id or dog_id based on schema detection
         const { data: schemaCheck, error: schemaError } = await supabase

@@ -39,7 +39,8 @@ export const useHeatCycles = (dogId: string) => {
         ...cycle,
         intensity: validateHeatIntensity(cycle.intensity)
       })) as HeatCycle[];
-    }
+    },
+    enabled: !!dogId
   });
   
   // Calculate average cycle length

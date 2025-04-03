@@ -25,7 +25,7 @@ const WeightUnitSelect: React.FC<WeightUnitSelectProps> = ({ form }) => {
               <SelectContent>
                 {weightUnits.map((unit) => (
                   <SelectItem key={unit.code} value={unit.code}>
-                    {unit.name}
+                    {unit.name} ({unit.code})
                   </SelectItem>
                 ))}
               </SelectContent>
