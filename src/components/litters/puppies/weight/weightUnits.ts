@@ -1,5 +1,5 @@
 
-import { WeightUnit, standardizeWeightUnit, formatWeightWithUnit, getWeightUnitName } from '@/types/common';
+import { WeightUnit, WeightUnitWithLegacy, standardizeWeightUnit, formatWeightWithUnit, getWeightUnitName } from '@/types/common';
 
 // Weight unit conversion utilities
 export const weightUnits = [
@@ -19,8 +19,8 @@ export const weightUnits = [
  */
 export const convertWeight = (
   weight: number,
-  fromUnit: string,
-  toUnit: string
+  fromUnit: WeightUnitWithLegacy,
+  toUnit: WeightUnitWithLegacy
 ): number => {
   const standardFromUnit = standardizeWeightUnit(fromUnit);
   const standardToUnit = standardizeWeightUnit(toUnit);

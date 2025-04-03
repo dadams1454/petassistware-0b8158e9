@@ -27,7 +27,7 @@ export const standardizeWeightUnit = (unit: string): WeightUnit => {
 /**
  * Helper function to format weight with unit
  */
-export const formatWeightWithUnit = (weight: number, unit: WeightUnit | string): string => {
+export const formatWeightWithUnit = (weight: number, unit: WeightUnitWithLegacy): string => {
   const standardUnit = standardizeWeightUnit(unit);
   return `${weight} ${standardUnit}`;
 };
@@ -35,7 +35,7 @@ export const formatWeightWithUnit = (weight: number, unit: WeightUnit | string):
 /**
  * Helper function to get human-readable weight unit name
  */
-export const getWeightUnitName = (unit: string): string => {
+export const getWeightUnitName = (unit: WeightUnitWithLegacy): string => {
   const unitMap: Record<string, string> = {
     'g': 'Grams',
     'kg': 'Kilograms',

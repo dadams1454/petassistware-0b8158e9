@@ -19,11 +19,7 @@ const weightEntrySchema = z.object({
   }).positive({
     message: 'Weight must be greater than 0',
   }),
-  unit: z.custom<WeightUnit>((val) => {
-    return ['oz', 'g', 'lb', 'kg'].includes(val as string);
-  }, {
-    message: 'Please select a valid weight unit',
-  }),
+  unit: z.enum(['oz', 'g', 'lb', 'kg']),
   notes: z.string().optional(),
 });
 

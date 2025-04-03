@@ -10,7 +10,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { WeightUnit } from '@/types/puppyTracking';
+import { WeightUnit, standardizeWeightUnit } from '@/types/common';
 
 interface WeightFormProps {
   puppyId: string;
@@ -31,7 +31,11 @@ const WeightForm: React.FC<WeightFormProps> = ({
   initialData
 }) => {
   const [weight, setWeight] = useState(initialData?.weight?.toString() || '');
-  const [weightUnit, setWeightUnit] = useState<WeightUnit>(initialData?.weight_unit || 'lbs');
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>(
+    initialData?.weight_unit ? 
+    standardizeWeightUnit(initialData.weight_unit) : 
+    'lb'
+  );
   const [date, setDate] = useState(initialData?.date || new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,6 +55,7 @@ const WeightForm: React.FC<WeightFormProps> = ({
         puppy_id: puppyId,
         weight: parseFloat(weight),
         weight_unit: weightUnit,
+        unit: weightUnit, // For compatibility
         date,
         notes
       });
@@ -86,7 +91,7 @@ const WeightForm: React.FC<WeightFormProps> = ({
               <SelectValue placeholder="Select unit" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+              <SelectItem value="lb">Pounds (lb)</SelectItem>
               <SelectItem value="kg">Kilograms (kg)</SelectItem>
               <SelectItem value="g">Grams (g)</SelectItem>
               <SelectItem value="oz">Ounces (oz)</SelectItem>

@@ -1,4 +1,4 @@
-import { WeightUnit as CommonWeightUnit } from './common';
+import { WeightUnit as CommonWeightUnit, WeightUnitWithLegacy } from './common';
 
 // Define weight unit type using the common definition
 export type WeightUnit = CommonWeightUnit;
@@ -104,7 +104,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
-  unit?: WeightUnit; // For compatibility
+  unit: WeightUnit; // For compatibility
   date: string;
   notes?: string;
   created_at: string;
@@ -119,8 +119,9 @@ export interface WeightData {
   date: string;
   age?: number;
   // Add for compatibility with other code
-  weights?: number[];
+  weights?: WeightRecord[];
   isLoading?: boolean;
+  error?: Error | null;
 }
 
 export interface HealthIndicator {

@@ -6,7 +6,8 @@ import {
   addWeightRecord as addRecord,
   deleteWeightRecord as deleteRecord
 } from '@/services/healthService';
-import { WeightRecord, WeightUnit } from '@/types/health';
+import { WeightRecord } from '@/types/health';
+import { WeightUnit, standardizeWeightUnit } from '@/types/common';
 
 export const useWeightTracking = (dogId: string) => {
   const { toast } = useToast();
@@ -117,11 +118,12 @@ export const useWeightTracking = (dogId: string) => {
 };
 
 // Helper function to convert weight to kg for calculations
-const convertWeightToKg = (weight: number, unit: WeightUnit): number => {
-  switch (unit) {
+const convertWeightToKg = (weight: number, unit: string): number => {
+  const standardUnit = standardizeWeightUnit(unit);
+  
+  switch (standardUnit) {
     case 'kg':
       return weight;
-    case 'lbs':
     case 'lb':
       return weight * 0.453592;
     case 'g':

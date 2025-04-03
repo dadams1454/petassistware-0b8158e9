@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LineChart, 
   Line, 
@@ -7,112 +7,107 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  Legend
 } from 'recharts';
-import { format, parseISO, differenceInDays } from 'date-fns';
-import { Card, CardContent } from '@/components/ui/card';
-import { WeightChartViewProps } from './types';
-import { WeightRecord, WeightUnit } from '@/types/puppyTracking';
+import { WeightRecord, WeightUnit } from '@/types/health';
 import { convertWeight } from './weightUnits';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
-const WeightChartView: React.FC<WeightChartViewProps> = ({ 
-  weightRecords, 
-  displayUnit 
+interface WeightChartViewProps {
+  puppyId: string;
+  birthDate?: string;
+  displayUnit?: WeightUnit;
+  weightRecords?: WeightRecord[];
+}
+
+const WeightChartView: React.FC<WeightChartViewProps> = ({
+  puppyId,
+  birthDate,
+  displayUnit = 'oz',
+  weightRecords = []
 }) => {
-  const birthDate = weightRecords[0]?.birth_date 
-    ? new Date(weightRecords[0].birth_date) 
-    : null;
+  const [chartData, setChartData] = useState<any[]>([]);
 
-  // Convert weights to the display unit and format the data for the chart
-  const chartData = weightRecords.map(record => {
-    const recordDate = new Date(record.date);
-    
-    // Calculate age in days if birth date is available
-    const ageInDays = birthDate 
-      ? differenceInDays(recordDate, birthDate) 
-      : null;
-    
-    // Convert weight to the display unit
-    const convertedWeight = convertWeight(
-      record.weight,
-      record.weight_unit as WeightUnit,
-      displayUnit
-    );
+  useEffect(() => {
+    if (weightRecords.length === 0) return;
 
-    return {
-      id: record.id,
-      date: recordDate,
-      weight: Number(convertedWeight.toFixed(2)),
-      formattedDate: format(recordDate, 'MMM d, yyyy'),
-      ageInDays: ageInDays,
-      unit: displayUnit,
-      notes: record.notes || ''
-    };
-  });
+    // Process data for chart
+    const formattedData = weightRecords.map((record) => {
+      // Get age in days if birthDate is provided
+      let ageInDays = 0;
+      if (birthDate && record.date) {
+        const birthDateTime = new Date(birthDate).getTime();
+        const recordDateTime = new Date(record.date).getTime();
+        ageInDays = Math.floor((recordDateTime - birthDateTime) / (1000 * 60 * 60 * 24));
+      }
+
+      // Convert weight to display unit
+      const convertedWeight = convertWeight(
+        record.weight, 
+        record.weight_unit || record.unit, 
+        displayUnit
+      );
+
+      return {
+        date: record.date,
+        weight: convertedWeight,
+        notes: record.notes,
+        age: ageInDays || record.age_days || 0,
+        original: record
+      };
+    }).sort((a, b) => a.age - b.age);
+
+    setChartData(formattedData);
+  }, [weightRecords, displayUnit, birthDate]);
 
   if (weightRecords.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground">No weight records available</p>
-        </CardContent>
-      </Card>
+      <Alert variant="default" className="bg-muted/40">
+        <AlertCircle className="h-4 w-4 mr-2" />
+        <AlertDescription>No weight records found for this puppy.</AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <div className="w-full">
-      <ResponsiveContainer width="100%" height={400}>
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={chartData}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
-            dataKey={chartData[0].ageInDays !== null ? "ageInDays" : "formattedDate"} 
-            label={
-              chartData[0].ageInDays !== null 
-                ? { value: "Age (days)", position: "insideBottom", offset: -5 } 
-                : { value: "Date", position: "insideBottom", offset: -5 }
-            }
+            dataKey="age" 
+            label={{ 
+              value: 'Age (days)', 
+              position: 'insideBottomRight', 
+              offset: -10 
+            }} 
           />
           <YAxis 
             label={{ 
               value: `Weight (${displayUnit})`, 
               angle: -90, 
-              position: 'insideLeft' 
+              position: 'insideLeft',
+              style: { textAnchor: 'middle' } 
             }} 
           />
           <Tooltip 
-            formatter={(value, name) => [
-              `${value} ${displayUnit}`, 
-              name === "weight" ? "Weight" : name
-            ]}
-            labelFormatter={(label) => 
-              chartData[0].ageInDays !== null 
-                ? `Age: ${label} days` 
-                : `Date: ${
-                    chartData.find(item => 
-                      item.ageInDays === label || 
-                      item.formattedDate === label
-                    )?.formattedDate
-                  }`
-            }
+            formatter={(value: number) => [`${value.toFixed(2)} ${displayUnit}`, 'Weight']}
+            labelFormatter={(age) => `Age: ${age} days`}
           />
           <Legend />
-          <Line
-            type="monotone"
-            dataKey="weight"
-            stroke="#8884d8"
-            activeDot={{ r: 8 }}
+          <Line 
+            type="monotone" 
+            dataKey="weight" 
+            stroke="#8884d8" 
+            name={`Puppy Weight (${displayUnit})`}
             strokeWidth={2}
-            name="Weight"
+            dot={{ r: 4 }}
+            activeDot={{ r: 6 }}
           />
         </LineChart>
       </ResponsiveContainer>
