@@ -3,6 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import HealthIndicatorForm from './HealthIndicatorForm';
 import { useHealthIndicators } from '@/hooks/useHealthIndicators';
+import { HealthIndicator } from '@/types/health';
 
 interface HealthIndicatorDialogProps {
   open: boolean;

@@ -1,13 +1,23 @@
 
 /**
- * Format a date for display in a user-friendly format
+ * Format a Date object to YYYY-MM-DD string
+ * @param date The date to format
+ * @returns The formatted date string
  */
-export const formatDateForDisplay = (date: string | Date | null | undefined): string => {
-  if (!date) return 'N/A';
-  
+export const formatDateToYYYYMMDD = (date: Date): string => {
+  return date.toISOString().split('T')[0];
+};
+
+/**
+ * Format a date string to a human-readable format
+ * @param dateString The date string to format
+ * @returns The formatted date string
+ */
+export const formatDateToHuman = (dateString: string | null | undefined): string => {
+  if (!dateString) return 'Not specified';
   try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-US', {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -19,76 +29,90 @@ export const formatDateForDisplay = (date: string | Date | null | undefined): st
 };
 
 /**
- * Format a date with time for detailed display
+ * Calculate the age in days from a birthdate
+ * @param birthDate The birthdate string
+ * @returns The age in days
  */
-export const formatDateTimeForDisplay = (date: string | Date | null | undefined): string => {
-  if (!date) return 'N/A';
+export const calculateAgeInDays = (birthDate: string | null | undefined): number => {
+  if (!birthDate) return 0;
   
   try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  } catch (error) {
-    console.error('Error formatting date and time:', error);
-    return 'Invalid date';
-  }
-};
-
-/**
- * Convert a date to ISO string with validation
- */
-export const toISOStringWithFallback = (date: string | Date | null | undefined): string | null => {
-  if (!date) return null;
-  
-  try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toISOString();
-  } catch (error) {
-    console.error('Error converting to ISO string:', error);
-    return null;
-  }
-};
-
-/**
- * Format a date to YYYY-MM-DD format
- */
-export const formatDateToYYYYMMDD = (date: Date | null | undefined): string | null => {
-  if (!date) return null;
-  
-  try {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  } catch (error) {
-    console.error('Error formatting date to YYYY-MM-DD:', error);
-    return null;
-  }
-};
-
-/**
- * Calculate age in weeks and days from a birthdate
- */
-export const calculateAge = (birthDate: string | Date | null | undefined): { weeks: number; days: number } => {
-  if (!birthDate) return { weeks: 0, days: 0 };
-  
-  try {
-    const birth = typeof birthDate === 'string' ? new Date(birthDate) : birthDate;
+    const birth = new Date(birthDate);
     const today = new Date();
-    const diffTime = Math.abs(today.getTime() - birth.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    const weeks = Math.floor(diffDays / 7);
-    const days = diffDays % 7;
-    
-    return { weeks, days };
+    const diffTime = today.getTime() - birth.getTime();
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
   } catch (error) {
     console.error('Error calculating age:', error);
-    return { weeks: 0, days: 0 };
+    return 0;
+  }
+};
+
+/**
+ * Calculate the age in weeks from a birthdate
+ * @param birthDate The birthdate string
+ * @returns The age in weeks
+ */
+export const calculateAgeInWeeks = (birthDate: string | null | undefined): number => {
+  const days = calculateAgeInDays(birthDate);
+  return Math.floor(days / 7);
+};
+
+/**
+ * Format an age in days to a human-readable string
+ * @param days The age in days
+ * @returns The formatted age string
+ */
+export const formatAge = (days: number): string => {
+  if (days < 0) return 'Invalid age';
+  if (days === 0) return 'Born today';
+  if (days === 1) return '1 day old';
+  if (days < 14) return `${days} days old`;
+  
+  const weeks = Math.floor(days / 7);
+  if (weeks === 1) return '1 week old';
+  if (weeks < 8) return `${weeks} weeks old`;
+  
+  const months = Math.floor(days / 30);
+  if (months === 1) return '1 month old';
+  if (months < 24) return `${months} months old`;
+  
+  const years = Math.floor(days / 365);
+  if (years === 1) return '1 year old';
+  return `${years} years old`;
+};
+
+/**
+ * Check if a date is in the future
+ * @param dateString The date string to check
+ * @returns True if the date is in the future
+ */
+export const isDateInFuture = (dateString: string | null | undefined): boolean => {
+  if (!dateString) return false;
+  
+  try {
+    const date = new Date(dateString);
+    const today = new Date();
+    return date > today;
+  } catch (error) {
+    console.error('Error checking if date is in future:', error);
+    return false;
+  }
+};
+
+/**
+ * Check if a date is in the past
+ * @param dateString The date string to check
+ * @returns True if the date is in the past
+ */
+export const isDateInPast = (dateString: string | null | undefined): boolean => {
+  if (!dateString) return false;
+  
+  try {
+    const date = new Date(dateString);
+    const today = new Date();
+    return date < today;
+  } catch (error) {
+    console.error('Error checking if date is in past:', error);
+    return false;
   }
 };

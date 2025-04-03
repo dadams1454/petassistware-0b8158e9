@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { WeightUnit } from '@/types/health';
+import { WeightUnit } from '@/types/common';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 
 // Schema for weight entry form
@@ -20,7 +20,7 @@ const weightEntrySchema = z.object({
     message: 'Weight must be greater than 0',
   }),
   unit: z.custom<WeightUnit>((val) => {
-    return ['oz', 'g', 'lbs', 'kg', 'lb'].includes(val as string);
+    return ['oz', 'g', 'lb', 'kg'].includes(val as string);
   }, {
     message: 'Please select a valid weight unit',
   }),
@@ -43,7 +43,7 @@ export const useWeightEntryForm = ({ dogId, onSave, initialData }: UseWeightEntr
     defaultValues: {
       date: initialData?.date || new Date(),
       weight: initialData?.weight || 0,
-      unit: initialData?.unit || 'lbs',
+      unit: initialData?.unit || 'lb',
       notes: initialData?.notes || '',
     }
   });

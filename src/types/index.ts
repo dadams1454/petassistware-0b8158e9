@@ -2,6 +2,7 @@
 // Re-export types from various files
 export type * from './customer';
 export type * from './task';
+export type * from './common';
 
 // Re-export from litter with explicit renaming to avoid ambiguity
 export type { 
@@ -18,21 +19,29 @@ export type {
 // Export puppy tracking types
 export type {
   PuppyWithAge,
-  AgeGroup,
   PuppyAgeGroupData,
   PuppyManagementStats,
-  PuppyMilestone,
-  PuppyWeightRecord,
   WeightUnit,
   WeightRecord,
-  PuppyHealthRecord,
-  PuppyVaccinationRecord,
-  VaccinationRecord,
-  PuppyVaccinationSchedule,
-  VaccinationScheduleItem,
   SocializationCategory,
   SocializationReaction,
   SocializationReactionObject,
-  SocializationExperience,
   SocializationProgress
 } from './puppyTracking';
+
+// Export health types
+export type {
+  HealthRecord,
+  HealthIndicator,
+  Medication,
+  MedicationAdministration,
+  HealthCertificate
+} from './health';
+
+// Export enums
+export { 
+  HealthRecordTypeEnum,
+  AppetiteLevelEnum,
+  EnergyLevelEnum,
+  StoolConsistencyEnum
+} from './health';

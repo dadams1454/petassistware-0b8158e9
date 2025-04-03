@@ -1,5 +1,5 @@
 
-import { WeightUnit } from '@/types/puppyTracking';
+import { WeightUnit, standardizeWeightUnit, formatWeightWithUnit, getWeightUnitName } from '@/types/common';
 
 // Weight unit conversion utilities
 export const weightUnits = [
@@ -22,12 +22,15 @@ export const convertWeight = (
   fromUnit: string,
   toUnit: string
 ): number => {
-  if (fromUnit === toUnit) return weight;
+  const standardFromUnit = standardizeWeightUnit(fromUnit);
+  const standardToUnit = standardizeWeightUnit(toUnit);
+  
+  if (standardFromUnit === standardToUnit) return weight;
 
   // Convert everything to grams first
   let grams = 0;
   
-  switch (fromUnit) {
+  switch (standardFromUnit) {
     case 'g':
       grams = weight;
       break;
@@ -38,7 +41,6 @@ export const convertWeight = (
       grams = weight * 28.35;
       break;
     case 'lb':
-    case 'lbs':
       grams = weight * 453.59;
       break;
     default:
@@ -46,7 +48,7 @@ export const convertWeight = (
   }
 
   // Then convert from grams to desired unit
-  switch (toUnit) {
+  switch (standardToUnit) {
     case 'g':
       return Math.round(grams * 10) / 10;
     case 'kg':
@@ -60,15 +62,8 @@ export const convertWeight = (
   }
 };
 
-/**
- * Format weight with unit
- * @param weight - The weight value
- * @param unit - The weight unit
- * @returns Formatted weight string
- */
-export const formatWeightWithUnit = (weight: number, unit: WeightUnit): string => {
-  return `${weight} ${unit}`;
-};
+// Re-export functions from common
+export { standardizeWeightUnit, formatWeightWithUnit, getWeightUnitName };
 
 /**
  * Calculate percent change between two weights
@@ -79,50 +74,4 @@ export const formatWeightWithUnit = (weight: number, unit: WeightUnit): string =
 export const calculatePercentChange = (newWeight: number, oldWeight: number): number => {
   if (oldWeight === 0) return 0;
   return ((newWeight - oldWeight) / oldWeight) * 100;
-};
-
-/**
- * Get the standard weight unit abbreviation
- * 
- * @param unit - The unit name to standardize
- * @returns The standardized unit abbreviation
- */
-export const standardizeWeightUnit = (unit: string): string => {
-  const unitMap: Record<string, string> = {
-    'g': 'g',
-    'gram': 'g',
-    'grams': 'g',
-    'kg': 'kg',
-    'kilo': 'kg',
-    'kilos': 'kg',
-    'kilogram': 'kg',
-    'kilograms': 'kg',
-    'oz': 'oz',
-    'ounce': 'oz',
-    'ounces': 'oz',
-    'lb': 'lb',
-    'lbs': 'lb',
-    'pound': 'lb',
-    'pounds': 'lb'
-  };
-
-  return unitMap[unit.toLowerCase()] || 'g';
-};
-
-/**
- * Get human-readable weight unit name
- * 
- * @param unit - The unit abbreviation
- * @returns The full name of the weight unit
- */
-export const getWeightUnitName = (unit: string): string => {
-  const unitMap: Record<string, string> = {
-    'g': 'Grams',
-    'kg': 'Kilograms',
-    'oz': 'Ounces',
-    'lb': 'Pounds',
-    'lbs': 'Pounds'
-  };
-
-  return unitMap[unit] || 'Grams';
 };

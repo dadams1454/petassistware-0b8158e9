@@ -1,6 +1,7 @@
+import { WeightUnit as CommonWeightUnit } from './common';
 
-// Define weight unit enum/type
-export type WeightUnit = 'lb' | 'kg' | 'oz' | 'g' | 'lbs';
+// Define weight unit type using the common definition
+export type WeightUnit = CommonWeightUnit;
 
 // Using enum with string values for better type-safety
 export enum HealthRecordTypeEnum {
@@ -103,7 +104,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
-  unit: WeightUnit; // For compatibility
+  unit?: WeightUnit; // For compatibility
   date: string;
   notes?: string;
   created_at: string;
