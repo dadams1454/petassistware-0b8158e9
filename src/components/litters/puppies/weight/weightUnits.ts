@@ -1,33 +1,22 @@
 
-import { WeightUnit, WeightUnitWithLegacy, standardizeWeightUnit, formatWeightWithUnit, getWeightUnitName } from '@/types/common';
-
-// Weight unit conversion utilities
-export const weightUnits = [
-  { value: 'lb', label: 'Pounds (lb)' },
-  { value: 'kg', label: 'Kilograms (kg)' },
-  { value: 'oz', label: 'Ounces (oz)' },
-  { value: 'g', label: 'Grams (g)' }
-];
+import { WeightUnit, standardizeWeightUnit, formatWeightWithUnit, getWeightUnitName } from '@/types/common';
 
 /**
  * Convert a weight value from one unit to another
- * 
- * @param weight - The weight value to convert
- * @param fromUnit - The unit to convert from
- * @param toUnit - The unit to convert to
- * @returns The converted weight value
  */
 export const convertWeight = (
-  weight: number,
-  fromUnit: WeightUnitWithLegacy,
-  toUnit: WeightUnitWithLegacy
+  weight: number, 
+  fromUnit: string, 
+  toUnit: WeightUnit
 ): number => {
   const standardFromUnit = standardizeWeightUnit(fromUnit);
   const standardToUnit = standardizeWeightUnit(toUnit);
   
-  if (standardFromUnit === standardToUnit) return weight;
-
-  // Convert everything to grams first
+  if (standardFromUnit === standardToUnit) {
+    return weight;
+  }
+  
+  // Convert to grams first (as base unit)
   let grams = 0;
   
   switch (standardFromUnit) {
@@ -38,40 +27,36 @@ export const convertWeight = (
       grams = weight * 1000;
       break;
     case 'oz':
-      grams = weight * 28.35;
+      grams = weight * 28.3495;
       break;
     case 'lb':
-      grams = weight * 453.59;
+      grams = weight * 453.592;
       break;
     default:
-      grams = weight; // Default to assuming grams
+      grams = weight;
   }
-
-  // Then convert from grams to desired unit
+  
+  // Convert from grams to target unit
   switch (standardToUnit) {
     case 'g':
-      return Math.round(grams * 10) / 10;
+      return Math.round(grams);
     case 'kg':
-      return Math.round((grams / 1000) * 100) / 100;
+      return parseFloat((grams / 1000).toFixed(2));
     case 'oz':
-      return Math.round((grams / 28.35) * 100) / 100;
+      return parseFloat((grams / 28.3495).toFixed(2));
     case 'lb':
-      return Math.round((grams / 453.59) * 100) / 100;
+      return parseFloat((grams / 453.592).toFixed(2));
     default:
-      return Math.round(grams * 10) / 10; // Default to grams
+      return weight;
   }
 };
 
-// Re-export functions from common
-export { standardizeWeightUnit, formatWeightWithUnit, getWeightUnitName };
-
 /**
- * Calculate percent change between two weights
- * @param newWeight - The new weight
- * @param oldWeight - The old weight
- * @returns Percent change
+ * Format a weight with its appropriate unit for display
  */
-export const calculatePercentChange = (newWeight: number, oldWeight: number): number => {
-  if (oldWeight === 0) return 0;
-  return ((newWeight - oldWeight) / oldWeight) * 100;
+export const formatWeightWithDisplay = (
+  weight: number,
+  unit: WeightUnit
+): string => {
+  return formatWeightWithUnit(weight, unit);
 };
