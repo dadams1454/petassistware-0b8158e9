@@ -46,6 +46,7 @@ export type {
   HealthCertificate,
   WeightData,
   HealthRecordType,
+  WeightRecord as HealthWeightRecord,
   WeightUnit
 } from './health';
 
