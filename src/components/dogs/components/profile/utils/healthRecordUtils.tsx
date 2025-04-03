@@ -51,6 +51,29 @@ export const getRecordTypeIcon = (type: string | HealthRecordTypeEnum): React.Re
   return option ? option.icon : <FileText className="h-4 w-4 mr-2" />;
 };
 
+// Helper function to get health record icon
+export const getHealthRecordIcon = (type: string | HealthRecordTypeEnum): React.ReactNode => {
+  return getRecordTypeIcon(type);
+};
+
+// Helper function to get health record color class
+export const getHealthRecordColor = (type: string | HealthRecordTypeEnum): string => {
+  const typeEnum = typeof type === 'string' ? stringToHealthRecordType(type) : type;
+  
+  switch (typeEnum) {
+    case HealthRecordTypeEnum.Vaccination:
+      return 'text-blue-500';
+    case HealthRecordTypeEnum.Medication:
+      return 'text-purple-500';
+    case HealthRecordTypeEnum.Surgery:
+      return 'text-red-500';
+    case HealthRecordTypeEnum.Examination:
+      return 'text-green-500';
+    default:
+      return 'text-gray-500';
+  }
+};
+
 // Helper function to format a date from ISO string to a readable format
 export const formatDate = (dateString: string): string => {
   if (!dateString) return 'Not specified';
@@ -83,3 +106,6 @@ export const isOverdue = (dueDate: string | null | undefined): boolean => {
   
   return due < today;
 };
+
+// Re-export directly to ensure proper type exports
+export { HealthRecordTypeEnum };

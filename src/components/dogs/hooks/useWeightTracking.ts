@@ -1,22 +1,24 @@
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { WeightRecord } from '@/types/health';
 import { 
   getWeightHistory, 
-  addWeightRecord as addRecord,
-  deleteWeightRecord as deleteRecord
+  addWeightRecord, 
+  deleteWeightRecord 
 } from '@/services/healthService';
-import { WeightRecord } from '@/types/health';
-import { WeightUnit, standardizeWeightUnit } from '@/types/common';
 
 export const useWeightTracking = (dogId: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
   // Fetch weight history
   const {
-    data: weightHistory,
+    data: weightHistory = [],
     isLoading,
+    isError,
     error,
     refetch
   } = useQuery({
@@ -24,113 +26,77 @@ export const useWeightTracking = (dogId: string) => {
     queryFn: () => getWeightHistory(dogId),
     enabled: !!dogId
   });
-  
+
   // Add a weight record
-  const addWeightRecord = useMutation({
-    mutationFn: (record: Omit<WeightRecord, 'id' | 'created_at'>) => 
-      addRecord(record),
+  const addWeight = useMutation({
+    mutationFn: (record: Partial<WeightRecord>) => {
+      return addWeightRecord({
+        ...record,
+        dog_id: dogId
+      });
+    },
     onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Weight record added successfully'
+      });
       queryClient.invalidateQueries({ queryKey: ['weightHistory', dogId] });
-      toast({
-        title: 'Weight record added',
-        description: 'The weight record has been successfully added',
-      });
+      setIsAddDialogOpen(false);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: 'Failed to add weight record',
-        description: error.message,
-        variant: 'destructive',
+        title: 'Error',
+        description: `Failed to add weight record: ${(error as Error).message}`,
+        variant: 'destructive'
       });
-    },
+    }
   });
-  
+
   // Delete a weight record
-  const deleteWeightRecord = useMutation({
-    mutationFn: (id: string) => deleteRecord(id),
+  const deleteWeight = useMutation({
+    mutationFn: (id: string) => {
+      return deleteWeightRecord(id);
+    },
     onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Weight record deleted successfully'
+      });
       queryClient.invalidateQueries({ queryKey: ['weightHistory', dogId] });
-      toast({
-        title: 'Weight record deleted',
-        description: 'The weight record has been successfully deleted',
-      });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: 'Failed to delete weight record',
-        description: error.message,
-        variant: 'destructive',
+        title: 'Error',
+        description: `Failed to delete weight record: ${(error as Error).message}`,
+        variant: 'destructive'
       });
-    },
+    }
   });
-  
-  // Calculate weight trends
-  const calculateGrowthRate = () => {
-    if (!weightHistory || weightHistory.length < 2) return null;
-    
-    // Sort by date
-    const sortedHistory = [...weightHistory].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-    
-    const firstRecord = sortedHistory[0];
-    const lastRecord = sortedHistory[sortedHistory.length - 1];
-    
-    // Convert weights to the same unit (kg)
-    const firstWeight = convertWeightToKg(firstRecord.weight, firstRecord.unit || firstRecord.weight_unit);
-    const lastWeight = convertWeightToKg(lastRecord.weight, lastRecord.unit || lastRecord.weight_unit);
-    
-    // Calculate days between measurements
-    const daysDiff = Math.max(1, Math.floor(
-      (new Date(lastRecord.date).getTime() - new Date(firstRecord.date).getTime()) 
-      / (1000 * 60 * 60 * 24)
-    ));
-    
-    // Weight difference
-    const weightDiff = lastWeight - firstWeight;
-    
-    // Calculate growth per day
-    const growthPerDay = weightDiff / daysDiff;
-    
-    return {
-      totalGain: weightDiff,
-      daysTracked: daysDiff,
-      growthPerDay,
-      growthPerWeek: growthPerDay * 7,
-      growthPerMonth: growthPerDay * 30,
-      initialWeight: firstWeight,
-      currentWeight: lastWeight,
-      percentageGain: (weightDiff / firstWeight) * 100
-    };
+
+  // Calculate weight change over time
+  const calculateWeightChange = (currentWeight: number, previousWeight: number): number => {
+    if (!previousWeight) return 0;
+    const change = ((currentWeight - previousWeight) / previousWeight) * 100;
+    return parseFloat(change.toFixed(1));
   };
-  
+
+  // Get the latest weight record
+  const getLatestWeight = (): WeightRecord | undefined => {
+    if (!weightHistory || weightHistory.length === 0) return undefined;
+    return weightHistory[0];
+  };
+
   return {
     weightHistory,
     isLoading,
+    isError,
     error,
     refetch,
-    addWeightRecord: addWeightRecord.mutate,
-    deleteWeightRecord: deleteWeightRecord.mutate,
-    isAdding: addWeightRecord.isPending,
-    isDeleting: deleteWeightRecord.isPending,
-    growthStats: calculateGrowthRate()
+    isAddDialogOpen,
+    setIsAddDialogOpen,
+    addWeight: addWeight.mutateAsync,
+    deleteWeight: deleteWeight.mutateAsync,
+    calculateWeightChange,
+    getLatestWeight
   };
-};
-
-// Helper function to convert weight to kg for calculations
-const convertWeightToKg = (weight: number, unit: string): number => {
-  const standardUnit = standardizeWeightUnit(unit);
-  
-  switch (standardUnit) {
-    case 'kg':
-      return weight;
-    case 'lb':
-      return weight * 0.453592;
-    case 'g':
-      return weight / 1000;
-    case 'oz':
-      return weight * 0.0283495;
-    default:
-      return weight;
-  }
 };

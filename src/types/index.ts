@@ -60,9 +60,12 @@ export {
 } from './health';
 
 // Export common functions and types
-export {
-  WeightUnit,
-  WeightUnitWithLegacy,
+export type { 
+  WeightUnit as CommonWeightUnit, 
+  WeightUnitWithLegacy
+} from './common';
+
+export { 
   standardizeWeightUnit,
   formatWeightWithUnit,
   getWeightUnitName,

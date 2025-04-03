@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types';
+import { HealthRecord, HealthRecordTypeEnum, stringToHealthRecordType } from '@/types';
 import RecordTypeField from './form-fields/RecordTypeField';
 import TitleField from './form-fields/TitleField';
 import VisitDateField from './form-fields/VisitDateField';

@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { MedicationStatus } from '@/utils/medicationUtils';
+import { MedicationStatus as MedicationStatusEnum } from '@/utils/medicationUtils';
 
 interface MedicationStatusDisplayProps {
-  status: MedicationStatus | 'incomplete' | 'current' | 'due_soon' | 'overdue';
+  status: MedicationStatusEnum | 'incomplete' | 'current' | 'due_soon' | 'overdue';
   statusColor: string;
   showLabel?: boolean;
 }
@@ -16,15 +16,15 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
 }) => {
   const getDisplayLabel = () => {
     switch (status) {
-      case MedicationStatus.Active:
+      case MedicationStatusEnum.Active:
         return 'Active';
-      case MedicationStatus.Completed:
+      case MedicationStatusEnum.Completed:
         return 'Complete';
-      case MedicationStatus.Upcoming:
+      case MedicationStatusEnum.Upcoming:
         return 'Upcoming';
-      case MedicationStatus.Expired:
+      case MedicationStatusEnum.Expired:
         return 'Expired';
-      case MedicationStatus.Missed:
+      case MedicationStatusEnum.Missed:
         return 'Missed';
       case 'current':
         return 'Current';

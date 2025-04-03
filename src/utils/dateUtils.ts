@@ -44,3 +44,18 @@ export const formatDate = (date: Date | string): string => {
     day: 'numeric'
   });
 };
+
+/**
+ * Format a date to a display format (Month D, YYYY)
+ */
+export const formatDateForDisplay = (date: Date | string | null): string => {
+  if (!date) return 'N/A';
+  
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  return dateObj.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};

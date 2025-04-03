@@ -1,144 +1,171 @@
+
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types';
 import { 
   getHealthRecords, 
-  getHealthRecordsByType,
-  addHealthRecord as addRecord, 
-  updateHealthRecord as updateRecord, 
-  deleteHealthRecord as deleteRecord,
+  getHealthRecord, 
+  addHealthRecord, 
+  updateHealthRecord, 
+  deleteHealthRecord, 
   getUpcomingVaccinations
 } from '@/services/healthService';
+import { useToast } from '@/hooks/use-toast';
 
 export const useHealthRecords = (dogId: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [recordTypeFilter, setRecordTypeFilter] = useState<HealthRecordTypeEnum | null>(null);
+
   // Fetch all health records
-  const { 
-    data: healthRecords, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: healthRecords = [],
+    isLoading,
+    isError,
+    error,
+    refetch
   } = useQuery({
-    queryKey: ['healthRecords', dogId],
-    queryFn: () => getHealthRecords(dogId),
-    enabled: !!dogId,
+    queryKey: ['healthRecords', dogId, recordTypeFilter],
+    queryFn: () => getHealthRecords(dogId, recordTypeFilter || undefined),
+    enabled: !!dogId
   });
 
-  // Fetch records by type
-  const getRecordsByType = (type: HealthRecordTypeEnum) => {
-    return healthRecords?.filter(record => record.record_type === type) || [];
-  };
+  // Fetch a single health record by ID
+  const {
+    data: selectedRecord,
+    isLoading: isLoadingRecord,
+    refetch: refetchRecord
+  } = useQuery({
+    queryKey: ['healthRecord', selectedRecordId],
+    queryFn: () => getHealthRecord(selectedRecordId!),
+    enabled: !!selectedRecordId,
+  });
+
+  // Fetch upcoming vaccinations
+  const {
+    data: upcomingVaccinations = []
+  } = useQuery({
+    queryKey: ['upcomingVaccinations', dogId],
+    queryFn: () => getUpcomingVaccinations(dogId),
+    enabled: !!dogId
+  });
 
   // Add a new health record
-  const addHealthRecord = useMutation({
-    mutationFn: (record: Omit<HealthRecord, 'id' | 'created_at'>) => 
-      addRecord(record),
+  const addRecord = useMutation({
+    mutationFn: (record: Partial<HealthRecord>) => {
+      return addHealthRecord({
+        ...record,
+        dog_id: dogId
+      });
+    },
     onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Health record added successfully'
+      });
       queryClient.invalidateQueries({ queryKey: ['healthRecords', dogId] });
-      toast({
-        title: 'Health record added',
-        description: 'The health record has been successfully added',
-      });
+      setIsAddDialogOpen(false);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: 'Failed to add health record',
-        description: error.message,
-        variant: 'destructive',
+        title: 'Error',
+        description: `Failed to add health record: ${(error as Error).message}`,
+        variant: 'destructive'
       });
-    },
+    }
   });
 
-  // Update an existing health record
-  const updateHealthRecord = useMutation({
-    mutationFn: ({ id, ...updates }: { id: string; [key: string]: any }) => 
-      updateRecord(id, updates),
+  // Update a health record
+  const updateRecord = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<HealthRecord> }) => {
+      return updateHealthRecord(id, data);
+    },
     onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Health record updated successfully'
+      });
       queryClient.invalidateQueries({ queryKey: ['healthRecords', dogId] });
-      toast({
-        title: 'Health record updated',
-        description: 'The health record has been successfully updated',
-      });
+      queryClient.invalidateQueries({ queryKey: ['healthRecord', selectedRecordId] });
+      setIsEditDialogOpen(false);
+      setSelectedRecordId(null);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: 'Failed to update health record',
-        description: error.message,
-        variant: 'destructive',
+        title: 'Error',
+        description: `Failed to update health record: ${(error as Error).message}`,
+        variant: 'destructive'
       });
-    },
+    }
   });
 
   // Delete a health record
-  const deleteHealthRecord = useMutation({
-    mutationFn: (id: string) => deleteRecord(id),
+  const deleteRecord = useMutation({
+    mutationFn: (id: string) => {
+      return deleteHealthRecord(id);
+    },
     onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Health record deleted successfully'
+      });
       queryClient.invalidateQueries({ queryKey: ['healthRecords', dogId] });
-      toast({
-        title: 'Health record deleted',
-        description: 'The health record has been successfully deleted',
-      });
+      setIsEditDialogOpen(false);
+      setSelectedRecordId(null);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: 'Failed to delete health record',
-        description: error.message,
-        variant: 'destructive',
+        title: 'Error',
+        description: `Failed to delete health record: ${(error as Error).message}`,
+        variant: 'destructive'
       });
-    },
+    }
   });
 
-  // Get upcoming vaccinations
-  const getUpcomingVaccinationsData = (daysAhead = 30) => {
-    if (!healthRecords) return [];
-    
-    const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + daysAhead);
-    
-    return healthRecords
-      .filter(record => 
-        record.record_type === HealthRecordTypeEnum.Vaccination && 
-        record.next_due_date && 
-        new Date(record.next_due_date) >= today &&
-        new Date(record.next_due_date) <= futureDate
-      )
-      .sort((a, b) => 
-        new Date(a.next_due_date!).getTime() - new Date(b.next_due_date!).getTime()
-      );
+  // Helper to filter health records by type
+  const getRecordsByType = (type: HealthRecordTypeEnum): HealthRecord[] => {
+    return healthRecords.filter(record => 
+      record.record_type === type || 
+      (typeof record.record_type === 'string' && stringToHealthRecordType(record.record_type) === type)
+    );
   };
-  
-  // Get overdue vaccinations
-  const getOverdueVaccinations = () => {
-    if (!healthRecords) return [];
-    
-    const today = new Date();
-    return healthRecords
-      .filter(record => 
-        record.record_type === HealthRecordTypeEnum.Vaccination && 
-        record.next_due_date && 
-        new Date(record.next_due_date) < today
-      )
-      .sort((a, b) => 
-        new Date(a.next_due_date!).getTime() - new Date(b.next_due_date!).getTime()
-      );
+
+  // Handle opening the add dialog
+  const handleAddRecord = (recordType?: HealthRecordTypeEnum) => {
+    setIsAddDialogOpen(true);
+  };
+
+  // Handle opening the edit dialog
+  const handleEditRecord = (recordId: string) => {
+    setSelectedRecordId(recordId);
+    setIsEditDialogOpen(true);
   };
 
   return {
+    dogId,
     healthRecords,
+    selectedRecord,
     isLoading,
+    isLoadingRecord,
+    isError,
     error,
     refetch,
-    addHealthRecord: addHealthRecord.mutate,
-    updateHealthRecord: updateHealthRecord.mutate,
-    deleteHealthRecord: deleteHealthRecord.mutate,
-    isAdding: addHealthRecord.isPending,
-    isUpdating: updateHealthRecord.isPending,
-    isDeleting: deleteHealthRecord.isPending,
+    refetchRecord,
+    isAddDialogOpen,
+    isEditDialogOpen,
+    setIsAddDialogOpen,
+    setIsEditDialogOpen,
+    addRecord: addRecord.mutateAsync,
+    updateRecord: updateRecord.mutateAsync,
+    deleteRecord: deleteRecord.mutateAsync,
+    handleAddRecord,
+    handleEditRecord,
+    recordTypeFilter,
+    setRecordTypeFilter,
     getRecordsByType,
-    getUpcomingVaccinations: getUpcomingVaccinationsData,
-    getOverdueVaccinations
+    upcomingVaccinations
   };
 };
