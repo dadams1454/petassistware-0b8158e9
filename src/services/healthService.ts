@@ -222,3 +222,111 @@ export const deleteWeightRecord = async (id: string): Promise<void> => {
     throw error;
   }
 };
+
+/**
+ * Get upcoming medications that are due soon (next 30 days)
+ */
+export const getUpcomingMedications = async (dogId?: string): Promise<HealthRecord[]> => {
+  const today = new Date().toISOString().split('T')[0];
+  const thirtyDaysLater = new Date();
+  thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+  const futureDate = thirtyDaysLater.toISOString().split('T')[0];
+  
+  let query = supabase
+    .from('health_records')
+    .select('*')
+    .eq('record_type', HealthRecordTypeEnum.Medication)
+    .gte('next_due_date', today)
+    .lte('next_due_date', futureDate)
+    .order('next_due_date', { ascending: true });
+    
+  // If dogId is provided, filter by it
+  if (dogId) {
+    query = query.eq('dog_id', dogId);
+  }
+  
+  const { data, error } = await query;
+    
+  if (error) {
+    console.error('Error fetching upcoming medications:', error);
+    throw error;
+  }
+  
+  return data.map(record => mapToHealthRecord(record));
+};
+
+/**
+ * Get expiring medications based on expiration date
+ */
+export const getExpiringMedications = async (dogId?: string): Promise<HealthRecord[]> => {
+  const today = new Date().toISOString().split('T')[0];
+  const thirtyDaysLater = new Date();
+  thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+  const futureDate = thirtyDaysLater.toISOString().split('T')[0];
+  
+  let query = supabase
+    .from('health_records')
+    .select('*')
+    .eq('record_type', HealthRecordTypeEnum.Medication)
+    .not('expiration_date', 'is', null)
+    .lte('expiration_date', futureDate)
+    .order('expiration_date', { ascending: true });
+    
+  // If dogId is provided, filter by it
+  if (dogId) {
+    query = query.eq('dog_id', dogId);
+  }
+  
+  const { data, error } = await query;
+    
+  if (error) {
+    console.error('Error fetching expiring medications:', error);
+    throw error;
+  }
+  
+  return data.map(record => mapToHealthRecord(record));
+};
+
+/**
+ * Get upcoming vaccinations
+ */
+export const getUpcomingVaccinations = async (dogId: string): Promise<HealthRecord[]> => {
+  const today = new Date().toISOString().split('T')[0];
+  const sixMonthsLater = new Date();
+  sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+  const futureDate = sixMonthsLater.toISOString().split('T')[0];
+  
+  const { data, error } = await supabase
+    .from('health_records')
+    .select('*')
+    .eq('dog_id', dogId)
+    .eq('record_type', HealthRecordTypeEnum.Vaccination)
+    .gte('next_due_date', today)
+    .lte('next_due_date', futureDate)
+    .order('next_due_date', { ascending: true });
+    
+  if (error) {
+    console.error('Error fetching upcoming vaccinations:', error);
+    throw error;
+  }
+  
+  return data.map(record => mapToHealthRecord(record));
+};
+
+/**
+ * Get a dog's weight history
+ */
+export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> => {
+  const { data, error } = await supabase
+    .from('weight_records')
+    .select('*')
+    .eq('dog_id', dogId)
+    .order('date', { ascending: true });
+    
+  if (error) {
+    console.error('Error fetching weight history:', error);
+    throw error;
+  }
+  
+  return data.map(record => mapToWeightRecord(record));
+};
