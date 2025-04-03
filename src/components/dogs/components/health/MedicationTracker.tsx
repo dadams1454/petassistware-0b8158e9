@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { Bell, Calendar, AlertTriangle, Check, Clock } from 'lucide-react';
@@ -9,7 +10,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { getUpcomingMedications, getExpiringMedications, updateHealthRecord } from '@/services/healthService';
 import { HealthRecord, HealthRecordTypeEnum } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { MedicationFrequency } from '@/utils/medicationUtils';
+import { MedicationFrequency, MedicationStatus } from '@/utils/medicationUtils';
 
 interface MedicationTrackerProps {
   dogId?: string; // Optional: if provided, only shows medications for this dog

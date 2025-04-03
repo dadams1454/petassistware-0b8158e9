@@ -5,6 +5,15 @@ import { MedicationFrequency } from '@/types/health';
 // Export the MedicationFrequency enum for components to use
 export { MedicationFrequency };
 
+// Define MedicationStatus enum
+export enum MedicationStatus {
+  Current = 'current',
+  Due = 'due',
+  Overdue = 'overdue',
+  Upcoming = 'upcoming',
+  Completed = 'completed'
+}
+
 /**
  * Determines the status of a medication based on its schedule
  * @param startDate Start date of medication
@@ -27,7 +36,7 @@ export const getMedicationStatus = (
   // Check if medication is completed (past end date)
   if (end && end < today) {
     return { 
-      status: 'completed',
+      status: MedicationStatus.Completed,
       statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
     };
   }
@@ -35,7 +44,7 @@ export const getMedicationStatus = (
   // Check if medication hasn't started yet
   if (start > today) {
     return { 
-      status: 'upcoming',
+      status: MedicationStatus.Upcoming,
       statusColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
     };
   }
@@ -43,7 +52,7 @@ export const getMedicationStatus = (
   // If no last administered date, it's due if the start date is today or earlier
   if (!lastGiven) {
     return {
-      status: 'due',
+      status: MedicationStatus.Due,
       statusColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
     };
   }
@@ -67,7 +76,7 @@ export const getMedicationStatus = (
   } else {
     // Default to as-needed (no next due date)
     return { 
-      status: 'current',
+      status: MedicationStatus.Current,
       statusColor: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
     };
   }
@@ -78,7 +87,7 @@ export const getMedicationStatus = (
     const daysOverdue = differenceInDays(today, nextDueDate);
     
     return {
-      status: 'overdue',
+      status: MedicationStatus.Overdue,
       daysOverdue,
       nextDueDate: format(nextDueDate, 'MMM d, yyyy'),
       statusColor: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
@@ -87,7 +96,7 @@ export const getMedicationStatus = (
   
   // Otherwise, it's current and will be due on the next due date
   return {
-    status: 'current',
+    status: MedicationStatus.Current,
     nextDueDate: format(nextDueDate, 'MMM d, yyyy'),
     daysUntilDue: differenceInDays(nextDueDate, today),
     statusColor: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
@@ -108,16 +117,15 @@ export const isComplexStatus = (
  */
 export const getStatusColor = (status: string): string => {
   switch (status) {
-    case 'active':
-    case 'current':
+    case MedicationStatus.Current:
       return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-    case 'completed':
+    case MedicationStatus.Completed:
       return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
-    case 'upcoming':
+    case MedicationStatus.Upcoming:
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-    case 'due':
+    case MedicationStatus.Due:
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
-    case 'overdue':
+    case MedicationStatus.Overdue:
       return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
     default:
       return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
