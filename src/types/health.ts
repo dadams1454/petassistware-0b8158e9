@@ -1,6 +1,6 @@
 
 import { WeightUnit } from './common';
-export { WeightUnit };
+export type { WeightUnit };
 
 // Health record type enum
 export enum HealthRecordTypeEnum {
