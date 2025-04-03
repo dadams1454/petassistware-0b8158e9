@@ -10,6 +10,7 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
   const [medicationLogs, setMedicationLogs] = useState<ProcessedMedicationLogs>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [loadedDogs, setLoadedDogs] = useState<DogCareStatus[]>([]);
 
   useEffect(() => {
     if (!dogs.length) return;
@@ -103,6 +104,7 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
         }
         
         setMedicationLogs(processedLogs);
+        setLoadedDogs(dogs);
       } catch (err) {
         console.error('Error fetching medication logs:', err);
         setError(err as Error);
@@ -117,6 +119,7 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
   return {
     medicationLogs,
     isLoading,
-    error
+    error,
+    dogs: loadedDogs
   };
 };

@@ -18,13 +18,20 @@ export enum ReproductiveStatus {
   Pregnant = 'pregnant',
   Nursing = 'nursing',
   Spayed = 'spayed',
-  Neutered = 'neutered'
+  Neutered = 'neutered',
+  Altered = 'altered',
+  NotInHeat = 'not_in_heat',
+  PreHeat = 'pre_heat',
+  Whelping = 'whelping',
+  Recovery = 'recovery'
 }
 
 export enum HeatIntensity {
   Light = 'light',
+  Mild = 'mild',
   Moderate = 'moderate',
-  Heavy = 'heavy'
+  Strong = 'strong',
+  Unknown = 'unknown'
 }
 
 export interface HeatCycle {
@@ -54,6 +61,13 @@ export interface BreedingRecord {
   created_at?: string;
   created_by?: string;
   sire?: Dog;
+  
+  // Extended properties
+  tie_date?: string;
+  breeding_method?: string;
+  is_successful?: boolean;
+  heat_cycle_id?: string;
+  estimated_due_date?: string;
 }
 
 export interface PregnancyRecord {
@@ -66,6 +80,13 @@ export interface PregnancyRecord {
   notes?: string;
   created_at: string;
   created_by?: string;
+  
+  // Extended properties
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 export interface ReproductiveMilestone {
@@ -76,6 +97,7 @@ export interface ReproductiveMilestone {
   notes?: string;
   created_at: string;
   created_by?: string;
+  date?: string;
 }
 
 export interface HeatStage {
@@ -97,6 +119,7 @@ export interface BreedingChecklistItem {
   isCompleted: boolean;
   dueDate?: string;
   category: string;
+  task?: string;
 }
 
 export interface ReproductiveCycleData {
@@ -119,4 +142,17 @@ export interface ReproductiveCycleData {
   daysUntilDue?: number;
   gestationDays?: number;
   heatStages: HeatStage[];
+  status?: ReproductiveStatus;
+  fertilityWindow?: { start: Date; end: Date };
+  estimatedDueDate?: Date;
+  averageCycleLength?: number;
+}
+
+export interface BreedingPrepFormData {
+  dam_id: string;
+  sire_id: string;
+  tie_date: string;
+  estimated_due_date: string;
+  breeding_method: string;
+  notes: string;
 }

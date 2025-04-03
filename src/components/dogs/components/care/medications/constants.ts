@@ -6,12 +6,12 @@ export const MedicationFrequencyOptions: {
   value: MedicationFrequency;
   label: string;
 }[] = [
-  { value: 'daily', label: 'Once daily' },
-  { value: 'twice_daily', label: 'Twice daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Every two weeks' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'as_needed', label: 'As needed' }
+  { value: MedicationFrequency.DAILY, label: 'Once daily' },
+  { value: MedicationFrequency.TWICE_DAILY, label: 'Twice daily' },
+  { value: MedicationFrequency.WEEKLY, label: 'Weekly' },
+  { value: MedicationFrequency.BIWEEKLY, label: 'Every two weeks' },
+  { value: MedicationFrequency.MONTHLY, label: 'Monthly' },
+  { value: MedicationFrequency.AS_NEEDED, label: 'As needed' }
 ];
 
 // Administration route options

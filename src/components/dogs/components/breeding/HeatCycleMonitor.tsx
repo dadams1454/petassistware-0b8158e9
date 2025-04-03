@@ -10,23 +10,23 @@ import HeatCycleDialog from './HeatCycleDialog';
 // Helper to ensure intensity is a valid HeatIntensity value
 const ensureValidIntensity = (cycle: any): HeatCycle => {
   // Map string intensity to type value
-  let validIntensity: HeatIntensity = 'moderate';
+  let validIntensity: HeatIntensity;
   
   switch (cycle.intensity) {
     case 'mild':
-      validIntensity = 'mild';
+      validIntensity = HeatIntensity.Mild;
       break;
     case 'moderate':
-      validIntensity = 'moderate';
+      validIntensity = HeatIntensity.Moderate;
       break;
     case 'strong':
-      validIntensity = 'strong';
+      validIntensity = HeatIntensity.Strong;
       break;
     case 'unknown':
-      validIntensity = 'unknown';
+      validIntensity = HeatIntensity.Unknown;
       break;
     default:
-      validIntensity = 'moderate';
+      validIntensity = HeatIntensity.Moderate;
   }
   
   return {

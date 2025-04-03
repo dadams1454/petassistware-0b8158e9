@@ -32,12 +32,15 @@ export const getStatusColor = (status: string | ReproductiveStatus): string => {
     case ReproductiveStatus.Nursing:
     case 'nursing':
       return 'bg-purple-100 text-purple-800 border-purple-200';
+    case ReproductiveStatus.PreHeat:
     case 'pre_heat':
     case 'preheat':
       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     case 'whelping':
+    case ReproductiveStatus.Whelping:
       return 'bg-pink-100 text-pink-800 border-pink-200';
     case 'recovery':
+    case ReproductiveStatus.Recovery:
       return 'bg-green-100 text-green-800 border-green-200';
     case ReproductiveStatus.Altered:
     case 'altered':
@@ -63,10 +66,13 @@ export const getStatusDisplay = (status: string | ReproductiveStatus): string =>
       return 'Nursing';
     case 'pre_heat':
     case 'preheat':
+    case ReproductiveStatus.PreHeat:
       return 'Pre-Heat';
     case 'whelping':
+    case ReproductiveStatus.Whelping:
       return 'Whelping';
     case 'recovery':
+    case ReproductiveStatus.Recovery:
       return 'Recovery';
     case ReproductiveStatus.NotInHeat:
     case 'not_in_heat':

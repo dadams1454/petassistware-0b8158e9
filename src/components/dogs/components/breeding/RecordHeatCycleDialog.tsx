@@ -34,7 +34,7 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
   );
   const [notes, setNotes] = useState(editData?.notes || '');
   const [intensity, setIntensity] = useState<HeatIntensity>(
-    editData?.intensity || 'moderate'
+    (editData?.intensity as HeatIntensity) || HeatIntensity.Moderate
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,12 +44,12 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
       setStartDate(editData.start_date ? new Date(editData.start_date) : new Date());
       setEndDate(editData.end_date ? new Date(editData.end_date) : undefined);
       setNotes(editData.notes || '');
-      setIntensity(editData.intensity || 'moderate');
+      setIntensity((editData.intensity as HeatIntensity) || HeatIntensity.Moderate);
     } else {
       setStartDate(new Date());
       setEndDate(undefined);
       setNotes('');
-      setIntensity('moderate');
+      setIntensity(HeatIntensity.Moderate);
     }
   }, [editData]);
 
@@ -71,7 +71,7 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate ? endDate.toISOString().split('T')[0] : null,
         notes: notes.trim() || null,
-        intensity: intensity
+        intensity
       };
 
       let result;
@@ -178,22 +178,22 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
             <label className="text-sm font-medium">Intensity</label>
             <div className="flex space-x-2">
               <Button 
-                variant={intensity === 'mild' ? "default" : "outline"}
-                onClick={() => setIntensity('mild')}
+                variant={intensity === HeatIntensity.Mild ? "default" : "outline"}
+                onClick={() => setIntensity(HeatIntensity.Mild)}
                 size="sm"
               >
                 Mild
               </Button>
               <Button 
-                variant={intensity === 'moderate' ? "default" : "outline"}
-                onClick={() => setIntensity('moderate')}
+                variant={intensity === HeatIntensity.Moderate ? "default" : "outline"}
+                onClick={() => setIntensity(HeatIntensity.Moderate)}
                 size="sm"
               >
                 Moderate
               </Button>
               <Button 
-                variant={intensity === 'strong' ? "default" : "outline"}
-                onClick={() => setIntensity('strong')}
+                variant={intensity === HeatIntensity.Strong ? "default" : "outline"}
+                onClick={() => setIntensity(HeatIntensity.Strong)}
                 size="sm"
               >
                 Strong
