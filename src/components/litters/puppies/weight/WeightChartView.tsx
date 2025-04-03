@@ -10,7 +10,8 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { WeightRecord, WeightUnit } from '@/types/health';
+import { WeightRecord } from '@/types/puppyTracking';
+import { WeightUnit } from '@/types/common';
 import { convertWeight } from './weightUnits';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -46,7 +47,7 @@ const WeightChartView: React.FC<WeightChartViewProps> = ({
       // Convert weight to display unit
       const convertedWeight = convertWeight(
         record.weight, 
-        record.weight_unit || record.unit, 
+        record.weight_unit || record.unit || 'oz', 
         displayUnit
       );
 

@@ -4,13 +4,14 @@ import { format, parseISO } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { WeightRecord } from './types';
+import { WeightRecord } from '@/types/puppyTracking';
+import { WeightUnit } from '@/types/common';
 import { convertWeight } from './weightUnits';
 
 interface WeightTableProps {
   weightRecords: WeightRecord[];
   onDelete: (id: string) => void;
-  displayUnit: 'oz' | 'g' | 'lbs' | 'kg';
+  displayUnit: WeightUnit;
 }
 
 const WeightTable: React.FC<WeightTableProps> = ({ 

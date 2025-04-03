@@ -21,12 +21,20 @@ export type {
   PuppyWithAge,
   PuppyAgeGroupData,
   PuppyManagementStats,
-  WeightUnit,
-  WeightRecord,
   SocializationCategory,
   SocializationReaction,
   SocializationReactionObject,
-  SocializationProgress
+  SocializationReactionOption,
+  SocializationCategoryOption,
+  SocializationExperience,
+  SocializationRecord,
+  SocializationProgress,
+  PuppyMilestone,
+  VaccinationScheduleItem,
+  VaccinationRecord,
+  VaccinationSchedule,
+  WeightRecord,
+  PuppyWeightRecord
 } from './puppyTracking';
 
 // Export health types
@@ -45,3 +53,12 @@ export {
   EnergyLevelEnum,
   StoolConsistencyEnum
 } from './health';
+
+// Export common types
+export {
+  WeightUnit,
+  WeightUnitWithLegacy,
+  standardizeWeightUnit,
+  formatWeightWithUnit,
+  getWeightUnitName
+} from './common';
