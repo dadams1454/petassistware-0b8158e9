@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { MedicationStatus } from '@/utils/medicationUtils';
 
 interface MedicationStatusDisplayProps {
-  status: MedicationStatus | 'incomplete';
+  status: MedicationStatus | 'incomplete' | 'current' | 'due_soon' | 'overdue';
   statusColor: string;
   showLabel?: boolean;
 }

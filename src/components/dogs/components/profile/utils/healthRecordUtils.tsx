@@ -1,38 +1,62 @@
 
 import React from 'react';
-import { Syringe, Stethoscope, Pill, Activity, AlertCircle, FileText, Scissors } from 'lucide-react';
+import { FileText, Thermometer, Syringe, Pill, Scissors, Eye } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
 
-export const getHealthRecordIcon = (recordType: string) => {
+export const getRecordTypeIcon = (recordType: string) => {
   switch (recordType) {
-    case HealthRecordTypeEnum.VACCINATION:
-      return <Syringe className="h-5 w-5" />;
-    case HealthRecordTypeEnum.EXAMINATION:
-      return <Stethoscope className="h-5 w-5" />;
-    case HealthRecordTypeEnum.MEDICATION:
-      return <Pill className="h-5 w-5" />;
-    case HealthRecordTypeEnum.SURGERY:
-      return <Scissors className="h-5 w-5" />;
-    case HealthRecordTypeEnum.OBSERVATION:
-      return <AlertCircle className="h-5 w-5" />;
+    case HealthRecordTypeEnum.Vaccination:
+      return <Syringe className="h-4 w-4" />;
+    
+    case HealthRecordTypeEnum.Examination:
+      return <Thermometer className="h-4 w-4" />;
+    
+    case HealthRecordTypeEnum.Medication:
+      return <Pill className="h-4 w-4" />;
+    
+    case HealthRecordTypeEnum.Surgery:
+      return <Scissors className="h-4 w-4" />;
+    
+    case HealthRecordTypeEnum.Observation:
+      return <Eye className="h-4 w-4" />;
+    
     default:
-      return <FileText className="h-5 w-5" />;
+      return <FileText className="h-4 w-4" />;
   }
 };
 
-export const getHealthRecordColor = (recordType: string) => {
+export const getRecordTypeLabel = (recordType: string) => {
   switch (recordType) {
-    case HealthRecordTypeEnum.VACCINATION:
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-    case HealthRecordTypeEnum.EXAMINATION:
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-    case HealthRecordTypeEnum.MEDICATION:
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-    case HealthRecordTypeEnum.SURGERY:
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-    case HealthRecordTypeEnum.OBSERVATION:
-      return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300';
+    case HealthRecordTypeEnum.Vaccination:
+      return 'Vaccination';
+    
+    case HealthRecordTypeEnum.Examination:
+      return 'Examination';
+    
+    case HealthRecordTypeEnum.Medication:
+      return 'Medication';
+    
+    case HealthRecordTypeEnum.Surgery:
+      return 'Surgery';
+    
+    case HealthRecordTypeEnum.Observation:
+      return 'Observation';
+    
     default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      return recordType.charAt(0).toUpperCase() + recordType.slice(1);
   }
 };
+
+export const recordTypeOptions = [
+  { value: HealthRecordTypeEnum.Examination, label: 'Examination' },
+  { value: HealthRecordTypeEnum.Vaccination, label: 'Vaccination' },
+  { value: HealthRecordTypeEnum.Medication, label: 'Medication' },
+  { value: HealthRecordTypeEnum.Surgery, label: 'Surgery' },
+  { value: HealthRecordTypeEnum.Dental, label: 'Dental' },
+  { value: HealthRecordTypeEnum.Allergy, label: 'Allergy' },
+  { value: HealthRecordTypeEnum.Test, label: 'Test' },
+  { value: HealthRecordTypeEnum.Observation, label: 'Observation' },
+  { value: HealthRecordTypeEnum.Deworming, label: 'Deworming' },
+  { value: HealthRecordTypeEnum.Grooming, label: 'Grooming' },
+  { value: HealthRecordTypeEnum.Other, label: 'Other' }
+];

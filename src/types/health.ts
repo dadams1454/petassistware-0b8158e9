@@ -119,6 +119,7 @@ export interface WeightData {
   age?: number;
   // Add for compatibility with other code
   weights?: number[];
+  isLoading?: boolean;
 }
 
 export interface HealthIndicator {
@@ -140,6 +141,7 @@ export interface Medication {
   id: string;
   dog_id: string;
   name: string;
+  medication_name?: string; // For backward compatibility
   dosage: number;
   dosage_unit: string;
   frequency: string;
@@ -149,6 +151,8 @@ export interface Medication {
   notes?: string;
   created_at: string;
   is_active: boolean;
+  last_administered?: string; // For backward compatibility
+  puppy_id?: string; // For puppy medications
 }
 
 export interface MedicationAdministration {
