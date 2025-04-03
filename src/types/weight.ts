@@ -13,6 +13,7 @@ export interface WeightRecord {
   percent_change?: number;
   created_at: string;
   age_days?: number; // For puppy weight tracking
+  birth_date?: string; // For age calculation
 }
 
 export interface GrowthStats {
@@ -22,6 +23,10 @@ export interface GrowthStats {
   growthRate: number;
   lastWeekGrowth: number;
   projectedWeight: number;
+  percentChange: number;
+  averageGrowthRate: number;
+  weightGoal: number | null;
+  onTrack: boolean | null;
 }
 
 export interface WeightTracking {

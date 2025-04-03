@@ -5,7 +5,6 @@
 
 // Weight related types
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
-export type WeightUnitWithLegacy = WeightUnit | 'lbs';
 
 // Weight unit option for dropdowns and UI
 export interface WeightUnitOption {

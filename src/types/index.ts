@@ -1,14 +1,46 @@
+
+// Re-export all type definitions with proper handling of duplicate names
+
+// Common types
 export * from './common';
-export * from './dailyCare';
-export * from './dog';
-export * from './health';
-export * from './litter';
-export * from './organization';
-export * from './pagination';
-export * from './people';
+
+// Weight related types
+export {
+  WeightRecord,
+  GrowthStats,
+  WeightTracking
+} from './weight';
+
+// Dog related types
+export {
+  Dog,
+  DogGender,
+  DogStatus,
+  DogProfile,
+  HealthRecord,
+  HealthRecordTypeEnum,
+  DocumentType
+} from './dog';
+
+// Health related types (different from Dog health types)
+export {
+  Medication,
+  MedicationStatus,
+  MedicationLog,
+  MedicationFrequency,
+  MedicationAdministrationRoute,
+  MedicationStatusResult
+} from './health';
+
+// Reproductive and breeding types
 export * from './reproductive';
-export * from './user';
-export * from './vaccination';
+
+// Litter and puppy tracking
+export * from './litter';
 export * from './welping';
-export * from './weight';
+
+// Puppy tracking with all its specialized types
+export * from './puppyTracking';
+
+// Socialization tracking
 export * from './socialization';
