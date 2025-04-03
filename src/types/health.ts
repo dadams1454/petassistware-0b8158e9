@@ -29,7 +29,8 @@ export enum EnergyLevelEnum {
   Normal = 'normal',
   High = 'high',
   Low = 'low',
-  Lethargic = 'lethargic'
+  Lethargic = 'lethargic',
+  Hyperactive = 'hyperactive'
 }
 
 export enum StoolConsistencyEnum {
@@ -38,7 +39,8 @@ export enum StoolConsistencyEnum {
   Loose = 'loose',
   Hard = 'hard',
   Watery = 'watery',
-  Bloody = 'bloody'
+  Bloody = 'bloody',
+  Mucousy = 'mucousy'
 }
 
 export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
@@ -124,10 +126,49 @@ export interface GrowthStats {
   projectedWeight?: number;
 }
 
+export interface HealthIndicator {
+  id: string;
+  dog_id: string;
+  date: string;
+  appetite: AppetiteEnum;
+  energy: EnergyLevelEnum;
+  stool_consistency: StoolConsistencyEnum;
+  abnormal: boolean;
+  notes?: string;
+  alert_generated: boolean;
+  created_at: string;
+  created_by?: string;
+}
+
+export interface HealthAlert {
+  id: string;
+  dog_id: string;
+  indicator_id: string;
+  status: string;
+  resolved: boolean;
+  resolved_at?: string;
+  created_at: string;
+}
+
 // Helper function to convert string to HealthRecordTypeEnum
 export function stringToHealthRecordType(recordType: string): HealthRecordTypeEnum {
   if (Object.values(HealthRecordTypeEnum).includes(recordType as HealthRecordTypeEnum)) {
     return recordType as HealthRecordTypeEnum;
   }
   return HealthRecordTypeEnum.Other;
+}
+
+// Helper functions to map API responses to our types
+export function mapToHealthRecord(record: any): HealthRecord {
+  return {
+    ...record,
+    record_type: stringToHealthRecordType(record.record_type)
+  };
+}
+
+export function mapToWeightRecord(record: any): WeightRecord {
+  return {
+    ...record,
+    weight_unit: record.weight_unit || record.unit || 'lb'
+  };
 }

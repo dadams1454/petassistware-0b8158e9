@@ -37,7 +37,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { HeatCycle, HeatIntensity } from '@/types/reproductive';
+import { HeatCycle } from '@/types/dog';
+import { HeatIntensity } from '@/types/reproductive';
 
 const formSchema = z.object({
   start_date: z.date({
@@ -53,7 +54,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface HeatCycleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: Partial<HeatCycle>) => void;
+  onSubmit: (data: Partial<HeatCycle>) => Promise<void>;
   cycle: HeatCycle | null;
 }
 
@@ -68,16 +69,16 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     defaultValues: {
       start_date: cycle ? new Date(cycle.start_date) : new Date(),
       end_date: cycle?.end_date ? new Date(cycle.end_date) : undefined,
-      intensity: (cycle?.intensity as HeatIntensity) || 'moderate',
+      intensity: ((cycle?.intensity as 'mild' | 'moderate' | 'strong' | 'unknown') || 'moderate'),
       notes: cycle?.notes || '',
     },
   });
 
-  const handleSubmitForm = (values: FormValues) => {
-    onSubmit({
+  const handleSubmitForm = async (values: FormValues) => {
+    await onSubmit({
       start_date: format(values.start_date, 'yyyy-MM-dd'),
       end_date: values.end_date ? format(values.end_date, 'yyyy-MM-dd') : undefined,
-      intensity: values.intensity as HeatIntensity,
+      intensity: values.intensity,
       notes: values.notes,
     });
   };

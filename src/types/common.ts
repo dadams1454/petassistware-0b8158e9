@@ -1,18 +1,39 @@
 
-// Weight unit definitions
-export type WeightUnit = 'kg' | 'lb' | 'g' | 'oz';
-export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+// Common types used throughout the application
 
-// Standard weight units for use in forms
+export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
+
+export type WeightUnitWithLegacy = WeightUnit | string;
+
 export const weightUnits = [
-  { code: 'kg', name: 'Kilograms (kg)' },
-  { code: 'lb', name: 'Pounds (lb)' },
-  { code: 'g', name: 'Grams (g)' },
-  { code: 'oz', name: 'Ounces (oz)' }
+  { code: 'lb', name: 'Pounds' },
+  { code: 'kg', name: 'Kilograms' },
+  { code: 'g', name: 'Grams' },
+  { code: 'oz', name: 'Ounces' }
 ];
 
-// Function to standardize weight unit names
-export const standardizeWeightUnit = (unit: WeightUnitWithLegacy): WeightUnit => {
-  if (unit === 'lbs') return 'lb';
-  return unit as WeightUnit;
-};
+export function standardizeWeightUnit(unit: string): WeightUnit {
+  switch (unit.toLowerCase()) {
+    case 'lb':
+    case 'lbs':
+    case 'pound':
+    case 'pounds':
+      return 'lb';
+    case 'kg':
+    case 'kilo':
+    case 'kilos':
+    case 'kilogram':
+    case 'kilograms':
+      return 'kg';
+    case 'g':
+    case 'gram':
+    case 'grams':
+      return 'g';
+    case 'oz':
+    case 'ounce':
+    case 'ounces':
+      return 'oz';
+    default:
+      return 'lb'; // Default to pounds
+  }
+}

@@ -33,7 +33,7 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
   
   if (isComplexStatus(status)) {
     displayText = status.statusLabel || getStatusValue(status);
-    displayColor = statusColor || status.statusColor;
+    displayColor = statusColor || status.statusColor || '';
   } else if (typeof status === 'object' && status !== null) {
     // Handle MedicationStatus objects (without statusLabel)
     displayText = status.status ? status.status.charAt(0).toUpperCase() + status.status.slice(1) : 'Unknown';
@@ -41,6 +41,7 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
   } else if (typeof status === 'string') {
     // Simple string status
     displayText = status.charAt(0).toUpperCase() + status.slice(1);
+    displayColor = getStatusColor(status);
   } else {
     // Default if status is null or undefined
     displayText = 'Unknown';

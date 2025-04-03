@@ -10,14 +10,16 @@ export interface PuppyWithAge {
   photo_url?: string;
   ageInDays: number;
   ageInWeeks: number;
+  current_weight?: string;
   developmentalStage: string;
   weightHistory?: WeightRecord[];
   litter?: any;
+  birth_order?: number;
 }
 
 export interface PuppyManagementStats {
   puppies: PuppyWithAge[];
-  ageGroups: AgeGroup[];
+  ageGroups: PuppyAgeGroupData[];
   puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
   totalPuppies: number;
   availablePuppies: number;
@@ -39,6 +41,16 @@ export interface PuppyManagementStats {
     byStatus: Record<string, number>;
     byGender: Record<string, number>;
   };
+}
+
+export interface PuppyAgeGroupData {
+  id: string;
+  name: string;
+  startDay: number;
+  endDay: number;
+  color: string;
+  description: string;
+  milestones: string;
 }
 
 export interface AgeGroup {
@@ -76,13 +88,20 @@ export interface WeightRecord {
   created_at: string;
   age_days?: number;
   birth_date?: string;
+  unit?: string; // For backward compatibility
 }
 
+export type SocializationReactionType = 'positive' | 'curious' | 'neutral' | 'fearful' | 'negative';
+
+export type SocializationCategory = 'people' | 'animals' | 'environments' | 'surfaces' | 'sounds' | 'objects' | 'handling';
+
 export interface SocializationCategoryOption {
+  id: string;
   value: string;
   label: string;
   color: string;
   description: string;
+  examples?: string[];
 }
 
 export interface SocializationReactionOption {
@@ -91,10 +110,6 @@ export interface SocializationReactionOption {
   emoji: string;
   color: string;
 }
-
-export type SocializationReactionType = 'positive' | 'curious' | 'neutral' | 'fearful' | 'negative';
-
-export type SocializationCategory = 'people' | 'animals' | 'environments' | 'surfaces' | 'sounds' | 'objects' | 'handling';
 
 export interface SocializationExperience {
   id: string;
@@ -176,5 +191,25 @@ export interface VaccinationRecord {
   vaccination_date: string;
   administered_by?: string;
   lot_number?: string;
+  notes?: string;
+}
+
+export interface SocializationRecord {
+  id: string;
+  puppy_id: string;
+  category: SocializationCategory;
+  experience: string;
+  experience_date: string;
+  reaction: SocializationReactionType;
+  notes?: string;
+}
+
+export interface PuppyCareLog {
+  id: string;
+  puppy_id: string;
+  care_type: string;
+  description: string;
+  care_date: string;
+  performed_by: string;
   notes?: string;
 }
