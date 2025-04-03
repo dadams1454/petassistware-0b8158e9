@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, parseISO } from 'date-fns';
-import { Male, Female, HelpCircle } from 'lucide-react';
+import { User, UserRound, HelpCircle } from 'lucide-react';
 
 /**
  * Format a date string for display
@@ -24,9 +24,9 @@ export const renderGenderIcon = (gender: string | null) => {
   
   switch (gender.toLowerCase()) {
     case 'male':
-      return <Male className="h-3.5 w-3.5 text-blue-500" />;
+      return <User className="h-3.5 w-3.5 text-blue-500" />;
     case 'female':
-      return <Female className="h-3.5 w-3.5 text-pink-500" />;
+      return <UserRound className="h-3.5 w-3.5 text-pink-500" />;
     default:
       return <HelpCircle className="h-3.5 w-3.5 text-gray-400" />;
   }

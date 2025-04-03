@@ -54,7 +54,7 @@ export {
   StoolConsistencyEnum
 } from './health';
 
-// Export common types
+// Export common functions and types
 export {
   WeightUnit,
   WeightUnitWithLegacy,
