@@ -12,10 +12,11 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { convertWeight } from './weightUnits';
+import { WeightUnit } from '@/types/common';
 
 interface WeightChartProps {
   weightRecords: WeightRecord[];
-  displayUnit: 'oz' | 'g' | 'lb' | 'kg';
+  displayUnit: WeightUnit;
 }
 
 // Custom tooltip component for the chart
@@ -33,7 +34,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const WeightChart: React.FC<WeightChartProps> = ({ 
+export const WeightChart: React.FC<WeightChartProps> = ({ 
   weightRecords, 
   displayUnit 
 }) => {
@@ -55,7 +56,7 @@ const WeightChart: React.FC<WeightChartProps> = ({
     
     return {
       ...record,
-      age: record.age_days,
+      age: record.age_days || 0,
       displayWeight,
       displayUnit
     };

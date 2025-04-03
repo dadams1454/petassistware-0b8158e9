@@ -4,14 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { WeightChart } from './WeightChart';
+import WeightChart from './WeightChart';
 import WeightTable from './WeightTable';
 import WeightEntryForm from './WeightEntryForm';
 import { PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { convertWeight } from './weightUnits';
 import { WeightRecord } from '@/types/puppyTracking';
 import { WeightUnit } from '@/types/common';
-import { convertWeight } from './weightUnits';
 
 interface WeightTrackerProps {
   puppyId: string;
@@ -63,8 +63,8 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
     
     // Convert the weight to the selected display unit
     const convertedWeight = convertWeight(
-      latest.weight,
-      latest.weight_unit,
+      latest.weight, 
+      latest.weight_unit, 
       displayUnit
     );
     

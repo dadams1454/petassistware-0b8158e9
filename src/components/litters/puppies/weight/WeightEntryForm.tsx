@@ -68,9 +68,13 @@ const WeightEntryForm: React.FC<WeightEntryFormProps> = ({
         weight_unit: weightUnit,
         date,
         notes: notes || '',
-        created_at: initialData?.created_at || new Date().toISOString(),
-        age_days: calculateAgeDays()
+        created_at: initialData?.created_at || new Date().toISOString()
       };
+      
+      // Add age_days if birthDate is available
+      if (birthDate) {
+        weightRecord.age_days = calculateAgeDays();
+      }
       
       onSave(weightRecord);
     } catch (error) {
