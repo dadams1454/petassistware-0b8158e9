@@ -11,13 +11,15 @@ import {
   FileQuestion,
   Scan,
 } from 'lucide-react';
-import { HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordTypeEnum, HealthRecordType, stringToHealthRecordType } from '@/types/health';
 
 /**
  * Get the appropriate icon for a health record type
  */
-export const getHealthRecordIcon = (recordType: string) => {
-  switch (recordType) {
+export const getHealthRecordIcon = (recordType: string | HealthRecordTypeEnum) => {
+  const type = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
+  
+  switch (type) {
     case HealthRecordTypeEnum.Examination:
       return Stethoscope;
     case HealthRecordTypeEnum.Vaccination:
@@ -46,8 +48,10 @@ export const getHealthRecordIcon = (recordType: string) => {
 /**
  * Get the appropriate color for a health record type
  */
-export const getHealthRecordColor = (recordType: string) => {
-  switch (recordType) {
+export const getHealthRecordColor = (recordType: string | HealthRecordTypeEnum) => {
+  const type = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
+  
+  switch (type) {
     case HealthRecordTypeEnum.Examination:
       return 'blue';
     case HealthRecordTypeEnum.Vaccination:
@@ -73,10 +77,7 @@ export const getHealthRecordColor = (recordType: string) => {
   }
 };
 
-// Export individual functions
-export { getHealthRecordIcon, getHealthRecordColor };
-
-// Also export as default for backward compatibility
+// Export default object for backward compatibility
 export default {
   getHealthRecordIcon,
   getHealthRecordColor

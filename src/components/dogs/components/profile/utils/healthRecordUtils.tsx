@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
 import { Syringe, Stethoscope, Pill, Scissors, FileText } from 'lucide-react';
 
 // Define record type options with icons and labels
@@ -38,14 +38,16 @@ export const recordTypeOptions = [
 ];
 
 // Helper function to get record type label
-export const getRecordTypeLabel = (type: string): string => {
-  const option = recordTypeOptions.find(option => option.value === type);
+export const getRecordTypeLabel = (type: string | HealthRecordTypeEnum): string => {
+  const typeEnum = typeof type === 'string' ? stringToHealthRecordType(type) : type;
+  const option = recordTypeOptions.find(option => option.value === typeEnum);
   return option ? option.label : 'Unknown';
 };
 
 // Helper function to get record type icon
-export const getRecordTypeIcon = (type: string): React.ReactNode => {
-  const option = recordTypeOptions.find(option => option.value === type);
+export const getRecordTypeIcon = (type: string | HealthRecordTypeEnum): React.ReactNode => {
+  const typeEnum = typeof type === 'string' ? stringToHealthRecordType(type) : type;
+  const option = recordTypeOptions.find(option => option.value === typeEnum);
   return option ? option.icon : <FileText className="h-4 w-4 mr-2" />;
 };
 

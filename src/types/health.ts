@@ -1,9 +1,10 @@
-import { WeightUnit as CommonWeightUnit, WeightUnitWithLegacy } from './common';
+
+import { WeightUnit as CommonWeightUnit } from './common';
 
 // Define weight unit type using the common definition
 export type WeightUnit = CommonWeightUnit;
 
-// Using enum with string values for better type-safety
+// Using enum with string values for better type-safety and consistency
 export enum HealthRecordTypeEnum {
   Examination = 'examination',
   Vaccination = 'vaccination',
@@ -17,6 +18,20 @@ export enum HealthRecordTypeEnum {
   Grooming = 'grooming',
   Other = 'other'
 }
+
+// String union type for better compatibility with database
+export type HealthRecordType = 
+  | 'examination'
+  | 'vaccination'
+  | 'medication'
+  | 'surgery'
+  | 'dental'
+  | 'allergy'
+  | 'test'
+  | 'observation'
+  | 'deworming'
+  | 'grooming'
+  | 'other';
 
 export enum AppetiteLevelEnum {
   Excellent = 'excellent',
@@ -54,7 +69,7 @@ export interface HealthRecord {
   id: string;
   dog_id: string;
   title: string;
-  record_type: HealthRecordTypeEnum | string;
+  record_type: HealthRecordTypeEnum | HealthRecordType;
   visit_date: string;
   record_notes?: string;
   vet_name: string;
@@ -178,3 +193,15 @@ export interface HealthCertificate {
   notes?: string;
   created_at: string;
 }
+
+// Helper functions to convert between enum and string
+export const healthRecordTypeToString = (type: HealthRecordTypeEnum): HealthRecordType => {
+  return type as unknown as HealthRecordType;
+};
+
+export const stringToHealthRecordType = (type: string): HealthRecordTypeEnum => {
+  const enumValues = Object.values(HealthRecordTypeEnum);
+  return enumValues.includes(type as HealthRecordTypeEnum)
+    ? type as HealthRecordTypeEnum
+    : HealthRecordTypeEnum.Other;
+};

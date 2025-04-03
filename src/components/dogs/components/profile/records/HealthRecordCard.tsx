@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { Pill, Stethoscope, Syringe, AlertCircle, Activity, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
+import { getHealthRecordIcon } from '@/components/dogs/components/utils/healthRecordUtils';
 
 interface HealthRecordCardProps {
   record: HealthRecord;
@@ -11,20 +12,23 @@ interface HealthRecordCardProps {
 }
 
 const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) => {
-  const getIcon = (recordType: string) => {
-    switch (recordType) {
+  const getIcon = (recordType: string | HealthRecordTypeEnum) => {
+    const type = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
+    const Icon = getHealthRecordIcon(type);
+    
+    switch (type) {
       case HealthRecordTypeEnum.Vaccination:
-        return <Syringe className="h-5 w-5 text-green-500" />;
+        return <Icon className="h-5 w-5 text-green-500" />;
       case HealthRecordTypeEnum.Examination:
-        return <Stethoscope className="h-5 w-5 text-blue-500" />;
+        return <Icon className="h-5 w-5 text-blue-500" />;
       case HealthRecordTypeEnum.Medication:
-        return <Pill className="h-5 w-5 text-purple-500" />;
+        return <Icon className="h-5 w-5 text-purple-500" />;
       case HealthRecordTypeEnum.Surgery:
-        return <Activity className="h-5 w-5 text-red-500" />;
+        return <Icon className="h-5 w-5 text-red-500" />;
       case HealthRecordTypeEnum.Observation:
-        return <AlertCircle className="h-5 w-5 text-amber-500" />;
+        return <Icon className="h-5 w-5 text-amber-500" />;
       default:
-        return <FileText className="h-5 w-5 text-gray-500" />;
+        return <Icon className="h-5 w-5 text-gray-500" />;
     }
   };
   
@@ -43,7 +47,7 @@ const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) 
               </span>
             </div>
             <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-              {record.description}
+              {record.description || record.record_notes}
             </p>
             
             {record.next_due_date && (
@@ -54,9 +58,9 @@ const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) 
               </div>
             )}
             
-            {record.performed_by && (
+            {(record.performed_by || record.vet_name) && (
               <div className="mt-2 text-xs text-muted-foreground">
-                Performed by: {record.performed_by}
+                Performed by: {record.performed_by || record.vet_name}
               </div>
             )}
           </div>

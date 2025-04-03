@@ -60,3 +60,22 @@ export const formatWeightWithDisplay = (
 ): string => {
   return formatWeightWithUnit(weight, unit);
 };
+
+/**
+ * Calculate percent change between two weights
+ */
+export const calculatePercentChange = (newWeight: number, oldWeight: number): number => {
+  if (oldWeight === 0) return 0;
+  return Math.round(((newWeight - oldWeight) / oldWeight) * 100 * 10) / 10;
+};
+
+// Re-export common weight functions
+export { standardizeWeightUnit, formatWeightWithUnit, getWeightUnitName };
+
+// Weight unit options for dropdowns/selects
+export const weightUnits = [
+  { value: 'lb', label: 'Pounds (lb)' },
+  { value: 'kg', label: 'Kilograms (kg)' },
+  { value: 'oz', label: 'Ounces (oz)' },
+  { value: 'g', label: 'Grams (g)' }
+];
