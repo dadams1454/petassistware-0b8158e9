@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from '@/components/ui/toaster';
-import Layout from '@/components/Layout';
+import MainLayout from '@/layouts/MainLayout';
 import HomePage from '@/pages/HomePage';
 import DogsPage from '@/pages/DogsPage';
 import DogDetailPage from '@/pages/DogDetailPage';
@@ -37,7 +37,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="dogs" element={<DogsPage />} />
           <Route path="dogs/:id" element={<DogDetailPage />} />
