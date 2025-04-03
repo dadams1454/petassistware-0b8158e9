@@ -22,6 +22,11 @@ export interface Dog extends SimpleDog {
   last_vaccination_date?: Date | string;
   owner_id?: string;
   created_at?: Date | string;
+  // Add reproductive status properties
+  is_pregnant?: boolean;
+  breeding_status?: string;
+  last_heat_date?: string;
+  tie_date?: string;
 }
 
 export interface Puppy {

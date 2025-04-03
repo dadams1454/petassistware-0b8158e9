@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { differenceInDays } from 'date-fns';
 import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats } from '@/types/puppyTracking';
+import { standardizeWeightUnit } from '@/types/common';
 
 // Define default age groups for puppies
 const defaultAgeGroups: PuppyAgeGroupData[] = [
@@ -104,7 +105,9 @@ export const usePuppyTracking = (): PuppyManagementStats => {
             age_in_weeks: Math.floor(ageInDays / 7),
             // For backward compatibility
             ageInDays: ageInDays,
-            age_weeks: Math.floor(ageInDays / 7)
+            age_weeks: Math.floor(ageInDays / 7),
+            // Standardize weight unit if present
+            weight_unit: puppy.weight_unit ? standardizeWeightUnit(puppy.weight_unit) : 'lb'
           } as PuppyWithAge;
         });
         

@@ -4,15 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Plus } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
-
-export interface HeatCycle {
-  id: string;
-  dog_id: string;
-  start_date: string;
-  end_date: string | null;
-  notes: string | null;
-  created_at: string;
-}
+import { HeatCycle } from '@/types/reproductive';
 
 interface HeatCycleMonitorProps {
   dogId: string;

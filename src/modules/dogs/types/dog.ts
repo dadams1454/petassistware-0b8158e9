@@ -1,4 +1,6 @@
 
+import { WeightUnit } from '@/types/common';
+
 export enum DogGender {
   Male = 'Male',
   Female = 'Female'
@@ -12,8 +14,6 @@ export enum DogStatus {
   Rehomed = 'rehomed',
   Guardian = 'guardian'
 }
-
-export type WeightUnit = 'lb' | 'kg' | 'oz' | 'g';
 
 export interface Dog {
   id: string;

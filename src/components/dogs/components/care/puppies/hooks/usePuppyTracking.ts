@@ -4,7 +4,7 @@ import { usePuppyAgeGroups } from '@/hooks/puppies/usePuppyAgeGroups';
 import { usePuppyStats } from '@/hooks/puppies/usePuppyStats';
 import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats } from '@/types/puppyTracking';
 
-export const usePuppyTracking = (): Partial<PuppyManagementStats> => {
+export const usePuppyTracking = (): PuppyManagementStats => {
   // Fetch puppy data
   const { puppies, isLoading: puppiesLoading, error } = usePuppyData();
   
@@ -43,6 +43,19 @@ export const usePuppyTracking = (): Partial<PuppyManagementStats> => {
       byGender,
       byStatus,
       byAgeGroup
-    }
+    },
+    // Required by PuppyManagementStats interface
+    total: {
+      count: totalPuppies,
+      male: byGender.male || 0,
+      female: byGender.female || 0
+    },
+    byGender: {
+      male: byGender.male || 0,
+      female: byGender.female || 0,
+      unknown: byGender.unknown || 0
+    },
+    byStatus,
+    byAgeGroup
   };
 };

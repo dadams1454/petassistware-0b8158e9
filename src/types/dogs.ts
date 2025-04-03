@@ -1,4 +1,6 @@
 
+import { WeightUnit } from './common';
+
 export interface Dog {
   id: string;
   name: string;
@@ -21,11 +23,12 @@ export interface Dog {
   is_pregnant?: boolean;
   last_heat_date?: string;
   tie_date?: string;
+  // Add weight fields
+  weight?: number;
+  weight_unit?: WeightUnit;
 }
 
 export enum DogGender {
   Male = 'Male',
   Female = 'Female'
 }
-
-export type WeightUnit = 'lbs' | 'kg' | 'oz' | 'g';
