@@ -33,7 +33,9 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
     editData?.end_date ? new Date(editData.end_date) : undefined
   );
   const [notes, setNotes] = useState(editData?.notes || '');
-  const [intensity, setIntensity] = useState<HeatIntensity | null>(editData?.intensity || null);
+  const [intensity, setIntensity] = useState<HeatIntensity>(
+    (editData?.intensity as HeatIntensity) || 'moderate'
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Update form when edit data changes
@@ -42,12 +44,12 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
       setStartDate(editData.start_date ? new Date(editData.start_date) : new Date());
       setEndDate(editData.end_date ? new Date(editData.end_date) : undefined);
       setNotes(editData.notes || '');
-      setIntensity(editData.intensity || null);
+      setIntensity((editData.intensity as HeatIntensity) || 'moderate');
     } else {
       setStartDate(new Date());
       setEndDate(undefined);
       setNotes('');
-      setIntensity(null);
+      setIntensity('moderate');
     }
   }, [editData]);
 

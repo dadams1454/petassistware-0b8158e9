@@ -1,6 +1,16 @@
 
 import { format, addDays, differenceInDays, parseISO } from 'date-fns';
-import { MedicationFrequency } from '@/types/health';
+
+// Define MedicationFrequency enum
+export enum MedicationFrequency {
+  Daily = 'daily',
+  Weekly = 'weekly',
+  Biweekly = 'biweekly',
+  Monthly = 'monthly',
+  Quarterly = 'quarterly',
+  Annual = 'annual',
+  AsNeeded = 'as_needed'
+}
 
 // Export the MedicationFrequency enum for components to use
 export { MedicationFrequency };
@@ -11,7 +21,10 @@ export enum MedicationStatus {
   Due = 'due',
   Overdue = 'overdue',
   Upcoming = 'upcoming',
-  Completed = 'completed'
+  Completed = 'completed',
+  Active = 'active',
+  Expired = 'expired',
+  Missed = 'missed'
 }
 
 /**
@@ -118,6 +131,7 @@ export const isComplexStatus = (
 export const getStatusColor = (status: string): string => {
   switch (status) {
     case MedicationStatus.Current:
+    case MedicationStatus.Active:
       return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
     case MedicationStatus.Completed:
       return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
@@ -126,7 +140,10 @@ export const getStatusColor = (status: string): string => {
     case MedicationStatus.Due:
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
     case MedicationStatus.Overdue:
+    case MedicationStatus.Missed:
       return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    case MedicationStatus.Expired:
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
     default:
       return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
   }
