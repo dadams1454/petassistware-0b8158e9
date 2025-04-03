@@ -1,15 +1,19 @@
+
 import { WeightUnit } from './common';
 
 // Basic gender types
 export type DogGender = 'Male' | 'Female';
 
-// Heat cycle intensity types
-export enum HeatIntensity {
-  Mild = 'mild',
-  Moderate = 'moderate',
-  Strong = 'strong',
-  Unknown = 'unknown'
-}
+// Heat cycle intensity types - using string literals instead of enum for better TS compatibility
+export type HeatIntensity = 'mild' | 'moderate' | 'strong' | 'unknown';
+
+// For compatibility with code that used the enum
+export const HeatIntensity = {
+  Mild: 'mild' as HeatIntensity,
+  Moderate: 'moderate' as HeatIntensity,
+  Strong: 'strong' as HeatIntensity,
+  Unknown: 'unknown' as HeatIntensity
+};
 
 // Reproductive status of a dog
 export enum ReproductiveStatus {
@@ -20,7 +24,8 @@ export enum ReproductiveStatus {
   Whelping = 'Whelping',
   Recovery = 'Recovery',
   Altered = 'Altered',
-  Nursing = 'Nursing'
+  Nursing = 'Nursing',
+  NotInHeat = 'Not In Heat'
 }
 
 // Breeding record interface
@@ -40,6 +45,7 @@ export interface BreedingRecord {
   created_by?: string;
   heat_cycle_id?: string;
   sire?: any; // Joined data from sire
+  estimated_due_date?: string;
 }
 
 // Function to normalize breeding records (handle both schemas)
@@ -58,7 +64,8 @@ export const normalizeBreedingRecord = (record: any): BreedingRecord => {
     notes: record.notes,
     created_at: record.created_at,
     created_by: record.created_by,
-    sire: record.sire
+    sire: record.sire,
+    estimated_due_date: record.estimated_due_date
   };
 };
 
@@ -107,6 +114,7 @@ export interface HeatStage {
   day?: number;
   fertility?: 'low' | 'medium' | 'high' | 'peak';
   id?: string; // For backward compatibility
+  length?: number;
 }
 
 // Reproductive milestone
@@ -197,12 +205,15 @@ export interface ReproductiveCycleData {
   daysUntilNextHeat?: number;
   averageCycleLength?: number;
   currentHeatStage?: HeatStage;
+  currentHeatCycle?: HeatCycle;
   fertilityWindow?: {
     start: Date;
     end: Date;
   };
   gestationDays?: number;
   estimatedDueDate?: Date;
+  pregnancyRecords?: PregnancyRecord[];
+  milestones?: ReproductiveMilestone[];
 }
 
 // Basic Dog interface for reproductive cycle tracking
@@ -213,9 +224,10 @@ export interface Dog {
   color?: string;
   gender: DogGender;
   photo_url?: string;
-  birthdate?: Date | string;
+  birthdate?: string;
   registration_number?: string;
   is_pregnant?: boolean;
   last_heat_date?: string;
   tie_date?: string;
+  created_at?: string;
 }

@@ -47,7 +47,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     cycle?.end_date ? new Date(cycle.end_date) : undefined
   );
   const [intensity, setIntensity] = useState<HeatIntensity>(
-    cycle?.intensity || HeatIntensity.Moderate
+    cycle?.intensity || 'moderate'
   );
   const [notes, setNotes] = useState<string>(cycle?.notes || '');
 
@@ -139,10 +139,10 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
                 <SelectValue placeholder="Select intensity" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={HeatIntensity.Mild}>Mild</SelectItem>
-                <SelectItem value={HeatIntensity.Moderate}>Moderate</SelectItem>
-                <SelectItem value={HeatIntensity.Strong}>Strong</SelectItem>
-                <SelectItem value={HeatIntensity.Unknown}>Unknown</SelectItem>
+                <SelectItem value="mild">Mild</SelectItem>
+                <SelectItem value="moderate">Moderate</SelectItem>
+                <SelectItem value="strong">Strong</SelectItem>
+                <SelectItem value="unknown">Unknown</SelectItem>
               </SelectContent>
             </Select>
           </div>

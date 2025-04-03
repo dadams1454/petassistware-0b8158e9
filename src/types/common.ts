@@ -47,3 +47,20 @@ export interface Notification {
   read: boolean;
   created_at: string;
 }
+
+// Utility function to standardize weight unit
+export const standardizeWeightUnit = (unit: string): WeightUnit => {
+  if (unit === 'lbs') return 'lb';
+  if (['oz', 'g', 'kg', 'lb'].includes(unit as WeightUnit)) {
+    return unit as WeightUnit;
+  }
+  return 'lb'; // Default fallback
+};
+
+// Weight unit options for dropdowns and selections
+export const weightUnits: { value: WeightUnit; label: string }[] = [
+  { value: 'lb', label: 'Pounds (lb)' },
+  { value: 'oz', label: 'Ounces (oz)' },
+  { value: 'kg', label: 'Kilograms (kg)' },
+  { value: 'g', label: 'Grams (g)' }
+];
