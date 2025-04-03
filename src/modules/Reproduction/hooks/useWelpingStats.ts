@@ -1,40 +1,30 @@
 
-import { Litter } from '@/types/litter';
-import { Dog } from '@/types/reproductive';
+import { Dog, Litter } from '@/types/litter';
 
 export const calculateWelpingStats = (
   pregnantDogs: Dog[],
   activeWelpings: Litter[],
   recentLitters: Litter[]
 ) => {
-  // Count pregnant dogs
+  // Calculate the counts
   const pregnantCount = pregnantDogs.length;
-  
-  // Count active welpings
   const activeWelpingsCount = activeWelpings.length;
   
-  // Count total puppies from active welpings and recent litters
-  let totalPuppiesCount = 0;
-  
-  // Add puppies from active welpings
-  activeWelpings.forEach(litter => {
-    const maleCount = litter.male_count || 0;
-    const femaleCount = litter.female_count || 0;
-    const puppyCount = litter.puppy_count || 0;
+  // Calculate total puppies across all active welpings and recent litters
+  const totalPuppiesCount = [...activeWelpings, ...recentLitters].reduce((count, litter) => {
+    // Handle potential different field names for puppy count
+    const puppyCount = litter.puppy_count || 
+                      (litter.male_count && litter.female_count 
+                        ? litter.male_count + litter.female_count 
+                        : 0);
     
-    // Use puppy_count if available, otherwise sum male_count and female_count
-    totalPuppiesCount += puppyCount > 0 ? puppyCount : (maleCount + femaleCount);
-  });
-  
-  // Add puppies from recent litters
-  recentLitters.forEach(litter => {
-    const maleCount = litter.male_count || 0;
-    const femaleCount = litter.female_count || 0;
-    const puppyCount = litter.puppy_count || 0;
+    // Handle puppies array if it exists
+    if (Array.isArray(litter.puppies)) {
+      return count + litter.puppies.length;
+    }
     
-    // Use puppy_count if available, otherwise sum male_count and female_count
-    totalPuppiesCount += puppyCount > 0 ? puppyCount : (maleCount + femaleCount);
-  });
+    return count + (puppyCount || 0);
+  }, 0);
   
   return {
     pregnantCount,

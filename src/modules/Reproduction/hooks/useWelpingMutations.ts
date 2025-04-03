@@ -45,7 +45,7 @@ export const useWelpingMutations = (): WelpingMutationHookResult => {
       const { error } = await supabase
         .from('litters')
         .update({ 
-          status: 'Whelping',
+          status: 'Whelping' as "active",
           whelp_date: new Date().toISOString()
         })
         .eq('id', litter.id);

@@ -10,12 +10,13 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { HeatCycle, HeatIntensity } from '@/types/reproductive';
 
 export interface RecordHeatCycleDialogProps {
   open?: boolean;
   onOpenChange?: (value: boolean) => void;
   dogId: string;
-  editData?: any;
+  editData?: HeatCycle | null;
 }
 
 const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
@@ -32,6 +33,7 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
     editData?.end_date ? new Date(editData.end_date) : undefined
   );
   const [notes, setNotes] = useState(editData?.notes || '');
+  const [intensity, setIntensity] = useState<HeatIntensity | null>(editData?.intensity || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Update form when edit data changes
@@ -40,10 +42,12 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
       setStartDate(editData.start_date ? new Date(editData.start_date) : new Date());
       setEndDate(editData.end_date ? new Date(editData.end_date) : undefined);
       setNotes(editData.notes || '');
+      setIntensity(editData.intensity || null);
     } else {
       setStartDate(new Date());
       setEndDate(undefined);
       setNotes('');
+      setIntensity(null);
     }
   }, [editData]);
 
@@ -64,7 +68,8 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
         dog_id: dogId,
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate ? endDate.toISOString().split('T')[0] : null,
-        notes: notes.trim() || null
+        notes: notes.trim() || null,
+        intensity: intensity
       };
 
       let result;
@@ -165,6 +170,33 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
                 />
               </PopoverContent>
             </Popover>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Intensity</label>
+            <div className="flex space-x-2">
+              <Button 
+                variant={intensity === 'mild' ? "default" : "outline"}
+                onClick={() => setIntensity('mild')}
+                size="sm"
+              >
+                Mild
+              </Button>
+              <Button 
+                variant={intensity === 'moderate' ? "default" : "outline"}
+                onClick={() => setIntensity('moderate')}
+                size="sm"
+              >
+                Moderate
+              </Button>
+              <Button 
+                variant={intensity === 'strong' ? "default" : "outline"}
+                onClick={() => setIntensity('strong')}
+                size="sm"
+              >
+                Strong
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-2">

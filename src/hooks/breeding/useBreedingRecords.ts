@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BreedingRecord } from '@/types/reproductive';
+import { BreedingRecord, normalizeBreedingRecord } from '@/types/reproductive';
 
 export const useBreedingRecords = (dogId: string) => {
   const queryClient = useQueryClient();
@@ -15,35 +15,40 @@ export const useBreedingRecords = (dogId: string) => {
     queryKey: ['breedingRecords', dogId],
     queryFn: async () => {
       try {
-        // First try the new breeding_records table
-        const { data: newData, error: newError } = await supabase
+        // First try to fetch as dam_id (new schema)
+        const { data: damRecords, error: damError } = await supabase
           .from('breeding_records')
           .select(`
             *,
             sire:sire_id(*)
           `)
-          .eq('dog_id', dogId)
+          .eq('dam_id', dogId)
           .order('breeding_date', { ascending: false });
           
-        if (newError) {
-          console.error('Error fetching from breeding_records:', newError);
+        if (damError && damError.message.includes('column "dam_id" does not exist')) {
+          console.log('Falling back to dog_id schema');
           
-          // Fall back to the old table schema
-          const { data: oldData, error: oldError } = await supabase
-            .from('breeding_records') // or whatever the old table was
-            .select(`*`)
-            .eq('dam_id', dogId)
+          // Fall back to dog_id schema
+          const { data: dogRecords, error: dogError } = await supabase
+            .from('breeding_records')
+            .select(`
+              *,
+              sire:sire_id(*)
+            `)
+            .eq('dog_id', dogId)
             .order('breeding_date', { ascending: false });
             
-          if (oldError) {
-            console.error('Error fetching breeding records from old table:', oldError);
+          if (dogError) {
+            console.error('Error fetching breeding records with dog_id:', dogError);
             return [];
           }
           
-          return oldData || [];
+          // Normalize records to ensure consistent structure
+          return (dogRecords || []).map(record => normalizeBreedingRecord(record));
         }
         
-        return newData;
+        // Normalize dam_id records
+        return (damRecords || []).map(record => normalizeBreedingRecord(record));
       } catch (err) {
         console.error('Exception in fetching breeding records:', err);
         return [];
@@ -56,14 +61,34 @@ export const useBreedingRecords = (dogId: string) => {
   const addBreedingRecord = useMutation({
     mutationFn: async (record: Omit<BreedingRecord, 'id' | 'created_at'>) => {
       try {
-        // Prepare the record for the new schema
-        const newRecord = {
-          dog_id: record.dam_id, // dam_id becomes dog_id in new schema
-          sire_id: record.sire_id,
-          breeding_date: record.breeding_date,
-          method: record.breeding_method, // field name change
-          notes: record.notes
-        };
+        // Determine whether to use dam_id or dog_id based on schema detection
+        const { data: schemaCheck, error: schemaError } = await supabase
+          .from('breeding_records')
+          .select('dam_id')
+          .limit(1);
+        
+        // Check if dam_id exists in the schema
+        const usesDamId = !schemaError || !schemaError.message.includes('column "dam_id" does not exist');
+        
+        const newRecord = usesDamId 
+          ? {
+              dam_id: record.dam_id,
+              sire_id: record.sire_id,
+              breeding_date: record.breeding_date,
+              tie_date: record.tie_date,
+              method: record.method || record.breeding_method,
+              success: record.success || record.is_successful,
+              notes: record.notes
+            }
+          : {
+              dog_id: record.dam_id, // Use dam_id as dog_id
+              sire_id: record.sire_id,
+              breeding_date: record.breeding_date,
+              tie_date: record.tie_date,
+              method: record.method || record.breeding_method,
+              success: record.success || record.is_successful,
+              notes: record.notes
+            };
         
         const { data, error } = await supabase
           .from('breeding_records')
@@ -72,7 +97,7 @@ export const useBreedingRecords = (dogId: string) => {
           .single();
           
         if (error) throw error;
-        return data;
+        return normalizeBreedingRecord(data);
       } catch (err) {
         console.error('Error adding breeding record:', err);
         throw err;
@@ -105,7 +130,7 @@ export const useBreedingRecords = (dogId: string) => {
   });
 
   return {
-    breedingRecords,
+    breedingRecords: breedingRecords || [],
     isLoading,
     error,
     addBreedingRecord: addBreedingRecord.mutateAsync,

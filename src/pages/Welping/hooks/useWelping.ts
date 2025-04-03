@@ -34,7 +34,15 @@ export const useWelping = (litterId?: string) => {
         .single();
 
       if (error) throw error;
-      return data as unknown as Litter;
+      
+      // Map data to ensure it matches Litter type
+      return {
+        ...data,
+        status: data.status as "active" | "completed" | "planned" | "archived",
+        dam: data.dam || { id: '', name: '' }, 
+        sire: data.sire || { id: '', name: '' },
+        puppies: data.puppies || []
+      } as Litter;
     },
     enabled: !!litterId,
   });
@@ -84,9 +92,15 @@ export const useWelping = (litterId?: string) => {
   // Mutation to add welping log
   const addLogMutation = useMutation({
     mutationFn: async (logEntry: Omit<WelpingLogEntry, 'id'>) => {
+      // Ensure the required fields are present
+      const completeLogEntry = {
+        ...logEntry,
+        created_at: new Date().toISOString()
+      };
+      
       const { data, error } = await supabase
         .from('welping_logs')
-        .insert(logEntry)
+        .insert(completeLogEntry)
         .select()
         .single();
 
@@ -126,10 +140,11 @@ export const useWelping = (litterId?: string) => {
   const addWelpingObservation = async (observation: Omit<WelpingObservation, 'id' | 'created_at'>) => {
     // Convert to format expected by addWelpingLog
     const logEntry = {
-      litter_id: observation.welping_id,
+      litter_id: litterId as string,
       timestamp: observation.observation_time,
       event_type: 'note' as const,
-      notes: observation.notes,
+      notes: observation.description,
+      created_at: new Date().toISOString(),
       // Add other fields as needed
     };
     

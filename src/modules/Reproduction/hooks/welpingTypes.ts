@@ -1,7 +1,7 @@
 
 // Define types for our welping hooks
 import { Litter } from '@/types/litter';
-import { Dog } from '@/types/reproductive';
+import { Dog } from '@/types/litter';
 
 export interface WelpingQueryHookResult {
   pregnantDogs: Dog[];

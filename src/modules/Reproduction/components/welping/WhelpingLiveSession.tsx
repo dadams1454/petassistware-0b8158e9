@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,7 +43,10 @@ const WhelpingLiveSession: React.FC = () => {
     try {
       await addWelpingLog({
         litter_id: id,
-        ...logData
+        timestamp: new Date().toISOString(),
+        event_type: logData.event_type,
+        notes: logData.notes,
+        created_at: new Date().toISOString()
       });
       
       toast({
@@ -73,7 +75,7 @@ const WhelpingLiveSession: React.FC = () => {
       // Update the welping_records table if it exists
       try {
         await updateWelping({
-          status: 'completed'
+          status: "completed"
           // Removed end_time as it doesn't exist in the Litter type
         });
       } catch (updateError) {
@@ -88,7 +90,8 @@ const WhelpingLiveSession: React.FC = () => {
         litter_id: id,
         timestamp: new Date().toISOString(),
         event_type: 'end',
-        notes: 'Whelping session completed'
+        notes: 'Whelping session completed',
+        created_at: new Date().toISOString()
       });
       
       toast({

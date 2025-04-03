@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Dog } from '@/types/reproductive';
+import { Dog } from '@/types/litter';
 import { WelpingQueryHookResult } from './welpingTypes';
 
 export const useWelpingQueries = (): WelpingQueryHookResult => {
@@ -28,9 +28,9 @@ export const useWelpingQueries = (): WelpingQueryHookResult => {
         name: dog.name,
         photoUrl: dog.photo_url, // Map photo_url to photoUrl
         gender: dog.gender,
-        is_pregnant: dog.is_pregnant,
-        last_heat_date: dog.last_heat_date,
-        tie_date: dog.tie_date,
+        breedStatus: dog.is_pregnant ? 'pregnant' : 'available',
+        lastHeatDate: dog.last_heat_date,
+        tieDate: dog.tie_date,
         breed: dog.breed,
         color: dog.color,
         created_at: dog.created_at
@@ -60,7 +60,14 @@ export const useWelpingQueries = (): WelpingQueryHookResult => {
         .order('expected_date', { ascending: true });
         
       if (error) throw new Error(error.message);
-      return data;
+      
+      // Transform data to ensure it conforms to Litter type
+      return data.map(litter => ({
+        ...litter,
+        status: litter.status as "active" | "completed" | "planned" | "archived",
+        dam: litter.dam || { id: '', name: '' }, // Ensure dam is valid
+        sire: litter.sire || { id: '', name: '' } // Ensure sire is valid
+      }));
     }
   });
   
@@ -85,7 +92,14 @@ export const useWelpingQueries = (): WelpingQueryHookResult => {
         .limit(5);
         
       if (error) throw new Error(error.message);
-      return data;
+      
+      // Transform data to ensure it conforms to Litter type
+      return data.map(litter => ({
+        ...litter,
+        status: litter.status as "active" | "completed" | "planned" | "archived",
+        dam: litter.dam || { id: '', name: '' },
+        sire: litter.sire || { id: '', name: '' }
+      }));
     }
   });
   

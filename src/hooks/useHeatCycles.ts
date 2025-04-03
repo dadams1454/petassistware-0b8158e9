@@ -3,20 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays } from 'date-fns';
-
-export interface HeatCycle {
-  id: string;
-  dog_id: string;
-  start_date: string;
-  end_date?: string | null;
-  notes?: string | null;
-  symptoms?: string[] | null;
-  intensity?: string | null;
-  cycle_number?: number | null;
-  cycle_length?: number | null;
-  fertility_indicators?: any | null;
-  created_at: string;
-}
+import { HeatCycle, HeatIntensity } from '@/types/reproductive';
 
 export const useHeatCycles = (dogId: string) => {
   const { toast } = useToast();
@@ -38,7 +25,12 @@ export const useHeatCycles = (dogId: string) => {
         .order('start_date', { ascending: false });
         
       if (error) throw error;
-      return data || [];
+
+      // Transform data to ensure it matches HeatCycle type
+      return (data || []).map(cycle => ({
+        ...cycle,
+        intensity: cycle.intensity as HeatIntensity
+      })) as HeatCycle[];
     }
   });
   
@@ -77,6 +69,14 @@ export const useHeatCycles = (dogId: string) => {
   // Add heat cycle
   const addHeatCycle = useMutation({
     mutationFn: async (cycleData: Partial<HeatCycle>) => {
+      // Ensure intensity is a valid HeatIntensity value
+      let intensityValue: HeatIntensity | null = null;
+      if (cycleData.intensity) {
+        if (['mild', 'moderate', 'strong'].includes(cycleData.intensity)) {
+          intensityValue = cycleData.intensity as HeatIntensity;
+        }
+      }
+      
       const { data, error } = await supabase
         .from('heat_cycles')
         .insert({
@@ -85,7 +85,7 @@ export const useHeatCycles = (dogId: string) => {
           end_date: cycleData.end_date,
           notes: cycleData.notes,
           symptoms: cycleData.symptoms,
-          intensity: cycleData.intensity,
+          intensity: intensityValue,
           cycle_number: cycleData.cycle_number || (heatCycles ? heatCycles.length + 1 : 1)
         })
         .select();
@@ -98,7 +98,7 @@ export const useHeatCycles = (dogId: string) => {
         .update({ last_heat_date: cycleData.start_date })
         .eq('id', dogId);
       
-      return data[0];
+      return data[0] as HeatCycle;
     },
     onSuccess: () => {
       toast({
@@ -121,22 +121,30 @@ export const useHeatCycles = (dogId: string) => {
     mutationFn: async (updates: { id: string, data: Partial<HeatCycle> }) => {
       const { id, data: cycleData } = updates;
       
+      // Ensure intensity is a valid HeatIntensity value
+      let intensityValue: HeatIntensity | null = null;
+      if (cycleData.intensity) {
+        if (['mild', 'moderate', 'strong'].includes(cycleData.intensity)) {
+          intensityValue = cycleData.intensity as HeatIntensity;
+        }
+      }
+      
       const { data, error } = await supabase
         .from('heat_cycles')
         .update({
           end_date: cycleData.end_date,
           notes: cycleData.notes,
           symptoms: cycleData.symptoms,
-          intensity: cycleData.intensity,
-          cycle_length: cycleData.end_date 
-            ? differenceInDays(new Date(cycleData.end_date), new Date(cycleData.start_date || '')) 
+          intensity: intensityValue,
+          cycle_length: cycleData.end_date && cycleData.start_date
+            ? differenceInDays(new Date(cycleData.end_date), new Date(cycleData.start_date)) 
             : null
         })
         .eq('id', id)
         .select();
         
       if (error) throw error;
-      return data[0];
+      return data[0] as HeatCycle;
     },
     onSuccess: () => {
       toast({
