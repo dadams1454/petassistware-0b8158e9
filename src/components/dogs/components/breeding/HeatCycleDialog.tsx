@@ -1,5 +1,9 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { format } from 'date-fns';
+import { CalendarIcon, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -7,165 +11,224 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { 
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
+  SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { HeatIntensity, HeatCycle } from '@/types/reproductive';
+import { Textarea } from '@/components/ui/textarea';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { HeatCycle, HeatIntensity } from '@/types/reproductive';
+
+const formSchema = z.object({
+  start_date: z.date({
+    required_error: 'Start date is required',
+  }),
+  end_date: z.date().optional(),
+  intensity: z.enum(['mild', 'moderate', 'strong', 'unknown'] as const),
+  notes: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface HeatCycleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => Promise<void>;
-  isLoading?: boolean;
-  cycle?: HeatCycle | null;
+  onSubmit: (data: Partial<HeatCycle>) => void;
+  cycle: HeatCycle | null;
 }
 
 const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
   open,
   onOpenChange,
   onSubmit,
-  isLoading = false,
-  cycle
+  cycle,
 }) => {
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    cycle?.start_date ? new Date(cycle.start_date) : undefined
-  );
-  const [endDate, setEndDate] = useState<Date | undefined>(
-    cycle?.end_date ? new Date(cycle.end_date) : undefined
-  );
-  const [intensity, setIntensity] = useState<HeatIntensity>(
-    cycle?.intensity || 'moderate'
-  );
-  const [notes, setNotes] = useState<string>(cycle?.notes || '');
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      start_date: cycle ? new Date(cycle.start_date) : new Date(),
+      end_date: cycle?.end_date ? new Date(cycle.end_date) : undefined,
+      intensity: (cycle?.intensity || 'moderate') as HeatIntensity,
+      notes: cycle?.notes || '',
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!startDate) return;
-
-    const data = {
-      start_date: format(startDate, 'yyyy-MM-dd'),
-      end_date: endDate ? format(endDate, 'yyyy-MM-dd') : null,
-      intensity,
-      notes,
-      id: cycle?.id
-    };
-
-    await onSubmit(data);
-    onOpenChange(false);
+  const handleSubmitForm = (values: FormValues) => {
+    onSubmit({
+      start_date: format(values.start_date, 'yyyy-MM-dd'),
+      end_date: values.end_date ? format(values.end_date, 'yyyy-MM-dd') : undefined,
+      intensity: values.intensity,
+      notes: values.notes,
+    });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{cycle ? 'Edit Heat Cycle' : 'Record Heat Cycle'}</DialogTitle>
+          <DialogTitle>{cycle ? 'Edit Heat Cycle' : 'Add Heat Cycle'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="start-date">Start Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="start-date"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, 'PPP') : 'Select a date'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="end-date">End Date (Optional)</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="end-date"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, 'PPP') : 'Select a date'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                  disabled={(date) => date < (startDate || new Date())}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="intensity">Intensity</Label>
-            <Select
-              value={intensity}
-              onValueChange={(value) => setIntensity(value as HeatIntensity)}
-            >
-              <SelectTrigger id="intensity">
-                <SelectValue placeholder="Select intensity" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mild">Mild</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="strong">Strong</SelectItem>
-                <SelectItem value="unknown">Unknown</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add any observations or notes about this heat cycle"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="start_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Start Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            'w-full text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!startDate || isLoading}>
-              {isLoading ? 'Saving...' : cycle ? 'Update' : 'Save'}
-            </Button>
-          </DialogFooter>
-        </form>
+            <FormField
+              control={form.control}
+              name="end_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>End Date (Optional)</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            'w-full text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <div className="flex justify-between p-2 border-b">
+                        <div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => field.onChange(undefined)}
+                            className="h-8 text-sm"
+                          >
+                            Clear <X className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription>
+                    Leave blank if heat cycle is ongoing
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="intensity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Intensity</FormLabel>
+                  <Select
+                    onValueChange={field.onChange as (value: string) => void}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select intensity" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="mild">Mild</SelectItem>
+                      <SelectItem value="moderate">Moderate</SelectItem>
+                      <SelectItem value="strong">Strong</SelectItem>
+                      <SelectItem value="unknown">Unknown</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Add any notes about this heat cycle"
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

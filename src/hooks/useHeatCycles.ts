@@ -7,8 +7,8 @@ import { HeatCycle, HeatIntensity } from '@/types/reproductive';
 
 // Helper to ensure intensity is a valid HeatIntensity value
 const validateHeatIntensity = (intensity: string | null): HeatIntensity => {
-  if (intensity === 'mild' || intensity === 'moderate' || intensity === 'strong') {
-    return intensity;
+  if (intensity === 'mild' || intensity === 'moderate' || intensity === 'strong' || intensity === 'unknown') {
+    return intensity as HeatIntensity;
   }
   return 'moderate'; // Default fallback
 };

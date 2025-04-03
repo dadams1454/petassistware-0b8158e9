@@ -70,6 +70,7 @@ export const useBreedingRecords = (dogId: string) => {
         // Check if dam_id exists in the schema
         const usesDamId = !schemaError || !schemaError.message.includes('column "dam_id" does not exist');
         
+        // Prepare the record based on schema
         const newRecord = usesDamId 
           ? {
               dam_id: record.dam_id,

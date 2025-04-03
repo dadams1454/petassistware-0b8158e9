@@ -16,6 +16,9 @@ const ensureValidIntensity = (cycle: any): HeatCycle => {
     case 'mild':
       validIntensity = 'mild';
       break;
+    case 'moderate':
+      validIntensity = 'moderate';
+      break;
     case 'strong':
       validIntensity = 'strong';
       break;
