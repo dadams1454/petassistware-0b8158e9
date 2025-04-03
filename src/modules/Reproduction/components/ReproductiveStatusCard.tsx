@@ -9,7 +9,7 @@ import { ReproductiveStatus, HeatStage, Dog } from '@/types/reproductive';
 
 interface ReproductiveStatusCardProps {
   dog: Dog;
-  status: ReproductiveStatus;
+  status: ReproductiveStatus | string;
   nextHeatDate: Date | null | undefined;
   daysUntilNextHeat: number | null | undefined;
   averageCycleLength: number | null | undefined;
@@ -33,7 +33,7 @@ const ReproductiveStatusCard: React.FC<ReproductiveStatusCardProps> = ({
   // Get status display information
   const getStatusInfo = () => {
     switch (status) {
-      case ReproductiveStatus.IN_HEAT:
+      case ReproductiveStatus.InHeat:
         return {
           label: 'In Heat',
           description: currentHeatStage
@@ -42,14 +42,14 @@ const ReproductiveStatusCard: React.FC<ReproductiveStatusCardProps> = ({
           color: 'bg-red-500',
           icon: <Clock className="h-5 w-5 text-white" />
         };
-      case ReproductiveStatus.PRE_HEAT:
+      case ReproductiveStatus.PreHeat:
         return {
           label: 'Pre-Heat',
           description: `Heat expected in ${daysUntilNextHeat} days`,
           color: 'bg-amber-500',
           icon: <Clock className="h-5 w-5 text-white" />
         };
-      case ReproductiveStatus.PREGNANT:
+      case ReproductiveStatus.Pregnant:
         return {
           label: 'Pregnant',
           description: gestationDays 
@@ -58,21 +58,21 @@ const ReproductiveStatusCard: React.FC<ReproductiveStatusCardProps> = ({
           color: 'bg-pink-500',
           icon: <Baby className="h-5 w-5 text-white" />
         };
-      case ReproductiveStatus.WHELPING:
+      case ReproductiveStatus.Whelping:
         return {
           label: 'Whelping',
           description: 'Active whelping in progress',
           color: 'bg-purple-500',
           icon: <Baby className="h-5 w-5 text-white" />
         };
-      case ReproductiveStatus.NURSING:
+      case ReproductiveStatus.Nursing:
         return {
           label: 'Nursing',
           description: 'Nursing puppies',
           color: 'bg-blue-500',
           icon: <Baby className="h-5 w-5 text-white" />
         };
-      case ReproductiveStatus.RECOVERY:
+      case ReproductiveStatus.Recovery:
         return {
           label: 'Recovery',
           description: 'Post-whelping recovery',
@@ -114,7 +114,7 @@ const ReproductiveStatusCard: React.FC<ReproductiveStatusCardProps> = ({
             </div>
           )}
           
-          {nextHeatDate && status !== ReproductiveStatus.PREGNANT && (
+          {nextHeatDate && status !== ReproductiveStatus.Pregnant && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Next Heat Expected:</span>
               <span className="font-medium">{format(nextHeatDate, 'MMM d, yyyy')}</span>
@@ -128,7 +128,7 @@ const ReproductiveStatusCard: React.FC<ReproductiveStatusCardProps> = ({
             </div>
           )}
           
-          {status === ReproductiveStatus.IN_HEAT && fertilityWindow && (
+          {status === ReproductiveStatus.InHeat && fertilityWindow && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Fertility Window:</span>
               <span className="font-medium">
@@ -137,7 +137,7 @@ const ReproductiveStatusCard: React.FC<ReproductiveStatusCardProps> = ({
             </div>
           )}
           
-          {status === ReproductiveStatus.IN_HEAT && currentHeatStage && (
+          {status === ReproductiveStatus.InHeat && currentHeatStage && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Fertility:</span>
               <span 
@@ -154,14 +154,14 @@ const ReproductiveStatusCard: React.FC<ReproductiveStatusCardProps> = ({
             </div>
           )}
           
-          {status === ReproductiveStatus.PREGNANT && estimatedDueDate && (
+          {status === ReproductiveStatus.Pregnant && estimatedDueDate && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Due Date:</span>
               <span className="font-medium">{format(estimatedDueDate, 'MMM d, yyyy')}</span>
             </div>
           )}
           
-          {status === ReproductiveStatus.PREGNANT && gestationDays !== null && (
+          {status === ReproductiveStatus.Pregnant && gestationDays !== null && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Gestation:</span>
               <span className="font-medium">{gestationDays} days (of ~63)</span>

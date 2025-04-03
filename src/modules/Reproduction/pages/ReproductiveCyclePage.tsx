@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Baby, Clock, ArrowLeft } from 'lucide-react';
@@ -102,7 +103,7 @@ const ReproductiveCyclePage: React.FC = () => {
             nextHeatDate={reproData.nextHeatDate}
             daysUntilNextHeat={reproData.daysUntilNextHeat}
             averageCycleLength={reproData.averageCycleLength}
-            currentHeatStage={reproData.currentHeatStage}
+            currentHeatStage={reproData.currentStage}
             fertilityWindow={reproData.fertilityWindow}
             gestationDays={reproData.gestationDays}
             estimatedDueDate={reproData.estimatedDueDate}
@@ -139,9 +140,9 @@ const ReproductiveCyclePage: React.FC = () => {
                 <HeatCycleTracker 
                   dog={dogWithRequiredFields}
                   heatCycles={reproData.heatCycles}
-                  status={reproData.status}
+                  status={reproData.status as ReproductiveStatus}
                   currentHeatCycle={reproData.currentHeatCycle}
-                  currentHeatStage={reproData.currentHeatStage}
+                  currentHeatStage={reproData.currentStage}
                   fertilityWindow={reproData.fertilityWindow}
                   nextHeatDate={reproData.nextHeatDate}
                   averageCycleLength={reproData.averageCycleLength}
@@ -151,7 +152,7 @@ const ReproductiveCyclePage: React.FC = () => {
               <TabsContent value="breeding" className="mt-6">
                 <BreedingManagement 
                   dog={dogWithRequiredFields}
-                  status={reproData.status}
+                  status={reproData.status as ReproductiveStatus}
                   heatCycles={reproData.heatCycles}
                   breedingRecords={reproData.breedingRecords}
                   currentHeatCycle={reproData.currentHeatCycle}
@@ -161,7 +162,7 @@ const ReproductiveCyclePage: React.FC = () => {
               <TabsContent value="pregnancy" className="mt-6">
                 <PregnancyTracker 
                   dog={dogWithRequiredFields}
-                  status={reproData.status}
+                  status={reproData.status as ReproductiveStatus}
                   pregnancyRecords={reproData.pregnancyRecords}
                   breedingRecords={reproData.breedingRecords}
                   estimatedDueDate={reproData.estimatedDueDate}

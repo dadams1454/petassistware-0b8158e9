@@ -9,10 +9,25 @@ export enum ReproductiveStatus {
   Intact = 'intact',
   Pregnant = 'pregnant',
   InHeat = 'in-heat',
+  PreHeat = 'pre-heat',
   PostHeat = 'post-heat',
   Spayed = 'spayed',
-  Neutered = 'neutered'
+  Neutered = 'neutered',
+  Whelping = 'whelping',
+  Nursing = 'nursing',
+  Recovery = 'recovery'
 }
+
+// For backward compatibility with string constants
+export const ReproductiveStatusConstants = {
+  NOT_IN_HEAT: ReproductiveStatus.Intact,
+  IN_HEAT: ReproductiveStatus.InHeat,
+  PRE_HEAT: ReproductiveStatus.PreHeat,
+  PREGNANT: ReproductiveStatus.Pregnant,
+  WHELPING: ReproductiveStatus.Whelping,
+  NURSING: ReproductiveStatus.Nursing,
+  RECOVERY: ReproductiveStatus.Recovery
+};
 
 export interface HeatStage {
   id: string;
@@ -50,6 +65,13 @@ export interface BreedingRecord {
   notes?: string;
   created_at: string;
   status?: string;
+  
+  // Additional fields to fix errors
+  tie_date?: string;
+  breeding_method?: string;
+  is_successful?: boolean;
+  heat_cycle_id?: string;
+  estimated_due_date?: string;
 }
 
 export interface PregnancyRecord {
@@ -61,6 +83,14 @@ export interface PregnancyRecord {
   notes?: string;
   status: string;
   created_at: string;
+  
+  // Additional fields to fix errors
+  confirmation_date?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 export interface ReproductiveMilestone {
@@ -70,6 +100,10 @@ export interface ReproductiveMilestone {
   date: string;
   description?: string;
   created_at: string;
+  
+  // Additional fields to fix errors
+  milestone_date?: string;
+  notes?: string;
 }
 
 export interface Dog {
@@ -107,6 +141,12 @@ export interface ReproductiveCycleData {
   isLoading: boolean;
   isError: boolean;
   error: any;
+  
+  // Additional properties needed
+  currentHeatCycle?: HeatCycle;
+  averageCycleLength?: number;
+  fertilityWindow?: { start: Date; end: Date };
+  gestationDays?: number;
 }
 
 export interface BreedingChecklistItem {
@@ -116,9 +156,18 @@ export interface BreedingChecklistItem {
   category?: string;
   completed: boolean;
   icon?: string;
+  task?: string; // Added for compatibility
 }
 
 export interface VerticalBreedingTimelineProps {
   dog: Dog;
   reproStatus?: ReproductiveCycleData;
+}
+
+export interface BreedingPrepFormData {
+  dam_id: string;
+  sire_id: string;
+  breeding_method: string;
+  planned_date: string;
+  notes: string;
 }

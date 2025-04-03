@@ -72,3 +72,9 @@ export const getHealthRecordColor = (recordType: string) => {
       return 'gray';
   }
 };
+
+// Export all functions to ensure they're available
+export default {
+  getHealthRecordIcon,
+  getHealthRecordColor
+};
