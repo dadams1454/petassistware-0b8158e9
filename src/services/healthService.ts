@@ -134,7 +134,8 @@ export const getWeightRecords = async (dogId: string): Promise<WeightRecord[]> =
   // Map the data to ensure weight_unit is standardized
   return data.map(record => ({
     ...record,
-    weight_unit: standardizeWeightUnit(record.weight_unit)
+    weight_unit: standardizeWeightUnit(record.weight_unit),
+    unit: standardizeWeightUnit(record.weight_unit) // Add unit field for compatibility
   }));
 };
 
@@ -162,7 +163,8 @@ export const getLatestWeightRecord = async (dogId: string): Promise<WeightRecord
   return {
     ...data[0],
     weight: Number(data[0].weight),
-    weight_unit: standardizeWeightUnit(data[0].weight_unit)
+    weight_unit: standardizeWeightUnit(data[0].weight_unit),
+    unit: standardizeWeightUnit(data[0].weight_unit) // Add unit field for compatibility
   };
 };
 
@@ -173,7 +175,8 @@ export const addWeightRecord = async (record: Omit<WeightRecord, 'id' | 'created
   // Ensure the weight unit is standardized
   const recordWithStandardUnit = {
     ...record,
-    weight_unit: standardizeWeightUnit(record.weight_unit)
+    weight_unit: standardizeWeightUnit(record.weight_unit),
+    dog_id: record.dog_id || '' // Ensure dog_id is set
   };
   
   const { data, error } = await supabase
@@ -335,4 +338,22 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
   }
   
   return data.map(record => mapToWeightRecord(record));
+};
+
+// Export all functions
+export {
+  getHealthRecords,
+  getHealthRecord,
+  addHealthRecord,
+  updateHealthRecord,
+  deleteHealthRecord,
+  getWeightRecords,
+  getLatestWeightRecord,
+  addWeightRecord,
+  updateWeightRecord,
+  deleteWeightRecord,
+  getUpcomingMedications,
+  getExpiringMedications,
+  getUpcomingVaccinations,
+  getWeightHistory
 };

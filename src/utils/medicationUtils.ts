@@ -22,7 +22,13 @@ export enum MedicationStatus {
   Missed = 'missed'
 }
 
-export type MedicationStatusResult = MedicationStatus | 'current' | 'due_soon' | 'overdue' | 'incomplete';
+// Define additional types for status results
+export type MedicationStatusResult = 
+  | MedicationStatus 
+  | 'current' 
+  | 'due_soon' 
+  | 'overdue' 
+  | 'incomplete';
 
 /**
  * Get human-readable form of medication frequency
@@ -131,12 +137,18 @@ export const getMedicationStatus = (
   return 'current';
 };
 
+// Extended status type to include color information
+export interface StatusWithColor {
+  status: MedicationStatusResult;
+  statusColor: string;
+}
+
 /**
  * Type guard to check if status is complex (object with additional properties)
  */
 export const isComplexStatus = (
-  status: MedicationStatusResult
-): status is { status: MedicationStatusResult; statusColor: string } => {
+  status: MedicationStatusResult | StatusWithColor
+): status is StatusWithColor => {
   return typeof status === 'object' && status !== null && 'status' in status;
 };
 
@@ -144,7 +156,7 @@ export const isComplexStatus = (
  * Get status value safely from status object or string
  */
 export const getStatusValue = (
-  status: MedicationStatusResult | { status: MedicationStatusResult; statusColor: string }
+  status: MedicationStatusResult | StatusWithColor
 ): MedicationStatusResult => {
   if (isComplexStatus(status)) {
     return status.status;

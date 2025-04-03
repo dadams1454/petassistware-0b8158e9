@@ -71,7 +71,28 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     reservedPuppies,
     soldPuppies,
     isLoading,
-    error
+    error,
+    // Add the required properties from the error
+    total: {
+      count: totalPuppies,
+      male: puppies.filter(p => p.gender?.toLowerCase() === 'male').length,
+      female: puppies.filter(p => p.gender?.toLowerCase() === 'female').length
+    },
+    byGender: {
+      male: puppies.filter(p => p.gender?.toLowerCase() === 'male').length,
+      female: puppies.filter(p => p.gender?.toLowerCase() === 'female').length,
+      unknown: puppies.filter(p => !p.gender).length
+    },
+    byStatus: {
+      available: availablePuppies,
+      reserved: reservedPuppies,
+      sold: soldPuppies,
+      unavailable: puppies.filter(p => p.status?.toLowerCase() === 'unavailable').length
+    },
+    byAgeGroup: Object.entries(puppiesByAgeGroup).reduce((acc, [key, puppies]) => {
+      acc[key] = puppies.length;
+      return acc;
+    }, {} as Record<string, number>)
   };
 
   if (isLoading) {

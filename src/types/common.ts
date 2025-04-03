@@ -6,6 +6,15 @@
 // Weight unit type that can be used throughout the app
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
+// For backward compatibility with code that might use 'lbs'
+export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+
+// Weight unit option for UI components
+export interface WeightUnitOption {
+  code: WeightUnit;
+  name: string;
+}
+
 /**
  * Standardize weight unit to ensure consistency
  * Handles potential variations like 'lbs' -> 'lb'
@@ -76,7 +85,7 @@ export interface BaseEntity {
 }
 
 // Export the weight units array for UI components
-export const weightUnits = [
+export const weightUnits: WeightUnitOption[] = [
   { code: 'lb', name: 'Pounds' },
   { code: 'kg', name: 'Kilograms' },
   { code: 'oz', name: 'Ounces' },

@@ -1,5 +1,6 @@
 
 // Health Record Types
+import { standardizeWeightUnit, WeightUnit } from './common';
 
 // Enums for health records
 export enum HealthRecordTypeEnum {
@@ -14,7 +15,12 @@ export enum HealthRecordTypeEnum {
   Emergency = "emergency",
   Specialist = "specialist",
   Other = "other",
-  Test = "test"
+  Test = "test",
+  // Extended types that were missing
+  Observation = "observation",
+  Deworming = "deworming",
+  Grooming = "grooming",
+  Allergy = "allergy"
 }
 
 // Appetite level enum
@@ -23,7 +29,9 @@ export enum AppetiteLevelEnum {
   Good = "good",
   Fair = "fair",
   Poor = "poor",
-  None = "none"
+  None = "none",
+  // Add missing value from errors
+  Hyperactive = "hyperactive"
 }
 
 // Energy level enum
@@ -31,7 +39,9 @@ export enum EnergyLevelEnum {
   High = "high",
   Normal = "normal",
   Low = "low",
-  Lethargic = "lethargic"
+  Lethargic = "lethargic",
+  // Add missing value from errors
+  Hyperactive = "hyperactive"
 }
 
 // Stool consistency enum
@@ -40,7 +50,10 @@ export enum StoolConsistencyEnum {
   Soft = "soft",
   Loose = "loose",
   Watery = "watery",
-  Hard = "hard"
+  Hard = "hard",
+  // Add missing values from errors
+  Mucousy = "mucousy",
+  Bloody = "bloody"
 }
 
 // Convert enum to string for display
@@ -70,6 +83,14 @@ export const healthRecordTypeToString = (type: HealthRecordTypeEnum): string => 
       return "Test";
     case HealthRecordTypeEnum.Other:
       return "Other";
+    case HealthRecordTypeEnum.Observation:
+      return "Observation";
+    case HealthRecordTypeEnum.Deworming:
+      return "Deworming";
+    case HealthRecordTypeEnum.Grooming:
+      return "Grooming";
+    case HealthRecordTypeEnum.Allergy:
+      return "Allergy";
     default:
       return "Unknown";
   }
@@ -100,6 +121,14 @@ export const stringToHealthRecordType = (type: string): HealthRecordTypeEnum => 
       return HealthRecordTypeEnum.Specialist;
     case "test":
       return HealthRecordTypeEnum.Test;
+    case "observation":
+      return HealthRecordTypeEnum.Observation;
+    case "deworming":
+      return HealthRecordTypeEnum.Deworming;
+    case "grooming":
+      return HealthRecordTypeEnum.Grooming;
+    case "allergy":
+      return HealthRecordTypeEnum.Allergy;
     case "other":
       return HealthRecordTypeEnum.Other;
     default:
@@ -117,8 +146,10 @@ export interface HealthRecord {
   record_notes?: string;
   vet_name: string;
   document_url?: string;
-  next_due_date?: string;
+  next_due_date?: string | null;
   created_at: string;
+  // Date field for sorting and filtering
+  date?: string;
   // Additional fields based on record type
   description?: string;
   findings?: string;
@@ -145,7 +176,7 @@ export interface HealthRecord {
   recovery_notes?: string;
   // Examination type
   examination_type?: string;
-  follow_up_date?: string;
+  follow_up_date?: string | null;
   // Lab test
   performed_by?: string;
 }
@@ -180,6 +211,9 @@ export interface Medication {
   notes?: string;
   last_administered?: string;
   created_at: string;
+  // Additional fields spotted in errors
+  startDate?: string;
+  endDate?: string;
 }
 
 // Medication administration record
@@ -217,16 +251,17 @@ export interface WeightRecord {
   id: string;
   dog_id: string;
   weight: number;
-  weight_unit: string;
+  weight_unit: WeightUnit;
   date: string;
   notes?: string;
   created_at: string;
   percent_change?: number;
   puppy_id?: string;
+  // Add compatibility fields
+  unit?: WeightUnit;
+  age_days?: number;
+  birth_date?: string;
 }
-
-// Use the common WeightUnit type
-export type { WeightUnit } from './common';
 
 // Helper for safely converting database records to HealthRecord type
 export const mapToHealthRecord = (record: any): HealthRecord => {
@@ -240,6 +275,7 @@ export const mapToHealthRecord = (record: any): HealthRecord => {
     record_type: stringToHealthRecordType(record.record_type || ''),
     title: record.title || '',
     visit_date: record.visit_date || '',
+    date: record.visit_date || record.date || '', // Add date for compatibility
     record_notes: record.record_notes,
     vet_name: record.vet_name || '',
     document_url: record.document_url,
@@ -283,10 +319,12 @@ export const mapToWeightRecord = (record: any): WeightRecord => {
     dog_id: record.dog_id || '',
     weight: record.weight ? Number(record.weight) : 0,
     weight_unit: standardizeWeightUnit(record.weight_unit || record.unit),
+    unit: record.weight_unit || record.unit, // Add for compatibility
     date: record.date || new Date().toISOString().split('T')[0],
     notes: record.notes,
     created_at: record.created_at || new Date().toISOString(),
     percent_change: record.percent_change ? Number(record.percent_change) : undefined,
-    puppy_id: record.puppy_id
+    puppy_id: record.puppy_id,
+    age_days: record.age_days ? Number(record.age_days) : undefined
   };
 };
