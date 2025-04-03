@@ -1,146 +1,168 @@
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 import { PuppyMilestone } from '@/types/puppyTracking';
+import { differenceInDays } from 'date-fns';
 
-export function usePuppyMilestones(puppyId: string) {
+interface UsePuppyMilestonesProps {
+  puppyId: string;
+}
+
+export const usePuppyMilestones = (puppyId: string) => {
   const [milestones, setMilestones] = useState<PuppyMilestone[]>([]);
+  const [completedMilestones, setCompletedMilestones] = useState<PuppyMilestone[]>([]);
+  const [upcomingMilestones, setUpcomingMilestones] = useState<PuppyMilestone[]>([]);
+  const [overdueMilestones, setOverdueMilestones] = useState<PuppyMilestone[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [puppyBirthDate, setPuppyBirthDate] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const fetchMilestones = useCallback(async () => {
+  useEffect(() => {
     if (!puppyId) return;
-    
+    fetchMilestones();
+  }, [puppyId]);
+
+  const fetchMilestones = async () => {
     setIsLoading(true);
-    setError(null);
-    
     try {
-      // Fetch the puppy's birth date
+      // Get puppy birth date first for age calculations
       const { data: puppyData, error: puppyError } = await supabase
         .from('puppies')
         .select('birth_date')
         .eq('id', puppyId)
         .single();
-      
+
       if (puppyError) throw puppyError;
       
-      if (puppyData) {
-        setPuppyBirthDate(puppyData.birth_date);
-      }
-      
-      // Fetch the puppy's milestones
-      const { data, error: milestonesError } = await supabase
-        .from('puppy_milestones')
+      const birthDate = puppyData?.birth_date;
+      if (!birthDate) throw new Error('Puppy birth date not found');
+
+      const { data, error } = await supabase
+        .from('puppy_developmental_milestones')
         .select('*')
         .eq('puppy_id', puppyId)
-        .order('milestone_date', { ascending: false });
+        .order('expected_age_days', { ascending: true });
+
+      if (error) throw error;
+
+      const currentDate = new Date();
+      const puppyBirthDate = new Date(birthDate);
+      const puppyAgeInDays = differenceInDays(currentDate, puppyBirthDate);
+
+      // Process milestones into categories
+      const allMilestones = data as PuppyMilestone[];
       
-      if (milestonesError) throw milestonesError;
+      const completed = allMilestones.filter(m => m.completion_date);
       
-      setMilestones(data || []);
+      const upcoming = allMilestones.filter(
+        m => !m.completion_date && 
+        (m.expected_age_days ?? 0) > puppyAgeInDays
+      );
+      
+      const overdue = allMilestones.filter(
+        m => !m.completion_date && 
+        (m.expected_age_days ?? 0) <= puppyAgeInDays
+      );
+
+      setMilestones(allMilestones);
+      setCompletedMilestones(completed);
+      setUpcomingMilestones(upcoming);
+      setOverdueMilestones(overdue);
     } catch (err) {
       console.error('Error fetching puppy milestones:', err);
-      setError(err as Error);
+      setError(err instanceof Error ? err : new Error('An error occurred fetching milestones'));
     } finally {
       setIsLoading(false);
     }
-  }, [puppyId]);
+  };
 
-  const addMilestone = useCallback(async (milestone: Omit<PuppyMilestone, 'id' | 'created_at'>) => {
+  const addMilestone = async (milestoneData: Partial<PuppyMilestone>) => {
     try {
       const { data, error } = await supabase
-        .from('puppy_milestones')
-        .insert(milestone)
+        .from('puppy_developmental_milestones')
+        .insert({
+          ...milestoneData,
+          puppy_id: puppyId,
+          created_at: new Date().toISOString(),
+        })
         .select()
         .single();
-      
+
       if (error) throw error;
-      
-      setMilestones(prev => [data, ...prev]);
+
+      toast({
+        title: 'Milestone added',
+        description: 'New developmental milestone has been added successfully.',
+      });
+
+      await fetchMilestones();
       return data;
     } catch (err) {
       console.error('Error adding puppy milestone:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to add milestone. Please try again.',
+        variant: 'destructive',
+      });
       throw err;
     }
-  }, []);
+  };
 
-  const deleteMilestone = useCallback(async (milestoneId: string) => {
+  const markComplete = async (milestoneId: string) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { error } = await supabase
+        .from('puppy_developmental_milestones')
+        .update({
+          completion_date: today,
+          is_completed: true,
+        })
+        .eq('id', milestoneId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Milestone completed',
+        description: 'Milestone has been marked as completed.',
+      });
+
+      await fetchMilestones();
+    } catch (err) {
+      console.error('Error completing milestone:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to mark milestone as complete.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const deleteMilestone = async (milestoneId: string) => {
     try {
       const { error } = await supabase
-        .from('puppy_milestones')
+        .from('puppy_developmental_milestones')
         .delete()
         .eq('id', milestoneId);
-      
+
       if (error) throw error;
-      
-      setMilestones(prev => prev.filter(m => m.id !== milestoneId));
-      return true;
+
+      toast({
+        title: 'Milestone deleted',
+        description: 'The milestone has been deleted successfully.',
+      });
+
+      await fetchMilestones();
     } catch (err) {
-      console.error('Error deleting puppy milestone:', err);
-      throw err;
+      console.error('Error deleting milestone:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete milestone.',
+        variant: 'destructive',
+      });
     }
-  }, []);
-
-  const markComplete = useCallback(async (milestoneId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('puppy_milestones')
-        .update({
-          is_completed: true,
-          completion_date: new Date().toISOString()
-        })
-        .eq('id', milestoneId)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      setMilestones(prev => 
-        prev.map(m => m.id === milestoneId ? data : m)
-      );
-      
-      return data;
-    } catch (err) {
-      console.error('Error marking milestone as complete:', err);
-      throw err;
-    }
-  }, []);
-
-  // Compute derived milestone lists
-  const completedMilestones = useMemo(() => {
-    return milestones.filter(m => m.is_completed);
-  }, [milestones]);
-  
-  const upcomingMilestones = useMemo(() => {
-    const today = new Date();
-    const currentAgeDays = puppyBirthDate 
-      ? Math.floor((today.getTime() - new Date(puppyBirthDate).getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
-      
-    return milestones.filter(m => 
-      !m.is_completed && 
-      m.expected_age_days >= currentAgeDays
-    ).sort((a, b) => a.expected_age_days - b.expected_age_days);
-  }, [milestones, puppyBirthDate]);
-  
-  const overdueMilestones = useMemo(() => {
-    const today = new Date();
-    const currentAgeDays = puppyBirthDate 
-      ? Math.floor((today.getTime() - new Date(puppyBirthDate).getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
-      
-    return milestones.filter(m => 
-      !m.is_completed && 
-      m.expected_age_days < currentAgeDays
-    ).sort((a, b) => b.expected_age_days - a.expected_age_days);
-  }, [milestones, puppyBirthDate]);
-
-  useEffect(() => {
-    if (puppyId) {
-      fetchMilestones();
-    }
-  }, [puppyId, fetchMilestones]);
+  };
 
   return {
     milestones,
@@ -150,9 +172,8 @@ export function usePuppyMilestones(puppyId: string) {
     isLoading,
     error,
     addMilestone,
-    deleteMilestone,
     markComplete,
-    puppyBirthDate,
-    refreshMilestones: fetchMilestones
+    deleteMilestone,
+    refreshMilestones: fetchMilestones,
   };
-}
+};

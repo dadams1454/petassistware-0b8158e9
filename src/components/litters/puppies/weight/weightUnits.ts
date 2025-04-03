@@ -1,72 +1,99 @@
 
-import { WeightUnit } from '@/types/health';
+// Weight unit conversion utilities
 
-// Weight unit conversion factors to grams
-const CONVERSION_TO_GRAMS = {
-  oz: 28.3495,   // 1 oz = 28.3495g
-  g: 1,          // 1g = 1g
-  lbs: 453.592,  // 1 lb = 453.592g
-  kg: 1000,      // 1 kg = 1000g
-  lb: 453.592    // 1 lb = 453.592g (added for compatibility)
-};
-
-// List of weight units for selection
-export const weightUnits = [
-  { value: 'oz' as WeightUnit, label: 'Ounces (oz)' },
-  { value: 'g' as WeightUnit, label: 'Grams (g)' },
-  { value: 'lbs' as WeightUnit, label: 'Pounds (lbs)' },
-  { value: 'kg' as WeightUnit, label: 'Kilograms (kg)' }
-];
-
-// Convert weight between units
+/**
+ * Convert a weight value from one unit to another
+ * 
+ * @param weight - The weight value to convert
+ * @param fromUnit - The unit to convert from
+ * @param toUnit - The unit to convert to
+ * @returns The converted weight value
+ */
 export const convertWeight = (
-  weight: number, 
-  fromUnit: WeightUnit, 
-  toUnit: WeightUnit
-): number => {
-  // If the units are the same, no conversion needed
-  if (fromUnit === toUnit) return weight;
-  
-  // Convert to grams first
-  const grams = weight * (CONVERSION_TO_GRAMS[fromUnit as keyof typeof CONVERSION_TO_GRAMS] || 0);
-  
-  // Then convert from grams to target unit
-  return grams / (CONVERSION_TO_GRAMS[toUnit as keyof typeof CONVERSION_TO_GRAMS] || 1);
-};
-
-// Format weight with unit
-export const formatWeightWithUnit = (
   weight: number,
-  unit: WeightUnit
-): string => {
-  // Format with proper decimal places based on unit
-  let formattedWeight: string;
+  fromUnit: string,
+  toUnit: string
+): number => {
+  if (fromUnit === toUnit) return weight;
+
+  // Convert everything to grams first
+  let grams = 0;
   
-  switch (unit) {
-    case 'oz':
-    case 'lbs':
-    case 'lb':
-      formattedWeight = weight.toFixed(1);
-      break;
+  switch (fromUnit) {
     case 'g':
-      formattedWeight = Math.round(weight).toString();
+      grams = weight;
       break;
     case 'kg':
-      formattedWeight = weight.toFixed(2);
+      grams = weight * 1000;
+      break;
+    case 'oz':
+      grams = weight * 28.35;
+      break;
+    case 'lb':
+    case 'lbs':
+      grams = weight * 453.59;
       break;
     default:
-      formattedWeight = weight.toString();
+      grams = weight; // Default to assuming grams
   }
-  
-  return `${formattedWeight} ${unit}`;
+
+  // Then convert from grams to desired unit
+  switch (toUnit) {
+    case 'g':
+      return Math.round(grams * 10) / 10;
+    case 'kg':
+      return Math.round((grams / 1000) * 100) / 100;
+    case 'oz':
+      return Math.round((grams / 28.35) * 100) / 100;
+    case 'lb':
+      return Math.round((grams / 453.59) * 100) / 100;
+    default:
+      return Math.round(grams * 10) / 10; // Default to grams
+  }
 };
 
-// Calculate percent change between two weight values
-export const calculatePercentChange = (
-  currentWeight: number,
-  previousWeight: number
-): number => {
-  if (previousWeight === 0) return 0;
-  
-  return ((currentWeight - previousWeight) / previousWeight) * 100;
+/**
+ * Get the standard weight unit abbreviation
+ * 
+ * @param unit - The unit name to standardize
+ * @returns The standardized unit abbreviation
+ */
+export const standardizeWeightUnit = (unit: string): string => {
+  const unitMap: Record<string, string> = {
+    'g': 'g',
+    'gram': 'g',
+    'grams': 'g',
+    'kg': 'kg',
+    'kilo': 'kg',
+    'kilos': 'kg',
+    'kilogram': 'kg',
+    'kilograms': 'kg',
+    'oz': 'oz',
+    'ounce': 'oz',
+    'ounces': 'oz',
+    'lb': 'lb',
+    'lbs': 'lb',
+    'pound': 'lb',
+    'pounds': 'lb'
+  };
+
+  return unitMap[unit.toLowerCase()] || 'g';
+};
+
+/**
+ * Get human-readable weight unit name
+ * 
+ * @param unit - The unit abbreviation
+ * @returns The full name of the weight unit
+ */
+export const getWeightUnitName = (unit: string): string => {
+  const unitMap: Record<string, string> = {
+    'g': 'Grams',
+    'kg': 'Kilograms',
+    'oz': 'Ounces',
+    'lb': 'Pounds',
+    'lbs': 'Pounds'
+  };
+
+  return unitMap[unit] || 'Grams';
 };

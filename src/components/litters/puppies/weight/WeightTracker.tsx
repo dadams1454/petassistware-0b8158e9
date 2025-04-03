@@ -1,129 +1,258 @@
 
-import React, { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import React, { useState } from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { WeightRecord } from '@/types/puppyTracking';
 import { useWeightData } from '@/hooks/useWeightData';
-import WeightForm from '@/components/puppies/growth/WeightForm';
-import { WeightTrackerProps } from './types';
-import { WeightUnit } from '@/types/health';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import WeightTable from './WeightTable';
+import WeightChart from './WeightChart';
+import WeightStats from './WeightStats';
+
+interface WeightTrackerProps {
+  puppyId: string;
+  birthDate?: string;
+  onAddSuccess?: () => void;
+}
+
+const weightFormSchema = z.object({
+  weight: z.coerce.number().positive('Weight must be positive'),
+  weight_unit: z.enum(['oz', 'g', 'lb', 'kg']),
+  date: z.string().default(() => new Date().toISOString().split('T')[0]),
+  notes: z.string().optional(),
+});
+
+type WeightFormValues = z.infer<typeof weightFormSchema>;
 
 const WeightTracker: React.FC<WeightTrackerProps> = ({
   puppyId,
   birthDate,
-  onAddSuccess
+  onAddSuccess,
 }) => {
-  const { weightRecords, isLoading, addWeightRecord } = useWeightData({ puppyId });
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [isAddingWeight, setIsAddingWeight] = useState(false);
-  
-  // Format weight data for chart
-  useEffect(() => {
-    if (!weightRecords) return;
-    
-    const formattedData = weightRecords.map(record => {
-      // Calculate age from birthDate and record.date if needed
-      const age = birthDate && record.date ? 
-        Math.floor((new Date(record.date).getTime() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24)) : 
-        record.age_days || 0;
-        
-      return {
-        date: new Date(record.date).toLocaleDateString(),
-        weight: record.weight,
-        age: age
-      };
-    });
-    
-    setChartData(formattedData);
-  }, [weightRecords, birthDate]);
-  
-  const handleWeightSubmit = async (data: any) => {
+  const [displayUnit, setDisplayUnit] = useState<'oz' | 'g' | 'lb' | 'kg'>('oz');
+  const { 
+    weightRecords, 
+    stats, 
+    isLoading, 
+    addWeightRecord, 
+    deleteWeightRecord 
+  } = useWeightData({ puppyId });
+
+  const form = useForm<WeightFormValues>({
+    resolver: zodResolver(weightFormSchema),
+    defaultValues: {
+      weight: 0,
+      weight_unit: 'oz',
+      date: new Date().toISOString().split('T')[0],
+      notes: '',
+    },
+  });
+
+  const onSubmit = async (values: WeightFormValues) => {
     try {
       await addWeightRecord({
-        weight: parseFloat(data.weight),
-        weight_unit: data.weight_unit as WeightUnit,
-        unit: data.weight_unit as WeightUnit, // For backward compatibility
-        date: data.date,
-        notes: data.notes,
-        dog_id: '', // Empty string as it's required but we're tracking a puppy
-        puppy_id: puppyId, // Add puppy_id as required
+        ...values,
+        birth_date: birthDate,
       });
       
-      setIsAddingWeight(false);
+      form.reset({
+        weight: 0,
+        weight_unit: values.weight_unit,
+        date: new Date().toISOString().split('T')[0],
+        notes: '',
+      });
       
       if (onAddSuccess) {
         onAddSuccess();
       }
-      
-      return true;
     } catch (error) {
       console.error('Error adding weight record:', error);
-      return false;
     }
   };
-  
-  const handleCancelAdd = () => {
-    setIsAddingWeight(false);
-  };
-  
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-  
-  if (isAddingWeight) {
-    return (
-      <WeightForm
-        puppyId={puppyId}
-        birthDate={birthDate}
-        onSubmit={handleWeightSubmit}
-        onCancel={handleCancelAdd}
-        defaultUnit="oz"
-      />
-    );
-  }
-  
-  if (!weightRecords || weightRecords.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground mb-2">No weight records found</p>
-      </div>
-    );
-  }
-  
+
   return (
-    <div className="h-[400px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={chartData}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="age" 
-            label={{ value: 'Age (days)', position: 'insideBottomRight', offset: 0 }}
-          />
-          <YAxis 
-            label={{ value: 'Weight (oz)', angle: -90, position: 'insideLeft' }}
-          />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="weight"
-            stroke="#8884d8"
-            activeDot={{ r: 8 }}
-            name="Weight"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="space-y-6">
+      <Tabs defaultValue="chart" className="w-full">
+        <TabsList>
+          <TabsTrigger value="chart">Chart</TabsTrigger>
+          <TabsTrigger value="table">Records</TabsTrigger>
+          <TabsTrigger value="add">Add Weight</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="chart" className="space-y-6">
+          <WeightStats stats={stats} />
+          
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Weight Growth Chart</CardTitle>
+                <Select
+                  defaultValue={displayUnit}
+                  onValueChange={(value) => setDisplayUnit(value as any)}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="oz">oz</SelectItem>
+                    <SelectItem value="g">g</SelectItem>
+                    <SelectItem value="lb">lb</SelectItem>
+                    <SelectItem value="kg">kg</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <WeightChart 
+                weightRecords={weightRecords} 
+                displayUnit={displayUnit} 
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="table">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Weight Records</CardTitle>
+                <Select
+                  defaultValue={displayUnit}
+                  onValueChange={(value) => setDisplayUnit(value as any)}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="oz">oz</SelectItem>
+                    <SelectItem value="g">g</SelectItem>
+                    <SelectItem value="lb">lb</SelectItem>
+                    <SelectItem value="kg">kg</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <WeightTable 
+                weightRecords={weightRecords} 
+                onDelete={deleteWeightRecord} 
+                displayUnit={displayUnit}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="add">
+          <Card>
+            <CardHeader>
+              <CardTitle>Add New Weight Record</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="weight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Weight</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="weight_unit"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Unit</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select unit" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="oz">Ounces (oz)</SelectItem>
+                              <SelectItem value="g">Grams (g)</SelectItem>
+                              <SelectItem value="lb">Pounds (lb)</SelectItem>
+                              <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notes</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Any observations or notes about this weight measurement"
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button type="submit">Record Weight</Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

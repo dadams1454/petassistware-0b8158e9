@@ -1,34 +1,28 @@
 
 import React from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { 
-  Form, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormControl, 
-  FormDescription,
-  FormMessage
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { usePuppyMilestones } from '@/hooks/usePuppyMilestones';
-import { useForm } from 'react-hook-form';
 
 interface AddMilestoneDialogProps {
   open: boolean;
@@ -36,49 +30,93 @@ interface AddMilestoneDialogProps {
   puppyId: string;
 }
 
-const AddMilestoneDialog: React.FC<AddMilestoneDialogProps> = ({ 
-  open, 
+const milestoneSchema = z.object({
+  title: z.string().min(2, "Title must be at least 2 characters"),
+  milestone_type: z.string().min(1, "Type is required"),
+  expected_age_days: z.coerce.number().min(0, "Age must be a positive number"),
+  description: z.string().optional(),
+  milestone_category: z.enum(['physical', 'health', 'behavioral']),
+});
+
+type MilestoneFormValues = z.infer<typeof milestoneSchema>;
+
+const AddMilestoneDialog: React.FC<AddMilestoneDialogProps> = ({
+  open,
   onOpenChange,
-  puppyId
+  puppyId,
 }) => {
   const { addMilestone } = usePuppyMilestones(puppyId);
   
-  const form = useForm({
-    defaultValues: {
-      title: '',
-      description: '',
-      category: 'physical' as 'physical' | 'health' | 'behavioral',
-      target_date: new Date().toISOString().split('T')[0]
-    }
+  const defaultValues: MilestoneFormValues = {
+    title: '',
+    milestone_type: '',
+    expected_age_days: 0,
+    description: '',
+    milestone_category: 'physical',
+  };
+  
+  const form = useForm<MilestoneFormValues>({
+    resolver: zodResolver(milestoneSchema),
+    defaultValues,
   });
   
-  const onSubmit = (data: any) => {
-    addMilestone(data);
-    form.reset();
-    onOpenChange(false);
+  const handleSubmit = async (values: MilestoneFormValues) => {
+    try {
+      await addMilestone({
+        ...values,
+        puppy_id: puppyId,
+      });
+      form.reset(defaultValues);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error adding milestone:', error);
+    }
   };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Custom Milestone</DialogTitle>
-          <DialogDescription>
-            Create a new development milestone to track for this puppy.
-          </DialogDescription>
+          <DialogTitle>Add Developmental Milestone</DialogTitle>
         </DialogHeader>
-        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
-              rules={{ required: 'Title is required' }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Milestone Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., First Bath" {...field} />
+                    <Input placeholder="E.g., First Steps" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="milestone_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <FormControl>
+                    <Input placeholder="E.g., Motor Development" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="expected_age_days"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Expected Age (Days)</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -93,8 +131,9 @@ const AddMilestoneDialog: React.FC<AddMilestoneDialogProps> = ({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe what this milestone represents..."
-                      {...field}
+                      placeholder="Describe this developmental milestone..." 
+                      className="resize-none" 
+                      {...field} 
                     />
                   </FormControl>
                   <FormMessage />
@@ -104,58 +143,43 @@ const AddMilestoneDialog: React.FC<AddMilestoneDialogProps> = ({
             
             <FormField
               control={form.control}
-              name="category"
-              rules={{ required: 'Category is required' }}
+              name="milestone_category"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2">
                   <FormLabel>Category</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="physical">Physical Development</SelectItem>
-                      <SelectItem value="health">Health</SelectItem>
-                      <SelectItem value="behavioral">Behavioral</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Categorize this milestone for better organization
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="target_date"
-              rules={{ required: 'Target date is required' }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Target Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="physical" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Physical</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="health" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Health</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="behavioral" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Behavioral</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
-                  <FormDescription>
-                    When do you expect this milestone to be reached?
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-              >
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit">Add Milestone</Button>

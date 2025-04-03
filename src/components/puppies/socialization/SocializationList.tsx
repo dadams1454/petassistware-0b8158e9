@@ -1,171 +1,121 @@
 
 import React from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
+import { format, parseISO } from 'date-fns';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Loader2 } from 'lucide-react';
+import { Trash2, SearchX, Loader2 } from 'lucide-react';
+import { SocializationExperience, SocializationReactionObject } from '@/types/puppyTracking';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { SocializationExperience } from '@/types/puppyTracking';
 
 interface SocializationListProps {
   experiences: SocializationExperience[];
   isLoading: boolean;
+  error?: string | null;
   onDelete: (id: string) => void;
 }
 
-const getCategoryName = (categoryId: string): string => {
-  const categories: Record<string, string> = {
-    'people': 'People Interactions',
-    'animals': 'Animal Interactions',
-    'environments': 'New Environments',
-    'sounds': 'Sound Exposures',
-    'handling': 'Physical Handling',
-    'objects': 'Novel Objects',
-    'travel': 'Travel Experiences'
-  };
-  
-  return categories[categoryId] || categoryId;
-};
-
-const getReactionBadge = (reaction?: string) => {
-  if (!reaction) return null;
-  
-  const variants: Record<string, string> = {
-    'very_positive': 'bg-green-100 text-green-800',
-    'positive': 'bg-green-50 text-green-600',
-    'neutral': 'bg-gray-100 text-gray-800',
-    'cautious': 'bg-yellow-100 text-yellow-800',
-    'fearful': 'bg-orange-100 text-orange-800',
-    'very_fearful': 'bg-red-100 text-red-800'
-  };
-  
-  const labels: Record<string, string> = {
-    'very_positive': 'Very Positive',
-    'positive': 'Positive',
-    'neutral': 'Neutral',
-    'cautious': 'Cautious',
-    'fearful': 'Fearful',
-    'very_fearful': 'Very Fearful'
-  };
-  
-  return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${variants[reaction] || 'bg-gray-100'}`}>
-      {labels[reaction] || reaction}
-    </span>
-  );
+const REACTION_MAP: Record<string, SocializationReactionObject> = {
+  'very_positive': { id: 'very_positive', name: 'Very Positive', emoji: '😄', color: 'text-green-600' },
+  'positive': { id: 'positive', name: 'Positive', emoji: '🙂', color: 'text-green-500' },
+  'neutral': { id: 'neutral', name: 'Neutral', emoji: '😐', color: 'text-gray-500' },
+  'cautious': { id: 'cautious', name: 'Cautious', emoji: '😟', color: 'text-yellow-500' },
+  'fearful': { id: 'fearful', name: 'Fearful', emoji: '😨', color: 'text-orange-500' },
+  'very_fearful': { id: 'very_fearful', name: 'Very Fearful', emoji: '😱', color: 'text-red-500' },
 };
 
 const SocializationList: React.FC<SocializationListProps> = ({
   experiences,
   isLoading,
-  onDelete
+  error,
+  onDelete,
 }) => {
   if (isLoading) {
     return (
+      <div className="flex items-center justify-center h-60">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
       <Card>
-        <CardContent className="py-10">
-          <div className="flex justify-center items-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2">Loading socialization records...</span>
-          </div>
+        <CardContent className="flex flex-col items-center justify-center p-6">
+          <AlertCircle className="h-10 w-10 text-destructive mb-2" />
+          <h3 className="text-lg font-semibold">Error Loading Data</h3>
+          <p className="text-muted-foreground text-center mt-1">{error}</p>
         </CardContent>
       </Card>
     );
   }
 
-  if (experiences.length === 0) {
+  if (!experiences || experiences.length === 0) {
     return (
       <Card>
-        <CardContent className="py-10">
-          <div className="text-center">
-            <p className="text-muted-foreground">No socialization experiences recorded yet.</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Record new experiences to track your puppy's socialization progress.
-            </p>
-          </div>
+        <CardContent className="flex flex-col items-center justify-center p-10">
+          <SearchX className="h-10 w-10 text-muted-foreground mb-2" />
+          <h3 className="text-lg font-semibold">No Experiences Yet</h3>
+          <p className="text-muted-foreground text-center mt-1">
+            No socialization experiences have been recorded. Add some using the form.
+          </p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Socialization Experiences</CardTitle>
-        <CardDescription>
-          Track your puppy's exposure to various experiences
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Experience</TableHead>
-              <TableHead>Reaction</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {experiences.map((experience) => (
-              <TableRow key={experience.id}>
-                <TableCell>
-                  {format(new Date(experience.experience_date), 'MMM d, yyyy')}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {getCategoryName(experience.category_id)}
-                  </Badge>
-                </TableCell>
-                <TableCell>{experience.experience}</TableCell>
-                <TableCell>
-                  {getReactionBadge(experience.reaction)}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() => onDelete(experience.id)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      {experiences.map((experience) => {
+        const reactionInfo = REACTION_MAP[experience.reaction || 'neutral'];
+        
+        return (
+          <Card key={experience.id} className="overflow-hidden">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-medium">{experience.experience}</h3>
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {experience.category}
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-sm text-muted-foreground mb-2">
+                    {format(
+                      typeof experience.experience_date === 'string' 
+                        ? parseISO(experience.experience_date) 
+                        : experience.experience_date,
+                      'MMM d, yyyy'
+                    )}
+                  </div>
+                  
+                  {experience.reaction && (
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className={reactionInfo.color}>
+                        {reactionInfo.emoji} {reactionInfo.name}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {experience.notes && (
+                    <p className="text-sm mt-2">{experience.notes}</p>
+                  )}
+                </div>
+                
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onDelete(experience.id)}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
   );
 };
 

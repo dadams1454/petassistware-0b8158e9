@@ -1,73 +1,104 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { z } from 'zod';
 import { useForm } from 'react-hook-form';
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SocializationReactionObject } from '@/types/puppyTracking';
 
 interface SocializationExperienceFormProps {
-  onSubmit: (data: any) => void;
-  onCancel: () => void;
   puppyId: string;
+  onSubmit: (data: any) => void;
+  onCancel?: () => void;
 }
 
-// Socialization categories
-const CATEGORIES = [
-  { id: 'people', name: 'People Interactions' },
-  { id: 'animals', name: 'Animal Interactions' },
-  { id: 'environments', name: 'New Environments' },
-  { id: 'sounds', name: 'Sound Exposures' },
-  { id: 'handling', name: 'Physical Handling' },
-  { id: 'objects', name: 'Novel Objects' },
-  { id: 'travel', name: 'Travel Experiences' }
+const SOCIALIZATION_CATEGORIES = [
+  { id: 'people', name: 'People' },
+  { id: 'animals', name: 'Animals' },
+  { id: 'environments', name: 'Environments' },
+  { id: 'sounds', name: 'Sounds' },
+  { id: 'handling', name: 'Handling' },
+  { id: 'surfaces', name: 'Surfaces' },
+  { id: 'objects', name: 'Objects' },
 ];
 
-// Reaction options
-const REACTIONS = [
-  { value: 'very_positive', label: 'Very Positive' },
-  { value: 'positive', label: 'Positive' },
-  { value: 'neutral', label: 'Neutral' },
-  { value: 'cautious', label: 'Cautious' },
-  { value: 'fearful', label: 'Fearful' },
-  { value: 'very_fearful', label: 'Very Fearful' }
+const REACTION_TYPES: SocializationReactionObject[] = [
+  { id: 'very_positive', name: 'Very Positive', emoji: '😄', color: 'text-green-600' },
+  { id: 'positive', name: 'Positive', emoji: '🙂', color: 'text-green-500' },
+  { id: 'neutral', name: 'Neutral', emoji: '😐', color: 'text-gray-500' },
+  { id: 'cautious', name: 'Cautious', emoji: '😟', color: 'text-yellow-500' },
+  { id: 'fearful', name: 'Fearful', emoji: '😨', color: 'text-orange-500' },
+  { id: 'very_fearful', name: 'Very Fearful', emoji: '😱', color: 'text-red-500' },
 ];
 
-const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = ({
+const experienceSchema = z.object({
+  category: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+  experience: z.string().min(3, "Experience description is required"),
+  experience_date: z.date({
+    required_error: "Date is required",
+  }),
+  reaction: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+type ExperienceFormValues = z.infer<typeof experienceSchema>;
+
+const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = ({ 
+  puppyId,
   onSubmit,
-  onCancel,
-  puppyId
+  onCancel 
 }) => {
-  const [date, setDate] = useState<Date>(new Date());
+  const defaultValues: ExperienceFormValues = {
+    category: SOCIALIZATION_CATEGORIES[0],
+    experience: '',
+    experience_date: new Date(),
+    reaction: 'neutral',
+    notes: '',
+  };
   
-  const form = useForm({
-    defaultValues: {
-      category_id: '',
-      experience: '',
-      experience_date: format(new Date(), 'yyyy-MM-dd'),
-      reaction: '',
-      notes: ''
-    }
+  const form = useForm<ExperienceFormValues>({
+    resolver: zodResolver(experienceSchema),
+    defaultValues,
   });
-
-  const handleSubmit = (data: any) => {
-    onSubmit({
-      ...data,
-      puppy_id: puppyId
-    });
+  
+  const handleSubmit = (values: ExperienceFormValues) => {
+    // Format the date to ISO string for the API
+    const formattedValues = {
+      ...values,
+      experience_date: format(values.experience_date, 'yyyy-MM-dd'),
+    };
+    
+    onSubmit(formattedValues);
+    form.reset(defaultValues);
   };
 
   return (
@@ -76,13 +107,18 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="category_id"
+            name="category"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
+                <Select
+                  onValueChange={(value) => {
+                    const category = SOCIALIZATION_CATEGORIES.find(cat => cat.id === value);
+                    if (category) {
+                      field.onChange(category);
+                    }
+                  }}
+                  defaultValue={field.value.id}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -90,11 +126,8 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {CATEGORIES.map(category => (
-                      <SelectItem 
-                        key={category.id} 
-                        value={category.id}
-                      >
+                    {SOCIALIZATION_CATEGORIES.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
                     ))}
@@ -104,7 +137,7 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
               </FormItem>
             )}
           />
-
+          
           <FormField
             control={form.control}
             name="experience_date"
@@ -117,12 +150,12 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
                         {field.value ? (
-                          format(new Date(field.value), "PPP")
+                          format(field.value, "PPP")
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -133,10 +166,8 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value) : undefined}
-                      onSelect={(date) => {
-                        field.onChange(date ? format(date, 'yyyy-MM-dd') : '');
-                      }}
+                      selected={field.value}
+                      onSelect={field.onChange}
                       disabled={(date) =>
                         date > new Date() || date < new Date("1900-01-01")
                       }
@@ -149,7 +180,7 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
             )}
           />
         </div>
-
+        
         <FormField
           control={form.control}
           name="experience"
@@ -157,38 +188,35 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
             <FormItem>
               <FormLabel>Experience Description</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="Describe the socialization experience" 
-                  {...field} 
-                />
+                <Input placeholder="Describe the socialization experience" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="reaction"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Puppy's Reaction</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
+              <Select
+                onValueChange={field.onChange}
                 defaultValue={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a reaction" />
+                    <SelectValue placeholder="Select reaction" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {REACTIONS.map(reaction => (
-                    <SelectItem 
-                      key={reaction.value} 
-                      value={reaction.value}
-                    >
-                      {reaction.label}
+                  {REACTION_TYPES.map((reaction) => (
+                    <SelectItem key={reaction.id} value={reaction.id}>
+                      <div className="flex items-center">
+                        <span className="mr-2">{reaction.emoji}</span>
+                        <span className={reaction.color}>{reaction.name}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -197,7 +225,7 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="notes"
@@ -205,24 +233,23 @@ const SocializationExperienceForm: React.FC<SocializationExperienceFormProps> = 
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Additional observations or notes" 
-                  {...field} 
+                <Textarea
+                  placeholder="Additional observations or notes"
+                  className="resize-none"
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <div className="flex justify-end space-x-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
+        
+        <div className="flex justify-end space-x-4">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
           <Button type="submit">Save Experience</Button>
         </div>
       </form>

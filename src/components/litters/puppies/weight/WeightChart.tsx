@@ -1,115 +1,151 @@
 
 import React from 'react';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import { WeightRecord } from '@/types/puppyTracking';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
-  Legend
+  ReferenceLine,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { WeightRecord } from './types';
 import { convertWeight } from './weightUnits';
 
-export interface WeightChartProps {
+interface WeightChartProps {
   weightRecords: WeightRecord[];
-  displayUnit: 'oz' | 'g' | 'lbs' | 'kg';
-  title?: string;
+  displayUnit: 'oz' | 'g' | 'lb' | 'kg';
 }
+
+// Custom tooltip component for the chart
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white p-3 border rounded shadow-sm">
+        <p className="text-sm font-medium">{`Age: ${label} days`}</p>
+        <p className="text-sm">{`Weight: ${payload[0].value} ${data.displayUnit}`}</p>
+        {data.notes && <p className="text-xs text-muted-foreground mt-1">{data.notes}</p>}
+      </div>
+    );
+  }
+  return null;
+};
 
 const WeightChart: React.FC<WeightChartProps> = ({ 
   weightRecords, 
-  displayUnit,
-  title = 'Weight Progress' 
+  displayUnit 
 }) => {
-  // Process data for the chart
+  if (!weightRecords || weightRecords.length === 0) {
+    return (
+      <div className="text-center p-8 text-muted-foreground">
+        No weight records available to display
+      </div>
+    );
+  }
+
+  // Convert weights to the selected display unit
   const chartData = weightRecords.map(record => {
-    // Convert weight to the display unit if needed
-    const convertedWeight = record.weight_unit !== displayUnit
-      ? convertWeight(record.weight, record.weight_unit, displayUnit)
-      : record.weight;
+    const displayWeight = convertWeight(
+      record.weight, 
+      record.weight_unit, 
+      displayUnit
+    );
     
     return {
-      date: record.date,
-      weight: Number(convertedWeight.toFixed(2)),
-      formattedDate: new Date(record.date).toLocaleDateString()
+      ...record,
+      age: record.age_days,
+      displayWeight,
+      displayUnit
     };
   });
 
-  // Format tooltip content
-  const formatTooltip = (value: number, name: string) => {
-    if (name === 'weight') {
-      return [`${value} ${displayUnit}`, 'Weight'];
-    }
-    return [value, name];
-  };
-
-  // Calculate domain for Y axis
-  const minWeight = Math.min(...chartData.map(data => data.weight)) * 0.9;
-  const maxWeight = Math.max(...chartData.map(data => data.weight)) * 1.1;
+  // Calculate trend line (simple linear regression)
+  let trendData: { age: number, displayWeight: number }[] = [];
+  
+  if (chartData.length > 1) {
+    const n = chartData.length;
+    
+    // Calculate sums for regression formula
+    const sumX = chartData.reduce((sum, item) => sum + item.age, 0);
+    const sumY = chartData.reduce((sum, item) => sum + item.displayWeight, 0);
+    const sumXY = chartData.reduce((sum, item) => sum + (item.age * item.displayWeight), 0);
+    const sumXX = chartData.reduce((sum, item) => sum + (item.age * item.age), 0);
+    
+    // Calculate slope and y-intercept
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const yIntercept = (sumY - slope * sumX) / n;
+    
+    // Create trend line data points
+    const firstAge = chartData[0].age;
+    const lastAge = chartData[chartData.length - 1].age;
+    const futureAge = lastAge + 14; // Project 2 weeks into the future
+    
+    trendData = [
+      { age: firstAge, displayWeight: yIntercept + slope * firstAge },
+      { age: futureAge, displayWeight: yIntercept + slope * futureAge }
+    ];
+  }
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {chartData.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            No weight records available
-          </div>
-        ) : (
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={chartData}
-                margin={{
-                  top: 10,
-                  right: 30,
-                  left: 0,
-                  bottom: 20,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="formattedDate" 
-                  angle={-45}
-                  textAnchor="end"
-                  tick={{ fontSize: 12 }}
-                  height={60}
-                />
-                <YAxis 
-                  domain={[minWeight, maxWeight]}
-                  tickFormatter={(value) => `${value}`}
-                  label={{ 
-                    value: `Weight (${displayUnit})`, 
-                    angle: -90, 
-                    position: 'insideLeft',
-                    style: { textAnchor: 'middle' }
-                  }}
-                />
-                <Tooltip 
-                  formatter={formatTooltip}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="weight"
-                  stroke="#8884d8"
-                  activeDot={{ r: 8 }}
-                  name="Weight"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="h-[400px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={chartData}
+          margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey="age" 
+            label={{ 
+              value: 'Age (days)', 
+              position: 'insideBottom', 
+              offset: -10 
+            }} 
+          />
+          <YAxis 
+            label={{ 
+              value: `Weight (${displayUnit})`, 
+              angle: -90, 
+              position: 'insideLeft' 
+            }} 
+          />
+          <Tooltip content={<CustomTooltip />} />
+          
+          <Line 
+            type="monotone" 
+            dataKey="displayWeight" 
+            stroke="#3b82f6" 
+            strokeWidth={2}
+            activeDot={{ r: 8 }} 
+          />
+          
+          {trendData.length > 0 && (
+            <Line 
+              data={trendData}
+              type="linear" 
+              dataKey="displayWeight"
+              stroke="#f43f5e" 
+              strokeWidth={2}
+              strokeDasharray="5 5" 
+              dot={false}
+              activeDot={false}
+              label="Trend"
+            />
+          )}
+          
+          {chartData.length > 0 && (
+            <ReferenceLine 
+              y={chartData[chartData.length - 1].displayWeight} 
+              stroke="#64748b" 
+              strokeDasharray="3 3"
+              label="Current"
+            />
+          )}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
