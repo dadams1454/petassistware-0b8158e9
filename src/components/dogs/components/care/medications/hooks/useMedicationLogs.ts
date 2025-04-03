@@ -67,12 +67,12 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
                 (log.task_name.toLowerCase().includes('prevention'));
               
               // Parse frequency from task_name if available
-              let frequency = MedicationFrequency.MONTHLY; // Default
-              if (log.task_name.includes('(Daily)')) frequency = MedicationFrequency.DAILY;
-              if (log.task_name.includes('(Weekly)')) frequency = MedicationFrequency.WEEKLY;
-              if (log.task_name.includes('(Monthly)')) frequency = MedicationFrequency.MONTHLY;
-              if (log.task_name.includes('(Quarterly)')) frequency = MedicationFrequency.QUARTERLY;
-              if (log.task_name.includes('(Annual)')) frequency = MedicationFrequency.ANNUAL;
+              let frequency = MedicationFrequency.Monthly; // Default
+              if (log.task_name.includes('(Daily)')) frequency = MedicationFrequency.Daily;
+              if (log.task_name.includes('(Weekly)')) frequency = MedicationFrequency.Weekly;
+              if (log.task_name.includes('(Monthly)')) frequency = MedicationFrequency.Monthly;
+              if (log.task_name.includes('(Quarterly)')) frequency = MedicationFrequency.Quarterly;
+              if (log.task_name.includes('(Annual)')) frequency = MedicationFrequency.Annual;
               
               // Clean medication name (remove frequency information)
               let cleanName = log.task_name;
@@ -87,7 +87,9 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
                   lastAdministered: log.timestamp,
                   frequency: frequency,
                   notes: log.notes,
-                  isPreventative: isPreventative
+                  isPreventative: isPreventative,
+                  startDate: log.start_date || log.timestamp, // Add startDate property
+                  endDate: log.end_date || null // Add endDate property
                 };
               }
             });
