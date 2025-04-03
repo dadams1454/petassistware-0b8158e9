@@ -1,50 +1,87 @@
 
-// Health record types
 export enum HealthRecordTypeEnum {
-  VACCINATION = 'vaccination',
-  EXAMINATION = 'examination',
-  MEDICATION = 'medication',
-  SURGERY = 'surgery',
-  OBSERVATION = 'observation',
-  DEWORMING = 'deworming',
-  GROOMING = 'grooming',
-  DENTAL = 'dental',
-  ALLERGY = 'allergy',
-  TEST = 'test',
-  OTHER = 'other'
+  VACCINATION = 'VACCINATION',
+  EXAMINATION = 'EXAMINATION',
+  MEDICATION = 'MEDICATION',
+  SURGERY = 'SURGERY',
+  OBSERVATION = 'OBSERVATION',
+  DEWORMING = 'DEWORMING',
+  GROOMING = 'GROOMING',
+  DENTAL = 'DENTAL',
+  ALLERGY = 'ALLERGY',
+  TEST = 'TEST',
+  OTHER = 'OTHER'
 }
+
+// Aliases for backward compatibility
+HealthRecordTypeEnum.Vaccination = HealthRecordTypeEnum.VACCINATION;
+HealthRecordTypeEnum.Examination = HealthRecordTypeEnum.EXAMINATION;
+HealthRecordTypeEnum.Medication = HealthRecordTypeEnum.MEDICATION;
+HealthRecordTypeEnum.Surgery = HealthRecordTypeEnum.SURGERY;
+HealthRecordTypeEnum.Observation = HealthRecordTypeEnum.OBSERVATION;
+HealthRecordTypeEnum.Deworming = HealthRecordTypeEnum.DEWORMING;
+HealthRecordTypeEnum.Grooming = HealthRecordTypeEnum.GROOMING;
+HealthRecordTypeEnum.Dental = HealthRecordTypeEnum.DENTAL;
+HealthRecordTypeEnum.Allergy = HealthRecordTypeEnum.ALLERGY;
+HealthRecordTypeEnum.Test = HealthRecordTypeEnum.TEST;
+HealthRecordTypeEnum.Other = HealthRecordTypeEnum.OTHER;
 
 export enum AppetiteLevelEnum {
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  FAIR = 'fair',
-  POOR = 'poor',
-  NONE = 'none'
+  EXCELLENT = 'EXCELLENT',
+  GOOD = 'GOOD',
+  FAIR = 'FAIR',
+  POOR = 'POOR',
+  NONE = 'NONE'
 }
+
+// Aliases for backward compatibility
+AppetiteLevelEnum.Excellent = AppetiteLevelEnum.EXCELLENT;
+AppetiteLevelEnum.Good = AppetiteLevelEnum.GOOD;
+AppetiteLevelEnum.Fair = AppetiteLevelEnum.FAIR;
+AppetiteLevelEnum.Poor = AppetiteLevelEnum.POOR;
+AppetiteLevelEnum.None = AppetiteLevelEnum.NONE;
 
 export enum EnergyLevelEnum {
-  HYPERACTIVE = 'hyperactive',
-  VERY_HIGH = 'very_high',
-  HIGH = 'high',
-  NORMAL = 'normal',
-  LOW = 'low',
-  VERY_LOW = 'very_low',
-  LETHARGIC = 'lethargic'
+  HYPERACTIVE = 'HYPERACTIVE',
+  VERY_HIGH = 'VERY_HIGH',
+  HIGH = 'HIGH',
+  NORMAL = 'NORMAL',
+  LOW = 'LOW',
+  VERY_LOW = 'VERY_LOW',
+  LETHARGIC = 'LETHARGIC'
 }
+
+// Aliases for backward compatibility
+EnergyLevelEnum.Hyperactive = EnergyLevelEnum.HYPERACTIVE;
+EnergyLevelEnum.VeryHigh = EnergyLevelEnum.VERY_HIGH;
+EnergyLevelEnum.High = EnergyLevelEnum.HIGH;
+EnergyLevelEnum.Normal = EnergyLevelEnum.NORMAL;
+EnergyLevelEnum.Low = EnergyLevelEnum.LOW;
+EnergyLevelEnum.VeryLow = EnergyLevelEnum.VERY_LOW;
+EnergyLevelEnum.Lethargic = EnergyLevelEnum.LETHARGIC;
 
 export enum StoolConsistencyEnum {
-  NORMAL = 'normal',
-  SOLID = 'solid',
-  SEMI_SOLID = 'semi_solid',
-  SOFT = 'soft',
-  LOOSE = 'loose',
-  WATERY = 'watery',
-  BLOODY = 'bloody',
-  MUCOUSY = 'mucousy',
-  HARD = 'hard'
+  SOLID = 'SOLID',
+  SEMI_SOLID = 'SEMI_SOLID',
+  NORMAL = 'NORMAL',
+  SOFT = 'SOFT',
+  LOOSE = 'LOOSE',
+  WATERY = 'WATERY',
+  BLOODY = 'BLOODY',
+  MUCOUSY = 'MUCOUSY',
+  HARD = 'HARD'
 }
 
-export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg' | 'lb';
+// Aliases for backward compatibility
+StoolConsistencyEnum.Normal = StoolConsistencyEnum.NORMAL;
+StoolConsistencyEnum.Soft = StoolConsistencyEnum.SOFT;
+StoolConsistencyEnum.Loose = StoolConsistencyEnum.LOOSE;
+StoolConsistencyEnum.Watery = StoolConsistencyEnum.WATERY;
+StoolConsistencyEnum.Hard = StoolConsistencyEnum.HARD;
+StoolConsistencyEnum.Mucousy = StoolConsistencyEnum.MUCOUSY;
+StoolConsistencyEnum.Bloody = StoolConsistencyEnum.BLOODY;
+StoolConsistencyEnum.SemiSolid = StoolConsistencyEnum.SEMI_SOLID;
+StoolConsistencyEnum.Solid = StoolConsistencyEnum.SOLID;
 
 export interface HealthRecord {
   id: string;
@@ -54,53 +91,44 @@ export interface HealthRecord {
   visit_date: string;
   vet_name: string;
   vet_clinic?: string;
-  description?: string;
+  examination_type?: string;
   findings?: string;
   recommendations?: string;
-  document_url?: string;
+  next_due_date?: string;
   follow_up_date?: string;
-  reminder_sent?: boolean;
-  record_notes?: string;
-  recovery_notes?: string;
-  performed_by?: string;
-  // Vaccination specific
   vaccine_name?: string;
-  lot_number?: string;
   manufacturer?: string;
+  lot_number?: string;
   expiration_date?: string;
-  // Medication specific
   medication_name?: string;
   dosage?: number;
   dosage_unit?: string;
+  duration?: number;
+  duration_unit?: string;
   frequency?: string;
   administration_route?: string;
   start_date?: string;
   end_date?: string;
-  duration?: number;
-  duration_unit?: string;
   prescription_number?: string;
-  next_due_date?: string;
-  // Examination specific
-  examination_type?: string;
-  // Surgery specific
   procedure_name?: string;
   surgeon?: string;
   anesthesia_used?: string;
+  recovery_notes?: string;
+  document_url?: string;
+  record_notes?: string;
+  description?: string;
+  reminder_sent?: boolean;
   created_at?: string;
+  performed_by?: string;
 }
 
-export interface WeightRecord {
+export interface WeightData {
   id: string;
-  dog_id: string;
-  puppy_id?: string;
   date: string;
   weight: number;
-  weight_unit: WeightUnit;
+  unit: string;
+  ageInDays?: number;
   notes?: string;
-  created_at: string;
-  percent_change?: number;
-  age_days?: number;
-  birth_date?: string;
 }
 
 export interface HealthIndicator {
@@ -110,19 +138,18 @@ export interface HealthIndicator {
   appetite?: AppetiteLevelEnum;
   energy?: EnergyLevelEnum;
   stool_consistency?: StoolConsistencyEnum;
-  abnormal?: boolean;
   notes?: string;
-  created_at: string;
-  created_by?: string;
+  abnormal?: boolean;
   alert_generated?: boolean;
+  created_at?: string;
+  created_by?: string;
 }
 
-export interface HealthAlert {
+export interface VaccinationData {
   id: string;
   dog_id: string;
-  indicator_id: string;
-  status: 'active' | 'resolved';
-  resolved?: boolean;
-  resolved_at?: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  notes?: string;
   created_at: string;
 }

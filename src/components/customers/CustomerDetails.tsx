@@ -39,6 +39,19 @@ const CustomerDetails: React.FC = () => {
     );
   }
 
+  // Create display name from first and last name
+  const customerName = customer ? `${customer.first_name} ${customer.last_name}` : 'Unknown Customer';
+  
+  // Parse metadata for additional fields
+  const metadata = customer?.metadata || {};
+  const { 
+    preferred_contact_method, 
+    interested_in, 
+    city, 
+    state, 
+    zip 
+  } = typeof metadata === 'object' ? metadata : {};
+
   return (
     <div className="container mx-auto py-6">
       <Button 
@@ -52,7 +65,7 @@ const CustomerDetails: React.FC = () => {
       
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{customer?.name}</h1>
+          <h1 className="text-3xl font-bold">{customerName}</h1>
           <p className="text-muted-foreground">{customer?.email}</p>
         </div>
         <Button onClick={() => navigate(`/customers/${customerId}/edit`)}>
@@ -82,7 +95,9 @@ const CustomerDetails: React.FC = () => {
                   {customer?.address ? (
                     <div>
                       <p>{customer.address}</p>
-                      <p>{customer.city}, {customer.state} {customer.zip}</p>
+                      {city && state && (
+                        <p>{city}, {state} {zip}</p>
+                      )}
                     </div>
                   ) : (
                     'Not provided'
@@ -101,11 +116,11 @@ const CustomerDetails: React.FC = () => {
             <dl className="space-y-4">
               <div>
                 <dt className="text-sm text-muted-foreground">Preferred Contact Method</dt>
-                <dd>{customer?.preferred_contact_method || 'Not specified'}</dd>
+                <dd>{preferred_contact_method || 'Not specified'}</dd>
               </div>
               <div>
                 <dt className="text-sm text-muted-foreground">Interested In</dt>
-                <dd>{customer?.interested_in || 'Not specified'}</dd>
+                <dd>{interested_in || 'Not specified'}</dd>
               </div>
             </dl>
           </CardContent>

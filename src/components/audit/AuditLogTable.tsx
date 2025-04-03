@@ -4,18 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { AuditLogEntry } from '@/hooks/useAuditLogs';
 
-export interface AuditLog {
-  id: string;
-  timestamp: string;
-  user_id: string;
-  action: string;
-  entity_type: string;
-  entity_id: string;
-  previous_state?: Record<string, any>;
-  new_state?: Record<string, any>;
-  notes?: string;
-}
+export type AuditLog = AuditLogEntry;
 
 export interface AuditLogTableProps {
   logs: AuditLog[];
