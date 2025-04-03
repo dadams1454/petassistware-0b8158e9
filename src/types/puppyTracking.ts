@@ -1,4 +1,6 @@
 
+import { WeightUnit } from './common';
+
 // Puppy tracking and management types
 
 // Represents a puppy with age calculation
@@ -22,6 +24,7 @@ export interface PuppyWithAge {
   age_weeks?: number;
   age?: number;
   ageDescription?: string;
+  litters?: any; // For components that need this property
 }
 
 // Defines an age group for puppies
@@ -69,6 +72,7 @@ export interface PuppyManagementStats {
   // Add stats property used in components
   stats?: any;
   totalCount?: number;
+  byColor?: Record<string, number>; // For components that use this
 }
 
 // Puppy weight record
@@ -89,13 +93,14 @@ export interface WeightRecord {
   dog_id: string;
   puppy_id?: string;
   weight: number;
-  weight_unit: string;
-  unit?: string; // For backward compatibility
+  weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   created_at?: string;
   percent_change?: number;
-  age_days?: number;
+  age_days?: number; // For age calculation
+  birth_date?: string; // For puppy age calculation
 }
 
 // Socialization Types
@@ -117,7 +122,6 @@ export interface SocializationReaction {
   value: string;
   color: string;
   emoji?: string;
-  description?: string;
 }
 
 export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'unknown' | 'very_positive' | 'cautious' | 'fearful' | 'very_fearful' | 'no_reaction';
@@ -232,4 +236,14 @@ export interface VaccinationSchedule {
   administered: boolean;
   notes?: string;
   vaccination_type?: string;
+}
+
+// AgeGroup for backward compatibility
+export interface AgeGroup {
+  id: string;
+  name: string;
+  startDay: number;
+  endDay: number;
+  description?: string;
+  color?: string;
 }

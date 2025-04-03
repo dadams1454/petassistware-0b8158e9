@@ -16,6 +16,14 @@ export const validateUUID = (uuid: string): boolean => {
 };
 
 /**
+ * @deprecated Use validateUUID instead
+ * Legacy function kept for backward compatibility
+ */
+export const isValidUUID = (uuid: string): boolean => {
+  return validateUUID(uuid);
+};
+
+/**
  * Sanitizes a UUID string, removing any non-UUID characters
  * @param input String that might contain a UUID
  * @returns Cleaned UUID string if valid, otherwise the original string
@@ -31,6 +39,36 @@ export const sanitizeUUID = (input: string): string => {
   
   // If no valid UUID found, return the original
   return input;
+};
+
+/**
+ * Attempts to repair a malformed UUID
+ * @param input Potentially malformed UUID string
+ * @returns Repaired UUID or null if not repairable
+ */
+export const attemptUUIDRepair = (input: string): string | null => {
+  if (!input) return null;
+  
+  // Remove all non-alphanumeric characters
+  const cleaned = input.replace(/[^a-f0-9]/gi, '');
+  
+  // If we don't have enough characters for a UUID, can't repair
+  if (cleaned.length < 32) return null;
+  
+  // Take the first 32 characters and format as UUID
+  const segments = [
+    cleaned.substring(0, 8),
+    cleaned.substring(8, 12),
+    cleaned.substring(12, 16),
+    cleaned.substring(16, 20),
+    cleaned.substring(20, 32)
+  ];
+  
+  // Make sure it's a v4 UUID
+  const uuidStr = segments.join('-').replace(/(.{14})(.{1})(.{3})/, '$14$3');
+  
+  // Validate the repaired UUID
+  return validateUUID(uuidStr) ? uuidStr : null;
 };
 
 /**

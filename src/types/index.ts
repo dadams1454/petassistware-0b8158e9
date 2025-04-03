@@ -5,14 +5,14 @@
 export * from './common';
 
 // Weight related types
-export {
+export type {
   WeightRecord,
   GrowthStats,
   WeightTracking
 } from './weight';
 
 // Dog related types
-export {
+export type {
   Dog,
   DogGender,
   DogStatus,
@@ -23,7 +23,7 @@ export {
 } from './dog';
 
 // Health related types (different from Dog health types)
-export {
+export type {
   Medication,
   MedicationStatus,
   MedicationLog,

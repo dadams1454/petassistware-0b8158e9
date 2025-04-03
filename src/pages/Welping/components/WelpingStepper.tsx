@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { WelpingRecordForm } from './WelpingRecordForm';
-import { WelpingObservationForm } from './WelpingObservationForm';
-import { PostpartumCareForm } from './PostpartumCareForm';
+import WelpingRecordForm from './WelpingRecordForm';
+import WelpingObservationForm from './WelpingObservationForm';
+import PostpartumCareForm from './PostpartumCareForm';
 
 interface WelpingStepperProps {
   currentStep: number;

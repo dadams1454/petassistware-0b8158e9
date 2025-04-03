@@ -22,13 +22,25 @@ export const formatDateLong = (date: Date | string): string => {
 };
 
 /**
+ * Format a date for display in a standard format
+ */
+export const formatDateForDisplay = (date: Date | string | null): string => {
+  if (!date) return '';
+  
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (!isValidDate(dateObj)) return '';
+  
+  return format(dateObj, 'MMM d, yyyy');
+};
+
+/**
  * Check if a value is a valid Date object
  */
 export const isValidDate = (value: any): boolean => {
   if (!value) return false;
   
   // If it's a Date object, check if it's valid
-  if (value instanceof Date || (typeof value === 'object' && Object.prototype.toString.call(value) === '[object Date]')) {
+  if (value instanceof Date) {
     return !isNaN(value.getTime());
   }
   
