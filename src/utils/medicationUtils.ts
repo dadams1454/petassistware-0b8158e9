@@ -19,7 +19,7 @@ export enum MedicationFrequency {
   ANNUAL = 'annual'
 }
 
-interface MedicationStatusResult {
+export interface MedicationStatusResult {
   status: MedicationStatus | 'incomplete';
   statusColor: string;
 }

@@ -11,7 +11,7 @@ import {
   FileQuestion,
   Scan,
 } from 'lucide-react';
-import { HealthRecordTypeEnum, HealthRecordType, stringToHealthRecordType } from '@/types/health';
+import { HealthRecordTypeEnum, HealthRecordType, stringToHealthRecordType } from '@/types';
 
 /**
  * Get the appropriate icon for a health record type
@@ -75,6 +75,12 @@ export const getHealthRecordColor = (recordType: string | HealthRecordTypeEnum) 
     default:
       return 'gray';
   }
+};
+
+export { 
+  HealthRecordTypeEnum, 
+  HealthRecordType, 
+  stringToHealthRecordType 
 };
 
 // Export default object for backward compatibility

@@ -45,10 +45,11 @@ export type {
   MedicationAdministration,
   HealthCertificate,
   WeightData,
-  HealthRecordType
+  HealthRecordType,
+  WeightUnit
 } from './health';
 
-// Export enums explicitly for backward compatibility
+// Export enums explicitly
 export { 
   HealthRecordTypeEnum,
   AppetiteLevelEnum,
@@ -67,3 +68,12 @@ export {
   getWeightUnitName,
   weightUnits
 } from './common';
+
+// Export medication utilities
+export {
+  MedicationStatus,
+  MedicationFrequency,
+  getMedicationStatus,
+  getTimeSlotsForFrequency,
+  calculateNextDueDate
+} from '@/utils/medicationUtils';

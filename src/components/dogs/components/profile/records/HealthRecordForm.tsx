@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types';
 import RecordTypeField from './form-fields/RecordTypeField';
 import TitleField from './form-fields/TitleField';
 import VisitDateField from './form-fields/VisitDateField';
@@ -74,13 +74,13 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
   initialData
 }) => {
   const [recordType, setRecordType] = useState<string>(
-    initialData?.record_type || HealthRecordTypeEnum.Examination
+    initialData?.record_type ? String(initialData.record_type) : HealthRecordTypeEnum.Examination
   );
   
   const form = useForm<z.infer<typeof healthRecordSchema>>({
     resolver: zodResolver(healthRecordSchema),
     defaultValues: {
-      record_type: initialData?.record_type || HealthRecordTypeEnum.Examination,
+      record_type: initialData?.record_type ? String(initialData.record_type) : HealthRecordTypeEnum.Examination,
       title: initialData?.title || '',
       visit_date: initialData?.visit_date ? new Date(initialData.visit_date) : new Date(),
       vet_name: initialData?.vet_name || '',
@@ -120,8 +120,9 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
   
   const handleFormSubmit = (values: z.infer<typeof healthRecordSchema>) => {
     // Format dates to ISO strings
-    const formattedData = {
+    const formattedData: Partial<HealthRecord> = {
       ...values,
+      record_type: stringToHealthRecordType(values.record_type),
       visit_date: values.visit_date.toISOString().split('T')[0],
       next_due_date: values.next_due_date ? values.next_due_date.toISOString().split('T')[0] : null,
       start_date: values.start_date ? values.start_date.toISOString().split('T')[0] : undefined,

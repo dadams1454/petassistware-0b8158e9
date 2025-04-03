@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { getUpcomingMedications, getExpiringMedications, updateHealthRecord } from '@/services/healthService';
-import { HealthRecord } from '@/types/health';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { MedicationFrequency } from '@/utils/medicationUtils';
 
 interface MedicationTrackerProps {
   dogId?: string; // Optional: if provided, only shows medications for this dog
@@ -26,17 +27,11 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
       setIsLoading(true);
       try {
         // Fetch upcoming medications
-        let medications = [];
-        if (dogId) {
-          medications = await getUpcomingMedications(dogId);
-        } else {
-          // For dashboard - get all dogs' medications in the future
-          medications = []; // This would need a different API endpoint for all dogs
-        }
+        const medications = await getUpcomingMedications(dogId);
         setUpcomingMedications(medications);
         
         // Fetch expiring medications
-        const expiring = await getExpiringMedications();
+        const expiring = await getExpiringMedications(dogId);
         setExpiringMedications(expiring);
       } catch (error) {
         console.error('Error fetching medications:', error);
@@ -60,21 +55,35 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
       let nextDueDate = new Date();
       
       // Simple frequency handling
-      if (medication.frequency === 'daily') {
-        nextDueDate.setDate(today.getDate() + 1);
-      } else if (medication.frequency === 'weekly') {
-        nextDueDate.setDate(today.getDate() + 7);
-      } else if (medication.frequency === 'biweekly') {
-        nextDueDate.setDate(today.getDate() + 14);
-      } else if (medication.frequency === 'monthly') {
-        nextDueDate.setMonth(today.getMonth() + 1);
-      } else if (medication.frequency === 'quarterly') {
-        nextDueDate.setMonth(today.getMonth() + 3);
-      } else if (medication.frequency === 'annually') {
-        nextDueDate.setFullYear(today.getFullYear() + 1);
-      } else {
-        // Default to 30 days if frequency is unknown
-        nextDueDate.setDate(today.getDate() + 30);
+      const frequencyStr = medication.frequency || 'monthly';
+      
+      switch (frequencyStr) {
+        case MedicationFrequency.DAILY:
+        case 'daily':
+          nextDueDate.setDate(today.getDate() + 1);
+          break;
+        case MedicationFrequency.WEEKLY:
+        case 'weekly':
+          nextDueDate.setDate(today.getDate() + 7);
+          break;
+        case 'biweekly':
+          nextDueDate.setDate(today.getDate() + 14);
+          break;
+        case MedicationFrequency.MONTHLY:
+        case 'monthly':
+          nextDueDate.setMonth(today.getMonth() + 1);
+          break;
+        case MedicationFrequency.QUARTERLY:
+        case 'quarterly':
+          nextDueDate.setMonth(today.getMonth() + 3);
+          break;
+        case MedicationFrequency.ANNUAL:
+        case 'annually':
+          nextDueDate.setFullYear(today.getFullYear() + 1);
+          break;
+        default:
+          // Default to 30 days if frequency is unknown
+          nextDueDate.setDate(today.getDate() + 30);
       }
 
       // Update the medication record
@@ -153,6 +162,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
         </CardHeader>
         <CardContent className="pt-0 pb-2">
           {medication.description && <p className="text-sm text-muted-foreground">{medication.description}</p>}
+          {medication.record_notes && <p className="text-sm text-muted-foreground">{medication.record_notes}</p>}
           {dogId ? null : (
             <p className="text-sm font-medium mt-2">
               For: {medication.dog_id ? 'Dog #' + medication.dog_id.substring(0, 8) : 'Unknown dog'}
@@ -218,6 +228,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
         </CardHeader>
         <CardContent className="pt-0 pb-2">
           {medication.description && <p className="text-sm text-muted-foreground">{medication.description}</p>}
+          {medication.record_notes && <p className="text-sm text-muted-foreground">{medication.record_notes}</p>}
           {dogId ? null : (
             <p className="text-sm font-medium mt-2">
               For: {medication.dog_id ? 'Dog #' + medication.dog_id.substring(0, 8) : 'Unknown dog'}
