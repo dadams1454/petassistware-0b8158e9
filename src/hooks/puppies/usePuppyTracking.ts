@@ -12,7 +12,8 @@ const defaultAgeGroups: PuppyAgeGroupData[] = [
     description: 'Eyes closed, focused on nursing and sleeping',
     startDay: 0,
     endDay: 14,
-    milestones: 'Eyes open around day 10-14, beginning to hear sounds'
+    careChecks: ['temperature', 'weight', 'feeding'],
+    milestones: ['Eyes open around day 10-14', 'Beginning to hear sounds']
   },
   {
     id: 'transitional',
@@ -20,7 +21,8 @@ const defaultAgeGroups: PuppyAgeGroupData[] = [
     description: 'Eyes open, ears opening, beginning to walk',
     startDay: 15,
     endDay: 21,
-    milestones: 'First steps, beginning to socialize, teeth starting to emerge'
+    careChecks: ['temperature', 'weight', 'feeding'],
+    milestones: ['First steps', 'Beginning to socialize', 'Teeth starting to emerge']
   },
   {
     id: 'socialization',
@@ -28,7 +30,8 @@ const defaultAgeGroups: PuppyAgeGroupData[] = [
     description: 'Active, exploring, socializing with littermates',
     startDay: 22,
     endDay: 49,
-    milestones: 'Start weaning, active play, sensitive period for socialization'
+    careChecks: ['weight', 'deworming', 'vaccination'],
+    milestones: ['Start weaning', 'Active play', 'Sensitive period for socialization']
   },
   {
     id: 'juvenile',
@@ -36,7 +39,8 @@ const defaultAgeGroups: PuppyAgeGroupData[] = [
     description: 'Ready for new homes, basic training beginning',
     startDay: 50,
     endDay: 84,
-    milestones: 'Most vaccinations done, ready for adoption, initial training'
+    careChecks: ['weight', 'vaccination', 'microchip'],
+    milestones: ['Most vaccinations done', 'Ready for adoption', 'Initial training']
   },
   {
     id: 'adolescent',
@@ -44,7 +48,8 @@ const defaultAgeGroups: PuppyAgeGroupData[] = [
     description: 'Growing quickly, training continues',
     startDay: 85,
     endDay: 180,
-    milestones: 'Adult teeth coming in, may test boundaries, growth spurts'
+    careChecks: ['weight', 'vaccination', 'training'],
+    milestones: ['Adult teeth coming in', 'May test boundaries', 'Growth spurts']
   }
 ];
 
@@ -96,8 +101,11 @@ export const usePuppyTracking = (): PuppyManagementStats => {
           return {
             ...puppy,
             age_days: ageInDays, // Primary age field
-            age_in_weeks: Math.floor(ageInDays / 7)
-          };
+            age_in_weeks: Math.floor(ageInDays / 7),
+            // For backward compatibility
+            ageInDays: ageInDays,
+            age_weeks: Math.floor(ageInDays / 7)
+          } as PuppyWithAge;
         });
         
         setPuppies(puppiesWithAge);
@@ -113,20 +121,23 @@ export const usePuppyTracking = (): PuppyManagementStats => {
   }, []);
   
   // Organize puppies by age group
-  const puppiesByAgeGroup = puppies.reduce((acc: Record<string, PuppyWithAge[]>, puppy) => {
+  const puppiesByAgeGroup: Record<string, PuppyWithAge[]> = {};
+  
+  // Initialize all age groups
+  defaultAgeGroups.forEach(group => {
+    puppiesByAgeGroup[group.id] = [];
+  });
+  
+  // Sort puppies into age groups
+  puppies.forEach(puppy => {
     const ageGroup = defaultAgeGroups.find(group => 
       puppy.age_days >= group.startDay && puppy.age_days <= group.endDay
     );
     
     if (ageGroup) {
-      if (!acc[ageGroup.id]) {
-        acc[ageGroup.id] = [];
-      }
-      acc[ageGroup.id].push(puppy);
+      puppiesByAgeGroup[ageGroup.id].push(puppy);
     }
-    
-    return acc;
-  }, {});
+  });
   
   // Count puppies by status
   const availablePuppies = puppies.filter(p => p.status === 'Available').length;
@@ -173,6 +184,8 @@ export const usePuppyTracking = (): PuppyManagementStats => {
       unknown: unknownGenderCount
     },
     byStatus,
-    byAgeGroup
+    byAgeGroup,
+    // Required by types but not actively used
+    stats: {}
   };
 };

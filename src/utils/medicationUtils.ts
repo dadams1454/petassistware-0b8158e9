@@ -1,219 +1,158 @@
-
-// Medication utility functions and constants
-
-/**
- * Enum for medication frequency options
- */
-export enum MedicationFrequency {
-  Daily = 'daily',
-  Weekly = 'weekly',
-  Biweekly = 'biweekly',
-  Monthly = 'monthly',
-  Quarterly = 'quarterly',
-  Annual = 'annually',
-  AsNeeded = 'as_needed',
-  Other = 'other'
-}
+import { addDays, addWeeks, addMonths, addYears, isBefore, isAfter, subDays } from 'date-fns';
 
 /**
- * Enum for medication status values
+ * Enumeration of medication status values
  */
 export enum MedicationStatus {
   Active = 'active',
   Completed = 'completed',
-  Discontinued = 'discontinued',
-  Pending = 'pending',
-  Expired = 'expired',
   Upcoming = 'upcoming',
+  Expired = 'expired',
   Missed = 'missed'
 }
 
-// Define additional types for status results
+/**
+ * Enumeration of medication frequency values
+ */
+export enum MedicationFrequency {
+  Daily = 'daily',
+  Weekly = 'weekly',
+  Monthly = 'monthly',
+  Quarterly = 'quarterly',
+  Annual = 'annual'
+}
+
+/**
+ * Type for complex medication status result
+ * Can be a simple string status or an object with status and color
+ */
 export type MedicationStatusResult = 
   | MedicationStatus 
   | 'current' 
   | 'due_soon' 
   | 'overdue' 
-  | 'incomplete';
+  | 'incomplete'
+  | { status: string; statusColor: string };
 
 /**
- * Get human-readable form of medication frequency
+ * Type for status with color information
  */
-export const getFrequencyLabel = (frequency: string): string => {
-  switch (frequency?.toLowerCase()) {
-    case MedicationFrequency.Daily:
-      return 'Daily';
-    case MedicationFrequency.Weekly:
-      return 'Weekly';
-    case MedicationFrequency.Biweekly:
-      return 'Every 2 weeks';
-    case MedicationFrequency.Monthly:
-      return 'Monthly';
-    case MedicationFrequency.Quarterly:
-      return 'Every 3 months';
-    case MedicationFrequency.Annual:
-      return 'Yearly';
-    case MedicationFrequency.AsNeeded:
-      return 'As needed';
-    case MedicationFrequency.Other:
-      return 'Other';
-    default:
-      return frequency || 'Unknown';
-  }
-};
-
-/**
- * Calculate the next due date based on frequency
- */
-export const calculateNextDueDate = (
-  lastDate: Date, 
-  frequency: string
-): Date => {
-  const nextDate = new Date(lastDate);
-  
-  switch (frequency?.toLowerCase()) {
-    case MedicationFrequency.Daily:
-      nextDate.setDate(nextDate.getDate() + 1);
-      break;
-    case MedicationFrequency.Weekly:
-      nextDate.setDate(nextDate.getDate() + 7);
-      break;
-    case MedicationFrequency.Biweekly:
-      nextDate.setDate(nextDate.getDate() + 14);
-      break;
-    case MedicationFrequency.Monthly:
-      nextDate.setMonth(nextDate.getMonth() + 1);
-      break;
-    case MedicationFrequency.Quarterly:
-      nextDate.setMonth(nextDate.getMonth() + 3);
-      break;
-    case MedicationFrequency.Annual:
-      nextDate.setFullYear(nextDate.getFullYear() + 1);
-      break;
-    default:
-      // Default to monthly if frequency is unknown
-      nextDate.setMonth(nextDate.getMonth() + 1);
-  }
-  
-  return nextDate;
-};
-
-/**
- * Determine medication status based on dates and frequency
- */
-export const getMedicationStatus = (
-  startDate?: string | null,
-  endDate?: string | null,
-  lastAdministered?: string | null,
-  frequency?: string | null
-): MedicationStatusResult => {
-  if (!lastAdministered) {
-    return MedicationStatus.Pending;
-  }
-
-  const today = new Date();
-  const lastAdminDate = new Date(lastAdministered);
-  
-  // Handle expiration
-  if (endDate && new Date(endDate) < today) {
-    return MedicationStatus.Expired;
-  }
-  
-  // Calculate next due date based on frequency
-  if (!frequency) {
-    return MedicationStatus.Active;
-  }
-  
-  const nextDue = calculateNextDueDate(lastAdminDate, frequency);
-  
-  // Determine if medication is due or overdue
-  if (nextDue < today) {
-    // Overdue by more than 7 days
-    if ((today.getTime() - nextDue.getTime()) > 7 * 24 * 60 * 60 * 1000) {
-      return 'overdue';
-    }
-    return 'due_soon';
-  }
-  
-  // Due within next 3 days
-  if ((nextDue.getTime() - today.getTime()) < 3 * 24 * 60 * 60 * 1000) {
-    return 'due_soon';
-  }
-  
-  return 'current';
-};
-
-// Extended status type to include color information
-export interface StatusWithColor {
-  status: MedicationStatusResult;
+export type StatusWithColor = {
+  status: string;
   statusColor: string;
+};
+
+/**
+ * Type guard to check if status is a complex object with status and color
+ */
+export function isComplexStatus(status: any): status is StatusWithColor {
+  return typeof status === 'object' && 'status' in status && 'statusColor' in status;
 }
 
 /**
- * Type guard to check if status is complex (object with additional properties)
+ * Get the status value from a potentially complex status
  */
-export const isComplexStatus = (
-  status: MedicationStatusResult | StatusWithColor
-): status is StatusWithColor => {
-  return typeof status === 'object' && status !== null && 'status' in status;
-};
-
-/**
- * Get status value safely from status object or string
- */
-export const getStatusValue = (
-  status: MedicationStatusResult | StatusWithColor
-): MedicationStatusResult => {
+export function getStatusValue(status: MedicationStatusResult): string {
   if (isComplexStatus(status)) {
     return status.status;
   }
   return status;
-};
+}
 
 /**
- * Get display color for medication status
+ * Get appropriate CSS color class for a medication status
  */
-export const getStatusColor = (status: MedicationStatusResult): string => {
+export function getStatusColor(status: MedicationStatusResult): string {
   const statusValue = getStatusValue(status);
   
   switch (statusValue) {
     case MedicationStatus.Active:
     case 'current':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-    case MedicationStatus.Pending:
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      return 'bg-green-100 text-green-800 border-green-200';
     case 'due_soon':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-    case 'overdue':
-    case MedicationStatus.Missed:
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-    case MedicationStatus.Expired:
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-    case MedicationStatus.Completed:
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-    case MedicationStatus.Discontinued:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     case MedicationStatus.Upcoming:
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case MedicationStatus.Completed:
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+    case MedicationStatus.Expired:
+    case MedicationStatus.Missed:
+    case 'overdue':
+      return 'bg-red-100 text-red-800 border-red-200';
     case 'incomplete':
-      return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
+      return 'bg-gray-100 text-gray-800 border-gray-200';
     default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      return 'bg-gray-100 text-gray-800 border-gray-200';
   }
-};
+}
 
 /**
- * Get time slots for medication frequency
+ * Calculate the next due date based on frequency
  */
-export const getTimeSlotsForFrequency = (frequency: string): string[] => {
-  switch (frequency?.toLowerCase()) {
+export function calculateNextDueDate(lastDate: Date, frequency: MedicationFrequency): Date {
+  switch (frequency) {
     case MedicationFrequency.Daily:
-      return ['Morning', 'Afternoon', 'Evening'];
+      return addDays(lastDate, 1);
     case MedicationFrequency.Weekly:
-      return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      return addWeeks(lastDate, 1);
     case MedicationFrequency.Monthly:
-      return ['Beginning of month', 'Middle of month', 'End of month'];
+      return addMonths(lastDate, 1);
+    case MedicationFrequency.Quarterly:
+      return addMonths(lastDate, 3);
+    case MedicationFrequency.Annual:
+      return addYears(lastDate, 1);
     default:
-      return ['As scheduled'];
+      return addDays(lastDate, 1);
   }
-};
+}
+
+/**
+ * Get medication status based on administration dates and frequency
+ */
+export function getMedicationStatus(
+  lastAdministered: Date | null | undefined,
+  frequency: MedicationFrequency | string,
+  endDate?: Date | null
+): MedicationStatusResult {
+  const today = new Date();
+  
+  // Handle null/undefined last administration date
+  if (!lastAdministered) {
+    return 'incomplete';
+  }
+  
+  // If medication has an end date and we're past it
+  if (endDate && isAfter(today, endDate)) {
+    return MedicationStatus.Completed;
+  }
+  
+  // Calculate next due date
+  const nextDue = calculateNextDueDate(lastAdministered, frequency as MedicationFrequency);
+  
+  // Check if overdue (more than 1 day)
+  if (isBefore(nextDue, subDays(today, 1))) {
+    return 'overdue';
+  }
+  
+  // Check if due soon (within 1 day)
+  if (isBefore(nextDue, addDays(today, 1))) {
+    return 'due_soon';
+  }
+  
+  // Otherwise medication is current/active
+  return 'current';
+}
+
+/**
+ * Get time slots for a given medication frequency
+ */
+export function getTimeSlotsForFrequency(frequency: MedicationFrequency): string[] {
+  switch (frequency) {
+    case MedicationFrequency.Daily:
+      return ['morning', 'afternoon', 'evening'];
+    case MedicationFrequency.Weekly:
+      return ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    default:
+      return ['anytime'];
+  }
+}

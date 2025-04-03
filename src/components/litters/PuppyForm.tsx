@@ -24,8 +24,8 @@ const PuppyForm: React.FC<PuppyFormProps> = ({
   });
 
   // Create a wrapper function to handle the form submission
-  const onSubmit = (data: PuppyFormValues) => {
-    return handleSubmit(data);
+  const onSubmit = (values: PuppyFormValues) => {
+    return handleSubmit(values);
   };
 
   return (

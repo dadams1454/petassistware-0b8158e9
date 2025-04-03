@@ -25,11 +25,11 @@ const MedicationFilter: React.FC<MedicationFilterProps> = ({ value, onChange }) 
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Frequencies</SelectItem>
-          <SelectItem value={MedicationFrequency.DAILY}>Daily</SelectItem>
-          <SelectItem value={MedicationFrequency.WEEKLY}>Weekly</SelectItem>
-          <SelectItem value={MedicationFrequency.MONTHLY}>Monthly</SelectItem>
-          <SelectItem value={MedicationFrequency.QUARTERLY}>Quarterly</SelectItem>
-          <SelectItem value={MedicationFrequency.ANNUAL}>Annual</SelectItem>
+          <SelectItem value={MedicationFrequency.Daily}>Daily</SelectItem>
+          <SelectItem value={MedicationFrequency.Weekly}>Weekly</SelectItem>
+          <SelectItem value={MedicationFrequency.Monthly}>Monthly</SelectItem>
+          <SelectItem value={MedicationFrequency.Quarterly}>Quarterly</SelectItem>
+          <SelectItem value={MedicationFrequency.Annual}>Annual</SelectItem>
         </SelectContent>
       </Select>
     </div>

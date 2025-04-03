@@ -2,13 +2,19 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
+import { Dog } from '@/types/litter';
+import { ReproductiveStatus } from '@/types/reproductive';
 
 interface WhelpingPreparationProps {
-  dog: any;
+  dog: Dog;
 }
 
 const WhelpingPreparation: React.FC<WhelpingPreparationProps> = ({ dog }) => {
-  const isPregnant = dog.breeding_status === 'pregnant';
+  // Type-safe check for pregnancy status
+  const isPregnant = dog.breeding_status === 'pregnant' || 
+                    (dog.is_pregnant === true) || 
+                    (typeof dog.breeding_status === 'string' && 
+                     dog.breeding_status.toLowerCase() === ReproductiveStatus.Pregnant);
 
   if (!isPregnant) {
     return (

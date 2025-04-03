@@ -1,48 +1,53 @@
 
 import { useMemo } from 'react';
-import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 
-// Define puppy age groups
-const AGE_GROUPS: PuppyAgeGroup[] = [
+// Define default puppy age groups
+const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
   {
     id: 'neonatal',
     name: 'Neonatal',
-    ageRangeStart: 0,
-    ageRangeEnd: 14,
     description: 'Birth to 2 weeks',
-    color: 'bg-pink-100'
+    startDay: 0,
+    endDay: 14,
+    careChecks: ['weight', 'temperature', 'feeding'],
+    milestones: ['Eyes open around day 10-14', 'Beginning to hear sounds']
   },
   {
     id: 'transitional',
     name: 'Transitional',
-    ageRangeStart: 15,
-    ageRangeEnd: 21,
     description: '2-3 weeks',
-    color: 'bg-purple-100'
+    startDay: 15,
+    endDay: 21,
+    careChecks: ['weight', 'temperature', 'deworming'],
+    milestones: ['First steps', 'Beginning to socialize', 'Teeth starting to emerge']
   },
   {
     id: 'socialization',
     name: 'Socialization',
-    ageRangeStart: 22,
-    ageRangeEnd: 49,
     description: '3-7 weeks',
-    color: 'bg-blue-100'
+    startDay: 22,
+    endDay: 49,
+    careChecks: ['weight', 'socialization', 'vaccination'],
+    milestones: ['Start weaning', 'Active play', 'Sensitive period for socialization']
   },
   {
     id: 'juvenile',
     name: 'Juvenile',
-    ageRangeStart: 50,
-    ageRangeEnd: 84,
     description: '7-12 weeks',
-    color: 'bg-green-100'
+    startDay: 50,
+    endDay: 84,
+    careChecks: ['weight', 'vaccination', 'training'],
+    milestones: ['Most vaccinations done', 'Ready for adoption', 'Initial training']
   },
   {
     id: 'adolescent',
     name: 'Adolescent',
-    ageRangeStart: 85,
-    ageRangeEnd: 365,
     description: '12+ weeks',
-    color: 'bg-yellow-100'
+    startDay: 85,
+    endDay: 365,
+    careChecks: ['weight', 'health check', 'training'],
+    milestones: ['Adult teeth coming in', 'May test boundaries', 'Growth spurts']
   }
 ];
 
@@ -52,33 +57,33 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[] = []) => {
     const groupedPuppies: Record<string, PuppyWithAge[]> = {};
     
     // Initialize with all age groups (even empty ones)
-    AGE_GROUPS.forEach(group => {
+    DEFAULT_AGE_GROUPS.forEach(group => {
       groupedPuppies[group.id] = [];
     });
     
     // Sort each puppy into the appropriate age group
     puppies.forEach(puppy => {
-      if (puppy.age === undefined) return;
+      // Use age_days for compatibility with the standardized PuppyWithAge type
+      const ageDays = puppy.age_days;
       
-      const ageGroup = AGE_GROUPS.find(
-        group => puppy.age! >= group.ageRangeStart && puppy.age! <= group.ageRangeEnd
+      if (ageDays === undefined) return;
+      
+      const ageGroup = DEFAULT_AGE_GROUPS.find(
+        group => ageDays >= group.startDay && ageDays <= group.endDay
       );
       
       if (ageGroup) {
-        puppy.ageGroup = ageGroup.id;
-        groupedPuppies[ageGroup.id].push(puppy);
+        groupedPuppies[ageGroup.id].push({
+          ...puppy,
+          // For backward compatibility
+          ageGroup: ageGroup.id
+        });
       }
     });
     
-    // Convert to array format for easier consumption
-    const puppiesByAgeGroup: PuppyAgeGroupData[] = AGE_GROUPS.map(group => ({
-      ageGroup: group,
-      puppies: groupedPuppies[group.id] || []
-    })).filter(group => group.puppies.length > 0);
-    
     return {
-      ageGroups: AGE_GROUPS,
-      puppiesByAgeGroup
+      ageGroups: DEFAULT_AGE_GROUPS,
+      puppiesByAgeGroup: groupedPuppies
     };
   }, [puppies]);
   

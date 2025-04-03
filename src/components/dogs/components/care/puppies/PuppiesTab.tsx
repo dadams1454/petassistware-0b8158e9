@@ -5,7 +5,7 @@ import { Baby, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { usePuppyTracking } from './hooks/usePuppyTracking';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { PuppyWithAge } from '@/types/puppyTracking';
 import PuppyAgeGroupSection from './PuppyAgeGroupSection';
 
 interface PuppiesTabProps {
@@ -17,12 +17,12 @@ const PuppyStatCards = ({ stats }: { stats: any }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
     <Card>
       <CardContent className="pt-6">
-        <p>Total Puppies: {stats.totalPuppies}</p>
+        <p>Total Puppies: {stats.totalPuppies || 0}</p>
       </CardContent>
     </Card>
     <Card>
       <CardContent className="pt-6">
-        <p>Available: {stats.availablePuppies}</p>
+        <p>Available: {stats.availablePuppies || 0}</p>
       </CardContent>
     </Card>
   </div>
@@ -30,15 +30,16 @@ const PuppyStatCards = ({ stats }: { stats: any }) => (
 
 const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   const { 
-    stats, 
     puppies = [], 
     ageGroups = [], 
     puppiesByAgeGroup = {},
+    totalPuppies = 0,
+    availablePuppies = 0,
     isLoading, 
-    error 
+    error,
+    stats = {} 
   } = usePuppyTracking();
   
-  const puppyStats = stats;
   const navigate = useNavigate();
   
   const handleNavigateToLitters = useCallback(() => {
@@ -97,7 +98,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   return (
     <div className="space-y-6">
       {/* Stats cards */}
-      <PuppyStatCards stats={puppyStats} />
+      <PuppyStatCards stats={{ totalPuppies, availablePuppies, ...stats }} />
       
       {/* Age group sections */}
       {Object.entries(puppiesByAgeGroup).map(([groupId, puppiesInGroup]) => {
