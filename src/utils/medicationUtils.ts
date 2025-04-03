@@ -1,5 +1,9 @@
+
 import { format, addDays, differenceInDays, parseISO } from 'date-fns';
 import { MedicationFrequency } from '@/types/health';
+
+// Export the MedicationFrequency enum for components to use
+export { MedicationFrequency };
 
 /**
  * Determines the status of a medication based on its schedule
@@ -128,4 +132,65 @@ export const getStatusValue = (status: string | { status: string }): string => {
     return status;
   }
   return status.status;
+};
+
+/**
+ * Gets time slots for a medication frequency
+ * Used by time managers for scheduled medications
+ */
+export const getTimeSlotsForFrequency = (frequency: MedicationFrequency): string[] => {
+  switch (frequency) {
+    case MedicationFrequency.Daily:
+      return ['7:00 AM', '8:00 AM', '12:00 PM', '6:00 PM', '9:00 PM'];
+    case MedicationFrequency.Weekly:
+      return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    case MedicationFrequency.Monthly:
+      return ['1st of month', '15th of month', 'Last day of month'];
+    case MedicationFrequency.Quarterly:
+      return ['January', 'April', 'July', 'October'];
+    case MedicationFrequency.Annual:
+      return ['January', 'February', 'March', 'April', 'May', 'June', 
+              'July', 'August', 'September', 'October', 'November', 'December'];
+    case MedicationFrequency.AsNeeded:
+      return ['As needed'];
+    default:
+      return ['Morning', 'Afternoon', 'Evening'];
+  }
+};
+
+/**
+ * Calculate the next due date based on frequency and last administered date
+ */
+export const calculateNextDueDate = (
+  lastAdministered: Date,
+  frequency: MedicationFrequency
+): Date => {
+  switch (frequency) {
+    case MedicationFrequency.Daily:
+      return addDays(lastAdministered, 1);
+    case MedicationFrequency.Weekly:
+      return addDays(lastAdministered, 7);
+    case MedicationFrequency.Monthly:
+      return addDays(lastAdministered, 30);
+    case MedicationFrequency.Quarterly:
+      return addDays(lastAdministered, 90);
+    case MedicationFrequency.Annual:
+      return addDays(lastAdministered, 365);
+    default:
+      return addDays(lastAdministered, 30); // Default to monthly
+  }
+};
+
+// Export types for status results
+export interface MedicationStatusResult {
+  status: string;
+  statusColor: string;
+  daysOverdue?: number;
+  nextDueDate?: string;
+  daysUntilDue?: number;
+}
+
+export type StatusWithColor = {
+  status: string;
+  statusColor: string;
 };

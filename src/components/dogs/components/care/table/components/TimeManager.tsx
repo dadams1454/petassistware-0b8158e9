@@ -19,7 +19,7 @@ export const useTimeManager = (activeCategory = 'pottybreaks') => {
       return ['7:00 AM (Breakfast)', '12:00 PM (Lunch)', '6:00 PM (Dinner)'];
     } else if (activeCategory === 'medications') {
       // For medications, use frequency-based slots (default to monthly)
-      return getTimeSlotsForFrequency(MedicationFrequency.MONTHLY);
+      return getTimeSlotsForFrequency(MedicationFrequency.Monthly);
     } else if (activeCategory === 'exercise' || activeCategory === 'training') {
       // For exercise/training, show morning and afternoon slots
       return ['8:00 AM', '12:00 PM', '4:00 PM'];

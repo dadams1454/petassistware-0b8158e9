@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { Bell, Calendar, AlertTriangle, Check, Clock } from 'lucide-react';
@@ -58,26 +57,26 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
       const frequencyStr = medication.frequency || 'monthly';
       
       switch (frequencyStr) {
-        case MedicationFrequency.DAILY:
+        case MedicationFrequency.Daily:
         case 'daily':
           nextDueDate.setDate(today.getDate() + 1);
           break;
-        case MedicationFrequency.WEEKLY:
+        case MedicationFrequency.Weekly:
         case 'weekly':
           nextDueDate.setDate(today.getDate() + 7);
           break;
         case 'biweekly':
           nextDueDate.setDate(today.getDate() + 14);
           break;
-        case MedicationFrequency.MONTHLY:
+        case MedicationFrequency.Monthly:
         case 'monthly':
           nextDueDate.setMonth(today.getMonth() + 1);
           break;
-        case MedicationFrequency.QUARTERLY:
+        case MedicationFrequency.Quarterly:
         case 'quarterly':
           nextDueDate.setMonth(today.getMonth() + 3);
           break;
-        case MedicationFrequency.ANNUAL:
+        case MedicationFrequency.Annual:
         case 'annually':
           nextDueDate.setFullYear(today.getFullYear() + 1);
           break;
