@@ -74,3 +74,74 @@ export interface BaseEntity {
   updated_at?: string;
   tenant_id?: string;
 }
+
+// Export the weight units array for UI components
+export const weightUnits = [
+  { code: 'lb', name: 'Pounds' },
+  { code: 'kg', name: 'Kilograms' },
+  { code: 'oz', name: 'Ounces' },
+  { code: 'g', name: 'Grams' }
+];
+
+/**
+ * Get the human-readable name for a weight unit
+ */
+export const getWeightUnitName = (unit: WeightUnit): string => {
+  const foundUnit = weightUnits.find(u => u.code === unit);
+  return foundUnit ? foundUnit.name : 'Unknown';
+};
+
+/**
+ * Format weight with unit for display
+ */
+export const formatWeightWithUnit = (weight: number, unit: WeightUnit): string => {
+  return `${weight} ${unit}`;
+};
+
+/**
+ * Convert weight between different units
+ */
+export const convertWeight = (
+  weight: number,
+  fromUnit: WeightUnit,
+  toUnit: WeightUnit
+): number => {
+  if (fromUnit === toUnit) {
+    return weight;
+  }
+
+  // Convert to grams first (base unit)
+  let weightInGrams = 0;
+  
+  switch (fromUnit) {
+    case 'g':
+      weightInGrams = weight;
+      break;
+    case 'kg':
+      weightInGrams = weight * 1000;
+      break;
+    case 'oz':
+      weightInGrams = weight * 28.3495;
+      break;
+    case 'lb':
+      weightInGrams = weight * 453.59237;
+      break;
+    default:
+      weightInGrams = weight;
+      break;
+  }
+  
+  // Convert from grams to target unit
+  switch (toUnit) {
+    case 'g':
+      return weightInGrams;
+    case 'kg':
+      return weightInGrams / 1000;
+    case 'oz':
+      return weightInGrams / 28.3495;
+    case 'lb':
+      return weightInGrams / 453.59237;
+    default:
+      return weight;
+  }
+};

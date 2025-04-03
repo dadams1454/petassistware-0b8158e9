@@ -13,12 +13,18 @@ import { standardizeWeightUnit } from '@/types/common';
 /**
  * Fetch health records for a specific dog
  */
-export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> => {
-  const { data, error } = await supabase
+export const getHealthRecords = async (dogId: string, recordType?: HealthRecordTypeEnum): Promise<HealthRecord[]> => {
+  let query = supabase
     .from('health_records')
     .select('*')
     .eq('dog_id', dogId)
     .order('visit_date', { ascending: false });
+    
+  if (recordType) {
+    query = query.eq('record_type', recordType);
+  }
+  
+  const { data, error } = await query;
     
   if (error) {
     console.error('Error fetching health records:', error);
