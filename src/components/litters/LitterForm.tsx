@@ -4,10 +4,10 @@ import { useLitterForm } from './hooks/useLitterForm';
 import { useDamInfoUpdater } from './hooks/useDamInfoUpdater';
 import { usePuppyCounter } from './hooks/usePuppyCounter';
 import LitterFormLayout from './form/LitterFormLayout';
-import { Litter } from '@/types/litter'; // Import from regular .ts file instead of .d.ts
+import { Litter } from '@/types'; 
 
 interface LitterFormProps {
-  initialData?: Litter;
+  initialData?: Partial<Litter>;
   onSuccess: () => void;
   onCancel?: () => void;
 }
@@ -54,7 +54,7 @@ const LitterForm: React.FC<LitterFormProps> = ({ initialData, onSuccess, onCance
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       onCancel={onCancel}
-      isEditMode={!!initialData}
+      isEditMode={!!initialData?.id}
     />
   );
 };

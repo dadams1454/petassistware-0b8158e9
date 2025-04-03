@@ -1,85 +1,105 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
-import { processFormData } from './utils/litterFormUtils';
+import { toast } from '@/hooks/use-toast';
 import { LitterFormData } from './types/litterFormTypes';
+import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 
 /**
  * Hook to handle litter form submission
  */
 export const useLitterFormSubmit = (
-  initialData: any | undefined, 
+  initialData: any, 
   onSuccess: () => void,
-  userId: string | undefined
+  userId?: string
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const submitForm = async (data: LitterFormData) => {
-    if (!userId) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to create or update a litter",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  
+  const submitForm = async (formData: LitterFormData) => {
     setIsSubmitting(true);
+    
     try {
-      // Debug logging
-      console.log('Submitting form with data:', data);
+      // Format dates for database
+      const birthDate = formatDateToYYYYMMDD(formData.birth_date);
+      const expectedGoHomeDate = formData.expected_go_home_date 
+        ? formatDateToYYYYMMDD(formData.expected_go_home_date) 
+        : undefined;
+      const akcRegistrationDate = formData.akc_registration_date 
+        ? formatDateToYYYYMMDD(formData.akc_registration_date) 
+        : undefined;
+        
+      // Prepare data for database
+      const litterData = {
+        litter_name: formData.litter_name,
+        dam_id: formData.dam_id,
+        sire_id: formData.sire_id || null,
+        birth_date: birthDate,
+        expected_go_home_date: expectedGoHomeDate,
+        akc_litter_number: formData.akc_litter_number,
+        akc_registration_number: formData.akc_registration_number,
+        akc_registration_date: akcRegistrationDate,
+        akc_verified: formData.akc_verified,
+        status: formData.status,
+        male_count: formData.male_count,
+        female_count: formData.female_count,
+        puppy_count: (formData.male_count || 0) + (formData.female_count || 0),
+        breeding_notes: formData.breeding_notes,
+        notes: formData.notes,
+        breeder_id: userId // Add the breeder's ID for tracking
+      };
       
-      // Make sure birth_date is not null
-      const today = new Date();
-      if (!data.birth_date) {
-        data.birth_date = today;
-      }
+      let result;
       
-      // Process the data
-      const processedData = processFormData(data, userId, today);
-      console.log('Processed data for submission:', processedData);
-
-      if (initialData) {
+      // Update or create litter based on whether we have an ID
+      if (initialData?.id) {
         // Update existing litter
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('litters')
-          .update(processedData)
-          .eq('id', initialData.id);
-
+          .update(litterData)
+          .eq('id', initialData.id)
+          .select()
+          .single();
+          
         if (error) throw error;
+        result = data;
         
         toast({
-          title: "Success",
-          description: "Litter updated successfully",
+          title: 'Litter Updated',
+          description: 'The litter has been successfully updated.',
         });
       } else {
         // Create new litter
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('litters')
-          .insert(processedData);
-
+          .insert(litterData)
+          .select()
+          .single();
+          
         if (error) throw error;
+        result = data;
         
         toast({
-          title: "Success",
-          description: "Litter created successfully",
+          title: 'Litter Created',
+          description: 'The new litter has been successfully created.',
         });
       }
-
+      
+      // Call onSuccess callback
       onSuccess();
-    } catch (error) {
-      console.error('Error saving litter:', error);
+      
+      return result;
+    } catch (error: any) {
+      console.error('Error submitting litter form:', error);
       toast({
-        title: "Error",
-        description: "There was a problem saving the litter",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'There was an error saving the litter.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return {
     isSubmitting,
     submitForm

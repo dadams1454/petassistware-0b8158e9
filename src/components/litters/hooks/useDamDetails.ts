@@ -1,10 +1,14 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Dog } from '@/types';
 
-export const useDamDetails = (damId: string | null) => {
+/**
+ * Hook to fetch dam details
+ */
+export const useDamDetails = (damId?: string) => {
   return useQuery({
-    queryKey: ['dam-details', damId],
+    queryKey: ['dog', damId],
     queryFn: async () => {
       if (!damId) return null;
       
@@ -14,9 +18,13 @@ export const useDamDetails = (damId: string | null) => {
         .eq('id', damId)
         .single();
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching dam details:', error);
+        throw error;
+      }
+      
+      return data as Dog;
     },
-    enabled: !!damId,
+    enabled: !!damId, // Only run query if we have a damId
   });
 };

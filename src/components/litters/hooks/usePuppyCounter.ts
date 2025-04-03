@@ -1,27 +1,29 @@
 
 import { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { LitterFormData } from './types/litterFormTypes';
+import { UsePuppyCounterProps } from './types/litterFormTypes';
 
-interface UsePuppyCounterProps {
-  form: UseFormReturn<LitterFormData>;
-  maleCount: number | null;
-  femaleCount: number | null;
-}
-
+/**
+ * Hook to automatically calculate puppy_count based on male and female counts
+ */
 export const usePuppyCounter = ({
   form,
   maleCount,
   femaleCount
 }: UsePuppyCounterProps) => {
-  // Effect to auto-calculate total puppy count
+  // Update puppy count when male or female count changes
   useEffect(() => {
-    // Only calculate if at least one value exists
-    if (maleCount !== null || femaleCount !== null) {
-      const totalPuppies = (maleCount || 0) + (femaleCount || 0);
-      
-      // Set the total puppy count
-      form.setValue('puppy_count', totalPuppies > 0 ? totalPuppies : null);
+    const male = maleCount || 0;
+    const female = femaleCount || 0;
+    const total = male + female;
+    
+    // If either count is defined, update puppy_count field
+    if (form.getValues('male_count') !== undefined || form.getValues('female_count') !== undefined) {
+      // We'll add this field if it doesn't exist in the type
+      try {
+        form.setValue('puppy_count', total);
+      } catch (error) {
+        console.log('Could not set puppy_count, field might be missing from form schema');
+      }
     }
   }, [form, maleCount, femaleCount]);
 };

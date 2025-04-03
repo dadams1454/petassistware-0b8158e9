@@ -1,19 +1,10 @@
 
 import { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { LitterFormData } from './types/litterFormTypes'; 
+import { UseDamInfoUpdaterProps } from './types/litterFormTypes';
 
-interface UseDamInfoUpdaterProps {
-  form: UseFormReturn<LitterFormData>;
-  damDetails: any | null;
-  isInitialLoad: boolean;
-  setIsInitialLoad: (value: boolean) => void;
-  initialData?: any;
-  currentDamId: string | null;
-  previousDamId: string | null;
-  setPreviousDamId: (id: string | null) => void;
-}
-
+/**
+ * Hook to update litter info when dam changes
+ */
 export const useDamInfoUpdater = ({
   form,
   damDetails,
@@ -24,37 +15,44 @@ export const useDamInfoUpdater = ({
   previousDamId,
   setPreviousDamId
 }: UseDamInfoUpdaterProps) => {
-  // Effect to handle initialization and dam changes
+  
+  // Update dam info and auto-fill litter name when dam changes
   useEffect(() => {
-    if (!currentDamId) return;
+    // Only run this effect when the dam_id changes
+    if (currentDamId === previousDamId) return;
     
-    // Skip if this is just initialization with the same dam
-    if (isInitialLoad && currentDamId === initialData?.dam_id) {
+    // Skip on first load if we have initial data
+    if (isInitialLoad && initialData?.litter_name) {
       setIsInitialLoad(false);
       setPreviousDamId(currentDamId);
       return;
     }
     
-    // If dam has changed and we have dam details, update certain form fields
-    if (damDetails && (!previousDamId || currentDamId !== previousDamId)) {
-      console.log('Dam changed, updating form values', { currentDamId, previousDamId });
+    // If we have dam details, auto-fill litter name
+    if (damDetails) {
+      const damName = damDetails.name || 'Unknown Dam';
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      const newLitterName = `${damName}'s Litter - ${formattedDate}`;
       
-      // Only update these fields if they're not already set by the user
-      // This prevents overwriting user changes when switching dams
-      if (!form.getValues('kennel_name')) {
-        form.setValue('kennel_name', damDetails.kennel_name || null);
+      // Only update litter name if it's empty or from a previous dam
+      if (!form.getValues('litter_name') || !isInitialLoad) {
+        form.setValue('litter_name', newLitterName);
       }
       
+      // Mark this dam as the previous one
       setPreviousDamId(currentDamId);
     }
+    
+    setIsInitialLoad(false);
   }, [
-    form, 
-    damDetails, 
-    isInitialLoad, 
-    setIsInitialLoad, 
-    initialData, 
     currentDamId, 
+    damDetails, 
+    form, 
+    initialData, 
+    isInitialLoad, 
     previousDamId, 
+    setIsInitialLoad, 
     setPreviousDamId
   ]);
 };

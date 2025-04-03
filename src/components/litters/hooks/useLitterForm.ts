@@ -6,7 +6,7 @@ import { useDamDetails } from './useDamDetails';
 import { useLitterFormSubmit } from './useLitterFormSubmit';
 import { getDefaultFormValues } from './utils/litterFormUtils';
 import { UseLitterFormProps, LitterFormData, UseLitterFormReturnType } from './types/litterFormTypes';
-import { supabase } from '@/integrations/supabase/client'; // Add this missing import
+import { supabase } from '@/integrations/supabase/client';
 
 export type { LitterFormData } from './types/litterFormTypes';
 
@@ -41,7 +41,7 @@ export const useLitterForm = ({ initialData, onSuccess }: UseLitterFormProps): U
     await submitForm(data);
     
     // If this is a new litter and we have dam details, update the dam's litter count
-    if (!initialData && damDetails && currentDamId) {
+    if (!initialData?.id && damDetails && currentDamId) {
       const newLitterNumber = (damDetails.litter_number || 0) + 1;
       await supabase
         .from('dogs')

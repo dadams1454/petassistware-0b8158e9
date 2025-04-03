@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CustomButton } from '@/components/ui/custom-button';
+import { Save, X } from 'lucide-react';
 
 interface LitterFormActionsProps {
   isSubmitting: boolean;
@@ -15,25 +15,26 @@ const LitterFormActions: React.FC<LitterFormActionsProps> = ({
   isEditMode
 }) => {
   return (
-    <div className="flex justify-end space-x-2 pt-4">
+    <div className="flex justify-end space-x-4 pt-4">
       {onCancel && (
-        <Button
-          type="button"
-          variant="outline"
+        <Button 
+          type="button" 
+          variant="outline" 
           onClick={onCancel}
           disabled={isSubmitting}
         >
+          <X className="h-4 w-4 mr-2" />
           Cancel
         </Button>
       )}
-      <CustomButton
-        type="submit"
-        variant="primary"
-        isLoading={isSubmitting}
-        fullWidth={false}
+      
+      <Button 
+        type="submit" 
+        disabled={isSubmitting}
       >
-        {isEditMode ? 'Update Litter' : 'Create Litter'}
-      </CustomButton>
+        <Save className="h-4 w-4 mr-2" />
+        {isEditMode ? 'Save Changes' : 'Create Litter'}
+      </Button>
     </div>
   );
 };

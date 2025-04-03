@@ -1,63 +1,65 @@
 
+import { Litter } from '@/types';
 import { LitterFormData } from '../types/litterFormTypes';
 
-export const getDefaultFormValues = (initialData: any | undefined, today: Date): LitterFormData => {
-  if (initialData) {
-    return {
-      litter_name: initialData.litter_name || '',
-      dam_id: initialData.dam_id || null,
-      sire_id: initialData.sire_id || null,
-      birth_date: initialData.birth_date ? new Date(initialData.birth_date) : null,
-      expected_go_home_date: initialData.expected_go_home_date ? new Date(initialData.expected_go_home_date) : new Date(today.getTime() + 8 * 7 * 24 * 60 * 60 * 1000), // Default to 8 weeks from today
-      puppy_count: initialData.puppy_count || null,
-      male_count: initialData.male_count || null,
-      female_count: initialData.female_count || null,
-      notes: initialData.notes || null,
-      documents_url: initialData.documents_url || null,
-      status: initialData.status || 'active',
-      akc_registration_number: initialData.akc_registration_number || null,
-      akc_registration_date: initialData.akc_registration_date ? new Date(initialData.akc_registration_date) : null,
-      akc_litter_color: initialData.akc_litter_color || null,
-      akc_verified: initialData.akc_verified || false,
-      first_mating_date: initialData.first_mating_date ? new Date(initialData.first_mating_date) : null,
-      last_mating_date: initialData.last_mating_date ? new Date(initialData.last_mating_date) : null,
-      kennel_name: initialData.kennel_name || null,
-      breeding_notes: initialData.breeding_notes || null,
-    };
-  }
-
-  // Default values for new litter
-  return {
+/**
+ * Get default form values, merging initialData if available
+ */
+export const getDefaultFormValues = (initialData?: Partial<Litter>, defaultDate: Date = new Date()): LitterFormData => {
+  // Default values for a new litter
+  const defaults: LitterFormData = {
     litter_name: '',
-    dam_id: null,
-    sire_id: null,
-    birth_date: today,
-    expected_go_home_date: new Date(today.getTime() + 8 * 7 * 24 * 60 * 60 * 1000), // Default to 8 weeks from today
-    puppy_count: null,
-    male_count: null,
-    female_count: null,
-    notes: null,
-    documents_url: null,
+    dam_id: '',
+    sire_id: '',
+    birth_date: defaultDate,
     status: 'active',
-    akc_registration_number: null,
-    akc_registration_date: null,
-    akc_litter_color: null,
-    akc_verified: false,
-    first_mating_date: null,
-    last_mating_date: null,
-    kennel_name: null,
-    breeding_notes: null,
+    male_count: 0,
+    female_count: 0,
+    notes: '',
+    breeding_notes: ''
   };
-};
 
-export const processFormData = (data: LitterFormData, userId: string, today: Date) => {
+  // If no initialData, return defaults
+  if (!initialData) return defaults;
+
+  // Convert birth_date to Date object if it's a string
+  let birthDate = initialData.birth_date 
+    ? (typeof initialData.birth_date === 'string' 
+        ? new Date(initialData.birth_date) 
+        : initialData.birth_date)
+    : defaultDate;
+
+  // Convert expected_go_home_date to Date object if it's a string
+  let expectedGoHomeDate = initialData.expected_go_home_date 
+    ? (typeof initialData.expected_go_home_date === 'string' 
+        ? new Date(initialData.expected_go_home_date) 
+        : initialData.expected_go_home_date)
+    : undefined;
+
+  // Convert akc_registration_date to Date object if it's a string
+  let akcRegistrationDate = initialData.akc_registration_date 
+    ? (typeof initialData.akc_registration_date === 'string' 
+        ? new Date(initialData.akc_registration_date) 
+        : initialData.akc_registration_date)
+    : undefined;
+
+  // Merge defaults with initialData
   return {
-    ...data,
-    breeder_id: userId,
-    birth_date: data.birth_date ? new Date(data.birth_date).toISOString().split('T')[0] : today.toISOString().split('T')[0],
-    expected_go_home_date: data.expected_go_home_date ? new Date(data.expected_go_home_date).toISOString().split('T')[0] : null,
-    akc_registration_date: data.akc_registration_date ? new Date(data.akc_registration_date).toISOString().split('T')[0] : null,
-    first_mating_date: data.first_mating_date ? new Date(data.first_mating_date).toISOString().split('T')[0] : null,
-    last_mating_date: data.last_mating_date ? new Date(data.last_mating_date).toISOString().split('T')[0] : null,
+    ...defaults,
+    id: initialData.id,
+    litter_name: initialData.litter_name || defaults.litter_name,
+    dam_id: initialData.dam_id || defaults.dam_id,
+    sire_id: initialData.sire_id || defaults.sire_id,
+    birth_date: birthDate,
+    expected_go_home_date: expectedGoHomeDate,
+    akc_litter_number: initialData.akc_litter_number,
+    akc_registration_number: initialData.akc_registration_number,
+    akc_registration_date: akcRegistrationDate,
+    akc_verified: initialData.akc_verified,
+    status: (initialData.status as LitterFormData['status']) || defaults.status,
+    male_count: initialData.male_count ?? defaults.male_count,
+    female_count: initialData.female_count ?? defaults.female_count,
+    breeding_notes: initialData.breeding_notes || defaults.breeding_notes,
+    notes: initialData.notes || defaults.notes
   };
 };
