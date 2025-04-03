@@ -36,7 +36,7 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
     displayColor = statusColor || status.statusColor;
   } else if (typeof status === 'object' && status !== null) {
     // Handle MedicationStatus objects (without statusLabel)
-    displayText = status.status?.charAt(0).toUpperCase() + status.status?.slice(1) || 'Unknown';
+    displayText = status.status ? status.status.charAt(0).toUpperCase() + status.status.slice(1) : 'Unknown';
     displayColor = statusColor || getStatusColor(status.status || '');
   } else if (typeof status === 'string') {
     // Simple string status

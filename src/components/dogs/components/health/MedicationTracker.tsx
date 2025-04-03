@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { Bell, Calendar, AlertTriangle, Check, Clock } from 'lucide-react';
@@ -27,11 +28,11 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
       try {
         // Fetch upcoming medications
         const medications = await getUpcomingMedications(dogId);
-        setUpcomingMedications(medications);
+        setUpcomingMedications(medications as any);
         
         // Fetch expiring medications
         const expiring = await getExpiringMedications(dogId);
-        setExpiringMedications(expiring);
+        setExpiringMedications(expiring as any);
       } catch (error) {
         console.error('Error fetching medications:', error);
         toast({
@@ -63,7 +64,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
         case MedicationFrequency.Weekly:
           nextDueDate.setDate(today.getDate() + 7);
           break;
-        case 'biweekly':
+        case MedicationFrequency.Biweekly:
           nextDueDate.setDate(today.getDate() + 14);
           break;
         case MedicationFrequency.Monthly:

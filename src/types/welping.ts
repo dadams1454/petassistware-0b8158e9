@@ -32,3 +32,9 @@ export interface PostpartumCare {
   performed_by?: string;
   created_at?: string;
 }
+
+// For consistent error handling with whelping logs
+export interface WelpingLogEntry extends WelpingLog {
+  puppy_name?: string;
+  event_description?: string;
+}

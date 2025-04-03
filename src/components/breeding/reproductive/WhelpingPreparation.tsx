@@ -11,10 +11,8 @@ interface WhelpingPreparationProps {
 
 const WhelpingPreparation: React.FC<WhelpingPreparationProps> = ({ dog }) => {
   // Type-safe check for pregnancy status
-  const isPregnant = dog.breeding_status === 'pregnant' || 
-                    (dog.is_pregnant === true) || 
-                    (typeof dog.breeding_status === 'string' && 
-                     dog.breeding_status.toLowerCase() === ReproductiveStatus.Pregnant);
+  const isPregnant = dog.is_pregnant === true || 
+                    (dog.reproductive_status === ReproductiveStatus.Pregnant);
 
   if (!isPregnant) {
     return (

@@ -2,7 +2,7 @@
 import { MedicationStatus, MedicationStatusResult } from '@/types/health';
 
 // Define MedicationFrequency type for export
-export type MedicationFrequency = 'daily' | 'twice_daily' | 'weekly' | 'biweekly' | 'monthly' | 'as_needed';
+export type MedicationFrequency = 'daily' | 'twice_daily' | 'weekly' | 'biweekly' | 'monthly' | 'as_needed' | 'quarterly' | 'annually';
 
 // Export MedicationFrequency as an enum for use with switch statements
 export const MedicationFrequency = {
@@ -127,6 +127,10 @@ export const getTimeSlotsForFrequency = (frequency: MedicationFrequency): string
       return ['08:00'];
     case 'as_needed':
       return [];
+    case 'quarterly':
+      return ['08:00'];
+    case 'annually':
+      return ['08:00'];
     default:
       return ['08:00'];
   }

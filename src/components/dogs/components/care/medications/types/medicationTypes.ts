@@ -1,5 +1,5 @@
 
-import { MedicationStatus, MedicationStatusResult } from '@/utils/medicationUtils';
+import { MedicationFrequency, MedicationStatus, MedicationStatusResult } from '@/utils/medicationUtils';
 
 export interface MedicationInfo {
   id: string;
@@ -31,4 +31,44 @@ export interface MedicationDisplayProps {
   route?: string;
   notes?: string;
   onLogAdministration?: () => void;
+}
+
+export interface MedicationsLogProps {
+  dogId: string;
+  onRefresh?: () => void;
+}
+
+export interface DogInfoProps {
+  dogId: string;
+  dogName?: string;
+  showPhoto?: boolean;
+}
+
+export interface LastMedicationInfoProps {
+  dogId: string;
+  medicationName: string;
+  lastAdministered?: string;
+}
+
+export interface MedicationFilterProps {
+  activeFilter: string;
+  onChange: (filter: string) => void;
+  counts: {
+    all: number;
+    preventative: number;
+    other: number;
+  };
+}
+
+export interface MedicationHeaderProps {
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+}
+
+export interface ProcessedMedicationLogs {
+  [dogId: string]: {
+    preventative: MedicationInfo[];
+    other: MedicationInfo[];
+  };
 }
