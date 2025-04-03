@@ -10,6 +10,7 @@ import NewWelpingPage from './pages/NewWelpingPage';
 import ViewWelpingPage from './pages/ViewWelpingPage';
 import LitterDetailsPage from './pages/LitterDetailsPage';
 import NewLitterPage from './pages/NewLitterPage';
+import WhelpingLiveSession from './components/welping/WhelpingLiveSession';
 
 // Create legacy route redirects to maintain backward compatibility
 const LegacyRedirects = () => (
@@ -19,6 +20,8 @@ const LegacyRedirects = () => (
     <Route path="/litters/new" element={<Navigate to="/reproduction/litters/new" replace />} />
     <Route path="/breeding" element={<Navigate to="/reproduction/breeding" replace />} />
     <Route path="/breeding-prep" element={<Navigate to="/reproduction/breeding" replace />} />
+    <Route path="/welping" element={<Navigate to="/reproduction/welping" replace />} />
+    <Route path="/welping/:id" element={<Navigate to="/reproduction/welping/session/:id" replace />} />
   </>
 );
 
@@ -31,6 +34,7 @@ const ReproductionRoutes = () => {
         <Route path="welping" element={<WelpingManagementPage />} />
         <Route path="welping/new" element={<NewWelpingPage />} />
         <Route path="welping/:welpingId" element={<ViewWelpingPage />} />
+        <Route path="welping/session/:id" element={<WhelpingLiveSession />} />
         <Route path="litters" element={<LittersManagement />} />
         <Route path="litters/new" element={<NewLitterPage />} />
         <Route path="litters/:litterId" element={<LitterDetailsPage />} />

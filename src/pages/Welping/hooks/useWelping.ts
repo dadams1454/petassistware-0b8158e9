@@ -17,6 +17,7 @@ export interface WelpingLogEntry {
     gender?: string;
     color?: string;
     weight?: number;
+    weight_unit?: string;
   };
 }
 

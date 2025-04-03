@@ -11,10 +11,10 @@ export interface HeatCycle {
   notes?: string;
   symptoms?: string[];
   created_at?: string;
-  cycle_length?: number; // Added for compatibility
-  fertility_indicators?: any; // Added for compatibility
-  recorded_by?: string; // Added for compatibility
-  updated_at?: string; // Added for compatibility
+  cycle_length?: number;
+  fertility_indicators?: any;
+  recorded_by?: string;
+  updated_at?: string;
 }
 
 export interface DogWithCycles extends Dog {
@@ -34,10 +34,10 @@ export interface BreedingRecord {
   created_at?: string;
   dam?: Dog;
   sire?: Dog;
-  tie_date?: string; // Added for compatibility
-  heat_cycle_id?: string; // Added for compatibility
-  breeding_method?: string; // Added for compatibility
-  estimated_due_date?: string; // Added for compatibility
+  tie_date?: string;
+  heat_cycle_id?: string;
+  breeding_method?: string;
+  estimated_due_date?: string;
 }
 
 export interface PregnancyRecord {
@@ -50,13 +50,13 @@ export interface PregnancyRecord {
   status: 'suspected' | 'confirmed' | 'completed' | 'lost';
   created_at?: string;
   dog?: Dog;
-  confirmation_date?: string; // Added for compatibility
-  estimated_whelp_date?: string; // Added for compatibility
-  actual_whelp_date?: string; // Added for compatibility
-  puppies_born?: number; // Added for compatibility
-  puppies_alive?: number; // Added for compatibility
-  outcome?: string; // Added for compatibility
-  breeding_record_id?: string; // Added for compatibility
+  confirmation_date?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
+  breeding_record_id?: string;
 }
 
 export interface ReproductiveMilestone {
@@ -66,7 +66,7 @@ export interface ReproductiveMilestone {
   date: string;
   notes?: string;
   created_at?: string;
-  milestone_date?: string; // Added for compatibility
+  milestone_date?: string;
 }
 
 export enum ReproductiveStatus {
@@ -79,7 +79,7 @@ export enum ReproductiveStatus {
   RECOVERY = 'recovery',
   SPAYED = 'spayed',
   NEUTERED = 'neutered',
-  NOT_IN_HEAT = 'not-in-heat' // Added for compatibility
+  NOT_IN_HEAT = 'not-in-heat'
 }
 
 export interface ReproductiveStatusRecord {
@@ -99,7 +99,6 @@ export interface HeatStage {
   fertility: 'none' | 'low' | 'moderate' | 'high' | 'peak';
 }
 
-// Add missing types needed by the codebase
 export interface ReproductiveCycleData {
   isInHeat: boolean;
   isPreHeat: boolean;
@@ -125,4 +124,46 @@ export interface BreedingChecklistItem {
   title: string;
   completed: boolean;
   description?: string;
+}
+
+// Add necessary whelping types
+export interface WelpingLog {
+  id: string;
+  litter_id: string;
+  timestamp: string;
+  event_type: 'start' | 'contraction' | 'puppy_born' | 'note' | 'end';
+  puppy_id?: string;
+  notes?: string;
+  puppy_details?: {
+    gender?: string;
+    color?: string;
+    weight?: number;
+    weight_unit?: string;
+    birth_order?: number;
+  };
+  created_at?: string;
+}
+
+export interface WelpingSession {
+  id: string;
+  litter_id: string;
+  start_time: string;
+  end_time?: string;
+  status: 'in-progress' | 'completed' | 'interrupted';
+  total_puppies: number;
+  males: number;
+  females: number;
+  complications: boolean;
+  complication_notes?: string;
+  attended_by?: string;
+  notes?: string;
+  logs?: WelpingLog[];
+  created_at?: string;
+}
+
+export interface WelpingStats {
+  pregnantCount: number;
+  activeWelpingsCount: number;
+  totalPuppiesCount: number;
+  upcomingWelpingsCount?: number;
 }

@@ -2539,6 +2539,7 @@ export type Database = {
           puppy_count: number | null
           sire_id: string | null
           status: string | null
+          whelp_date: string | null
         }
         Insert: {
           akc_litter_color?: string | null
@@ -2563,6 +2564,7 @@ export type Database = {
           puppy_count?: number | null
           sire_id?: string | null
           status?: string | null
+          whelp_date?: string | null
         }
         Update: {
           akc_litter_color?: string | null
@@ -2587,6 +2589,7 @@ export type Database = {
           puppy_count?: number | null
           sire_id?: string | null
           status?: string | null
+          whelp_date?: string | null
         }
         Relationships: [
           {
@@ -3307,6 +3310,54 @@ export type Database = {
           },
           {
             foreignKeyName: "weight_records_puppy_id_fkey"
+            columns: ["puppy_id"]
+            isOneToOne: false
+            referencedRelation: "puppies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      welping_logs: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          litter_id: string
+          notes: string | null
+          puppy_details: Json | null
+          puppy_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          litter_id: string
+          notes?: string | null
+          puppy_details?: Json | null
+          puppy_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          litter_id?: string
+          notes?: string | null
+          puppy_details?: Json | null
+          puppy_id?: string | null
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welping_logs_litter_id_fkey"
+            columns: ["litter_id"]
+            isOneToOne: false
+            referencedRelation: "litters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "welping_logs_puppy_id_fkey"
             columns: ["puppy_id"]
             isOneToOne: false
             referencedRelation: "puppies"

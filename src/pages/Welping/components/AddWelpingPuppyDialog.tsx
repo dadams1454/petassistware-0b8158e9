@@ -16,8 +16,8 @@ const AddWelpingPuppyDialog: React.FC<AddWelpingPuppyDialogProps> = ({
   onOpenChange,
   onSuccess,
 }) => {
-  const handleSuccess = () => {
-    onSuccess();
+  const handleSuccess = async () => {
+    await onSuccess();
     onOpenChange(false);
   };
 
