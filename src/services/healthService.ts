@@ -340,4 +340,4 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
   return data.map(record => mapToWeightRecord(record));
 };
 
-// Removed the duplicate export list that was causing the error
+// Note: No duplicate exports at the end of the file anymore
