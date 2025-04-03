@@ -19,10 +19,10 @@ interface ReproductiveStatusCardProps {
 }
 
 export const getStatusColor = (status: string | ReproductiveStatus): string => {
-  // Use a type guard to safely check the status
-  const statusValue = typeof status === 'string' ? status : status.toString();
+  // Convert the status to string for comparison
+  const statusStr = typeof status === 'string' ? status : status;
   
-  switch (statusValue) {
+  switch (statusStr) {
     case ReproductiveStatus.InHeat:
     case 'in_heat':
       return 'bg-red-100 text-red-800 border-red-200';
@@ -48,10 +48,10 @@ export const getStatusColor = (status: string | ReproductiveStatus): string => {
 };
 
 export const getStatusDisplay = (status: string | ReproductiveStatus): string => {
-  // Use a type guard to safely check the status
-  const statusValue = typeof status === 'string' ? status : status.toString();
+  // Convert the status to string for comparison
+  const statusStr = typeof status === 'string' ? status : status;
   
-  switch (statusValue) {
+  switch (statusStr) {
     case ReproductiveStatus.InHeat:
     case 'in_heat':
       return 'In Heat';

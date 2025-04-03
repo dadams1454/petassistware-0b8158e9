@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Plus } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
-import { HeatCycle } from '@/types/reproductive';
+import { HeatCycle, HeatIntensity } from '@/types/reproductive';
 
 interface HeatCycleMonitorProps {
   dogId: string;
@@ -29,7 +29,8 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
             start_date: '2023-09-05',
             end_date: '2023-09-19',
             notes: 'Normal cycle, no complications',
-            created_at: '2023-09-05T12:00:00Z'
+            created_at: '2023-09-05T12:00:00Z',
+            intensity: 'moderate' as HeatIntensity
           },
           {
             id: '2',
@@ -37,7 +38,8 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, onAddCycle }
             start_date: '2023-12-01',
             end_date: '2023-12-15',
             notes: null,
-            created_at: '2023-12-01T12:00:00Z'
+            created_at: '2023-12-01T12:00:00Z',
+            intensity: 'mild' as HeatIntensity
           }
         ];
         

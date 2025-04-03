@@ -1,84 +1,77 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MedicationStatus as MedicationStatusEnum, 
-  MedicationStatusResult,
-  isComplexStatus,
-  getStatusValue,
-  getStatusColor
-} from '@/utils/medicationUtils';
-
-interface MedicationStatusDisplayProps {
-  status: MedicationStatusResult | string;
-  statusColor?: string;
-  showLabel?: boolean;
-}
+import { Skeleton } from '@/components/ui/skeleton';
+import { MedicationStatus, isComplexStatus, getStatusValue } from '@/utils/medicationUtils';
+import { MedicationStatusDisplayProps } from '../types/medicationTypes';
 
 const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({ 
   status, 
   statusColor,
-  showLabel = true
+  label,
+  isLoading = false
 }) => {
-  const getDisplayColor = (): string => {
-    if (statusColor) return statusColor;
-    
-    // Handle both string and complex status objects
-    if (typeof status === 'object' && 'statusColor' in status) {
-      return status.statusColor;
-    }
-    
-    // For simple status strings or standard MedicationStatusResult
-    return getStatusColor(status as MedicationStatusResult);
-  };
+  if (isLoading) {
+    return <Skeleton className="h-6 w-20" />;
+  }
 
-  const getDisplayLabel = (): string => {
-    // Handle complex status object
-    if (typeof status === 'object' && 'status' in status) {
-      const innerStatus = status.status;
-      
-      if (innerStatus === 'incomplete') return 'None';
-      if (innerStatus === 'current') return 'Current';
-      if (innerStatus === 'due_soon') return 'Due Soon';
-      if (innerStatus === 'overdue') return 'Overdue';
-    }
-    
-    // Handle simple status values and enum values
+  // If it's a complex status object, extract the status string
+  const statusText = isComplexStatus(status) 
+    ? status.status
+    : typeof status === 'string' 
+      ? status 
+      : 'Unknown';
+
+  // Format the status text for display
+  const formattedStatus = (() => {
+    // If it's a simple string like 'incomplete', just capitalize it
     if (typeof status === 'string') {
-      switch (status) {
-        case MedicationStatusEnum.Active:
-          return 'Active';
-        case MedicationStatusEnum.Completed:
-          return 'Complete';
-        case MedicationStatusEnum.Upcoming:
-          return 'Upcoming';
-        case MedicationStatusEnum.Expired:
-          return 'Expired';
-        case MedicationStatusEnum.Missed:
-          return 'Missed';
-        case 'current':
-          return 'Current';
-        case 'due_soon':
-          return 'Due Soon';
-        case 'overdue':
-          return 'Overdue';
-        case 'incomplete':
-          return 'None';
-        default:
-          return 'Unknown';
-      }
+      return status.charAt(0).toUpperCase() + status.slice(1);
     }
     
-    // For other MedicationStatusResult values
-    return 'Unknown';
-  };
+    // Otherwise, handle the known enum values
+    switch (statusText) {
+      case MedicationStatus.Current:
+        return 'Current';
+      case MedicationStatus.Due:
+        return 'Due';
+      case MedicationStatus.Overdue:
+        return 'Overdue';
+      case MedicationStatus.Upcoming:
+        return 'Upcoming';
+      case MedicationStatus.Completed:
+        return 'Completed';
+      case MedicationStatus.Active:
+        return 'Active';
+      case MedicationStatus.Expired:
+        return 'Expired';
+      case MedicationStatus.Missed:
+        return 'Missed';
+      default:
+        return 'Unknown';
+    }
+  })();
+
+  // Add additional info for overdue or due soon medications
+  const additionalInfo = (() => {
+    if (!isComplexStatus(status)) return null;
+    
+    if (status.status === MedicationStatus.Overdue && status.daysOverdue) {
+      return ` (${status.daysOverdue} days)`;
+    }
+    
+    if ((status.status === MedicationStatus.Current || status.status === MedicationStatus.Upcoming) 
+        && status.daysUntilDue) {
+      return ` (in ${status.daysUntilDue} days)`;
+    }
+    
+    return null;
+  })();
 
   return (
-    <Badge 
-      variant="outline" 
-      className={`whitespace-nowrap ${getDisplayColor()}`}
-    >
-      {showLabel ? getDisplayLabel() : ''}
+    <Badge className={statusColor}>
+      {label ? `${label}: ` : ''}
+      {formattedStatus}
+      {additionalInfo}
     </Badge>
   );
 };

@@ -17,7 +17,7 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     availablePuppies = 0,
     reservedPuppies = 0,
     soldPuppies = 0,
-    byGender = {},
+    byGender = { male: 0, female: 0, unknown: 0 },
     byStatus = {},
     byAgeGroup = {}
   } = usePuppyStats(puppies) || {};

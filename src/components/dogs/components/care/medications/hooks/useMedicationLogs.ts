@@ -80,6 +80,19 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
                 cleanName = cleanName.substring(0, cleanName.indexOf('(')).trim();
               }
               
+              // Extract start_date and end_date from metadata if available
+              let startDate = log.timestamp;
+              let endDate = null;
+              
+              if (log.medication_metadata && typeof log.medication_metadata === 'object') {
+                if (log.medication_metadata.start_date) {
+                  startDate = log.medication_metadata.start_date;
+                }
+                if (log.medication_metadata.end_date) {
+                  endDate = log.medication_metadata.end_date;
+                }
+              }
+              
               if (!medicationsByName[cleanName] || new Date(log.timestamp) > new Date(medicationsByName[cleanName].lastAdministered)) {
                 medicationsByName[cleanName] = {
                   id: log.id,
@@ -88,8 +101,8 @@ export const useMedicationLogs = (dogs: DogCareStatus[]) => {
                   frequency: frequency,
                   notes: log.notes,
                   isPreventative: isPreventative,
-                  startDate: log.start_date || log.timestamp, // Add startDate property
-                  endDate: log.end_date || null // Add endDate property
+                  startDate: startDate,
+                  endDate: endDate
                 };
               }
             });

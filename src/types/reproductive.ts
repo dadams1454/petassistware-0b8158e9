@@ -7,7 +7,11 @@ export enum ReproductiveStatus {
   NotInHeat = 'not_in_heat',
   Pregnant = 'pregnant',
   Nursing = 'nursing',
-  Altered = 'altered'
+  Altered = 'altered',
+  // Add missing enum values that are used
+  Whelping = 'whelping',
+  Recovery = 'recovery',
+  PreHeat = 'pre_heat'
 }
 
 // Legacy constants for backward compatibility
