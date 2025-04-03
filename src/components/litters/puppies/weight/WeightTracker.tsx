@@ -1,145 +1,93 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus } from 'lucide-react';
-import WeightForm from './WeightForm';
-import WeightChartView from './WeightChartView';
-import WeightTableView from './WeightTableView';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { WeightRecord, WeightUnit } from '@/types/health';
-import { useToast } from '@/components/ui/use-toast';
-import { useWeightData } from '@/hooks/useWeightData';
+import { WeightChart } from './WeightChart';
+import WeightTable from './WeightTable';
+import WeightEntryForm from './WeightEntryForm';
+import { PlusCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { WeightRecord } from '@/types/puppyTracking';
+import { WeightUnit } from '@/types/common';
+import { convertWeight } from './weightUnits';
 
 interface WeightTrackerProps {
   puppyId: string;
   birthDate?: string;
-  onAddSuccess?: () => void;
-  isAddingWeight?: boolean;
-  onCancelAdd?: () => void;
+  initialRecords?: WeightRecord[];
   onWeightAdded?: () => void;
 }
 
 const WeightTracker: React.FC<WeightTrackerProps> = ({
   puppyId,
   birthDate,
-  onAddSuccess,
-  isAddingWeight = false,
-  onCancelAdd = () => {},
-  onWeightAdded = () => {}
+  initialRecords = [],
+  onWeightAdded
 }) => {
-  const [showAddForm, setShowAddForm] = useState(isAddingWeight);
+  const [activeTab, setActiveTab] = useState('chart');
+  const [weightRecords, setWeightRecords] = useState<WeightRecord[]>(initialRecords);
+  const [isAddingWeight, setIsAddingWeight] = useState(false);
   const [displayUnit, setDisplayUnit] = useState<WeightUnit>('oz');
-  const { toast } = useToast();
   
-  const {
-    weightRecords,
-    isLoading,
-    addWeightRecord,
-    deleteWeightRecord
-  } = useWeightData({ puppyId });
-
-  // Sync with props
-  useEffect(() => {
-    setShowAddForm(isAddingWeight);
-  }, [isAddingWeight]);
-
-  const handleAddWeight = async (data: any) => {
-    try {
-      await addWeightRecord({
-        ...data,
-        birth_date: birthDate
-      });
-      
-      toast({
-        title: 'Weight recorded',
-        description: 'The weight record has been saved successfully.',
-      });
-      
-      setShowAddForm(false);
-      
-      if (onWeightAdded) {
-        onWeightAdded();
-      }
-      
-      if (onAddSuccess) {
-        onAddSuccess();
-      }
-    } catch (error) {
-      console.error('Error adding weight record:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save the weight record. Please try again.',
-        variant: 'destructive',
-      });
-    }
+  // Handle adding a new weight record
+  const handleAddWeight = (record: WeightRecord) => {
+    setWeightRecords([record, ...weightRecords]);
+    setIsAddingWeight(false);
+    if (onWeightAdded) onWeightAdded();
   };
-
-  const handleCancelAdd = () => {
-    setShowAddForm(false);
-    if (onCancelAdd) {
-      onCancelAdd();
-    }
+  
+  // Handle deleting a weight record
+  const handleDeleteWeight = (id: string) => {
+    setWeightRecords(weightRecords.filter(record => record.id !== id));
   };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteWeightRecord(id);
-      toast({
-        title: 'Weight deleted',
-        description: 'The weight record has been removed successfully.',
-      });
-    } catch (error) {
-      console.error('Error deleting weight record:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete the weight record. Please try again.',
-        variant: 'destructive',
-      });
-    }
+  
+  // Handle unit changes - convert all weights to the new unit
+  const handleDisplayUnitChange = (unit: WeightUnit) => {
+    setDisplayUnit(unit);
   };
-
-  if (showAddForm) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Add Weight Record</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <WeightForm
-            puppyId={puppyId}
-            onSubmit={handleAddWeight}
-            onCancel={handleCancelAdd}
-          />
-        </CardContent>
-      </Card>
+  
+  // Get the latest weight for display at the top
+  const getLatestWeight = (): { weight: number, unit: WeightUnit, date: string } | null => {
+    if (weightRecords.length === 0) return null;
+    
+    // Sort records to get the most recent one
+    const sortedRecords = [...weightRecords].sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateB - dateA;
+    });
+    
+    const latest = sortedRecords[0];
+    
+    // Convert the weight to the selected display unit
+    const convertedWeight = convertWeight(
+      latest.weight,
+      latest.weight_unit,
+      displayUnit
     );
-  }
-
+    
+    return {
+      weight: convertedWeight,
+      unit: displayUnit,
+      date: latest.date
+    };
+  };
+  
+  const latestWeight = getLatestWeight();
+  
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Weight Tracking</h3>
-        <Button size="sm" onClick={() => setShowAddForm(true)}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Weight
-        </Button>
-      </div>
-
-      <Tabs defaultValue="chart">
-        <div className="flex justify-between items-center mb-4">
-          <TabsList>
-            <TabsTrigger value="chart">Chart</TabsTrigger>
-            <TabsTrigger value="table">History</TabsTrigger>
-          </TabsList>
-          
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Weight Tracking</CardTitle>
+        <div className="flex items-center gap-2">
           <Select
             value={displayUnit}
-            onValueChange={(value) => setDisplayUnit(value as WeightUnit)}
+            onValueChange={(value) => handleDisplayUnitChange(value as WeightUnit)}
           >
-            <SelectTrigger className="w-28">
-              <SelectValue placeholder="Unit" />
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Weight unit" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="oz">Ounces (oz)</SelectItem>
@@ -148,35 +96,68 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
               <SelectItem value="kg">Kilograms (kg)</SelectItem>
             </SelectContent>
           </Select>
+          
+          <Button onClick={() => setIsAddingWeight(true)} size="sm">
+            <PlusCircle className="h-4 w-4 mr-1" />
+            Add Weight
+          </Button>
         </div>
+      </CardHeader>
+      
+      <CardContent>
+        {latestWeight ? (
+          <div className="mb-4 p-3 bg-muted/30 rounded-md">
+            <div className="text-sm text-muted-foreground">Current Weight</div>
+            <div className="text-2xl font-bold">
+              {latestWeight.weight.toFixed(2)} {latestWeight.unit}
+            </div>
+          </div>
+        ) : (
+          <div className="mb-4 p-3 bg-muted/30 rounded-md">
+            <div className="text-sm text-muted-foreground">No weight records</div>
+            <div className="text-lg">
+              Add a weight record to track puppy growth
+            </div>
+          </div>
+        )}
         
-        <TabsContent value="chart">
-          <Card>
-            <CardContent className="pt-6">
-              <WeightChartView
-                puppyId={puppyId}
-                birthDate={birthDate}
-                displayUnit={displayUnit}
-                weightRecords={weightRecords}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="table">
-          <Card>
-            <CardContent className="pt-6">
-              <WeightTableView
-                puppyId={puppyId}
-                displayUnit={displayUnit}
-                weightRecords={weightRecords}
-                onDelete={handleDelete}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="chart">Chart</TabsTrigger>
+            <TabsTrigger value="table">Table</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="chart" className="p-2">
+            <WeightChart 
+              weightRecords={weightRecords} 
+              displayUnit={displayUnit} 
+            />
+          </TabsContent>
+          
+          <TabsContent value="table" className="p-2">
+            <WeightTable 
+              weightRecords={weightRecords} 
+              onDelete={handleDeleteWeight}
+              displayUnit={displayUnit}
+            />
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+      
+      <Dialog open={isAddingWeight} onOpenChange={setIsAddingWeight}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Weight Record</DialogTitle>
+          </DialogHeader>
+          <WeightEntryForm
+            puppyId={puppyId}
+            birthDate={birthDate}
+            onSave={handleAddWeight}
+            onCancel={() => setIsAddingWeight(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </Card>
   );
 };
 

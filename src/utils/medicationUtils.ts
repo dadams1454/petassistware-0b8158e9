@@ -21,16 +21,25 @@ export enum MedicationFrequency {
   Custom = 'custom'
 }
 
+// Type for medication status result
+export type MedicationStatusResult = 
+  | MedicationStatus 
+  | { status: 'incomplete' | MedicationStatus; statusColor: string };
+
 /**
  * Get the status of a medication based on its attributes
  */
 export const getMedicationStatus = (
-  startDate: string | Date,
+  startDate: string | Date | undefined | null,
   endDate: string | Date | undefined | null,
   lastAdministered: string | Date | undefined | null,
   frequency: string,
   currentDate = new Date()
-): MedicationStatus | { status: 'incomplete' | MedicationStatus; statusColor: string } => {
+): MedicationStatusResult => {
+  if (!startDate) {
+    return { status: 'incomplete', statusColor: 'bg-slate-100 text-slate-800 border-slate-300' };
+  }
+  
   const start = new Date(startDate);
   const end = endDate ? new Date(endDate) : null;
   const lastGiven = lastAdministered ? new Date(lastAdministered) : null;
@@ -104,5 +113,49 @@ export const calculateNextDueDate = (
     default:
       // Default to daily for unrecognized frequencies
       return addDays(lastAdministered, 1);
+  }
+};
+
+/**
+ * Type guard to check if the status is a simple MedicationStatus enum or the complex object
+ */
+export const isComplexStatus = (
+  status: MedicationStatusResult
+): status is { status: 'incomplete' | MedicationStatus; statusColor: string } => {
+  return typeof status === 'object' && 'status' in status && 'statusColor' in status;
+};
+
+/**
+ * Safely get the status value regardless of the status type
+ */
+export const getStatusValue = (status: MedicationStatusResult): 'incomplete' | MedicationStatus => {
+  if (isComplexStatus(status)) {
+    return status.status;
+  }
+  return status;
+};
+
+/**
+ * Safely get the status color regardless of the status type
+ */
+export const getStatusColor = (status: MedicationStatusResult): string => {
+  if (isComplexStatus(status)) {
+    return status.statusColor;
+  }
+  
+  // Default colors based on status
+  switch (status) {
+    case MedicationStatus.Active:
+      return 'bg-green-100 text-green-800 border-green-300';
+    case MedicationStatus.Upcoming:
+      return 'bg-blue-100 text-blue-800 border-blue-300';
+    case MedicationStatus.Missed:
+      return 'bg-red-100 text-red-800 border-red-300';
+    case MedicationStatus.Completed:
+      return 'bg-gray-100 text-gray-800 border-gray-300';
+    case MedicationStatus.Expired:
+      return 'bg-amber-100 text-amber-800 border-amber-300';
+    default:
+      return 'bg-muted text-muted-foreground';
   }
 };

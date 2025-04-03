@@ -1,49 +1,57 @@
 
+// Common types used across multiple modules
+
+// Weight unit type
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
+
 export type WeightUnitWithLegacy = WeightUnit | 'lbs'; // For backward compatibility
 
-// Standard weight units with display names and conversion factors
-export const weightUnits: { code: WeightUnit; name: string; factor: number }[] = [
-  { code: 'lb', name: 'Pounds', factor: 453.59237 },
-  { code: 'kg', name: 'Kilograms', factor: 1000 },
-  { code: 'oz', name: 'Ounces', factor: 28.3495 },
-  { code: 'g', name: 'Grams', factor: 1 }
-];
+// Interface for weight unit display
+export interface WeightUnitOption {
+  code: WeightUnit;
+  name: string;
+}
 
-// Utility function to get a user-friendly name for a weight unit
-export const getWeightUnitName = (unit: WeightUnit | string): string => {
-  const foundUnit = weightUnits.find(u => u.code === unit);
-  return foundUnit ? foundUnit.name : unit;
-};
-
-// Standardize weight unit codes (handles legacy 'lbs' -> 'lb')
-export const standardizeWeightUnit = (unit: string | undefined): WeightUnit => {
-  if (!unit) return 'lb';
+// Utility function to standardize weight units (handle legacy formats)
+export const standardizeWeightUnit = (unit?: string | null): WeightUnit => {
+  if (!unit) return 'lb'; // Default to lb
   
-  // Handle the common 'lbs' -> 'lb' conversion
+  // Handle legacy 'lbs' format
   if (unit === 'lbs') return 'lb';
   
-  // Ensure we have a valid weight unit
-  if (weightUnits.some(u => u.code === unit)) {
+  // Check if it's a valid weight unit
+  if (['oz', 'g', 'lb', 'kg'].includes(unit)) {
     return unit as WeightUnit;
   }
   
-  // Default to 'lb' if not recognized
+  // Default to lb for unknown units
   return 'lb';
 };
 
-// Utility to format weight values with their units
+// Weight units for UI selection
+export const weightUnits: WeightUnitOption[] = [
+  { code: 'lb', name: 'Pounds' },
+  { code: 'kg', name: 'Kilograms' },
+  { code: 'oz', name: 'Ounces' },
+  { code: 'g', name: 'Grams' }
+];
+
+// Format weight with unit for display
 export const formatWeightWithUnit = (
   weight: number | string | null | undefined, 
-  unit: WeightUnit | string | null | undefined,
-  decimalPlaces: number = 2
+  unit: WeightUnit | string | null | undefined
 ): string => {
   if (weight === null || weight === undefined) return 'N/A';
   
   const numWeight = typeof weight === 'string' ? parseFloat(weight) : weight;
+  const standardUnit = standardizeWeightUnit(unit);
   
-  if (isNaN(numWeight)) return 'N/A';
-  
-  const standardUnit = standardizeWeightUnit(unit as string);
-  return `${numWeight.toFixed(decimalPlaces)} ${standardUnit}`;
+  return `${numWeight.toFixed(2)} ${standardUnit}`;
+};
+
+// Get the display name for a weight unit
+export const getWeightUnitName = (unit: WeightUnit | string | null | undefined): string => {
+  const standardUnit = standardizeWeightUnit(unit);
+  const unitObj = weightUnits.find(u => u.code === standardUnit);
+  return unitObj ? unitObj.name : 'Pounds';
 };

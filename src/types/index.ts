@@ -63,7 +63,8 @@ export {
 // Export common functions and types
 export type { 
   WeightUnit as CommonWeightUnit, 
-  WeightUnitWithLegacy
+  WeightUnitWithLegacy,
+  WeightUnitOption
 } from './common';
 
 export { 
@@ -79,5 +80,11 @@ export {
   MedicationFrequency,
   getMedicationStatus,
   getTimeSlotsForFrequency,
-  calculateNextDueDate
+  calculateNextDueDate,
+  isComplexStatus,
+  getStatusValue,
+  getStatusColor
 } from '@/utils/medicationUtils';
+
+// Export type for medication status
+export type { MedicationStatusResult } from '@/utils/medicationUtils';

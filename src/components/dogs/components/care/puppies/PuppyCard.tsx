@@ -22,13 +22,21 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
     navigate(`/litters/${puppy.litter_id}/puppies/${puppy.id}`);
   };
   
+  // Safe access to puppy properties with nullish coalescing
+  const puppyName = puppy.name || 'Unnamed Puppy';
+  const litterName = puppy.litters?.litter_name || puppy.litters?.name || 'Unknown Litter';
+  const puppyStatus = puppy.status || 'Available';
+  const puppyGender = puppy.gender || 'Unknown';
+  const ageInDays = puppy.age_days || 0;
+  const currentWeight = puppy.current_weight || 'Not recorded';
+  
   return (
     <Card className="overflow-hidden">
       <div className="h-40 overflow-hidden relative bg-muted">
         {puppy.photo_url ? (
           <img 
             src={puppy.photo_url} 
-            alt={puppy.name || 'Puppy'} 
+            alt={puppyName} 
             className="w-full h-full object-cover"
           />
         ) : (
@@ -38,7 +46,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
         )}
         <div className="absolute top-2 right-2">
           <Badge variant="secondary" className="font-medium">
-            {puppy.gender || 'Unknown'}
+            {puppyGender}
           </Badge>
         </div>
       </div>
@@ -47,20 +55,20 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
             <Avatar className="h-8 w-8 mr-2">
-              <AvatarImage src={puppy.photo_url || ''} alt={puppy.name || 'Puppy'} />
+              <AvatarImage src={puppy.photo_url || ''} alt={puppyName} />
               <AvatarFallback className="bg-primary text-primary-foreground">
-                {(puppy.name?.[0] || 'P').toUpperCase()}
+                {(puppyName[0] || 'P').toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold">{puppy.name || 'Unnamed Puppy'}</h3>
+              <h3 className="font-semibold">{puppyName}</h3>
               <p className="text-xs text-muted-foreground">
-                {puppy.litters?.litter_name || puppy.litters?.name || 'Unknown Litter'}
+                {litterName}
               </p>
             </div>
           </div>
-          <Badge variant={puppy.status === 'Reserved' ? 'destructive' : 'default'}>
-            {puppy.status || 'Available'}
+          <Badge variant={puppyStatus === 'Reserved' ? 'destructive' : 'default'}>
+            {puppyStatus}
           </Badge>
         </div>
         
@@ -70,7 +78,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
             <span className="text-muted-foreground">Age:</span>
           </div>
           <div className="text-sm font-medium text-right">
-            {puppy.ageInDays || puppy.age_days || 0} days
+            {ageInDays} days
           </div>
           
           <div className="flex items-center text-sm">
@@ -78,7 +86,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
             <span className="text-muted-foreground">Weight:</span>
           </div>
           <div className="text-sm font-medium text-right">
-            {puppy.current_weight || 'Not recorded'}
+            {currentWeight}
           </div>
           
           <div className="flex items-center text-sm">

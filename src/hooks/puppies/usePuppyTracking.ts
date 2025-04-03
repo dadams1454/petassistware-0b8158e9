@@ -95,10 +95,8 @@ export const usePuppyTracking = (): PuppyManagementStats => {
           
           return {
             ...puppy,
-            ageInDays,
-            age_days: ageInDays, // Alternative property name
-            age_in_weeks: Math.floor(ageInDays / 7),
-            age_weeks: Math.floor(ageInDays / 7) // For backward compatibility
+            age_days: ageInDays, // Primary age field
+            age_in_weeks: Math.floor(ageInDays / 7)
           };
         });
         
@@ -117,7 +115,7 @@ export const usePuppyTracking = (): PuppyManagementStats => {
   // Organize puppies by age group
   const puppiesByAgeGroup = puppies.reduce((acc: Record<string, PuppyWithAge[]>, puppy) => {
     const ageGroup = defaultAgeGroups.find(group => 
-      puppy.ageInDays >= group.startDay && puppy.ageInDays <= group.endDay
+      puppy.age_days >= group.startDay && puppy.age_days <= group.endDay
     );
     
     if (ageGroup) {
@@ -135,6 +133,24 @@ export const usePuppyTracking = (): PuppyManagementStats => {
   const reservedPuppies = puppies.filter(p => p.status === 'Reserved').length;
   const soldPuppies = puppies.filter(p => p.status === 'Sold').length;
   
+  // Count puppies by gender
+  const maleCount = puppies.filter(p => p.gender?.toLowerCase() === 'male').length;
+  const femaleCount = puppies.filter(p => p.gender?.toLowerCase() === 'female').length;
+  const unknownGenderCount = puppies.filter(p => !p.gender).length;
+  
+  // Count puppies by age group
+  const byAgeGroup = defaultAgeGroups.reduce((acc, group) => {
+    acc[group.id] = (puppiesByAgeGroup[group.id] || []).length;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  // Count by status
+  const byStatus = puppies.reduce((acc, puppy) => {
+    const status = puppy.status || 'Unknown';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
   return {
     puppies,
     puppiesByAgeGroup,
@@ -144,6 +160,19 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     reservedPuppies,
     soldPuppies,
     isLoading,
-    error
+    error,
+    // Additional stats for dashboard
+    total: {
+      count: puppies.length,
+      male: maleCount,
+      female: femaleCount
+    },
+    byGender: {
+      male: maleCount,
+      female: femaleCount,
+      unknown: unknownGenderCount
+    },
+    byStatus,
+    byAgeGroup
   };
 };

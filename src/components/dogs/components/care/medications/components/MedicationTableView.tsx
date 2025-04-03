@@ -5,7 +5,7 @@ import { Pill, Clock } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { MedicationInfo } from '../types/medicationTypes';
 import { DogCareStatus } from '@/types/dailyCare';
-import { getMedicationStatus } from '@/utils/medicationUtils';
+import { getMedicationStatus, isComplexStatus, getStatusValue, getStatusColor } from '@/utils/medicationUtils';
 import MedicationStatusDisplay from './MedicationStatus';
 import { Button } from '@/components/ui/button';
 
@@ -73,11 +73,11 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
               
               // Get status for display
               const heartwormStatus = heartwormMed 
-                ? getMedicationStatus(heartwormMed.lastAdministered, heartwormMed.frequency)
+                ? getMedicationStatus(heartwormMed.startDate, heartwormMed.endDate, heartwormMed.lastAdministered, heartwormMed.frequency)
                 : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
                 
               const fleaTickStatus = fleaTickMed
-                ? getMedicationStatus(fleaTickMed.lastAdministered, fleaTickMed.frequency)
+                ? getMedicationStatus(fleaTickMed.startDate, fleaTickMed.endDate, fleaTickMed.lastAdministered, fleaTickMed.frequency)
                 : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
               
               // Get most recent medication for last administered column
@@ -116,16 +116,16 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
                   {/* Heartworm Status */}
                   <TableCell>
                     <MedicationStatusDisplay
-                      status={heartwormStatus.status}
-                      statusColor={heartwormStatus.statusColor}
+                      status={heartwormStatus}
+                      statusColor={isComplexStatus(heartwormStatus) ? heartwormStatus.statusColor : getStatusColor(heartwormStatus)}
                     />
                   </TableCell>
                   
                   {/* Flea/Tick Status */}
                   <TableCell>
                     <MedicationStatusDisplay
-                      status={fleaTickStatus.status}
-                      statusColor={fleaTickStatus.statusColor}
+                      status={fleaTickStatus}
+                      statusColor={isComplexStatus(fleaTickStatus) ? fleaTickStatus.statusColor : getStatusColor(fleaTickStatus)}
                     />
                   </TableCell>
                   

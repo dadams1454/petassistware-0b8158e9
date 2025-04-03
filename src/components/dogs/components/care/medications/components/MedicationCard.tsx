@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { MedicationInfo } from '../types/medicationTypes';
 import { DogCareStatus } from '@/types/dailyCare';
-import { getMedicationStatus, MedicationStatus } from '@/utils/medicationUtils';
+import { getMedicationStatus, isComplexStatus, getStatusValue, getStatusColor } from '@/utils/medicationUtils';
 import DogInfo from './DogInfo';
 import MedicationStatusDisplay from './MedicationStatus';
 import LastMedicationInfo from './LastMedicationInfo';
@@ -39,12 +39,12 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   
   // Get status for display
   const heartwormStatus = heartwormMed 
-    ? getMedicationStatus(heartwormMed.lastAdministered, heartwormMed.frequency)
-    : { status: 'incomplete' as ('incomplete' | MedicationStatus), statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+    ? getMedicationStatus(heartwormMed.startDate, heartwormMed.endDate, heartwormMed.lastAdministered, heartwormMed.frequency)
+    : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
     
   const fleaTickStatus = fleaTickMed
-    ? getMedicationStatus(fleaTickMed.lastAdministered, fleaTickMed.frequency)
-    : { status: 'incomplete' as ('incomplete' | MedicationStatus), statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+    ? getMedicationStatus(fleaTickMed.startDate, fleaTickMed.endDate, fleaTickMed.lastAdministered, fleaTickMed.frequency)
+    : { status: 'incomplete' as const, statusColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
   
   // Check if any other medications are ongoing
   const hasOtherMeds = otherMeds.length > 0;
@@ -95,16 +95,16 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
           <div className="flex items-center justify-between">
             <span>Heartworm Prevention:</span>
             <MedicationStatusDisplay
-              status={heartwormStatus.status}
-              statusColor={heartwormStatus.statusColor}
+              status={heartwormStatus}
+              statusColor={isComplexStatus(heartwormStatus) ? heartwormStatus.statusColor : getStatusColor(heartwormStatus)}
             />
           </div>
           
           <div className="flex items-center justify-between">
             <span>Flea/Tick Prevention:</span>
             <MedicationStatusDisplay
-              status={fleaTickStatus.status}
-              statusColor={fleaTickStatus.statusColor}
+              status={fleaTickStatus}
+              statusColor={isComplexStatus(fleaTickStatus) ? fleaTickStatus.statusColor : getStatusColor(fleaTickStatus)}
             />
           </div>
           
