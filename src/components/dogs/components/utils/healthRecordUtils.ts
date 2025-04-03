@@ -73,7 +73,10 @@ export const getHealthRecordColor = (recordType: string) => {
   }
 };
 
-// Export all functions to ensure they're available
+// Export individual functions
+export { getHealthRecordIcon, getHealthRecordColor };
+
+// Also export as default for backward compatibility
 export default {
   getHealthRecordIcon,
   getHealthRecordColor
