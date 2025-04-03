@@ -22,7 +22,7 @@ const Contracts = () => {
           }}
         />
         
-        <ContractsList />
+        <ContractsList showFilters={true} />
         
         <ContractDialog 
           open={isCreateDialogOpen} 
