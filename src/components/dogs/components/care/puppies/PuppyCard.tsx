@@ -55,7 +55,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
             <div>
               <h3 className="font-semibold">{puppy.name || 'Unnamed Puppy'}</h3>
               <p className="text-xs text-muted-foreground">
-                {puppy.litters?.name || 'Unknown Litter'}
+                {puppy.litters?.litter_name || puppy.litters?.name || 'Unknown Litter'}
               </p>
             </div>
           </div>
@@ -70,7 +70,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
             <span className="text-muted-foreground">Age:</span>
           </div>
           <div className="text-sm font-medium text-right">
-            {puppy.ageInDays} days
+            {puppy.ageInDays || puppy.age_days || 0} days
           </div>
           
           <div className="flex items-center text-sm">

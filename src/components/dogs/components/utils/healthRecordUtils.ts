@@ -8,9 +8,8 @@ import {
   Bug,
   RotateCcw,
   Microscope,
-  Scissors as ToothIcon,  // Using Scissors as alternative for Tooth
+  FileQuestion,
   Scan,
-  FileQuestion
 } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
 
@@ -28,7 +27,7 @@ export const getHealthRecordIcon = (recordType: string) => {
     case HealthRecordTypeEnum.Surgery:
       return Scissors;
     case HealthRecordTypeEnum.Dental:
-      return ToothIcon;
+      return Scissors; // Using Scissors as alternative for Tooth
     case HealthRecordTypeEnum.Allergy:
       return Bug;
     case HealthRecordTypeEnum.Test:

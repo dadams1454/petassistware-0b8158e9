@@ -34,9 +34,6 @@ export function usePuppyAgeGroups(puppies: PuppyWithAge[] = []) {
       );
       
       if (matchingGroup) {
-        if (!groupedPuppies[matchingGroup.id]) {
-          groupedPuppies[matchingGroup.id] = [];
-        }
         groupedPuppies[matchingGroup.id].push(puppy);
       }
     });

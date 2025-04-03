@@ -1,4 +1,3 @@
-
 import { WeightUnit as CommonWeightUnit } from './common';
 
 export type WeightUnit = CommonWeightUnit;
@@ -15,19 +14,41 @@ export interface PuppyWithAge {
   litter_id?: string;
   age_days?: number;
   age_weeks?: number;
-  ageInDays?: number;
-  ageInWeeks?: number;
+  ageInDays?: number; // For backward compatibility
+  ageInWeeks?: number; // For backward compatibility
   status?: string;
   birth_order?: number;
-  // Added fields for backward compatibility
+  // Additional fields
   ageDescription?: string;
+  microchip_number?: string;
+  akc_litter_number?: string;
+  akc_registration_number?: string;
+  weight_unit?: WeightUnit;
+  // Add litters property with proper structure
   litters?: {
-    id: string;
+    id: string; 
     name?: string;
+    litter_name?: string; // Some components use litter_name
     birth_date: string;
+    dam?: { name?: string };
+    sire?: { name?: string };
   };
+  // For backward compatibility with components accessing these properties
+  created_at?: string;
+  updated_at?: string;
+  presentation?: string;
+  assistance_required?: boolean;
+  assistance_notes?: string;
+  notes?: string;
+  vaccination_dates?: string;
+  deworming_dates?: string;
+  vet_check_dates?: string;
+  health_notes?: string;
+  sale_price?: number;
+  birth_time?: string;
 }
 
+// Keep all other interfaces the same
 export interface PuppyAgeGroupData {
   groupName: string;
   ageRange: string;
@@ -39,6 +60,7 @@ export interface PuppyAgeGroupData {
   endDay: number; // Adding endDay property
   milestones?: string[]; // Adding milestones property
   careChecks?: string[]; // Adding careChecks property
+  color?: string; // Add color property that's used in some components
 }
 
 export interface PuppyManagementStats {
@@ -181,4 +203,9 @@ export interface AgeGroup {
   description: string;
   imageUrl: string;
   milestones: string[];
+}
+
+// Add a type guard function to safely check for puppy properties
+export function isPuppyWithAge(obj: any): obj is PuppyWithAge {
+  return obj && typeof obj === 'object' && typeof obj.id === 'string';
 }

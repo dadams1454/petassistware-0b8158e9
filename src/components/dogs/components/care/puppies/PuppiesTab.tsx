@@ -103,9 +103,8 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
       {Object.entries(puppiesByAgeGroup).map(([groupId, puppiesInGroup]) => {
         if (!Array.isArray(puppiesInGroup) || puppiesInGroup.length === 0) return null;
         
-        const ageGroup = ageGroups && typeof ageGroups === 'object' && 'find' in ageGroups ? 
-          ageGroups.find((group: PuppyAgeGroupData) => group.id === groupId) : 
-          null;
+        // Find the age group with the matching ID
+        const ageGroup = ageGroups.find((group) => group.id === groupId);
         
         if (!ageGroup) return null;
         
