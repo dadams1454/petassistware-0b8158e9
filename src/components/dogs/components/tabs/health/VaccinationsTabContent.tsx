@@ -16,7 +16,7 @@ const VaccinationsTabContent: React.FC = () => {
     handleEditRecord 
   } = useHealthTabContext();
   
-  const vaccinations = getRecordsByType(HealthRecordTypeEnum.Vaccination);
+  const vaccinations = getRecordsByType(HealthRecordTypeEnum.VACCINATION);
   
   if (isLoading) {
     return <LoadingState message="Loading vaccination records..." />;
@@ -29,7 +29,7 @@ const VaccinationsTabContent: React.FC = () => {
         description="Add your first vaccination record to keep track of your dog's vaccinations."
         action={{
           label: "Add Vaccination",
-          onClick: () => handleAddRecord(HealthRecordTypeEnum.Vaccination)
+          onClick: () => handleAddRecord(HealthRecordTypeEnum.VACCINATION)
         }}
       />
     );
@@ -37,14 +37,14 @@ const VaccinationsTabContent: React.FC = () => {
   
   // Sort vaccinations by date (newest first)
   const sortedVaccinations = [...vaccinations].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime()
   );
   
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <Button 
-          onClick={() => handleAddRecord(HealthRecordTypeEnum.Vaccination)}
+          onClick={() => handleAddRecord(HealthRecordTypeEnum.VACCINATION)}
           size="sm"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -63,7 +63,7 @@ const VaccinationsTabContent: React.FC = () => {
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium">{vax.title}</h3>
                   <span className="text-sm text-muted-foreground">
-                    {format(new Date(vax.date), 'MMM d, yyyy')}
+                    {format(new Date(vax.visit_date), 'MMM d, yyyy')}
                   </span>
                 </div>
                 {vax.next_due_date && (

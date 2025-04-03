@@ -1,4 +1,3 @@
-
 export enum HealthRecordTypeEnum {
   VACCINATION = 'VACCINATION',
   EXAMINATION = 'EXAMINATION',
@@ -13,7 +12,8 @@ export enum HealthRecordTypeEnum {
   OTHER = 'OTHER'
 }
 
-// Aliases for backward compatibility
+// IMPORTANT: Keep the lowercase aliases for backward compatibility, 
+// but update all new code to use the uppercase versions
 HealthRecordTypeEnum.Vaccination = HealthRecordTypeEnum.VACCINATION;
 HealthRecordTypeEnum.Examination = HealthRecordTypeEnum.EXAMINATION;
 HealthRecordTypeEnum.Medication = HealthRecordTypeEnum.MEDICATION;
@@ -89,6 +89,7 @@ export interface HealthRecord {
   record_type: HealthRecordTypeEnum;
   title?: string;
   visit_date: string;
+  date?: string; // Adding this for backward compatibility
   vet_name: string;
   vet_clinic?: string;
   examination_type?: string;
@@ -120,6 +121,24 @@ export interface HealthRecord {
   reminder_sent?: boolean;
   created_at?: string;
   performed_by?: string;
+}
+
+// Define the WeightUnit type
+export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg' | 'lbs';
+
+// Define the WeightRecord interface
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  date: string;
+  weight: number;
+  unit: WeightUnit;
+  weight_unit: string; // For backward compatibility
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  ageInDays?: number; // Optional property for puppy weight records
 }
 
 export interface WeightData {

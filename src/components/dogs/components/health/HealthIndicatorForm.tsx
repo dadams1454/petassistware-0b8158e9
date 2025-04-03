@@ -139,11 +139,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={AppetiteLevelEnum.Excellent}>Excellent</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.Good}>Good</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.Fair}>Fair</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.Poor}>Poor</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.None}>None</SelectItem>
+                    <SelectItem value={AppetiteLevelEnum.EXCELLENT}>Excellent</SelectItem>
+                    <SelectItem value={AppetiteLevelEnum.GOOD}>Good</SelectItem>
+                    <SelectItem value={AppetiteLevelEnum.FAIR}>Fair</SelectItem>
+                    <SelectItem value={AppetiteLevelEnum.POOR}>Poor</SelectItem>
+                    <SelectItem value={AppetiteLevelEnum.NONE}>None</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -164,11 +164,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={EnergyLevelEnum.Hyperactive}>Hyperactive</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.High}>High</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.Normal}>Normal</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.Low}>Low</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.Lethargic}>Lethargic</SelectItem>
+                    <SelectItem value={EnergyLevelEnum.HYPERACTIVE}>Hyperactive</SelectItem>
+                    <SelectItem value={EnergyLevelEnum.HIGH}>High</SelectItem>
+                    <SelectItem value={EnergyLevelEnum.NORMAL}>Normal</SelectItem>
+                    <SelectItem value={EnergyLevelEnum.LOW}>Low</SelectItem>
+                    <SelectItem value={EnergyLevelEnum.LETHARGIC}>Lethargic</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -189,13 +189,13 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={StoolConsistencyEnum.Normal}>Normal</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Soft}>Soft</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Loose}>Loose</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Watery}>Watery</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Hard}>Hard</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Mucousy}>Mucousy</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Bloody}>Bloody</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.NORMAL}>Normal</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.SOFT}>Soft</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.LOOSE}>Loose</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.WATERY}>Watery</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.HARD}>Hard</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.MUCOUSY}>Mucousy</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.BLOODY}>Bloody</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

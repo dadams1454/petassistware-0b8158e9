@@ -39,7 +39,11 @@ const DogSelector: React.FC<DogSelectorProps> = ({ form, name, label, filterGend
         throw error;
       }
       
-      return data || [];
+      // Cast the gender appropriately for the Dog type
+      return data?.map(dog => ({
+        ...dog,
+        gender: dog.gender as 'Male' | 'Female'
+      })) || [];
     }
   });
 

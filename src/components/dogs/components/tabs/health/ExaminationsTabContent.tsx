@@ -17,7 +17,7 @@ const ExaminationsTabContent: React.FC = () => {
     handleEditRecord 
   } = useHealthTabContext();
   
-  const examinations = getRecordsByType(HealthRecordTypeEnum.Examination);
+  const examinations = getRecordsByType(HealthRecordTypeEnum.EXAMINATION);
   
   if (isLoading) {
     return <LoadingState message="Loading examination records..." />;
@@ -30,7 +30,7 @@ const ExaminationsTabContent: React.FC = () => {
         description="Add your first examination record to keep track of your dog's health checks."
         action={{
           label: "Add Examination",
-          onClick: () => handleAddRecord(HealthRecordTypeEnum.Examination)
+          onClick: () => handleAddRecord(HealthRecordTypeEnum.EXAMINATION)
         }}
       />
     );
@@ -38,14 +38,14 @@ const ExaminationsTabContent: React.FC = () => {
   
   // Sort examinations by date (newest first)
   const sortedExaminations = [...examinations].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime()
   );
   
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <Button 
-          onClick={() => handleAddRecord(HealthRecordTypeEnum.Examination)}
+          onClick={() => handleAddRecord(HealthRecordTypeEnum.EXAMINATION)}
           size="sm"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -64,7 +64,7 @@ const ExaminationsTabContent: React.FC = () => {
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium">{exam.title}</h3>
                   <span className="text-sm text-muted-foreground">
-                    {format(new Date(exam.date), 'MMM d, yyyy')}
+                    {format(new Date(exam.visit_date), 'MMM d, yyyy')}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-3">
