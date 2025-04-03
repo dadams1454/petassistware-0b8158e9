@@ -14,7 +14,7 @@ export const generateHtml = (
   // Replace template variables
   Object.entries(contractData).forEach(([key, value]) => {
     const variablePattern = new RegExp(`{{${key}}}`, 'g');
-    html = html.replace(variablePattern, String(value));
+    html = html.replace(variablePattern, String(value || ''));
   });
   
   return html;

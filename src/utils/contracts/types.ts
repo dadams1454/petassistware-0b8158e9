@@ -5,14 +5,14 @@ export interface ContractData {
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
-  puppyName: string;
+  puppyName: string | null;
   puppyId?: string;
-  puppyDob: string;
+  puppyDob: string | null;
   puppyBreed?: string;
   puppyColor?: string;
   puppyGender?: string;
-  microchipNumber?: string;
-  salePrice: number;
+  microchipNumber?: string | null;
+  salePrice: number | null;
   contractDate: string;
   contractType: 'pet' | 'breeding' | 'co-ownership' | 'other';
   healthGuarantee?: string;
