@@ -1,11 +1,15 @@
-
 import { WeightUnit } from './common';
 
 // Basic gender types
 export type DogGender = 'Male' | 'Female';
 
 // Heat cycle intensity types
-export type HeatIntensity = 'mild' | 'moderate' | 'strong';
+export enum HeatIntensity {
+  Mild = 'mild',
+  Moderate = 'moderate',
+  Strong = 'strong',
+  Unknown = 'unknown'
+}
 
 // Reproductive status of a dog
 export enum ReproductiveStatus {
@@ -15,7 +19,8 @@ export enum ReproductiveStatus {
   Pregnant = 'Pregnant',
   Whelping = 'Whelping',
   Recovery = 'Recovery',
-  Altered = 'Altered'
+  Altered = 'Altered',
+  Nursing = 'Nursing'
 }
 
 // Breeding record interface
@@ -83,7 +88,7 @@ export interface HeatCycle {
   end_date?: string;
   cycle_number?: number;
   cycle_length?: number;
-  intensity?: HeatIntensity;
+  intensity: HeatIntensity;
   symptoms?: string[];
   fertility_indicators?: any;
   notes?: string;
@@ -99,6 +104,8 @@ export interface HeatStage {
   duration: string;
   color: string;
   index: number;
+  day?: number;
+  fertility?: 'low' | 'medium' | 'high' | 'peak';
   id?: string; // For backward compatibility
 }
 
@@ -137,6 +144,29 @@ export interface WelpingObservation {
   created_at: string;
 }
 
+export interface PostpartumCare {
+  id: string;
+  litter_id?: string;
+  puppy_id?: string;
+  date: string;
+  dam_temperature?: number;
+  dam_appetite?: string;
+  dam_hydration?: string;
+  dam_discharge?: string;
+  dam_milk_production?: string;
+  dam_behavior?: string;
+  puppies_nursing?: boolean;
+  all_puppies_nursing?: boolean;
+  puppy_weights_recorded?: boolean;
+  weight_concerns?: string;
+  notes?: string;
+  created_at: string;
+  created_by?: string;
+  care_type?: string;
+  care_time?: string;
+  performed_by?: string;
+}
+
 // Breeding preparation form data
 export interface BreedingPrepFormData {
   dam_id: string;
@@ -155,4 +185,37 @@ export interface BreedingChecklistItem {
   completed: boolean;
   required: boolean;
   dueDate?: string;
+}
+
+// Reproductive cycle data
+export interface ReproductiveCycleData {
+  dog: Dog;
+  status: ReproductiveStatus;
+  heatCycles: HeatCycle[];
+  breedingRecords: BreedingRecord[];
+  nextHeatDate?: Date;
+  daysUntilNextHeat?: number;
+  averageCycleLength?: number;
+  currentHeatStage?: HeatStage;
+  fertilityWindow?: {
+    start: Date;
+    end: Date;
+  };
+  gestationDays?: number;
+  estimatedDueDate?: Date;
+}
+
+// Basic Dog interface for reproductive cycle tracking
+export interface Dog {
+  id: string;
+  name: string;
+  breed?: string;
+  color?: string;
+  gender: DogGender;
+  photo_url?: string;
+  birthdate?: Date | string;
+  registration_number?: string;
+  is_pregnant?: boolean;
+  last_heat_date?: string;
+  tie_date?: string;
 }

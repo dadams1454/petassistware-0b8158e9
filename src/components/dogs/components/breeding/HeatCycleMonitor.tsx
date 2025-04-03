@@ -9,11 +9,22 @@ import HeatCycleDialog from './HeatCycleDialog';
 
 // Helper to ensure intensity is a valid HeatIntensity value
 const ensureValidIntensity = (cycle: any): HeatCycle => {
-  // Default to 'moderate' if intensity is missing or invalid
-  const validIntensity: HeatIntensity = 
-    (cycle.intensity === 'mild' || cycle.intensity === 'moderate' || cycle.intensity === 'strong') 
-      ? cycle.intensity as HeatIntensity 
-      : 'moderate';
+  // Map string intensity to enum value
+  let validIntensity: HeatIntensity;
+  
+  switch (cycle.intensity) {
+    case 'mild':
+      validIntensity = HeatIntensity.Mild;
+      break;
+    case 'strong':
+      validIntensity = HeatIntensity.Strong;
+      break;
+    case 'unknown':
+      validIntensity = HeatIntensity.Unknown;
+      break;
+    default:
+      validIntensity = HeatIntensity.Moderate;
+  }
   
   return {
     ...cycle,
@@ -112,12 +123,14 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({
         )}
       </CardContent>
       
-      <HeatCycleDialog
-        isOpen={isDialogOpen}
-        onClose={handleClose}
-        onSubmit={handleSubmit}
-        cycle={selectedCycle}
-      />
+      {isDialogOpen && (
+        <HeatCycleDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSubmit={handleSubmit}
+          cycle={selectedCycle}
+        />
+      )}
     </Card>
   );
 };

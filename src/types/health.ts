@@ -1,4 +1,3 @@
-
 import { WeightUnit } from './common';
 
 // Medication status options
@@ -71,6 +70,39 @@ export interface HealthCertificate {
   created_at: string;
 }
 
+// Health record type enum
+export enum HealthRecordTypeEnum {
+  Examination = 'examination',
+  Vaccination = 'vaccination',
+  Medication = 'medication',
+  Surgery = 'surgery',
+  Allergy = 'allergy',
+  LabTest = 'lab_test',
+  Dental = 'dental',
+  Injury = 'injury',
+  ChronicCondition = 'chronic_condition',
+  Wellness = 'wellness'
+}
+
+// Helper function to convert string to HealthRecordTypeEnum
+export const stringToHealthRecordType = (type: string): HealthRecordTypeEnum => {
+  const normalizedType = type.toLowerCase();
+  
+  switch (normalizedType) {
+    case 'examination': return HealthRecordTypeEnum.Examination;
+    case 'vaccination': return HealthRecordTypeEnum.Vaccination;
+    case 'medication': return HealthRecordTypeEnum.Medication;
+    case 'surgery': return HealthRecordTypeEnum.Surgery;
+    case 'allergy': return HealthRecordTypeEnum.Allergy;
+    case 'lab_test': return HealthRecordTypeEnum.LabTest;
+    case 'dental': return HealthRecordTypeEnum.Dental;
+    case 'injury': return HealthRecordTypeEnum.Injury;
+    case 'chronic_condition': return HealthRecordTypeEnum.ChronicCondition;
+    case 'wellness': return HealthRecordTypeEnum.Wellness;
+    default: return HealthRecordTypeEnum.Examination;
+  }
+};
+
 // Health record type
 export interface HealthRecord {
   id: string;
@@ -117,4 +149,109 @@ export interface HealthRecord {
   created_at?: string;
   description?: string;
   performed_by?: string;
+}
+
+// Weight record interface
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;
+}
+
+// Helper function to map database record to WeightRecord
+export const mapToWeightRecord = (record: any): WeightRecord => {
+  return {
+    id: record.id,
+    dog_id: record.dog_id,
+    puppy_id: record.puppy_id || null,
+    weight: record.weight,
+    weight_unit: record.weight_unit as WeightUnit,
+    date: record.date,
+    notes: record.notes || '',
+    percent_change: record.percent_change || 0,
+    created_at: record.created_at,
+    age_days: record.age_days || 0
+  };
+};
+
+// Helper function to map database record to HealthRecord 
+export const mapToHealthRecord = (record: any): HealthRecord => {
+  return {
+    id: record.id,
+    dog_id: record.dog_id,
+    record_type: record.record_type,
+    title: record.title || '',
+    visit_date: record.visit_date,
+    vet_name: record.vet_name || '',
+    vet_clinic: record.vet_clinic || '',
+    findings: record.findings || '',
+    recommendations: record.recommendations || '',
+    follow_up_date: record.follow_up_date,
+    record_notes: record.record_notes || '',
+    document_url: record.document_url,
+    next_due_date: record.next_due_date,
+    created_at: record.created_at,
+    description: record.description || '',
+    performed_by: record.performed_by || ''
+  };
+};
+
+// Growth statistics
+export interface GrowthStats {
+  currentWeight: number;
+  weightUnit: WeightUnit;
+  percentChange: number;
+  averageGrowth: number;
+  growthRate: number;
+  averageGrowthRate: number;
+  lastWeekGrowth: number;
+  projectedWeight: number;
+  weightGoal: number;
+  onTrack: boolean;
+}
+
+// Health indicator enums
+export enum AppetiteLevelEnum {
+  Excellent = 'excellent',
+  Good = 'good',
+  Fair = 'fair',
+  Poor = 'poor',
+  None = 'none'
+}
+
+export enum EnergyLevelEnum {
+  High = 'high',
+  Normal = 'normal',
+  Low = 'low',
+  Lethargic = 'lethargic'
+}
+
+export enum StoolConsistencyEnum {
+  Normal = 'normal',
+  Soft = 'soft',
+  Loose = 'loose',
+  Watery = 'watery',
+  Hard = 'hard'
+}
+
+// Health indicator interface
+export interface HealthIndicator {
+  id: string;
+  dog_id: string;
+  date: string;
+  appetite: AppetiteLevelEnum;
+  energy_level: EnergyLevelEnum;
+  stool_consistency: StoolConsistencyEnum;
+  water_intake: string;
+  urination: string;
+  notes: string;
+  created_at: string;
+  created_by?: string;
 }

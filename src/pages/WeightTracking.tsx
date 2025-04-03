@@ -1,72 +1,110 @@
 
 import React, { useState } from 'react';
-import PageContainer from '@/components/common/PageContainer';
 import { useParams } from 'react-router-dom';
-import WeightTrackingSection from '@/components/dogs/components/health/WeightTrackingSection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDogDetail } from '@/components/dogs/hooks/useDogDetail';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useWeightTracking } from '@/hooks/useWeightTracking';
+import WeightHistoryChart from '@/components/dogs/components/health/WeightHistoryChart';
+import WeightRecordsTable from '@/components/dogs/components/health/WeightRecordsTable';
+import WeightEntryDialog from '@/components/dogs/components/health/WeightEntryDialog';
+import GrowthStatsCard from '@/components/dogs/components/health/GrowthStatsCard';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
-import { useWeightTracking } from '@/components/dogs/hooks/useWeightTracking';
-import WeightEntryDialog from '@/modules/dogs/components/dialogs/WeightEntryDialog';
 
 const WeightTracking: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const dogId = id || '';
-  const [weightDialogOpen, setWeightDialogOpen] = useState(false);
+  const { dogId } = useParams<{ dogId: string }>();
+  const [isAddingWeight, setIsAddingWeight] = useState(false);
   
-  const { dog, isLoading: isDogLoading, error: dogError } = useDogDetail(dogId);
   const { 
     weightHistory, 
-    isLoading: isWeightLoading, 
-    growthStats,
-    addWeightRecord
-  } = useWeightTracking(dogId);
-  
-  const isLoading = isDogLoading || isWeightLoading;
+    isLoading, 
+    isError, 
+    error, 
+    growthStats, 
+    addWeightRecord, 
+    selectedWeight, 
+    setSelectedWeight, 
+    updateWeightRecord, 
+    deleteWeightRecord 
+  } = useWeightTracking({ dogId: dogId || '' });
   
   const handleAddWeight = () => {
-    setWeightDialogOpen(true);
+    setIsAddingWeight(true);
   };
   
-  const handleSaveWeight = async (data: any) => {
-    await addWeightRecord(data);
-    setWeightDialogOpen(false);
+  const handleCancelAdd = () => {
+    setIsAddingWeight(false);
+  };
+  
+  const handleWeightAdded = () => {
+    setIsAddingWeight(false);
   };
   
   if (isLoading) {
-    return <LoadingState message="Loading dog details..." />;
+    return <LoadingState message="Loading weight records..." />;
   }
   
-  if (dogError || !dog) {
-    return <ErrorState title="Error" message="Could not load dog information" />;
+  if (isError) {
+    return <ErrorState title="Error" message={error?.message || 'Failed to load weight records'} />;
   }
 
   return (
-    <PageContainer>
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Weight Tracking for {dog.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <WeightTrackingSection 
-              dogId={dogId} 
-              weightHistory={weightHistory || []}
-              growthStats={growthStats}
-              onAddWeight={handleAddWeight}
-              isLoading={isWeightLoading}
-            />
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Weight Tracking</h2>
+        <Button onClick={handleAddWeight}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Weight
+        </Button>
       </div>
-
-      <WeightEntryDialog
-        open={weightDialogOpen}
-        onOpenChange={setWeightDialogOpen}
-        onSave={handleSaveWeight}
-        dogId={dogId}
-      />
-    </PageContainer>
+      
+      <GrowthStatsCard stats={growthStats} />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Weight History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WeightHistoryChart weightRecords={weightHistory} />
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Weight Records</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WeightRecordsTable 
+            weightRecords={weightHistory}
+            onEdit={setSelectedWeight}
+            onDelete={deleteWeightRecord}
+          />
+        </CardContent>
+      </Card>
+      
+      {isAddingWeight && (
+        <WeightEntryDialog 
+          open={isAddingWeight} 
+          onOpenChange={setIsAddingWeight}
+          dogId={dogId || ''}
+          onSave={addWeightRecord}
+          onSuccess={handleWeightAdded}
+          onCancel={handleCancelAdd}
+        />
+      )}
+      
+      {selectedWeight && (
+        <WeightEntryDialog 
+          open={!!selectedWeight} 
+          onOpenChange={() => setSelectedWeight(null)}
+          dogId={dogId || ''}
+          weightRecord={selectedWeight}
+          onSave={updateWeightRecord}
+          onSuccess={() => setSelectedWeight(null)}
+          onCancel={() => setSelectedWeight(null)}
+        />
+      )}
+    </div>
   );
 };
 

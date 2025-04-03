@@ -1,93 +1,49 @@
 
-/**
- * Common type definitions used across the application
- */
+// Common utility types shared across the application
 
-// Weight related types
-export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
+// Weight unit options
+export type WeightUnit = 'oz' | 'g' | 'lbs' | 'kg' | 'lb';
 
-// Weight unit option for dropdowns and UI
-export interface WeightUnitOption {
-  value: WeightUnit;
-  label: string;
-  code: string;
-  name: string;
+// Legacy compatibility for code that used the enum
+export type WeightUnitWithLegacy = WeightUnit;
+
+// Status type for general use
+export type Status = 'active' | 'inactive' | 'pending' | 'completed' | 'archived';
+
+// UUID validation result interface
+export interface UuidValidationResult {
+  valid: boolean;
+  message?: string;
 }
 
-// Weight units array for use in dropdowns
-export const weightUnits: WeightUnitOption[] = [
-  { value: 'lb', code: 'lb', label: 'Pound (lb)', name: 'Pounds' },
-  { value: 'kg', code: 'kg', label: 'Kilogram (kg)', name: 'Kilograms' },
-  { value: 'oz', code: 'oz', label: 'Ounce (oz)', name: 'Ounces' },
-  { value: 'g', code: 'g', label: 'Gram (g)', name: 'Grams' }
-];
+// Common tenant-related interfaces
+export interface TenantInfo {
+  id: string;
+  name: string;
+  created_at: string;
+}
 
-/**
- * Standardize a weight unit to ensure it's a valid one
- */
-export const standardizeWeightUnit = (unit?: string): WeightUnit => {
-  if (!unit) return 'lb';
-  
-  const normalizedUnit = unit.toLowerCase();
-  
-  if (normalizedUnit === 'lbs') return 'lb';
-  if (normalizedUnit === 'oz' || normalizedUnit === 'ounce' || normalizedUnit === 'ounces') return 'oz';
-  if (normalizedUnit === 'g' || normalizedUnit === 'gram' || normalizedUnit === 'grams') return 'g';
-  if (normalizedUnit === 'kg' || normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') return 'kg';
-  
-  return 'lb'; // Default fallback
-};
+// User role types
+export type UserRole = 'admin' | 'breeder' | 'staff' | 'viewer';
 
-/**
- * Get the full name of a weight unit
- */
-export const getWeightUnitName = (unit: WeightUnit): string => {
-  const unitOption = weightUnits.find(u => u.value === unit);
-  return unitOption?.name || 'Pounds';
-};
+// Pagination options
+export interface PaginationOptions {
+  page: number;
+  limit: number;
+}
 
-/**
- * Format weight with appropriate unit
- */
-export const formatWeightWithUnit = (weight: number, unit: WeightUnit): string => {
-  return `${weight} ${unit}`;
-};
+// Basic form field validation
+export interface FieldValidation {
+  isValid: boolean;
+  message?: string;
+}
 
-/**
- * Convert weight between different units
- */
-export const convertWeight = (weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number => {
-  if (fromUnit === toUnit) return weight;
-  
-  // Convert to grams first (base unit)
-  let weightInGrams = weight;
-  
-  switch (fromUnit) {
-    case 'lb':
-      weightInGrams = weight * 453.592;
-      break;
-    case 'oz':
-      weightInGrams = weight * 28.3495;
-      break;
-    case 'kg':
-      weightInGrams = weight * 1000;
-      break;
-    case 'g':
-      weightInGrams = weight;
-      break;
-  }
-  
-  // Convert from grams to target unit
-  switch (toUnit) {
-    case 'lb':
-      return weightInGrams / 453.592;
-    case 'oz':
-      return weightInGrams / 28.3495;
-    case 'kg':
-      return weightInGrams / 1000;
-    case 'g':
-      return weightInGrams;
-    default:
-      return weight;
-  }
-};
+// Notification type 
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  read: boolean;
+  created_at: string;
+}

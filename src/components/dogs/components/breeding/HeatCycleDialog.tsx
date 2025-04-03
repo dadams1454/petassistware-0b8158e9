@@ -23,15 +23,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { HeatIntensity } from '@/types/reproductive';
+import { HeatIntensity, HeatCycle } from '@/types/reproductive';
 
 interface HeatCycleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => Promise<void>;
   isLoading?: boolean;
-  initialData?: any;
-  isEditing?: boolean;
+  cycle?: HeatCycle | null;
 }
 
 const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
@@ -39,19 +38,18 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
   onOpenChange,
   onSubmit,
   isLoading = false,
-  initialData,
-  isEditing = false
+  cycle
 }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(
-    initialData?.start_date ? new Date(initialData.start_date) : undefined
+    cycle?.start_date ? new Date(cycle.start_date) : undefined
   );
   const [endDate, setEndDate] = useState<Date | undefined>(
-    initialData?.end_date ? new Date(initialData.end_date) : undefined
+    cycle?.end_date ? new Date(cycle.end_date) : undefined
   );
   const [intensity, setIntensity] = useState<HeatIntensity>(
-    initialData?.intensity || HeatIntensity.Moderate
+    cycle?.intensity || HeatIntensity.Moderate
   );
-  const [notes, setNotes] = useState<string>(initialData?.notes || '');
+  const [notes, setNotes] = useState<string>(cycle?.notes || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +60,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
       end_date: endDate ? format(endDate, 'yyyy-MM-dd') : null,
       intensity,
       notes,
-      id: initialData?.id
+      id: cycle?.id
     };
 
     await onSubmit(data);
@@ -73,7 +71,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Heat Cycle' : 'Record Heat Cycle'}</DialogTitle>
+          <DialogTitle>{cycle ? 'Edit Heat Cycle' : 'Record Heat Cycle'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -164,7 +162,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
               Cancel
             </Button>
             <Button type="submit" disabled={!startDate || isLoading}>
-              {isLoading ? 'Saving...' : isEditing ? 'Update' : 'Save'}
+              {isLoading ? 'Saving...' : cycle ? 'Update' : 'Save'}
             </Button>
           </DialogFooter>
         </form>
