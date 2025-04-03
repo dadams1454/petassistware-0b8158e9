@@ -1,6 +1,10 @@
 
 // Reproductive Status and Types
 
+/**
+ * Enum representing the reproductive status of a dog
+ * @description Used to track heat cycles, pregnancy, and other reproductive states
+ */
 export enum ReproductiveStatus {
   InHeat = 'in_heat',
   NotInHeat = 'not_in_heat',
@@ -19,7 +23,10 @@ export const PREGNANT = ReproductiveStatus.Pregnant;
 export const NURSING = ReproductiveStatus.Nursing;
 export const RESTING = ReproductiveStatus.Resting;
 
-// Heat Cycle interface
+/**
+ * Interface for heat cycle data
+ * @description Records the start, end, and details of a dog's heat cycle
+ */
 export interface HeatCycle {
   id: string;
   dog_id: string;
@@ -27,7 +34,7 @@ export interface HeatCycle {
   end_date?: string | null;
   cycle_length?: number | null;
   cycle_number?: number | null;
-  intensity?: string | null;
+  intensity?: HeatIntensity | null;
   symptoms?: string[] | null;
   fertility_indicators?: any;
   notes?: string | null;
@@ -36,12 +43,18 @@ export interface HeatCycle {
   updated_at?: string | null;
 }
 
-// Heat intensity type
+/**
+ * Type for heat intensity levels
+ */
 export type HeatIntensity = 'mild' | 'moderate' | 'strong';
 
-// Breeding Record interface
+/**
+ * Interface for breeding record data
+ * @description Records details of a breeding attempt
+ */
 export interface BreedingRecord {
   id: string;
+  // Support both new and old schema
   dam_id: string;
   sire_id?: string | null;
   dog_id?: string | null; // For compatibility with DB
@@ -63,7 +76,36 @@ export interface BreedingRecord {
   dam?: any; // For relationship data
 }
 
-// Pregnancy Record interface
+/**
+ * Utility to normalize BreedingRecord between old and new schema
+ */
+export const normalizeBreedingRecord = (record: Partial<BreedingRecord>): BreedingRecord => {
+  return {
+    id: record.id || '',
+    dam_id: record.dam_id || record.dog_id || '',
+    sire_id: record.sire_id || null,
+    breeding_date: record.breeding_date || new Date().toISOString().split('T')[0],
+    tie_date: record.tie_date || null,
+    method: record.method || record.breeding_method || null,
+    breeding_method: record.breeding_method || record.method || null,
+    success: record.success || record.is_successful || null,
+    is_successful: record.is_successful || record.success || null,
+    notes: record.notes || null,
+    created_at: record.created_at || new Date().toISOString(),
+    created_by: record.created_by || null,
+    // Additional fields with defaults
+    heat_cycle_id: record.heat_cycle_id || undefined,
+    expected_due_date: record.expected_due_date || record.estimated_due_date || undefined,
+    estimated_due_date: record.estimated_due_date || record.expected_due_date || undefined,
+    status: record.status || undefined,
+    sire: record.sire || undefined,
+    dam: record.dam || undefined
+  };
+};
+
+/**
+ * Interface for pregnancy record data
+ */
 export interface PregnancyRecord {
   id: string;
   dog_id: string;
@@ -75,9 +117,17 @@ export interface PregnancyRecord {
   notes?: string | null;
   created_at: string;
   created_by?: string | null;
+  // Add fields found in error messages
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
-// Reproductive Milestone interface
+/**
+ * Interface for reproductive milestone data
+ */
 export interface ReproductiveMilestone {
   id: string;
   dog_id: string;
@@ -90,7 +140,9 @@ export interface ReproductiveMilestone {
   created_by?: string | null;
 }
 
-// Whelping log
+/**
+ * Interface for whelping log entries
+ */
 export interface WelpingLog {
   id: string;
   litter_id: string;
@@ -102,7 +154,9 @@ export interface WelpingLog {
   created_at: string;
 }
 
-// Whelping observation
+/**
+ * Interface for whelping observations
+ */
 export interface WelpingObservation {
   id: string;
   welping_record_id: string;

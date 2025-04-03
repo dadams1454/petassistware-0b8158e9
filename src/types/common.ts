@@ -112,17 +112,20 @@ export const formatWeightWithUnit = (weight: number, unit: WeightUnit): string =
  */
 export const convertWeight = (
   weight: number,
-  fromUnit: WeightUnit,
+  fromUnit: WeightUnit | WeightUnitWithLegacy,
   toUnit: WeightUnit
 ): number => {
-  if (fromUnit === toUnit) {
+  // Handle legacy 'lbs' -> 'lb' conversion
+  const standardFromUnit = fromUnit === 'lbs' ? 'lb' : fromUnit as WeightUnit;
+  
+  if (standardFromUnit === toUnit) {
     return weight;
   }
 
   // Convert to grams first (base unit)
   let weightInGrams = 0;
   
-  switch (fromUnit) {
+  switch (standardFromUnit) {
     case 'g':
       weightInGrams = weight;
       break;

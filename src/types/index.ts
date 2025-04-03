@@ -46,9 +46,31 @@ export type {
   MedicationAdministration,
   HealthCertificate,
   WeightData,
-  WeightRecord as HealthWeightRecord,
-  WeightUnit
+  WeightRecord as HealthWeightRecord
 } from './health';
+
+// Export reproductive types
+export type {
+  HeatCycle,
+  HeatIntensity,
+  BreedingRecord,
+  PregnancyRecord,
+  ReproductiveMilestone,
+  WelpingLog,
+  WelpingObservation
+} from './reproductive';
+
+// Export reproductive status enum
+export { 
+  ReproductiveStatus, 
+  normalizeBreedingRecord,
+  // Legacy constants
+  IN_HEAT, 
+  NOT_IN_HEAT, 
+  PREGNANT, 
+  NURSING, 
+  RESTING 
+} from './reproductive';
 
 // Export enums explicitly
 export { 
@@ -62,13 +84,14 @@ export {
   mapToWeightRecord
 } from './health';
 
-// Export common functions and types
+// Export common weight unit types
 export type { 
-  WeightUnit as CommonWeightUnit, 
+  WeightUnit,
   WeightUnitWithLegacy,
   WeightUnitOption
 } from './common';
 
+// Export common weight utility functions
 export { 
   standardizeWeightUnit,
   formatWeightWithUnit,
@@ -90,4 +113,4 @@ export {
 } from '@/utils/medicationUtils';
 
 // Export type for medication status
-export type { MedicationStatusResult } from '@/utils/medicationUtils';
+export type { MedicationStatusResult, StatusWithColor } from '@/utils/medicationUtils';

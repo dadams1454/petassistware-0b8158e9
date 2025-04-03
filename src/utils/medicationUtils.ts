@@ -1,6 +1,9 @@
 
 // Medication utility functions and constants
 
+/**
+ * Enum for medication frequency options
+ */
 export enum MedicationFrequency {
   Daily = 'daily',
   Weekly = 'weekly',
@@ -12,6 +15,9 @@ export enum MedicationFrequency {
   Other = 'other'
 }
 
+/**
+ * Enum for medication status values
+ */
 export enum MedicationStatus {
   Active = 'active',
   Completed = 'completed',

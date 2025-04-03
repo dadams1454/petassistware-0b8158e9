@@ -1,4 +1,3 @@
-
 import { WeightUnit } from './common';
 
 // Base puppy type with age information
@@ -11,14 +10,14 @@ export interface PuppyWithAge {
   litter_id: string;
   age_days: number;
   age_in_weeks: number;
+  ageInDays?: number; // For compatibility
+  age_weeks?: number; // For compatibility
   microchip_number?: string | null;
   photo_url?: string | null;
   current_weight?: number | null;
-  weight_unit?: string | null;
+  weight_unit?: WeightUnit | null;
   status: string;
   // Add compatibility fields
-  ageInDays?: number;
-  age_weeks?: number;
   birth_order?: number;
   litters?: {
     id: string;
@@ -68,6 +67,21 @@ export interface PuppyManagementStats {
   byAgeGroup: Record<string, number>;
   // Extra property used in some components
   stats?: any;
+}
+
+/**
+ * Interface for socialization records
+ */
+export interface SocializationRecord {
+  id: string;
+  puppy_id: string;
+  category: string | SocializationCategory;
+  experience: string;
+  experience_date: string;
+  reaction?: string;
+  notes?: string;
+  created_at: string;
+  experience_type?: string;
 }
 
 // Socialization category
@@ -212,7 +226,7 @@ export interface WeightRecord {
   age_days?: number;
   percent_change?: number;
   dog_id?: string;
-  unit?: WeightUnit;
+  unit?: WeightUnit; // For compatibility
 }
 
 // Type for puppy weight record display
@@ -221,12 +235,12 @@ export interface PuppyWeightRecord {
   puppy_id: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // Added for compatibility
   date: string;
   age_days?: number;
   percent_change?: number;
   notes?: string;
   created_at: string;
-  unit?: WeightUnit; // Added for compatibility
 }
 
 // Safe converter between puppy and health weight records
