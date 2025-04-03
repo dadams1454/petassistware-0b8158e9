@@ -1,175 +1,168 @@
 
-import React, { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import React, { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check } from 'lucide-react';
-import { ContractData, generatePdfContract, downloadPdf } from '@/utils/pdfGenerator';
-import { useToast } from '@/hooks/use-toast';
-import PreviewTab from './tabs/PreviewTab';
-import SignatureTab from './tabs/SignatureTab';
+import { Loader2, Download } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { getContractById, Contract } from '@/services/contractService';
+import { downloadContract } from '@/utils/contracts/download';
 
 interface ContractPreviewDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  contractData: ContractData;
-  onSignContract: (signatureData: string) => Promise<void>;
+  contractId: string; // Changed from contractData to contractId
 }
 
 const ContractPreviewDialog: React.FC<ContractPreviewDialogProps> = ({
   isOpen,
   onOpenChange,
-  contractData,
-  onSignContract,
+  contractId
 }) => {
+  const [loading, setLoading] = useState(true);
+  const [contract, setContract] = useState<Contract | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>('preview');
-  const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
-  const [pdfUrl, setPdfUrl] = useState<string>('');
-  const [signature, setSignature] = useState<string>('');
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(true);
-  const [isSigningContract, setIsSigningContract] = useState(false);
 
-  // Generate PDF preview when dialog opens or contract data changes
   useEffect(() => {
-    if (!isOpen) return;
-
-    const generatePreview = async () => {
-      setIsGeneratingPdf(true);
+    const fetchContract = async () => {
+      if (!isOpen || !contractId) return;
+      
+      setLoading(true);
       try {
-        const bytes = await generatePdfContract(contractData);
-        setPdfBytes(bytes);
-        
-        // Create a blob URL for the preview
-        const blob = new Blob([bytes], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
-      } catch (error) {
-        console.error('Error generating PDF preview:', error);
+        const contractData = await getContractById(contractId);
+        setContract(contractData);
+      } catch (err) {
+        console.error('Error fetching contract:', err);
+        setError('Failed to load contract details');
         toast({
           title: 'Error',
-          description: 'Failed to generate contract preview',
-          variant: 'destructive'
+          description: 'Could not load contract details',
+          variant: 'destructive',
         });
       } finally {
-        setIsGeneratingPdf(false);
+        setLoading(false);
       }
     };
 
-    generatePreview();
+    fetchContract();
+  }, [isOpen, contractId, toast]);
 
-    // Clean up blob URL on unmount
-    return () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-    };
-  }, [isOpen, contractData, toast]);
-
-  const handleDownload = () => {
-    if (!pdfBytes) return;
+  const handleDownload = async () => {
+    if (!contract) return;
     
-    const customerName = contractData.customerName.split(' ').pop() || 'Customer';
-    const puppyName = contractData.puppyName || 'Puppy';
-    const filename = `${customerName}_${puppyName}_Contract.pdf`;
-    
-    downloadPdf(pdfBytes, filename);
-    
-    toast({
-      title: 'Download Started',
-      description: 'Your contract is downloading',
-    });
-  };
-
-  const handleSignContract = async () => {
-    if (!signature) {
-      toast({
-        title: 'Signature Required',
-        description: 'Please sign the contract before submitting',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setIsSigningContract(true);
     try {
-      await onSignContract(signature);
+      await downloadContract(contract);
       toast({
-        title: 'Contract Signed',
-        description: 'The contract has been successfully signed'
+        title: 'Contract Downloaded',
+        description: 'The contract has been downloaded successfully',
       });
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Error signing contract:', error);
+    } catch (err) {
+      console.error('Error downloading contract:', err);
       toast({
-        title: 'Error',
-        description: 'Failed to sign the contract',
-        variant: 'destructive'
+        title: 'Download Failed',
+        description: 'Failed to download the contract',
+        variant: 'destructive',
       });
-    } finally {
-      setIsSigningContract(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-3xl h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Contract Preview & Signature</DialogTitle>
+          <DialogTitle>Contract Preview</DialogTitle>
         </DialogHeader>
         
-        <Tabs 
-          value={activeTab} 
-          onValueChange={setActiveTab}
-          className="flex-1 flex flex-col min-h-0"
-        >
-          <TabsList className="w-full grid grid-cols-2">
-            <TabsTrigger value="preview">Preview Contract</TabsTrigger>
-            <TabsTrigger value="sign">Sign Contract</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="preview" className="flex-1 overflow-hidden flex flex-col">
-            <PreviewTab
-              isGeneratingPdf={isGeneratingPdf}
-              pdfUrl={pdfUrl}
-              pdfBytes={pdfBytes}
-              onDownload={handleDownload}
-            />
-          </TabsContent>
-
-          <TabsContent value="sign" className="flex-1 overflow-auto space-y-4">
-            <SignatureTab
-              customerName={contractData.customerName}
-              onSignatureChange={setSignature}
-            />
-          </TabsContent>
-        </Tabs>
-        
-        <DialogFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          
-          {activeTab === 'sign' && (
-            <Button 
-              onClick={handleSignContract} 
-              disabled={!signature || isSigningContract}
-            >
-              {isSigningContract ? (
-                <>Signing...</>
-              ) : (
-                <>
-                  <Check className="mr-2 h-4 w-4" />
-                  Sign Contract
-                </>
+        <div className="flex-grow overflow-auto p-4 border rounded-md">
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2">Loading contract...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center text-destructive p-4">
+              {error}
+            </div>
+          ) : contract ? (
+            <div className="contract-preview bg-white p-8">
+              <h1 className="text-2xl font-bold text-center mb-6">
+                {contract.contract_type?.toUpperCase()} CONTRACT
+              </h1>
+              
+              <div className="mb-6">
+                <p className="text-sm">
+                  This agreement is made on <strong>{new Date(contract.contract_date || '').toLocaleDateString()}</strong> between:
+                </p>
+                <p className="mt-2">
+                  <strong>Breeder:</strong> {contract.breeder_id || 'Bear Paw Newfoundlands'}
+                </p>
+                <p className="mt-1">
+                  <strong>Customer:</strong> {contract.customer ? `${contract.customer.first_name} ${contract.customer.last_name}` : 'N/A'}
+                  {contract.customer?.email && ` (${contract.customer.email})`}
+                </p>
+              </div>
+              
+              {contract.puppy && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">Puppy Information</h2>
+                  <p><strong>Name:</strong> {contract.puppy.name || 'Unnamed puppy'}</p>
+                  <p><strong>Color:</strong> {contract.puppy.color || 'N/A'}</p>
+                  <p><strong>Birth Date:</strong> {contract.puppy.birth_date ? new Date(contract.puppy.birth_date).toLocaleDateString() : 'N/A'}</p>
+                  <p><strong>Microchip:</strong> {contract.puppy.microchip_number || 'Not microchipped'}</p>
+                </div>
               )}
-            </Button>
+              
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold border-b pb-1 mb-2">Contract Terms</h2>
+                <p><strong>Price:</strong> ${contract.price || 'Not specified'}</p>
+                <p><strong>Contract Type:</strong> {contract.contract_type || 'Standard'}</p>
+                <p><strong>Status:</strong> {contract.status || 'Draft'}</p>
+                
+                {contract.notes && (
+                  <div className="mt-4">
+                    <h3 className="font-medium">Additional Notes:</h3>
+                    <p className="text-sm whitespace-pre-line">{contract.notes}</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-12 border-t pt-4">
+                <div className="flex justify-between">
+                  <div className="text-center">
+                    <div className="border-t border-black w-40 pt-1">Breeder Signature</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="border-t border-black w-40 pt-1">Customer Signature</div>
+                    {contract.signed && contract.signed_date && (
+                      <p className="text-xs mt-1">Signed on {new Date(contract.signed_date).toLocaleDateString()}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center p-4">
+              No contract data available
+            </div>
           )}
-        </DialogFooter>
+        </div>
+        
+        <div className="flex justify-end mt-4">
+          <Button 
+            variant="outline" 
+            className="mr-2" 
+            onClick={() => onOpenChange(false)}
+          >
+            Close
+          </Button>
+          <Button 
+            onClick={handleDownload} 
+            disabled={!contract || loading}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

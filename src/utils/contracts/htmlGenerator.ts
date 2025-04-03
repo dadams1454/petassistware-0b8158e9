@@ -1,61 +1,33 @@
 
-// HTML Generator for Contracts
+import { ContractData } from './types';
 
 /**
- * Generates HTML for a contract based on template and data
+ * Generates HTML content for a contract
+ * 
+ * @param templateHtml - The HTML template
+ * @param contractData - The contract data to inject
+ * @returns Completed HTML content
  */
-export const generateHtml = (
-  templateContent: string, 
-  contractData: Record<string, any>
-): string => {
-  // Basic implementation that replaces variables in the template
-  let html = templateContent;
+export const generateContractHTML = (templateHtml: string, contractData: ContractData): string => {
+  // Replace template variables with actual values
+  let processedHTML = templateHtml;
   
-  // Replace template variables
-  Object.entries(contractData).forEach(([key, value]) => {
-    const variablePattern = new RegExp(`{{${key}}}`, 'g');
-    html = html.replace(variablePattern, String(value || ''));
-  });
-  
-  return html;
-};
-
-/**
- * Renders a template with provided data
- */
-export const renderTemplate = (
-  template: string, 
-  data: Record<string, any>
-): string => {
-  return generateHtml(template, data);
-};
-
-/**
- * Applies custom styles to the contract HTML
- */
-export const applyCustomStyles = (
-  html: string, 
-  styles: string
-): string => {
-  // Simple implementation that inserts CSS into the head
-  if (!html.includes('<head>')) {
-    return `<html><head><style>${styles}</style></head><body>${html}</body></html>`;
+  // Process all contractData properties
+  for (const [key, value] of Object.entries(contractData)) {
+    // Skip undefined or null values
+    if (value === undefined || value === null) continue;
+    
+    // Format price with 2 decimal places
+    if (key === 'salePrice' && typeof value === 'number') {
+      processedHTML = processedHTML.replace(new RegExp(`{{${key}}}`, 'g'), value.toFixed(2));
+    } else {
+      // Replace all occurrences of the variable
+      processedHTML = processedHTML.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
+    }
   }
   
-  return html.replace('<head>', `<head><style>${styles}</style>`);
-};
-
-// Helper function for contract generation
-export const generateContractHTML = (
-  templateContent: string,
-  contractData: Record<string, any>,
-  customStyles?: string
-): string => {
-  let html = generateHtml(templateContent, contractData);
+  // Remove any remaining template variables
+  processedHTML = processedHTML.replace(/{{[^}]+}}/g, 'N/A');
   
-  if (customStyles) {
-    html = applyCustomStyles(html, customStyles);
-  }
-  
-  return html;
+  return processedHTML;
 };

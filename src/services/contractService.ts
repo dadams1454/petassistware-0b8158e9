@@ -17,6 +17,11 @@ export type Contract = Tables<'contracts'> & {
     birth_date: string | null;
     microchip_number: string | null;
   } | null;
+  // Added missing fields
+  status?: string;
+  signed_date?: string;
+  pdf_url?: string;
+  signature_data?: string;
 };
 
 export type ContractInsert = Omit<Tables<'contracts'>, 'id' | 'created_at'>;

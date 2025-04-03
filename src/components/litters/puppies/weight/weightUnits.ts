@@ -1,5 +1,13 @@
 
+import { WeightUnit } from '@/types/puppyTracking';
+
 // Weight unit conversion utilities
+export const weightUnits = [
+  { value: 'lb', label: 'Pounds (lb)' },
+  { value: 'kg', label: 'Kilograms (kg)' },
+  { value: 'oz', label: 'Ounces (oz)' },
+  { value: 'g', label: 'Grams (g)' }
+];
 
 /**
  * Convert a weight value from one unit to another
@@ -50,6 +58,27 @@ export const convertWeight = (
     default:
       return Math.round(grams * 10) / 10; // Default to grams
   }
+};
+
+/**
+ * Format weight with unit
+ * @param weight - The weight value
+ * @param unit - The weight unit
+ * @returns Formatted weight string
+ */
+export const formatWeightWithUnit = (weight: number, unit: WeightUnit): string => {
+  return `${weight} ${unit}`;
+};
+
+/**
+ * Calculate percent change between two weights
+ * @param newWeight - The new weight
+ * @param oldWeight - The old weight
+ * @returns Percent change
+ */
+export const calculatePercentChange = (newWeight: number, oldWeight: number): number => {
+  if (oldWeight === 0) return 0;
+  return ((newWeight - oldWeight) / oldWeight) * 100;
 };
 
 /**
