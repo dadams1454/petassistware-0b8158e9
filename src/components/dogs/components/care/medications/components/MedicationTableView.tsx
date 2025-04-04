@@ -101,7 +101,7 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
 // Helper function to render the status badge
 const getStatusBadge = (status: MedicationStatus | MedicationStatusResult | undefined) => {
   if (!status) {
-    return getStatusLabelBadge(MedicationStatusEnum.NotStarted);
+    return getStatusLabelBadge(MedicationStatusEnum.NOT_STARTED);
   }
   
   if (typeof status === 'string') {
@@ -118,7 +118,7 @@ const getStatusBadge = (status: MedicationStatus | MedicationStatusResult | unde
   }
   
   // Default fallback
-  return getStatusLabelBadge(MedicationStatusEnum.NotStarted);
+  return getStatusLabelBadge(MedicationStatusEnum.NOT_STARTED);
 };
 
 const getStatusLabelBadge = (status: MedicationStatus | string) => {

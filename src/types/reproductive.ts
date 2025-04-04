@@ -103,9 +103,18 @@ export const HeatIntensity = {
   Peak: 'peak' as HeatIntensityType
 };
 
-export const HeatIntensityValues: HeatIntensityType[] = [
-  'light', 'moderate', 'heavy', 'mild', 'medium', 'strong', 'high', 'low', 'peak'
-];
+// Export HeatIntensityValues as individual values, not as array for compatibility
+export const HeatIntensityValues = {
+  light: 'light' as HeatIntensityType,
+  moderate: 'moderate' as HeatIntensityType,
+  heavy: 'heavy' as HeatIntensityType,
+  mild: 'mild' as HeatIntensityType,
+  medium: 'medium' as HeatIntensityType,
+  strong: 'strong' as HeatIntensityType,
+  high: 'high' as HeatIntensityType,
+  low: 'low' as HeatIntensityType,
+  peak: 'peak' as HeatIntensityType
+};
 
 export interface HeatStage {
   name: string;

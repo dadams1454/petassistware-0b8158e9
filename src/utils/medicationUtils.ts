@@ -1,3 +1,4 @@
+
 import { 
   Medication, 
   MedicationStatusEnum, 
@@ -5,6 +6,45 @@ import {
   MedicationStatusResult 
 } from '@/types/health';
 import { differenceInDays } from 'date-fns';
+
+// Medication frequency constants
+export const MedicationFrequencyConstants = {
+  DAILY: 'daily',
+  TWICE_DAILY: 'twice daily',
+  EVERY_OTHER_DAY: 'every other day',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  AS_NEEDED: 'as needed',
+  EVERY_12_HOURS: 'every 12 hours',
+  EVERY_8_HOURS: 'every 8 hours',
+  EVERY_6_HOURS: 'every 6 hours',
+  SINGLE_DOSE: 'single dose'
+};
+
+// Process medication logs utility function
+export function processMedicationLogs(logs: any[]) {
+  if (!logs || !Array.isArray(logs)) return [];
+  
+  // Group logs by medication
+  const groupedLogs: Record<string, any[]> = {};
+  
+  logs.forEach(log => {
+    const medicationId = log.medication_metadata?.medication_id || 'unknown';
+    if (!groupedLogs[medicationId]) {
+      groupedLogs[medicationId] = [];
+    }
+    groupedLogs[medicationId].push(log);
+  });
+  
+  // Sort each medication's logs by timestamp (newest first)
+  Object.keys(groupedLogs).forEach(medicationId => {
+    groupedLogs[medicationId].sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  });
+  
+  return groupedLogs;
+}
 
 // Get medication status based on frequency, start date, end date
 export function getMedicationStatus(

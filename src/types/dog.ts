@@ -1,4 +1,3 @@
-
 import { WeightUnit } from './common';
 
 export interface Dog {
@@ -81,3 +80,6 @@ export interface Vaccination {
   notes?: string;
   created_at: string;
 }
+
+// Add HealthRecordTypeEnum from health.ts for compatibility
+export { HealthRecordTypeEnum } from './health';

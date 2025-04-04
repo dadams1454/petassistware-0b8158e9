@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum } from '@/types/health';
+import { AppetiteEnum, EnergyEnum, StoolConsistencyEnum } from '@/types/health';
 
 // Form schema using zod
 const healthIndicatorSchema = z.object({
@@ -74,11 +74,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={AppetiteLevelEnum.Excellent}>Excellent</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.Good}>Good</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.Fair}>Fair</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.Poor}>Poor</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.None}>None</SelectItem>
+                    <SelectItem value={AppetiteEnum.EXCELLENT}>Excellent</SelectItem>
+                    <SelectItem value={AppetiteEnum.GOOD}>Good</SelectItem>
+                    <SelectItem value={AppetiteEnum.FAIR}>Fair</SelectItem>
+                    <SelectItem value={AppetiteEnum.POOR}>Poor</SelectItem>
+                    <SelectItem value={AppetiteEnum.NONE}>None</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -102,11 +102,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={EnergyLevelEnum.Hyperactive}>Hyperactive</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.High}>High</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.Normal}>Normal</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.Low}>Low</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.Lethargic}>Lethargic</SelectItem>
+                    <SelectItem value={EnergyEnum.HYPERACTIVE}>Hyperactive</SelectItem>
+                    <SelectItem value={EnergyEnum.HIGH}>High</SelectItem>
+                    <SelectItem value={EnergyEnum.NORMAL}>Normal</SelectItem>
+                    <SelectItem value={EnergyEnum.LOW}>Low</SelectItem>
+                    <SelectItem value={EnergyEnum.LETHARGIC}>Lethargic</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

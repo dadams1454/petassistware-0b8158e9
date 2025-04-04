@@ -15,31 +15,9 @@ interface BreedingPreparationProps {
   dogId?: string;
 }
 
-// Create a type that ensures the dog has a status property
-interface ExtendedDog extends Omit<Dog, 'status'> {
-  birthdate: string;
-  breed: string;
-  color: string;
-  created_at: string;
-  gender: string;
-  id: string;
-  is_pregnant: boolean;
-  last_heat_date: string;
-  last_vaccination_date: string;
-  litter_number: number;
-  microchip_number: string;
-  name: string;
-  notes: string;
-  photo_url: string;
-  pedigree: boolean;
-  registration_number: string;
-  requires_special_handling: boolean;
-  status: string; // Required status property
-  tenant_id: string;
-  tie_date: string;
-  vaccination_notes: string;
-  vaccination_type: string;
-  weight: number;
+// Create a type that ensures the dog has all required Dog properties
+interface ExtendedDog extends Dog {
+  // Any additional properties specific to this component can be added here
 }
 
 const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
@@ -71,14 +49,14 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           
         if (dogError) throw dogError;
         
-        // Ensure dog has a status property
-        const dogWithStatus: ExtendedDog = {
+        // Ensure dog has required properties
+        const dogWithRequiredProps: ExtendedDog = {
           ...dogData,
           gender: (dogData.gender as Gender) || 'Female', // Ensure gender is typed correctly
-          status: dogData.status || 'active' // Add status property
+          status: dogData.status || 'active' // Add status property if not present
         };
         
-        setDog(dogWithStatus);
+        setDog(dogWithRequiredProps);
         
         // Fetch compatible male dogs
         const { data: malesData, error: malesError } = await supabase
@@ -92,13 +70,13 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         if (malesError) throw malesError;
         
         // Process and convert males to Dog type with status
-        const malesWithStatus: ExtendedDog[] = malesData.map(male => ({
+        const malesWithRequiredProps: ExtendedDog[] = malesData.map(male => ({
           ...male,
           gender: (male.gender as Gender) || 'Male',
-          status: male.status || 'active' // Add status property
+          status: male.status || 'active' // Add status property if not present
         }));
         
-        setCompatibleMales(malesWithStatus);
+        setCompatibleMales(malesWithRequiredProps);
       } catch (error) {
         console.error('Error fetching dog data:', error);
       } finally {
@@ -110,7 +88,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
   }, [effectiveDogId]);
   
   // Use our dog status hook to get heat cycle and fertility information
-  const dogStatus = dog ? useDogStatus(dog as Dog) : null;
+  const dogStatus = dog ? useDogStatus(dog) : null;
   
   const handleCreateLitter = () => {
     // Navigate to the add litter page with pre-filled information

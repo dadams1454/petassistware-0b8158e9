@@ -134,6 +134,18 @@ export enum MedicationStatusEnum {
   UNKNOWN = 'unknown'
 }
 
+// For backward compatibility with camelCase usage
+export const MedicationStatusEnum_Aliases = {
+  Active: MedicationStatusEnum.ACTIVE,
+  Completed: MedicationStatusEnum.COMPLETED,
+  Scheduled: MedicationStatusEnum.SCHEDULED,
+  Overdue: MedicationStatusEnum.OVERDUE,
+  Upcoming: MedicationStatusEnum.UPCOMING,
+  Discontinued: MedicationStatusEnum.DISCONTINUED,
+  NotStarted: MedicationStatusEnum.NOT_STARTED,
+  Unknown: MedicationStatusEnum.UNKNOWN
+}
+
 export interface MedicationStatus {
   status: MedicationStatusEnum;
   daysUntilNext?: number;
