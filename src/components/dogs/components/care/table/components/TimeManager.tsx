@@ -2,7 +2,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
-import { MedicationFrequency } from '@/utils/medicationUtils';
+import { MedicationFrequencyConstants } from '@/utils/medicationUtils';
 
 interface TimeManagerProps {
   frequency: string;
@@ -17,11 +17,11 @@ const TimeManager: React.FC<TimeManagerProps> = ({
 }) => {
   const getTimeSlots = () => {
     switch (frequency) {
-      case MedicationFrequency.TWICE_DAILY:
+      case MedicationFrequencyConstants.TWICE_DAILY:
         return ['morning', 'evening'];
-      case MedicationFrequency.THREE_TIMES_DAILY:
+      case MedicationFrequencyConstants.THREE_TIMES_DAILY:
         return ['morning', 'afternoon', 'evening'];
-      case MedicationFrequency.MONTHLY:
+      case MedicationFrequencyConstants.MONTHLY:
         return ['beginning of month'];
       default:
         return ['anytime'];

@@ -1,6 +1,20 @@
 
 import { compareAsc, differenceInDays, differenceInHours, format, parseISO } from 'date-fns';
-import { MedicationFrequency, MedicationStatus, MedicationStatusResult } from '@/types/health';
+import { MedicationStatus, MedicationStatusResult } from '@/types/health';
+
+// Define constants for medication frequency to avoid duplicate exports
+export const MedicationFrequencyConstants = {
+  DAILY: 'daily',
+  TWICE_DAILY: 'twice_daily',
+  THREE_TIMES_DAILY: 'three_times_daily',
+  WEEKLY: 'weekly',
+  BIWEEKLY: 'biweekly',
+  MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  ANNUAL: 'annual',
+  AS_NEEDED: 'as_needed',
+  ONE_TIME: 'one_time'
+};
 
 /**
  * Converts a medication frequency to a label for display
@@ -269,18 +283,4 @@ export const processMedicationLogs = (logs: any[]) => {
   });
   
   return { preventative, other };
-};
-
-// Constants for backward compatibility
-export const MedicationFrequencyConstants = {
-  DAILY: 'daily',
-  TWICE_DAILY: 'twice_daily',
-  THREE_TIMES_DAILY: 'three_times_daily',
-  WEEKLY: 'weekly',
-  BIWEEKLY: 'biweekly',
-  MONTHLY: 'monthly',
-  QUARTERLY: 'quarterly',
-  ANNUAL: 'annual',
-  AS_NEEDED: 'as_needed',
-  ONE_TIME: 'one_time'
 };
