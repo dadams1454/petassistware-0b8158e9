@@ -1,66 +1,97 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
-import { MedicationStatusResult, MedicationStatus } from '@/utils/medicationUtils';
-import { isComplexStatus, getStatusValue, getStatusColor } from '@/utils/medicationUtils';
+import { format, parseISO, differenceInDays } from 'date-fns';
+import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
+import { MedicationStatusResult, MedicationStatus } from '@/types/health';
+import { getStatusLabel } from '@/utils/medicationUtils';
 
-interface MedicationStatusDisplayProps {
-  status: string | MedicationStatusResult | MedicationStatus | null;
-  statusColor?: string;
-  label?: string;
-  isLoading?: boolean;
+interface MedicationStatusProps {
+  status: MedicationStatusResult | MedicationStatus | null;
+  nextDue?: string | Date | null;
+  showIcon?: boolean;
+  showLabel?: boolean;
+  showNextDue?: boolean;
 }
 
-const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({ 
-  status = 'unknown', 
-  statusColor,
-  label,
-  isLoading = false
+const MedicationStatus: React.FC<MedicationStatusProps> = ({
+  status,
+  nextDue,
+  showIcon = true,
+  showLabel = true,
+  showNextDue = false
 }) => {
-  if (isLoading) {
-    return (
-      <div className="flex items-center">
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
-        <span className="text-sm text-muted-foreground">Loading...</span>
-      </div>
-    );
-  }
-
-  // Get display text and color
-  let displayText = '';
-  let displayColor = statusColor || '';
+  if (!status) return null;
   
-  if (status === null) {
-    displayText = 'Unknown';
-    displayColor = statusColor || "bg-gray-200 text-gray-700";
-  } else if (isComplexStatus(status)) {
-    displayText = status.statusLabel || getStatusValue(status);
-    displayColor = statusColor || status.statusColor || '';
-  } else if (typeof status === 'object' && status !== null) {
-    // Handle MedicationStatus objects (without statusLabel)
-    displayText = status.status ? status.status.charAt(0).toUpperCase() + status.status.slice(1) : 'Unknown';
-    displayColor = statusColor || getStatusColor(status.status || '');
-  } else if (typeof status === 'string') {
-    // Simple string status
-    displayText = status.charAt(0).toUpperCase() + status.slice(1);
-    displayColor = getStatusColor(status);
-  } else {
-    // Default if status is null or undefined
-    displayText = 'Unknown';
-    displayColor = statusColor || "bg-gray-200 text-gray-700";
-  }
+  // Helper function to calculate time until next dose
+  const getTimeUntilNextDose = (date: Date | string) => {
+    const nextDueDate = typeof date === 'string' ? parseISO(date) : date;
+    const today = new Date();
+    
+    const days = differenceInDays(nextDueDate, today);
+    
+    if (days === 0) {
+      return 'Today';
+    } else if (days === 1) {
+      return 'Tomorrow';
+    } else if (days > 1) {
+      return `In ${days} days`;
+    } else {
+      return `${Math.abs(days)} days ago`;
+    }
+  };
   
-  // Override display text with explicit label if provided
-  if (label) {
-    displayText = label;
-  }
-
+  const { statusLabel, statusColor, emoji } = getStatusLabel(status);
+  
+  // Determine the icon based on status
+  const getIcon = () => {
+    if (typeof status === 'object' && status.status) {
+      switch (status.status) {
+        case 'active':
+          return <Check className="h-4 w-4 text-green-500" />;
+        case 'overdue':
+          return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        case 'upcoming':
+          return <Calendar className="h-4 w-4 text-blue-500" />;
+        default:
+          return <Clock className="h-4 w-4 text-gray-500" />;
+      }
+    } else {
+      switch (status) {
+        case 'active':
+          return <Check className="h-4 w-4 text-green-500" />;
+        case 'overdue':
+          return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        case 'upcoming':
+          return <Calendar className="h-4 w-4 text-blue-500" />;
+        default:
+          return <Clock className="h-4 w-4 text-gray-500" />;
+      }
+    }
+  };
+  
+  // Determine the next due date to display
+  const nextDueDate = nextDue ||
+    (typeof status === 'object' && status.nextDue ? status.nextDue : null);
+  
   return (
-    <Badge className={displayColor || "bg-gray-200 text-gray-700"}>
-      {displayText}
-    </Badge>
+    <div className="flex items-center space-x-2">
+      {showIcon && getIcon()}
+      
+      {showLabel && (
+        <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor}`}>
+          {statusLabel}
+        </span>
+      )}
+      
+      {showNextDue && nextDueDate && (
+        <span className="text-xs text-muted-foreground">
+          {typeof nextDueDate === 'string' ? 
+            getTimeUntilNextDose(parseISO(nextDueDate)) : 
+            getTimeUntilNextDose(nextDueDate)}
+        </span>
+      )}
+    </div>
   );
 };
 
-export default MedicationStatusDisplay;
+export default MedicationStatus;

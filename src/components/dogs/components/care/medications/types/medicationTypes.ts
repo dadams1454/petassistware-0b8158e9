@@ -1,5 +1,5 @@
 
-import { MedicationStatus } from '@/utils/medicationUtils';
+import { MedicationStatus } from '@/types/health';
 
 export interface MedicationInfo {
   id: string;
@@ -10,6 +10,7 @@ export interface MedicationInfo {
   nextDue?: string;
   status?: string | MedicationStatus;
   notes?: string;
+  isPreventative?: boolean;
 }
 
 export interface ProcessedMedicationLogs {
@@ -32,6 +33,7 @@ export interface MedicationFilterProps {
     preventative: number;
     other: number;
   };
+  value?: string;
 }
 
 export interface MedicationHeaderProps {
@@ -39,6 +41,8 @@ export interface MedicationHeaderProps {
   count: number;
   type: 'preventative' | 'other';
   onAdd?: () => void;
+  description?: string;
+  isLoading?: boolean;
 }
 
 export interface DogCareStatus {
@@ -54,6 +58,8 @@ export interface DogCareStatus {
     timestamp: string;
   };
   flags?: string[];
+  incompatible_with?: string[];
+  dog_weight?: number;
 }
 
 export interface DogInfoProps {

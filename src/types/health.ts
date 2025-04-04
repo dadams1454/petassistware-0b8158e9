@@ -8,7 +8,7 @@ export enum HealthRecordTypeEnum {
   Surgery = 'surgery',
   Laboratory = 'laboratory',
   Imaging = 'imaging',
-  AllergyTest = 'allergy_test',
+  Allergy = 'allergy_test',
   ParasiteControl = 'parasite_control',
   DentalCare = 'dental_care',
   EmergencyCare = 'emergency_care',
@@ -20,6 +20,15 @@ export enum HealthRecordTypeEnum {
   NutritionalConsult = 'nutritional_consult',
   ReproductiveHealth = 'reproductive_health',
   Procedure = 'procedure',
+  Dental = 'dental',
+  Allergy = 'allergy',
+  Emergency = 'emergency',
+  Preventive = 'preventive',
+  Observation = 'observation',
+  Deworming = 'deworming',
+  Grooming = 'grooming',
+  Test = 'test',
+  Other = 'other',
   OtherRecord = 'other'
 }
 
@@ -36,7 +45,9 @@ export enum EnergyLevelEnum {
   High = 'high',
   Normal = 'normal',
   Low = 'low',
-  VeryLow = 'very_low'
+  VeryLow = 'very_low',
+  Hyperactive = 'hyperactive',
+  Lethargic = 'lethargic'
 }
 
 export enum StoolConsistencyEnum {
@@ -44,7 +55,9 @@ export enum StoolConsistencyEnum {
   Soft = 'soft',
   Loose = 'loose',
   Watery = 'watery',
-  Hard = 'hard'
+  Hard = 'hard',
+  Mucousy = 'mucousy',
+  Bloody = 'bloody'
 }
 
 export interface HealthRecord {
@@ -84,6 +97,14 @@ export interface HealthRecord {
   weight?: number;
   weight_unit?: WeightUnit;
   unit?: WeightUnit;
+  examination_type?: string;
+  findings?: string;
+  recommendations?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  performed_by?: string;
+  procedure_name?: string;
+  surgeon?: string;
 }
 
 export interface Medication {
@@ -100,6 +121,8 @@ export interface Medication {
   active: boolean;
   created_at?: string;
   status?: MedicationStatusResult;
+  medication_name?: string;
+  last_administered?: string;
 }
 
 export type MedicationStatusResult = 
@@ -118,6 +141,7 @@ export interface MedicationStatus {
   lastTaken?: Date | string | null;
   daysOverdue?: number;
   statusColor?: string;
+  statusLabel?: string;
 }
 
 export interface VaccinationSchedule {
@@ -182,6 +206,8 @@ export interface HealthCertificate {
   notes?: string;
   created_at: string;
   created_by: string;
+  file_url?: string;
+  issuer?: string;
 }
 
 export interface MedicationAdministration {
