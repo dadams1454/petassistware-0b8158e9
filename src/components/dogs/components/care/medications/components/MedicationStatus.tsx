@@ -6,7 +6,7 @@ import { MedicationStatusResult, MedicationStatus } from '@/utils/medicationUtil
 import { isComplexStatus, getStatusValue, getStatusColor } from '@/utils/medicationUtils';
 
 interface MedicationStatusDisplayProps {
-  status: string | MedicationStatusResult | MedicationStatus;
+  status: string | MedicationStatusResult | MedicationStatus | null;
   statusColor?: string;
   label?: string;
   isLoading?: boolean;
@@ -31,7 +31,10 @@ const MedicationStatusDisplay: React.FC<MedicationStatusDisplayProps> = ({
   let displayText = '';
   let displayColor = statusColor || '';
   
-  if (isComplexStatus(status)) {
+  if (status === null) {
+    displayText = 'Unknown';
+    displayColor = statusColor || "bg-gray-200 text-gray-700";
+  } else if (isComplexStatus(status)) {
     displayText = status.statusLabel || getStatusValue(status);
     displayColor = statusColor || status.statusColor || '';
   } else if (typeof status === 'object' && status !== null) {

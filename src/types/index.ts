@@ -3,8 +3,9 @@
 // This file functions as a central hub for importing types
 
 // Dog-related types
-export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord, Litter, HeatCycle } from './dog';
+export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord, Litter } from './dog';
 export { DogGender, HealthRecordTypeEnum, DocumentType } from './dog';
+export type { HeatCycle } from './reproductive';
 
 // Common types
 export type { WeightUnit, WeightUnitWithLegacy } from './common';
@@ -48,7 +49,7 @@ export type {
 } from './reproductive';
 
 // Litter and puppy types
-export { Dog } from './litter';
+export { Dog as SimpleDog } from './litter';
 export type { 
   Litter as LitterType, 
   LitterWithDogs, 
@@ -58,12 +59,11 @@ export type {
   WhelpingLogEntry,
   WhelpingObservation,
   PuppyMilestone,
-  SimpleDog
+  Dog as LitterDog
 } from './litter';
 
 // Puppy tracking types
 export type { 
-  PuppyAgeGroup, 
   PuppyAgeGroupData, 
   PuppyManagementStats,
   SocializationRecord,
@@ -75,10 +75,22 @@ export type {
   PuppyCareLog,
   SocializationExperience,
   WeightRecord as PuppyWeightRecord,
-  VaccinationScheduleItem,
+  VaccinationSchedule as PuppyVaccinationSchedule,
   VaccinationRecord,
 } from './puppyTracking';
-export { PuppyWithAge } from './puppyTracking';
+
+// Daily care types
+export type {
+  DogCareStatus,
+  DailyCareSummary,
+  CareLogEntry,
+  CareActivityLog,
+  DailyCarelog,
+  CareLogFormData,
+  CareTaskPreset,
+  DogFlag,
+  DogSpecialCondition
+} from './dailyCare';
 
 // Facility types
 export * from './facility';

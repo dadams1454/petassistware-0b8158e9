@@ -1,125 +1,101 @@
 
-export interface PuppyWithAge {
+import { WeightUnit } from './common';
+
+export interface PuppyAgeGroupData {
+  title: string;
+  range: string;
+  description: string;
+  startWeek: number;
+  endWeek: number;
+  careChecks?: string[];
+  developmentMilestones: string;
+  commonIssues: string;
+  recommendedActions: string;
+  puppies: PuppyWithAge[];
+}
+
+export interface PuppyAgeGroup {
   id: string;
-  name?: string;
-  color: string;
-  birth_date?: string;
-  gender?: string;
-  litter_id?: string;
-  status?: string;
-  photo_url?: string;
-  ageInDays: number;
-  ageInWeeks: number;
-  current_weight?: string;
-  developmentalStage: string;
-  weightHistory?: WeightRecord[];
-  litter?: any;
-  birth_order?: number;
+  name: string;
+  start_week: number;
+  end_week: number;
+  description: string;
+  care_items: string[];
+  milestones: string[];
+  common_issues: string[];
+  recommended_actions: string[];
 }
 
 export interface PuppyManagementStats {
-  puppies: PuppyWithAge[];
-  ageGroups: PuppyAgeGroupData[];
-  puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
-  totalPuppies: number;
-  availablePuppies: number;
-  reservedPuppies: number;
-  soldPuppies: number;
-  isLoading: boolean;
-  error: Error | null;
-  total: {
-    count: number;
-    male: number;
-    female: number;
-  };
-  byGender: Record<string, number>;
+  totalCount: number;
+  byAge: Record<string, number>;
   byStatus: Record<string, number>;
-  byAgeGroup: Record<string, number>;
-  stats?: {
-    totalCount: number;
-    byAge: Record<string, number>;
-    byStatus: Record<string, number>;
-    byGender: Record<string, number>;
-  };
+  byGender: Record<string, number>;
+  puppies?: PuppyWithAge[];
+  ageGroups?: PuppyAgeGroupData[];
+  puppiesByAgeGroup?: Record<string, PuppyWithAge[]>;
 }
 
-export interface PuppyAgeGroupData {
+export interface PuppyWithAge {
   id: string;
   name: string;
-  startDay: number;
-  endDay: number;
+  litter_id: string;
+  gender: string;
   color: string;
-  description: string;
-  milestones: string;
-}
-
-export interface AgeGroup {
-  id: string;
-  name: string;
-  minAge: number;
-  maxAge: number;
-  color: string;
-  description: string;
-  milestones: string;
-}
-
-export interface PuppyMilestone {
-  id: string;
-  puppy_id: string;
-  title: string;
-  milestone_type: string;
-  expected_age_days?: number;
-  description?: string;
-  is_completed: boolean;
-  completion_date?: string;
-  category?: string;
+  birth_date: string;
+  ageInDays: number;
+  ageInWeeks: number;
+  developmentalStage: string;
+  currentWeight?: number;
+  weightUnit?: string;
+  photo_url?: string;
   notes?: string;
+  ageDescription?: string;
+  status?: string;
 }
 
-export interface WeightRecord {
-  id: string;
-  dog_id: string;
-  puppy_id?: string;
-  weight: number;
-  weight_unit: string;
-  date: string;
-  notes?: string;
-  percent_change?: number;
-  created_at: string;
-  age_days?: number;
-  birth_date?: string;
-  unit?: string; // For backward compatibility
+export interface SocializationReactionType {
+  positive: 'positive';
+  neutral: 'neutral';
+  negative: 'negative';
+  curious: 'curious';
+  fearful: 'fearful';
 }
 
-export type SocializationReactionType = 'positive' | 'curious' | 'neutral' | 'fearful' | 'negative';
-
-export type SocializationCategory = 'people' | 'animals' | 'environments' | 'surfaces' | 'sounds' | 'objects' | 'handling';
+export type SocializationCategory = 
+  | 'people'
+  | 'animals'
+  | 'environments'
+  | 'surfaces'
+  | 'noises'
+  | 'objects'
+  | 'handling';
 
 export interface SocializationCategoryOption {
   id: string;
-  value: string;
-  label: string;
+  name: string;
   color: string;
   description: string;
-  examples?: string[];
+  examples: string[];
 }
 
 export interface SocializationReactionOption {
-  value: SocializationReactionType;
-  label: string;
-  emoji: string;
+  id: string;
+  name: string;
+  description: string;
   color: string;
+  emoji: string;
 }
 
-export interface SocializationExperience {
+export interface SocializationRecord {
   id: string;
   puppy_id: string;
   category: SocializationCategory;
-  categoryName?: string;
   experience: string;
   experience_date: string;
-  reaction: SocializationReactionType;
+  reaction?: string;
   notes?: string;
+  created_at: string;
 }
 
 export interface SocializationProgress {
@@ -135,81 +111,75 @@ export interface SocializationProgress {
   completion_percentage?: number;
 }
 
+export interface PuppyCareLog {
+  id: string;
+  puppy_id: string;
+  care_type: string;
+  care_time: string;
+  notes?: string;
+  performed_by?: string;
+  created_at: string;
+}
+
+export interface SocializationExperience {
+  id: string;
+  puppy_id: string;
+  category: SocializationCategory;
+  categoryName?: string;
+  experience: string;
+  experience_date: string;
+  reaction?: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface PuppyMilestone {
+  id: string;
+  puppy_id: string;
+  title: string;
+  milestone_type: string;
+  expected_age_days: number;
+  description: string;
+  is_completed: boolean;
+  completion_date: string;
+  category?: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: string;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;
+}
+
 export interface VaccinationSchedule {
   id: string;
   puppy_id: string;
   vaccination_type: string;
   vaccine_name?: string;
   due_date: string;
+  administered: boolean;
   scheduled_date?: string;
   notes?: string;
-  administered: boolean;
-}
-
-export interface Medication {
-  id: string;
-  dog_id: string;
-  puppy_id?: string;
-  name: string;
-  medication_name?: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency: string;
-  administration_route?: string;
-  start_date: string;
-  end_date?: string;
-  notes?: string;
-  last_administered?: string;
-  active: boolean;
-  is_active?: boolean;
-}
-
-export interface MedicationAdministration {
-  id: string;
-  medication_id: string;
-  administered_at: string;
-  administered_by: string;
-  notes?: string;
-}
-
-export interface HealthCertificate {
-  id: string;
-  dog_id: string;
-  puppy_id?: string;
-  certificate_type: string;
-  issue_date: string;
-  expiry_date?: string;
-  issuer: string;
-  file_url?: string;
-  notes?: string;
+  created_at: string;
 }
 
 export interface VaccinationRecord {
   id: string;
   puppy_id: string;
-  vaccination_type: string;
-  vaccination_date: string;
-  administered_by?: string;
+  vaccine_name: string;
+  administration_date: string;
   lot_number?: string;
+  expiry_date?: string;
   notes?: string;
-}
-
-export interface SocializationRecord {
-  id: string;
-  puppy_id: string;
-  category: SocializationCategory;
-  experience: string;
-  experience_date: string;
-  reaction: SocializationReactionType;
-  notes?: string;
-}
-
-export interface PuppyCareLog {
-  id: string;
-  puppy_id: string;
-  care_type: string;
-  description: string;
-  care_date: string;
-  performed_by: string;
-  notes?: string;
+  administered_by?: string;
+  created_at: string;
 }
