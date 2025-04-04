@@ -22,18 +22,22 @@ import { HealthRecordTypeEnum } from '@/types/health';
 export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string, className?: string) => {
   switch (recordType) {
     case HealthRecordTypeEnum.Exam:
+    case HealthRecordTypeEnum.Examination:
       return <Stethoscope className={className} />;
     case HealthRecordTypeEnum.Vaccination:
       return <Syringe className={className} />;
     case HealthRecordTypeEnum.Parasite:
+    case HealthRecordTypeEnum.Deworming:
       return <Bug className={className} />;
     case HealthRecordTypeEnum.Medication:
       return <Pill className={className} />;
     case HealthRecordTypeEnum.Surgery:
+    case HealthRecordTypeEnum.Procedure:
       return <Scissors className={className} />;
     case HealthRecordTypeEnum.Emergency:
       return <AlertTriangle className={className} />;
     case HealthRecordTypeEnum.Lab:
+    case HealthRecordTypeEnum.Test:
       return <FileText className={className} />;
     case HealthRecordTypeEnum.Dental:
       return <Tooth className={className} />;
@@ -53,24 +57,32 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string, c
 export const getHealthRecordColor = (recordType: HealthRecordTypeEnum | string) => {
   switch (recordType) {
     case HealthRecordTypeEnum.Exam:
+    case HealthRecordTypeEnum.Examination:
       return 'text-blue-500';
     case HealthRecordTypeEnum.Vaccination:
       return 'text-green-500';
     case HealthRecordTypeEnum.Parasite:
+    case HealthRecordTypeEnum.Deworming:
       return 'text-orange-500';
     case HealthRecordTypeEnum.Medication:
       return 'text-purple-500';
     case HealthRecordTypeEnum.Surgery:
+    case HealthRecordTypeEnum.Procedure:
       return 'text-red-500';
     case HealthRecordTypeEnum.Emergency:
       return 'text-red-600';
     case HealthRecordTypeEnum.Lab:
+    case HealthRecordTypeEnum.Test:
       return 'text-cyan-500';
     case HealthRecordTypeEnum.Dental:
       return 'text-yellow-500';
     case HealthRecordTypeEnum.Xray:
     case HealthRecordTypeEnum.Ultrasound:
       return 'text-indigo-500';
+    case HealthRecordTypeEnum.Observation:
+    case HealthRecordTypeEnum.Grooming:
+    case HealthRecordTypeEnum.Allergy:
+      return 'text-teal-500';
     default:
       return 'text-gray-500';
   }

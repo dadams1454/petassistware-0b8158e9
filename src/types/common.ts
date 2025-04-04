@@ -5,6 +5,14 @@ export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
 // Legacy weight units for backward compatibility
 export type WeightUnitWithLegacy = WeightUnit | 'pounds' | 'kilograms' | 'grams' | 'ounces';
 
+// Define weight units for UI
+export const weightUnits = [
+  { code: 'lb', name: 'Pounds (lb)' },
+  { code: 'kg', name: 'Kilograms (kg)' },
+  { code: 'g', name: 'Grams (g)' },
+  { code: 'oz', name: 'Ounces (oz)' }
+];
+
 // Function to standardize weight units
 export const standardizeWeightUnit = (unit: string): WeightUnit => {
   // Convert legacy units to standardized ones

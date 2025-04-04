@@ -1,166 +1,140 @@
 
-import { MedicationStatusEnum } from '@/types/health';
-
-/**
- * Get the status label and color for a medication status
- * @param status - Medication status
- * @returns Object with status label and color
- */
-export const getStatusLabel = (status: MedicationStatusEnum | string) => {
-  let statusLabel = '';
-  let statusColor = '';
-  let emoji = '';
-  
-  switch (String(status).toLowerCase()) {
-    case 'active':
-    case MedicationStatusEnum.Active:
-      statusLabel = 'Active';
-      statusColor = 'bg-green-100 text-green-800';
-      emoji = '✅';
-      break;
-    case 'discontinued':
-    case MedicationStatusEnum.Discontinued:
-    case 'overdue':
-      statusLabel = status === 'overdue' ? 'Overdue' : 'Discontinued';
-      statusColor = 'bg-red-100 text-red-800';
-      emoji = '⚠️';
-      break;
-    case 'scheduled':
-    case MedicationStatusEnum.Scheduled:
-    case 'upcoming':
-      statusLabel = status === 'upcoming' ? 'Upcoming' : 'Scheduled';
-      statusColor = 'bg-blue-100 text-blue-800';
-      emoji = '📅';
-      break;
-    case 'not_started':
-    case MedicationStatusEnum.NotStarted:
-      statusLabel = 'Not Started';
-      statusColor = 'bg-gray-100 text-gray-800';
-      emoji = '⏱️';
-      break;
-    case 'completed':
-    case MedicationStatusEnum.Completed:
-      statusLabel = 'Completed';
-      statusColor = 'bg-green-100 text-green-800';
-      emoji = '✅';
-      break;
-    default:
-      statusLabel = 'Unknown';
-      statusColor = 'bg-gray-100 text-gray-800';
-      emoji = '❓';
-  }
-  
-  return { statusLabel, statusColor, emoji };
+// Medication frequency constants
+export const MedicationFrequencyConstants = {
+  DAILY: 'daily',
+  TWICE_DAILY: 'twice_daily',
+  EVERY_OTHER_DAY: 'every_other_day',
+  WEEKLY: 'weekly',
+  TWICE_WEEKLY: 'twice_weekly',
+  BIWEEKLY: 'biweekly',
+  MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  ANNUALLY: 'annually',
+  AS_NEEDED: 'as_needed'
 };
 
-/**
- * Calculate medication status based on last administration and frequency
- * @param lastAdministered - Date of last administration
- * @param frequency - Medication frequency 
- * @param endDate - End date for the medication
- * @returns Object with status and next due date
- */
-export const calculateMedicationStatus = (
-  lastAdministered: string | Date | null,
-  frequency: string,
-  endDate?: string | Date | null
-) => {
-  if (!lastAdministered && !endDate) {
-    return { status: MedicationStatusEnum.NotStarted, nextDue: null };
-  }
-  
-  const today = new Date();
-  
-  // Check if medication is discontinued/completed
-  if (endDate) {
-    const endDateObj = typeof endDate === 'string' ? new Date(endDate) : endDate;
-    if (endDateObj < today) {
-      return { status: MedicationStatusEnum.Discontinued, nextDue: null };
+// Process medication logs
+export const processMedicationLogs = (logs: any[]) => {
+  // Group by medication name
+  const groupedLogs = logs.reduce((acc: any, log: any) => {
+    const { medication_name, dosage, frequency, timestamp, notes, medication_metadata } = log;
+    
+    if (!medication_name) return acc;
+    
+    // Determine if it's a preventative medication
+    const isPreventative = medication_metadata?.is_preventative === true;
+    const category = isPreventative ? 'preventative' : 'other';
+    
+    if (!acc[category]) {
+      acc[category] = [];
     }
+    
+    // Find if we already have an entry for this medication
+    const existingMedIndex = acc[category].findIndex((item: any) => 
+      item.name === medication_name
+    );
+    
+    if (existingMedIndex > -1) {
+      // Update if the timestamp is more recent
+      const existingTimestamp = new Date(acc[category][existingMedIndex].lastAdministered).getTime();
+      const newTimestamp = new Date(timestamp).getTime();
+      
+      if (newTimestamp > existingTimestamp) {
+        acc[category][existingMedIndex].lastAdministered = timestamp;
+        acc[category][existingMedIndex].notes = notes;
+      }
+    } else {
+      // Add new medication to the list
+      acc[category].push({
+        id: medication_name,
+        name: medication_name,
+        dosage: dosage || 'N/A',
+        frequency: frequency || 'N/A',
+        lastAdministered: timestamp,
+        notes: notes || '',
+        isPreventative,
+      });
+    }
+    
+    return acc;
+  }, { preventative: [], other: [] });
+  
+  return groupedLogs;
+};
+
+// Calculate medication status
+export const calculateMedicationStatus = (lastAdministered: string, frequency: string) => {
+  if (!lastAdministered || !frequency) {
+    return { status: 'unknown', nextDue: null };
   }
   
-  // Handle case where medication hasn't been administered yet
-  if (!lastAdministered) {
-    return { status: MedicationStatusEnum.Scheduled, nextDue: null };
+  const lastAdminDate = new Date(lastAdministered);
+  const now = new Date();
+  const daysDiff = Math.floor((now.getTime() - lastAdminDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  let daysUntilDue = 0;
+  
+  switch (frequency.toLowerCase()) {
+    case MedicationFrequencyConstants.DAILY:
+      daysUntilDue = 1;
+      break;
+    case MedicationFrequencyConstants.TWICE_DAILY:
+      daysUntilDue = 0.5;
+      break;
+    case MedicationFrequencyConstants.EVERY_OTHER_DAY:
+      daysUntilDue = 2;
+      break;
+    case MedicationFrequencyConstants.WEEKLY:
+      daysUntilDue = 7;
+      break;
+    case MedicationFrequencyConstants.TWICE_WEEKLY:
+      daysUntilDue = 3.5;
+      break;
+    case MedicationFrequencyConstants.BIWEEKLY:
+      daysUntilDue = 14;
+      break;
+    case MedicationFrequencyConstants.MONTHLY:
+      daysUntilDue = 30;
+      break;
+    case MedicationFrequencyConstants.QUARTERLY:
+      daysUntilDue = 90;
+      break;
+    case MedicationFrequencyConstants.ANNUALLY:
+      daysUntilDue = 365;
+      break;
+    case MedicationFrequencyConstants.AS_NEEDED:
+      return { status: 'as_needed', nextDue: null };
+    default:
+      return { status: 'unknown', nextDue: null };
   }
   
-  // Calculate days since last administration
-  const lastAdminDate = typeof lastAdministered === 'string' ? 
-    new Date(lastAdministered) : lastAdministered;
-  
-  const daysForFrequency = getFrequencyDays(frequency);
-  
-  if (daysForFrequency === 0) {
-    // Handle as-needed medications
-    return { status: MedicationStatusEnum.Active, nextDue: null };
-  }
-  
-  // Calculate next due date
   const nextDueDate = new Date(lastAdminDate);
-  nextDueDate.setDate(lastAdminDate.getDate() + daysForFrequency);
+  nextDueDate.setDate(lastAdminDate.getDate() + daysUntilDue);
   
-  // Determine status based on next due date
-  if (nextDueDate < today) {
-    return { status: MedicationStatusEnum.Overdue, nextDue: nextDueDate };
-  } else if (
-    nextDueDate.getTime() - today.getTime() < 2 * 24 * 60 * 60 * 1000
-  ) {
-    // Due in less than 2 days
-    return { status: MedicationStatusEnum.Due, nextDue: nextDueDate };
+  if (daysDiff > daysUntilDue * 1.5) {
+    return { status: 'overdue', nextDue: nextDueDate };
+  } else if (daysDiff >= daysUntilDue) {
+    return { status: 'due', nextDue: nextDueDate };
+  } else if (daysDiff >= daysUntilDue * 0.8) {
+    return { status: 'upcoming', nextDue: nextDueDate };
   } else {
-    return { status: MedicationStatusEnum.Active, nextDue: nextDueDate };
+    return { status: 'active', nextDue: nextDueDate };
   }
 };
 
-/**
- * Convert frequency string to number of days
- * @param frequency - Medication frequency
- * @returns Number of days for the frequency
- */
-const getFrequencyDays = (frequency: string): number => {
-  const frequencyMap: Record<string, number> = {
-    'once_daily': 1,
-    'twice_daily': 0.5,
-    'three_times_daily': 0.33,
-    'four_times_daily': 0.25,
-    'every_other_day': 2,
-    'weekly': 7,
-    'twice_weekly': 3.5,
-    'biweekly': 14,
-    'monthly': 30,
-    'quarterly': 90,
-    'annually': 365,
-    'as_needed': 0,
-    'daily': 1,
-    'biweekly': 14,
-    'as_needed': 0
-  };
-  
-  return frequencyMap[frequency.toLowerCase()] || 0;
-};
-
-/**
- * Format a frequency string for display
- * @param frequency - Medication frequency code
- * @returns Human-readable frequency
- */
-export const formatFrequency = (frequency: string): string => {
+// Get human-readable frequency label
+export const getFrequencyLabel = (frequency: string) => {
   const frequencyMap: Record<string, string> = {
-    'once_daily': 'Once daily',
-    'twice_daily': 'Twice daily',
-    'three_times_daily': 'Three times daily',
-    'four_times_daily': 'Four times daily',
-    'every_other_day': 'Every other day',
-    'weekly': 'Weekly',
-    'twice_weekly': 'Twice weekly',
-    'biweekly': 'Every two weeks',
-    'monthly': 'Monthly',
-    'quarterly': 'Every 3 months',
-    'annually': 'Yearly',
-    'as_needed': 'As needed (PRN)',
-    'daily': 'Daily',
-    'biweekly': 'Every two weeks',
-    'as_needed': 'As needed (PRN)'
+    [MedicationFrequencyConstants.DAILY]: 'Once Daily',
+    [MedicationFrequencyConstants.TWICE_DAILY]: 'Twice Daily',
+    [MedicationFrequencyConstants.EVERY_OTHER_DAY]: 'Every Other Day',
+    [MedicationFrequencyConstants.WEEKLY]: 'Weekly',
+    [MedicationFrequencyConstants.TWICE_WEEKLY]: 'Twice Weekly',
+    [MedicationFrequencyConstants.BIWEEKLY]: 'Every Two Weeks',
+    [MedicationFrequencyConstants.MONTHLY]: 'Monthly',
+    [MedicationFrequencyConstants.QUARTERLY]: 'Quarterly',
+    [MedicationFrequencyConstants.ANNUALLY]: 'Annually',
+    [MedicationFrequencyConstants.AS_NEEDED]: 'As Needed'
   };
   
   return frequencyMap[frequency.toLowerCase()] || frequency;
