@@ -110,8 +110,8 @@ export const getLitterById = async (litterId: string): Promise<LitterResult> => 
       .from('litters')
       .select(`
         *,
-        dam:dogs!litters_dam_id_fkey(id, name, breed, color, photo_url),
-        sire:dogs!litters_sire_id_fkey(id, name, breed, color, photo_url),
+        dam:dam_id(*),
+        sire:sire_id(*),
         puppies!puppies_litter_id_fkey(*)
       `)
       .eq('id', litterId)

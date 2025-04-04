@@ -12,6 +12,28 @@ export const formatDate = (date: Date | string | null): string => {
   return format(dateObj, 'yyyy-MM-dd');
 };
 
+// Format date specifically for YYYY-MM-DD format (ISO date format)
+export const formatDateToYYYYMMDD = (date: Date | string | null): string => {
+  if (!date) return '';
+  
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  
+  if (!isValid(dateObj)) return '';
+  
+  return format(dateObj, 'yyyy-MM-dd');
+};
+
+// Format date for display purposes
+export const formatDateForDisplay = (date: Date | string | null): string => {
+  if (!date) return '';
+  
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  
+  if (!isValid(dateObj)) return '';
+  
+  return format(dateObj, 'MMM d, yyyy');
+};
+
 // Format date to a more human-readable format
 export const formatReadableDate = (date: Date | string | null): string => {
   if (!date) return 'Not specified';
@@ -116,3 +138,8 @@ export function parseFrequency(frequencyStr: string): { interval: number; unit: 
   // Default to once daily if we can't parse
   return { interval: 1, unit: 'day' };
 }
+
+// Helper for hooks that depend on formatDateToYYYYMMDD
+export const utilitiesMigrationHelper = {
+  formatDateToYYYYMMDD
+};

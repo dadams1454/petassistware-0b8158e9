@@ -1,72 +1,78 @@
 
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { WeightUnit } from '@/types/common';
+import { WeightRecord } from '@/types/health';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
-
-// Schema for weight entry form
-const weightEntrySchema = z.object({
-  date: z.date({
-    required_error: 'Date is required',
-  }).refine(date => date <= new Date(), {
-    message: 'Date cannot be in the future',
-  }),
-  weight: z.coerce.number({
-    required_error: 'Weight is required',
-    invalid_type_error: 'Weight must be a number',
-  }).positive({
-    message: 'Weight must be greater than 0',
-  }),
-  unit: z.enum(['oz', 'g', 'lb', 'kg']),
-  notes: z.string().optional(),
-});
-
-export type WeightEntryValues = z.infer<typeof weightEntrySchema>;
 
 interface UseWeightEntryFormProps {
   dogId: string;
-  onSave: (data: any) => Promise<any>;
-  initialData?: Partial<WeightEntryValues>;
+  onSave: (data: Partial<WeightRecord>) => void;
+  initialData?: WeightRecord;
+}
+
+interface WeightFormValues {
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes: string;
 }
 
 export const useWeightEntryForm = ({ dogId, onSave, initialData }: UseWeightEntryFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   
-  const form = useForm<WeightEntryValues>({
-    resolver: zodResolver(weightEntrySchema),
+  // Current date
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Setup the form with default values
+  const form = useForm<WeightFormValues>({
     defaultValues: {
-      date: initialData?.date || new Date(),
       weight: initialData?.weight || 0,
-      unit: initialData?.unit || 'lb',
-      notes: initialData?.notes || '',
+      weight_unit: initialData?.weight_unit || 'lb',
+      date: initialData?.date || today,
+      notes: initialData?.notes || ''
     }
   });
   
-  const handleSubmit = async (values: WeightEntryValues) => {
+  // Handle form submission
+  const handleSubmit = async (data: WeightFormValues) => {
     setIsSubmitting(true);
+    
     try {
-      // Format the data for the API, safely converting Date to string
-      const formattedDate = values.date instanceof Date 
-        ? formatDateToYYYYMMDD(values.date) 
-        : new Date().toISOString().split('T')[0];
+      // Format date
+      const formattedDate = formatDateToYYYYMMDD(data.date);
       
-      const weightRecord = {
+      // Prepare the record data
+      const recordData: Partial<WeightRecord> = {
+        ...initialData, // Keep existing fields if editing
         dog_id: dogId,
+        weight: parseFloat(data.weight.toString()),
+        weight_unit: data.weight_unit,
         date: formattedDate,
-        weight: values.weight,
-        unit: values.unit,
-        // We also include weight_unit for backward compatibility
-        weight_unit: values.unit,
-        notes: values.notes
+        notes: data.notes
       };
       
-      await onSave(weightRecord);
-      return true;
+      // Call the onSave callback
+      await onSave(recordData);
+      
+      // Reset form if not editing
+      if (!initialData) {
+        form.reset({
+          weight: 0,
+          weight_unit: data.weight_unit, // Keep the selected unit
+          date: today,
+          notes: ''
+        });
+      }
     } catch (error) {
-      console.error('Error saving weight record:', error);
-      return false;
+      console.error('Error submitting weight form:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save weight record. Please try again.',
+        variant: 'destructive'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -75,6 +81,6 @@ export const useWeightEntryForm = ({ dogId, onSave, initialData }: UseWeightEntr
   return {
     form,
     isSubmitting,
-    handleSubmit: form.handleSubmit(handleSubmit)
+    handleSubmit
   };
 };
