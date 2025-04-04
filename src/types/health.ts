@@ -326,4 +326,5 @@ export type { WeightUnit };
 // Export enums as constants for compatibility with components that expect string values
 export const AppetiteEnum = AppetiteLevelEnum;
 export const EnergyEnum = EnergyLevelEnum;
-export const StoolConsistencyEnum = StoolConsistencyEnum;
+export const StoolEnum = StoolConsistencyEnum;
+
