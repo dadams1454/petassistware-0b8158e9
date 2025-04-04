@@ -1,3 +1,4 @@
+
 import { Medication, MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 import { addDays, isBefore, isAfter, parseISO, differenceInDays } from 'date-fns';
 
@@ -168,6 +169,8 @@ export const getStatusLabel = (status: MedicationStatusEnum) => {
 
 // Process medication logs from daily care data
 export const processMedicationLogs = (logs: any[] = []): Record<string, any> => {
+  const processedLogs: Record<string, any> = {};
+  
   logs.forEach(log => {
     if (!log.medication_metadata) return;
     
@@ -221,7 +224,7 @@ export const getOverdueMedications = (medications: Medication[]): Medication[] =
   });
 };
 
-// Add the missing function that healthService.ts is trying to import
+// Add the function that healthService.ts is trying to import
 export const calculateMedicationStatus = (startDate?: string, endDate?: string): MedicationStatusEnum => {
   const today = new Date();
   
