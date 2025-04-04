@@ -1,32 +1,24 @@
 
 // Common type definitions used across the application
 
-export type Gender = 'Male' | 'Female';
+export type Gender = 'male' | 'female';
 
-// Weight unit types
-export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
+// Weight units with proper export
+export type WeightUnit = 'g' | 'kg' | 'lb' | 'oz';
 
-// Extended weight unit type with display information
-export interface WeightUnitWithDisplay {
-  code: WeightUnit;
-  name: string;
-}
+// For backward compatibility
+export type WeightUnitWithLegacy = WeightUnit | 'grams' | 'kilograms' | 'pounds' | 'ounces';
 
-// For compatibility with code expecting the object format
-export type WeightUnitWithLegacy = WeightUnit | WeightUnitWithDisplay;
-
-// Weight units for display
-export const weightUnits: WeightUnitWithDisplay[] = [
-  { code: 'g', name: 'Grams' },
-  { code: 'kg', name: 'Kilograms' },
-  { code: 'oz', name: 'Ounces' },
-  { code: 'lb', name: 'Pounds' }
-];
-
-// Helper function to standardize weight unit values
-export function standardizeWeightUnit(unit: WeightUnitWithLegacy): WeightUnit {
-  if (typeof unit === 'string') {
-    return unit as WeightUnit;
+// Standard unit conversion function
+export const standardizeWeightUnit = (unit: WeightUnitWithLegacy): WeightUnit => {
+  switch (unit) {
+    case 'grams': return 'g';
+    case 'kilograms': return 'kg';
+    case 'pounds': return 'lb';
+    case 'ounces': return 'oz';
+    default: return unit as WeightUnit;
   }
-  return unit.code;
-}
+};
+
+// Common weight units for UI dropdowns
+export const weightUnits: WeightUnit[] = ['g', 'kg', 'lb', 'oz'];

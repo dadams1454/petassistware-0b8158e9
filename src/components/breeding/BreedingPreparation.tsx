@@ -49,11 +49,11 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           
         if (dogError) throw dogError;
         
-        // Ensure dog has required properties
+        // Ensure dog has required properties by providing defaults
         const dogWithRequiredProps: ExtendedDog = {
           ...dogData,
           gender: dogData.gender as DogGender || DogGender.Female, // Ensure gender is typed correctly
-          status: dogData.status || 'active' // Add status property if not present
+          status: dogData.status || 'active' // Add default status property if not present
         };
         
         setDog(dogWithRequiredProps);
@@ -73,7 +73,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         const malesWithRequiredProps: ExtendedDog[] = malesData.map(male => ({
           ...male,
           gender: male.gender as DogGender || DogGender.Male,
-          status: male.status || 'active' // Add status property if not present
+          status: male.status || 'active' // Add default status property if not present
         }));
         
         setCompatibleMales(malesWithRequiredProps);

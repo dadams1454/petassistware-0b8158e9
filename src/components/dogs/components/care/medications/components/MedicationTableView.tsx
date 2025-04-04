@@ -61,7 +61,7 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
                 {medication.name}
               </TableCell>
               <TableCell>
-                {medication.dosage ? `${medication.dosage} ${medication.dosage}` : 'N/A'}
+                {medication.dosage ? `${medication.dosage} ${medication.dosage_unit}` : 'N/A'}
               </TableCell>
               <TableCell>{medication.frequency}</TableCell>
               <TableCell>
@@ -106,9 +106,12 @@ const getStatusBadge = (status: any) => {
   
   if (typeof status === 'string') {
     // Handle string status (convert to enum)
-    const enumStatus = status.toUpperCase() as keyof typeof MedicationStatusEnum;
-    const statusEnum = MedicationStatusEnum[enumStatus] || MedicationStatusEnum.NOT_STARTED;
-    return getStatusLabelBadge(statusEnum);
+    const upperStatus = status.toUpperCase();
+    const medicationEnumKeys = Object.keys(MedicationStatusEnum);
+    const enumStatus = medicationEnumKeys.includes(upperStatus) 
+      ? MedicationStatusEnum[upperStatus as keyof typeof MedicationStatusEnum] 
+      : MedicationStatusEnum.NOT_STARTED;
+    return getStatusLabelBadge(enumStatus);
   } 
   
   if (typeof status === 'object' && status && 'status' in status) {
@@ -127,8 +130,14 @@ const getStatusBadge = (status: any) => {
 const getStatusLabelBadge = (status: MedicationStatusEnum | string) => {
   // Normalize string status to enum
   let statusEnum = status as MedicationStatusEnum;
-  if (typeof status === 'string' && !(status in MedicationStatusEnum)) {
-    statusEnum = MedicationStatusEnum.NOT_STARTED;
+  if (typeof status === 'string') {
+    const upperStatus = status.toUpperCase();
+    const medicationEnumKeys = Object.keys(MedicationStatusEnum);
+    if (!medicationEnumKeys.includes(upperStatus)) {
+      statusEnum = MedicationStatusEnum.NOT_STARTED;
+    } else {
+      statusEnum = MedicationStatusEnum[upperStatus as keyof typeof MedicationStatusEnum];
+    }
   }
   
   const statusInfo = getStatusLabel(statusEnum);

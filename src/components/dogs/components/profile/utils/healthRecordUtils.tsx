@@ -6,31 +6,31 @@ import { Syringe, Stethoscope, Pill, Scissors, FileText } from 'lucide-react';
 // Define record type options with icons and labels
 export const recordTypeOptions = [
   {
-    value: HealthRecordTypeEnum.Examination,
+    value: HealthRecordTypeEnum.EXAMINATION,
     label: 'Examination',
     icon: <Stethoscope className="h-4 w-4 mr-2" />,
     description: 'Regular check-ups and health examinations'
   },
   {
-    value: HealthRecordTypeEnum.Vaccination,
+    value: HealthRecordTypeEnum.VACCINATION,
     label: 'Vaccination',
     icon: <Syringe className="h-4 w-4 mr-2" />,
     description: 'Vaccines and immunizations'
   },
   {
-    value: HealthRecordTypeEnum.Medication,
+    value: HealthRecordTypeEnum.MEDICATION,
     label: 'Medication',
     icon: <Pill className="h-4 w-4 mr-2" />,
     description: 'Prescribed medications and treatments'
   },
   {
-    value: HealthRecordTypeEnum.Surgery,
+    value: HealthRecordTypeEnum.SURGERY,
     label: 'Surgery',
     icon: <Scissors className="h-4 w-4 mr-2" />,
     description: 'Surgical procedures'
   },
   {
-    value: HealthRecordTypeEnum.Other,
+    value: HealthRecordTypeEnum.OTHER,
     label: 'Other',
     icon: <FileText className="h-4 w-4 mr-2" />,
     description: 'Other health-related records'
@@ -61,13 +61,13 @@ export const getHealthRecordColor = (type: string | HealthRecordTypeEnum): strin
   const typeEnum = typeof type === 'string' ? stringToHealthRecordType(type) : type;
   
   switch (typeEnum) {
-    case HealthRecordTypeEnum.Vaccination:
+    case HealthRecordTypeEnum.VACCINATION:
       return 'text-blue-500';
-    case HealthRecordTypeEnum.Medication:
+    case HealthRecordTypeEnum.MEDICATION:
       return 'text-purple-500';
-    case HealthRecordTypeEnum.Surgery:
+    case HealthRecordTypeEnum.SURGERY:
       return 'text-red-500';
-    case HealthRecordTypeEnum.Examination:
+    case HealthRecordTypeEnum.EXAMINATION:
       return 'text-green-500';
     default:
       return 'text-gray-500';

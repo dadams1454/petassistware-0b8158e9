@@ -19,19 +19,19 @@ const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) 
     let iconColor = 'text-gray-500';
     
     switch (type) {
-      case HealthRecordTypeEnum.Vaccination:
+      case HealthRecordTypeEnum.VACCINATION:
         iconColor = 'text-green-500';
         break;
-      case HealthRecordTypeEnum.Examination:
+      case HealthRecordTypeEnum.EXAMINATION:
         iconColor = 'text-blue-500';
         break;
-      case HealthRecordTypeEnum.Medication:
+      case HealthRecordTypeEnum.MEDICATION:
         iconColor = 'text-purple-500';
         break;
-      case HealthRecordTypeEnum.Surgery:
+      case HealthRecordTypeEnum.SURGERY:
         iconColor = 'text-red-500';
         break;
-      case HealthRecordTypeEnum.Observation:
+      case HealthRecordTypeEnum.OBSERVATION:
         iconColor = 'text-amber-500';
         break;
       default:
@@ -53,7 +53,7 @@ const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) 
             <div className="flex justify-between items-start">
               <h3 className="font-medium">{record.title}</h3>
               <span className="text-sm text-muted-foreground">
-                {format(new Date(record.date || record.visit_date), 'MMM d, yyyy')}
+                {format(new Date(record.visit_date || record.date), 'MMM d, yyyy')}
               </span>
             </div>
             <p className="text-sm text-muted-foreground line-clamp-2 mt-1">

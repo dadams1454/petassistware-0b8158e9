@@ -1,97 +1,130 @@
 
-import { HealthRecordTypeEnum } from '@/types/health';
-import {
-  Stethoscope,
-  Syringe,
-  Pill,
-  FileText,
-  Activity,
-  Image,
-  HelpCircle,
-  Shield,
-  Microscope
-} from 'lucide-react';
+import { HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
+import { FileText, Syringe, Stethoscope, Pill, Scissors, Eye, Droplet, Cut, AlarmClock, Flask, Scan, ShieldCheck, Activity } from 'lucide-react';
 
-/**
- * Get the appropriate icon for a health record type
- */
+// Get icon component for health record type
 export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string) => {
-  switch (recordType) {
-    case HealthRecordTypeEnum.Examination:
+  // Convert string to enum if needed
+  const type = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
+  
+  // Return appropriate icon based on record type
+  switch (type) {
+    case HealthRecordTypeEnum.EXAMINATION:
       return Stethoscope;
-    case HealthRecordTypeEnum.Procedure:
-      return Activity;
-    case HealthRecordTypeEnum.Vaccination:
+    case HealthRecordTypeEnum.PROCEDURE:
+      return Cut;
+    case HealthRecordTypeEnum.VACCINATION:
       return Syringe;
-    case HealthRecordTypeEnum.Medication:
+    case HealthRecordTypeEnum.MEDICATION:
       return Pill;
-    case HealthRecordTypeEnum.Test:
+    case HealthRecordTypeEnum.TEST:
+      return Activity;
+    case HealthRecordTypeEnum.LABORATORY:
+      return Flask;
+    case HealthRecordTypeEnum.IMAGING:
+      return Scan;
+    case HealthRecordTypeEnum.PREVENTIVE:
+      return ShieldCheck;
+    case HealthRecordTypeEnum.OTHER:
       return FileText;
-    case HealthRecordTypeEnum.Laboratory:
-      return Microscope;
-    case HealthRecordTypeEnum.Imaging:
-      return Image;
-    case HealthRecordTypeEnum.Preventive:
-      return Shield;
-    case HealthRecordTypeEnum.Other:
-      return HelpCircle;
+    case HealthRecordTypeEnum.SURGERY:
+      return Scissors;
+    case HealthRecordTypeEnum.OBSERVATION:
+      return Eye;
+    case HealthRecordTypeEnum.DEWORMING:
+      return Droplet;
+    case HealthRecordTypeEnum.GROOMING:
+      return Cut;
+    case HealthRecordTypeEnum.DENTAL:
+      return Activity;
+    case HealthRecordTypeEnum.ALLERGY:
+      return AlarmClock;
     default:
-      return HelpCircle;
+      return FileText;
   }
 };
 
-/**
- * Get the color for a health record type
- */
+// Get color class for health record type
 export const getHealthRecordColor = (recordType: HealthRecordTypeEnum | string) => {
-  switch (recordType) {
-    case HealthRecordTypeEnum.Examination:
-      return 'bg-blue-50 text-blue-700 border-blue-200';
-    case HealthRecordTypeEnum.Procedure:
-      return 'bg-purple-50 text-purple-700 border-purple-200';
-    case HealthRecordTypeEnum.Vaccination:
-      return 'bg-green-50 text-green-700 border-green-200';
-    case HealthRecordTypeEnum.Medication:
-      return 'bg-orange-50 text-orange-700 border-orange-200';
-    case HealthRecordTypeEnum.Test:
-      return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-    case HealthRecordTypeEnum.Laboratory:
-      return 'bg-cyan-50 text-cyan-700 border-cyan-200';
-    case HealthRecordTypeEnum.Imaging:
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-    case HealthRecordTypeEnum.Preventive:
-      return 'bg-teal-50 text-teal-700 border-teal-200';
-    case HealthRecordTypeEnum.Other:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
+  // Convert string to enum if needed
+  const type = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
+  
+  switch (type) {
+    case HealthRecordTypeEnum.EXAMINATION:
+      return 'text-blue-500';
+    case HealthRecordTypeEnum.PROCEDURE:
+      return 'text-purple-500';
+    case HealthRecordTypeEnum.VACCINATION:
+      return 'text-green-500';
+    case HealthRecordTypeEnum.MEDICATION:
+      return 'text-purple-500';
+    case HealthRecordTypeEnum.TEST:
+      return 'text-amber-500';
+    case HealthRecordTypeEnum.LABORATORY:
+      return 'text-cyan-500';
+    case HealthRecordTypeEnum.IMAGING:
+      return 'text-indigo-500';
+    case HealthRecordTypeEnum.PREVENTIVE:
+      return 'text-teal-500';
+    case HealthRecordTypeEnum.OTHER:
+      return 'text-gray-500';
+    case HealthRecordTypeEnum.SURGERY:
+      return 'text-red-500';
+    case HealthRecordTypeEnum.OBSERVATION:
+      return 'text-yellow-500';
+    case HealthRecordTypeEnum.DEWORMING:
+      return 'text-lime-500';
+    case HealthRecordTypeEnum.GROOMING:
+      return 'text-rose-500';
+    case HealthRecordTypeEnum.DENTAL:
+      return 'text-sky-500';
+    case HealthRecordTypeEnum.ALLERGY:
+      return 'text-orange-500';
     default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
+      return 'text-gray-500';
   }
 };
 
-/**
- * Get a human-readable label for a health record type
- */
-export const getHealthRecordTypeLabel = (recordType: HealthRecordTypeEnum | string) => {
-  switch (recordType) {
-    case HealthRecordTypeEnum.Examination:
+// Get display name for health record type
+export const getHealthRecordTypeName = (recordType: HealthRecordTypeEnum | string) => {
+  // Convert string to enum if needed
+  const type = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
+  
+  switch (type) {
+    case HealthRecordTypeEnum.EXAMINATION:
       return 'Examination';
-    case HealthRecordTypeEnum.Procedure:
+    case HealthRecordTypeEnum.PROCEDURE:
       return 'Procedure';
-    case HealthRecordTypeEnum.Vaccination:
+    case HealthRecordTypeEnum.VACCINATION:
       return 'Vaccination';
-    case HealthRecordTypeEnum.Medication:
+    case HealthRecordTypeEnum.MEDICATION:
       return 'Medication';
-    case HealthRecordTypeEnum.Test:
+    case HealthRecordTypeEnum.TEST:
       return 'Test';
-    case HealthRecordTypeEnum.Laboratory:
+    case HealthRecordTypeEnum.LABORATORY:
       return 'Laboratory';
-    case HealthRecordTypeEnum.Imaging:
+    case HealthRecordTypeEnum.IMAGING:
       return 'Imaging';
-    case HealthRecordTypeEnum.Preventive:
+    case HealthRecordTypeEnum.PREVENTIVE:
       return 'Preventive Care';
-    case HealthRecordTypeEnum.Other:
+    case HealthRecordTypeEnum.OTHER:
       return 'Other';
+    case HealthRecordTypeEnum.SURGERY:
+      return 'Surgery';
+    case HealthRecordTypeEnum.OBSERVATION:
+      return 'Observation';
+    case HealthRecordTypeEnum.DEWORMING:
+      return 'Deworming';
+    case HealthRecordTypeEnum.GROOMING:
+      return 'Grooming';
+    case HealthRecordTypeEnum.DENTAL:
+      return 'Dental';
+    case HealthRecordTypeEnum.ALLERGY:
+      return 'Allergy';
     default:
-      return 'Other';
+      return 'Unknown';
   }
 };
+
+// Export directly from health.ts to ensure consistent usage
+export { HealthRecordTypeEnum } from '@/types/health';
