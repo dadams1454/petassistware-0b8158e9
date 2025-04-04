@@ -48,13 +48,11 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         const processedDog: DogProfile = {
           ...dogData,
           gender: (dogData.gender as Gender) || 'Female', // Ensure gender is typed correctly
+          status: dogData.status || 'active' // Add status property which is needed for Dog type
         };
         
         // Convert to Dog type which requires status
-        const dogWithStatus: Dog = dogProfileToBasicDog({
-          ...processedDog,
-          status: dogData.status || 'active' // Default to 'active' if status is not provided
-        });
+        const dogWithStatus: Dog = dogProfileToBasicDog(processedDog);
         
         setDog(dogWithStatus);
         
@@ -74,12 +72,10 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           const maleProfile: DogProfile = {
             ...male,
             gender: (male.gender as Gender) || 'Male',
+            status: male.status || 'active' // Add status property
           };
           
-          return dogProfileToBasicDog({
-            ...maleProfile,
-            status: male.status || 'active'
-          });
+          return dogProfileToBasicDog(maleProfile);
         });
         
         setCompatibleMales(malesWithStatus);

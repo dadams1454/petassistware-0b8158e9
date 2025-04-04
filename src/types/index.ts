@@ -7,18 +7,17 @@ export type { Dog, DogProfile, HealthRecord, Vaccination } from './dog';
 export { DogGender, DogStatus, HealthRecordTypeEnum, DocumentType } from './dog';
 
 // Reproductive cycle types
-export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensity } from './reproductive';
-export { ReproductiveStatus, normalizeBreedingRecord, HeatIntensityValues } from './reproductive';
+export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensityType, HeatStage } from './reproductive';
+export { ReproductiveStatus, normalizeBreedingRecord, HeatIntensity, HeatIntensityValues } from './reproductive';
 export type { 
   ReproductiveMilestone, 
   ReproductiveCycleData,
   BreedingChecklistItem,
-  BreedingPrepFormData,
-  HeatStage
+  BreedingPrepFormData
 } from './reproductive';
 
 // Common types
-export type { WeightUnit, WeightUnitWithLegacy } from './common';
+export type { Gender, WeightUnit, WeightUnitWithLegacy } from './common';
 export { standardizeWeightUnit, weightUnits } from './common';
 
 // Health-related types
@@ -71,7 +70,8 @@ export type {
   SocializationReactionOption,
   SocializationProgress,
   PuppyCareLog,
-  SocializationExperience
+  SocializationExperience,
+  SocializationReaction
 } from './puppyTracking';
 
 // Daily care types

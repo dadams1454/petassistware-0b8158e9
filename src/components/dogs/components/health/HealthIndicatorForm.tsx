@@ -14,9 +14,9 @@ import { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum } from '@/type
 const healthIndicatorSchema = z.object({
   dog_id: z.string(),
   date: z.date().default(new Date()),
-  appetite: z.nativeEnum(AppetiteLevelEnum).optional(),
-  energy: z.nativeEnum(EnergyLevelEnum).optional(),
-  stool_consistency: z.nativeEnum(StoolConsistencyEnum).optional(),
+  appetite: z.string().optional(),
+  energy: z.string().optional(),
+  stool_consistency: z.string().optional(),
   abnormal: z.boolean().default(false),
   notes: z.string().optional(),
 });
@@ -130,13 +130,13 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={StoolConsistencyEnum.Normal}>Normal</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Soft}>Soft</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Loose}>Loose</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Watery}>Watery</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Hard}>Hard</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Mucousy}>Mucousy</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.Bloody}>Bloody</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.NORMAL}>Normal</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.SOFT}>Soft</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.LOOSE}>Loose</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.WATERY}>Watery</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.HARD}>Hard</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.MUCOUSY}>Mucousy</SelectItem>
+                    <SelectItem value={StoolConsistencyEnum.BLOODY}>Bloody</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

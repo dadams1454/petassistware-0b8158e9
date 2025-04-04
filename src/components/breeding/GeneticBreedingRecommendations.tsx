@@ -52,7 +52,7 @@ const GeneticBreedingRecommendations: React.FC<GeneticBreedingRecommendationsPro
             <div className="p-3 rounded-md bg-muted">
               <span className="text-sm block mb-1">Selected: <strong>{dog.name}</strong></span>
               <span className="text-xs text-muted-foreground">
-                {dog.breed} • {dog.gender === 'male' ? 'Male' : 'Female'}
+                {dog.breed} • {dog.gender === 'Male' ? 'Male' : 'Female'}
                 {dog.color ? ` • ${dog.color}` : ''}
               </span>
             </div>

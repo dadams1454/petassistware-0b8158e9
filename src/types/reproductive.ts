@@ -1,3 +1,4 @@
+
 import { Dog } from './dog';
 
 // Heat cycle interface
@@ -33,23 +34,23 @@ export enum HeatIntensity {
 
 // Heat intensity values for compatibility
 export const HeatIntensityValues = {
-  mild: 'mild',
-  moderate: 'moderate',
-  strong: 'strong',
-  unknown: 'unknown',
-  low: 'low',
-  medium: 'medium',
-  high: 'high',
-  peak: 'peak',
+  mild: 'mild' as HeatIntensityType,
+  moderate: 'moderate' as HeatIntensityType,
+  strong: 'strong' as HeatIntensityType,
+  unknown: 'unknown' as HeatIntensityType,
+  low: 'low' as HeatIntensityType,
+  medium: 'medium' as HeatIntensityType,
+  high: 'high' as HeatIntensityType,
+  peak: 'peak' as HeatIntensityType,
   // Also include uppercase versions for backward compatibility
-  MILD: 'mild',
-  MODERATE: 'moderate',
-  STRONG: 'strong',
-  UNKNOWN: 'unknown',
-  LOW: 'low',
-  MEDIUM: 'medium',
-  HIGH: 'high',
-  PEAK: 'peak'
+  MILD: 'mild' as HeatIntensityType,
+  MODERATE: 'moderate' as HeatIntensityType,
+  STRONG: 'strong' as HeatIntensityType,
+  UNKNOWN: 'unknown' as HeatIntensityType,
+  LOW: 'low' as HeatIntensityType,
+  MEDIUM: 'medium' as HeatIntensityType,
+  HIGH: 'high' as HeatIntensityType,
+  PEAK: 'peak' as HeatIntensityType
 };
 
 // Breeding record interface
@@ -153,6 +154,7 @@ export interface HeatStage {
   start_day: number;
   end_day: number;
   fertility_level: 'none' | 'low' | 'medium' | 'high' | 'peak';
+  color?: string; // Added for compatibility
   
   // For compatibility
   day?: number;
@@ -210,6 +212,7 @@ export interface BreedingChecklistItem {
   completed: boolean;
   timeframe?: string;
   priority: 'low' | 'medium' | 'high';
+  category?: string; // Added for compatibility
   
   // For compatibility
   task?: string;

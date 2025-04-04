@@ -2,6 +2,7 @@
 // Define reusable common types across the application
 export type WeightUnit = 'g' | 'kg' | 'lb' | 'oz';
 
+// Define Gender as a union type instead of enum for better compatibility
 export type Gender = 'Male' | 'Female';
 
 export interface SelectOption {

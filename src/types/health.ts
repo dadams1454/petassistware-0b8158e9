@@ -24,7 +24,9 @@ export enum EnergyEnum {
   HIGH = 'high',
   NORMAL = 'normal',
   LOW = 'low',
-  VERY_LOW = 'very_low'
+  VERY_LOW = 'very_low',
+  HYPERACTIVE = 'hyperactive', // Added missing items
+  LETHARGIC = 'lethargic'
 }
 
 // For compatibility
@@ -32,7 +34,9 @@ export enum EnergyLevelEnum {
   High = 'high',
   Normal = 'normal',
   Low = 'low',
-  VeryLow = 'very_low'
+  VeryLow = 'very_low',
+  Hyperactive = 'hyperactive', // Added missing items
+  Lethargic = 'lethargic'
 }
 
 // Export StoolConsistencyEnum
@@ -41,7 +45,11 @@ export enum StoolConsistencyEnum {
   LOOSE = 'loose',
   DIARRHEA = 'diarrhea',
   CONSTIPATED = 'constipated',
-  BLOODY = 'bloody'
+  BLOODY = 'bloody',
+  SOFT = 'soft', // Added missing items
+  WATERY = 'watery',
+  HARD = 'hard',
+  MUCOUSY = 'mucousy'
 }
 
 // Define MedicationStatus enum
@@ -71,8 +79,8 @@ export interface Medication {
   id: string;
   dog_id: string;
   name: string;
-  dosage: number;
-  dosage_unit: string;
+  dosage?: number; // Changed to optional for compatibility
+  dosage_unit?: string;
   frequency: string;
   administration_route?: string;
   start_date: string;
@@ -83,6 +91,8 @@ export interface Medication {
   status?: MedicationStatusEnum | MedicationStatus | MedicationStatusResult;
   last_administered?: string;
   next_due?: string;
+  medication_name?: string; // For compatibility
+  last_administered_date?: string; // For compatibility
 }
 
 // Define MedicationAdministration interface
@@ -180,6 +190,67 @@ export interface HealthCertificate {
   notes?: string;
   file_url?: string;
   created_at: string;
+}
+
+// Health record type enum (moved from dog.ts)
+export enum HealthRecordTypeEnum {
+  Vaccination = 'vaccination',
+  Examination = 'examination',
+  Medication = 'medication',
+  Surgery = 'surgery',
+  Laboratory = 'laboratory',
+  Imaging = 'imaging',
+  Dental = 'dental',
+  Allergy = 'allergy',
+  Emergency = 'emergency',
+  Preventive = 'preventive',
+  Observation = 'observation',
+  Deworming = 'deworming',
+  Grooming = 'grooming',
+  Test = 'test',
+  Other = 'other',
+  Procedure = 'procedure'
+}
+
+// Health record interface (moved from dog.ts)
+export interface HealthRecord {
+  id: string;
+  dog_id: string;
+  visit_date: string;
+  record_type: string;
+  title: string;
+  vet_name: string;
+  description?: string;
+  performed_by?: string;
+  next_due_date?: string;
+  document_url?: string;
+  record_notes?: string;
+  created_at?: string;
+  // Vaccination-specific fields
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  expiration_date?: string;
+  // Medication-specific fields
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string;
+  duration?: number;
+  duration_unit?: string;
+  administration_route?: string;
+  // Examination-specific fields
+  examination_type?: string;
+  findings?: string;
+  recommendations?: string;
+  follow_up_date?: string;
+  // Surgery-specific fields
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
 }
 
 // Helper function to map data to HealthRecord

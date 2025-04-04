@@ -37,7 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { HeatIntensity, HeatIntensityType, HeatCycle } from '@/types/reproductive';
+import { HeatIntensity, HeatIntensityType, HeatCycle, HeatIntensityValues } from '@/types/reproductive';
 
 const formSchema = z.object({
   start_date: z.date({
@@ -197,9 +197,9 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={HeatIntensityValues.Mild}>Mild</SelectItem>
-                      <SelectItem value={HeatIntensityValues.Moderate}>Moderate</SelectItem>
-                      <SelectItem value={HeatIntensityValues.Strong}>Strong</SelectItem>
+                      <SelectItem value={HeatIntensityValues.mild}>Mild</SelectItem>
+                      <SelectItem value={HeatIntensityValues.moderate}>Moderate</SelectItem>
+                      <SelectItem value={HeatIntensityValues.strong}>Strong</SelectItem>
                       <SelectItem value="unknown">Unknown</SelectItem>
                     </SelectContent>
                   </Select>

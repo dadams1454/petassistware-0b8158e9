@@ -1,9 +1,18 @@
+
 import { Gender, WeightUnit } from './common';
 
-// Dog gender enum
+// Dog gender enum for legacy compatibility
 export enum DogGender {
   Male = 'Male',
   Female = 'Female',
+}
+
+// Dog status enum
+export enum DogStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+  Archived = 'archived',
+  Deceased = 'deceased'
 }
 
 // Dog profile interface for detailed dog information
@@ -40,6 +49,7 @@ export interface DogProfile {
   sire_id?: string; // For breeding compatibility
   reproductive_status?: string; // For reproductive tracking
   group_ids?: string[]; // For dog groups
+  dam_id?: string; // Added for compatibility
 }
 
 // Dog interface for compatibility with all dog-related components
@@ -72,6 +82,7 @@ export interface Dog {
   tie_date?: string;
   tenant_id?: string;
   reproductive_status?: string; // Add missing field
+  dam_id?: string; // Added for compatibility
 }
 
 // Dogs query parameters interface
@@ -156,10 +167,11 @@ export const mapToDogProfile = (data: any): DogProfile => {
     vaccination_type: data.vaccination_type,
     tie_date: data.tie_date,
     tenant_id: data.tenant_id,
-    status: data.status,
+    status: data.status || 'active',
     sire_id: data.sire_id,
     reproductive_status: data.reproductive_status,
-    group_ids: data.group_ids
+    group_ids: data.group_ids,
+    dam_id: data.dam_id
   };
 };
 
@@ -193,7 +205,8 @@ export const dogProfileToBasicDog = (profile: DogProfile): Dog => {
     vaccination_type: profile.vaccination_type,
     tie_date: profile.tie_date,
     tenant_id: profile.tenant_id,
-    reproductive_status: profile.reproductive_status
+    reproductive_status: profile.reproductive_status,
+    dam_id: profile.dam_id
   };
 };
 
@@ -208,68 +221,14 @@ export enum DocumentType {
   Other = 'other'
 }
 
-// Health record type enum
-export enum HealthRecordTypeEnum {
-  Vaccination = 'vaccination',
-  Examination = 'examination',
-  Medication = 'medication',
-  Surgery = 'surgery',
-  Laboratory = 'laboratory',
-  Imaging = 'imaging',
-  Dental = 'dental',
-  Allergy = 'allergy',
-  Emergency = 'emergency',
-  Preventive = 'preventive',
-  Observation = 'observation',
-  Deworming = 'deworming',
-  Grooming = 'grooming',
-  Test = 'test',
-  Other = 'other',
-  Procedure = 'procedure'
-}
+// Export the HealthRecord and HealthRecordTypeEnum from health.ts
+export type { HealthRecord } from './health';
+export { HealthRecordTypeEnum } from './health';
 
-// Health record interface
-export interface HealthRecord {
-  id: string;
-  dog_id: string;
-  visit_date: string;
-  record_type: string;
-  title: string;
-  vet_name: string;
-  description?: string;
-  performed_by?: string;
-  next_due_date?: string;
-  document_url?: string;
-  record_notes?: string;
-  created_at?: string;
-  // Vaccination-specific fields
-  vaccine_name?: string;
-  manufacturer?: string;
-  lot_number?: string;
-  expiration_date?: string;
-  // Medication-specific fields
-  medication_name?: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency?: string;
-  start_date?: string;
-  end_date?: string;
-  duration?: number;
-  duration_unit?: string;
-  administration_route?: string;
-  // Examination-specific fields
-  examination_type?: string;
-  findings: string;
-  recommendations: string;
-  follow_up_date: string;
-  // Surgery-specific fields
-  procedure_name: string;
-  surgeon: string;
-  anesthesia_used: string;
-  recovery_notes: string;
-}
+// Export WeightUnit from common.ts for compatibility
+export { WeightUnit } from './common';
 
-// Vaccination interface
+// Export Vaccination interface
 export interface Vaccination {
   id: string;
   dog_id: string;
