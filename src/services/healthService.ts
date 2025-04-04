@@ -1,47 +1,9 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { HealthRecord, HealthRecordTypeEnum, WeightRecord } from '@/types/health';
-import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
-import { standardizeWeightUnit } from '@/types/common';
+import { addDays, differenceInDays, isAfter, isBefore, parseISO } from 'date-fns';
 
 /**
- * Add a new health record for a dog
- */
-export const addHealthRecord = async (healthRecord: Omit<HealthRecord, 'id' | 'created_at'>) => {
-  try {
-    // Format date for consistency
-    const visitDate = healthRecord.visit_date ? formatDateToYYYYMMDD(healthRecord.visit_date) : formatDateToYYYYMMDD(new Date());
-    const nextDueDate = healthRecord.next_due_date ? formatDateToYYYYMMDD(healthRecord.next_due_date) : null;
-    
-    // Set defaults for optional fields
-    const recordData = {
-      ...healthRecord,
-      visit_date: visitDate,
-      next_due_date: nextDueDate,
-      document_url: healthRecord.document_url || '',
-    };
-    
-    // Insert into database
-    const { data, error } = await supabase
-      .from('health_records')
-      .insert(recordData)
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('Error adding health record:', error);
-      throw error;
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('Error in addHealthRecord:', error);
-    throw error;
-  }
-};
-
-/**
- * Get health records for a specific dog
+ * Fetch all health records for a dog
  */
 export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> => {
   try {
@@ -51,12 +13,14 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
       .eq('dog_id', dogId)
       .order('visit_date', { ascending: false });
       
-    if (error) {
-      console.error('Error fetching health records:', error);
-      throw error;
-    }
+    if (error) throw error;
     
-    return data || [];
+    // Convert to fully typed health records
+    return (data || []).map(record => ({
+      ...record,
+      date: record.visit_date, // Ensure date field is set
+      record_type: record.record_type as HealthRecordTypeEnum
+    })) as HealthRecord[];
   } catch (error) {
     console.error('Error in getHealthRecords:', error);
     throw error;
@@ -64,129 +28,33 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
 };
 
 /**
- * Delete a health record
+ * Add a new health record
  */
-export const deleteHealthRecord = async (recordId: string) => {
+export const addHealthRecord = async (recordData: Partial<HealthRecord>): Promise<HealthRecord> => {
   try {
-    const { error } = await supabase
-      .from('health_records')
-      .delete()
-      .eq('id', recordId);
-      
-    if (error) {
-      console.error('Error deleting health record:', error);
-      throw error;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error in deleteHealthRecord:', error);
-    throw error;
-  }
-};
-
-/**
- * Update a health record
- */
-export const updateHealthRecord = async (recordId: string, updates: Partial<HealthRecord>) => {
-  try {
-    // Format dates if present
-    if (updates.visit_date) {
-      updates.visit_date = formatDateToYYYYMMDD(updates.visit_date);
-    }
-    
-    if (updates.next_due_date) {
-      updates.next_due_date = formatDateToYYYYMMDD(updates.next_due_date);
-    }
+    // Ensure required fields are present
+    if (!recordData.dog_id) throw new Error('Dog ID is required');
+    if (!recordData.visit_date) throw new Error('Visit date is required');
     
     const { data, error } = await supabase
       .from('health_records')
-      .update(updates)
-      .eq('id', recordId)
+      .insert({
+        ...recordData,
+        date: recordData.visit_date, // Keep both for compatibility
+        vet_name: recordData.vet_name || 'Unknown'
+      })
       .select()
       .single();
       
-    if (error) {
-      console.error('Error updating health record:', error);
-      throw error;
-    }
+    if (error) throw error;
     
-    return data;
+    return {
+      ...data,
+      date: data.visit_date,
+      record_type: data.record_type as HealthRecordTypeEnum
+    } as HealthRecord;
   } catch (error) {
-    console.error('Error in updateHealthRecord:', error);
-    throw error;
-  }
-};
-
-/**
- * Get upcoming medications for a dog
- */
-export const getUpcomingMedications = async (dogId?: string): Promise<HealthRecord[]> => {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const thirtyDaysLater = new Date();
-    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
-    const thirtyDaysLaterStr = thirtyDaysLater.toISOString().split('T')[0];
-    
-    let query = supabase
-      .from('health_records')
-      .select('*')
-      .eq('record_type', HealthRecordTypeEnum.Medication)
-      .gte('next_due_date', today)
-      .lte('next_due_date', thirtyDaysLaterStr)
-      .order('next_due_date', { ascending: true });
-      
-    if (dogId) {
-      query = query.eq('dog_id', dogId);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching upcoming medications:', error);
-      throw error;
-    }
-    
-    return data || [];
-  } catch (error) {
-    console.error('Error in getUpcomingMedications:', error);
-    throw error;
-  }
-};
-
-/**
- * Get expiring medications for a dog
- */
-export const getExpiringMedications = async (dogId?: string): Promise<HealthRecord[]> => {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const thirtyDaysLater = new Date();
-    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
-    const thirtyDaysLaterStr = thirtyDaysLater.toISOString().split('T')[0];
-    
-    let query = supabase
-      .from('health_records')
-      .select('*')
-      .eq('record_type', HealthRecordTypeEnum.Medication)
-      .is('next_due_date', null) // Medications with no next due date
-      .not('expiration_date', 'is', null) // Only get records with expiration date
-      .lte('expiration_date', thirtyDaysLaterStr) // Expiring in the next 30 days
-      .order('expiration_date', { ascending: true });
-      
-    if (dogId) {
-      query = query.eq('dog_id', dogId);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching expiring medications:', error);
-      throw error;
-    }
-    
-    return data || [];
-  } catch (error) {
-    console.error('Error in getExpiringMedications:', error);
+    console.error('Error in addHealthRecord:', error);
     throw error;
   }
 };
@@ -202,16 +70,9 @@ export const getWeightRecords = async (dogId: string): Promise<WeightRecord[]> =
       .eq('dog_id', dogId)
       .order('date', { ascending: false });
       
-    if (error) {
-      console.error('Error fetching weight records:', error);
-      throw error;
-    }
+    if (error) throw error;
     
-    // Convert legacy weight units
-    return (data || []).map(record => ({
-      ...record,
-      weight_unit: standardizeWeightUnit(record.weight_unit),
-    }));
+    return data as WeightRecord[];
   } catch (error) {
     console.error('Error in getWeightRecords:', error);
     throw error;
@@ -219,67 +80,91 @@ export const getWeightRecords = async (dogId: string): Promise<WeightRecord[]> =
 };
 
 /**
- * Add a new weight record
+ * Get weight history for a dog
  */
-export const addWeightRecord = async (weightData: Omit<WeightRecord, 'id' | 'created_at'>) => {
+export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> => {
+  return getWeightRecords(dogId);
+};
+
+/**
+ * Get medications due soon or overdue
+ */
+export const getExpiringMedications = async (
+  dogId: string, 
+  daysThreshold = 14
+): Promise<HealthRecord[]> => {
   try {
-    // Format date and standardize weight unit
-    const formattedDate = formatDateToYYYYMMDD(weightData.date);
-    const standardizedUnit = standardizeWeightUnit(weightData.weight_unit);
+    const today = new Date();
+    const futureDate = addDays(today, daysThreshold);
     
     const { data, error } = await supabase
-      .from('weight_records')
-      .insert({
-        ...weightData,
-        date: formattedDate,
-        weight_unit: standardizedUnit,
-      })
-      .select()
-      .single();
+      .from('health_records')
+      .select('*')
+      .eq('dog_id', dogId)
+      .eq('record_type', HealthRecordTypeEnum.Medication)
+      .not('next_due_date', 'is', null);
       
-    if (error) {
-      console.error('Error adding weight record:', error);
-      throw error;
-    }
+    if (error) throw error;
     
-    return data;
+    // Filter medications that are due within the threshold or overdue
+    const dueOrExpiring = (data || []).filter(medication => {
+      if (!medication.next_due_date) return false;
+      
+      const dueDate = parseISO(medication.next_due_date);
+      return (
+        // Due within threshold
+        (isAfter(dueDate, today) && isBefore(dueDate, futureDate)) ||
+        // Overdue
+        isBefore(dueDate, today)
+      );
+    });
+    
+    return dueOrExpiring.map(record => ({
+      ...record,
+      date: record.visit_date, // Ensure date field is set
+      record_type: record.record_type as HealthRecordTypeEnum
+    })) as HealthRecord[];
   } catch (error) {
-    console.error('Error in addWeightRecord:', error);
+    console.error('Error in getExpiringMedications:', error);
     throw error;
   }
 };
 
 /**
- * Delete a weight record
+ * Get upcoming medications (due in the future)
  */
-export const deleteWeightRecord = async (recordId: string) => {
+export const getUpcomingMedications = async (
+  dogId: string
+): Promise<HealthRecord[]> => {
   try {
-    const { error } = await supabase
-      .from('weight_records')
-      .delete()
-      .eq('id', recordId);
-      
-    if (error) {
-      console.error('Error deleting weight record:', error);
-      throw error;
-    }
+    const today = new Date();
     
-    return true;
+    const { data, error } = await supabase
+      .from('health_records')
+      .select('*')
+      .eq('dog_id', dogId)
+      .eq('record_type', HealthRecordTypeEnum.Medication)
+      .not('next_due_date', 'is', null);
+      
+    if (error) throw error;
+    
+    // Filter medications that are due in the future
+    const upcoming = (data || []).filter(medication => {
+      if (!medication.next_due_date) return false;
+      
+      const dueDate = parseISO(medication.next_due_date);
+      return isAfter(dueDate, today);
+    });
+    
+    return upcoming.map(record => ({
+      ...record,
+      date: record.visit_date, // Ensure date field is set
+      record_type: record.record_type as HealthRecordTypeEnum
+    })) as HealthRecord[];
   } catch (error) {
-    console.error('Error in deleteWeightRecord:', error);
+    console.error('Error in getUpcomingMedications:', error);
     throw error;
   }
 };
 
-/**
- * Utility to map from form data to weight record
- */
-export const mapToWeightRecord = (formData: any, dogId: string): Omit<WeightRecord, 'id' | 'created_at'> => {
-  return {
-    dog_id: dogId,
-    weight: parseFloat(formData.weight),
-    weight_unit: formData.weight_unit,
-    date: formData.date,
-    notes: formData.notes || '',
-  };
-};
+// Additional helper functions...

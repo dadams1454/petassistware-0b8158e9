@@ -1,76 +1,70 @@
 
-// Weight units
-export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
+// Common types for the application
 
-// Legacy weight units for backward compatibility
-export type WeightUnitWithLegacy = WeightUnit | 'pounds' | 'kilograms' | 'grams' | 'ounces';
+// Status enum
+export type Status = 'active' | 'inactive' | 'archived' | 'deleted';
 
-// Define weight units for UI
-export const weightUnits = [
-  { code: 'lb', name: 'Pounds (lb)' },
-  { code: 'kg', name: 'Kilograms (kg)' },
-  { code: 'g', name: 'Grams (g)' },
-  { code: 'oz', name: 'Ounces (oz)' }
+// Weight unit type
+export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
+
+// Weight unit definition
+export interface WeightUnitDef {
+  code: WeightUnit;
+  name: string;
+  ratio: number; // Ratio to grams for conversion
+}
+
+// Standard weight units
+export const weightUnits: WeightUnitDef[] = [
+  { code: 'g', name: 'Grams', ratio: 1 },
+  { code: 'kg', name: 'Kilograms', ratio: 1000 },
+  { code: 'oz', name: 'Ounces', ratio: 28.3495 },
+  { code: 'lb', name: 'Pounds', ratio: 453.592 }
 ];
 
-// Function to standardize weight units
-export const standardizeWeightUnit = (unit: string): WeightUnit => {
-  // Convert legacy units to standardized ones
-  const unitMap: Record<string, WeightUnit> = {
-    'lb': 'lb',
-    'kg': 'kg',
-    'g': 'g',
-    'oz': 'oz',
-    'pounds': 'lb',
-    'kilograms': 'kg',
-    'grams': 'g',
-    'ounces': 'oz',
-    'pound': 'lb',
-    'kilogram': 'kg',
-    'gram': 'g',
-    'ounce': 'oz'
-  };
+// Helper function to standardize weight units
+export function standardizeWeightUnit(unit: string | null): WeightUnit {
+  if (!unit) return 'g';
   
-  return unitMap[unit.toLowerCase()] || 'lb';
-};
-
-// Available weight units for UI
-export const weightUnitOptions = [
-  { value: 'lb', label: 'Pounds (lb)' },
-  { value: 'kg', label: 'Kilograms (kg)' },
-  { value: 'g', label: 'Grams (g)' },
-  { value: 'oz', label: 'Ounces (oz)' }
-];
-
-// Generic status types
-export type Status = 'active' | 'inactive' | 'pending' | 'archived';
-
-// Pagination params for API requests
-export interface PaginationParams {
-  page?: number;
-  pageSize?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  const normalizedUnit = unit.toLowerCase();
+  
+  // Handle common variations
+  if (normalizedUnit === 'gram' || normalizedUnit === 'grams' || normalizedUnit === 'g') {
+    return 'g';
+  }
+  if (normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms' || normalizedUnit === 'kg') {
+    return 'kg';
+  }
+  if (normalizedUnit === 'ounce' || normalizedUnit === 'ounces' || normalizedUnit === 'oz') {
+    return 'oz';
+  }
+  if (normalizedUnit === 'pound' || normalizedUnit === 'pounds' || normalizedUnit === 'lb' || normalizedUnit === 'lbs') {
+    return 'lb';
+  }
+  
+  // Default to grams if unrecognized
+  return 'g';
 }
 
-// API response with pagination metadata
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    pageSize: number;
-    pageCount: number;
-  };
+// Convert weight between different units
+export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number {
+  if (fromUnit === toUnit) return weight;
+  
+  // Convert to grams first
+  const fromUnitDef = weightUnits.find(u => u.code === fromUnit);
+  const toUnitDef = weightUnits.find(u => u.code === toUnit);
+  
+  if (!fromUnitDef || !toUnitDef) {
+    console.error(`Unknown weight units: ${fromUnit} or ${toUnit}`);
+    return weight;
+  }
+  
+  // Convert to grams, then to target unit
+  const weightInGrams = weight * fromUnitDef.ratio;
+  return weightInGrams / toUnitDef.ratio;
 }
 
-// Dog gender options
-export type Gender = 'Male' | 'Female';
-
-// Base tenant entity with common fields
-export interface TenantEntity {
-  id: string;
-  created_at: string;
-  updated_at?: string;
-  tenant_id?: string;
+// Format weight with unit
+export function formatWeight(weight: number, unit: WeightUnit): string {
+  return `${weight} ${unit}`;
 }

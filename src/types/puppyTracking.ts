@@ -1,124 +1,133 @@
 
-// Re-export PuppyWithAge for easier imports
-export type { PuppyWithAge } from './litter';
+// Import common types
+import { WeightUnit } from './common';
+import { Litter } from './litter';
+import { PuppyWeightRecord } from '@/services/puppyWeightService';
 
-// Puppy age group data
+// Define the basic puppy structure
+export interface Puppy {
+  id: string;
+  name: string;
+  litter_id: string;
+  birth_date?: string;
+  color?: string;
+  gender?: string;
+  status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
+  birth_weight?: string;
+  current_weight?: string;
+  current_weight_unit?: string;
+  birth_order?: number;
+  photo_url?: string;
+  microchip_number?: string;
+  akc_registration_number?: string;
+  akc_litter_number?: string;
+  notes?: string;
+  created_at: string;
+  // Additional fields
+  birth_time?: string;
+  assistance_required?: boolean;
+  assistance_notes?: string;
+  reservation_date?: string;
+  eyes_open_date?: string;
+  ears_open_date?: string;
+  first_walk_date?: string;
+  fully_mobile_date?: string;
+  deworming_dates?: string;
+  vaccination_dates?: string;
+  vet_check_dates?: string;
+  presentation?: string;
+  sale_price?: number;
+}
+
+// Extended puppy type with age calculations
+export interface PuppyWithAge extends Puppy {
+  age: number;  // Age in days
+  ageInDays: number;  // Alias for age
+  ageInWeeks: number;
+  developmentalStage: string;
+  weightHistory?: PuppyWeightRecord[];
+  // Optional litter reference
+  litter?: Partial<Litter>;
+}
+
+// Puppy age group definitions
+export interface PuppyAgeGroup {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  minDays: number;
+  maxDays: number;
+  unit?: string;
+  color: string;
+}
+
+// Puppy age group data structure
 export interface PuppyAgeGroupData {
   newborn: PuppyWithAge[];
   twoWeek: PuppyWithAge[];
   fourWeek: PuppyWithAge[];
   sixWeek: PuppyWithAge[];
   eightWeek: PuppyWithAge[];
+  [key: string]: PuppyWithAge[]; // Allow additional age groups
 }
 
-export interface PuppyAgeGroup {
-  id: string;
-  name: string;
-  description: string;
-  minDays: number;
-  maxDays: number;
-  color: string;
-  // Additional properties for compatibility
-  minAge?: number;
-  maxAge?: number;
-  startDay?: number;
-  endDay?: number;
-  milestones?: string[];
-}
-
-// Socialization reaction type
-export type SocializationReactionType = 
-  | 'very_positive' 
-  | 'positive' 
-  | 'neutral' 
-  | 'cautious' 
-  | 'fearful' 
-  | 'very_fearful' 
-  | 'no_reaction'
-  | 'negative' 
-  | 'unknown';
-
-// Puppy management statistics
-export interface PuppyManagementStats {
+// Puppy statistics structure
+export interface PuppyStats {
   totalPuppies: number;
   availablePuppies: number;
   reservedPuppies: number;
   soldPuppies: number;
-  unavailablePuppies?: number;
-  maleCount?: number;
-  femaleCount?: number;
-  activeCount: number;
-  availableCount: number;
-  reservedCount: number;
-  soldCount: number;
-  neonate?: number; // 0-2 weeks
-  transitional?: number; // 2-4 weeks
-  socialization?: number; // 4-8 weeks
-  juvenile?: number; // 8+ weeks
-  
-  // Status counts
+  byGender: {
+    male: number;
+    female: number;
+    unknown: number;
+  };
   byStatus: {
     available: number;
     reserved: number;
     sold: number;
     unavailable: number;
   };
-  
-  // Gender counts
-  byGender: {
-    male: number;
-    female: number;
-    unknown: number;
-  };
-  
-  // Age group categorization
+}
+
+// Complete puppy management stats
+export interface PuppyManagementStats extends PuppyStats {
+  puppies: PuppyWithAge[];
+  ageGroups: PuppyAgeGroup[];
+  puppiesByAgeGroup: PuppyAgeGroupData;
   byAgeGroup: PuppyAgeGroupData;
-  
-  // Age stats
-  averageAge?: number;
-  youngestAge?: number;
-  oldestAge?: number;
-  
-  // Weight stats
-  averageWeight?: number;
-  minWeight?: number;
-  maxWeight?: number;
-  
-  // Health stats  
-  vaccinationRate?: number;
-  dewormingRate?: number;
-  healthCheckRate?: number;
-  
-  // For backward compatibility
-  puppies?: any[];
-  isLoading?: boolean;
-  error?: any;
-  currentWeek?: number;
-  ageGroups?: PuppyAgeGroup[];
-  puppiesByAgeGroup?: Record<string, PuppyWithAge[]>;
-  total?: {
+  activeCount: number;
+  availableCount: number;
+  reservedCount: number;
+  soldCount: number;
+  currentWeek: number;
+  isLoading: boolean;
+  error: any;
+  // Extended statistics
+  total: {
     count: number;
     male: number;
     female: number;
   };
 }
 
-// Socialization-related types
+// Socialization tracking types
+export type SocializationReactionType = 'positive' | 'neutral' | 'cautious' | 'fearful' | 'curious';
+
 export interface SocializationCategory {
   id: string;
   name: string;
-}
-
-export interface SocializationCategoryOption {
-  id: string;
-  name: string;
-  value: string;
-  label: string;
-  examples: string[];
-  categoryId?: string; // For linking
-  order?: number;
+  categoryId?: string;
   color?: string;
   description?: string;
+  examples?: string[];
+}
+
+export interface SocializationCategoryOption extends SocializationCategory {
+  value: string;
+  label: string;
+  order: number;
 }
 
 export interface SocializationReactionOption {
@@ -131,57 +140,45 @@ export interface SocializationReactionOption {
   emoji: string;
 }
 
-export interface SocializationProgress {
-  categoryId: string;
-  count: number;
-  total: number;
-  percentage: number;
-}
-
 export interface SocializationExperience {
   id: string;
   puppy_id: string;
   category_id: string;
+  category?: SocializationCategory;
   experience: string;
   date: string;
+  experience_date?: string; // For backward compatibility
   reaction?: SocializationReactionType;
   notes?: string;
   created_at: string;
 }
 
-// Puppy care log
-export interface PuppyCareLog {
-  id: string;
-  puppy_id: string;
-  care_type: string;
-  care_date: string;
-  performed_by: string;
-  notes?: string;
-  created_at: string;
+export interface SocializationProgress {
+  categoryId: string;
+  total: number;
+  percentage: number;
 }
 
-// Weight related types
-export interface WeightRecord {
+// Puppy milestone types
+export interface PuppyMilestone {
   id: string;
   puppy_id: string;
-  dog_id?: string;
-  weight: number;
-  weight_unit: string;
-  unit?: string; // For backward compatibility
-  date: string;
-  notes?: string;
-  age_days?: number;
-  percent_change?: number;
-  created_at: string;
+  title: string;
+  milestone_type: string;
+  expected_age_days: number;
+  description?: string;
+  is_completed: boolean;
+  completion_date?: string;
 }
 
-// Vaccination related types
+// Vaccination schedule for puppies
 export interface VaccinationScheduleItem {
   id: string;
   puppy_id: string;
-  vaccine_name: string;
   vaccination_type: string;
+  vaccine_name?: string;
   scheduled_date: string;
+  due_date?: string; // For backward compatibility
   administered: boolean;
   administration_date?: string;
   notes?: string;
@@ -191,7 +188,7 @@ export interface VaccinationScheduleItem {
 export interface VaccinationRecord {
   id: string;
   puppy_id: string;
-  vaccine_name: string;
+  vaccination_type: string;
   vaccination_date: string;
   administered_by?: string;
   lot_number?: string;
