@@ -9,7 +9,7 @@ import {
   Image,
   HelpCircle,
   Shield,
-  Test
+  Microscope
 } from 'lucide-react';
 
 /**
@@ -28,11 +28,13 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string) =
     case HealthRecordTypeEnum.Test:
       return FileText;
     case HealthRecordTypeEnum.Laboratory:
-      return Test;
+      return Microscope;
     case HealthRecordTypeEnum.Imaging:
       return Image;
     case HealthRecordTypeEnum.Preventive:
       return Shield;
+    case HealthRecordTypeEnum.Other:
+      return HelpCircle;
     default:
       return HelpCircle;
   }
@@ -59,6 +61,8 @@ export const getHealthRecordColor = (recordType: HealthRecordTypeEnum | string) 
       return 'bg-indigo-50 text-indigo-700 border-indigo-200';
     case HealthRecordTypeEnum.Preventive:
       return 'bg-teal-50 text-teal-700 border-teal-200';
+    case HealthRecordTypeEnum.Other:
+      return 'bg-gray-50 text-gray-700 border-gray-200';
     default:
       return 'bg-gray-50 text-gray-700 border-gray-200';
   }
@@ -85,6 +89,8 @@ export const getHealthRecordTypeLabel = (recordType: HealthRecordTypeEnum | stri
       return 'Imaging';
     case HealthRecordTypeEnum.Preventive:
       return 'Preventive Care';
+    case HealthRecordTypeEnum.Other:
+      return 'Other';
     default:
       return 'Other';
   }

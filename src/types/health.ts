@@ -1,4 +1,7 @@
 
+// Import the WeightUnit type
+import { WeightUnit } from './common';
+
 // Health record types and enums
 export enum HealthRecordTypeEnum {
   Examination = 'examination',
@@ -9,13 +12,13 @@ export enum HealthRecordTypeEnum {
   Laboratory = 'laboratory',
   Imaging = 'imaging',
   Preventive = 'preventive',
-  // Additional types for compatibility
   Surgery = 'surgery',
   Observation = 'observation',
   Deworming = 'deworming',
   Grooming = 'grooming',
   Dental = 'dental',
-  Allergy = 'allergy'
+  Allergy = 'allergy',
+  Other = 'other'
 }
 
 // Health record status enums
@@ -34,7 +37,8 @@ export enum AppetiteLevelEnum {
   Good = 'good',
   Fair = 'fair',
   Poor = 'poor',
-  None = 'none'
+  None = 'none',
+  Hyperactive = 'hyperactive' // Adding missing value
 }
 
 // Backward compatibility
@@ -45,7 +49,8 @@ export enum EnergyLevelEnum {
   High = 'high',
   Normal = 'normal',
   Low = 'low',
-  Lethargic = 'lethargic'
+  Lethargic = 'lethargic',
+  Hyperactive = 'hyperactive' // Adding missing value
 }
 
 // Backward compatibility
@@ -57,11 +62,14 @@ export enum StoolConsistencyEnum {
   Loose = 'loose',
   Watery = 'watery',
   Hard = 'hard',
-  Absent = 'absent'
+  Absent = 'absent',
+  Soft = 'soft', // Adding missing values
+  Mucousy = 'mucousy',
+  Bloody = 'bloody'
 }
 
 // Weight unit type
-export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
+export type { WeightUnit };
 
 // For backward compatibility
 export type WeightUnitWithLegacy = WeightUnit;
@@ -99,6 +107,12 @@ export interface HealthRecord {
   record_notes?: string;
   description?: string;
   created_at: string;
+  
+  // Additional fields for compatibility
+  examination_type?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
 }
 
 // Weight record interface
@@ -108,6 +122,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: string; // For backward compatibility
   date: string;
   percent_change?: number;
   notes?: string;
@@ -136,8 +151,9 @@ export interface Medication {
   end_date?: string;
   next_due_date?: string;
   last_administered?: string;
-  status?: string;
+  status?: MedicationStatus;
   active: boolean;
+  is_active?: boolean; // For backward compatibility
   notes?: string;
   created_at: string;
 }
@@ -147,6 +163,9 @@ export interface MedicationStatusResult {
   statusLabel: string;
   statusColor: string;
   icon: string;
+  status?: string; // Adding for compatibility
+  color?: string; // Adding for compatibility
+  name?: string; // Adding for compatibility
 }
 
 // Medication status
@@ -190,6 +209,7 @@ export interface HealthIndicator {
   notes?: string;
   created_at: string;
   created_by?: string;
+  record_date?: string; // Adding for compatibility
 }
 
 // Health indicator type
@@ -230,8 +250,8 @@ export interface GrowthStats {
   averageGrowthRate: number;
   lastWeekGrowth: number;
   projectedWeight: number;
-  weightGoal: number;
-  onTrack: boolean;
+  weightGoal: number | null;
+  onTrack: boolean | null;
 }
 
 // Helper function to map database record to health record
@@ -241,7 +261,7 @@ export function mapToHealthRecord(record: any): HealthRecord {
     dog_id: record.dog_id,
     title: record.title || '',
     record_type: stringToHealthRecordType(record.record_type),
-    date: record.visit_date,
+    date: record.visit_date || record.date,
     visit_date: record.visit_date,
     performed_by: record.performed_by,
     vet_name: record.vet_name,
@@ -267,7 +287,11 @@ export function mapToHealthRecord(record: any): HealthRecord {
     document_url: record.document_url,
     record_notes: record.record_notes || record.notes,
     description: record.description,
-    created_at: record.created_at
+    created_at: record.created_at,
+    examination_type: record.examination_type,
+    surgeon: record.surgeon,
+    anesthesia_used: record.anesthesia_used,
+    recovery_notes: record.recovery_notes,
   };
 }
 
@@ -279,6 +303,7 @@ export function mapToWeightRecord(record: any): WeightRecord {
     puppy_id: record.puppy_id,
     weight: record.weight,
     weight_unit: record.weight_unit,
+    unit: record.unit || record.weight_unit, // For backwards compatibility
     date: record.date,
     percent_change: record.percent_change,
     notes: record.notes,
@@ -317,6 +342,8 @@ export function stringToHealthRecordType(type: string): HealthRecordTypeEnum {
       return HealthRecordTypeEnum.Dental;
     case 'allergy':
       return HealthRecordTypeEnum.Allergy;
+    case 'other':
+      return HealthRecordTypeEnum.Other;
     default:
       return HealthRecordTypeEnum.Examination;
   }

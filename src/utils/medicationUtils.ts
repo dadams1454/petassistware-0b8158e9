@@ -1,160 +1,171 @@
-import { MedicationStatusEnum } from '@/types/health';
 
-/**
- * Medication frequency constants
- */
+import { Medication, MedicationStatusEnum } from '@/types/health';
+
+// Medication frequency options
 export const MedicationFrequencyConstants = {
-  DAILY: 'daily',
-  TWICE_DAILY: 'twice-daily',
-  THREE_TIMES_DAILY: 'three-times-daily',
+  ONCE_DAILY: 'once_daily',
+  TWICE_DAILY: 'twice_daily',
+  THREE_TIMES_DAILY: 'three_times_daily',
+  FOUR_TIMES_DAILY: 'four_times_daily',
+  EVERY_OTHER_DAY: 'every_other_day',
   WEEKLY: 'weekly',
   BIWEEKLY: 'biweekly',
   MONTHLY: 'monthly',
-  QUARTERLY: 'quarterly',
-  ANNUALLY: 'annually',
-  AS_NEEDED: 'as-needed'
+  AS_NEEDED: 'as_needed'
 };
 
-/**
- * Get label and style for medication status
- */
-export const getStatusLabel = (status: MedicationStatusEnum | string) => {
-  switch (status) {
-    case MedicationStatusEnum.Active:
-    case 'active':
-      return {
-        statusLabel: 'Active',
-        statusColor: 'bg-green-100 text-green-800',
-        icon: 'check-circle'
-      };
-    case MedicationStatusEnum.Completed:
-    case 'completed':
-      return {
-        statusLabel: 'Completed',
-        statusColor: 'bg-blue-100 text-blue-800',
-        icon: 'check-circle'
-      };
-    case MedicationStatusEnum.Discontinued:
-    case 'discontinued':
-    case 'overdue':
-      return {
-        statusLabel: 'Discontinued',
-        statusColor: 'bg-red-100 text-red-800',
-        icon: 'x-circle'
-      };
-    case MedicationStatusEnum.NotStarted:
-    case 'not_started':
-      return {
-        statusLabel: 'Not Started',
-        statusColor: 'bg-gray-100 text-gray-800',
-        icon: 'clock'
-      };
-    case MedicationStatusEnum.Scheduled:
-    case 'scheduled':
-    case 'upcoming':
-      return {
-        statusLabel: 'Scheduled',
-        statusColor: 'bg-purple-100 text-purple-800',
-        icon: 'calendar'
-      };
-    case MedicationStatusEnum.UpcomingDue:
-    case 'upcoming_due':
-      return {
-        statusLabel: 'Due Soon',
-        statusColor: 'bg-yellow-100 text-yellow-800',
-        icon: 'alert-circle'
-      };
-    default:
-      return {
-        statusLabel: 'Unknown',
-        statusColor: 'bg-gray-100 text-gray-800',
-        icon: 'help-circle'
-      };
-  }
+// Admin route options
+export const AdministrationRouteConstants = {
+  ORAL: 'oral',
+  TOPICAL: 'topical',
+  INJECTION: 'injection',
+  SUBCUTANEOUS: 'subcutaneous',
+  INTRAMUSCULAR: 'intramuscular',
+  INTRAVENOUS: 'intravenous',
+  RECTAL: 'rectal',
+  OPHTHALMIC: 'ophthalmic',
+  OTIC: 'otic',
+  NASAL: 'nasal',
+  INHALATION: 'inhalation'
 };
 
 /**
  * Calculate medication status based on dates
+ * @param startDate Medication start date
+ * @param endDate Medication end date (optional)
+ * @returns MedicationStatusEnum value
  */
 export const calculateMedicationStatus = (
-  startDate?: string | Date | null,
-  endDate?: string | Date | null,
-  lastAdministered?: string | Date | null
-) => {
+  startDate?: string | Date,
+  endDate?: string | Date
+): MedicationStatusEnum => {
   if (!startDate) {
     return MedicationStatusEnum.NotStarted;
   }
 
-  const now = new Date();
+  const today = new Date();
   const start = new Date(startDate);
   
-  // If medication hasn't started yet
-  if (start > now) {
-    return MedicationStatusEnum.Scheduled;
+  // If there's no end date, medication is active
+  if (!endDate) {
+    if (start > today) {
+      return MedicationStatusEnum.Scheduled;
+    }
+    return MedicationStatusEnum.Active;
   }
+
+  const end = new Date(endDate);
   
-  // If medication has ended
-  if (endDate && new Date(endDate) < now) {
+  // If end date is in the past, medication is completed
+  if (end < today) {
     return MedicationStatusEnum.Completed;
   }
   
-  // Medication is active
+  // If start date is in the future, medication is scheduled
+  if (start > today) {
+    return MedicationStatusEnum.Scheduled;
+  }
+  
+  // If today is between start and end, medication is active
   return MedicationStatusEnum.Active;
 };
 
 /**
- * Process medication logs into categorized structure
+ * Get the full human-readable text for a medication frequency
+ * @param frequency Medication frequency code
+ * @returns Human-readable frequency text
  */
-export const processMedicationLogs = (logs: any[]) => {
-  const processedLogs = {
-    preventative: [],
-    other: []
-  };
-  
-  if (!logs || logs.length === 0) {
-    return processedLogs;
+export const getMedicationFrequencyText = (frequency: string): string => {
+  switch (frequency) {
+    case MedicationFrequencyConstants.ONCE_DAILY:
+      return 'Once daily';
+    case MedicationFrequencyConstants.TWICE_DAILY:
+      return 'Twice daily';
+    case MedicationFrequencyConstants.THREE_TIMES_DAILY:
+      return 'Three times daily';
+    case MedicationFrequencyConstants.FOUR_TIMES_DAILY:
+      return 'Four times daily';
+    case MedicationFrequencyConstants.EVERY_OTHER_DAY:
+      return 'Every other day';
+    case MedicationFrequencyConstants.WEEKLY:
+      return 'Weekly';
+    case MedicationFrequencyConstants.BIWEEKLY:
+      return 'Every two weeks';
+    case MedicationFrequencyConstants.MONTHLY:
+      return 'Monthly';
+    case MedicationFrequencyConstants.AS_NEEDED:
+      return 'As needed (PRN)';
+    default:
+      return frequency;
   }
-  
-  // Group logs by medication name
-  const logsByMedication: Record<string, any[]> = {};
-  
-  logs.forEach(log => {
-    const medicationName = log.task_name || 'Unknown';
-    if (!logsByMedication[medicationName]) {
-      logsByMedication[medicationName] = [];
-    }
-    logsByMedication[medicationName].push(log);
-  });
-  
-  // Process each medication group
-  Object.keys(logsByMedication).forEach(name => {
-    const medicationLogs = logsByMedication[name];
-    const latestLog = medicationLogs.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    )[0];
-    
-    const isPreventative = name.toLowerCase().includes('preventative') || 
-                          name.toLowerCase().includes('preventive');
-    
-    const medicationInfo = {
-      id: latestLog.id,
-      name: name,
-      dosage: latestLog.dosage,
-      frequency: latestLog.frequency || 'daily',
-      lastAdministered: latestLog.timestamp,
-      nextDue: latestLog.next_due_date,
-      status: latestLog.status,
-      notes: latestLog.notes,
-      isPreventative: isPreventative,
-      startDate: latestLog.start_date
+};
+
+/**
+ * Get the full human-readable text for an administration route
+ * @param route Administration route code
+ * @returns Human-readable route text
+ */
+export const getAdministrationRouteText = (route: string): string => {
+  switch (route) {
+    case AdministrationRouteConstants.ORAL:
+      return 'Oral';
+    case AdministrationRouteConstants.TOPICAL:
+      return 'Topical (on skin)';
+    case AdministrationRouteConstants.INJECTION:
+      return 'Injection';
+    case AdministrationRouteConstants.SUBCUTANEOUS:
+      return 'Subcutaneous (under skin)';
+    case AdministrationRouteConstants.INTRAMUSCULAR:
+      return 'Intramuscular';
+    case AdministrationRouteConstants.INTRAVENOUS:
+      return 'Intravenous';
+    case AdministrationRouteConstants.RECTAL:
+      return 'Rectal';
+    case AdministrationRouteConstants.OPHTHALMIC:
+      return 'Ophthalmic (eye)';
+    case AdministrationRouteConstants.OTIC:
+      return 'Otic (ear)';
+    case AdministrationRouteConstants.NASAL:
+      return 'Nasal';
+    case AdministrationRouteConstants.INHALATION:
+      return 'Inhalation';
+    default:
+      return route;
+  }
+};
+
+/**
+ * Process medication logs for display or analysis
+ * @param medications List of medications
+ * @returns Processed medications with additional properties
+ */
+export const processMedicationLogs = (medications: Medication[]): Medication[] => {
+  return medications.map(med => {
+    const status = calculateMedicationStatus(med.start_date, med.end_date);
+    return {
+      ...med,
+      status,
+      active: status === MedicationStatusEnum.Active,
+      is_active: status === MedicationStatusEnum.Active // For backward compatibility
     };
-    
-    if (isPreventative) {
-      processedLogs.preventative.push(medicationInfo);
-    } else {
-      processedLogs.other.push(medicationInfo);
-    }
   });
+};
+
+/**
+ * Get upcoming due medications from a list based on a date range
+ * @param medications List of medications
+ * @param days Number of days to look ahead
+ * @returns Filtered list of medications due within the specified days
+ */
+export const getUpcomingDueMedications = (medications: Medication[], days: number = 30): Medication[] => {
+  const today = new Date();
+  const futureDate = new Date(today);
+  futureDate.setDate(today.getDate() + days);
   
-  return processedLogs;
+  return medications.filter(med => {
+    if (!med.next_due_date) return false;
+    
+    const dueDate = new Date(med.next_due_date);
+    return dueDate > today && dueDate <= futureDate;
+  });
 };

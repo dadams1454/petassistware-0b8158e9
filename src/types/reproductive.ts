@@ -13,7 +13,16 @@ export const HeatIntensityValues = {
   MEDIUM: 'medium',
   HIGH: 'high',
   PEAK: 'peak',
-  UNKNOWN: 'unknown'
+  UNKNOWN: 'unknown',
+  // Alias using capitalized first letter for compatibility
+  Mild: 'mild',
+  Moderate: 'moderate',
+  Strong: 'strong',
+  Low: 'low',
+  Medium: 'medium',
+  High: 'high',
+  Peak: 'peak',
+  Unknown: 'unknown'
 } as const;
 
 // For backward compatibility
@@ -51,7 +60,11 @@ export enum ReproductiveStatus {
   Altered = 'altered',
   Spayed = 'spayed',
   Neutered = 'neutered',
-  Unknown = 'unknown'
+  Unknown = 'unknown',
+  
+  // For backward compatibility
+  IN_HEAT = 'in_heat',
+  PREGNANT = 'pregnant'
 }
 
 // Heat stage types
@@ -71,6 +84,8 @@ export interface HeatStage {
   name: string;
   day: number;
   fertility: 'low' | 'medium' | 'high' | 'peak';
+  id?: string; // For compatibility
+  description?: string; // For compatibility
 }
 
 // Breeding record interface
@@ -92,6 +107,7 @@ export interface BreedingRecord {
   sire?: Dog;
   heat_cycle_id?: string;
   estimated_due_date?: string;
+  data?: any; // For compatibility with some components
 }
 
 // Helper function to normalize breeding records
@@ -124,7 +140,7 @@ export interface PregnancyRecord {
   breeding_record_id?: string;
   confirmation_date?: string;
   due_date?: string;
-  status: 'pending' | 'confirmed' | 'lost' | 'delivered';
+  status: 'pending' | 'confirmed' | 'lost' | 'delivered' | 'completed';
   notes?: string;
   created_at: string;
   created_by?: string;
@@ -153,6 +169,7 @@ export interface BreedingChecklistItem {
   title: string;
   description?: string;
   is_completed: boolean;
+  completed?: boolean; // For backward compatibility
   completion_date?: string;
   due_date?: string;
   task?: string; // Some components use task instead of title

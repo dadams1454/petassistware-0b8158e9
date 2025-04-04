@@ -1,5 +1,6 @@
 
 import { Status } from '@/types/common';
+import { WeightUnit } from '@/types/common';
 
 export interface Dog {
   id: string;
@@ -82,6 +83,7 @@ export interface DogProfile {
   potty_alert_threshold?: number;
   max_time_between_breaks?: number;
   group_ids?: string[];
+  created_at?: string; // Adding for compatibility
 }
 
 // Define enums for Dog gender and status
@@ -112,3 +114,4 @@ export enum DocumentType {
 // Re-export HealthRecord for backward compatibility
 export type { HealthRecord, Vaccination } from '@/types/health';
 export { HealthRecordTypeEnum } from '@/types/health';
+export type { WeightUnit };
