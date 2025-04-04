@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,7 +53,10 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         };
         
         // Convert to Dog type which requires status
-        const dogWithStatus: Dog = dogProfileToBasicDog(processedDog);
+        const dogWithStatus: Dog = {
+          ...dogProfileToBasicDog(processedDog),
+          status: processedDog.status || 'active'
+        };
         
         setDog(dogWithStatus);
         
@@ -75,7 +79,10 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
             status: male.status || 'active' // Add status property
           };
           
-          return dogProfileToBasicDog(maleProfile);
+          return {
+            ...dogProfileToBasicDog(maleProfile),
+            status: maleProfile.status || 'active'
+          };
         });
         
         setCompatibleMales(malesWithStatus);

@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroup } from '@/types/puppyTracking';
 import PuppyCard from './PuppyCard';
 import { Badge } from '@/components/ui/badge';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface PuppyAgeGroupListProps {
-  puppiesByAgeGroup: PuppyAgeGroupData;
+  puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
   ageGroups: PuppyAgeGroup[];
 }
 
@@ -44,7 +44,7 @@ const PuppyAgeGroupList: React.FC<PuppyAgeGroupListProps> = ({
                   </Badge>
                 </div>
                 <Badge variant="outline" className="bg-primary/10">
-                  {group.startDay || group.minAge}-{group.endDay || group.maxAge} days
+                  {group.startDay}-{group.endDay} days
                 </Badge>
               </div>
             </AccordionTrigger>

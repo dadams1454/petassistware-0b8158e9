@@ -71,7 +71,12 @@ export type {
   SocializationProgress,
   PuppyCareLog,
   SocializationExperience,
-  SocializationReaction
+  SocializationReaction,
+  WeightRecord as PuppyWeightRecord,
+  PuppyMilestone as PuppyTrackingMilestone,
+  VaccinationSchedule,
+  VaccinationRecord,
+  PuppyAgeGroup
 } from './puppyTracking';
 
 // Daily care types
@@ -95,3 +100,9 @@ export * from './user';
 
 // Socialization types
 export * from './socialization';
+
+// Weight types
+export * from './weight';
+
+// Welping types
+export * from './welping';

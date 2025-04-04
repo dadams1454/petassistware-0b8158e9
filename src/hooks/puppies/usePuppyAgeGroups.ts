@@ -101,7 +101,11 @@ export const usePuppyAgeGroups = (
       twoWeek: [],
       fourWeek: [],
       sixWeek: [],
-      eightWeek: []
+      eightWeek: [],
+      tenWeek: [],
+      twelveWeek: [],
+      older: [],
+      all: []
     };
     
     // Group puppies by their age
@@ -115,16 +119,16 @@ export const usePuppyAgeGroups = (
         
         if (ageInDays >= minDays && ageInDays <= maxDays) {
           // Add puppy to its appropriate age group
-          if (!groups[group.id]) {
-            groups[group.id] = [];
+          if (!groups[group.id as keyof PuppyAgeGroupData]) {
+            (groups as any)[group.id] = [];
           }
-          groups[group.id].push(puppy);
+          (groups as any)[group.id].push(puppy);
           break;
         }
       }
       
       return groups;
-    }, { ...initialGroups } as PuppyAgeGroupData);
+    }, { ...initialGroups });
   }, [puppies, ageGroups]);
 
   return {

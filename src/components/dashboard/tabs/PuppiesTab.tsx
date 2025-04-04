@@ -43,6 +43,8 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   
   // Filter puppies based on search term and age group
   const filteredPuppiesByAgeGroup = React.useMemo(() => {
+    if (!puppiesByAgeGroup) return {} as Record<string, PuppyWithAge[]>;
+    
     if (ageGroupFilter === 'all') {
       // Filter all puppies by search term only
       if (!searchTerm) return puppiesByAgeGroup;
@@ -71,8 +73,8 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   // Create stats object for PuppyStatCards with proper type
   const stats: PuppyManagementStats = {
     puppies,
-    puppiesByAgeGroup,
-    ageGroups,
+    puppiesByAgeGroup: puppiesByAgeGroup || {} as Record<string, PuppyWithAge[]>,
+    ageGroups: ageGroups || [],
     totalPuppies,
     availablePuppies,
     reservedPuppies,
@@ -84,7 +86,17 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     reservedCount: reservedPuppies || 0,
     soldCount: soldPuppies || 0,
     currentWeek: Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000)),
-    byAgeGroup: puppiesByAgeGroup,
+    byAgeGroup: {
+      newborn: [],
+      twoWeek: [],
+      fourWeek: [],
+      sixWeek: [],
+      eightWeek: [],
+      tenWeek: [],
+      twelveWeek: [],
+      older: [],
+      all: []
+    },
     total: {
       count: totalPuppies,
       male: maleCount,
@@ -145,6 +157,8 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     );
   }
 
+  const ageGroupsArray = ageGroups || [];
+
   return (
     <Card>
       <CardContent className="py-6">
@@ -175,7 +189,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Age Groups</SelectItem>
-                {ageGroups.map((group) => (
+                {ageGroupsArray.map((group) => (
                   <SelectItem key={group.id} value={group.id}>
                     {group.name}
                   </SelectItem>
@@ -186,7 +200,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
           
           <PuppyAgeGroupList 
             puppiesByAgeGroup={filteredPuppiesByAgeGroup} 
-            ageGroups={ageGroups} 
+            ageGroups={ageGroupsArray} 
           />
         </div>
       </CardContent>
