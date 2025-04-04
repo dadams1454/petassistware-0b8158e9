@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
@@ -27,7 +26,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { 
-  MedicationFrequency,
+  MedicationFrequencyConstants,
 } from '@/utils/medicationUtils';
 import { useAuth } from '@/contexts/AuthProvider';
 import { 

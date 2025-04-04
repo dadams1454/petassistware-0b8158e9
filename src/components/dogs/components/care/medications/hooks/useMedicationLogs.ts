@@ -1,84 +1,69 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { isAfter, parseISO } from 'date-fns';
-import { DogCareStatus } from '@/components/dogs/components/care/medications/types/medicationTypes';
-import { MedicationInfo, ProcessedMedicationLogs } from '../types/medicationTypes';
-import { MedicationFrequency, processMedicationLogs } from '@/utils/medicationUtils';
+import { processMedicationLogs, MedicationFrequencyConstants } from '@/utils/medicationUtils';
 
-export const useMedicationLogs = (dogs: DogCareStatus[] | string) => {
-  const [medicationLogs, setMedicationLogs] = useState<ProcessedMedicationLogs>({});
+export const useMedicationLogs = (dogIdOrDogs: any) => {
+  const [medicationLogs, setMedicationLogs] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [loadedDogs, setLoadedDogs] = useState<DogCareStatus[]>([]);
 
   useEffect(() => {
-    // Skip if no dogs are provided
-    if (!dogs || (Array.isArray(dogs) && dogs.length === 0)) {
-      setIsLoading(false);
-      return;
-    }
-    
     const fetchMedicationLogs = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
-        // Handle both single dogId string and array of dog objects
-        const dogIds = typeof dogs === 'string' 
-          ? [dogs] 
-          : dogs.map(dog => dog.dog_id);
-        
-        // Fetch all medication records for the provided dogs
-        const { data, error } = await supabase
-          .from('daily_care_logs')
-          .select('*')
-          .in('dog_id', dogIds)
-          .eq('category', 'medications');
-        
-        if (error) throw error;
-        
-        // Process the medication logs
-        const processedLogs: ProcessedMedicationLogs = {};
-        
-        dogIds.forEach(dogId => {
-          processedLogs[dogId] = {
-            preventative: [],
-            other: []
-          };
-        });
-        
-        // Group logs by dog and medication name
-        const dogLogs: Record<string, any[]> = {};
-        
-        if (data && Array.isArray(data)) {
-          // Group by dog ID
-          dogIds.forEach(dogId => {
-            const logsForDog = data.filter(log => log.dog_id === dogId);
-            dogLogs[dogId] = logsForDog;
+        // If dogIdOrDogs is a string (single dogId)
+        if (typeof dogIdOrDogs === 'string') {
+          const { data, error } = await supabase
+            .from('daily_care_logs')
+            .select('*')
+            .eq('dog_id', dogIdOrDogs)
+            .eq('category', 'medications')
+            .order('timestamp', { ascending: false });
             
-            // Process the logs for this dog
-            const { preventative, other } = processMedicationLogs(logsForDog);
-            processedLogs[dogId] = { preventative, other };
+          if (error) throw error;
+          
+          setMedicationLogs({
+            [dogIdOrDogs]: processMedicationLogs(data)
           });
+        } 
+        // If dogIdOrDogs is an array
+        else if (Array.isArray(dogIdOrDogs)) {
+          const processedLogs: Record<string, any> = {};
+          
+          // Process each dog in the array
+          for (const dog of dogIdOrDogs) {
+            const dogId = dog.dog_id || dog.id;
+            if (!dogId) continue;
+            
+            const { data, error } = await supabase
+              .from('daily_care_logs')
+              .select('*')
+              .eq('dog_id', dogId)
+              .eq('category', 'medications')
+              .order('timestamp', { ascending: false });
+              
+            if (error) throw error;
+            
+            processedLogs[dogId] = processMedicationLogs(data);
+          }
+          
+          setMedicationLogs(processedLogs);
         }
-        
-        setMedicationLogs(processedLogs);
       } catch (err) {
         console.error('Error fetching medication logs:', err);
-        setError(err instanceof Error ? err : new Error('Unknown error occurred'));
+        setError(err as Error);
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchMedicationLogs();
-  }, [dogs]);
-
-  return {
-    medicationLogs,
-    isLoading,
-    error,
-    loadedDogs
-  };
+    if (dogIdOrDogs) {
+      fetchMedicationLogs();
+    }
+  }, [dogIdOrDogs]);
+  
+  return { medicationLogs, isLoading, error };
 };
