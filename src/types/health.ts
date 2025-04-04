@@ -30,7 +30,6 @@ export enum HealthRecordTypeEnum {
   Medication = 'medication',
   Surgery = 'surgery',
   Test = 'test',
-  Other = 'other',
   Laboratory = 'laboratory',
   Imaging = 'imaging',
   Dental = 'dental',
@@ -40,7 +39,8 @@ export enum HealthRecordTypeEnum {
   Observation = 'observation',
   Deworming = 'deworming',
   Grooming = 'grooming',
-  Procedure = 'procedure'
+  Procedure = 'procedure',
+  Other = 'other'
 }
 
 // Health record interface
@@ -322,9 +322,6 @@ export function mapToWeightRecord(record: any): WeightRecord {
     birth_date: record.birth_date
   };
 }
-
-// Export WeightUnit for proper TypeScript isolation mode compatibility
-export type { WeightUnit };
 
 // Export enums as constants for compatibility with components that expect string values
 export const AppetiteEnum = AppetiteLevelEnum;

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MinusCircle, PlusCircle, AlertCircle, Scale } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { WeightUnit, WeightUnitWithLegacy, standardizeWeightUnit } from '@/types/common';
+import { WeightUnit } from '@/types/common';
 
 interface WeightInputProps {
   form: UseFormReturn<any>;
@@ -72,8 +72,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lb' }: WeightInputProps
   };
 
   const getIncrementAmount = (): number => {
-    const standardUnit = standardizeWeightUnit(unit);
-    switch (standardUnit) {
+    switch (unit) {
       case 'lb': return 0.1;
       case 'kg': return 0.1;
       case 'oz': return 0.5;
@@ -83,8 +82,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lb' }: WeightInputProps
   };
 
   const getDefaultIncrement = (): string => {
-    const standardUnit = standardizeWeightUnit(unit);
-    switch (standardUnit) {
+    switch (unit) {
       case 'lb': return '0.1';
       case 'kg': return '0.1';
       case 'oz': return '0.5';
@@ -94,8 +92,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lb' }: WeightInputProps
   };
 
   const formatWeight = (value: number): string => {
-    const standardUnit = standardizeWeightUnit(unit);
-    switch (standardUnit) {
+    switch (unit) {
       case 'lb':
       case 'kg':
         return value.toFixed(1);
@@ -124,8 +121,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lb' }: WeightInputProps
         
         // First convert current unit to grams (base unit)
         let weightInGrams: number;
-        const standardUnit = standardizeWeightUnit(unit);
-        switch (standardUnit) {
+        switch (unit) {
           case 'lb': weightInGrams = numValue * 453.59; break;
           case 'kg': weightInGrams = numValue * 1000; break;
           case 'oz': weightInGrams = numValue * 28.35; break;
@@ -134,8 +130,7 @@ const WeightInput = ({ form, name, label, defaultUnit = 'lb' }: WeightInputProps
         }
         
         // Then convert from grams to new unit
-        const standardNewUnit = standardizeWeightUnit(newUnit);
-        switch (standardNewUnit) {
+        switch (newUnit) {
           case 'lb': convertedWeight = weightInGrams / 453.59; break;
           case 'kg': convertedWeight = weightInGrams / 1000; break;
           case 'oz': convertedWeight = weightInGrams / 28.35; break;

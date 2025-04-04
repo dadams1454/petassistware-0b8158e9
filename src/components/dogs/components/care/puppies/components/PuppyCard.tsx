@@ -23,7 +23,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, className }) => {
   };
 
   // Calculate age in weeks from days
-  const ageInWeeks = Math.floor(puppy.ageInDays / 7);
+  const ageInWeeks = Math.floor(puppy.ageInDays || 0 / 7);
   
   // Determine badge color based on gender
   const genderBadgeColor = puppy.gender === 'Male' 
@@ -53,7 +53,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, className }) => {
           {puppy.current_weight && (
             <div className="col-span-2">
               <p className="text-muted-foreground">Current Weight</p>
-              <p className="font-medium">{puppy.current_weight} {puppy.weight_unit || 'oz'}</p>
+              <p className="font-medium">{puppy.current_weight} {puppy.current_weight_unit || puppy.weight_unit || 'oz'}</p>
             </div>
           )}
         </div>

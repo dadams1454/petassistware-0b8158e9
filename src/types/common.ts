@@ -54,5 +54,29 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-// Re-export for legacy code compatibility
+// For backward compatibility
 export type WeightUnitWithLegacy = WeightUnit | string;
+
+// Helper function to standardize weight unit values
+export function standardizeWeightUnit(unit: WeightUnitWithLegacy): WeightUnit {
+  switch (unit) {
+    case 'lbs':
+    case 'pound':
+    case 'pounds':
+      return 'lb';
+    case 'g':
+    case 'gram':
+    case 'grams':
+      return 'g';
+    case 'oz':
+    case 'ounce':
+    case 'ounces':
+      return 'oz';
+    case 'kg':
+    case 'kilogram':
+    case 'kilograms':
+      return 'kg';
+    default:
+      return (unit as WeightUnit) || 'lb';
+  }
+}

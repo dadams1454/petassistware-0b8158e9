@@ -3,13 +3,13 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PencilIcon, PawPrint, Scale } from 'lucide-react';
+import { PencilIcon, PawPrint } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { PuppyWithAge } from '@/types/puppyTracking';
 
 interface PuppyCardProps {
   puppy: PuppyWithAge;
-  ageGroup: PuppyAgeGroupData;
+  ageGroup: string;
   onRefresh: () => void;
 }
 
@@ -65,7 +65,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
         <div className="mt-4 flex justify-between">
           <Button size="sm" variant="outline" onClick={handleGoToPuppy}>
             <PawPrint className="h-4 w-4 mr-1" />
-            {ageGroup.name} Care
+            {ageGroup} Care
           </Button>
           
           <Button size="sm" variant="ghost" onClick={handleGoToPuppy}>

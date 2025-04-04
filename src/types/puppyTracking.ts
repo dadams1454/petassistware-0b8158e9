@@ -23,6 +23,7 @@ export interface PuppyWithAge {
   birth_weight_unit?: WeightUnit;
   current_weight?: number;
   current_weight_unit?: WeightUnit;
+  weight_unit?: WeightUnit;
   sale_price?: number;
   is_sold?: boolean;
   is_available?: boolean;
@@ -31,6 +32,7 @@ export interface PuppyWithAge {
   notes?: string;
   created_at?: string;
   updated_at?: string;
+  is_test_data?: boolean;
 }
 
 // Age group data
@@ -234,6 +236,3 @@ export interface SocializationReaction {
   emoji?: string;
   value: string;
 }
-
-// Re-export WeightUnit to ensure it's available to importers
-export type { WeightUnit };
