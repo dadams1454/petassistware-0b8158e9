@@ -3,7 +3,7 @@
 // This file functions as a central hub for importing types
 
 // Dog-related types
-export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord, Litter } from './dog';
+export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord } from './dog';
 export { DogGender, HealthRecordTypeEnum, DocumentType } from './dog';
 export type { HeatCycle } from './reproductive';
 
@@ -72,7 +72,7 @@ export type {
   SocializationProgress,
   PuppyCareLog,
   SocializationExperience,
-  PuppyWeightRecord,
+  WeightRecord as PuppyWeightRecord,
   VaccinationScheduleItem as PuppyVaccinationSchedule,
   VaccinationRecord,
 } from './puppyTracking';

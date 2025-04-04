@@ -10,7 +10,7 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { HeatCycle, HeatIntensity } from '@/types/reproductive';
+import { HeatCycle, HeatIntensity } from '@/types';
 
 export interface RecordHeatCycleDialogProps {
   open?: boolean;
@@ -33,8 +33,8 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
     editData?.end_date ? new Date(editData.end_date) : undefined
   );
   const [notes, setNotes] = useState(editData?.notes || '');
-  const [intensity, setIntensity] = useState<HeatIntensity>(
-    (editData?.intensity as HeatIntensity) || 'moderate'
+  const [intensity, setIntensity] = useState<string>(
+    editData?.intensity || 'moderate'
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,7 +44,7 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
       setStartDate(editData.start_date ? new Date(editData.start_date) : new Date());
       setEndDate(editData.end_date ? new Date(editData.end_date) : undefined);
       setNotes(editData.notes || '');
-      setIntensity((editData.intensity as HeatIntensity) || 'moderate');
+      setIntensity(editData.intensity || 'moderate');
     } else {
       setStartDate(new Date());
       setEndDate(undefined);

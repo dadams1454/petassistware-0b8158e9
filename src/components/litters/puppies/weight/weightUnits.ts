@@ -67,3 +67,6 @@ export const weightUnits = [
   { code: 'oz', name: 'Ounces' },
   { code: 'g', name: 'Grams' }
 ];
+
+// Export WeightUnit type for external use
+export type { WeightUnit };
