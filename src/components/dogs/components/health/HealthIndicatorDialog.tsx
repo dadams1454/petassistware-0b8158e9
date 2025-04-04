@@ -22,8 +22,20 @@ const HealthIndicatorDialog: React.FC<HealthIndicatorDialogProps> = ({
   } = useHealthIndicators(dogId);
   
   const handleSave = async (data: any) => {
-    await addHealthIndicator(data);
-    onOpenChange(false);
+    try {
+      const formattedData = {
+        ...data,
+        dog_id: dogId,
+        date: data.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        abnormal: !!data.abnormal,
+        alert_generated: false,  // We'll handle alert generation in the API
+      };
+      
+      await addHealthIndicator(formattedData);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error saving health indicator:', error);
+    }
   };
   
   return (

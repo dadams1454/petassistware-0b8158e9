@@ -269,6 +269,9 @@ export interface Medication {
 export enum MedicationStatusEnum {
   Active = 'active',
   Completed = 'completed',
+  Discontinued = 'discontinued',
+  Scheduled = 'scheduled',
+  NotStarted = 'not_started',
   Overdue = 'overdue',
   UpToDate = 'up_to_date',
   Unknown = 'unknown'

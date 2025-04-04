@@ -47,7 +47,7 @@ export type {
 // Common types
 export type { Gender, WeightUnitWithLegacy } from './common';
 export { standardizeWeightUnit, weightUnits } from './common';
-export { type WeightUnit } from './common';  // Correctly export WeightUnit
+export type { WeightUnit } from './common';  // Explicitly export WeightUnit
 
 // Litter and puppy types
 export { type Dog as SimpleDog } from './litter';

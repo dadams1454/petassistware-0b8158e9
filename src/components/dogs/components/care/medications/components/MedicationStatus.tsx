@@ -61,11 +61,12 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
       case MedicationStatusEnum.Active:
         return <Check className="h-4 w-4 text-green-500" />;
       case 'overdue':
-      case MedicationStatusEnum.Discontinued: // Using existing enum instead of 'Overdue'
+      case MedicationStatusEnum.Overdue:
       case 'discontinued':
+      case MedicationStatusEnum.Discontinued:
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       case 'upcoming':
-      case MedicationStatusEnum.Scheduled: // Using existing enum instead of 'Upcoming'
+      case MedicationStatusEnum.Scheduled:
       case 'scheduled':
         return <Calendar className="h-4 w-4 text-blue-500" />;
       case 'not_started':
@@ -80,7 +81,7 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   };
   
   // Determine the next due date to display
-  let nextDueDate = nextDue;
+  let nextDueDate: string | Date | null = nextDue || null;
   if (!nextDueDate && statusObject && 'nextDue' in statusObject) {
     nextDueDate = statusObject.nextDue;
   }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,12 +16,38 @@ interface BreedingPreparationProps {
   dogId?: string;
 }
 
+interface ExtendedDog {
+  birthdate: string;
+  breed: string;
+  color: string;
+  created_at: string;
+  gender: string;
+  id: string;
+  is_pregnant: boolean;
+  last_heat_date: string;
+  last_vaccination_date: string;
+  litter_number: number;
+  microchip_number: string;
+  name: string;
+  notes: string;
+  photo_url: string;
+  pedigree: boolean;
+  registration_number: string;
+  requires_special_handling: boolean;
+  status: string; // Adding status property explicitly
+  tenant_id: string;
+  tie_date: string;
+  vaccination_notes: string;
+  vaccination_type: string;
+  weight: number;
+}
+
 const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [dog, setDog] = useState<Dog | null>(null);
+  const [dog, setDog] = useState<ExtendedDog | null>(null);
   const [loading, setLoading] = useState(true);
-  const [compatibleMales, setCompatibleMales] = useState<Dog[]>([]);
+  const [compatibleMales, setCompatibleMales] = useState<ExtendedDog[]>([]);
   const [selectedSire, setSelectedSire] = useState<string | null>(null);
   
   // Get dog ID from URL if not provided as prop
@@ -45,10 +72,10 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         if (dogError) throw dogError;
         
         // Convert to Dog type with required status
-        const dogWithStatus: Dog = {
+        const dogWithStatus: ExtendedDog = {
           ...dogData,
           gender: (dogData.gender as Gender) || 'Female', // Ensure gender is typed correctly
-          status: dogData.status || 'active' // Add status property which is needed for Dog type
+          status: dogData.status || 'active' // Add status property
         };
         
         setDog(dogWithStatus);
@@ -65,7 +92,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         if (malesError) throw malesError;
         
         // Process and convert males to Dog type with status
-        const malesWithStatus: Dog[] = malesData.map(male => ({
+        const malesWithStatus: ExtendedDog[] = malesData.map(male => ({
           ...male,
           gender: (male.gender as Gender) || 'Male',
           status: male.status || 'active' // Add status property
@@ -83,7 +110,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
   }, [effectiveDogId]);
   
   // Use our dog status hook to get heat cycle and fertility information
-  const dogStatus = dog ? useDogStatus(dog) : null;
+  const dogStatus = dog ? useDogStatus(dog as any) : null;
   
   const handleCreateLitter = () => {
     // Navigate to the add litter page with pre-filled information
