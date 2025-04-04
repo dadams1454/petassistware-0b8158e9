@@ -1,3 +1,4 @@
+// Reproductive cycle related types
 
 import { Dog } from '@/types/dog';
 import { Json } from '@/integrations/supabase/types';

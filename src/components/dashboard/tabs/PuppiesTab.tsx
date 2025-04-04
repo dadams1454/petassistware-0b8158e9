@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PuppyAgeGroupList from './puppies/PuppyAgeGroupList';
 import PuppyStatCards from './puppies/PuppyStatCards';
-import { PuppyManagementStats, PuppyWithAge } from '@/types/puppyTracking';
+import { PuppyManagementStats, PuppyWithAge, PuppyAgeGroup } from '@/types/puppyTracking';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
 
 interface PuppiesTabProps {

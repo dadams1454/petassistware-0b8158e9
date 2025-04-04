@@ -41,6 +41,9 @@ export interface PuppyAgeGroup {
   minAge: number;
   maxAge: number;
   unit: 'days' | 'weeks' | 'months';
+  startDay?: number;
+  endDay?: number;
+  milestones?: string;
 }
 
 // Mapping of age groups to puppies
@@ -94,4 +97,60 @@ export interface PuppyManagementStats {
   // Loading and error states
   isLoading?: boolean;
   error?: any;
+}
+
+// Add socialization types that were missing
+export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'fearful' | 'curious';
+
+export interface SocializationCategory {
+  id: string;
+  name: string;
+  description: string;
+  order: number;
+}
+
+export interface SocializationCategoryOption {
+  id: string;
+  categoryId: string;
+  name: string;
+  description?: string;
+}
+
+export interface SocializationReactionOption {
+  id: string;
+  type: SocializationReactionType;
+  name: string;
+  description?: string;
+  color: string;
+  emoji: string;
+}
+
+export interface SocializationProgress {
+  categoryId: string;
+  category: string;
+  total: number;
+  completed: number;
+  percentage: number;
+}
+
+export interface SocializationExperience {
+  id: string;
+  puppy_id: string;
+  date: string;
+  category: string;
+  stimulus: string;
+  reaction: SocializationReactionType;
+  notes?: string;
+  created_at: string;
+  created_by?: string;
+}
+
+export interface PuppyCareLog {
+  id: string;
+  puppy_id: string;
+  date: string;
+  care_type: string;
+  notes?: string;
+  created_at: string;
+  created_by?: string;
 }

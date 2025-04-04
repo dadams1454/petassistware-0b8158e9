@@ -2,7 +2,7 @@
 // Observation types for the potty breaks and other care activities
 
 // Observation types
-export type ObservationType = 'health' | 'behavior' | 'activity' | 'medication' | 'feeding' | 'weight' | 'milestone' | 'other';
+export type ObservationType = 'health' | 'behavior' | 'activity' | 'medication' | 'feeding' | 'weight' | 'milestone' | 'other' | 'accident' | 'heat';
 
 // Observation record interface
 export interface ObservationRecord {
@@ -40,3 +40,23 @@ export interface ObservationContextProps {
   getObservationSummary: (dogId: string, category: string) => ObservationSummary | null;
   clearObservations: () => void;
 }
+
+// Add the missing types referenced in other files
+export interface ObservationDetails {
+  emoji: string;
+  color: string;
+  label: string;
+}
+
+export const ObservationMap: Record<ObservationType, ObservationDetails> = {
+  health: { emoji: '🩺', color: 'blue', label: 'Health' },
+  behavior: { emoji: '🐕', color: 'purple', label: 'Behavior' },
+  activity: { emoji: '🏃', color: 'green', label: 'Activity' },
+  medication: { emoji: '💊', color: 'red', label: 'Medication' },
+  feeding: { emoji: '🍖', color: 'orange', label: 'Feeding' },
+  weight: { emoji: '⚖️', color: 'blue', label: 'Weight' },
+  milestone: { emoji: '🏆', color: 'yellow', label: 'Milestone' },
+  other: { emoji: '📝', color: 'gray', label: 'Other' },
+  accident: { emoji: '💦', color: 'amber', label: 'Accident' },
+  heat: { emoji: '🔥', color: 'red', label: 'Heat' }
+};

@@ -1,59 +1,51 @@
-
-// Common types shared across the application
+// Common types used across the application
 
 // Weight unit type
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
-// Weight unit with legacy support
+// Legacy type alias for backward compatibility
 export type WeightUnitWithLegacy = WeightUnit | 'lbs';
 
-// Date range type
-export interface DateRange {
-  start: Date;
-  end: Date;
+// Weight unit metadata (name, symbol, conversion ratio)
+export interface WeightUnitInfo {
+  code: WeightUnit;
+  name: string;
+  symbol: string;
+  toGrams: number; // Conversion ratio to grams
 }
 
-// Time of day options
-export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
+// Standard weight units with metadata
+export const weightUnits: WeightUnitInfo[] = [
+  { code: 'oz', name: 'Ounces', symbol: 'oz', toGrams: 28.35 },
+  { code: 'g', name: 'Grams', symbol: 'g', toGrams: 1 },
+  { code: 'lb', name: 'Pounds', symbol: 'lb', toGrams: 453.59 },
+  { code: 'kg', name: 'Kilograms', symbol: 'kg', toGrams: 1000 }
+];
 
-// Status type
-export type Status = 'active' | 'inactive' | 'pending' | 'completed' | 'archived';
+// Standardize weight unit for consistency (handle legacy 'lbs')
+export const standardizeWeightUnit = (unit?: WeightUnitWithLegacy): WeightUnit => {
+  if (!unit) return 'lb';
+  if (unit === 'lbs') return 'lb';
+  return unit;
+};
 
-// Alert levels
-export type AlertLevel = 'info' | 'success' | 'warning' | 'error';
+// Other common types can be added here
 
-// Common id type
-export type ID = string;
+// Date format options
+export interface DateFormatOptions {
+  includeTime?: boolean;
+  includeSeconds?: boolean;
+  use12Hour?: boolean;
+  dateOnly?: boolean;
+}
 
-// Pagination params
+// Status types
+export type EntityStatus = 'active' | 'inactive' | 'archived' | 'deleted';
+
+// Common pagination parameters
 export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  offset?: number;
-}
-
-// Sort direction
-export type SortDirection = 'asc' | 'desc';
-
-// Sort params
-export interface SortParams {
-  field: string;
-  direction: SortDirection;
-}
-
-// Filter operator
-export type FilterOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'like';
-
-// Filter param
-export interface FilterParam {
-  field: string;
-  operator: FilterOperator;
-  value: any;
-}
-
-// Query params
-export interface QueryParams {
-  pagination?: PaginationParams;
-  sort?: SortParams[];
-  filters?: FilterParam[];
+  page: number;
+  pageSize: number;
+  totalItems?: number;
+  totalPages?: number;
 }
