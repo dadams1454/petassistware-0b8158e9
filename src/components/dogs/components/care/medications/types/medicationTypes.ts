@@ -1,5 +1,5 @@
 
-import { MedicationStatus } from '@/types/health';
+import { MedicationStatus, MedicationStatusResult } from '@/types/health';
 
 export interface MedicationInfo {
   id: string;
@@ -8,7 +8,7 @@ export interface MedicationInfo {
   frequency: string;
   lastAdministered: string;
   nextDue?: string;
-  status?: string | MedicationStatus;
+  status?: string | MedicationStatus | MedicationStatusResult;
   notes?: string;
   isPreventative?: boolean;
 }
