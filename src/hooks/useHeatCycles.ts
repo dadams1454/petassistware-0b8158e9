@@ -3,15 +3,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays } from 'date-fns';
-import { HeatCycle, HeatIntensity } from '@/types';
+import { HeatCycle, HeatIntensity, HeatIntensityValues } from '@/types';
 
 // Helper to ensure intensity is a valid HeatIntensity value
-const validateHeatIntensity = (intensity: string | null): string => {
-  const validIntensities = ['mild', 'moderate', 'strong', 'unknown'];
+const validateHeatIntensity = (intensity: string | null): HeatIntensity => {
+  const validIntensities = ['mild', 'moderate', 'strong', 'medium', 'low', 'high', 'peak', 'unknown'];
   if (intensity && validIntensities.includes(intensity)) {
-    return intensity;
+    return intensity as HeatIntensity;
   }
-  return 'moderate'; // Default fallback
+  return HeatIntensityValues.Moderate; // Default fallback
 };
 
 export const useHeatCycles = (dogId: string) => {

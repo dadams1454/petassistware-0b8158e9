@@ -1,111 +1,103 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { HeatCycle, HeatIntensity } from '@/types/reproductive';
-import HeatCycleDialog from './HeatCycleDialog';
+import { useHeatCycles } from '@/hooks/useHeatCycles';
+import { format, parseISO, addDays } from 'date-fns';
+import { CalendarDays, Clock } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface HeatCycleMonitorProps {
+export interface HeatCycleMonitorProps {
   dogId: string;
-  cycles: HeatCycle[];
-  onAddCycle: (data: Partial<HeatCycle>) => Promise<void>;
-  onUpdateCycle: (id: string, data: Partial<HeatCycle>) => Promise<void>;
+  refreshKey?: number;
 }
 
-const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({
-  dogId,
-  cycles,
-  onAddCycle,
-  onUpdateCycle
-}) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedCycle, setSelectedCycle] = useState<HeatCycle | null>(null);
-
-  const handleOpenAddDialog = () => {
-    setSelectedCycle(null);
-    setIsDialogOpen(true);
-  };
-
-  const handleOpenEditDialog = (cycle: HeatCycle) => {
-    setSelectedCycle(cycle);
-    setIsDialogOpen(true);
-  };
-
-  const handleClose = () => {
-    setIsDialogOpen(false);
-    setSelectedCycle(null);
-  };
-
-  const handleSubmit = async (data: Partial<HeatCycle>) => {
-    try {
-      if (selectedCycle) {
-        await onUpdateCycle(selectedCycle.id, data);
-      } else {
-        await onAddCycle({ ...data, dog_id: dogId });
-      }
-      handleClose();
-    } catch (error) {
-      console.error('Error submitting heat cycle:', error);
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl">Heat Cycle History</CardTitle>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleOpenAddDialog}
-          className="gap-1"
-        >
-          <PlusCircle className="h-4 w-4" />
-          <span>Add Cycle</span>
-        </Button>
-      </CardHeader>
-      
-      <CardContent>
-        {cycles.length === 0 ? (
-          <p className="text-center text-muted-foreground py-4">
-            No heat cycles recorded yet. Click "Add Cycle" to record the first one.
-          </p>
-        ) : (
-          <div className="space-y-4">
-            {cycles.map((cycle) => (
-              <div 
-                key={cycle.id} 
-                className="flex justify-between items-center border-b pb-2 last:border-0"
-                onClick={() => handleOpenEditDialog(cycle)}
-                role="button"
-                tabIndex={0}
-              >
-                <div>
-                  <div className="font-medium">
-                    {format(parseISO(cycle.start_date), 'MMM d, yyyy')}
-                    {cycle.end_date && ` - ${format(parseISO(cycle.end_date), 'MMM d, yyyy')}`}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {cycle.cycle_length ? `${cycle.cycle_length} days` : 'Ongoing'}
-                    {cycle.intensity && ` • ${cycle.intensity} intensity`}
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm">Edit</Button>
-              </div>
-            ))}
+const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, refreshKey }) => {
+  const { heatCycles, averageCycleLength, isLoading, error } = useHeatCycles(dogId);
+  
+  if (isLoading) {
+    return (
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle className="text-base">Heat Cycle Data</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-5 w-1/2" />
           </div>
-        )}
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (error) {
+    return (
+      <Card className="mt-4 border-red-200 bg-red-50">
+        <CardContent className="text-red-700 p-4">
+          Error loading heat cycle data: {(error as Error).message}
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  const lastHeatCycle = heatCycles && heatCycles.length > 0 ? heatCycles[0] : null;
+  
+  const calculateNextHeatDate = () => {
+    if (!lastHeatCycle || !averageCycleLength) return null;
+    
+    const lastStartDate = parseISO(lastHeatCycle.start_date);
+    return addDays(lastStartDate, averageCycleLength);
+  };
+  
+  const nextHeatDate = calculateNextHeatDate();
+  
+  return (
+    <Card className="mt-4">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <CalendarDays className="h-4 w-4" />
+          Heat Cycle Data
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {lastHeatCycle && (
+            <div className="text-sm grid grid-cols-2">
+              <span className="text-muted-foreground">Last Heat Started:</span>
+              <span className="font-medium">{format(parseISO(lastHeatCycle.start_date), 'MMM d, yyyy')}</span>
+            </div>
+          )}
+          
+          {lastHeatCycle?.end_date && (
+            <div className="text-sm grid grid-cols-2">
+              <span className="text-muted-foreground">Last Heat Ended:</span>
+              <span className="font-medium">{format(parseISO(lastHeatCycle.end_date), 'MMM d, yyyy')}</span>
+            </div>
+          )}
+          
+          {averageCycleLength && (
+            <div className="text-sm grid grid-cols-2">
+              <span className="text-muted-foreground">Average Cycle Length:</span>
+              <span className="font-medium">{averageCycleLength} days</span>
+            </div>
+          )}
+          
+          {lastHeatCycle && averageCycleLength && nextHeatDate && (
+            <div className="text-sm grid grid-cols-2">
+              <span className="text-muted-foreground">Next Heat Expected:</span>
+              <span className="font-medium">{format(nextHeatDate, 'MMM d, yyyy')}</span>
+            </div>
+          )}
+          
+          {heatCycles?.length === 0 && (
+            <div className="text-center py-2">
+              <Clock className="h-5 w-5 mx-auto text-gray-400 mb-2" />
+              <p className="text-muted-foreground">No heat cycles recorded yet</p>
+            </div>
+          )}
+        </div>
       </CardContent>
-      
-      {isDialogOpen && (
-        <HeatCycleDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onSubmit={handleSubmit}
-          cycle={selectedCycle}
-        />
-      )}
     </Card>
   );
 };

@@ -4,14 +4,34 @@
 // Define reproductive statuses
 export enum ReproductiveStatus {
   InHeat = 'in_heat',
+  PreHeat = 'pre_heat',
   Pregnant = 'pregnant',
   Nursing = 'nursing',
   Available = 'available',
-  Resting = 'resting'
+  Resting = 'resting',
+  Whelping = 'whelping',
+  Recovery = 'recovery',
+  Intact = 'intact',
+  NotInHeat = 'not_in_heat',
+  Altered = 'altered',
+  Spayed = 'spayed',
+  Neutered = 'neutered'
 }
 
-// Heat Intensity as a string union type
-export type HeatIntensity = 'mild' | 'moderate' | 'strong' | 'unknown';
+// Define HeatIntensity as a string literal union type with constant values
+export type HeatIntensity = 'mild' | 'moderate' | 'medium' | 'high' | 'peak' | 'low' | 'strong' | 'unknown';
+
+// Define heat intensity constants for use in code
+export const HeatIntensityValues = {
+  Low: 'low' as HeatIntensity,
+  Mild: 'mild' as HeatIntensity,
+  Moderate: 'moderate' as HeatIntensity,
+  Medium: 'medium' as HeatIntensity,
+  High: 'high' as HeatIntensity,
+  Strong: 'strong' as HeatIntensity,
+  Peak: 'peak' as HeatIntensity,
+  Unknown: 'unknown' as HeatIntensity
+};
 
 // Define heat cycle interface
 export interface HeatCycle {
@@ -21,7 +41,7 @@ export interface HeatCycle {
   end_date?: string;
   cycle_number?: number;
   cycle_length?: number;
-  intensity?: string;
+  intensity?: HeatIntensity;
   symptoms?: string[];
   fertility_indicators?: any;
   notes?: string;
@@ -80,6 +100,19 @@ export interface HeatStage {
   end_day: number;
   fertility_level: string;
   color: string;
+  day?: number;
+  fertility?: string;
+}
+
+// Dog interface for reproductive context
+export interface Dog {
+  id: string;
+  name: string;
+  breed?: string;
+  gender?: string;
+  color?: string;
+  last_heat_date?: string;
+  next_heat_date?: string;
 }
 
 // Define the reproductive cycle data interface
@@ -117,6 +150,7 @@ export interface BreedingChecklistItem {
   isCompleted: boolean;
   dueDate?: string;
   category?: string;
+  task?: string;
 }
 
 // Define breeding prep form data interface
@@ -125,6 +159,10 @@ export interface BreedingPrepFormData {
   sire_id: string;
   planned_date: string;
   notes?: string;
+  damId?: string;
+  sireId?: string;
+  plannedDate?: string;
+  plannedTieDate?: string;
 }
 
 // Helper function to normalize breeding records

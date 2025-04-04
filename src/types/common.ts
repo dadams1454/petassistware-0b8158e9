@@ -29,3 +29,6 @@ export const standardizeWeightUnit = (unit: string): WeightUnit => {
   }
   return 'lb'; // Default fallback
 };
+
+// Export the weight unit types
+export type { WeightUnit, WeightUnitWithLegacy };
