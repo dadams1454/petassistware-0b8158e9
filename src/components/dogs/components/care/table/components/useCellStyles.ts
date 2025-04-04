@@ -48,7 +48,7 @@ export const useCellStyles = () => {
       baseClass = 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50';
     }
     
-    // Check for pregnant flag - note that type checks are now string comparisons
+    // Check for pregnant flag - use string comparison
     const pregnantFlag = flags.find(flag => flag.type === 'pregnant');
     if (pregnantFlag) {
       baseClass = 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/50';

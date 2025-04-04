@@ -1,12 +1,20 @@
-
 // Reproductive cycle-related types
 
 import { Dog } from './dog';
 
 // Heat Cycle Types
-export type HeatIntensity = 'mild' | 'moderate' | 'strong';
+export type HeatIntensity = 'mild' | 'moderate' | 'strong' | 'low' | 'medium' | 'high' | 'peak' | 'unknown';
 
-export const HeatIntensityValues: HeatIntensity[] = ['mild', 'moderate', 'strong'];
+export const HeatIntensityValues = {
+  Mild: 'mild' as HeatIntensity,
+  Moderate: 'moderate' as HeatIntensity,
+  Strong: 'strong' as HeatIntensity,
+  Low: 'low' as HeatIntensity,
+  Medium: 'medium' as HeatIntensity,
+  High: 'high' as HeatIntensity,
+  Peak: 'peak' as HeatIntensity,
+  Unknown: 'unknown' as HeatIntensity
+};
 
 export interface HeatCycle {
   id: string;
@@ -27,13 +35,21 @@ export interface HeatCycle {
 // Reproductive status enum
 export enum ReproductiveStatus {
   InHeat = 'in_heat',
+  PreHeat = 'pre_heat',
   Pregnant = 'pregnant',
+  Whelping = 'whelping',
   Nursing = 'nursing',
+  Recovery = 'recovery',
   Available = 'available',
   Resting = 'resting',
   TooYoung = 'too_young',
   Retired = 'retired',
-  Unknown = 'unknown'
+  Unknown = 'unknown',
+  Intact = 'intact',
+  NotInHeat = 'not_in_heat',
+  Altered = 'altered',
+  Spayed = 'spayed',
+  Neutered = 'neutered'
 }
 
 // Breeding record types
@@ -87,6 +103,8 @@ export interface HeatStage {
   color: string;
   startDay: number;
   endDay: number;
+  day?: number; // Optional day property
+  fertility?: 'low' | 'medium' | 'high' | 'peak'; // Optional fertility property
 }
 
 // Reproductive milestone
@@ -139,4 +157,12 @@ export interface ReproductiveCycleData {
   lastBreedingRecord?: BreedingRecord;
   daysPregnant?: number;
   gestationDays: number;
+  
+  // Added missing properties
+  nextHeatDate?: Date | null;
+  averageCycleLength?: number | null;
+  fertilityWindow?: { start: Date; end: Date } | null;
+  estimatedDueDate?: Date | null;
+  currentHeatCycle?: HeatCycle;
+  status?: ReproductiveStatus;
 }

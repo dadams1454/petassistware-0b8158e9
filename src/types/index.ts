@@ -41,11 +41,13 @@ export {
   mapToHealthRecord,
   mapToWeightRecord,
   stringToHealthRecordType,
-  MedicationStatusEnum
+  MedicationStatusEnum,
+  AppetiteLevelEnum,
+  EnergyLevelEnum
 } from './health';
 
 // Litter and puppy types
-export { Dog as SimpleDog } from './litter';
+export { type Dog as SimpleDog } from './litter';
 export type { 
   Litter as LitterType, 
   LitterWithDogs, 
@@ -92,6 +94,3 @@ export * from './user';
 
 // Socialization types
 export * from './socialization';
-
-// Utility type for form values - kept for backward compatibility but should use WeightUnit instead
-export type WeightUnitValue = WeightUnit | 'lbs';

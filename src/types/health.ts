@@ -1,4 +1,3 @@
-
 // Health-related type definitions
 
 import { WeightUnit } from './common';
@@ -15,7 +14,12 @@ export enum HealthRecordTypeEnum {
   Allergy = 'allergy',
   Emergency = 'emergency',
   Preventive = 'preventive',
-  Other = 'other'
+  Observation = 'observation',
+  Deworming = 'deworming',
+  Grooming = 'grooming',
+  Test = 'test',
+  Other = 'other',
+  Procedure = 'procedure'
 }
 
 // Health measurement and indicators
@@ -25,7 +29,8 @@ export enum StoolConsistencyEnum {
   Soft = 'soft',
   Watery = 'watery',
   Mucousy = 'mucousy',
-  Bloody = 'bloody'
+  Bloody = 'bloody',
+  Loose = 'loose'
 }
 
 export enum AppetiteEnum {
@@ -42,6 +47,10 @@ export enum EnergyEnum {
   Low = 'low',
   VeryLow = 'very_low'
 }
+
+// For backward compatibility
+export const AppetiteLevelEnum = AppetiteEnum;
+export const EnergyLevelEnum = EnergyEnum;
 
 // Helper function to map strings to HealthRecordTypeEnum
 export const stringToHealthRecordType = (
@@ -68,6 +77,16 @@ export const stringToHealthRecordType = (
       return HealthRecordTypeEnum.Emergency;
     case 'preventive':
       return HealthRecordTypeEnum.Preventive;
+    case 'observation':
+      return HealthRecordTypeEnum.Observation;
+    case 'deworming':
+      return HealthRecordTypeEnum.Deworming;
+    case 'grooming':
+      return HealthRecordTypeEnum.Grooming;
+    case 'test':
+      return HealthRecordTypeEnum.Test;
+    case 'procedure':
+      return HealthRecordTypeEnum.Procedure;
     default:
       return HealthRecordTypeEnum.Other;
   }
@@ -80,17 +99,20 @@ export interface HealthRecord {
   record_type: HealthRecordTypeEnum;
   title: string;
   visit_date: string;
+  date?: string; // For backward compatibility
   vet_name: string;
   description?: string;
   document_url?: string;
   record_notes?: string;
   created_at: string;
   next_due_date?: string | null;
+  performed_by?: string;
   
   // Vaccination specific fields
   vaccine_name?: string;
   manufacturer?: string;
   lot_number?: string;
+  expiration_date?: string;
   
   // Medication specific fields
   medication_name?: string;
@@ -102,13 +124,12 @@ export interface HealthRecord {
   duration?: number;
   duration_unit?: string;
   administration_route?: string;
-  expiration_date?: string;
   
   // Examination specific fields
   examination_type?: string;
   findings?: string;
   recommendations?: string;
-  follow_up_date?: string | null;
+  follow_up_date?: string;
   
   // Surgery specific fields
   procedure_name?: string;
@@ -128,7 +149,13 @@ export interface WeightRecord {
   created_at: string;
   percent_change?: number;
   puppy_id?: string;
+  unit?: WeightUnit; // For backward compatibility
+  age_days?: number; // For puppy weight tracking
+  birth_date?: string; // For puppy weight tracking
 }
+
+// Export WeightUnit so it can be used in other files
+export { WeightUnit };
 
 // Mapping function to convert DB results to WeightRecord
 export const mapToWeightRecord = (data: any): WeightRecord => {

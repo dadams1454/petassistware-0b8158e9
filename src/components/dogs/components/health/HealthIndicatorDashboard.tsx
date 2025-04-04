@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, Plus, Thermometer, Activity, Droplets } from 'lucide-react';
 import { format } from 'date-fns';
 import { useHealthIndicators } from '@/hooks/useHealthIndicators';
-import { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum } from '@/types/health';
+import { AppetiteEnum, EnergyEnum, StoolConsistencyEnum } from '@/types/health';
 
 interface HealthIndicatorDashboardProps {
   dogId: string;
