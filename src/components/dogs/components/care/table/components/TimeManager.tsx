@@ -1,52 +1,90 @@
 
 import React from 'react';
-import { format } from 'date-fns';
-import { Clock } from 'lucide-react';
+import { formatDistance, formatDistanceToNow, isPast, isToday, parseISO } from 'date-fns';
 import { MedicationFrequencyConstants } from '@/utils/medicationUtils';
 
 interface TimeManagerProps {
   frequency: string;
-  lastTime?: string;
+  lastTime: string;
   showFrequency?: boolean;
+  formatType?: 'short' | 'long';
 }
 
-const TimeManager: React.FC<TimeManagerProps> = ({ 
-  frequency, 
+const TimeManager: React.FC<TimeManagerProps> = ({
+  frequency,
   lastTime,
-  showFrequency = true
+  showFrequency = true,
+  formatType = 'short'
 }) => {
-  const getTimeSlots = () => {
+  const parsedLastTime = parseISO(lastTime);
+  const lastTimePast = isPast(parsedLastTime);
+  const lastTimeToday = isToday(parsedLastTime);
+  
+  const getDueTime = () => {
+    let dueIn: string;
+    
+    // For frequency handling
+    let nextDue: Date = new Date(parsedLastTime);
+    
     switch (frequency) {
+      case MedicationFrequencyConstants.DAILY:
+      case MedicationFrequencyConstants.ONCE_DAILY:
+        nextDue.setDate(nextDue.getDate() + 1);
+        break;
       case MedicationFrequencyConstants.TWICE_DAILY:
-        return ['morning', 'evening'];
+        nextDue.setHours(nextDue.getHours() + 12);
+        break;
       case MedicationFrequencyConstants.THREE_TIMES_DAILY:
-        return ['morning', 'afternoon', 'evening'];
+        nextDue.setHours(nextDue.getHours() + 8);
+        break;
+      case MedicationFrequencyConstants.EVERY_OTHER_DAY:
+        nextDue.setDate(nextDue.getDate() + 2);
+        break;
+      case MedicationFrequencyConstants.WEEKLY:
+        nextDue.setDate(nextDue.getDate() + 7);
+        break;
+      case MedicationFrequencyConstants.BIWEEKLY:
+        nextDue.setDate(nextDue.getDate() + 14);
+        break;
       case MedicationFrequencyConstants.MONTHLY:
-        return ['beginning of month'];
+        nextDue.setMonth(nextDue.getMonth() + 1);
+        break;
       default:
-        return ['anytime'];
+        nextDue.setDate(nextDue.getDate() + 1); // Default to daily
     }
-  };
-
-  const formatTime = (time: string) => {
-    try {
-      return format(new Date(time), 'h:mm a');
-    } catch (e) {
-      return 'Invalid time';
+    
+    const isPastDue = isPast(nextDue);
+    
+    if (isPastDue) {
+      dueIn = formatType === 'short' 
+        ? `Past due (${formatDistance(nextDue, new Date(), { addSuffix: false })})`
+        : `Past due by ${formatDistance(nextDue, new Date(), { addSuffix: false })}`;
+    } else {
+      dueIn = formatType === 'short'
+        ? `Due ${formatDistanceToNow(nextDue, { addSuffix: true })}`
+        : `Due in ${formatDistanceToNow(nextDue, { addSuffix: false })}`;
     }
+    
+    return dueIn;
   };
-
+  
+  const getElapsedTime = () => {
+    if (lastTimeToday) {
+      return 'Today';
+    }
+    return formatType === 'short'
+      ? formatDistanceToNow(parsedLastTime, { addSuffix: true })
+      : `${formatDistanceToNow(parsedLastTime, { addSuffix: false })} ago`;
+  };
+  
   return (
-    <div className="flex flex-col text-xs">
-      {lastTime && (
-        <div className="flex items-center text-muted-foreground mb-1">
-          <Clock className="h-3 w-3 mr-1" />
-          {formatTime(lastTime)}
-        </div>
-      )}
+    <div className="flex flex-col">
+      <div className="text-sm font-medium">
+        {getElapsedTime()}
+      </div>
       {showFrequency && (
-        <div className="text-muted-foreground">
-          {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
+        <div className="text-xs text-muted-foreground">
+          {getDueTime()}
         </div>
       )}
     </div>

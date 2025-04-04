@@ -1,3 +1,4 @@
+
 import { WeightUnit } from './common';
 
 export interface Dog {

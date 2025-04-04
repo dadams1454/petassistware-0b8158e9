@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Settings } from 'lucide-react';
 import { MedicationInfo } from '../types/medicationTypes';
 import TimeManager from '../../table/components/TimeManager';
-import { MedicationStatus, MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
+import { MedicationStatusEnum } from '@/types/health';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationTableViewProps {
@@ -99,13 +99,16 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
 };
 
 // Helper function to render the status badge
-const getStatusBadge = (status: MedicationStatus | MedicationStatusResult | undefined) => {
+const getStatusBadge = (status: any) => {
   if (!status) {
     return getStatusLabelBadge(MedicationStatusEnum.NOT_STARTED);
   }
   
   if (typeof status === 'string') {
-    return getStatusLabelBadge(status as MedicationStatus);
+    // Handle string status (convert to enum)
+    const enumStatus = status.toUpperCase() as keyof typeof MedicationStatusEnum;
+    const statusEnum = MedicationStatusEnum[enumStatus] || MedicationStatusEnum.NOT_STARTED;
+    return getStatusLabelBadge(statusEnum);
   } 
   
   if (typeof status === 'object' && status && 'status' in status) {
@@ -121,8 +124,14 @@ const getStatusBadge = (status: MedicationStatus | MedicationStatusResult | unde
   return getStatusLabelBadge(MedicationStatusEnum.NOT_STARTED);
 };
 
-const getStatusLabelBadge = (status: MedicationStatus | string) => {
-  const statusInfo = getStatusLabel(status as unknown as MedicationStatusEnum);
+const getStatusLabelBadge = (status: MedicationStatusEnum | string) => {
+  // Normalize string status to enum
+  let statusEnum = status as MedicationStatusEnum;
+  if (typeof status === 'string' && !(status in MedicationStatusEnum)) {
+    statusEnum = MedicationStatusEnum.NOT_STARTED;
+  }
+  
+  const statusInfo = getStatusLabel(statusEnum);
   
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.statusColor}`}>

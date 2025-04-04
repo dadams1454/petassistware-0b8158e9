@@ -1,3 +1,4 @@
+
 import { Dog } from './dog';
 
 export interface HeatCycle {
@@ -124,6 +125,7 @@ export interface HeatStage {
   day?: number;
   id?: string;
   fertility?: string;
+  color?: string; // Added to fix errors
 }
 
 export interface ReproductiveCycleData {

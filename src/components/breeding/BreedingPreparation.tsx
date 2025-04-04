@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Calendar, Check, AlertTriangle, ArrowRight } from 'lucide-react';
-import { Dog } from '@/types/dog';
-import { Gender } from '@/types/common';
+import { Dog, DogGender } from '@/types/dog';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays } from 'date-fns';
 import { useDogStatus } from '@/components/dogs/hooks/useDogStatus';
@@ -52,7 +52,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         // Ensure dog has required properties
         const dogWithRequiredProps: ExtendedDog = {
           ...dogData,
-          gender: (dogData.gender as Gender) || 'Female', // Ensure gender is typed correctly
+          gender: dogData.gender as DogGender || DogGender.Female, // Ensure gender is typed correctly
           status: dogData.status || 'active' // Add status property if not present
         };
         
@@ -62,7 +62,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         const { data: malesData, error: malesError } = await supabase
           .from('dogs')
           .select('*')
-          .eq('gender', 'Male')
+          .eq('gender', DogGender.Male)
           .eq('breed', dogData.breed) // Same breed
           .neq('id', effectiveDogId) // Not the same dog
           .order('name');
@@ -72,7 +72,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         // Process and convert males to Dog type with status
         const malesWithRequiredProps: ExtendedDog[] = malesData.map(male => ({
           ...male,
-          gender: (male.gender as Gender) || 'Male',
+          gender: male.gender as DogGender || DogGender.Male,
           status: male.status || 'active' // Add status property if not present
         }));
         
@@ -119,7 +119,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
     );
   }
   
-  if (dog.gender !== 'Female') {
+  if (dog.gender !== DogGender.Female) {
     return (
       <Alert className="max-w-3xl mx-auto">
         <AlertTriangle className="h-4 w-4" />
