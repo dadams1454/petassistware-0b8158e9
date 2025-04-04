@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { WeightRecord } from '@/types/health';
+import { WeightUnit } from '@/types/common';
 
 interface WeightTableProps {
   weightRecords: WeightRecord[];
@@ -49,7 +50,7 @@ const WeightTable: React.FC<WeightTableProps> = ({ weightRecords }) => {
                   {record.age_days || '-'}
                 </TableCell>
                 <TableCell>
-                  {record.weight} {record.unit || record.weight_unit || 'lbs'}
+                  {record.weight} {record.weight_unit || 'lb'}
                 </TableCell>
                 <TableCell>
                   {percentChange !== null ? (

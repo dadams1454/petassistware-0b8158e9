@@ -1,4 +1,3 @@
-
 // Puppy tracking related types
 
 import { WeightUnit } from './common';
