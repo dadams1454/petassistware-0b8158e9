@@ -16,20 +16,30 @@ const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) 
     const type = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
     const Icon = getHealthRecordIcon(type);
     
+    let iconComponent;
+    
     switch (type) {
       case HealthRecordTypeEnum.Vaccination:
-        return <Icon className="h-5 w-5 text-green-500" />;
+        iconComponent = <Icon className="h-5 w-5 text-green-500" />;
+        break;
       case HealthRecordTypeEnum.Examination:
-        return <Icon className="h-5 w-5 text-blue-500" />;
+        iconComponent = <Icon className="h-5 w-5 text-blue-500" />;
+        break;
       case HealthRecordTypeEnum.Medication:
-        return <Icon className="h-5 w-5 text-purple-500" />;
+        iconComponent = <Icon className="h-5 w-5 text-purple-500" />;
+        break;
       case HealthRecordTypeEnum.Surgery:
-        return <Icon className="h-5 w-5 text-red-500" />;
+        iconComponent = <Icon className="h-5 w-5 text-red-500" />;
+        break;
       case HealthRecordTypeEnum.Observation:
-        return <Icon className="h-5 w-5 text-amber-500" />;
+        iconComponent = <Icon className="h-5 w-5 text-amber-500" />;
+        break;
       default:
-        return <Icon className="h-5 w-5 text-gray-500" />;
+        iconComponent = <Icon className="h-5 w-5 text-gray-500" />;
+        break;
     }
+    
+    return iconComponent;
   };
   
   return (

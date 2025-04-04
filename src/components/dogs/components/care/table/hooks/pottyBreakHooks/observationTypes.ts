@@ -9,7 +9,15 @@ export type ObservationType =
   | 'medication'
   | 'feeding'
   | 'weight'
-  | 'milestone';
+  | 'milestone'
+  | 'potty'
+  | 'exercise'
+  | 'training'
+  | 'grooming'
+  | 'in_heat'
+  | 'pregnant'
+  | 'special_attention'
+  | 'incompatible';
 
 export interface ObservationRecord {
   id: string;
@@ -20,7 +28,7 @@ export interface ObservationRecord {
   created_by?: string;
   timeSlot: string;
   category: string;
-  expires_at?: string; // Added for compatibility
+  expires_at?: string;
 }
 
 export interface ObservationDetails {

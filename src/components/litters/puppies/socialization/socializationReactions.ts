@@ -1,5 +1,5 @@
 
-import { SocializationReactionOption } from '../types';
+import { SocializationReactionOption, SocializationReactionType } from '@/types/puppyTracking';
 
 export const socializationReactions: SocializationReactionOption[] = [
   {
@@ -7,35 +7,45 @@ export const socializationReactions: SocializationReactionOption[] = [
     name: 'Curious',
     value: 'curious',
     label: 'Curious',
-    color: 'green'
+    color: 'green',
+    type: 'curious',
+    emoji: '🧐'
   },
   {
     id: 'neutral',
     name: 'Neutral',
     value: 'neutral',
     label: 'Neutral',
-    color: 'blue'
+    color: 'blue',
+    type: 'neutral',
+    emoji: '😐'
   },
   {
-    id: 'cautious',
-    name: 'Cautious',
-    value: 'cautious',
-    label: 'Cautious',
-    color: 'amber'
+    id: 'positive',
+    name: 'Positive',
+    value: 'positive',
+    label: 'Positive',
+    color: 'amber',
+    type: 'positive',
+    emoji: '😊'
   },
   {
     id: 'fearful',
     name: 'Fearful',
     value: 'fearful',
     label: 'Fearful',
-    color: 'red'
+    color: 'red',
+    type: 'fearful',
+    emoji: '😨'
   },
   {
     id: 'excited',
     name: 'Excited',
     value: 'excited',
     label: 'Excited',
-    color: 'purple'
+    color: 'purple',
+    type: 'excited',
+    emoji: '🤩'
   }
 ];
 

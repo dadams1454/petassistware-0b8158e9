@@ -11,7 +11,7 @@ interface HealthRecordDialogProps {
   dogId: string;
   recordType?: HealthRecordTypeEnum;
   recordId?: string;
-  onSave: (data: any) => void; // Updated the type to accept a parameter
+  onSave: (data: any) => void;
 }
 
 const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
@@ -58,14 +58,18 @@ const HealthRecordDialog: React.FC<HealthRecordDialogProps> = ({
         // Update existing record
         await updateHealthRecord({
           id: recordId,
-          ...data
+          ...data,
+          created_at: recordData?.created_at || new Date().toISOString()
         });
       } else {
         // Add new record
-        await addHealthRecord(data);
+        await addHealthRecord({
+          ...data,
+          created_at: new Date().toISOString()
+        });
       }
       
-      onSave(data); // Pass data to the parent component
+      onSave(data);
       onOpenChange(false);
     } catch (err: any) {
       setError(err.message || 'Failed to save health record');

@@ -5,7 +5,7 @@ import { toast } from '@/components/ui/use-toast';
 import PuppiesTable from './puppies/PuppiesTable';
 import DeletePuppyDialog from './puppies/DeletePuppyDialog';
 import EditPuppyDialog from './puppies/EditPuppyDialog';
-import { Puppy } from './puppies/types';
+import { Puppy } from '@/types/litter';
 
 interface PuppiesListProps {
   puppies: Puppy[];
@@ -72,14 +72,14 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
     <div>
       <PuppiesTable 
         puppies={puppies} 
-        onEditPuppy={handleEditPuppy}
-        onDeletePuppy={setPuppyToDelete} 
+        onEditPuppy={handleEditPuppy as any}
+        onDeletePuppy={setPuppyToDelete as any} 
         onAddPuppy={handleAddPuppy}
       />
 
       {/* Edit Puppy Dialog */}
       <EditPuppyDialog
-        puppy={selectedPuppy}
+        puppy={selectedPuppy as any}
         litterId={litterId}
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -97,7 +97,7 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
 
       {/* Delete Confirmation Dialog */}
       <DeletePuppyDialog
-        puppy={puppyToDelete}
+        puppy={puppyToDelete as any}
         onClose={() => setPuppyToDelete(null)}
         onConfirm={handleDeletePuppy}
       />
