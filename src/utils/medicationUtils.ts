@@ -7,25 +7,25 @@ import { MedicationFrequency, MedicationStatus, MedicationStatusResult } from '@
  */
 export const frequencyToLabel = (frequency: string): string => {
   switch (frequency) {
-    case MedicationFrequency.DAILY:
+    case MedicationFrequencyConstants.DAILY:
       return 'Once Daily';
-    case MedicationFrequency.TWICE_DAILY:
+    case MedicationFrequencyConstants.TWICE_DAILY:
       return 'Twice Daily';
-    case MedicationFrequency.THREE_TIMES_DAILY:
+    case MedicationFrequencyConstants.THREE_TIMES_DAILY:
       return 'Three Times Daily';
-    case MedicationFrequency.WEEKLY:
+    case MedicationFrequencyConstants.WEEKLY:
       return 'Weekly';
-    case MedicationFrequency.BIWEEKLY:
+    case MedicationFrequencyConstants.BIWEEKLY:
       return 'Every Two Weeks';
-    case MedicationFrequency.MONTHLY:
+    case MedicationFrequencyConstants.MONTHLY:
       return 'Monthly';
-    case MedicationFrequency.QUARTERLY:
+    case MedicationFrequencyConstants.QUARTERLY:
       return 'Every Three Months';
-    case MedicationFrequency.ANNUAL:
+    case MedicationFrequencyConstants.ANNUAL:
       return 'Yearly';
-    case MedicationFrequency.AS_NEEDED:
+    case MedicationFrequencyConstants.AS_NEEDED:
       return 'As Needed';
-    case MedicationFrequency.ONE_TIME:
+    case MedicationFrequencyConstants.ONE_TIME:
       return 'One Time';
     default:
       return frequency;
@@ -37,21 +37,21 @@ export const frequencyToLabel = (frequency: string): string => {
  */
 export const frequencyToHours = (frequency: string): number => {
   switch (frequency) {
-    case MedicationFrequency.DAILY:
+    case MedicationFrequencyConstants.DAILY:
       return 24;
-    case MedicationFrequency.TWICE_DAILY:
+    case MedicationFrequencyConstants.TWICE_DAILY:
       return 12;
-    case MedicationFrequency.THREE_TIMES_DAILY:
+    case MedicationFrequencyConstants.THREE_TIMES_DAILY:
       return 8;
-    case MedicationFrequency.WEEKLY:
+    case MedicationFrequencyConstants.WEEKLY:
       return 24 * 7;
-    case MedicationFrequency.BIWEEKLY:
+    case MedicationFrequencyConstants.BIWEEKLY:
       return 24 * 14;
-    case MedicationFrequency.MONTHLY:
+    case MedicationFrequencyConstants.MONTHLY:
       return 24 * 30;
-    case MedicationFrequency.QUARTERLY:
+    case MedicationFrequencyConstants.QUARTERLY:
       return 24 * 90;
-    case MedicationFrequency.ANNUAL:
+    case MedicationFrequencyConstants.ANNUAL:
       return 24 * 365;
     default:
       return 0; // For as-needed or one-time meds
@@ -68,8 +68,8 @@ export const isOverdue = (frequency: string, lastDose: string): boolean => {
   const hoursUntilNextDose = frequencyToHours(frequency);
   
   // If it's a one-time medication or as-needed, it's never overdue
-  if (frequency === MedicationFrequency.ONE_TIME || 
-      frequency === MedicationFrequency.AS_NEEDED) {
+  if (frequency === MedicationFrequencyConstants.ONE_TIME || 
+      frequency === MedicationFrequencyConstants.AS_NEEDED) {
     return false;
   }
   
@@ -119,7 +119,7 @@ export const getMedicationStatus = (
   }
   
   // If it's a one-time medication
-  if (frequency === MedicationFrequency.ONE_TIME) {
+  if (frequency === MedicationFrequencyConstants.ONE_TIME) {
     if (!lastDosed) {
       return {
         status: MedicationStatus.upcoming,
@@ -137,7 +137,7 @@ export const getMedicationStatus = (
   }
   
   // If it's an as-needed medication
-  if (frequency === MedicationFrequency.AS_NEEDED) {
+  if (frequency === MedicationFrequencyConstants.AS_NEEDED) {
     return {
       status: MedicationStatus.active,
       statusLabel: 'As Needed',
