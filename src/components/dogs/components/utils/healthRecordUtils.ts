@@ -7,9 +7,9 @@ import {
   FileText,
   Activity,
   Image,
-  Flask,
+  HelpCircle,
   Shield,
-  HelpCircle
+  Test
 } from 'lucide-react';
 
 /**
@@ -28,7 +28,7 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string) =
     case HealthRecordTypeEnum.Test:
       return FileText;
     case HealthRecordTypeEnum.Laboratory:
-      return Flask;
+      return Test;
     case HealthRecordTypeEnum.Imaging:
       return Image;
     case HealthRecordTypeEnum.Preventive:
