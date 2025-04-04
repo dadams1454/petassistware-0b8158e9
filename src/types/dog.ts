@@ -1,6 +1,7 @@
 
 // Import WeightUnit from common
 import { WeightUnit } from './common';
+import { HeatIntensity } from './reproductive';
 
 export enum DogGender {
   Male = 'male',
@@ -99,6 +100,7 @@ export interface DogProfile {
   group_ids?: string[];
   sire_id?: string;
   dam_id?: string;
+  created_at?: string;
 }
 
 // Export WeightRecord and HealthRecord that match the health.ts definitions
@@ -181,4 +183,21 @@ export interface GrowthStats {
   growthRate?: number;
   lastWeekGrowth?: number;
   projectedWeight?: number;
+}
+
+// Heat cycle interface for compatibility
+export interface HeatCycle {
+  id: string;
+  dog_id: string;
+  start_date: string;
+  end_date?: string;
+  cycle_number?: number;
+  cycle_length?: number;
+  intensity: HeatIntensity;
+  symptoms?: string[];
+  fertility_indicators?: any;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+  recorded_by?: string;
 }

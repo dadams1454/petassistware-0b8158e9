@@ -23,6 +23,7 @@ export interface SocializationReactionOption {
   color: string;
   emoji: string;
   value: SocializationReactionType;
+  label?: string;
 }
 
 export interface SocializationProgress {
@@ -65,15 +66,19 @@ export interface PuppyCareLog {
 
 // Statistics for puppy management dashboard
 export interface PuppyAgeGroupData {
+  id: string;
   name: string;
   range: string;
   ageRange: [number, number]; // in days
+  startDay: number;
+  endDay: number;
   developmentalPhase: string;
   description: string;
   milestones: string[];
   color: string;
   puppies: PuppyWithAge[];
   count: number;
+  careChecks?: string[];
 }
 
 export interface PuppyManagementStats {
@@ -82,9 +87,104 @@ export interface PuppyManagementStats {
   reservedCount: number;
   availableCount: number;
   soldCount: number;
+  currentWeek: number;
+  
+  // These can be derived from above properties but kept for backward compatibility
+  puppies?: PuppyWithAge[];
+  availablePuppies?: number;
+  reservedPuppies?: number;
+  soldPuppies?: number;
+  
   byAgeGroup: Record<string, PuppyWithAge[]>;
   ageGroups: PuppyAgeGroupData[];
   puppiesByAgeGroup: Record<string, number>;
-  currentWeek: number;
+  
+  // Additional metadata
+  isLoading?: boolean;
+  error?: any;
+  
+  // Extended statistics
+  total?: {
+    count: number;
+    male: number;
+    female: number;
+  };
+  byGender?: {
+    male: number;
+    female: number;
+    unknown: number;
+  };
+  byStatus?: {
+    available: number;
+    reserved: number;
+    sold: number;
+    unavailable: number;
+  };
+  
   weightRanges?: Record<string, any>;
+}
+
+// Export PuppyWithAge so it's available
+export { PuppyWithAge };
+
+// Add WeightRecord definition for puppy weight tracking
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: string;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;  // For puppy weight records
+  birth_date?: string; // For reference
+}
+
+// Add vaccination types
+export interface VaccinationScheduleItem {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  scheduled_date: string;
+  administered: boolean;
+  administrationDate?: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface VaccinationRecord {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  administrationDate: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface PuppyMilestone {
+  id?: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
+  notes?: string;
+  created_at?: string;
+  title?: string;
+  is_completed?: boolean;
+}
+
+// Add SocializationRecord for backward compatibility
+export interface SocializationRecord {
+  id: string;
+  puppy_id: string;
+  category: {
+    id: string;
+    name: string;
+  };
+  experience: string;
+  experience_date: string;
+  reaction?: string;
+  notes?: string;
+  created_at: string;
 }

@@ -41,20 +41,30 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   };
   
   // Convert string status to MedicationStatusEnum if needed
-  const statusValue = typeof status === 'object' && status !== null && 'status' in status
-    ? (status as MedicationStatusResult).status
-    : status as MedicationStatusEnum;
+  let statusValue = '';
+  let statusObject: MedicationStatusResult | null = null;
   
-  const { statusLabel, statusColor } = getStatusLabel(statusValue);
+  if (typeof status === 'object' && status !== null) {
+    statusObject = status as MedicationStatusResult;
+    statusValue = statusObject.status;
+  } else {
+    statusValue = status as MedicationStatusEnum;
+  }
+  
+  // Get status label and color
+  const { statusLabel, statusColor } = getStatusLabel(statusValue as MedicationStatusEnum);
   
   // Determine the icon based on status
   const getIcon = () => {
     switch (String(statusValue)) {
       case 'active':
+      case 'Active':
         return <Check className="h-4 w-4 text-green-500" />;
       case 'overdue':
+      case 'Overdue':
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       case 'upcoming':
+      case 'Upcoming':
         return <Calendar className="h-4 w-4 text-blue-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
@@ -62,9 +72,10 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   };
   
   // Determine the next due date to display
-  const nextDueDate = nextDue ||
-    (typeof status === 'object' && status !== null && 'nextDue' in status ? 
-      (status as MedicationStatusResult).nextDue : null);
+  let nextDueDate = nextDue;
+  if (!nextDueDate && statusObject && 'nextDue' in statusObject) {
+    nextDueDate = statusObject.nextDue;
+  }
   
   return (
     <div className="flex items-center space-x-2">

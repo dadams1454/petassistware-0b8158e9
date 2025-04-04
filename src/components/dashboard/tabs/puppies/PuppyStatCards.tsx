@@ -17,19 +17,19 @@ const PuppyStatCards: React.FC<PuppyStatCardsProps> = ({ stats }) => {
     },
     {
       title: 'Available',
-      value: stats.availablePuppies,
+      value: stats.availableCount || stats.availablePuppies || 0,
       icon: <CheckCircle className="h-5 w-5 text-green-500" />,
       color: 'bg-green-50 text-green-700 border-green-100'
     },
     {
       title: 'Reserved',
-      value: stats.reservedPuppies,
+      value: stats.reservedCount || stats.reservedPuppies || 0,
       icon: <Clock className="h-5 w-5 text-amber-500" />,
       color: 'bg-amber-50 text-amber-700 border-amber-100'
     },
     {
       title: 'Sold',
-      value: stats.soldPuppies,
+      value: stats.soldCount || stats.soldPuppies || 0,
       icon: <DollarSign className="h-5 w-5 text-purple-500" />,
       color: 'bg-purple-50 text-purple-700 border-purple-100'
     }

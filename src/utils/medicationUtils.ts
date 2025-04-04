@@ -1,295 +1,240 @@
-import { 
-  MedicationStatus, 
-  MedicationStatusEnum,
-  MedicationStatusResult,
-  Medication 
-} from '@/types/health';
-import { format, differenceInDays, isValid } from 'date-fns';
+import { format, parse, parseISO, addDays, isBefore, isAfter, differenceInDays } from 'date-fns';
+import { MedicationStatus, MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 
-// Medication frequency constants
-export const MedicationFrequencyConstants = {
-  DAILY: 'daily',
-  TWICE_DAILY: 'twice_daily',
-  THREE_TIMES_DAILY: 'three_times_daily',
-  WEEKLY: 'weekly',
-  BIWEEKLY: 'biweekly',
-  MONTHLY: 'monthly',
-  QUARTERLY: 'quarterly',
-  ANNUAL: 'annual',
-  AS_NEEDED: 'as_needed'
+// Frequency to days mapping
+type FrequencyMapping = {
+  [key: string]: number;
 };
 
-// Helper function to process medication logs
-export const processMedicationLogs = (data: any[]) => {
-  if (!data || data.length === 0) {
-    return { preventative: [], other: [] };
+const frequencyToDays: FrequencyMapping = {
+  'daily': 1,
+  'twice_daily': 0.5,
+  'every_other_day': 2,
+  'weekly': 7,
+  'biweekly': 14,
+  'monthly': 30,
+  'as_needed': 0,
+  'once': 0,
+};
+
+// Get the next administration date based on frequency and last administration
+export const getNextAdministrationDate = (
+  lastAdministered: string | Date | null,
+  frequency: string
+): Date | null => {
+  if (!lastAdministered || !frequency) return null;
+  
+  // Convert to Date if string
+  const lastDate = typeof lastAdministered === 'string' ? 
+    parseISO(lastAdministered) : lastAdministered;
+  
+  // Handle different frequency formats
+  const days = getFrequencyDays(frequency);
+  
+  // If no regular schedule (as_needed, once)
+  if (days === 0) return null;
+  
+  // Calculate next due date
+  return addDays(lastDate, days);
+};
+
+// Calculate days from frequency string
+export const getFrequencyDays = (frequency: string): number => {
+  // Standard frequencies
+  if (frequency.toLowerCase() in frequencyToDays) {
+    return frequencyToDays[frequency.toLowerCase()];
   }
   
-  // Group medications by name
-  const medicationsByName: Record<string, any[]> = {};
-  
-  data.forEach(log => {
-    const name = log.task_name;
-    if (!medicationsByName[name]) {
-      medicationsByName[name] = [];
+  // Parse complex frequencies like "every X days"
+  if (frequency.toLowerCase().includes('every')) {
+    const match = frequency.match(/every\s+(\d+)\s+(day|days|week|weeks|month|months)/i);
+    if (match) {
+      const value = parseInt(match[1], 10);
+      const unit = match[2].toLowerCase();
+      
+      if (unit === 'day' || unit === 'days') {
+        return value;
+      } else if (unit === 'week' || unit === 'weeks') {
+        return value * 7;
+      } else if (unit === 'month' || unit === 'months') {
+        return value * 30; // Approximate
+      }
     }
-    medicationsByName[name].push(log);
-  });
+  }
   
-  // Process each medication
-  const processedMedications = Object.keys(medicationsByName).map(name => {
-    const logs = medicationsByName[name];
-    const latestLog = logs.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    )[0];
-    
-    const metadata = latestLog.medication_metadata || {};
-    
-    return {
-      id: latestLog.id,
-      name: name,
-      dosage: metadata.dosage 
-        ? `${metadata.dosage}${metadata.dosage_unit ? ' ' + metadata.dosage_unit : ''}` 
-        : undefined,
-      frequency: metadata.frequency || 'daily',
-      lastAdministered: latestLog.timestamp,
-      status: getMedicationStatus(
-        latestLog.timestamp, 
-        metadata.frequency || 'daily',
-        metadata.end_date
-      ),
-      notes: latestLog.notes,
-      isPreventative: metadata.preventative || false,
-      startDate: metadata.start_date,
-      nextDue: calculateNextDueDate(new Date(latestLog.timestamp), metadata.frequency || 'daily')?.toISOString()
-    };
-  });
-  
-  // Categorize by preventative or treatment
-  return {
-    preventative: processedMedications.filter(med => med.isPreventative),
-    other: processedMedications.filter(med => !med.isPreventative)
-  };
+  // Default to daily if we can't parse
+  return 1;
 };
 
-// Function to determine the status of a medication
+// Get medication status
 export const getMedicationStatus = (
-  lastAdministered: string | Date | null, 
-  frequency: string, 
+  frequency: string,
+  lastAdministered: string | Date | null,
   endDate?: string | Date | null
 ): MedicationStatusResult => {
-  // If there's no last administered date, return unknown
-  if (!lastAdministered) {
-    return {
-      status: MedicationStatusEnum.unknown,
-      statusLabel: 'Unknown',
-      statusColor: 'bg-gray-200 text-gray-700',
-      isOverdue: false,
-    };
-  }
+  const today = new Date();
   
-  // Handle end date - if it's in the past, medication is completed
+  // If medication has an end date and it's in the past
   if (endDate) {
-    const today = new Date();
-    const endDateTime = typeof endDate === 'string' ? new Date(endDate) : endDate;
-    
-    if (isValid(endDateTime) && endDateTime < today) {
-      return {
-        status: MedicationStatusEnum.completed,
+    const endDateTime = typeof endDate === 'string' ? parseISO(endDate) : endDate;
+    if (isBefore(endDateTime, today)) {
+      return { 
+        status: MedicationStatusEnum.Completed,
         statusLabel: 'Completed',
-        statusColor: 'bg-green-200 text-green-700',
-        isOverdue: false,
+        statusColor: 'bg-green-100 text-green-800'
       };
     }
   }
   
-  // Calculate next due date based on frequency
-  const lastGiven = typeof lastAdministered === 'string' 
-    ? new Date(lastAdministered) 
-    : lastAdministered;
-  
-  if (!isValid(lastGiven)) {
-    return {
-      status: MedicationStatusEnum.unknown,
-      statusLabel: 'Invalid Date',
-      statusColor: 'bg-gray-200 text-gray-700',
-      isOverdue: false,
+  // If never administered
+  if (!lastAdministered) {
+    return { 
+      status: MedicationStatusEnum.Unknown,
+      statusLabel: 'Not Started',
+      statusColor: 'bg-gray-100 text-gray-800'
     };
   }
   
-  const nextDue = calculateNextDueDate(lastGiven, frequency);
+  // Calculate next due date
+  const nextDue = getNextAdministrationDate(lastAdministered, frequency);
   
-  // Determine status based on next due date
-  return getStatusFromDueDate(nextDue);
-};
-
-// Helper function to calculate next due date based on frequency
-export const calculateNextDueDate = (lastGiven: Date, frequency: string): Date | null => {
-  if (!frequency || !lastGiven || !isValid(lastGiven)) {
-    return null;
-  }
-  
-  const nextDue = new Date(lastGiven);
-  
-  if (/daily|every day/i.test(frequency)) {
-    nextDue.setDate(nextDue.getDate() + 1);
-  } else if (/twice daily|twice a day|bid|b\.i\.d\./i.test(frequency)) {
-    nextDue.setHours(nextDue.getHours() + 12);
-  } else if (/three times daily|tid|t\.i\.d\./i.test(frequency)) {
-    nextDue.setHours(nextDue.getHours() + 8);
-  } else if (/every other day|eod|e\.o\.d\./i.test(frequency)) {
-    nextDue.setDate(nextDue.getDate() + 2);
-  } else if (/weekly|once a week/i.test(frequency)) {
-    nextDue.setDate(nextDue.getDate() + 7);
-  } else if (/biweekly|every two weeks/i.test(frequency)) {
-    nextDue.setDate(nextDue.getDate() + 14);
-  } else if (/monthly|once a month/i.test(frequency)) {
-    nextDue.setMonth(nextDue.getMonth() + 1);
-  } else if (/every (\d+) hours/i.test(frequency)) {
-    const match = frequency.match(/every (\d+) hours/i);
-    if (match && match[1]) {
-      const hours = parseInt(match[1], 10);
-      nextDue.setHours(nextDue.getHours() + hours);
-    }
-  } else if (/every (\d+) days/i.test(frequency)) {
-    const match = frequency.match(/every (\d+) days/i);
-    if (match && match[1]) {
-      const days = parseInt(match[1], 10);
-      nextDue.setDate(nextDue.getDate() + days);
-    }
-  } else if (/every (\d+) weeks/i.test(frequency)) {
-    const match = frequency.match(/every (\d+) weeks/i);
-    if (match && match[1]) {
-      const weeks = parseInt(match[1], 10);
-      nextDue.setDate(nextDue.getDate() + (weeks * 7));
-    }
-  } else if (/every (\d+) months/i.test(frequency)) {
-    const match = frequency.match(/every (\d+) months/i);
-    if (match && match[1]) {
-      const months = parseInt(match[1], 10);
-      nextDue.setMonth(nextDue.getMonth() + months);
-    }
-  } else {
-    // Default to daily if we can't parse the frequency
-    nextDue.setDate(nextDue.getDate() + 1);
-  }
-  
-  return nextDue;
-};
-
-// Helper function to get status based on due date
-export const getStatusFromDueDate = (dueDate: Date | null): MedicationStatusResult => {
-  if (!dueDate || !isValid(dueDate)) {
-    return {
-      status: MedicationStatusEnum.unknown,
-      statusLabel: 'Unknown',
-      statusColor: 'bg-gray-200 text-gray-700',
-      isOverdue: false,
+  // If no regular schedule (as_needed, once)
+  if (!nextDue) {
+    return { 
+      status: MedicationStatusEnum.Unknown,
+      statusLabel: 'As Needed',
+      statusColor: 'bg-gray-100 text-gray-800',
+      nextDue: null
     };
   }
   
-  const now = new Date();
-  const days = differenceInDays(dueDate, now);
-  
-  // If due date is in the past, it's overdue
-  if (days < 0) {
-    return {
-      status: MedicationStatusEnum.overdue,
-      statusLabel: 'Overdue',
-      statusColor: 'bg-red-200 text-red-700',
-      nextDue: dueDate,
-      daysUntilNext: days,
-      isOverdue: true,
+  // Check if overdue
+  if (isBefore(nextDue, today)) {
+    const daysOverdue = differenceInDays(today, nextDue);
+    
+    return { 
+      status: 'Overdue' as MedicationStatusEnum,
+      statusLabel: `Overdue (${daysOverdue}d)`,
+      statusColor: 'bg-red-100 text-red-800',
+      nextDue
     };
   }
   
-  // If due date is today, it's due today
-  if (days === 0) {
+  // Check if due today
+  if (differenceInDays(nextDue, today) === 0) {
     return {
-      status: MedicationStatusEnum.active,
+      status: MedicationStatusEnum.Active,
       statusLabel: 'Due Today',
-      statusColor: 'bg-amber-200 text-amber-700',
-      nextDue: dueDate,
-      daysUntilNext: 0,
-      isOverdue: false,
+      statusColor: 'bg-green-100 text-green-800',
+      nextDue
     };
   }
   
-  // If due date is tomorrow, it's due soon
-  if (days === 1) {
+  // Check if due soon (within 24 hours)
+  if (differenceInDays(nextDue, today) <= 1) {
     return {
-      status: MedicationStatusEnum.active,
-      statusLabel: 'Due Tomorrow',
-      statusColor: 'bg-amber-100 text-amber-700',
-      nextDue: dueDate,
-      daysUntilNext: 1,
-      isOverdue: false,
+      status: MedicationStatusEnum.Active,
+      statusLabel: 'Due Soon',
+      statusColor: 'bg-blue-100 text-blue-800',
+      nextDue
     };
   }
   
-  // If due date is within 3 days, it's upcoming
-  if (days <= 3) {
-    return {
-      status: MedicationStatusEnum.upcoming,
-      statusLabel: 'Upcoming',
-      statusColor: 'bg-blue-200 text-blue-700',
-      nextDue: dueDate,
-      daysUntilNext: days,
-      isOverdue: false,
-    };
-  }
-  
-  // Otherwise it's just active
+  // Otherwise, it's upcoming
   return {
-    status: MedicationStatusEnum.active,
-    statusLabel: 'Active',
-    statusColor: 'bg-green-200 text-green-700',
-    nextDue: dueDate,
-    daysUntilNext: days,
-    isOverdue: false,
+    status: 'Upcoming' as MedicationStatusEnum,
+    statusLabel: 'Upcoming',
+    statusColor: 'bg-blue-100 text-blue-800',
+    nextDue
   };
 };
 
-// Helper function to get status label and color
-export const getStatusLabel = (
-  status: MedicationStatus | null
-): { statusLabel: string, statusColor: string } => {
-  // If status is already a status result object, return its values
-  if (typeof status === 'object' && status !== null && 'statusLabel' in status && 'statusColor' in status) {
-    return {
-      statusLabel: status.statusLabel as string,
-      statusColor: status.statusColor as string
-    };
+// Parse and format frequency strings for display
+export const formatFrequency = (frequency: string): string => {
+  if (!frequency) return 'Unknown';
+  
+  switch (frequency.toLowerCase()) {
+    case 'daily':
+      return 'Once daily';
+    case 'twice_daily':
+      return 'Twice daily';
+    case 'every_other_day':
+      return 'Every other day';
+    case 'weekly':
+      return 'Once a week';
+    case 'biweekly':
+      return 'Every two weeks';
+    case 'monthly':
+      return 'Once a month';
+    case 'as_needed':
+      return 'As needed (PRN)';
+    case 'once':
+      return 'Once only';
+    default:
+      return frequency;
   }
-  
-  // String status handlers
-  const statusString = String(status);
-  
-  switch (statusString) {
-    case String(MedicationStatusEnum.active):
+};
+
+export const getStatusLabel = (status: MedicationStatusEnum): { statusLabel: string, statusColor: string } => {
+  switch (status) {
+    case MedicationStatusEnum.Active:
       return {
         statusLabel: 'Active',
-        statusColor: 'bg-green-200 text-green-700'
+        statusColor: 'bg-green-100 text-green-800'
       };
-    case String(MedicationStatusEnum.overdue):
+    case MedicationStatusEnum.Overdue:
+    case 'Overdue' as MedicationStatusEnum:
       return {
         statusLabel: 'Overdue',
-        statusColor: 'bg-red-200 text-red-700'
+        statusColor: 'bg-red-100 text-red-800'
       };
-    case String(MedicationStatusEnum.upcoming):
+    case MedicationStatusEnum.Upcoming:
+    case 'Upcoming' as MedicationStatusEnum:
       return {
         statusLabel: 'Upcoming',
-        statusColor: 'bg-blue-200 text-blue-700'
+        statusColor: 'bg-blue-100 text-blue-800'
       };
-    case String(MedicationStatusEnum.completed):
+    case MedicationStatusEnum.Completed:
       return {
         statusLabel: 'Completed',
-        statusColor: 'bg-gray-200 text-gray-700'
+        statusColor: 'bg-green-100 text-green-800'
       };
+    case MedicationStatusEnum.Unknown:
     default:
       return {
         statusLabel: 'Unknown',
-        statusColor: 'bg-gray-200 text-gray-700'
+        statusColor: 'bg-gray-100 text-gray-800'
       };
+  }
+};
+
+// Extract status values for components
+export const getMedicationStatusValue = (status: MedicationStatus | MedicationStatusResult | string | null): string => {
+  if (!status) return MedicationStatusEnum.Unknown;
+  
+  if (typeof status === 'object' && status !== null && 'status' in status) {
+    return (status as MedicationStatusResult).status;
+  }
+  
+  return status as MedicationStatus;
+};
+
+// Get status class for UI
+export const getStatusClass = (status: MedicationStatus | MedicationStatusResult | string | null): string => {
+  const statusValue = getMedicationStatusValue(status);
+  
+  switch (statusValue) {
+    case MedicationStatusEnum.Active:
+      return 'bg-green-100 text-green-800';
+    case 'Overdue':
+    case MedicationStatusEnum.Overdue:
+      return 'bg-red-100 text-red-800';
+    case 'Upcoming':
+    case MedicationStatusEnum.Upcoming:
+      return 'bg-blue-100 text-blue-800';
+    case MedicationStatusEnum.Completed:
+      return 'bg-green-100 text-green-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 };

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PuppyAgeGroupList from './puppies/PuppyAgeGroupList';
 import PuppyStatCards from './puppies/PuppyStatCards';
-import { PuppyManagementStats } from '@/types/puppyTracking';
+import { PuppyManagementStats, PuppyWithAge } from '@/types/puppyTracking';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
 
 interface PuppiesTabProps {
@@ -23,7 +23,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   
   // Get puppy tracking data
   const { 
-    puppies, 
+    puppies = [], 
     puppiesByAgeGroup, 
     ageGroups, 
     totalPuppies,
@@ -41,22 +41,22 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
       if (!searchTerm) return puppiesByAgeGroup;
       
       // Apply search filter to all age groups
-      const filtered: Record<string, any[]> = {};
+      const filtered: Record<string, PuppyWithAge[]> = {};
       Object.keys(puppiesByAgeGroup).forEach(groupId => {
-        filtered[groupId] = puppiesByAgeGroup[groupId]?.filter(puppy => 
+        filtered[groupId] = (puppiesByAgeGroup[groupId] || []).filter(puppy => 
           puppy.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           puppy.color?.toLowerCase().includes(searchTerm.toLowerCase())
-        ) || [];
+        );
       });
       return filtered;
     } else {
       // Only include the selected age group
-      const filtered: Record<string, any[]> = {};
-      filtered[ageGroupFilter] = puppiesByAgeGroup[ageGroupFilter]?.filter(puppy => 
+      const filtered: Record<string, PuppyWithAge[]> = {};
+      filtered[ageGroupFilter] = (puppiesByAgeGroup[ageGroupFilter] || []).filter(puppy => 
         !searchTerm || 
         puppy.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         puppy.color?.toLowerCase().includes(searchTerm.toLowerCase())
-      ) || [];
+      );
       return filtered;
     }
   }, [puppiesByAgeGroup, searchTerm, ageGroupFilter]);
@@ -72,7 +72,12 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     soldPuppies,
     isLoading,
     error,
-    // Add the required properties from the error
+    activeCount: totalPuppies,
+    availableCount: availablePuppies || 0,
+    reservedCount: reservedPuppies || 0,
+    soldCount: soldPuppies || 0,
+    currentWeek: Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000)),
+    byAgeGroup: puppiesByAgeGroup,
     total: {
       count: totalPuppies,
       male: puppies.filter(p => p.gender?.toLowerCase() === 'male').length,
@@ -84,15 +89,11 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
       unknown: puppies.filter(p => !p.gender).length
     },
     byStatus: {
-      available: availablePuppies,
-      reserved: reservedPuppies,
-      sold: soldPuppies,
+      available: availablePuppies || 0,
+      reserved: reservedPuppies || 0,
+      sold: soldPuppies || 0,
       unavailable: puppies.filter(p => p.status?.toLowerCase() === 'unavailable').length
-    },
-    byAgeGroup: Object.entries(puppiesByAgeGroup).reduce((acc, [key, puppies]) => {
-      acc[key] = puppies.length;
-      return acc;
-    }, {} as Record<string, number>)
+    }
   };
 
   if (isLoading) {

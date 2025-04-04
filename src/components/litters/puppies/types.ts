@@ -1,6 +1,7 @@
 
 import { PuppyFormValues } from '@/hooks/usePuppyForm';
 import { UseFormReturn } from 'react-hook-form';
+import { SocializationReactionType } from '@/types/puppyTracking';
 
 export interface Puppy {
   id: string;
@@ -60,4 +61,46 @@ export interface AKCRegistrationTabProps {
 
 export interface NewOwnerTabProps {
   form: UseFormReturn<PuppyFormValues>;
+}
+
+// Socialization types
+export type SocializationCategory = {
+  id: string;
+  name: string;
+  color?: string;
+  description?: string;
+  examples?: string[];
+};
+
+export interface SocializationRecord {
+  id: string;
+  puppy_id: string;
+  category: SocializationCategory;
+  experience: string;
+  experience_date: string;
+  reaction?: SocializationReactionType;
+  notes?: string;
+  created_at: string;
+}
+
+export interface SocializationCategoryOption {
+  id: string;
+  name: string;
+  value: string;
+  label: string;
+  color?: string;
+  examples?: string[];
+}
+
+export interface SocializationReactionOption {
+  id: string;
+  name: string;
+  value: SocializationReactionType;
+  label: string;
+  color: string;
+}
+
+export interface SocializationTrackerProps {
+  puppyId: string;
+  onExperienceAdded?: () => void;
 }

@@ -35,12 +35,13 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     puppiesByAgeGroup = {},
     totalPuppies = 0,
     availablePuppies = 0,
+    reservedPuppies = 0,
+    soldPuppies = 0,
     isLoading, 
     error,
     total = { count: 0, male: 0, female: 0 },
     byGender = { male: 0, female: 0, unknown: 0 },
-    byStatus = {},
-    byAgeGroup = {}
+    byStatus = {}
   } = usePuppyTracking();
   
   const navigate = useNavigate();
@@ -102,6 +103,8 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   const stats = {
     totalPuppies,
     availablePuppies,
+    reservedPuppies,
+    soldPuppies,
     byGender,
     byStatus
   };
@@ -115,13 +118,13 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
       {ageGroups.map((ageGroup) => {
         const puppiesInGroup = puppiesByAgeGroup[ageGroup.id] || [];
         
-        if (puppiesInGroup.length === 0) return null;
+        if (Array.isArray(puppiesInGroup) && puppiesInGroup.length === 0) return null;
         
         return (
           <PuppyAgeGroupSection
             key={ageGroup.id}
             ageGroup={ageGroup}
-            puppies={puppiesInGroup}
+            puppies={puppiesInGroup as PuppyWithAge[]}
             onRefresh={onRefresh}
           />
         );

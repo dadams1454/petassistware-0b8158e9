@@ -31,38 +31,33 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     byAgeGroup = {}
   } = usePuppyStats(processedPuppies) || {};
 
-  const isLoading = puppiesLoading;
-
-  // Create the management stats object
-  const managementStats: PuppyManagementStats = {
+  // Construct PuppyManagementStats object
+  return {
+    totalPuppies,
     puppies: processedPuppies,
     ageGroups,
     puppiesByAgeGroup,
-    totalPuppies,
+    byAgeGroup,
+    activeCount: totalPuppies, // Same as total for backward compatibility
+    reservedCount: reservedPuppies,
+    availableCount: availablePuppies,
+    soldCount: soldPuppies,
+    currentWeek: Math.ceil(new Date().getTime() / (7 * 24 * 60 * 60 * 1000)),
+    
+    // Legacy properties
     availablePuppies,
     reservedPuppies,
     soldPuppies,
-    isLoading,
+    isLoading: puppiesLoading,
     error,
+    
+    // Extended statistics
     total: {
       count: totalPuppies,
       male: byGender.male || 0,
       female: byGender.female || 0
     },
     byGender,
-    byStatus,
-    byAgeGroup,
-    // Add stats for compatibility with components that use it
-    stats: {
-      totalPuppies,
-      availablePuppies,
-      reservedPuppies,
-      soldPuppies,
-      byGender,
-      byStatus,
-      byAgeGroup
-    }
+    byStatus
   };
-
-  return managementStats;
 };

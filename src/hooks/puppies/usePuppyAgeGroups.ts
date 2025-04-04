@@ -2,94 +2,128 @@
 import { useMemo } from 'react';
 import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
 
-// Predefined age groups for puppies
-const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
-  {
-    id: 'newborn',
-    name: 'Newborn',
-    startDay: 0,
-    endDay: 14,
-    description: 'First two weeks after birth',
-    color: 'blue',
-    milestones: ['Eyes opening', 'Umbilical healing', 'Weight gain'],
-    careChecks: ['Warmth', 'Hydration', 'Weight daily']
-  },
-  {
-    id: 'transitional',
-    name: 'Transitional',
-    startDay: 15,
-    endDay: 21,
-    description: 'Eyes and ears open, beginning to walk',
-    color: 'purple',
-    milestones: ['Full mobility', 'Responding to sound', 'Beginning of play'],
-    careChecks: ['Socialization', 'Introduction to sounds', 'Weight 3x/week']
-  },
-  {
-    id: 'socialization',
-    name: 'Socialization',
-    startDay: 22,
-    endDay: 49,
-    description: 'Critical period for socialization',
-    color: 'green',
-    milestones: ['Weaning', 'Play with littermates', 'Environmental enrichment'],
-    careChecks: ['Exposure to stimuli', 'Beginning training', 'Weight 2x/week']
-  },
-  {
-    id: 'juvenile',
-    name: 'Juvenile',
-    startDay: 50,
-    endDay: 84,
-    description: 'Preparing for new homes',
-    color: 'amber',
-    milestones: ['Vaccinations', 'Microchipping', 'Pre-placement evaluations'],
-    careChecks: ['Temperament assessment', 'Health checks', 'Weight weekly']
-  },
-  {
-    id: 'adolescent',
-    name: 'Adolescent',
-    startDay: 85,
-    endDay: 365,
-    description: 'Growing young dogs',
-    color: 'orange',
-    milestones: ['Training continuation', 'Growth monitoring', 'Adult behaviors emerging'],
-    careChecks: ['Exercise needs', 'Training progress', 'Nutrition assessment']
-  }
-];
+export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
+  // Define age groups
+  const ageGroups: PuppyAgeGroupData[] = useMemo(() => [
+    {
+      id: 'newborn',
+      name: 'Newborn',
+      range: '0-14 days',
+      ageRange: [0, 14],
+      startDay: 0,
+      endDay: 14,
+      developmentalPhase: 'Neonatal Period',
+      description: 'Puppies are completely dependent on mother for nutrition and care.',
+      milestones: ['Eyes closed', 'Ears closed', 'Minimal movement', 'Sleep 90% of time'],
+      color: 'blue',
+      puppies: [],
+      count: 0,
+      careChecks: ['weight', 'temperature', 'umbilical check', 'nursing']
+    },
+    {
+      id: 'infant',
+      name: 'Infant',
+      range: '15-21 days',
+      ageRange: [15, 21],
+      startDay: 15,
+      endDay: 21,
+      developmentalPhase: 'Transitional Period',
+      description: 'Puppies begin to open eyes and ears, and start to crawl.',
+      milestones: ['Eyes open', 'Ears open', 'Begin crawling', 'First teeth appear'],
+      color: 'green',
+      puppies: [],
+      count: 0,
+      careChecks: ['weight', 'motor development', 'first deworming']
+    },
+    {
+      id: 'transitional',
+      name: 'Transitional',
+      range: '22-28 days',
+      ageRange: [22, 28],
+      startDay: 22,
+      endDay: 28,
+      developmentalPhase: 'Early Socialization',
+      description: 'Puppies begin to interact with siblings and environment.',
+      milestones: ['Walking steadily', 'Playing with littermates', 'Weaning begins', 'Recognize people'],
+      color: 'yellow',
+      puppies: [],
+      count: 0,
+      careChecks: ['weaning progress', 'socialization', 'second deworming']
+    },
+    {
+      id: 'socialization',
+      name: 'Socialization',
+      range: '29-49 days',
+      ageRange: [29, 49],
+      startDay: 29,
+      endDay: 49,
+      developmentalPhase: 'Critical Socialization',
+      description: 'Key period for socialization and learning.',
+      milestones: ['Fully weaned', 'First vaccinations', 'Structured play', 'Fear responses develop'],
+      color: 'orange',
+      puppies: [],
+      count: 0,
+      careChecks: ['vaccines', 'socialization plan', 'temperament assessment']
+    },
+    {
+      id: 'juvenile',
+      name: 'Juvenile',
+      range: '50+ days',
+      ageRange: [50, 120],
+      startDay: 50,
+      endDay: 120,
+      developmentalPhase: 'Juvenile Period',
+      description: 'Puppies are ready for new homes and continued training.',
+      milestones: ['Ready for adoption', 'Full vaccination series', 'Basic training', 'House training'],
+      color: 'red',
+      puppies: [],
+      count: 0,
+      careChecks: ['final health check', 'microchipping', 'spay/neuter plans']
+    }
+  ], []);
 
-export const usePuppyAgeGroups = (puppies: PuppyWithAge[] = []) => {
-  // Use predefined age groups or fetch from system settings/database
-  const ageGroups = DEFAULT_AGE_GROUPS;
-  
-  // Organize puppies by age group
+  // Group puppies by age
   const puppiesByAgeGroup = useMemo(() => {
-    const grouped: { [groupId: string]: PuppyWithAge[] } = {};
+    const grouped: Record<string, PuppyWithAge[]> = {};
     
-    // Initialize all groups with empty arrays
+    // Initialize empty arrays for each age group
     ageGroups.forEach(group => {
       grouped[group.id] = [];
     });
     
-    // Sort puppies into appropriate age groups
+    // Sort puppies into their respective age groups
     puppies.forEach(puppy => {
-      const ageInDays = puppy.ageInDays;
+      const ageDays = puppy.ageInDays || puppy.age_days || 0;
       
-      // Find the right age group for this puppy
-      const matchingGroup = ageGroups.find(
-        group => ageInDays >= group.startDay && ageInDays <= group.endDay
+      const group = ageGroups.find(
+        g => ageDays >= g.startDay && ageDays <= g.endDay
       );
       
-      if (matchingGroup) {
-        grouped[matchingGroup.id].push(puppy);
+      if (group) {
+        grouped[group.id].push(puppy);
+      } else if (ageDays > ageGroups[ageGroups.length - 1].endDay) {
+        // If older than the oldest defined group, put in the oldest group
+        grouped[ageGroups[ageGroups.length - 1].id].push(puppy);
       } else {
-        // For puppies older than our defined groups, put in the last group
-        if (ageGroups.length > 0 && ageInDays > ageGroups[ageGroups.length - 1].endDay) {
-          grouped[ageGroups[ageGroups.length - 1].id].push(puppy);
-        }
+        // Fallback - shouldn't happen if ages are calculated correctly
+        grouped['juvenile'].push(puppy);
       }
     });
     
     return grouped;
   }, [puppies, ageGroups]);
   
-  return { ageGroups, puppiesByAgeGroup };
+  // Update age groups with puppy counts
+  const updatedAgeGroups = useMemo(() => {
+    return ageGroups.map(group => ({
+      ...group,
+      puppies: puppiesByAgeGroup[group.id] || [],
+      count: (puppiesByAgeGroup[group.id] || []).length
+    }));
+  }, [ageGroups, puppiesByAgeGroup]);
+  
+  return {
+    ageGroups: updatedAgeGroups,
+    puppiesByAgeGroup
+  };
 };
