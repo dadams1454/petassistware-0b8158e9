@@ -1,5 +1,6 @@
 
-import { Puppy, PuppyWithAge } from './litter';
+// Re-export PuppyWithAge for easier imports
+export { PuppyWithAge } from './litter';
 
 // Puppy age group data
 export interface PuppyAgeGroupData {
@@ -11,129 +12,88 @@ export interface PuppyAgeGroupData {
   eightWeek: PuppyWithAge[];
 }
 
+export interface PuppyAgeGroup {
+  id: string;
+  name: string;
+  description: string;
+  minDays: number;
+  maxDays: number;
+  color: string;
+}
+
 // Puppy management statistics
 export interface PuppyManagementStats {
-  puppies: PuppyWithAge[];
   totalPuppies: number;
   availablePuppies: number;
   reservedPuppies: number;
   soldPuppies: number;
-  unavailablePuppies: number;
-  maleCount: number;
-  femaleCount: number;
+  unavailablePuppies?: number;
+  maleCount?: number;
+  femaleCount?: number;
   activeCount: number;
   availableCount: number;
-  neonate: number; // 0-2 weeks
-  transitional: number; // 2-4 weeks
-  socialization: number; // 4-8 weeks
-  juvenile: number; // 8+ weeks
+  reservedCount: number;
+  soldCount: number;
+  neonate?: number; // 0-2 weeks
+  transitional?: number; // 2-4 weeks
+  socialization?: number; // 4-8 weeks
+  juvenile?: number; // 8+ weeks
   
   // Status counts
-  statusCounts: {
+  byStatus: {
     available: number;
     reserved: number;
     sold: number;
     unavailable: number;
   };
   
+  // Gender counts
+  byGender: {
+    male: number;
+    female: number;
+    unknown: number;
+  };
+  
   // Age group categorization
   byAgeGroup: PuppyAgeGroupData;
   
   // Age stats
-  averageAge: number;
-  youngestAge: number;
-  oldestAge: number;
+  averageAge?: number;
+  youngestAge?: number;
+  oldestAge?: number;
   
   // Weight stats
-  averageWeight: number;
-  minWeight: number;
-  maxWeight: number;
+  averageWeight?: number;
+  minWeight?: number;
+  maxWeight?: number;
   
   // Health stats  
-  vaccinationRate: number;
-  dewormingRate: number;
-  healthCheckRate: number;
+  vaccinationRate?: number;
+  dewormingRate?: number;
+  healthCheckRate?: number;
+  
+  // For backward compatibility
+  puppies?: any[];
+  isLoading?: boolean;
+  error?: any;
+  currentWeek?: number;
+  ageGroups?: PuppyAgeGroup[];
+  puppiesByAgeGroup?: Record<string, PuppyWithAge[]>;
+  total?: {
+    count: number;
+    male: number;
+    female: number;
+  };
 }
 
 // Socialization reaction type
 export type SocializationReactionType = 
-  'very_positive' | 'positive' | 'neutral' | 
-  'cautious' | 'fearful' | 'very_fearful' | 'no_reaction' |
-  'negative' | 'unknown';
-
-// Socialization category interface
-export interface SocializationCategory {
-  id: string;
-  name: string;
-  description?: string;
-  color?: string;
-  examples?: string[];
-  icon?: string;
-  order?: number;
-}
-
-// Socialization category option interface
-export interface SocializationCategoryOption {
-  id: string;
-  name: string;
-  description?: string;
-  examples?: string[];
-  color?: string;
-  value?: string;
-  label?: string;
-  order?: number;
-}
-
-// Socialization reaction option interface
-export interface SocializationReactionOption {
-  id: string;
-  name: string;
-  color: string;
-  emoji?: string;
-  value: SocializationReactionType;
-}
-
-// Socialization progress interface
-export interface SocializationProgress {
-  categoryId: string;
-  category: string;
-  categoryName: string;
-  total: number;
-  completed: number;
-  positive: number;
-  neutral: number;
-  negative: number;
-  percentage: number;
-  count?: number;
-  target?: number;
-  completion_percentage?: number;
-}
-
-// Puppy care log interface
-export interface PuppyCareLog {
-  id: string;
-  puppy_id: string;
-  care_type: string;
-  care_date: string;
-  notes?: string;
-  performed_by?: string;
-  created_at: string;
-  duration?: number;
-  status?: string;
-  feeding_amount?: number;
-  feeding_unit?: string;
-  weight?: number;
-  weight_unit?: string;
-}
-
-// Socialization experience interface
-export interface SocializationExperience {
-  id: string;
-  puppy_id: string;
-  category: string;
-  experience: string;
-  experience_date: string;
-  reaction?: SocializationReactionType;
-  notes?: string;
-  created_at: string;
-}
+  | 'very_positive' 
+  | 'positive' 
+  | 'neutral' 
+  | 'cautious' 
+  | 'fearful' 
+  | 'very_fearful' 
+  | 'no_reaction'
+  | 'negative' 
+  | 'unknown';

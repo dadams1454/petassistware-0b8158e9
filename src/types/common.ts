@@ -1,21 +1,68 @@
 
-// Weight unit types
-export type WeightUnit = 'kg' | 'g' | 'lb' | 'oz';
-export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+// Weight units
+export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
 
-// For components that need to display weight unit options
-export const weightUnits: { value: WeightUnit; label: string }[] = [
+// Legacy weight units for backward compatibility
+export type WeightUnitWithLegacy = WeightUnit | 'pounds' | 'kilograms' | 'grams' | 'ounces';
+
+// Function to standardize weight units
+export const standardizeWeightUnit = (unit: string): WeightUnit => {
+  // Convert legacy units to standardized ones
+  const unitMap: Record<string, WeightUnit> = {
+    'lb': 'lb',
+    'kg': 'kg',
+    'g': 'g',
+    'oz': 'oz',
+    'pounds': 'lb',
+    'kilograms': 'kg',
+    'grams': 'g',
+    'ounces': 'oz',
+    'pound': 'lb',
+    'kilogram': 'kg',
+    'gram': 'g',
+    'ounce': 'oz'
+  };
+  
+  return unitMap[unit.toLowerCase()] || 'lb';
+};
+
+// Available weight units for UI
+export const weightUnitOptions = [
   { value: 'lb', label: 'Pounds (lb)' },
   { value: 'kg', label: 'Kilograms (kg)' },
   { value: 'g', label: 'Grams (g)' },
   { value: 'oz', label: 'Ounces (oz)' }
 ];
 
-// Standardize weight units for consistency
-export function standardizeWeightUnit(unit: WeightUnitWithLegacy): WeightUnit {
-  if (unit === 'lbs') return 'lb';
-  return unit as WeightUnit;
+// Generic status types
+export type Status = 'active' | 'inactive' | 'pending' | 'archived';
+
+// Pagination params for API requests
+export interface PaginationParams {
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
-// For UI status colors
-export type StatusColor = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+// API response with pagination metadata
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    pageSize: number;
+    pageCount: number;
+  };
+}
+
+// Dog gender options
+export type Gender = 'Male' | 'Female';
+
+// Base tenant entity with common fields
+export interface TenantEntity {
+  id: string;
+  created_at: string;
+  updated_at?: string;
+  tenant_id?: string;
+}
