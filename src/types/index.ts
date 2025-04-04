@@ -5,7 +5,17 @@
 // Dog-related types
 export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord } from './dog';
 export { DogGender, HealthRecordTypeEnum, DocumentType } from './dog';
-export type { HeatCycle } from './reproductive';
+
+// Reproductive cycle types
+export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensity } from './reproductive';
+export { ReproductiveStatus, normalizeBreedingRecord, HeatIntensityValues } from './reproductive';
+export type { 
+  ReproductiveMilestone, 
+  ReproductiveCycleData,
+  BreedingChecklistItem,
+  BreedingPrepFormData,
+  HeatStage
+} from './reproductive';
 
 // Common types
 export type { WeightUnit, WeightUnitWithLegacy } from './common';
@@ -28,24 +38,11 @@ export {
   EnergyEnum, 
   StoolConsistencyEnum,
   mapToHealthRecord,
-  mapToWeightRecord
+  mapToWeightRecord,
+  stringToHealthRecordType,
+  MedicationStatusEnum
 } from './health';
-
-// Breeding and reproductive types
-export { 
-  ReproductiveStatus, 
-  normalizeBreedingRecord,
-  HeatIntensity
-} from './reproductive';
-export type { 
-  BreedingRecord, 
-  PregnancyRecord, 
-  ReproductiveMilestone, 
-  ReproductiveCycleData,
-  BreedingChecklistItem,
-  BreedingPrepFormData,
-  HeatStage
-} from './reproductive';
+export { WeightUnit } from './health';
 
 // Litter and puppy types
 export { Dog as SimpleDog } from './litter';

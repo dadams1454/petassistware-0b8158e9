@@ -1,36 +1,58 @@
 
 import React from 'react';
-import { DogCareStatus } from '@/types/dailyCare';
+import { User } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { DogFlag } from '@/types/dailyCare';
 
 interface DogAvatarProps {
-  dog: DogCareStatus;
-  onClick: (e: React.MouseEvent) => void;
+  photoUrl?: string;
+  name: string;
+  size?: 'sm' | 'md' | 'lg';
+  flags?: DogFlag[];
 }
 
-const DogAvatar: React.FC<DogAvatarProps> = ({ dog, onClick }) => {
+const DogAvatar: React.FC<DogAvatarProps> = ({ 
+  photoUrl,
+  name,
+  size = 'md',
+  flags = []
+}) => {
+  const sizeClasses = {
+    sm: 'h-8 w-8 text-xs',
+    md: 'h-10 w-10 text-sm',
+    lg: 'h-12 w-12 text-base'
+  };
+  
+  // Check if dog has any flags
+  const inHeatFlag = flags.find(flag => flag.type === 'in_heat');
+  const pregnantFlag = flags.find(flag => flag.type === 'pregnant');
+  
+  // Determine border color based on flags
+  let borderClass = '';
+  
+  if (inHeatFlag) {
+    borderClass = 'ring-2 ring-red-500 dark:ring-red-400';
+  } else if (pregnantFlag) {
+    borderClass = 'ring-2 ring-purple-500 dark:ring-purple-400';
+  }
+  
   return (
-    <div 
-      className="flex-shrink-0 h-10 w-10 cursor-pointer relative" 
-      onClick={onClick}
-      title={`View ${dog.dog_name}'s details`}
-    >
-      <img 
-        src={dog.dog_photo || '/placeholder.svg'} 
-        alt={dog.dog_name}
-        className="h-full w-full rounded-full object-cover"
-      />
-      
-      {/* Special conditions indicators */}
-      {dog.flags && dog.flags.some(flag => flag.type === 'in_heat') && (
-        <span className="absolute -top-1 -right-1 h-4 w-4 bg-pink-500 rounded-full border-2 border-white dark:border-gray-900" 
-              title="In heat">
-        </span>
-      )}
-      
-      {dog.flags && dog.flags.some(flag => flag.type === 'pregnant') && (
-        <span className="absolute -bottom-1 -right-1 h-4 w-4 bg-blue-500 rounded-full border-2 border-white dark:border-gray-900"
-              title="Pregnant">
-        </span>
+    <div className={cn(
+      'relative rounded-full bg-muted flex items-center justify-center overflow-hidden',
+      sizeClasses[size],
+      borderClass
+    )}>
+      {photoUrl ? (
+        <img 
+          src={photoUrl} 
+          alt={name} 
+          className="object-cover w-full h-full"
+        />
+      ) : (
+        <User className={cn(
+          'text-muted-foreground',
+          size === 'sm' ? 'h-4 w-4' : size === 'md' ? 'h-5 w-5' : 'h-6 w-6'
+        )} />
       )}
     </div>
   );

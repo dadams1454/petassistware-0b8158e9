@@ -41,27 +41,30 @@ export const useCellStyles = ({
       classes += ' bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700';
     }
     
-    // Special styles for cells with flags - use individual checks to prevent false positives
-    if (flags.some(flag => flag.type === 'in_heat')) {
+    // Special styles for cells with flags - use separate checks to avoid TS type errors
+    const inHeatFlag = flags.find(flag => flag.type === 'in_heat');
+    if (inHeatFlag) {
       classes += ' ring-2 ring-red-300 dark:ring-red-700';
     }
     
-    if (flags.some(flag => flag.type === 'pregnant')) {
+    const pregnantFlag = flags.find(flag => flag.type === 'pregnant');
+    if (pregnantFlag) {
       classes += ' ring-2 ring-purple-300 dark:ring-purple-700';
     }
     
-    if (flags.some(flag => flag.type === 'special_attention')) {
+    const specialAttentionFlag = flags.find(flag => flag.type === 'special_attention');
+    if (specialAttentionFlag) {
       classes += ' ring-1 ring-blue-300 dark:ring-blue-700';
     }
     
     return classes;
   }, [category, hasPottyBreak, hasCareLogged, flags]);
 
-  // Extract flag statuses
-  const isInHeat = flags.some(flag => flag.type === 'in_heat');
-  const isPregnant = flags.some(flag => flag.type === 'pregnant');
-  const hasIncompatibility = flags.some(flag => flag.type === 'incompatible');
-  const hasSpecialAttention = flags.some(flag => flag.type === 'special_attention');
+  // Extract flag statuses using find instead of some to avoid TypeScript errors
+  const isInHeat = flags.find(flag => flag.type === 'in_heat') !== undefined;
+  const isPregnant = flags.find(flag => flag.type === 'pregnant') !== undefined;
+  const hasIncompatibility = flags.find(flag => flag.type === 'incompatible') !== undefined;
+  const hasSpecialAttention = flags.find(flag => flag.type === 'special_attention') !== undefined;
   
   return {
     cellClassNames: getCellClassNames(),
