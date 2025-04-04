@@ -1,7 +1,19 @@
 
+// Import WeightUnit from common
+import { WeightUnit } from './common';
+
 export enum DogGender {
   Male = 'male',
   Female = 'female'
+}
+
+export enum DogStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+  Deceased = 'deceased',
+  Sold = 'sold',
+  Rehomed = 'rehomed',
+  Guardian = 'guardian'
 }
 
 export enum DocumentType {
@@ -32,9 +44,6 @@ export enum HealthRecordTypeEnum {
   Procedure = 'procedure'
 }
 
-// Import WeightUnit from common
-import { WeightUnit } from './common';
-
 export interface Dog {
   id: string;
   name: string;
@@ -45,6 +54,17 @@ export interface Dog {
   created_at?: string;
   last_heat_date?: string;
   next_heat_date?: string;
+  registration_number?: string;
+  microchip_number?: string;
+  registration_organization?: string;
+  microchip_location?: string;
+  reproductive_status?: string;
+  status?: string;
+  is_pregnant?: boolean;
+  tie_date?: string;
+  weight?: number;
+  weight_unit?: WeightUnit;
+  litter_number?: number;
 }
 
 export interface DogProfile {
@@ -77,7 +97,8 @@ export interface DogProfile {
   potty_alert_threshold?: number;
   max_time_between_breaks?: number;
   group_ids?: string[];
-  sire_id?: string; // Added for compatibility
+  sire_id?: string;
+  dam_id?: string;
 }
 
 // Export WeightRecord and HealthRecord that match the health.ts definitions
@@ -107,6 +128,7 @@ export interface HealthRecord {
   created_at: string;
   next_due_date?: string;
   performed_by?: string;
+  expiration_date?: string;
   
   // Field groups for specific record types
   // Vaccination

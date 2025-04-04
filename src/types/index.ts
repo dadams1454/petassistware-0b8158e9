@@ -4,7 +4,7 @@
 
 // Dog-related types
 export type { Dog, DogProfile, HealthRecord, Vaccination } from './dog';
-export { DogGender, HealthRecordTypeEnum, DocumentType } from './dog';
+export { DogGender, DogStatus, HealthRecordTypeEnum, DocumentType } from './dog';
 
 // Reproductive cycle types
 export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensity } from './reproductive';
@@ -34,6 +34,7 @@ export type {
   MedicationAdministration,
   WeightRecord
 } from './health';
+
 export { 
   AppetiteEnum, 
   EnergyEnum, 
@@ -49,7 +50,7 @@ export {
 // Litter and puppy types
 export { type Dog as SimpleDog } from './litter';
 export type { 
-  Litter as LitterType, 
+  Litter, 
   LitterWithDogs, 
   Puppy, 
   PuppyWithAge,

@@ -1,7 +1,7 @@
 
 import { Dog } from './dog';
 // Re-export Dog so it's available to components that import from this file
-export { Dog };
+export type { Dog };
 
 // Simple dog interface for minimal dog info (used in litter management)
 export interface SimpleDog {
@@ -10,6 +10,7 @@ export interface SimpleDog {
   breed?: string;
   gender?: string;
   color?: string;
+  registration_number?: string;
 }
 
 // Litter interface
@@ -32,11 +33,13 @@ export interface Litter {
   akc_registration_date?: string;
   akc_verified?: boolean;
   expected_go_home_date?: string;
+  name?: string; // For compatibility
   // Additional properties needed for proper typing
   dam?: Dog;
   sire?: Dog;
   puppies?: Puppy[];
   archived?: boolean;
+  breeder_id?: string;
 }
 
 // Extended litter interface with Dogs
@@ -87,6 +90,9 @@ export interface PuppyWithAge extends Puppy {
   developmentalStage: string;
   weightHistory?: any[];
   litter?: Litter;
+  currentWeight?: number;
+  age_days?: number; // For backward compatibility
+  age_weeks?: number; // For backward compatibility
 }
 
 // Whelping record interface
@@ -139,4 +145,6 @@ export interface PuppyMilestone {
   milestone_date: string;
   notes?: string;
   created_at?: string;
+  title?: string;
+  is_completed?: boolean;
 }

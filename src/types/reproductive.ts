@@ -1,3 +1,4 @@
+
 // Reproductive cycle-related types
 
 import { Dog } from './dog';
@@ -64,6 +65,12 @@ export interface BreedingRecord {
   created_at: string;
   created_by?: string;
   heat_cycle_id?: string;
+  tie_date?: string;
+  breeding_method?: string;
+  is_successful?: boolean;
+  dam_id?: string;
+  estimated_due_date?: string;
+  sire?: any;
 }
 
 // Normalize breeding record for display
@@ -71,14 +78,20 @@ export const normalizeBreedingRecord = (record: any): BreedingRecord => {
   return {
     id: record.id,
     dog_id: record.dog_id || record.dam_id,
+    dam_id: record.dam_id,
     sire_id: record.sire_id,
     breeding_date: record.breeding_date || record.date,
     method: record.method || record.breeding_method,
+    breeding_method: record.breeding_method || record.method,
     success: record.success ?? record.is_successful ?? false,
+    is_successful: record.is_successful ?? record.success ?? false,
     notes: record.notes,
     created_at: record.created_at,
     created_by: record.created_by,
-    heat_cycle_id: record.heat_cycle_id
+    heat_cycle_id: record.heat_cycle_id,
+    tie_date: record.tie_date,
+    estimated_due_date: record.estimated_due_date,
+    sire: record.sire
   };
 };
 
@@ -93,6 +106,11 @@ export interface PregnancyRecord {
   notes?: string;
   created_at: string;
   created_by?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 // Heat stage type
@@ -116,6 +134,7 @@ export interface ReproductiveMilestone {
   notes?: string;
   created_at: string;
   created_by?: string;
+  date?: string; // For compatibility with some components
 }
 
 // Breeding checklist item
@@ -127,6 +146,7 @@ export interface BreedingChecklistItem {
   dueDate?: string;
   category: string;
   importance: 'high' | 'medium' | 'low';
+  task?: string; // Added for compatibility
 }
 
 // Breeding preparation form data
@@ -136,6 +156,10 @@ export interface BreedingPrepFormData {
   planned_date: string;
   method: string;
   notes?: string;
+  damId?: string; // For compatibility
+  sireId?: string;
+  plannedDate?: string;
+  plannedTieDate?: string;
 }
 
 // Combined reproductive cycle data
@@ -157,6 +181,7 @@ export interface ReproductiveCycleData {
   lastBreedingRecord?: BreedingRecord;
   daysPregnant?: number;
   gestationDays: number;
+  currentStage?: HeatStage; // Added for compatibility
   
   // Added missing properties
   nextHeatDate?: Date | null;

@@ -1,164 +1,48 @@
 
-import { WeightUnit } from './common';
+import { Puppy, PuppyWithAge } from './litter';
 
-// Puppy with age information
-export interface PuppyWithAge {
-  id: string;
-  litter_id?: string;
-  name?: string;
-  gender?: string;
-  color?: string;
-  status?: string;
-  birth_date?: string;
-  photo_url?: string;
-  notes?: string;
-  ageInDays: number;
-  ageInWeeks: number;
-  developmentalStage: string;
-  currentWeight?: string | number;
-  weightUnit?: string;
-}
+// Age groups for puppy development tracking
+export type PuppyAgeGroup = 'newborn' | 'infant' | 'transitional' | 'socialization' | 'juvenile';
 
-// Puppy age group data
-export interface PuppyAgeGroupData {
-  id: string;
-  name: string;
-  startDay: number;
-  endDay: number;
-  description?: string;
-  color?: string;
-  milestones?: string;
-  careChecks: string[];
-}
+// Socialization types
+export type SocializationReactionType = 'very_positive' | 'positive' | 'neutral' | 'nervous' | 'fearful' | 'avoidant' | 'aggressive' | 'curious' | 'excited' | 'unknown';
 
-// Puppy management statistics
-export interface PuppyManagementStats {
-  puppies: PuppyWithAge[];
-  ageGroups: PuppyAgeGroupData[];
-  puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
-  totalPuppies: number;
-  availablePuppies: number;
-  reservedPuppies: number;
-  soldPuppies: number;
-  isLoading: boolean;
-  error: any;
-  total: {
-    count: number;
-    male: number;
-    female: number;
-  };
-  byGender: {
-    male: number;
-    female: number;
-    unknown: number;
-  };
-  byStatus: Record<string, number>;
-  byAgeGroup: Record<string, number>;
-  totalCount?: number;
-  byAge?: Record<string, number>;
-  byColor?: Record<string, number>;
-  stats?: any;
-}
+export type SocializationCategory = 'people' | 'animals' | 'environment' | 'handling' | 'sounds' | 'surfaces' | 'objects' | 'dogs';
 
-// Puppy milestone
-export interface PuppyMilestone {
-  id?: string;
-  puppy_id: string;
-  title: string;
-  milestone_type: string;
-  expected_age_days?: number;
-  description?: string;
-  is_completed: boolean;
-  completion_date?: string;
-  category?: string;
-  notes?: string;
-  created_at?: string;
-}
-
-// Milestone category
-export interface MilestoneCategory {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-}
-
-// Vaccination schedule - renamed to match import expectation
-export interface VaccinationScheduleItem {
-  id?: string;
-  puppy_id: string;
-  vaccination_type: string;
-  vaccine_name?: string;
-  due_date: string;
-  scheduled_date?: string;
-  administered: boolean;
-  notes?: string;
-  created_at?: string;
-}
-
-// Vaccination record
-export interface VaccinationRecord {
-  id?: string;
-  puppy_id: string;
-  vaccination_type: string;
-  vaccination_date: string;
-  lot_number?: string;
-  administered_by?: string;
-  notes?: string;
-  created_at?: string;
-}
-
-// Socialization category
-export type SocializationCategory = 
-  | 'people'
-  | 'dogs'
-  | 'animals'
-  | 'environments'
-  | 'surfaces'
-  | 'sounds'
-  | 'objects';
-
-// Socialization category option
 export interface SocializationCategoryOption {
   id: string;
   name: string;
-  description: string;
   color: string;
-  examples: string[];
-  value?: string;
-  label?: string;
-}
-
-// Socialization reaction type
-export type SocializationReactionType =
-  | 'very_positive'
-  | 'positive'
-  | 'neutral'
-  | 'cautious'
-  | 'fearful'
-  | 'very_fearful'
-  | 'no_reaction'
-  | 'aggressive'
-  | 'curious'
-  | 'excited'
-  | 'negative'
-  | 'unknown';
-
-// Socialization reaction option
-export interface SocializationReactionOption {
-  id?: string;
-  value: SocializationReactionType;
-  label: string;
-  name?: string;
-  color?: string;
   description?: string;
+  examples?: string[];
 }
 
-// Socialization experience
+export interface SocializationReactionOption {
+  id: string;
+  name: string;
+  color: string;
+  emoji: string;
+  value: SocializationReactionType;
+}
+
+export interface SocializationProgress {
+  category: string;
+  categoryName: string;
+  count: number;
+  target: number;
+  completion_percentage: number;
+  total: number;
+  completed: number;
+  positive: number;
+  neutral: number;
+  negative: number;
+  categoryId?: string; // For backwards compatibility
+}
+
 export interface SocializationExperience {
   id?: string;
   puppy_id: string;
-  category: SocializationCategory;
+  category: SocializationCategory | string;
   categoryName?: string;
   experience: string;
   experience_date: string;
@@ -168,41 +52,39 @@ export interface SocializationExperience {
   experience_type?: string;
 }
 
-// Socialization progress
-export interface SocializationProgress {
-  category: SocializationCategory;
-  categoryName: string;
-  total: number;
-  completed: number;
-  positive: number;
-  neutral: number;
-  negative: number;
-  count?: number;
-  target?: number;
-  completion_percentage?: number;
-}
-
-// Weight record
-export interface WeightRecord {
-  id: string;
-  puppy_id?: string;
-  dog_id: string;
-  weight: number;
-  weight_unit: WeightUnit;
-  date: string;
-  notes?: string;
-  created_at: string;
-  percent_change?: number;
-  age_days?: number;
-}
-
-// Puppy care log
 export interface PuppyCareLog {
   id: string;
   puppy_id: string;
-  activity_type: string;
   timestamp: string;
+  care_type: string;
+  activity: string;
   notes?: string;
+  performed_by?: string;
   created_at: string;
-  created_by?: string;
+}
+
+// Statistics for puppy management dashboard
+export interface PuppyAgeGroupData {
+  name: string;
+  range: string;
+  ageRange: [number, number]; // in days
+  developmentalPhase: string;
+  description: string;
+  milestones: string[];
+  color: string;
+  puppies: PuppyWithAge[];
+  count: number;
+}
+
+export interface PuppyManagementStats {
+  totalPuppies: number;
+  activeCount: number;
+  reservedCount: number;
+  availableCount: number;
+  soldCount: number;
+  byAgeGroup: Record<string, PuppyWithAge[]>;
+  ageGroups: PuppyAgeGroupData[];
+  puppiesByAgeGroup: Record<string, number>;
+  currentWeek: number;
+  weightRanges?: Record<string, any>;
 }
