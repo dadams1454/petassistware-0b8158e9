@@ -119,6 +119,79 @@ export const updateHealthRecord = async (recordId: string, updates: Partial<Heal
 };
 
 /**
+ * Get upcoming medications for a dog
+ */
+export const getUpcomingMedications = async (dogId?: string): Promise<HealthRecord[]> => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysLater = new Date();
+    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+    const thirtyDaysLaterStr = thirtyDaysLater.toISOString().split('T')[0];
+    
+    let query = supabase
+      .from('health_records')
+      .select('*')
+      .eq('record_type', HealthRecordTypeEnum.Medication)
+      .gte('next_due_date', today)
+      .lte('next_due_date', thirtyDaysLaterStr)
+      .order('next_due_date', { ascending: true });
+      
+    if (dogId) {
+      query = query.eq('dog_id', dogId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching upcoming medications:', error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error in getUpcomingMedications:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get expiring medications for a dog
+ */
+export const getExpiringMedications = async (dogId?: string): Promise<HealthRecord[]> => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysLater = new Date();
+    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+    const thirtyDaysLaterStr = thirtyDaysLater.toISOString().split('T')[0];
+    
+    let query = supabase
+      .from('health_records')
+      .select('*')
+      .eq('record_type', HealthRecordTypeEnum.Medication)
+      .is('next_due_date', null) // Medications with no next due date
+      .not('expiration_date', 'is', null) // Only get records with expiration date
+      .lte('expiration_date', thirtyDaysLaterStr) // Expiring in the next 30 days
+      .order('expiration_date', { ascending: true });
+      
+    if (dogId) {
+      query = query.eq('dog_id', dogId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching expiring medications:', error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error in getExpiringMedications:', error);
+    throw error;
+  }
+};
+
+/**
  * Get weight records for a dog
  */
 export const getWeightRecords = async (dogId: string): Promise<WeightRecord[]> => {

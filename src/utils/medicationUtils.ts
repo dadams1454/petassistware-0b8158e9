@@ -139,3 +139,17 @@ export const getFrequencyLabel = (frequency: string) => {
   
   return frequencyMap[frequency.toLowerCase()] || frequency;
 };
+
+// Get status label for medication
+export const getStatusLabel = (status: string) => {
+  const statusMap: Record<string, { label: string, color: string, icon: string }> = {
+    active: { label: 'Active', color: 'green', icon: '✓' },
+    upcoming: { label: 'Due Soon', color: 'blue', icon: '⏰' },
+    due: { label: 'Due', color: 'yellow', icon: '⚠️' },
+    overdue: { label: 'Overdue', color: 'red', icon: '❗' },
+    as_needed: { label: 'As Needed', color: 'purple', icon: '💊' },
+    unknown: { label: 'Unknown', color: 'gray', icon: '❓' }
+  };
+  
+  return statusMap[status] || { label: status, color: 'gray', icon: '❓' };
+};

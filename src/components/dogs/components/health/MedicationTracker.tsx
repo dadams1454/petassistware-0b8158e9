@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { Bell, Calendar, AlertTriangle, Check, Clock } from 'lucide-react';
@@ -7,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { getUpcomingMedications, getExpiringMedications, updateHealthRecord } from '@/services/healthService';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
 import { useToast } from '@/hooks/use-toast';
 import { MedicationFrequencyConstants } from '@/utils/medicationUtils';
 
@@ -27,11 +28,11 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
       try {
         // Fetch upcoming medications
         const medications = await getUpcomingMedications(dogId);
-        setUpcomingMedications(medications as any);
+        setUpcomingMedications(medications);
         
         // Fetch expiring medications
         const expiring = await getExpiringMedications(dogId);
-        setExpiringMedications(expiring as any);
+        setExpiringMedications(expiring);
       } catch (error) {
         console.error('Error fetching medications:', error);
         toast({
@@ -72,7 +73,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
         case MedicationFrequencyConstants.QUARTERLY:
           nextDueDate.setMonth(today.getMonth() + 3);
           break;
-        case MedicationFrequencyConstants.ANNUAL:
+        case MedicationFrequencyConstants.ANNUALLY:
           nextDueDate.setFullYear(today.getFullYear() + 1);
           break;
         default:
