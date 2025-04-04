@@ -2,11 +2,11 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatus as MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
+import { MedicationStatus as MedicationStatusType, MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {
-  status: MedicationStatusResult | MedicationStatusEnum | string | null;
+  status: MedicationStatusResult | MedicationStatusType | string | null;
   nextDue?: string | Date | null;
   showIcon?: boolean;
   showLabel?: boolean;
@@ -46,9 +46,9 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   
   if (typeof status === 'object' && status !== null) {
     statusObject = status as MedicationStatusResult;
-    statusValue = statusObject.status;
+    statusValue = statusObject.status as string;
   } else {
-    statusValue = status as MedicationStatusEnum;
+    statusValue = status as string;
   }
   
   // Get status label and color
@@ -58,13 +58,13 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   const getIcon = () => {
     switch (String(statusValue)) {
       case 'active':
-      case 'Active':
+      case MedicationStatusEnum.Active:
         return <Check className="h-4 w-4 text-green-500" />;
       case 'overdue':
-      case 'Overdue':
+      case MedicationStatusEnum.Overdue:
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       case 'upcoming':
-      case 'Upcoming':
+      case MedicationStatusEnum.Upcoming:
         return <Calendar className="h-4 w-4 text-blue-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;

@@ -27,7 +27,12 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     reservedPuppies = 0,
     soldPuppies = 0,
     byGender = { male: 0, female: 0, unknown: 0 },
-    byStatus = {},
+    byStatus = {
+      available: 0,
+      reserved: 0,
+      sold: 0,
+      unavailable: 0
+    },
     byAgeGroup = {}
   } = usePuppyStats(processedPuppies) || {};
 
@@ -37,7 +42,7 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     puppies: processedPuppies,
     ageGroups,
     puppiesByAgeGroup,
-    byAgeGroup,
+    byAgeGroup: puppiesByAgeGroup, // Use puppiesByAgeGroup for byAgeGroup
     activeCount: totalPuppies, // Same as total for backward compatibility
     reservedCount: reservedPuppies,
     availableCount: availablePuppies,

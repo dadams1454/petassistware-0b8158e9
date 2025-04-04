@@ -22,6 +22,8 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   const [ageGroupFilter, setAgeGroupFilter] = useState('all');
   
   // Get puppy tracking data
+  const trackingData = usePuppyTracking();
+  
   const { 
     puppies = [], 
     puppiesByAgeGroup, 
@@ -32,7 +34,12 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     soldPuppies,
     isLoading, 
     error 
-  } = usePuppyTracking();
+  } = trackingData;
+  
+  // Calculate gender counts properly
+  const maleCount = puppies?.filter(p => p.gender?.toLowerCase() === 'male').length || 0;
+  const femaleCount = puppies?.filter(p => p.gender?.toLowerCase() === 'female').length || 0;
+  const unknownCount = (puppies?.length || 0) - maleCount - femaleCount;
   
   // Filter puppies based on search term and age group
   const filteredPuppiesByAgeGroup = React.useMemo(() => {
@@ -61,7 +68,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     }
   }, [puppiesByAgeGroup, searchTerm, ageGroupFilter]);
   
-  // Create stats object for PuppyStatCards
+  // Create stats object for PuppyStatCards with proper type
   const stats: PuppyManagementStats = {
     puppies,
     puppiesByAgeGroup,
@@ -80,19 +87,19 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     byAgeGroup: puppiesByAgeGroup,
     total: {
       count: totalPuppies,
-      male: puppies.filter(p => p.gender?.toLowerCase() === 'male').length,
-      female: puppies.filter(p => p.gender?.toLowerCase() === 'female').length
+      male: maleCount,
+      female: femaleCount
     },
     byGender: {
-      male: puppies.filter(p => p.gender?.toLowerCase() === 'male').length,
-      female: puppies.filter(p => p.gender?.toLowerCase() === 'female').length,
-      unknown: puppies.filter(p => !p.gender).length
+      male: maleCount,
+      female: femaleCount,
+      unknown: unknownCount
     },
     byStatus: {
       available: availablePuppies || 0,
       reserved: reservedPuppies || 0,
       sold: soldPuppies || 0,
-      unavailable: puppies.filter(p => p.status?.toLowerCase() === 'unavailable').length
+      unavailable: puppies.filter(p => p.status?.toLowerCase() === 'unavailable').length || 0
     }
   };
 
