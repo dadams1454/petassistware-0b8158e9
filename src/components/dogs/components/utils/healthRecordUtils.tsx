@@ -18,7 +18,7 @@ import {
   Droplets,
   Bug
 } from 'lucide-react';
-import { HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
 
 export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum) => {
   switch (recordType) {
@@ -58,8 +58,10 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum) => {
   }
 };
 
-export const getHealthRecordColor = (recordType: HealthRecordTypeEnum): string => {
-  switch (recordType) {
+export const getHealthRecordColor = (recordType: string | HealthRecordTypeEnum): string => {
+  const typeEnum = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
+  
+  switch (typeEnum) {
     case HealthRecordTypeEnum.Examination:
       return 'text-blue-500';
     case HealthRecordTypeEnum.Vaccination:
@@ -96,9 +98,59 @@ export const getHealthRecordColor = (recordType: HealthRecordTypeEnum): string =
   }
 };
 
-export const HealthRecordIcon: React.FC<{ recordType: HealthRecordTypeEnum, className?: string }> = ({ recordType, className }) => {
+interface HealthRecordIconProps {
+  recordType: HealthRecordTypeEnum;
+  className?: string;
+}
+
+export const HealthRecordIcon: React.FC<HealthRecordIconProps> = ({ recordType, className }) => {
   const Icon = getHealthRecordIcon(recordType);
   const colorClass = getHealthRecordColor(recordType);
   
   return <Icon className={`h-5 w-5 ${colorClass} ${className || ''}`} />;
 };
+
+// Helper function to get record type label
+export const getRecordTypeLabel = (type: string | HealthRecordTypeEnum): string => {
+  const typeEnum = typeof type === 'string' ? stringToHealthRecordType(type) : type;
+  
+  switch (typeEnum) {
+    case HealthRecordTypeEnum.Examination:
+      return 'Examination';
+    case HealthRecordTypeEnum.Vaccination:
+      return 'Vaccination';
+    case HealthRecordTypeEnum.Medication:
+      return 'Medication';
+    case HealthRecordTypeEnum.Surgery:
+      return 'Surgery';
+    case HealthRecordTypeEnum.Laboratory:
+      return 'Laboratory';
+    case HealthRecordTypeEnum.Imaging:
+      return 'Imaging';
+    case HealthRecordTypeEnum.Dental:
+      return 'Dental';
+    case HealthRecordTypeEnum.Allergy:
+      return 'Allergy';
+    case HealthRecordTypeEnum.Emergency:
+      return 'Emergency';
+    case HealthRecordTypeEnum.Preventive:
+      return 'Preventive Care';
+    case HealthRecordTypeEnum.Observation:
+      return 'Observation';
+    case HealthRecordTypeEnum.Deworming:
+      return 'Deworming';
+    case HealthRecordTypeEnum.Grooming:
+      return 'Grooming';
+    case HealthRecordTypeEnum.Test:
+      return 'Test';
+    case HealthRecordTypeEnum.Procedure:
+      return 'Procedure';
+    case HealthRecordTypeEnum.Other:
+      return 'Other';
+    default:
+      return 'Unknown';
+  }
+};
+
+// Re-export directly to ensure proper type exports
+export { HealthRecordTypeEnum };

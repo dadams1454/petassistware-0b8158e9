@@ -1,54 +1,101 @@
 
-// UI-related types for the application
+// Status color type for UI components
+export type StatusColor = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
 
-// Status color types
-export type StatusColor = 
+// Card size type
+export type CardSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+// Button variant type
+export type ButtonVariant = 'default' | 'primary' | 'secondary' | 'outline' | 'ghost' | 'link' | 'destructive';
+
+// Form field size type
+export type FormFieldSize = 'default' | 'sm' | 'lg';
+
+// Tab orientation type
+export type TabOrientation = 'horizontal' | 'vertical';
+
+// Toast variant type
+export type ToastVariant = 'default' | 'destructive' | 'success' | 'warning' | 'info';
+
+// Avatar size type
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+// Badge variant type
+export type BadgeVariant = 
+  | 'default'
+  | 'secondary'
+  | 'destructive'
+  | 'outline'
   | 'success'
   | 'warning'
-  | 'error'
-  | 'info'
-  | 'default'
-  | 'primary'
-  | 'secondary';
+  | 'info';
 
-// Button size types
-export type ButtonSize = 'sm' | 'md' | 'lg';
+// Calendar view type
+export type CalendarView = 'day' | 'week' | 'month' | 'agenda';
 
-// Theme types
-export type ThemeMode = 'light' | 'dark' | 'system';
+// Alert variant type
+export type AlertVariant = 'default' | 'destructive' | 'success' | 'warning' | 'info';
 
-// Page layout types
-export type PageLayout = 'default' | 'wide' | 'narrow' | 'fullWidth';
+// Table sorting direction
+export type SortDirection = 'asc' | 'desc';
 
-// Navigation item interface
-export interface NavItem {
-  title: string;
-  href: string;
-  icon?: React.ReactNode;
-  disabled?: boolean;
-  external?: boolean;
-  children?: NavItem[];
-}
+// Dashboard view type
+export type DashboardView = 'list' | 'grid' | 'table' | 'calendar' | 'timeline';
 
-// Dropdown option interface
-export interface DropdownOption {
-  label: string;
-  value: string;
-  disabled?: boolean;
-  description?: string;
-}
-
-// Modal size types
+// Modal size type
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
-// Toast position types
-export type ToastPosition = 
-  | 'top-right'
-  | 'top-center'
-  | 'top-left'
-  | 'bottom-right'
-  | 'bottom-center'
-  | 'bottom-left';
+// Spacing size
+export type SpacingSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-// Animation types
-export type AnimationType = 'fade' | 'slide' | 'scale' | 'none';
+// Card component interface
+export interface CardProps {
+  title?: string;
+  description?: string;
+  size?: CardSize;
+  className?: string;
+  onClick?: () => void;
+  href?: string;
+  children?: React.ReactNode;
+}
+
+// Button component props
+export interface ButtonProps {
+  variant?: ButtonVariant;
+  size?: 'sm' | 'md' | 'lg' | 'icon';
+  isLoading?: boolean;
+  disabled?: boolean;
+  className?: string;
+  onClick?: () => void;
+  type?: 'button' | 'submit' | 'reset';
+  children?: React.ReactNode;
+}
+
+// Dropdown option
+export interface DropdownOption {
+  value: string;
+  label: string;
+  icon?: React.ReactNode;
+  description?: string;
+  disabled?: boolean;
+}
+
+// Form field props
+export interface FormFieldProps {
+  label?: string;
+  description?: string;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  size?: FormFieldSize;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+// Pagination state
+export interface PaginationState {
+  pageIndex: number;
+  pageSize: number;
+  pageCount: number;
+  total: number;
+}

@@ -18,6 +18,9 @@ const DogCard: React.FC<DogCardProps> = ({ dog, onClick }) => {
     return isValid(parsed) ? format(parsed, 'MMM d, yyyy') : 'Invalid date';
   };
 
+  // Use default status if not provided
+  const dogStatus = dog.status || 'active';
+
   return (
     <Card 
       className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow h-full"
@@ -37,8 +40,8 @@ const DogCard: React.FC<DogCardProps> = ({ dog, onClick }) => {
         )}
         
         <div className="absolute top-2 right-2">
-          <Badge variant={dog.status === 'active' ? 'default' : 'secondary'}>
-            {dog.status || 'Active'}
+          <Badge variant={dogStatus === 'active' ? 'default' : 'secondary'}>
+            {dogStatus}
           </Badge>
         </div>
         

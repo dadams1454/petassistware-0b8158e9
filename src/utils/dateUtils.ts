@@ -1,169 +1,118 @@
 
-import { format, addDays, subDays, differenceInDays, isAfter, isBefore, isValid } from 'date-fns';
+import { format, differenceInDays, addDays, parseISO, isValid } from 'date-fns';
 
-/**
- * Format a date to YYYY-MM-DD (ISO date format)
- */
-export const formatDateToYYYYMMDD = (date: Date): string => {
-  if (!isValidDate(date)) return '';
-  return format(date, 'yyyy-MM-dd');
-};
-
-/**
- * Format a date to Month Day, Year (e.g., January 1, 2023)
- */
-export const formatDateLong = (date: Date | string): string => {
+// Format date to "YYYY-MM-DD" format
+export const formatDate = (date: Date | string | null): string => {
   if (!date) return '';
   
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (!isValidDate(dateObj)) return '';
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
   
-  return format(dateObj, 'MMMM d, yyyy');
+  if (!isValid(dateObj)) return '';
+  
+  return format(dateObj, 'yyyy-MM-dd');
 };
 
-/**
- * Format a date for display in a standard format
- */
-export const formatDateForDisplay = (date: Date | string | null): string => {
-  if (!date) return '';
+// Format date to a more human-readable format
+export const formatReadableDate = (date: Date | string | null): string => {
+  if (!date) return 'Not specified';
   
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (!isValidDate(dateObj)) return '';
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  
+  if (!isValid(dateObj)) return 'Invalid date';
   
   return format(dateObj, 'MMM d, yyyy');
 };
 
-/**
- * Check if a value is a valid Date object
- */
-export const isValidDate = (value: any): boolean => {
-  if (!value) return false;
+// Calculate age in days from birthdate
+export const calculateAge = (birthDate: string | Date | null): number => {
+  if (!birthDate) return 0;
   
-  // If it's a Date object, check if it's valid
-  if (value instanceof Date) {
-    return !isNaN(value.getTime());
-  }
+  const birthDateObj = typeof birthDate === 'string' ? parseISO(birthDate) : birthDate;
   
-  // If it's a string, try to create a Date and check
-  if (typeof value === 'string') {
-    const date = new Date(value);
-    return !isNaN(date.getTime());
-  }
+  if (!isValid(birthDateObj)) return 0;
   
-  return false;
+  return differenceInDays(new Date(), birthDateObj);
 };
 
-/**
- * Calculate age in days between two dates
- */
-export const calculateAgeDays = (startDate: string, endDate: string = ''): number => {
-  if (!startDate) return 0;
-  
-  const start = new Date(startDate);
-  const end = endDate ? new Date(endDate) : new Date();
-  
-  if (!isValidDate(start) || !isValidDate(end)) return 0;
-  
-  return differenceInDays(end, start);
+// Calculate age in weeks from birthdate
+export const calculateAgeInWeeks = (birthDate: string | Date | null): number => {
+  const ageInDays = calculateAge(birthDate);
+  return Math.floor(ageInDays / 7);
 };
 
-/**
- * Format a date as a relative time (e.g., "2 days ago", "in 3 days")
- */
-export const formatRelativeDate = (date: string): string => {
-  if (!date) return '';
+// Format age description based on days
+export const formatAgeDescription = (ageInDays: number): string => {
+  if (ageInDays < 0) return 'Not born yet';
+  if (ageInDays === 0) return 'Born today';
+  if (ageInDays < 7) return `${ageInDays} ${ageInDays === 1 ? 'day' : 'days'} old`;
   
-  const targetDate = new Date(date);
-  if (!isValidDate(targetDate)) return '';
+  const weeks = Math.floor(ageInDays / 7);
+  const remainingDays = ageInDays % 7;
   
-  const today = new Date();
-  const daysDiff = differenceInDays(targetDate, today);
-  
-  if (daysDiff === 0) return 'Today';
-  if (daysDiff === 1) return 'Tomorrow';
-  if (daysDiff === -1) return 'Yesterday';
-  
-  if (daysDiff > 0) {
-    return `In ${daysDiff} days`;
-  } else {
-    return `${Math.abs(daysDiff)} days ago`;
+  if (weeks < 16) {
+    return remainingDays > 0 
+      ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}, ${remainingDays} ${remainingDays === 1 ? 'day' : 'days'} old`
+      : `${weeks} ${weeks === 1 ? 'week' : 'weeks'} old`;
   }
+  
+  const months = Math.floor(ageInDays / 30);
+  if (months < 24) {
+    return `${months} ${months === 1 ? 'month' : 'months'} old`;
+  }
+  
+  const years = Math.floor(ageInDays / 365);
+  const remainingMonths = Math.floor((ageInDays % 365) / 30);
+  
+  return remainingMonths > 0
+    ? `${years} ${years === 1 ? 'year' : 'years'}, ${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'} old`
+    : `${years} ${years === 1 ? 'year' : 'years'} old`;
 };
 
-/**
- * Parse frequency string into interval and unit
- * Example: "every 7 days" -> { interval: 7, unit: "day" }
- */
-export const parseFrequency = (frequency: string): { interval: number | null; unit: string | null } => {
-  if (!frequency) {
-    return { interval: null, unit: null };
+// Parses frequency strings like "every 12 hours" or "twice daily"
+export function parseFrequency(frequencyStr: string): { interval: number; unit: string } {
+  const frequencyLower = frequencyStr.toLowerCase();
+  let interval = 1;
+  let unit = 'day';
+
+  // Handle specific patterns
+  if (frequencyLower.includes('twice daily') || frequencyLower.includes('twice a day') || frequencyLower.includes('2 times daily')) {
+    return { interval: 12, unit: 'hours' };
   }
   
-  // Common frequency patterns
-  if (frequency.toLowerCase() === 'daily') {
-    return { interval: 1, unit: 'day' };
+  if (frequencyLower.includes('three times daily') || frequencyLower.includes('3 times daily')) {
+    return { interval: 8, unit: 'hours' };
   }
   
-  if (frequency.toLowerCase() === 'twice-daily' || frequency.toLowerCase() === 'twice daily') {
-    return { interval: 12, unit: 'hour' };
+  if (frequencyLower.includes('four times daily') || frequencyLower.includes('4 times daily')) {
+    return { interval: 6, unit: 'hours' };
   }
   
-  if (frequency.toLowerCase() === 'weekly') {
-    return { interval: 1, unit: 'week' };
+  if (frequencyLower.includes('every other day') || frequencyLower.includes('every 2 days')) {
+    return { interval: 2, unit: 'days' };
   }
   
-  if (frequency.toLowerCase() === 'biweekly') {
-    return { interval: 2, unit: 'week' };
+  if (frequencyLower.includes('weekly') || frequencyLower.includes('once a week')) {
+    return { interval: 7, unit: 'days' };
   }
   
-  if (frequency.toLowerCase() === 'monthly') {
-    return { interval: 1, unit: 'month' };
+  if (frequencyLower.includes('monthly') || frequencyLower.includes('once a month')) {
+    return { interval: 30, unit: 'days' };
   }
   
-  if (frequency.toLowerCase() === 'quarterly') {
-    return { interval: 3, unit: 'month' };
-  }
-  
-  if (frequency.toLowerCase() === 'yearly' || frequency.toLowerCase() === 'annual') {
-    return { interval: 12, unit: 'month' };
-  }
-  
-  // For "every X days/weeks/months" pattern
-  const everyPattern = /every\s+(\d+)\s+(day|week|month|hour|year)s?/i;
-  const everyMatch = frequency.match(everyPattern);
-  
-  if (everyMatch) {
-    return {
-      interval: parseInt(everyMatch[1], 10),
-      unit: everyMatch[2].toLowerCase()
-    };
-  }
-  
-  // Pattern for "X times per day/week"
-  const timesPattern = /(\d+)\s+times?\s+per\s+(day|week|month|year)/i;
-  const timesMatch = frequency.match(timesPattern);
-  
-  if (timesMatch) {
-    const times = parseInt(timesMatch[1], 10);
-    const period = timesMatch[2].toLowerCase();
+  // Parse "every X hours/days/etc"
+  const matches = frequencyLower.match(/every\s+(\d+)\s+(hour|hours|day|days|week|weeks|month|months)/i);
+  if (matches && matches.length >= 3) {
+    interval = parseInt(matches[1], 10);
+    unit = matches[2].toLowerCase();
     
-    // Calculate interval in hours
-    if (period === 'day') {
-      return { interval: 24 / times, unit: 'hour' };
+    // Normalize unit to singular
+    if (unit.endsWith('s')) {
+      unit = unit.slice(0, -1);
     }
     
-    if (period === 'week') {
-      return { interval: 7 / times, unit: 'day' };
-    }
-    
-    if (period === 'month') {
-      return { interval: 30 / times, unit: 'day' };
-    }
-    
-    if (period === 'year') {
-      return { interval: 12 / times, unit: 'month' };
-    }
+    return { interval, unit };
   }
   
-  return { interval: null, unit: null };
-};
+  // Default to once daily if we can't parse
+  return { interval: 1, unit: 'day' };
+}

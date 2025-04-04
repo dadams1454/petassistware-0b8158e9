@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Baby, Calendar, Check } from 'lucide-react';
-import { Dog } from '@/types/litter';
+import { Dog } from '@/types/dog';
 import { ReproductiveStatus } from '@/types/reproductive';
 import { differenceInDays, formatDistance, addDays } from 'date-fns';
 

@@ -1,76 +1,21 @@
 
-// Common types used across the application
+// Weight unit types
+export type WeightUnit = 'kg' | 'g' | 'lb' | 'oz';
+export type WeightUnitWithLegacy = WeightUnit | 'lbs';
 
-// Weight unit type
-export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
-
-// Legacy weight unit type for backward compatibility
-export type WeightUnitWithLegacy = WeightUnit | string;
-
-// Date range type
-export interface DateRange {
-  start: Date;
-  end: Date;
-}
-
-// Standard ID type
-export type ID = string;
-
-// Status type for enabled/disabled
-export type Status = 'active' | 'inactive';
-
-// Simple coordinate type
-export interface Coordinates {
-  x: number;
-  y: number;
-}
-
-// Basic pagination parameters
-export interface PaginationParams {
-  page: number;
-  limit: number;
-}
-
-// Generic response status
-export interface ResponseStatus {
-  success: boolean;
-  message?: string;
-  code?: number;
-}
-
-// Weight units array for dropdown options
-export const weightUnits = [
-  { code: 'oz', name: 'Ounces (oz)' },
-  { code: 'g', name: 'Grams (g)' },
-  { code: 'lb', name: 'Pounds (lb)' },
-  { code: 'kg', name: 'Kilograms (kg)' }
+// For components that need to display weight unit options
+export const weightUnits: { value: WeightUnit; label: string }[] = [
+  { value: 'lb', label: 'Pounds (lb)' },
+  { value: 'kg', label: 'Kilograms (kg)' },
+  { value: 'g', label: 'Grams (g)' },
+  { value: 'oz', label: 'Ounces (oz)' }
 ];
 
-// Helper function to standardize weight unit
-export function standardizeWeightUnit(unit?: string): WeightUnit {
-  if (!unit) return 'lb';
-  
-  const lowerUnit = unit.toLowerCase();
-  
-  switch (lowerUnit) {
-    case 'oz':
-    case 'ounce':
-    case 'ounces':
-      return 'oz';
-    case 'g':
-    case 'gram':
-    case 'grams':
-      return 'g';
-    case 'lb':
-    case 'lbs':
-    case 'pound':
-    case 'pounds':
-      return 'lb';
-    case 'kg':
-    case 'kilogram':
-    case 'kilograms':
-      return 'kg';
-    default:
-      return 'lb'; // Default to pounds if unknown
-  }
+// Standardize weight units for consistency
+export function standardizeWeightUnit(unit: WeightUnitWithLegacy): WeightUnit {
+  if (unit === 'lbs') return 'lb';
+  return unit as WeightUnit;
 }
+
+// For UI status colors
+export type StatusColor = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
