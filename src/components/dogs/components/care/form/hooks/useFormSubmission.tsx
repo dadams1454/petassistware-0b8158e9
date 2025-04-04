@@ -16,12 +16,17 @@ export const useFormSubmission = ({ dogId, onSuccess }: UseFormSubmissionProps) 
   const submitCareLog = async (values: CareLogFormValues, flags: DogFlag[]) => {
     setSubmissionLoading(true);
     try {
+      // Format timestamp to string if it's a Date object
+      const timestamp = values.timestamp instanceof Date 
+        ? values.timestamp.toISOString() 
+        : values.timestamp;
+      
       // Create a properly typed CareLogFormData object
       const careLogData = {
         dog_id: dogId,
         category: values.category,
         task_name: values.task_name,
-        timestamp: values.timestamp,
+        timestamp: timestamp,
         notes: values.notes,
         flags: flags.length > 0 ? flags : undefined
       };
@@ -38,7 +43,7 @@ export const useFormSubmission = ({ dogId, onSuccess }: UseFormSubmissionProps) 
       console.error('Error in submitCareLog:', error);
       return false;
     } finally {
-      setSubmissionLoading(true);
+      setSubmissionLoading(false);
     }
   };
 

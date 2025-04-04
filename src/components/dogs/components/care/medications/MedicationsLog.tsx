@@ -1,155 +1,159 @@
-
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 import { useMedicationLogs } from './hooks/useMedicationLogs';
-import { MedicationsLogProps, DogCareStatus } from './types/medicationTypes';
-import MedicationCard from './components/MedicationCard';
 import MedicationFilter from './components/MedicationFilter';
+import MedicationCard from './components/MedicationCard';
+import { MedicationsLogProps } from './types/medicationTypes';
+import { Button } from '@/components/ui/button';
 
 const MedicationsLog: React.FC<MedicationsLogProps> = ({ dogId, onRefresh }) => {
-  const [filter, setFilter] = useState<string>('all');
-  const { medicationLogs, isLoading, error, dogs } = useMedicationLogs(dogId);
-
-  useEffect(() => {
-    // Log for debugging
-    console.log('Medication logs data:', medicationLogs);
-  }, [medicationLogs]);
-
-  // If dogId is provided, we're in single dog mode
-  const singleDogMode = !!dogId;
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [dogs, setDogs] = useState<any[]>([]);
+  const [isLoadingDogs, setIsLoadingDogs] = useState(true);
+  const [localDogId, setLocalDogId] = useState<string | undefined>(dogId);
   
-  // Filter dogs based on the selected filter
-  const filteredDogs = !singleDogMode && dogs 
-    ? dogs.filter(dog => {
-        if (filter === 'all') return true;
-        if (filter === 'withMeds') {
-          return medicationLogs[dog.dog_id] && (
-            medicationLogs[dog.dog_id].preventative.length > 0 || 
-            medicationLogs[dog.dog_id].other.length > 0
-          );
-        }
-        if (filter === 'withoutMeds') {
-          return !medicationLogs[dog.dog_id] || (
-            medicationLogs[dog.dog_id].preventative.length === 0 && 
-            medicationLogs[dog.dog_id].other.length === 0
-          );
-        }
-        return true;
-      })
-    : [];
-
-  // Render loading state
-  if (isLoading) {
+  // If dogId is provided, use it. Otherwise, fetch all dogs.
+  const { medicationLogs, isLoading, error } = useMedicationLogs(localDogId || dogs);
+  
+  useEffect(() => {
+    // If dogId is provided, use it directly
+    if (dogId) {
+      setLocalDogId(dogId);
+      return;
+    }
+    
+    // Otherwise, fetch all dogs
+    const fetchDogs = async () => {
+      setIsLoadingDogs(true);
+      
+      try {
+        const { data, error } = await supabase
+          .from('dogs')
+          .select('id, name, breed, photo_url')
+          .order('name');
+        
+        if (error) throw error;
+        
+        // Transform to expected format
+        const transformedDogs = data.map(dog => ({
+          dog_id: dog.id,
+          dog_name: dog.name,
+          dog_photo: dog.photo_url,
+          breed: dog.breed
+        }));
+        
+        setDogs(transformedDogs);
+      } catch (err) {
+        console.error('Error fetching dogs:', err);
+      } finally {
+        setIsLoadingDogs(false);
+      }
+    };
+    
+    fetchDogs();
+  }, [dogId]);
+  
+  // Helper to count medications
+  const getMedicationCounts = (dogId: string) => {
+    const logs = medicationLogs[dogId];
+    if (!logs) return { all: 0, preventative: 0, other: 0 };
+    
+    const preventativeCount = logs.preventative?.length || 0;
+    const otherCount = logs.other?.length || 0;
+    
+    return {
+      all: preventativeCount + otherCount,
+      preventative: preventativeCount,
+      other: otherCount
+    };
+  };
+  
+  // Loading state
+  if (isLoadingDogs || (isLoading && Object.keys(medicationLogs).length === 0)) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="flex flex-col items-center space-y-2">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Loading medication records...</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
-
-  // Render error state
+  
+  // Error state
   if (error) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="flex flex-col items-center space-y-2">
-            <AlertTriangle className="h-8 w-8 text-destructive" />
-            <p className="text-sm text-destructive">Error loading medications: {error.message}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <Alert variant="destructive">
+        <AlertDescription>
+          Error loading medication data. Please try again.
+        </AlertDescription>
+      </Alert>
     );
   }
-
-  // For single dog mode
-  if (singleDogMode) {
-    const dogMeds = medicationLogs[dogId] || { preventative: [], other: [] };
-    
+  
+  // Single dog view
+  if (dogId && medicationLogs[dogId]) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Medications</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {dogMeds.preventative.length === 0 && dogMeds.other.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No medications found for this dog.
-            </p>
-          ) : (
-            <MedicationCard
-              dog={{ dog_id: dogId } as DogCareStatus}
-              preventativeMeds={dogMeds.preventative}
-              otherMeds={dogMeds.other}
-              onSuccess={onRefresh || (() => {})}
-            />
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Render empty state for multiple dogs
-  if (!dogs || filteredDogs.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Medications</CardTitle>
-            <MedicationFilter 
-              activeFilter={filter} 
-              onChange={setFilter} 
-              counts={{
-                all: dogs?.length || 0,
-                preventative: dogs?.filter(d => medicationLogs[d.dog_id]?.preventative.length > 0).length || 0,
-                other: dogs?.filter(d => medicationLogs[d.dog_id]?.other.length > 0).length || 0
-              }}
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-muted-foreground py-8">
-            No dogs match the current filter.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Render medication cards for multiple dogs
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="space-y-4">
         <MedicationFilter 
-          activeFilter={filter} 
-          onChange={setFilter} 
-          counts={{
-            all: dogs?.length || 0,
-            preventative: dogs?.filter(d => medicationLogs[d.dog_id]?.preventative.length > 0).length || 0,
-            other: dogs?.filter(d => medicationLogs[d.dog_id]?.other.length > 0).length || 0
-          }}
+          activeFilter={activeFilter}
+          onChange={setActiveFilter}
+          counts={getMedicationCounts(dogId)}
+        />
+        
+        <MedicationCard
+          dogId={dogId}
+          preventativeMeds={activeFilter === 'all' || activeFilter === 'preventative' 
+            ? medicationLogs[dogId].preventative 
+            : []}
+          otherMeds={activeFilter === 'all' || activeFilter === 'other' 
+            ? medicationLogs[dogId].other 
+            : []}
+          onSuccess={() => onRefresh?.()}
         />
       </div>
-      
-      {filteredDogs.map(dog => {
-        // Safely access medication data for this dog
-        const dogMeds = medicationLogs[dog.dog_id] || { preventative: [], other: [] };
+    );
+  }
+  
+  // Multiple dogs view
+  return (
+    <div className="space-y-4">
+      <Tabs>
+        <TabList className="flex space-x-2 border-b mb-4">
+          {dogs.map(dog => (
+            <Tab 
+              key={dog.dog_id} 
+              className="px-4 py-2 cursor-pointer hover:bg-muted rounded-t-md"
+              selectedClassName="border-b-2 border-primary font-medium"
+            >
+              {dog.dog_name}
+            </Tab>
+          ))}
+        </TabList>
         
-        return (
-          <MedicationCard
-            key={dog.dog_id}
-            dog={dog}
-            preventativeMeds={dogMeds.preventative}
-            otherMeds={dogMeds.other}
-            onSuccess={onRefresh || (() => {})}
-          />
-        );
-      })}
+        {dogs.map(dog => (
+          <TabPanel key={dog.dog_id}>
+            <div className="space-y-4">
+              <MedicationFilter 
+                activeFilter={activeFilter}
+                onChange={setActiveFilter}
+                counts={getMedicationCounts(dog.dog_id)}
+              />
+              
+              <MedicationCard
+                dogId={dog.dog_id}
+                preventativeMeds={activeFilter === 'all' || activeFilter === 'preventative' 
+                  ? (medicationLogs[dog.dog_id]?.preventative || []) 
+                  : []}
+                otherMeds={activeFilter === 'all' || activeFilter === 'other' 
+                  ? (medicationLogs[dog.dog_id]?.other || []) 
+                  : []}
+                onSuccess={() => onRefresh?.()}
+              />
+            </div>
+          </TabPanel>
+        ))}
+      </Tabs>
     </div>
   );
 };

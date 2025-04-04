@@ -37,11 +37,14 @@ export const useObservationActions = (
       const defaultText = observationText.trim() || 
         `${observationType.charAt(0).toUpperCase() + observationType.slice(1)} observed`;
       
+      // Format timestamp to string if it's a Date
+      const timestampString = timestamp instanceof Date ? timestamp.toISOString() : timestamp;
+      
       console.log('Submitting observation:', {
         dog_id: dogId,
         category,
         task_name: observationType,
-        timestamp,
+        timestamp: timestampString,
         notes: defaultText
       });
       
@@ -49,13 +52,13 @@ export const useObservationActions = (
         dog_id: dogId,
         category: category,
         task_name: observationType,
-        timestamp,
+        timestamp: timestampString,
         notes: defaultText
       });
       
       if (result) {
         // Calculate the time slot
-        const calculatedTimeSlot = getTimeSlotFromTimestamp(timestamp.toString());
+        const calculatedTimeSlot = getTimeSlotFromTimestamp(timestampString.toString());
         
         // Update local state
         setObservations(prev => {

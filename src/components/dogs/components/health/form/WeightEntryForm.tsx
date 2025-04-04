@@ -40,6 +40,12 @@ const WeightEntryForm: React.FC<WeightEntryFormProps> = ({
   const { handleSubmit, watch, setValue, register, formState } = form;
   const { errors } = formState;
   
+  // Format the weight units array for the select component
+  const weightUnitOptions = weightUnits.map(unit => ({
+    value: unit.code,
+    label: unit.name
+  }));
+  
   return (
     <Card className="w-full">
       <CardContent className="p-4">
@@ -61,7 +67,7 @@ const WeightEntryForm: React.FC<WeightEntryFormProps> = ({
             <div className="w-full sm:w-40">
               <SelectWithLabel
                 label="Unit"
-                options={weightUnits}
+                options={weightUnitOptions}
                 defaultValue={initialData?.unit || currentUnit || 'lb'}
                 error={errors.unit?.message}
                 {...register("unit")}

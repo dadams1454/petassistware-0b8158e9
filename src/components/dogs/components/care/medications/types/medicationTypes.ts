@@ -11,6 +11,7 @@ export interface MedicationInfo {
   status?: string | MedicationStatus | MedicationStatusResult;
   notes?: string;
   isPreventative?: boolean;
+  startDate?: string;
 }
 
 export interface ProcessedMedicationLogs {
@@ -74,4 +75,11 @@ export interface LastMedicationInfoProps {
   name: string;
   lastAdministered: string;
   frequency: string;
+}
+
+export interface MedicationCardProps {
+  dogId: string;
+  preventativeMeds: MedicationInfo[];
+  otherMeds: MedicationInfo[];
+  onSuccess: () => void;
 }

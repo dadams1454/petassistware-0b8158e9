@@ -1,65 +1,34 @@
 
-import { WeightUnit } from './common';
-
-export interface DogCareStatus {
-  dog_id: string;
-  dog_name: string;
-  dog_photo: string;
-  breed: string;
-  color: string;
-  sex: string;
-  last_care: {
-    category: string;
-    task_name: string;
-    timestamp: string;
-  };
-  flags: DogFlag[];
+export interface CareTaskPreset {
+  id: string;
+  task_name: string;
+  category: string;
+  is_default: boolean;
+  breeder_id?: string;
+  created_at: string;
+  usage_count: number;
 }
 
 export interface DailyCareSummary {
   dog_id: string;
-  total_logs: number;
-  last_care_date: string;
-  recent_activity_types: string[];
-  pending_activities: string[];
-  has_flags: boolean;
-  flags?: string[];
+  dog_name: string;
+  breed: string;
+  lastCareActivity?: CareActivity;
+  caredForToday: boolean;
+  flags?: DogFlag[];
+  needsAttention: boolean;
 }
 
-export interface CareLogEntry {
-  id: string;
-  dog_id: string;
-  task_name: string;
-  category: string;
-  timestamp: string;
-  notes?: string;
-  created_by: string;
-  created_at: string;
-  flags?: string[];
-}
-
-export interface CareActivityLog {
+export interface CareActivity {
   id: string;
   dog_id: string;
   activity_type: string;
-  timestamp: string;
-  notes?: string;
-  performed_by?: string;
-  created_at: string;
-}
-
-export interface DailyCarelog {
-  id: string;
-  dog_id: string;
   category: string;
   task_name: string;
   timestamp: string;
+  performed_by?: string;
   notes?: string;
-  created_by: string;
   created_at: string;
-  flags?: DogFlag[];
-  status?: string;
-  type?: string;
 }
 
 export interface CareLogFormData {
@@ -71,41 +40,63 @@ export interface CareLogFormData {
   flags?: DogFlag[];
 }
 
-export interface MedicationsLogProps {
-  dogId?: string;
-  onRefresh?: () => void;
+export interface DogFlag {
+  type: 'in_heat' | 'special_attention' | 'incompatible' | 'other';
+  value?: string;
+  incompatible_with?: string[];
 }
 
-export interface MedicationFilterProps {
-  activeFilter: string;
-  onChange: (filter: string) => void;
-  counts?: {
-    all: number;
-    preventative: number;
-    other: number;
+export interface BreedingStatus {
+  status: 'intact' | 'in_heat' | 'pregnant' | 'nursing' | 'spayed' | 'neutered';
+  status_since?: string;
+  next_heat?: string;
+  days_until_next_heat?: number;
+}
+
+export interface DogCareStatus {
+  dog_id: string;
+  dog_name: string;
+  dog_photo: string;
+  breed: string;
+  color?: string;
+  sex?: string;
+  last_care?: {
+    category: string;
+    task_name: string;
+    timestamp: string;
   };
+  flags?: DogFlag[];
+  incompatible_with?: string[];
 }
 
-export interface CareTaskPreset {
+export interface TimeSlot {
   id: string;
+  time: string;
+  created_at: string;
+}
+
+export interface PottyBreakSession {
+  id: string;
+  session_time: string;
+  notes?: string;
+  created_at: string;
+  created_by?: string;
+}
+
+export interface PottyBreakDog {
+  id: string;
+  dog_id: string;
+  session_id: string;
+  created_at: string;
+}
+
+export interface CareLog {
+  id: string;
+  dog_id: string;
   category: string;
   task_name: string;
-  created_at: string;
-  usage_count: number;
-  tenant_id?: string;
-}
-
-export interface DogFlag {
-  type: string;
-  value?: string;
-  color?: string;
-  icon?: string;
-}
-
-export interface DogSpecialCondition {
-  type: string;
-  value: string;
+  timestamp: string;
   notes?: string;
-  start_date?: string;
-  end_date?: string;
+  created_at: string;
+  created_by: string;
 }

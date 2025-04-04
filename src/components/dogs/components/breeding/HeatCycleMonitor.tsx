@@ -7,37 +7,9 @@ import { format, parseISO } from 'date-fns';
 import { HeatCycle, HeatIntensity } from '@/types/reproductive';
 import HeatCycleDialog from './HeatCycleDialog';
 
-// Helper to ensure intensity is a valid HeatIntensity value
-const ensureValidIntensity = (cycle: any): HeatCycle => {
-  // Map string intensity to type value
-  let validIntensity: HeatIntensity;
-  
-  switch (cycle.intensity) {
-    case 'mild':
-      validIntensity = HeatIntensity.Mild;
-      break;
-    case 'moderate':
-      validIntensity = HeatIntensity.Moderate;
-      break;
-    case 'strong':
-      validIntensity = HeatIntensity.Strong;
-      break;
-    case 'unknown':
-      validIntensity = HeatIntensity.Unknown;
-      break;
-    default:
-      validIntensity = HeatIntensity.Moderate;
-  }
-  
-  return {
-    ...cycle,
-    intensity: validIntensity
-  };
-};
-
 interface HeatCycleMonitorProps {
   dogId: string;
-  cycles: any[];
+  cycles: HeatCycle[];
   onAddCycle: (data: Partial<HeatCycle>) => Promise<void>;
   onUpdateCycle: (id: string, data: Partial<HeatCycle>) => Promise<void>;
 }
@@ -56,8 +28,8 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({
     setIsDialogOpen(true);
   };
 
-  const handleOpenEditDialog = (cycle: any) => {
-    setSelectedCycle(ensureValidIntensity(cycle));
+  const handleOpenEditDialog = (cycle: HeatCycle) => {
+    setSelectedCycle(cycle);
     setIsDialogOpen(true);
   };
 

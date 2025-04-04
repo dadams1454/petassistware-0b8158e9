@@ -1,5 +1,5 @@
 
-import { WeightRecord } from './health';
+import { WeightUnit } from './common';
 
 // Puppy with age information
 export interface PuppyWithAge {
@@ -56,6 +56,8 @@ export interface PuppyManagementStats {
   byAgeGroup: Record<string, number>;
   totalCount?: number;
   byAge?: Record<string, number>;
+  byColor?: Record<string, number>;
+  stats?: any;
 }
 
 // Puppy milestone
@@ -123,6 +125,8 @@ export interface SocializationCategoryOption {
   description: string;
   color: string;
   examples: string[];
+  value?: string;
+  label?: string;
 }
 
 // Socialization reaction type
@@ -132,14 +136,20 @@ export type SocializationReactionType =
   | 'cautious'
   | 'fearful'
   | 'aggressive'
-  | 'avoidant';
+  | 'avoidant'
+  | 'curious'
+  | 'excited'
+  | 'very_positive'
+  | 'very_fearful';
 
 // Socialization reaction option
 export interface SocializationReactionOption {
+  id?: string;
   value: SocializationReactionType;
   label: string;
-  description: string;
-  color: string;
+  name?: string;
+  color?: string;
+  description?: string;
 }
 
 // Socialization experience
@@ -153,6 +163,7 @@ export interface SocializationExperience {
   reaction?: SocializationReactionType;
   notes?: string;
   created_at?: string;
+  experience_type?: string;
 }
 
 // Socialization progress
@@ -167,4 +178,18 @@ export interface SocializationProgress {
   count?: number;
   target?: number;
   completion_percentage?: number;
+}
+
+// Weight record
+export interface WeightRecord {
+  id: string;
+  puppy_id: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  created_at: string;
+  percent_change?: number;
+  age_days?: number;
+  unit?: WeightUnit;
 }

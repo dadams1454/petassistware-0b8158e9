@@ -1,10 +1,5 @@
 
-import { SocializationCategory as AppSocializationCategory } from '@/types/puppyTracking';
-
-export interface SocializationCategory {
-  id: string;
-  name: string;
-}
+import { SocializationCategory as AppSocializationCategory, SocializationCategoryOption, SocializationReactionOption } from '@/types/puppyTracking';
 
 export interface SocializationTrackerProps {
   puppyId: string;
@@ -14,7 +9,7 @@ export interface SocializationTrackerProps {
 export interface SocializationRecord {
   id: string;
   puppy_id: string;
-  category: SocializationCategory;
+  category: AppSocializationCategory;
   experience: string;
   experience_date: string;
   reaction?: string;
@@ -22,22 +17,63 @@ export interface SocializationRecord {
   created_at: string;
 }
 
-export const SOCIALIZATION_CATEGORIES: SocializationCategory[] = [
-  { id: 'people', name: 'People Interactions' },
-  { id: 'animals', name: 'Animal Interactions' },
-  { id: 'environments', name: 'New Environments' },
-  { id: 'sounds', name: 'Sounds & Noises' },
-  { id: 'surfaces', name: 'Different Surfaces' },
-  { id: 'handling', name: 'Handling & Grooming' },
-  { id: 'objects', name: 'Objects & Toys' },
-  { id: 'travel', name: 'Travel Experiences' },
+export const SOCIALIZATION_CATEGORIES: SocializationCategoryOption[] = [
+  { 
+    id: 'people', 
+    name: 'People Interactions',
+    description: 'Interactions with different types of people',
+    color: 'blue',
+    examples: ['Adults', 'Children', 'Elderly']
+  },
+  { 
+    id: 'animals', 
+    name: 'Animal Interactions',
+    description: 'Interactions with other animals',
+    color: 'green',
+    examples: ['Dogs', 'Cats', 'Farm animals']
+  },
+  { 
+    id: 'environments', 
+    name: 'New Environments',
+    description: 'Exposure to different environments',
+    color: 'purple',
+    examples: ['Parks', 'Urban areas', 'Stores']
+  },
+  { 
+    id: 'sounds', 
+    name: 'Sounds & Noises',
+    description: 'Exposure to different sounds',
+    color: 'yellow',
+    examples: ['Thunder', 'Vacuums', 'Sirens']
+  },
+  { 
+    id: 'surfaces', 
+    name: 'Different Surfaces',
+    description: 'Walking on various surfaces',
+    color: 'orange',
+    examples: ['Grass', 'Tile', 'Carpet']
+  },
+  { 
+    id: 'handling', 
+    name: 'Handling & Grooming',
+    description: 'Getting used to being handled',
+    color: 'pink',
+    examples: ['Nail trimming', 'Brushing', 'Bathing']
+  },
+  { 
+    id: 'objects', 
+    name: 'Objects & Toys',
+    description: 'Exposure to different objects',
+    color: 'red',
+    examples: ['Umbrellas', 'Bicycles', 'Toys']
+  },
 ];
 
-export const REACTION_OPTIONS = [
-  { id: 'very_positive', name: 'Very Positive' },
-  { id: 'positive', name: 'Positive' },
-  { id: 'neutral', name: 'Neutral' },
-  { id: 'cautious', name: 'Cautious' },
-  { id: 'fearful', name: 'Fearful' },
-  { id: 'very_fearful', name: 'Very Fearful' },
+export const REACTION_OPTIONS: SocializationReactionOption[] = [
+  { value: 'very_positive', label: 'Very Positive' },
+  { value: 'positive', label: 'Positive' },
+  { value: 'neutral', label: 'Neutral' },
+  { value: 'cautious', label: 'Cautious' },
+  { value: 'fearful', label: 'Fearful' },
+  { value: 'very_fearful', label: 'Very Fearful' },
 ];

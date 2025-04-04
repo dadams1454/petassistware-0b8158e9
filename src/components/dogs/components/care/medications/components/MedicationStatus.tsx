@@ -2,7 +2,7 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatusResult, MedicationStatus as MedicationStatusEnum } from '@/types/health';
+import { MedicationStatus as MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {
@@ -56,7 +56,7 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
           return <Clock className="h-4 w-4 text-gray-500" />;
       }
     } else {
-      switch (status) {
+      switch (status as MedicationStatusEnum) {
         case MedicationStatusEnum.active:
           return <Check className="h-4 w-4 text-green-500" />;
         case MedicationStatusEnum.overdue:

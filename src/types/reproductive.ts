@@ -7,10 +7,23 @@ export enum ReproductiveStatus {
   Pregnant = 'pregnant',
   Nursing = 'nursing',
   Spayed = 'spayed',
-  Neutered = 'neutered'
+  Neutered = 'neutered',
+  PreHeat = 'pre_heat',
+  Whelping = 'whelping',
+  Recovery = 'recovery',
+  NotInHeat = 'not_in_heat',
+  Altered = 'altered'
 }
 
-export type HeatIntensity = 'none' | 'low' | 'medium' | 'high' | 'peak';
+export enum HeatIntensity {
+  None = 'none',
+  Low = 'low',
+  Moderate = 'moderate',
+  Medium = 'medium',
+  High = 'high',
+  Peak = 'peak',
+  Unknown = 'unknown'
+}
 
 export interface HeatCycle {
   id: string;
@@ -55,6 +68,8 @@ export interface BreedingRecord {
   created_at?: string;
   created_by?: string;
   sire?: Dog;
+  heat_cycle_id?: string;
+  estimated_due_date?: string;
 }
 
 export interface PregnancyRecord {
@@ -64,6 +79,11 @@ export interface PregnancyRecord {
   status: 'confirmed' | 'pending' | 'completed' | 'terminated';
   confirmation_date?: string;
   due_date?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
   notes?: string;
   created_at?: string;
   created_by?: string;
@@ -74,6 +94,7 @@ export interface ReproductiveMilestone {
   dog_id: string;
   milestone_type: string;
   milestone_date: string;
+  date?: string; // For form handling
   notes?: string;
   created_at?: string;
   created_by?: string;
@@ -101,6 +122,10 @@ export interface ReproductiveCycleData {
   isLactating: boolean;
   nextMilestone?: ReproductiveMilestone;
   timeInGestation?: string;
+  nextHeatDate?: string;
+  averageCycleLength?: number;
+  fertilityWindow?: { start: string; end: string };
+  estimatedDueDate?: string;
 }
 
 export type BreedingChecklistItem = {
@@ -109,6 +134,7 @@ export type BreedingChecklistItem = {
   description: string;
   isCompleted: boolean;
   category: string;
+  task?: string;
 };
 
 export type BreedingPrepFormData = {
@@ -134,6 +160,8 @@ export const normalizeBreedingRecord = (record: any): BreedingRecord => {
     notes: record.notes,
     created_at: record.created_at,
     created_by: record.created_by,
-    sire: record.sire
+    sire: record.sire,
+    heat_cycle_id: record.heat_cycle_id,
+    estimated_due_date: record.estimated_due_date
   };
 };

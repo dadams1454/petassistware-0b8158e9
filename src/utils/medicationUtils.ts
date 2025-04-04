@@ -1,156 +1,188 @@
-import { addDays, format, isAfter, isBefore, parseISO } from 'date-fns';
-import { MedicationStatus, MedicationFrequency } from '@/types/health';
 
-export const MedicationFrequencyOptions = [
-  { value: MedicationFrequency.DAILY, label: 'Daily' },
-  { value: MedicationFrequency.TWICE_DAILY, label: 'Twice Daily' },
-  { value: MedicationFrequency.THREE_TIMES_DAILY, label: 'Three Times Daily' },
-  { value: MedicationFrequency.WEEKLY, label: 'Weekly' },
-  { value: MedicationFrequency.BIWEEKLY, label: 'Biweekly' },
-  { value: MedicationFrequency.MONTHLY, label: 'Monthly' },
-  { value: MedicationFrequency.QUARTERLY, label: 'Quarterly' },
-  { value: MedicationFrequency.ANNUALLY, label: 'Annually' },
-  { value: MedicationFrequency.AS_NEEDED, label: 'As Needed' },
-  { value: MedicationFrequency.ONE_TIME, label: 'One-Time' }
-];
+import { format, isBefore, isAfter, addDays } from 'date-fns';
+import { MedicationStatus, MedicationStatusResult } from '@/types/health';
+import { MedicationInfo } from '@/components/dogs/components/care/medications/types/medicationTypes';
 
-export const AdministrationRouteOptions = [
-  { value: 'oral', label: 'Oral' },
-  { value: 'topical', label: 'Topical' },
-  { value: 'injection', label: 'Injection' },
-  { value: 'subcutaneous', label: 'Subcutaneous' },
-  { value: 'intramuscular', label: 'Intramuscular' },
-  { value: 'intravenous', label: 'Intravenous' },
-  { value: 'inhalation', label: 'Inhalation' },
-  { value: 'rectal', label: 'Rectal' },
-  { value: 'ocular', label: 'Ocular' },
-  { value: 'otic', label: 'Otic' },
-  { value: 'nasal', label: 'Nasal' },
-  { value: 'other', label: 'Other' }
-];
+export enum MedicationFrequency {
+  DAILY = 'daily',
+  TWICE_DAILY = 'twice_daily',
+  WEEKLY = 'weekly',
+  BIWEEKLY = 'biweekly',
+  MONTHLY = 'monthly',
+  AS_NEEDED = 'as_needed'
+}
 
-export const DosageUnitOptions = [
-  { value: 'mg', label: 'mg' },
-  { value: 'ml', label: 'ml' },
-  { value: 'tablet', label: 'tablet(s)' },
-  { value: 'capsule', label: 'capsule(s)' },
-  { value: 'drop', label: 'drop(s)' },
-  { value: 'application', label: 'application(s)' },
-  { value: 'unit', label: 'unit(s)' },
-  { value: 'gram', label: 'g' },
-  { value: 'cc', label: 'cc' },
-  { value: 'mcg', label: 'mcg' },
-  { value: 'puff', label: 'puff(s)' },
-  { value: 'spray', label: 'spray(s)' },
-  { value: 'piece', label: 'piece(s)' },
-  { value: 'other', label: 'other' }
-];
-
-export const DurationUnitOptions = [
-  { value: 'days', label: 'Days' },
-  { value: 'weeks', label: 'Weeks' },
-  { value: 'months', label: 'Months' }
-];
-
-/**
- * Gets the next due date based on the frequency and last administered date
- */
-export const getNextDueDate = (lastAdministered: string, frequency: string): Date => {
-  const date = typeof lastAdministered === 'string' ? parseISO(lastAdministered) : lastAdministered;
-  
-  switch (frequency) {
+// Function to calculate the next dose date based on medication frequency
+export const calculateNextDueDate = (lastAdministered: string | Date, frequency: string): Date => {
+  const lastDate = typeof lastAdministered === 'string' 
+    ? new Date(lastAdministered) 
+    : lastAdministered;
+    
+  switch (frequency?.toLowerCase()) {
     case MedicationFrequency.DAILY:
-      return addDays(date, 1);
+      return addDays(lastDate, 1);
     case MedicationFrequency.TWICE_DAILY:
-      return addDays(date, 0.5);
-    case MedicationFrequency.THREE_TIMES_DAILY:
-      return addDays(date, 0.33);
+      return addDays(lastDate, 0.5);
     case MedicationFrequency.WEEKLY:
-      return addDays(date, 7);
+      return addDays(lastDate, 7);
     case MedicationFrequency.BIWEEKLY:
-      return addDays(date, 14);
+      return addDays(lastDate, 14);
     case MedicationFrequency.MONTHLY:
-      return addDays(date, 30);
-    case MedicationFrequency.QUARTERLY:
-      return addDays(date, 90);
-    case MedicationFrequency.ANNUALLY:
-      return addDays(date, 365);
+      return addDays(lastDate, 30);
     default:
-      return addDays(date, 1);
+      return addDays(lastDate, 1); // Default to daily
   }
 };
 
-/**
- * Determines the status of a medication based on the last administered date and frequency
- */
-export const getMedicationStatus = (lastAdministered?: string, frequency?: string, endDate?: string): { status: MedicationStatus, nextDue?: Date } => {
+// Function to determine medication status
+export const getMedicationStatus = (
+  lastAdministered: string | Date | undefined, 
+  frequency: string | undefined
+): MedicationStatusResult => {
   if (!lastAdministered || !frequency) {
     return { status: MedicationStatus.upcoming };
   }
-  
+
   const now = new Date();
-  const lastAdminDate = typeof lastAdministered === 'string' ? parseISO(lastAdministered) : lastAdministered;
-  const nextDueDate = getNextDueDate(lastAdministered, frequency);
+  const lastDate = typeof lastAdministered === 'string' 
+    ? new Date(lastAdministered) 
+    : lastAdministered;
   
-  // If there's an end date and it's in the past, medication is completed
-  if (endDate) {
-    const endDateParsed = typeof endDate === 'string' ? parseISO(endDate) : endDate;
-    if (isBefore(endDateParsed, now)) {
-      return { status: MedicationStatus.completed };
-    }
-  }
+  const nextDueDate = calculateNextDueDate(lastDate, frequency);
   
-  // Check if the medication is overdue
   if (isBefore(nextDueDate, now)) {
-    return { status: MedicationStatus.overdue, nextDue: nextDueDate };
+    return { 
+      status: MedicationStatus.overdue,
+      nextDue: format(nextDueDate, 'yyyy-MM-dd'),
+      lastAdministered: format(lastDate, 'yyyy-MM-dd')
+    };
+  } else if (isAfter(nextDueDate, addDays(now, 2))) {
+    return { 
+      status: MedicationStatus.active,
+      nextDue: format(nextDueDate, 'yyyy-MM-dd'),
+      lastAdministered: format(lastDate, 'yyyy-MM-dd')
+    };
+  } else {
+    return { 
+      status: MedicationStatus.upcoming,
+      nextDue: format(nextDueDate, 'yyyy-MM-dd'),
+      lastAdministered: format(lastDate, 'yyyy-MM-dd')
+    };
   }
-  
-  // Check if the medication is upcoming (due within 24 hours)
-  const tomorrowDate = addDays(now, 1);
-  if (isBefore(nextDueDate, tomorrowDate)) {
-    return { status: MedicationStatus.upcoming, nextDue: nextDueDate };
-  }
-  
-  // Otherwise the medication is active
-  return { status: MedicationStatus.active, nextDue: nextDueDate };
 };
 
-/**
- * Returns display information for a medication status
- */
-export const getStatusLabel = (status: MedicationStatus | any) => {
-  let statusValue = typeof status === 'object' ? status.status : status;
+// Function to get the display label and color for a medication status
+export const getStatusLabel = (status: MedicationStatus | MedicationStatusResult | null) => {
+  if (!status) {
+    return { 
+      statusLabel: 'Unknown', 
+      statusColor: 'bg-gray-100 text-gray-800', 
+      emoji: '❓' 
+    };
+  }
+  
+  let statusValue: MedicationStatus;
+  
+  if (typeof status === 'object' && status.status) {
+    statusValue = status.status;
+  } else {
+    statusValue = status as MedicationStatus;
+  }
   
   switch (statusValue) {
     case MedicationStatus.active:
-      return {
-        statusLabel: 'Active',
-        statusColor: 'bg-green-100 text-green-800',
-        emoji: '✓'
-      };
-    case MedicationStatus.upcoming:
-      return {
-        statusLabel: 'Upcoming',
-        statusColor: 'bg-blue-100 text-blue-800',
-        emoji: '⏰'
+      return { 
+        statusLabel: 'Active', 
+        statusColor: 'bg-green-100 text-green-800', 
+        emoji: '✅' 
       };
     case MedicationStatus.overdue:
-      return {
-        statusLabel: 'Overdue',
-        statusColor: 'bg-red-100 text-red-800',
-        emoji: '⚠️'
+      return { 
+        statusLabel: 'Overdue', 
+        statusColor: 'bg-red-100 text-red-800', 
+        emoji: '⚠️' 
+      };
+    case MedicationStatus.upcoming:
+      return { 
+        statusLabel: 'Upcoming', 
+        statusColor: 'bg-blue-100 text-blue-800', 
+        emoji: '🔔' 
       };
     case MedicationStatus.completed:
-      return {
-        statusLabel: 'Completed',
-        statusColor: 'bg-gray-100 text-gray-800',
-        emoji: '✓'
+      return { 
+        statusLabel: 'Completed', 
+        statusColor: 'bg-gray-100 text-gray-800', 
+        emoji: '✓' 
       };
     default:
-      return {
-        statusLabel: 'Unknown',
-        statusColor: 'bg-gray-100 text-gray-800',
-        emoji: '❓'
+      return { 
+        statusLabel: 'Unknown', 
+        statusColor: 'bg-gray-100 text-gray-800', 
+        emoji: '❓' 
       };
   }
 };
+
+// Convert an array of medication logs to MedicationInfo objects
+export const processMedicationLogs = (logs: any[]): { preventative: MedicationInfo[], other: MedicationInfo[] } => {
+  const result: { preventative: MedicationInfo[], other: MedicationInfo[] } = {
+    preventative: [],
+    other: []
+  };
+  
+  if (!logs || logs.length === 0) {
+    return result;
+  }
+  
+  // Group by medication name
+  const groupedLogs: Record<string, any[]> = {};
+  
+  logs.forEach(log => {
+    if (!groupedLogs[log.task_name]) {
+      groupedLogs[log.task_name] = [];
+    }
+    groupedLogs[log.task_name].push(log);
+  });
+  
+  // Process each group
+  Object.entries(groupedLogs).forEach(([medicationName, medicationLogs]) => {
+    // Sort by timestamp for most recent first
+    medicationLogs.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    
+    const mostRecent = medicationLogs[0];
+    const metadata = mostRecent.medication_metadata || {};
+    const isPreventative = metadata.is_preventative === true;
+    
+    // Extract frequency from metadata or default to daily
+    const frequency = metadata.frequency || 'daily';
+    
+    // Calculate status based on last administered and frequency
+    const status = getMedicationStatus(mostRecent.timestamp, frequency);
+    
+    const info: MedicationInfo = {
+      id: mostRecent.id,
+      name: medicationName,
+      dosage: metadata.dosage,
+      frequency: metadata.frequency || 'daily',
+      lastAdministered: mostRecent.timestamp,
+      nextDue: status.nextDue,
+      status: status,
+      notes: mostRecent.notes,
+      isPreventative: isPreventative
+    };
+    
+    // Add to appropriate category
+    if (isPreventative) {
+      result.preventative.push(info);
+    } else {
+      result.other.push(info);
+    }
+  });
+  
+  return result;
+};
+
+// Export MedicationFrequency 
+export { MedicationFrequency };
