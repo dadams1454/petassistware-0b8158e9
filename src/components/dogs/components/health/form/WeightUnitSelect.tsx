@@ -1,36 +1,45 @@
 
 import React from 'react';
-import { FormField, FormItem, FormControl, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { WeightEntryValues } from './useWeightEntryForm';
-import { weightUnits } from '@/types/common';
+import { WeightUnit, weightUnits } from '@/types/common';
 
 interface WeightUnitSelectProps {
-  form: UseFormReturn<WeightEntryValues>;
+  form: UseFormReturn<any>;
+  label?: string;
+  name?: string;
+  defaultValue?: WeightUnit;
 }
 
-const WeightUnitSelect: React.FC<WeightUnitSelectProps> = ({ form }) => {
+export const WeightUnitSelect: React.FC<WeightUnitSelectProps> = ({
+  form,
+  label = 'Unit',
+  name = 'unit',
+  defaultValue = 'lb'
+}) => {
   return (
     <FormField
       control={form.control}
-      name="unit"
+      name={name}
+      defaultValue={defaultValue}
       render={({ field }) => (
-        <FormItem className="w-1/3">
-          <FormControl>
-            <Select onValueChange={field.onChange} value={field.value}>
+        <FormItem>
+          {label && <FormLabel>{label}</FormLabel>}
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Unit" />
+                <SelectValue placeholder="Select unit" />
               </SelectTrigger>
-              <SelectContent>
-                {weightUnits.map((unit) => (
-                  <SelectItem key={unit.code} value={unit.code}>
-                    {unit.name} ({unit.code})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormControl>
+            </FormControl>
+            <SelectContent>
+              {weightUnits.map((unit) => (
+                <SelectItem key={unit.code} value={unit.code}>
+                  {unit.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <FormMessage />
         </FormItem>
       )}

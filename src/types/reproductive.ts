@@ -29,6 +29,10 @@ export interface BreedingRecord {
   created_by?: string;
   dam?: Dog;
   sire?: Dog;
+  tie_date?: string;
+  breeding_method?: string;
+  is_successful?: boolean;
+  estimated_due_date?: string;
 }
 
 export interface PregnancyRecord {
@@ -41,13 +45,27 @@ export interface PregnancyRecord {
   notes?: string;
   created_at: string;
   created_by?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 export enum ReproductiveStatus {
   InHeat = 'in_heat',
+  PreHeat = 'pre_heat',
   Pregnant = 'pregnant',
   Breeding = 'breeding',
   NotActive = 'not_active',
+  Whelping = 'whelping',
+  Nursing = 'nursing',
+  Recovery = 'recovery',
+  Intact = 'intact',
+  NotInHeat = 'not_in_heat',
+  Altered = 'altered',
+  Spayed = 'spayed',
+  Neutered = 'neutered',
   InWhelp = 'in_whelp',
   Unknown = 'unknown'
 }
@@ -60,23 +78,35 @@ export interface ReproductiveMilestone {
   notes?: string;
   created_at: string;
   created_by?: string;
+  date?: string;
 }
 
-export type HeatIntensityType = 'light' | 'moderate' | 'heavy';
+export type HeatIntensityType = 'light' | 'moderate' | 'heavy' | 'mild' | 'medium' | 'strong' | 'peak' | 'high' | 'low';
 
 export const HeatIntensity = {
   Light: 'light' as HeatIntensityType,
   Moderate: 'moderate' as HeatIntensityType,
-  Heavy: 'heavy' as HeatIntensityType
+  Heavy: 'heavy' as HeatIntensityType,
+  Mild: 'mild' as HeatIntensityType,
+  Medium: 'medium' as HeatIntensityType,
+  Strong: 'strong' as HeatIntensityType,
+  High: 'high' as HeatIntensityType,
+  Low: 'low' as HeatIntensityType,
+  Peak: 'peak' as HeatIntensityType
 };
 
-export const HeatIntensityValues: HeatIntensityType[] = ['light', 'moderate', 'heavy'];
+export const HeatIntensityValues: HeatIntensityType[] = [
+  'light', 'moderate', 'heavy', 'mild', 'medium', 'strong', 'high', 'low', 'peak'
+];
 
 export interface HeatStage {
   name: string;
   length: number; // Duration in days
   description: string;
   fertilityLevel: 'none' | 'low' | 'moderate' | 'high';
+  day?: number;
+  id?: string;
+  fertility?: string;
 }
 
 export interface ReproductiveCycleData {
@@ -121,6 +151,12 @@ export interface ReproductiveCycleData {
     trimester?: number;
   };
   gestationDays: number;
+  status?: ReproductiveStatus;
+  daysUntilNextHeat?: number;
+  averageCycleLength?: number;
+  currentStage?: HeatStage;
+  fertilityWindow?: { start: Date; end: Date };
+  currentHeatCycle?: HeatCycle;
 }
 
 export interface BreedingChecklistItem {
@@ -139,6 +175,10 @@ export interface BreedingPrepFormData {
   breeding_date: string;
   breeding_method: string;
   notes?: string;
+  plannedTieDate?: string;
+  plannedDate?: string;
+  damId?: string;
+  sireId?: string;
 }
 
 export const normalizeBreedingRecord = (record: any): BreedingRecord => {
@@ -151,6 +191,10 @@ export const normalizeBreedingRecord = (record: any): BreedingRecord => {
     success: !!record.success || record.is_successful,
     notes: record.notes,
     created_at: record.created_at,
-    created_by: record.created_by
+    created_by: record.created_by,
+    tie_date: record.tie_date,
+    is_successful: record.is_successful,
+    breeding_method: record.breeding_method,
+    estimated_due_date: record.estimated_due_date
   };
 };

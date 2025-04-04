@@ -23,6 +23,7 @@ export interface Dog {
   is_pregnant?: boolean;
   last_heat_date?: string;
   tie_date?: string;
+  reproductive_status?: string;
   // Weight fields
   weight?: number;
   weight_unit?: WeightUnit;
@@ -38,14 +39,16 @@ export interface Dog {
   vaccination_notes?: string;
   last_vaccination_date?: string;
   tenant_id?: string;
+  registration_organization?: string;
+  microchip_location?: string;
+  group_ids?: string[];
+  last_medical_check?: string;
+  next_vaccination_due?: string;
 }
 
 export interface DogProfile extends Dog {
   // Additional fields for dog profiles
   reproductive_status?: string;
-  last_medical_check?: string;
-  next_vaccination_due?: string;
-  health_alerts?: number;
 }
 
 export enum DogGender {
