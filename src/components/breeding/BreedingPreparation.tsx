@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Calendar, Check, AlertTriangle, ArrowRight } from 'lucide-react';
-import { Dog } from '@/types/dog';
+import { Dog, DogProfile, dogProfileToBasicDog } from '@/types/dog';
+import { Gender } from '@/types/common';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays } from 'date-fns';
 import { useDogStatus } from '@/components/dogs/hooks/useDogStatus';
@@ -43,11 +44,17 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           
         if (dogError) throw dogError;
         
-        // Create Dog object with required status field
-        const dogWithStatus: Dog = {
+        // Process the dog data
+        const processedDog: DogProfile = {
           ...dogData,
-          status: dogData.status || 'active' // Default to 'active' if status is not provided
+          gender: (dogData.gender as Gender) || 'Female', // Ensure gender is typed correctly
         };
+        
+        // Convert to Dog type which requires status
+        const dogWithStatus: Dog = dogProfileToBasicDog({
+          ...processedDog,
+          status: dogData.status || 'active' // Default to 'active' if status is not provided
+        });
         
         setDog(dogWithStatus);
         
@@ -62,11 +69,18 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           
         if (malesError) throw malesError;
         
-        // Add status to male dogs
-        const malesWithStatus: Dog[] = malesData.map(male => ({
-          ...male,
-          status: male.status || 'active' // Default to 'active' if status is not provided
-        }));
+        // Process and convert males to Dog type
+        const malesWithStatus: Dog[] = malesData.map(male => {
+          const maleProfile: DogProfile = {
+            ...male,
+            gender: (male.gender as Gender) || 'Male',
+          };
+          
+          return dogProfileToBasicDog({
+            ...maleProfile,
+            status: male.status || 'active'
+          });
+        });
         
         setCompatibleMales(malesWithStatus);
       } catch (error) {

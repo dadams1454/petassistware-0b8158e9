@@ -1,3 +1,4 @@
+import { Gender, WeightUnit } from './common';
 
 // Dog gender enum
 export enum DogGender {
@@ -10,12 +11,15 @@ export interface DogProfile {
   id: string;
   name: string;
   breed: string;
-  gender: string; // Using string for flexibility with DB values
+  gender: Gender; // Using updated Gender type
   color?: string;
   birthdate?: string;
   weight?: number;
+  weight_unit?: WeightUnit; // Use common WeightUnit type
   microchip_number?: string;
+  microchip_location?: string;
   registration_number?: string;
+  registration_organization?: string;
   owner_id?: string;
   notes?: string;
   photo_url?: string;
@@ -34,6 +38,8 @@ export interface DogProfile {
   tenant_id?: string;
   status?: string; // For compatibility with Dog interface
   sire_id?: string; // For breeding compatibility
+  reproductive_status?: string; // For reproductive tracking
+  group_ids?: string[]; // For dog groups
 }
 
 // Dog interface for compatibility with all dog-related components
@@ -41,11 +47,12 @@ export interface Dog {
   id: string;
   name: string;
   status: string;
-  gender: 'Male' | 'Female';
+  gender: Gender; // Using updated Gender type
   breed: string;
   color?: string;
   birthdate?: string;
   weight?: number;
+  weight_unit?: WeightUnit; // Use common WeightUnit type
   microchip_number?: string;
   registration_number?: string;
   owner_id?: string;
@@ -64,6 +71,7 @@ export interface Dog {
   vaccination_type?: string;
   tie_date?: string;
   tenant_id?: string;
+  reproductive_status?: string; // Add missing field
 }
 
 // Dogs query parameters interface
@@ -127,8 +135,11 @@ export const mapToDogProfile = (data: any): DogProfile => {
     color: data.color,
     birthdate: data.birthdate,
     weight: data.weight,
+    weight_unit: data.weight_unit,
     microchip_number: data.microchip_number,
+    microchip_location: data.microchip_location,
     registration_number: data.registration_number,
+    registration_organization: data.registration_organization,
     owner_id: data.owner_id,
     notes: data.notes,
     photo_url: data.photo_url,
@@ -146,7 +157,9 @@ export const mapToDogProfile = (data: any): DogProfile => {
     tie_date: data.tie_date,
     tenant_id: data.tenant_id,
     status: data.status,
-    sire_id: data.sire_id
+    sire_id: data.sire_id,
+    reproductive_status: data.reproductive_status,
+    group_ids: data.group_ids
   };
 };
 
@@ -156,11 +169,12 @@ export const dogProfileToBasicDog = (profile: DogProfile): Dog => {
     id: profile.id,
     name: profile.name,
     status: profile.status || 'active',
-    gender: profile.gender as 'Male' | 'Female',
+    gender: profile.gender,
     breed: profile.breed,
     color: profile.color,
     birthdate: profile.birthdate,
     weight: profile.weight,
+    weight_unit: profile.weight_unit,
     microchip_number: profile.microchip_number,
     registration_number: profile.registration_number,
     owner_id: profile.owner_id,
@@ -178,6 +192,89 @@ export const dogProfileToBasicDog = (profile: DogProfile): Dog => {
     vaccination_notes: profile.vaccination_notes,
     vaccination_type: profile.vaccination_type,
     tie_date: profile.tie_date,
-    tenant_id: profile.tenant_id
+    tenant_id: profile.tenant_id,
+    reproductive_status: profile.reproductive_status
   };
 };
+
+// Document type enum
+export enum DocumentType {
+  HealthRecord = 'health_record',
+  Registration = 'registration',
+  Pedigree = 'pedigree',
+  Contract = 'contract',
+  MedicalReport = 'medical_report',
+  Vaccination = 'vaccination',
+  Other = 'other'
+}
+
+// Health record type enum
+export enum HealthRecordTypeEnum {
+  Vaccination = 'vaccination',
+  Examination = 'examination',
+  Medication = 'medication',
+  Surgery = 'surgery',
+  Laboratory = 'laboratory',
+  Imaging = 'imaging',
+  Dental = 'dental',
+  Allergy = 'allergy',
+  Emergency = 'emergency',
+  Preventive = 'preventive',
+  Observation = 'observation',
+  Deworming = 'deworming',
+  Grooming = 'grooming',
+  Test = 'test',
+  Other = 'other',
+  Procedure = 'procedure'
+}
+
+// Health record interface
+export interface HealthRecord {
+  id: string;
+  dog_id: string;
+  visit_date: string;
+  record_type: string;
+  title: string;
+  vet_name: string;
+  description?: string;
+  performed_by?: string;
+  next_due_date?: string;
+  document_url?: string;
+  record_notes?: string;
+  created_at?: string;
+  // Vaccination-specific fields
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  expiration_date?: string;
+  // Medication-specific fields
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string;
+  duration?: number;
+  duration_unit?: string;
+  administration_route?: string;
+  // Examination-specific fields
+  examination_type?: string;
+  findings: string;
+  recommendations: string;
+  follow_up_date: string;
+  // Surgery-specific fields
+  procedure_name: string;
+  surgeon: string;
+  anesthesia_used: string;
+  recovery_notes: string;
+}
+
+// Vaccination interface
+export interface Vaccination {
+  id: string;
+  dog_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  notes?: string;
+  created_at: string;
+}

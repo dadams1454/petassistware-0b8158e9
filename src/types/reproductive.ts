@@ -1,4 +1,3 @@
-
 import { Dog } from './dog';
 
 // Heat cycle interface
@@ -34,16 +33,22 @@ export enum HeatIntensity {
 
 // Heat intensity values for compatibility
 export const HeatIntensityValues = {
-  Mild: 'mild',
-  Moderate: 'moderate',
-  Strong: 'strong',
-  Unknown: 'unknown',
-  LOW: 'low',
+  mild: 'mild',
+  moderate: 'moderate',
+  strong: 'strong',
+  unknown: 'unknown',
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  peak: 'peak',
+  // Also include uppercase versions for backward compatibility
   MILD: 'mild',
   MODERATE: 'moderate',
+  STRONG: 'strong',
+  UNKNOWN: 'unknown',
+  LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
-  STRONG: 'strong',
   PEAK: 'peak'
 };
 

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import HeatCycleMonitor from './breeding/HeatCycleMonitor';
 import { format } from 'date-fns';
-import { HeatCycle, HeatIntensityValues } from '@/types/reproductive';
+import { HeatCycle, HeatIntensityType, HeatIntensityValues } from '@/types/reproductive';
 
 export interface HeatCycleManagementProps {
   dogId: string;
@@ -18,7 +18,7 @@ interface HeatCycleInput {
   start_date: string;
   end_date: string | null;
   notes: string | null;
-  intensity?: string;
+  intensity?: HeatIntensityType;
 }
 
 const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeatCycleAdded }) => {
@@ -37,7 +37,7 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeat
     const startDate = formData.get('start_date') as string;
     const endDate = formData.get('end_date') as string || null;
     const notes = formData.get('notes') as string || null;
-    const intensity = formData.get('intensity') as string || HeatIntensityValues.Moderate;
+    const intensity = formData.get('intensity') as HeatIntensityType || HeatIntensityValues.moderate;
     
     try {
       setLoading(true);
@@ -129,15 +129,15 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeat
               <select 
                 name="intensity"
                 className="w-full p-2 border rounded"
-                defaultValue={HeatIntensityValues.Moderate}
+                defaultValue={HeatIntensityValues.moderate}
               >
-                <option value={HeatIntensityValues.Low}>Low</option>
-                <option value={HeatIntensityValues.Mild}>Mild</option>
-                <option value={HeatIntensityValues.Moderate}>Moderate</option>
-                <option value={HeatIntensityValues.Medium}>Medium</option>
-                <option value={HeatIntensityValues.High}>High</option>
-                <option value={HeatIntensityValues.Strong}>Strong</option>
-                <option value={HeatIntensityValues.Peak}>Peak</option>
+                <option value={HeatIntensityValues.low}>Low</option>
+                <option value={HeatIntensityValues.mild}>Mild</option>
+                <option value={HeatIntensityValues.moderate}>Moderate</option>
+                <option value={HeatIntensityValues.medium}>Medium</option>
+                <option value={HeatIntensityValues.high}>High</option>
+                <option value={HeatIntensityValues.strong}>Strong</option>
+                <option value={HeatIntensityValues.peak}>Peak</option>
               </select>
             </div>
             

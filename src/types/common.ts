@@ -2,6 +2,8 @@
 // Define reusable common types across the application
 export type WeightUnit = 'g' | 'kg' | 'lb' | 'oz';
 
+export type Gender = 'Male' | 'Female';
+
 export interface SelectOption {
   value: string;
   label: string;
@@ -35,3 +37,27 @@ export interface FilterParams {
   search?: string;
   filters?: Record<string, any>;
 }
+
+// Helper functions for weight unit standardization
+export const weightUnits: Record<string, WeightUnit> = {
+  g: 'g',
+  gram: 'g',
+  grams: 'g',
+  kg: 'kg',
+  kilogram: 'kg',
+  kilograms: 'kg',
+  lb: 'lb',
+  lbs: 'lb',
+  pound: 'lb',
+  pounds: 'lb',
+  oz: 'oz',
+  ounce: 'oz',
+  ounces: 'oz'
+};
+
+export const standardizeWeightUnit = (unit: string): WeightUnit => {
+  const standardized = weightUnits[unit.toLowerCase()];
+  return standardized || 'lb'; // Default to lb if unknown
+};
+
+export type WeightUnitWithLegacy = WeightUnit | 'pound' | 'pounds' | 'ounce' | 'ounces' | 'gram' | 'grams' | 'kilogram' | 'kilograms';
