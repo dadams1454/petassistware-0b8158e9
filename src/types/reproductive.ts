@@ -1,4 +1,3 @@
-
 import { Dog } from './dog';
 
 export interface HeatCycle {
@@ -81,7 +80,16 @@ export interface ReproductiveMilestone {
   date?: string;
 }
 
-export type HeatIntensityType = 'light' | 'moderate' | 'heavy' | 'mild' | 'medium' | 'strong' | 'peak' | 'high' | 'low';
+export type HeatIntensityType = 
+  | 'light' 
+  | 'moderate' 
+  | 'heavy' 
+  | 'mild' 
+  | 'medium' 
+  | 'strong' 
+  | 'peak' 
+  | 'high' 
+  | 'low';
 
 export const HeatIntensity = {
   Light: 'light' as HeatIntensityType,

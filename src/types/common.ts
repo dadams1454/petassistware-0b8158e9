@@ -3,12 +3,12 @@
 
 export type Gender = 'Male' | 'Female';
 
-// Weight unit types - both legacy and new formats for compatibility
+// Weight unit types
 export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
 
 // Extended weight unit type with display information
 export interface WeightUnitWithDisplay {
-  code: string;
+  code: WeightUnit;
   name: string;
 }
 
@@ -28,5 +28,5 @@ export function standardizeWeightUnit(unit: WeightUnitWithLegacy): WeightUnit {
   if (typeof unit === 'string') {
     return unit as WeightUnit;
   }
-  return unit.code as WeightUnit;
+  return unit.code;
 }

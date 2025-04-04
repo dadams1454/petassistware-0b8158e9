@@ -65,7 +65,7 @@ export enum HealthRecordTypeEnum {
   PROCEDURE = 'procedure'
 }
 
-// For backward compatibility, add aliases
+// Add camelCase aliases for backward compatibility
 export const HealthRecordTypeEnum_Aliases = {
   Vaccination: HealthRecordTypeEnum.VACCINATION,
   Examination: HealthRecordTypeEnum.EXAMINATION,
@@ -82,20 +82,23 @@ export const HealthRecordTypeEnum_Aliases = {
   Laboratory: HealthRecordTypeEnum.LABORATORY,
   Imaging: HealthRecordTypeEnum.IMAGING,
   Preventive: HealthRecordTypeEnum.PREVENTIVE
-};
+}
 
 export function stringToHealthRecordType(type: string): HealthRecordTypeEnum {
   // Convert case-insensitive string to enum
-  const upperType = type.toUpperCase();
+  const lowerType = type.toLowerCase();
   
-  if (Object.values(HealthRecordTypeEnum).includes(upperType as HealthRecordTypeEnum)) {
-    return upperType as HealthRecordTypeEnum;
+  for (const enumKey of Object.keys(HealthRecordTypeEnum)) {
+    if (HealthRecordTypeEnum[enumKey as keyof typeof HealthRecordTypeEnum].toLowerCase() === lowerType) {
+      return HealthRecordTypeEnum[enumKey as keyof typeof HealthRecordTypeEnum];
+    }
   }
   
   // Check aliases
-  const aliasKey = type as keyof typeof HealthRecordTypeEnum_Aliases;
-  if (HealthRecordTypeEnum_Aliases[aliasKey]) {
-    return HealthRecordTypeEnum_Aliases[aliasKey];
+  for (const aliasKey of Object.keys(HealthRecordTypeEnum_Aliases)) {
+    if (aliasKey.toLowerCase() === type.toLowerCase()) {
+      return HealthRecordTypeEnum_Aliases[aliasKey as keyof typeof HealthRecordTypeEnum_Aliases];
+    }
   }
   
   // Default to OTHER if not found
@@ -126,18 +129,21 @@ export enum MedicationStatusEnum {
   SCHEDULED = 'scheduled',
   OVERDUE = 'overdue',
   UPCOMING = 'upcoming',
-  DISCONTINUED = 'discontinued'
+  DISCONTINUED = 'discontinued',
+  NOT_STARTED = 'not_started',
+  UNKNOWN = 'unknown'
 }
 
 export interface MedicationStatus {
   status: MedicationStatusEnum;
   daysUntilNext?: number;
   daysOverdue?: number;
-  nextDoseDue?: Date;
+  nextDue?: Date;
   lastDose?: Date;
   isOverdue?: boolean;
   overdue?: boolean;
   daysUntilNextDose?: number;
+  daysSinceLastDose?: number;
 }
 
 export type MedicationStatusResult = MedicationStatus;
@@ -160,14 +166,21 @@ export enum AppetiteEnum {
   NORMAL = 'normal',
   INCREASED = 'increased',
   DECREASED = 'decreased',
-  NONE = 'none'
+  NONE = 'none',
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  FAIR = 'fair',
+  POOR = 'poor'
 }
 
 export enum EnergyEnum {
   NORMAL = 'normal',
   INCREASED = 'increased',
   DECREASED = 'decreased',
-  LETHARGIC = 'lethargic'
+  LETHARGIC = 'lethargic',
+  HYPERACTIVE = 'hyperactive',
+  HIGH = 'high',
+  LOW = 'low'
 }
 
 export enum StoolConsistencyEnum {
@@ -176,7 +189,9 @@ export enum StoolConsistencyEnum {
   WATERY = 'watery',
   HARD = 'hard',
   BLOODY = 'bloody',
-  NONE = 'none'
+  NONE = 'none',
+  SOFT = 'soft',
+  MUCOUSY = 'mucousy'
 }
 
 // Compatibility with legacy names

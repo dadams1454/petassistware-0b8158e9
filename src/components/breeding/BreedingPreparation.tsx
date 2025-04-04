@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +15,8 @@ interface BreedingPreparationProps {
   dogId?: string;
 }
 
-interface ExtendedDog {
+// Create a type that ensures the dog has a status property
+interface ExtendedDog extends Omit<Dog, 'status'> {
   birthdate: string;
   breed: string;
   color: string;
@@ -71,7 +71,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           
         if (dogError) throw dogError;
         
-        // Convert to Dog type with required status
+        // Ensure dog has a status property
         const dogWithStatus: ExtendedDog = {
           ...dogData,
           gender: (dogData.gender as Gender) || 'Female', // Ensure gender is typed correctly
@@ -110,7 +110,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
   }, [effectiveDogId]);
   
   // Use our dog status hook to get heat cycle and fertility information
-  const dogStatus = dog ? useDogStatus(dog as any) : null;
+  const dogStatus = dog ? useDogStatus(dog as Dog) : null;
   
   const handleCreateLitter = () => {
     // Navigate to the add litter page with pre-filled information

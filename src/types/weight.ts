@@ -8,6 +8,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -31,7 +32,7 @@ export interface WeightDataPoint {
   age?: number;
 }
 
-// Add GrowthStats definition that was missing
+// Growth stats definition
 export interface GrowthStats {
   averageGrowthRate: number;
   maxGrowthRate: number;
@@ -42,4 +43,10 @@ export interface GrowthStats {
   firstWeight: number;
   totalGain: number;
   percentGain: number;
+  currentWeight?: number;
+  weightUnit?: string;
+  projectedWeight?: number;
+  weightGoal?: number;
+  onTrack?: boolean;
+  percentChange?: number;
 }

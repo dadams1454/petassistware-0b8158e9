@@ -1,8 +1,7 @@
-
 // Types for puppy tracking
 
 // Age groups for puppies
-export type PuppyAgeGroup = 
+export type PuppyAgeGroupName = 
   | 'newborn'
   | 'twoWeek'
   | 'fourWeek'
@@ -13,21 +12,27 @@ export type PuppyAgeGroup =
   | 'older'
   | 'all';
 
-// Extended PuppyAgeGroup with UI properties
-export interface PuppyAgeGroupExtended {
+// Base interface for puppy age groups
+export interface PuppyAgeGroup {
   id: string;
   name: string;
   displayName: string;
   description: string;
-  minDays: number;
-  maxDays: number;
-  unit: string;
-  color: string;
   startDay: number;
   endDay: number;
+  minDays: number;
+  maxDays: number;
   minAge: number;
   maxAge: number;
+  unit: string;
+  color: string;
   milestones: string;
+}
+
+// Extended PuppyAgeGroup with UI properties
+export interface PuppyAgeGroupExtended extends PuppyAgeGroup {
+  startDay: number;
+  endDay: number;
 }
 
 // Age group data storage
@@ -212,7 +217,7 @@ export interface SocializationReaction {
   emoji?: string;
 }
 
-// Socialization progress
+// Fix duplicate categoryId in SocializationProgress
 export interface SocializationProgress {
   categoryId: string;
   categoryName: string;
@@ -220,7 +225,6 @@ export interface SocializationProgress {
   target: number;
   percentage: number;
   category?: string;
-  categoryId?: string;
   count?: number;
   completion_percentage?: number;
 }
