@@ -12,6 +12,8 @@ export interface PuppyWithAge extends Puppy {
   currentWeight?: number;
   age_days?: number; // For backward compatibility
   age_weeks?: number; // For backward compatibility
+  current_weight_unit?: string; // For compatibility with PuppyCard
+  weight_unit?: string; // For compatibility with PuppyCard
 }
 
 // Puppy age group data structure
@@ -135,6 +137,7 @@ export interface SocializationReaction {
   emoji?: string;
   color?: string;
   name?: string;
+  id?: string; // For compatibility with utils
 }
 
 // Socialization progress
@@ -147,6 +150,7 @@ export interface SocializationProgress {
   category?: string; // For backward compatibility  
   target?: number; // For backward compatibility
   completion_percentage?: number; // For backward compatibility
+  id?: string; // For compatibility with data structures
 }
 
 // Socialization experience
@@ -162,6 +166,18 @@ export interface SocializationExperience {
   created_at: string;
   experience_date?: string; // For backward compatibility
   experience_type?: string; // For backward compatibility
+}
+
+// Socialization record (for compatibility)
+export interface SocializationRecord {
+  id: string;
+  puppy_id: string;
+  category: string;
+  experience: string;
+  experience_date: string;
+  reaction: string;
+  notes?: string;
+  created_at: string;
 }
 
 // Weight record for puppies
@@ -202,4 +218,39 @@ export interface VaccinationRecord {
   lot_number?: string;
   notes?: string;
   created_at: string;
+}
+
+// Milestone (for compatibility)
+export interface Milestone {
+  id: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
+  notes?: string;
+  created_at?: string;
+  title: string;
+  is_completed: boolean;
+}
+
+// Puppy milestone
+export interface PuppyMilestone {
+  id?: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
+  notes?: string;
+  created_at?: string;
+  title?: string;
+  is_completed?: boolean;
+}
+
+// Age group (for compatibility)
+export interface AgeGroup {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  minDays: number;
+  maxDays: number;
+  color: string;
 }

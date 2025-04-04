@@ -19,13 +19,17 @@ export interface HeatCycle {
 }
 
 // Heat intensity type and enum
-export type HeatIntensityType = 'mild' | 'moderate' | 'strong' | 'unknown';
+export type HeatIntensityType = 'mild' | 'moderate' | 'strong' | 'unknown' | 'medium' | 'high' | 'low' | 'peak';
 
 export enum HeatIntensity {
   Mild = 'mild',
   Moderate = 'moderate',
   Strong = 'strong',
-  Unknown = 'unknown'
+  Unknown = 'unknown',
+  Medium = 'medium',
+  High = 'high',
+  Low = 'low',
+  Peak = 'peak'
 }
 
 // Heat intensity values for compatibility
@@ -33,7 +37,14 @@ export const HeatIntensityValues = {
   Mild: 'mild',
   Moderate: 'moderate',
   Strong: 'strong',
-  Unknown: 'unknown'
+  Unknown: 'unknown',
+  LOW: 'low',
+  MILD: 'mild',
+  MODERATE: 'moderate',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  STRONG: 'strong',
+  PEAK: 'peak'
 };
 
 // Breeding record interface
@@ -49,6 +60,13 @@ export interface BreedingRecord {
   created_by?: string;
   sire?: Dog;
   dam?: Dog;
+  
+  // For compatibility
+  tie_date?: string;
+  breeding_method?: string;
+  is_successful?: boolean;
+  estimated_due_date?: string;
+  heat_cycle_id?: string;
 }
 
 // Helper to normalize breeding record
@@ -62,7 +80,12 @@ export const normalizeBreedingRecord = (record: any): BreedingRecord => {
     success: record.success || record.is_successful,
     notes: record.notes,
     created_at: record.created_at,
-    created_by: record.created_by
+    created_by: record.created_by,
+    tie_date: record.tie_date,
+    breeding_method: record.breeding_method,
+    is_successful: record.is_successful,
+    estimated_due_date: record.estimated_due_date,
+    heat_cycle_id: record.heat_cycle_id
   };
 };
 
@@ -77,6 +100,13 @@ export interface PregnancyRecord {
   notes?: string;
   created_at: string;
   created_by?: string;
+  
+  // For compatibility
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 // Reproductive status enum
@@ -85,9 +115,15 @@ export enum ReproductiveStatus {
   Spayed = 'spayed',
   Neutered = 'neutered',
   InHeat = 'in_heat',
+  PreHeat = 'pre_heat',
   Pregnant = 'pregnant',
   Breeding = 'breeding',
-  NotBreeding = 'not_breeding'
+  NotBreeding = 'not_breeding',
+  Whelping = 'whelping',
+  Nursing = 'nursing',
+  Recovery = 'recovery',
+  NotInHeat = 'not_in_heat',
+  Altered = 'altered'
 }
 
 // Reproductive milestone interface
@@ -99,6 +135,9 @@ export interface ReproductiveMilestone {
   notes?: string;
   created_at: string;
   created_by?: string;
+  
+  // For compatibility
+  date?: string;
 }
 
 // Heat stage interface
@@ -109,6 +148,10 @@ export interface HeatStage {
   start_day: number;
   end_day: number;
   fertility_level: 'none' | 'low' | 'medium' | 'high' | 'peak';
+  
+  // For compatibility
+  day?: number;
+  fertility?: string;
 }
 
 // Reproductive cycle data interface
@@ -142,6 +185,16 @@ export interface ReproductiveCycleData {
   };
   pregnancyConfirmed: boolean;
   pregnancyLost: boolean;
+  
+  // For compatibility with components
+  status?: string;
+  daysUntilNextHeat?: number;
+  averageCycleLength?: number;
+  currentStage?: HeatStage;
+  fertilityWindow?: {
+    start: Date;
+    end: Date;
+  };
 }
 
 // Breeding checklist item interface
@@ -152,6 +205,9 @@ export interface BreedingChecklistItem {
   completed: boolean;
   timeframe?: string;
   priority: 'low' | 'medium' | 'high';
+  
+  // For compatibility
+  task?: string;
 }
 
 // Breeding prep form data interface
@@ -161,4 +217,8 @@ export interface BreedingPrepFormData {
   breedingMethod: string;
   plannedBreedingDate?: Date;
   notes?: string;
+  
+  // For compatibility
+  plannedTieDate?: Date;
+  plannedDate?: Date;
 }

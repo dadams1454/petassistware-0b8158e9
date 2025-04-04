@@ -1,49 +1,37 @@
 
-// Status types used across the application
-export type Status = 'active' | 'inactive' | 'archived' | 'deleted';
+// Define reusable common types across the application
+export type WeightUnit = 'g' | 'kg' | 'lb' | 'oz';
 
-// Weight unit type
-export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
-
-// For backward compatibility
-export type WeightUnitWithLegacy = WeightUnit;
-
-// Common selection option interface
 export interface SelectOption {
   value: string;
   label: string;
+  code?: string;
+  name?: string;
+  description?: React.ReactNode;
 }
 
-// Common date range interface
-export interface DateRange {
-  start: Date;
-  end: Date;
+export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+
+export type ErrorState = {
+  message: string;
+  details?: string;
+} | null;
+
+export interface PaginationParams {
+  page: number;
+  pageSize: number;
+  totalCount: number;
 }
 
-// Common validation result interface
-export interface ValidationResult {
-  valid: boolean;
-  message?: string;
+export interface ApiResponse<T> {
+  data: T | null;
+  error: ErrorState;
+  isLoading: boolean;
 }
 
-// Weight units array for selecting in forms
-export const weightUnits: SelectOption[] = [
-  { value: 'g', label: 'Grams (g)' },
-  { value: 'kg', label: 'Kilograms (kg)' },
-  { value: 'oz', label: 'Ounces (oz)' },
-  { value: 'lb', label: 'Pounds (lb)' }
-];
-
-// Helper function to standardize weight unit
-export const standardizeWeightUnit = (unit?: string): WeightUnit => {
-  if (!unit) return 'lb';
-  
-  const lowerUnit = unit.toLowerCase();
-  
-  if (lowerUnit === 'g' || lowerUnit === 'grams') return 'g';
-  if (lowerUnit === 'kg' || lowerUnit === 'kilograms') return 'kg';
-  if (lowerUnit === 'oz' || lowerUnit === 'ounces') return 'oz';
-  if (lowerUnit === 'lb' || lowerUnit === 'lbs' || lowerUnit === 'pounds') return 'lb';
-  
-  return 'lb'; // Default fallback
-};
+export interface FilterParams {
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  search?: string;
+  filters?: Record<string, any>;
+}

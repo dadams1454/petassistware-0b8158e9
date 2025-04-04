@@ -22,9 +22,30 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
   limit = 5,
   filter = 'all'
 }) => {
-  const { medications, isLoading, error, addMedicationLog } = useMedication(dogId);
+  const { medications, isLoading, error, addMedication, updateMedication, deleteMedication } = useMedication(dogId);
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
   const [isAdministerDialogOpen, setIsAdministerDialogOpen] = useState(false);
+  
+  const addMedicationLog = async (administrationData: any) => {
+    if (!selectedMedication) return;
+    
+    try {
+      // Update medication with last_administered date
+      const updatedMedication = {
+        ...selectedMedication,
+        last_administered: administrationData.administeredAt
+      };
+      
+      await updateMedication(selectedMedication.id, updatedMedication);
+      
+      // Here you would also add the log to a separate table if needed
+      
+      return true;
+    } catch (error) {
+      console.error('Error logging medication administration:', error);
+      return false;
+    }
+  };
   
   const filteredMedications = React.useMemo(() => {
     if (!medications) return [];
@@ -152,7 +173,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
           >
             <div className="flex justify-between items-start mb-2">
               <div>
-                <h3 className="font-medium">{medication.name}</h3>
+                <h3 className="font-medium">{medication.name || medication.medication_name}</h3>
                 <p className="text-sm text-muted-foreground">
                   {medication.dosage} {medication.dosage_unit}, {medication.frequency}
                 </p>

@@ -37,7 +37,7 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeat
     const startDate = formData.get('start_date') as string;
     const endDate = formData.get('end_date') as string || null;
     const notes = formData.get('notes') as string || null;
-    const intensity = formData.get('intensity') as string || HeatIntensityValues.MODERATE;
+    const intensity = formData.get('intensity') as string || HeatIntensityValues.Moderate;
     
     try {
       setLoading(true);
@@ -129,15 +129,15 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeat
               <select 
                 name="intensity"
                 className="w-full p-2 border rounded"
-                defaultValue={HeatIntensityValues.MODERATE}
+                defaultValue={HeatIntensityValues.Moderate}
               >
-                <option value={HeatIntensityValues.LOW}>Low</option>
-                <option value={HeatIntensityValues.MILD}>Mild</option>
-                <option value={HeatIntensityValues.MODERATE}>Moderate</option>
-                <option value={HeatIntensityValues.MEDIUM}>Medium</option>
-                <option value={HeatIntensityValues.HIGH}>High</option>
-                <option value={HeatIntensityValues.STRONG}>Strong</option>
-                <option value={HeatIntensityValues.PEAK}>Peak</option>
+                <option value={HeatIntensityValues.Low}>Low</option>
+                <option value={HeatIntensityValues.Mild}>Mild</option>
+                <option value={HeatIntensityValues.Moderate}>Moderate</option>
+                <option value={HeatIntensityValues.Medium}>Medium</option>
+                <option value={HeatIntensityValues.High}>High</option>
+                <option value={HeatIntensityValues.Strong}>Strong</option>
+                <option value={HeatIntensityValues.Peak}>Peak</option>
               </select>
             </div>
             
