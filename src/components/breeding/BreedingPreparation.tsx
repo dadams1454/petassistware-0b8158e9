@@ -34,7 +34,7 @@ interface ExtendedDog {
   pedigree: boolean;
   registration_number: string;
   requires_special_handling: boolean;
-  status: string; // Adding status property explicitly
+  status: string; // Required status property
   tenant_id: string;
   tie_date: string;
   vaccination_notes: string;

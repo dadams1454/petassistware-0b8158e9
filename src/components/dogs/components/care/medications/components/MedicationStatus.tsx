@@ -6,7 +6,7 @@ import { MedicationStatus as MedicationStatusType, MedicationStatusEnum, Medicat
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {
-  status: MedicationStatusResult | MedicationStatusType | string | null;
+  status: MedicationStatusResult | MedicationStatusType | MedicationStatusEnum | string | null;
   nextDue?: string | Date | null;
   showIcon?: boolean;
   showLabel?: boolean;
@@ -40,51 +40,58 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
     }
   };
   
-  // Convert string status to MedicationStatusEnum if needed
-  let statusValue = '';
+  // Convert different status types to a standard string
+  let statusValue: MedicationStatusEnum = MedicationStatusEnum.Unknown;
   let statusObject: MedicationStatusResult | null = null;
+  let nextDueDate: string | Date | null = nextDue;
   
-  if (typeof status === 'object' && status !== null) {
+  if (typeof status === 'object' && status !== null && 'status' in status) {
+    // Handle MedicationStatusResult
     statusObject = status as MedicationStatusResult;
-    statusValue = statusObject.status as string;
-  } else {
-    statusValue = status as string;
+    statusValue = statusObject.status;
+    if (!nextDueDate && statusObject.nextDue) {
+      nextDueDate = statusObject.nextDue;
+    }
+  } else if (typeof status === 'string') {
+    // Handle status as string (or enum)
+    if (Object.values(MedicationStatusEnum).includes(status as MedicationStatusEnum)) {
+      statusValue = status as MedicationStatusEnum;
+    } else {
+      // Try to map legacy string status to enum
+      switch (status) {
+        case 'active': statusValue = MedicationStatusEnum.Active; break;
+        case 'overdue': statusValue = MedicationStatusEnum.Overdue; break;
+        case 'discontinued': statusValue = MedicationStatusEnum.Discontinued; break;
+        case 'upcoming': 
+        case 'scheduled': statusValue = MedicationStatusEnum.Scheduled; break;
+        case 'not_started': statusValue = MedicationStatusEnum.NotStarted; break;
+        case 'completed': statusValue = MedicationStatusEnum.Completed; break;
+        default: statusValue = MedicationStatusEnum.Unknown;
+      }
+    }
   }
   
   // Get status label and color
-  const { statusLabel, statusColor } = getStatusLabel(statusValue as MedicationStatusEnum);
+  const { statusLabel, statusColor } = getStatusLabel(statusValue);
   
   // Determine the icon based on status
   const getIcon = () => {
-    switch (String(statusValue)) {
-      case 'active':
+    switch (statusValue) {
       case MedicationStatusEnum.Active:
         return <Check className="h-4 w-4 text-green-500" />;
-      case 'overdue':
       case MedicationStatusEnum.Overdue:
-      case 'discontinued':
       case MedicationStatusEnum.Discontinued:
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'upcoming':
       case MedicationStatusEnum.Scheduled:
-      case 'scheduled':
         return <Calendar className="h-4 w-4 text-blue-500" />;
-      case 'not_started':
       case MedicationStatusEnum.NotStarted:
         return <Clock className="h-4 w-4 text-gray-500" />;
-      case 'completed':
       case MedicationStatusEnum.Completed:
         return <Check className="h-4 w-4 text-green-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
-  
-  // Determine the next due date to display
-  let nextDueDate: string | Date | null = nextDue || null;
-  if (!nextDueDate && statusObject && 'nextDue' in statusObject) {
-    nextDueDate = statusObject.nextDue;
-  }
   
   return (
     <div className="flex items-center space-x-2">

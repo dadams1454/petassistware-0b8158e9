@@ -7,35 +7,40 @@ export const socializationReactions: SocializationReactionOption[] = [
     name: 'Positive',
     color: 'green',
     value: 'positive',
-    icon: '😊'
+    icon: '😊',
+    type: 'positive'
   },
   {
     id: 'neutral',
     name: 'Neutral',
     color: 'blue',
     value: 'neutral',
-    icon: '😐'
+    icon: '😐',
+    type: 'neutral'
   },
   {
     id: 'fearful',
     name: 'Fearful',
     color: 'yellow',
     value: 'fearful',
-    icon: '😨'
+    icon: '😨',
+    type: 'fearful'
   },
   {
     id: 'negative',
     name: 'Negative',
     color: 'red',
     value: 'negative',
-    icon: '😠'
+    icon: '😠',
+    type: 'negative'
   },
   {
     id: 'curious', 
     name: 'Curious',
     color: 'purple',
     value: 'curious',
-    icon: '🧐'
+    icon: '🧐',
+    type: 'curious'
   }
 ];
 

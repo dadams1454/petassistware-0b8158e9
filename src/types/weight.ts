@@ -8,7 +8,6 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
-  unit?: WeightUnit; // For compatibility with older code
   date: string;
   notes?: string;
   percent_change?: number;
@@ -30,4 +29,17 @@ export interface WeightDataPoint {
   date: string;
   weight: number;
   age?: number;
+}
+
+// Add GrowthStats definition that was missing
+export interface GrowthStats {
+  averageGrowthRate: number;
+  maxGrowthRate: number;
+  minGrowthRate: number;
+  dailyGrowthAverage: number;
+  weeklyGrowthAverage: number;
+  lastWeight: number;
+  firstWeight: number;
+  totalGain: number;
+  percentGain: number;
 }

@@ -54,3 +54,16 @@ export const convertWeight = (weight: number, fromUnit: WeightUnit, toUnit: Weig
 export const formatWeightWithUnit = (weight: number, unit: WeightUnit): string => {
   return `${weight.toFixed(unit === 'g' || unit === 'oz' ? 0 : 2)} ${unit}`;
 };
+
+// Weight unit with display properties for UI
+export interface WeightUnitOption {
+  code: WeightUnit;
+  name: string;
+}
+
+export const weightUnitOptions: WeightUnitOption[] = [
+  { code: 'g', name: 'Grams' },
+  { code: 'kg', name: 'Kilograms' },
+  { code: 'oz', name: 'Ounces' },
+  { code: 'lb', name: 'Pounds' }
+];

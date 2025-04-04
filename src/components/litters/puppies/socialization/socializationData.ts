@@ -1,5 +1,5 @@
 
-import { SocializationCategoryOption, SocializationReactionOption } from '../types';
+import { SocializationCategoryOption, SocializationReactionOption } from '@/types/puppyTracking';
 
 // This file re-exports the data from the other files
 export { socializationCategoryOptions } from './socializationCategories';

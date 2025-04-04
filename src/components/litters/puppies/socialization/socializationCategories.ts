@@ -45,36 +45,42 @@ export const socializationCategoryOptions: SocializationCategoryOption[] = [
     id: 'sounds',
     categoryId: 'sounds',
     name: 'Sounds',
-    description: 'Different sounds the puppy might encounter'
+    description: 'Different sounds the puppy might encounter',
+    targetCount: 5
   },
   {
     id: 'people',
     categoryId: 'people',
     name: 'People',
-    description: 'Different types of people'
+    description: 'Different types of people',
+    targetCount: 5
   },
   {
     id: 'animals',
     categoryId: 'animals',
     name: 'Animals',
-    description: 'Other animals the puppy might encounter'
+    description: 'Other animals the puppy might encounter',
+    targetCount: 5
   },
   {
     id: 'environments',
     categoryId: 'environments',
     name: 'Environments',
-    description: 'Different places and environments'
+    description: 'Different places and environments',
+    targetCount: 5
   },
   {
     id: 'handling',
     categoryId: 'handling',
     name: 'Handling',
-    description: 'Different ways of handling the puppy'
+    description: 'Different ways of handling the puppy',
+    targetCount: 5
   },
   {
     id: 'objects',
     categoryId: 'objects',
     name: 'Objects',
-    description: 'Different objects the puppy might encounter'
+    description: 'Different objects the puppy might encounter',
+    targetCount: 5
   }
 ];
