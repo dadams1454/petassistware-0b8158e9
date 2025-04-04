@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SocializationCategory } from '../types';
+import { SocializationCategory } from '@/types/puppyTracking';
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -14,21 +14,21 @@ import { cn } from '@/lib/utils';
 
 // Predefined categories
 const SOCIALIZATION_CATEGORIES = [
-  { id: 'people', name: 'People', value: 'people', label: 'People', examples: ['Strangers', 'Children', 'Men with beards'] },
-  { id: 'animals', name: 'Animals', value: 'animals', label: 'Animals', examples: ['Other dogs', 'Cats', 'Livestock'] },
-  { id: 'environments', name: 'Environments', value: 'environments', label: 'Environments', examples: ['Car rides', 'Parks', 'City streets'] },
-  { id: 'sounds', name: 'Sounds', value: 'sounds', label: 'Sounds', examples: ['Thunderstorms', 'Fireworks', 'Vacuum cleaners'] },
-  { id: 'handling', name: 'Handling', value: 'handling', label: 'Handling', examples: ['Nail trimming', 'Ear cleaning', 'Grooming'] },
-  { id: 'objects', name: 'Objects', value: 'objects', label: 'Objects', examples: ['Umbrellas', 'Bicycles', 'Skateboards'] },
-  { id: 'surfaces', name: 'Surfaces', value: 'surfaces', label: 'Surfaces', examples: ['Grass', 'Tile', 'Metal grates'] }
+  { id: 'people', name: 'People', targetCount: 5, description: 'Introducing puppies to different types of people' },
+  { id: 'animals', name: 'Animals', targetCount: 5, description: 'Introducing puppies to other animals' },
+  { id: 'environments', name: 'Environments', targetCount: 5, description: 'Exposing puppies to different environments' },
+  { id: 'sounds', name: 'Sounds', targetCount: 5, description: 'Exposing puppies to various sounds' },
+  { id: 'handling', name: 'Handling', targetCount: 5, description: 'Getting puppies used to being handled' },
+  { id: 'objects', name: 'Objects', targetCount: 5, description: 'Introducing puppies to different objects' },
+  { id: 'surfaces', name: 'Surfaces', targetCount: 5, description: 'Exposing puppies to different surfaces' }
 ];
 
 // Predefined reactions
 const REACTIONS = [
-  { id: 'positive', name: 'Positive', value: 'positive', label: 'Positive', color: 'green' },
-  { id: 'neutral', name: 'Neutral', value: 'neutral', label: 'Neutral', color: 'blue' },
-  { id: 'fearful', name: 'Fearful', value: 'fearful', label: 'Fearful', color: 'yellow' },
-  { id: 'negative', name: 'Negative', value: 'negative', label: 'Negative', color: 'red' }
+  { id: 'positive', name: 'Positive', value: 'positive', color: 'green' },
+  { id: 'neutral', name: 'Neutral', value: 'neutral', color: 'blue' },
+  { id: 'fearful', name: 'Fearful', value: 'fearful', color: 'yellow' },
+  { id: 'negative', name: 'Negative', value: 'negative', color: 'red' }
 ];
 
 interface SocializationFormProps {
@@ -87,10 +87,7 @@ const SocializationForm: React.FC<SocializationFormProps> = ({ onSubmit, isSubmi
           onValueChange={(value) => {
             const selectedCategory = SOCIALIZATION_CATEGORIES.find(cat => cat.id === value);
             if (selectedCategory) {
-              setCategory({
-                id: selectedCategory.id,
-                name: selectedCategory.name
-              });
+              setCategory(selectedCategory);
             }
           }}
         >
@@ -100,7 +97,7 @@ const SocializationForm: React.FC<SocializationFormProps> = ({ onSubmit, isSubmi
           <SelectContent>
             {SOCIALIZATION_CATEGORIES.map((cat) => (
               <SelectItem key={cat.id} value={cat.id}>
-                {cat.label}
+                {cat.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -110,7 +107,7 @@ const SocializationForm: React.FC<SocializationFormProps> = ({ onSubmit, isSubmi
         {category && (
           <div className="mt-1">
             <span className="text-xs text-muted-foreground">
-              Examples: {SOCIALIZATION_CATEGORIES.find(cat => cat.id === category.id)?.examples.join(', ')}
+              {category.description}
             </span>
           </div>
         )}
@@ -169,7 +166,7 @@ const SocializationForm: React.FC<SocializationFormProps> = ({ onSubmit, isSubmi
           <SelectContent>
             {REACTIONS.map((react) => (
               <SelectItem key={react.id} value={react.value}>
-                {react.label}
+                {react.name}
               </SelectItem>
             ))}
           </SelectContent>

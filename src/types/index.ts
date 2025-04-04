@@ -25,7 +25,7 @@ export type {
   Medication, 
   MedicationStatus, 
   MedicationStatusResult,
-  VaccinationSchedule,
+  VaccinationSchedule as HealthVaccinationSchedule,
   GrowthStats,
   HealthIndicator,
   HealthAlert,

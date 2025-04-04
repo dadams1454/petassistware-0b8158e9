@@ -3,49 +3,39 @@ import { SocializationReactionOption, SocializationReactionType } from '@/types/
 
 export const socializationReactions: SocializationReactionOption[] = [
   {
-    id: 'curious',
-    name: 'Curious',
-    value: 'curious',
-    label: 'Curious',
+    id: 'positive',
+    name: 'Positive',
     color: 'green',
-    type: 'curious',
-    emoji: '🧐'
+    value: 'positive',
+    icon: '😊'
   },
   {
     id: 'neutral',
     name: 'Neutral',
-    value: 'neutral',
-    label: 'Neutral',
     color: 'blue',
-    type: 'neutral',
-    emoji: '😐'
-  },
-  {
-    id: 'positive',
-    name: 'Positive',
-    value: 'positive',
-    label: 'Positive',
-    color: 'amber',
-    type: 'positive',
-    emoji: '😊'
+    value: 'neutral',
+    icon: '😐'
   },
   {
     id: 'fearful',
     name: 'Fearful',
+    color: 'yellow',
     value: 'fearful',
-    label: 'Fearful',
-    color: 'red',
-    type: 'fearful',
-    emoji: '😨'
+    icon: '😨'
   },
   {
-    id: 'excited', 
-    name: 'Excited',
-    value: 'excited',
-    label: 'Excited',
+    id: 'negative',
+    name: 'Negative',
+    color: 'red',
+    value: 'negative',
+    icon: '😠'
+  },
+  {
+    id: 'curious', 
+    name: 'Curious',
     color: 'purple',
-    type: 'curious' as SocializationReactionType, // Map to an existing type for compatibility
-    emoji: '🤩'
+    value: 'curious',
+    icon: '🧐'
   }
 ];
 

@@ -96,17 +96,15 @@ export const usePuppyAgeGroups = (
   // Group puppies by age groups
   const puppiesByAgeGroup = useMemo(() => {
     // Initialize with empty arrays for all defined age groups
-    const initialGroups: PuppyAgeGroupData = {
-      newborn: [],
-      twoWeek: [],
-      fourWeek: [],
-      sixWeek: [],
-      eightWeek: [],
-      tenWeek: [],
-      twelveWeek: [],
-      older: [],
-      all: []
-    };
+    const initialGroups: Record<string, PuppyWithAge[]> = {};
+    
+    // Set up empty arrays for each age group
+    ageGroups.forEach(group => {
+      initialGroups[group.id] = [];
+    });
+    
+    // Add an all category
+    initialGroups['all'] = [...puppies];
     
     // Group puppies by their age
     return puppies.reduce((groups, puppy) => {
@@ -119,16 +117,16 @@ export const usePuppyAgeGroups = (
         
         if (ageInDays >= minDays && ageInDays <= maxDays) {
           // Add puppy to its appropriate age group
-          if (!groups[group.id as keyof PuppyAgeGroupData]) {
-            (groups as any)[group.id] = [];
+          if (!groups[group.id]) {
+            groups[group.id] = [];
           }
-          (groups as any)[group.id].push(puppy);
+          groups[group.id].push(puppy);
           break;
         }
       }
       
       return groups;
-    }, { ...initialGroups });
+    }, initialGroups);
   }, [puppies, ageGroups]);
 
   return {

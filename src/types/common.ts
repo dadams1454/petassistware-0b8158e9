@@ -1,64 +1,29 @@
 
-// Define reusable common types across the application
-export type WeightUnit = 'g' | 'kg' | 'lb' | 'oz';
+// Gender type used throughout the application
+export type Gender = 'Male' | 'Female' | 'Unknown';
 
-// Define Gender as a union type instead of enum for better compatibility
-export type Gender = 'Male' | 'Female';
+// Weight unit type
+export type WeightUnit = 'kg' | 'lb' | 'g' | 'oz';
 
-export interface SelectOption {
-  value: string;
-  label: string;
-  code?: string;
-  name?: string;
-  description?: React.ReactNode;
-}
+// For backward compatibility with code that expects a string
+export type WeightUnitWithLegacy = WeightUnit | string;
 
-export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
-
-export type ErrorState = {
-  message: string;
-  details?: string;
-} | null;
-
-export interface PaginationParams {
-  page: number;
-  pageSize: number;
-  totalCount: number;
-}
-
-export interface ApiResponse<T> {
-  data: T | null;
-  error: ErrorState;
-  isLoading: boolean;
-}
-
-export interface FilterParams {
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  search?: string;
-  filters?: Record<string, any>;
-}
-
-// Helper functions for weight unit standardization
-export const weightUnits: Record<string, WeightUnit> = {
-  g: 'g',
-  gram: 'g',
-  grams: 'g',
-  kg: 'kg',
-  kilogram: 'kg',
-  kilograms: 'kg',
-  lb: 'lb',
-  lbs: 'lb',
-  pound: 'lb',
-  pounds: 'lb',
-  oz: 'oz',
-  ounce: 'oz',
-  ounces: 'oz'
+// Helper function to standardize weight unit values
+export const standardizeWeightUnit = (unit?: string): WeightUnit => {
+  if (!unit) return 'lb';
+  
+  const lowerUnit = unit.toLowerCase();
+  
+  if (lowerUnit === 'kg' || lowerUnit === 'kilograms' || lowerUnit === 'kilogram') {
+    return 'kg';
+  } else if (lowerUnit === 'g' || lowerUnit === 'grams' || lowerUnit === 'gram') {
+    return 'g';
+  } else if (lowerUnit === 'oz' || lowerUnit === 'ounce' || lowerUnit === 'ounces') {
+    return 'oz';
+  } else {
+    return 'lb'; // Default to pounds
+  }
 };
 
-export const standardizeWeightUnit = (unit: string): WeightUnit => {
-  const standardized = weightUnits[unit.toLowerCase()];
-  return standardized || 'lb'; // Default to lb if unknown
-};
-
-export type WeightUnitWithLegacy = WeightUnit | 'pound' | 'pounds' | 'ounce' | 'ounces' | 'gram' | 'grams' | 'kilogram' | 'kilograms';
+// Available weight units for use in forms
+export const weightUnits: WeightUnit[] = ['kg', 'lb', 'g', 'oz'];

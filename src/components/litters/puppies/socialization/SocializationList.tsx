@@ -72,10 +72,11 @@ const SocializationList: React.FC<SocializationListProps> = ({
       blue: 'bg-blue-100 text-blue-800',
       amber: 'bg-amber-100 text-amber-800',
       red: 'bg-red-100 text-red-800',
-      purple: 'bg-purple-100 text-purple-800'
+      purple: 'bg-purple-100 text-purple-800',
+      yellow: 'bg-yellow-100 text-yellow-800' // Added yellow for the 'fearful' reaction
     };
     
-    const badgeColor = colorMap[reaction.color] || 'bg-gray-100 text-gray-800';
+    const badgeColor = reaction.color ? colorMap[reaction.color] : 'bg-gray-100 text-gray-800';
     
     return (
       <Badge className={badgeColor}>
@@ -85,6 +86,10 @@ const SocializationList: React.FC<SocializationListProps> = ({
   };
 
   const getCategoryDisplayName = (categoryId: string) => {
+    if (typeof categoryId === 'object' && categoryId.name) {
+      return categoryId.name;
+    }
+    
     const category = socializationCategoryOptions.find(c => c.id === categoryId);
     return category ? category.name : categoryId;
   };

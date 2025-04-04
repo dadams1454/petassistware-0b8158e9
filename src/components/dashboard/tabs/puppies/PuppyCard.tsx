@@ -83,7 +83,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
           <div className="flex items-center gap-1">
             <Baby className="h-4 w-4 text-muted-foreground" />
             <span className="text-muted-foreground">Age:</span>
-            <span className="font-medium">{puppy.ageInDays} days</span>
+            <span className="font-medium">{puppy.ageInDays || puppy.age_days || 0} days</span>
           </div>
           
           <div className="flex items-center gap-1">

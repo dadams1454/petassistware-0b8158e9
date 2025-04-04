@@ -1,5 +1,6 @@
 
 import { WeightUnit } from '@/types/common';
+import { SocializationCategory, SocializationReactionType, SocializationReaction } from '@/types/puppyTracking';
 
 // Puppy interface for PuppyForm component
 export interface Puppy {
@@ -50,3 +51,15 @@ export interface PuppyFormProps {
 
 // Form data type for compatibility
 export type PuppyFormData = Puppy;
+
+// Socialization record type
+export interface SocializationRecord {
+  id: string;
+  puppy_id: string;
+  category: SocializationCategory | { id: string; name: string };
+  experience: string;
+  experience_date: string;
+  reaction?: string;
+  notes?: string;
+  created_at: string;
+}

@@ -1,76 +1,80 @@
 
-import { SocializationCategory, SocializationCategoryOption } from '../types';
+import { SocializationCategory, SocializationCategoryOption } from '@/types/puppyTracking';
 
 export const socializationCategories: SocializationCategory[] = [
   {
     id: 'sounds',
-    name: 'Sounds'
+    name: 'Sounds',
+    description: 'Different sounds the puppy might encounter',
+    targetCount: 5
   },
   {
     id: 'people',
-    name: 'People'
+    name: 'People',
+    description: 'Different types of people',
+    targetCount: 5
   },
   {
     id: 'animals',
-    name: 'Animals'
+    name: 'Animals',
+    description: 'Other animals the puppy might encounter',
+    targetCount: 5
   },
   {
     id: 'environments',
-    name: 'Environments'
+    name: 'Environments',
+    description: 'Different places and environments',
+    targetCount: 5
   },
   {
     id: 'handling',
-    name: 'Handling'
+    name: 'Handling',
+    description: 'Different ways of handling the puppy',
+    targetCount: 5
   },
   {
     id: 'objects',
-    name: 'Objects'
+    name: 'Objects',
+    description: 'Different objects the puppy might encounter',
+    targetCount: 5
   }
 ];
 
 export const socializationCategoryOptions: SocializationCategoryOption[] = [
   {
     id: 'sounds',
+    categoryId: 'sounds',
     name: 'Sounds',
-    value: 'sounds',
-    label: 'Sounds',
-    examples: ['Vacuum cleaner', 'Thunderstorm', 'Doorbell', 'Car engines', 'Music']
+    description: 'Different sounds the puppy might encounter'
   },
   {
     id: 'people',
+    categoryId: 'people',
     name: 'People',
-    value: 'people',
-    label: 'People',
-    examples: ['Children', 'Men with beards', 'People with hats', 'Elderly people', 'Crowds']
+    description: 'Different types of people'
   },
   {
     id: 'animals',
+    categoryId: 'animals',
     name: 'Animals',
-    value: 'animals',
-    label: 'Animals',
-    examples: ['Other dogs', 'Cats', 'Birds', 'Livestock', 'Small animals']
+    description: 'Other animals the puppy might encounter'
   },
   {
     id: 'environments',
+    categoryId: 'environments',
     name: 'Environments',
-    value: 'environments',
-    label: 'Environments',
-    examples: ['Car rides', 'Pet stores', 'Parks', 'Veterinary clinics', 'Different floor surfaces']
+    description: 'Different places and environments'
   },
   {
     id: 'handling',
+    categoryId: 'handling',
     name: 'Handling',
-    value: 'handling',
-    label: 'Handling',
-    examples: ['Nail trimming', 'Ear cleaning', 'Teeth brushing', 'Grooming', 'Being held']
+    description: 'Different ways of handling the puppy'
   },
   {
     id: 'objects',
+    categoryId: 'objects',
     name: 'Objects',
-    value: 'objects',
-    label: 'Objects',
-    examples: ['Umbrellas', 'Bicycles', 'Stairs', 'Crates', 'Toys']
+    description: 'Different objects the puppy might encounter'
   }
 ];
-
-export default socializationCategoryOptions;

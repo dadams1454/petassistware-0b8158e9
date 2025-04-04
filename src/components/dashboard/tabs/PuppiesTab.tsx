@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -157,8 +157,6 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     );
   }
 
-  const ageGroupsArray = ageGroups || [];
-
   return (
     <Card>
       <CardContent className="py-6">
@@ -189,7 +187,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Age Groups</SelectItem>
-                {ageGroupsArray.map((group) => (
+                {ageGroups.map((group) => (
                   <SelectItem key={group.id} value={group.id}>
                     {group.name}
                   </SelectItem>
@@ -200,7 +198,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
           
           <PuppyAgeGroupList 
             puppiesByAgeGroup={filteredPuppiesByAgeGroup} 
-            ageGroups={ageGroupsArray} 
+            ageGroups={ageGroups} 
           />
         </div>
       </CardContent>

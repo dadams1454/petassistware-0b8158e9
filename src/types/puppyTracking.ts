@@ -1,5 +1,14 @@
 
-import { PuppyWithAge } from './litter';
+import { Puppy } from './litter';
+
+// Make sure to properly export PuppyWithAge
+export interface PuppyWithAge extends Puppy {
+  ageInDays?: number;
+  age_days?: number;
+  ageInWeeks?: number;
+  age_weeks?: number;
+  age?: number;
+}
 
 // Define age groups for puppies
 export interface PuppyAgeGroupData {
@@ -35,7 +44,7 @@ export interface PuppyAgeGroup {
 export interface PuppyManagementStats {
   totalPuppies: number;
   puppies: PuppyWithAge[];
-  ageGroups: string[];
+  ageGroups: PuppyAgeGroup[];
   puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
   byAgeGroup: PuppyAgeGroupData;
   byStatus: {
@@ -76,7 +85,7 @@ export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'f
 export interface SocializationReaction {
   id: string;
   type: SocializationReactionType;
-  label: string;
+  label?: string;
   description: string;
   value?: string; // For compatibility
   icon?: string;
@@ -101,6 +110,7 @@ export interface SocializationCategoryOption {
   name: string;
   description?: string;
   color?: string; // Adding for compatibility
+  examples?: string[]; // Adding for compatibility
 }
 
 export interface SocializationReactionOption {
@@ -109,6 +119,7 @@ export interface SocializationReactionOption {
   color: string;
   icon?: string;
   value?: string; // Adding for compatibility
+  label?: string; // Adding for compatibility
 }
 
 export interface SocializationProgress {

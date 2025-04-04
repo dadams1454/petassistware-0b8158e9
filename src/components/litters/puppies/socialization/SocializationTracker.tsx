@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { SocializationRecord, SocializationCategory } from '../types';
+import { SocializationRecord } from '../types';
+import { SocializationCategory } from '@/types/puppyTracking';
 import SocializationForm from './SocializationForm';
 import SocializationList from './SocializationList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -44,19 +45,17 @@ const SocializationTracker: React.FC<SocializationTrackerProps> = ({ puppyId }) 
       if (error) throw error;
 
       // For each experience, we need to get the category details
-      const enhancedExperiences = await Promise.all(
-        data.map(async (experience) => {
-          return {
-            ...experience,
-            category: {
-              id: experience.category, 
-              name: experience.category
-            } as SocializationCategory
-          } as SocializationRecord;
-        })
-      );
+      const enhancedExperiences = data.map((experience) => {
+        return {
+          ...experience,
+          category: {
+            id: experience.category, 
+            name: experience.category
+          } as SocializationCategory
+        } as SocializationRecord;
+      });
 
-      setExperiences(enhancedExperiences as SocializationRecord[]);
+      setExperiences(enhancedExperiences);
     } catch (error) {
       console.error('Error fetching socialization records:', error);
       setError('Failed to load socialization experiences');
