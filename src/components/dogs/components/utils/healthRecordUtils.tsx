@@ -1,66 +1,65 @@
 
 import React from 'react';
 import { 
-  Stethoscope, 
+  Clipboard, 
   Syringe, 
-  Pill, 
+  Pills, 
   Scalpel, 
   FileText, 
-  Microscope, 
-  Camera, 
-  Tooth, 
-  AlertTriangle, 
-  ShieldAlert, 
-  Eye, 
-  Droplets, 
-  Scissors, 
-  TestTube,
-  LucideIcon
+  Activity, 
+  Thermometer,
+  Search,
+  Stethoscope,
+  AlertTriangle,
+  Shield,
+  Eye,
+  Scissors,
+  FlaskConical,
+  Droplets,
+  Bug
 } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
 
-// Function to get the appropriate icon for each health record type
-export function getHealthRecordIcon(recordType: HealthRecordTypeEnum): LucideIcon {
-  switch(recordType) {
+export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum) => {
+  switch (recordType) {
     case HealthRecordTypeEnum.Examination:
       return Stethoscope;
     case HealthRecordTypeEnum.Vaccination:
       return Syringe;
     case HealthRecordTypeEnum.Medication:
-      return Pill;
+      return Pills;
     case HealthRecordTypeEnum.Surgery:
       return Scalpel;
     case HealthRecordTypeEnum.Laboratory:
-      return Microscope;
+      return FlaskConical;
     case HealthRecordTypeEnum.Imaging:
-      return Camera;
+      return Search;
     case HealthRecordTypeEnum.Dental:
-      return Tooth;
+      return Eye;
     case HealthRecordTypeEnum.Allergy:
       return AlertTriangle;
     case HealthRecordTypeEnum.Emergency:
-      return ShieldAlert;
+      return Activity;
     case HealthRecordTypeEnum.Preventive:
-      return Eye;
+      return Shield;
     case HealthRecordTypeEnum.Observation:
       return Eye;
     case HealthRecordTypeEnum.Deworming:
-      return Droplets;
+      return Bug;
     case HealthRecordTypeEnum.Grooming:
       return Scissors;
     case HealthRecordTypeEnum.Test:
-      return TestTube;
+      return Thermometer;
     case HealthRecordTypeEnum.Procedure:
-      return Scalpel;
+      return Droplets;
     case HealthRecordTypeEnum.Other:
     default:
       return FileText;
   }
-}
+};
 
-// Function to get color for health record types
-export function getHealthRecordColor(recordType: HealthRecordTypeEnum): string {
-  switch(recordType) {
+export const getHealthRecordColor = (recordType: HealthRecordTypeEnum): string => {
+  switch (recordType) {
     case HealthRecordTypeEnum.Examination:
       return 'text-blue-500';
     case HealthRecordTypeEnum.Vaccination:
@@ -69,17 +68,37 @@ export function getHealthRecordColor(recordType: HealthRecordTypeEnum): string {
       return 'text-purple-500';
     case HealthRecordTypeEnum.Surgery:
       return 'text-red-500';
-    case HealthRecordTypeEnum.Emergency:
-      return 'text-red-600';
-    case HealthRecordTypeEnum.Preventive:
-      return 'text-sky-500';
-    case HealthRecordTypeEnum.Deworming:
-      return 'text-teal-500';
     case HealthRecordTypeEnum.Laboratory:
       return 'text-amber-500';
+    case HealthRecordTypeEnum.Imaging:
+      return 'text-indigo-500';
+    case HealthRecordTypeEnum.Dental:
+      return 'text-cyan-500';
+    case HealthRecordTypeEnum.Allergy:
+      return 'text-orange-500';
+    case HealthRecordTypeEnum.Emergency:
+      return 'text-rose-500';
+    case HealthRecordTypeEnum.Preventive:
+      return 'text-teal-500';
     case HealthRecordTypeEnum.Observation:
-      return 'text-amber-600';
+      return 'text-amber-500';
+    case HealthRecordTypeEnum.Deworming:
+      return 'text-lime-500';
+    case HealthRecordTypeEnum.Grooming:
+      return 'text-blue-400';
+    case HealthRecordTypeEnum.Test:
+      return 'text-violet-500';
+    case HealthRecordTypeEnum.Procedure:
+      return 'text-sky-500';
+    case HealthRecordTypeEnum.Other:
     default:
       return 'text-gray-500';
   }
-}
+};
+
+export const HealthRecordIcon: React.FC<{ recordType: HealthRecordTypeEnum }> = ({ recordType }) => {
+  const Icon = getHealthRecordIcon(recordType);
+  const colorClass = getHealthRecordColor(recordType);
+  
+  return <Icon className={`h-5 w-5 ${colorClass}`} />;
+};

@@ -83,7 +83,18 @@ export enum MedicationStatusEnum {
   Discontinued = 'discontinued',
   OnHold = 'on-hold',
   Scheduled = 'scheduled',
+  NotStarted = 'not_started',
   Unknown = 'unknown'
+}
+
+// Define the MedicationStatus type as a string that can be one of the enum values
+export type MedicationStatus = string;
+
+// Define MedicationStatusResult interface
+export interface MedicationStatusResult {
+  status: MedicationStatusEnum | string;
+  nextDue?: string;
+  lastAdministered?: string;
 }
 
 // Medication status interface
@@ -248,7 +259,7 @@ export function mapToHealthRecord(data: any): HealthRecord {
   };
 }
 
-// Add the missing mapToWeightRecord function
+// Add the mapToWeightRecord function
 export function mapToWeightRecord(data: any): WeightRecord {
   return {
     id: data.id,
@@ -286,7 +297,8 @@ export enum AppetiteLevelEnum {
   Good = 'good',
   Fair = 'fair',
   Poor = 'poor',
-  None = 'none'
+  None = 'none',
+  Hyperactive = 'hyperactive'
 }
 
 // Energy level enum
@@ -294,7 +306,8 @@ export enum EnergyLevelEnum {
   High = 'high',
   Normal = 'normal',
   Low = 'low',
-  Lethargic = 'lethargic'
+  Lethargic = 'lethargic',
+  Hyperactive = 'hyperactive'
 }
 
 // Stool consistency enum
@@ -304,7 +317,9 @@ export enum StoolConsistencyEnum {
   Loose = 'loose',
   Watery = 'watery',
   Hard = 'hard',
-  None = 'none'
+  None = 'none',
+  Mucousy = 'mucousy',
+  Bloody = 'bloody'
 }
 
 // For backward compatibility

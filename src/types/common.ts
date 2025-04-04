@@ -39,7 +39,12 @@ export interface ResponseStatus {
 }
 
 // Weight units array for dropdown options
-export const weightUnits: WeightUnit[] = ['oz', 'g', 'lb', 'kg'];
+export const weightUnits = [
+  { code: 'oz', name: 'Ounces (oz)' },
+  { code: 'g', name: 'Grams (g)' },
+  { code: 'lb', name: 'Pounds (lb)' },
+  { code: 'kg', name: 'Kilograms (kg)' }
+];
 
 // Helper function to standardize weight unit
 export function standardizeWeightUnit(unit?: string): WeightUnit {
