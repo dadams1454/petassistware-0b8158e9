@@ -202,3 +202,6 @@ export interface HeatCycle {
   updated_at?: string;
   recorded_by?: string;
 }
+
+// Correctly re-export the WeightUnit type
+export type { WeightUnit };

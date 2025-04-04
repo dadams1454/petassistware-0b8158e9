@@ -118,7 +118,7 @@ export interface Medication {
 }
 
 // Medication status interface
-export interface MedicationStatus {
+export interface MedicationStatusInfo {
   id: string;
   medication_id: string;
   status: MedicationStatusEnum;
@@ -269,8 +269,8 @@ export interface HealthRecord {
   notes?: string; // For compatibility
 }
 
-// Export WeightUnit for use in other modules
-export { WeightUnit };
+// Re-export WeightUnit for use in other modules
+export type { WeightUnit };
 
 // Helper functions
 export function mapToHealthRecord(data: any): HealthRecord {
@@ -341,4 +341,3 @@ export function stringToHealthRecordType(type: string): HealthRecordTypeEnum {
   }
   return HealthRecordTypeEnum.Other;
 }
-

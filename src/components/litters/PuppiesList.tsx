@@ -72,14 +72,14 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
     <div>
       <PuppiesTable 
         puppies={puppies} 
-        onEditPuppy={handleEditPuppy as any}
-        onDeletePuppy={setPuppyToDelete as any} 
+        onEditPuppy={handleEditPuppy}
+        onDeletePuppy={setPuppyToDelete} 
         onAddPuppy={handleAddPuppy}
       />
 
       {/* Edit Puppy Dialog */}
       <EditPuppyDialog
-        puppy={selectedPuppy as any}
+        puppy={selectedPuppy}
         litterId={litterId}
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -97,7 +97,7 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
 
       {/* Delete Confirmation Dialog */}
       <DeletePuppyDialog
-        puppy={puppyToDelete as any}
+        puppy={puppyToDelete}
         onClose={() => setPuppyToDelete(null)}
         onConfirm={handleDeletePuppy}
       />

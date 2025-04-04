@@ -39,12 +39,12 @@ export const socializationReactions: SocializationReactionOption[] = [
     emoji: '😨'
   },
   {
-    id: 'excited',
+    id: 'excited', 
     name: 'Excited',
     value: 'excited',
     label: 'Excited',
     color: 'purple',
-    type: 'excited',
+    type: 'excited' as SocializationReactionType, // Type assertion for compatibility
     emoji: '🤩'
   }
 ];
