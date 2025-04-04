@@ -224,7 +224,7 @@ export const getOverdueMedications = (medications: Medication[]): Medication[] =
   });
 };
 
-// Add the function that healthService.ts is trying to import
+// Calculate medication status based on start and end dates
 export const calculateMedicationStatus = (startDate?: string, endDate?: string): MedicationStatusEnum => {
   const today = new Date();
   
