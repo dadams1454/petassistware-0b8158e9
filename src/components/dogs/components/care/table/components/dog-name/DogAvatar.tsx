@@ -9,13 +9,17 @@ interface DogAvatarProps {
   name: string;
   size?: 'sm' | 'md' | 'lg';
   flags?: DogFlag[];
+  dog?: any;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const DogAvatar: React.FC<DogAvatarProps> = ({ 
   photoUrl,
   name,
   size = 'md',
-  flags = []
+  flags = [],
+  dog,
+  onClick
 }) => {
   const sizeClasses = {
     sm: 'h-8 w-8 text-xs',
@@ -37,11 +41,14 @@ const DogAvatar: React.FC<DogAvatarProps> = ({
   }
   
   return (
-    <div className={cn(
-      'relative rounded-full bg-muted flex items-center justify-center overflow-hidden',
-      sizeClasses[size],
-      borderClass
-    )}>
+    <div 
+      className={cn(
+        'relative rounded-full bg-muted flex items-center justify-center overflow-hidden',
+        sizeClasses[size],
+        borderClass
+      )}
+      onClick={onClick}
+    >
       {photoUrl ? (
         <img 
           src={photoUrl} 

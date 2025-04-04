@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -160,6 +159,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
               setIsAddDialogOpen(false);
               onSuccess();
             }}
+            onCancel={() => setIsAddDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>

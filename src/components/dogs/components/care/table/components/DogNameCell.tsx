@@ -66,7 +66,13 @@ const DogNameCell: React.FC<DogNameCellProps> = ({
     >
       <div className="flex items-center gap-3 max-w-[160px]">
         {/* Dog Avatar with Status Indicators */}
-        <DogAvatar dog={dog} onClick={onDogClick} />
+        <DogAvatar 
+          dog={dog} 
+          photoUrl={dog.dog_photo} 
+          name={dog.dog_name}
+          flags={dog.flags} 
+          onClick={onDogClick} 
+        />
         
         <div className="overflow-hidden flex flex-col">
           {/* Dog Name Display */}

@@ -1,9 +1,76 @@
 import { 
   MedicationStatus, 
   MedicationStatusEnum,
-  MedicationStatusResult 
+  MedicationStatusResult,
+  Medication 
 } from '@/types/health';
 import { format, differenceInDays, isValid } from 'date-fns';
+
+// Medication frequency constants
+export const MedicationFrequencyConstants = {
+  DAILY: 'daily',
+  TWICE_DAILY: 'twice_daily',
+  THREE_TIMES_DAILY: 'three_times_daily',
+  WEEKLY: 'weekly',
+  BIWEEKLY: 'biweekly',
+  MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  ANNUAL: 'annual',
+  AS_NEEDED: 'as_needed'
+};
+
+// Helper function to process medication logs
+export const processMedicationLogs = (data: any[]) => {
+  if (!data || data.length === 0) {
+    return { preventative: [], other: [] };
+  }
+  
+  // Group medications by name
+  const medicationsByName: Record<string, any[]> = {};
+  
+  data.forEach(log => {
+    const name = log.task_name;
+    if (!medicationsByName[name]) {
+      medicationsByName[name] = [];
+    }
+    medicationsByName[name].push(log);
+  });
+  
+  // Process each medication
+  const processedMedications = Object.keys(medicationsByName).map(name => {
+    const logs = medicationsByName[name];
+    const latestLog = logs.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )[0];
+    
+    const metadata = latestLog.medication_metadata || {};
+    
+    return {
+      id: latestLog.id,
+      name: name,
+      dosage: metadata.dosage 
+        ? `${metadata.dosage}${metadata.dosage_unit ? ' ' + metadata.dosage_unit : ''}` 
+        : undefined,
+      frequency: metadata.frequency || 'daily',
+      lastAdministered: latestLog.timestamp,
+      status: getMedicationStatus(
+        latestLog.timestamp, 
+        metadata.frequency || 'daily',
+        metadata.end_date
+      ),
+      notes: latestLog.notes,
+      isPreventative: metadata.preventative || false,
+      startDate: metadata.start_date,
+      nextDue: calculateNextDueDate(new Date(latestLog.timestamp), metadata.frequency || 'daily')?.toISOString()
+    };
+  });
+  
+  // Categorize by preventative or treatment
+  return {
+    preventative: processedMedications.filter(med => med.isPreventative),
+    other: processedMedications.filter(med => !med.isPreventative)
+  };
+};
 
 // Function to determine the status of a medication
 export const getMedicationStatus = (
@@ -185,7 +252,7 @@ export const getStatusFromDueDate = (dueDate: Date | null): MedicationStatusResu
 
 // Helper function to get status label and color
 export const getStatusLabel = (
-  status: MedicationStatus | string
+  status: MedicationStatus | null
 ): { statusLabel: string, statusColor: string } => {
   // If status is already a status result object, return its values
   if (typeof status === 'object' && status !== null && 'statusLabel' in status && 'statusColor' in status) {

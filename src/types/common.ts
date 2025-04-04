@@ -1,17 +1,14 @@
 
-// Common types used across the application
+// Common types shared across the application
 
-// Weight units
-export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
+export type WeightUnitWithLegacy = 'lb' | 'kg' | 'g' | 'oz' | 'lbs';
+export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
 
-// Legacy compatibility for code that might use 'lbs'
-export type WeightUnitWithLegacy = WeightUnit | 'lbs';
-
-// Select option
-export interface SelectOption {
-  value: string;
-  label: string;
-}
+// Function to convert legacy weight units to standardized ones
+export const standardizeWeightUnit = (unit: WeightUnitWithLegacy): WeightUnit => {
+  if (unit === 'lbs') return 'lb';
+  return unit as WeightUnit;
+};
 
 // Weight units array for UI components
 export const weightUnits = [
@@ -20,15 +17,3 @@ export const weightUnits = [
   { code: 'oz', name: 'Ounces' },
   { code: 'g', name: 'Grams' }
 ];
-
-// Standardize weight unit
-export const standardizeWeightUnit = (unit: string): WeightUnit => {
-  if (unit === 'lbs') return 'lb';
-  if (unit && ['g', 'kg', 'oz', 'lb'].includes(unit)) {
-    return unit as WeightUnit;
-  }
-  return 'lb'; // Default fallback
-};
-
-// Export the weight unit types
-export type { WeightUnit, WeightUnitWithLegacy };

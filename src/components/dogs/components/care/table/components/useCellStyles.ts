@@ -1,77 +1,79 @@
 
-import { useCallback } from 'react';
 import { DogFlag } from '@/types/dailyCare';
-import { DogCellStyles } from './types';
 
-interface CellStylesProps {
-  category: string;
-  hasPottyBreak: boolean;
-  hasCareLogged: boolean;
-  flags: DogFlag[];
-}
-
-export const useCellStyles = ({
-  category,
-  hasPottyBreak,
-  hasCareLogged,
-  flags
-}: CellStylesProps): DogCellStyles => {
-  const getCellClassNames = useCallback(() => {
-    // Base styles for all cells - Excel-like with clear borders
-    let classes = 'text-center py-1 px-1 relative h-10';
+export const useCellStyles = () => {
+  // Get text color based on day of week
+  const getDayTextColor = (dayOfWeek: number) => {
+    if (dayOfWeek === 0) return 'text-red-600 dark:text-red-400'; // Sunday
+    if (dayOfWeek === 6) return 'text-blue-600 dark:text-blue-400'; // Saturday
+    return 'text-gray-900 dark:text-white'; // Weekdays
+  };
+  
+  // Get background color based on day of week
+  const getDayBackgroundColor = (dayOfWeek: number) => {
+    if (dayOfWeek === 0) return 'bg-red-50 dark:bg-red-950/20'; // Sunday
+    if (dayOfWeek === 6) return 'bg-blue-50 dark:bg-blue-950/20'; // Saturday
+    return 'bg-white dark:bg-gray-800'; // Weekdays
+  };
+  
+  // Get border styles
+  const getBorderStyles = (isFirst: boolean, isLast: boolean) => {
+    let styles = 'border-gray-200 dark:border-gray-700 ';
     
-    // Color coding based on category
-    if (category === 'pottybreaks' && hasPottyBreak) {
-      classes += ' bg-green-100 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-    } else if (category === 'feeding' && hasCareLogged) {
-      classes += ' bg-orange-100 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800';
-    } else if (category === 'medication' && hasCareLogged) {
-      classes += ' bg-red-100 dark:bg-red-900/20 border-red-200 dark:border-red-800';
-    } else if (category === 'grooming' && hasCareLogged) {
-      classes += ' bg-purple-100 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
-    } else if (category === 'exercise' && hasCareLogged) {
-      classes += ' bg-green-100 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-    } else if (category === 'wellness' && hasCareLogged) {
-      classes += ' bg-pink-100 dark:bg-pink-900/20 border-pink-200 dark:border-pink-800';
-    } else if (category === 'training' && hasCareLogged) {
-      classes += ' bg-indigo-100 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800';
-    } else if (category === 'notes' && hasCareLogged) {
-      classes += ' bg-gray-100 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800';
-    } else {
-      classes += ' bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700';
+    if (isFirst) {
+      styles += 'border-l ';
     }
     
-    // Special styles for cells with flags - use separate checks to avoid TS type errors
+    if (isLast) {
+      styles += 'border-r ';
+    }
+    
+    return styles;
+  };
+  
+  // Handle hover styles
+  const getRowHoverClass = (isMobile: boolean) => {
+    return isMobile 
+      ? 'hover:bg-gray-100 dark:hover:bg-gray-700' 
+      : 'group-hover:bg-gray-50 dark:group-hover:bg-gray-700';
+  };
+  
+  // Handle status flags
+  const getFlagStyles = (flags: DogFlag[] = []) => {
+    let baseClass = '';
+    
+    // Check for in heat flag
     const inHeatFlag = flags.find(flag => flag.type === 'in_heat');
     if (inHeatFlag) {
-      classes += ' ring-2 ring-red-300 dark:ring-red-700';
+      baseClass = 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50';
     }
     
+    // Check for pregnant flag - note that type checks are now string comparisons
     const pregnantFlag = flags.find(flag => flag.type === 'pregnant');
     if (pregnantFlag) {
-      classes += ' ring-2 ring-purple-300 dark:ring-purple-700';
+      baseClass = 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/50';
     }
     
+    // Check for special attention flag
     const specialAttentionFlag = flags.find(flag => flag.type === 'special_attention');
     if (specialAttentionFlag) {
-      classes += ' ring-1 ring-blue-300 dark:ring-blue-700';
+      baseClass = 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800/50';
     }
     
-    return classes;
-  }, [category, hasPottyBreak, hasCareLogged, flags]);
-
-  // Extract flag statuses using find instead of some to avoid TypeScript errors
-  const isInHeat = flags.find(flag => flag.type === 'in_heat') !== undefined;
-  const isPregnant = flags.find(flag => flag.type === 'pregnant') !== undefined;
-  const hasIncompatibility = flags.find(flag => flag.type === 'incompatible') !== undefined;
-  const hasSpecialAttention = flags.find(flag => flag.type === 'special_attention') !== undefined;
+    // Check for incompatible dogs flag
+    const incompatibleFlag = flags.find(flag => flag.type === 'incompatible');
+    if (incompatibleFlag) {
+      baseClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50';
+    }
+    
+    return baseClass;
+  };
   
   return {
-    cellClassNames: getCellClassNames(),
-    isPottyCategory: category === 'pottybreaks',
-    isInHeat,
-    isPregnant,
-    hasIncompatibility,
-    hasSpecialAttention
+    getDayTextColor,
+    getDayBackgroundColor,
+    getBorderStyles,
+    getRowHoverClass,
+    getFlagStyles
   };
 };

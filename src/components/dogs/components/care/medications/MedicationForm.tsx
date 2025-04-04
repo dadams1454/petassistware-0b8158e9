@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
@@ -35,6 +36,7 @@ import {
   DosageUnitOptions, 
   DurationUnitOptions 
 } from './constants';
+import { MedicationInfo } from './types/medicationTypes';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Medication name is required' }),
@@ -55,33 +57,53 @@ interface MedicationFormProps {
   onSuccess: () => void;
   onCancel: () => void;
   initialData?: any;
+  medication?: MedicationInfo;
+  isViewMode?: boolean;
 }
 
 const MedicationForm: React.FC<MedicationFormProps> = ({ 
   dogId, 
   onSuccess, 
   onCancel,
-  initialData 
+  initialData,
+  medication,
+  isViewMode = false
 }) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Combine initialData and medication props
+  const combinedInitialData = medication || initialData;
+  
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: initialData?.name || '',
-      dosage: initialData?.dosage?.toString() || '',
-      dosage_unit: initialData?.dosage_unit || '',
-      frequency: initialData?.frequency || 'daily',
-      administration_route: initialData?.administration_route || '',
-      start_date: initialData?.start_date ? format(new Date(initialData.start_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-      end_date: initialData?.end_date ? format(new Date(initialData.end_date), 'yyyy-MM-dd') : '',
-      duration: initialData?.duration?.toString() || '',
-      duration_unit: initialData?.duration_unit || 'days',
-      preventative: initialData?.preventative || false,
-      notes: initialData?.notes || '',
+      name: combinedInitialData?.name || '',
+      dosage: combinedInitialData?.dosage?.toString() || '',
+      dosage_unit: combinedInitialData?.dosage_unit || '',
+      frequency: combinedInitialData?.frequency || 'daily',
+      administration_route: combinedInitialData?.administration_route || '',
+      start_date: combinedInitialData?.start_date ? format(new Date(combinedInitialData.start_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+      end_date: combinedInitialData?.end_date ? format(new Date(combinedInitialData.end_date), 'yyyy-MM-dd') : '',
+      duration: combinedInitialData?.duration?.toString() || '',
+      duration_unit: combinedInitialData?.duration_unit || 'days',
+      preventative: combinedInitialData?.preventative || combinedInitialData?.isPreventative || false,
+      notes: combinedInitialData?.notes || '',
     }
   });
+
+  // Make the form read-only in view mode
+  useEffect(() => {
+    if (isViewMode) {
+      Object.keys(form.getValues()).forEach(key => {
+        form.setValue(key as any, form.getValues(key as any), {
+          shouldValidate: false,
+          shouldDirty: false,
+          shouldTouch: false
+        });
+      });
+    }
+  }, [form, isViewMode]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
@@ -113,6 +135,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
             end_date: values.end_date || null,
             dosage: parseFloat(values.dosage || '0'),
             dosage_unit: values.dosage_unit,
+            administration_route: values.administration_route
           }
         });
       
@@ -146,7 +169,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
             <FormItem>
               <FormLabel>Medication Name</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} disabled={isViewMode} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -161,7 +184,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <FormItem>
                 <FormLabel>Dosage</FormLabel>
                 <FormControl>
-                  <Input {...field} type="number" step="0.01" min="0" />
+                  <Input {...field} type="number" step="0.01" min="0" disabled={isViewMode} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -177,6 +200,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  disabled={isViewMode}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -206,6 +230,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
+                disabled={isViewMode}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -234,6 +259,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
+                disabled={isViewMode}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -261,7 +287,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <FormItem>
                 <FormLabel>Start Date</FormLabel>
                 <FormControl>
-                  <Input {...field} type="date" />
+                  <Input {...field} type="date" disabled={isViewMode} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -275,7 +301,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <FormItem>
                 <FormLabel>End Date (Optional)</FormLabel>
                 <FormControl>
-                  <Input {...field} type="date" />
+                  <Input {...field} type="date" disabled={isViewMode} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -291,7 +317,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
               <FormItem>
                 <FormLabel>Duration (Optional)</FormLabel>
                 <FormControl>
-                  <Input {...field} type="number" min="1" />
+                  <Input {...field} type="number" min="1" disabled={isViewMode} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -307,6 +333,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  disabled={isViewMode}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -336,6 +363,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                 <Checkbox
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  disabled={isViewMode}
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
@@ -359,6 +387,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
                   placeholder="Add any additional notes about this medication"
                   className="resize-none"
                   {...field}
+                  disabled={isViewMode}
                 />
               </FormControl>
               <FormMessage />
@@ -368,11 +397,13 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
         
         <div className="flex justify-end space-x-2 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {isViewMode ? 'Close' : 'Cancel'}
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Medication'}
-          </Button>
+          {!isViewMode && (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Medication'}
+            </Button>
+          )}
         </div>
       </form>
     </Form>

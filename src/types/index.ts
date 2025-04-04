@@ -3,7 +3,7 @@
 // This file functions as a central hub for importing types
 
 // Dog-related types
-export type { Dog, DogProfile, HealthRecord, Vaccination, WeightRecord } from './dog';
+export type { Dog, DogProfile, HealthRecord, Vaccination } from './dog';
 export { DogGender, HealthRecordTypeEnum, DocumentType } from './dog';
 
 // Reproductive cycle types
@@ -31,7 +31,8 @@ export type {
   HealthIndicator,
   HealthAlert,
   HealthCertificate,
-  MedicationAdministration
+  MedicationAdministration,
+  WeightRecord
 } from './health';
 export { 
   AppetiteEnum, 
@@ -42,7 +43,6 @@ export {
   stringToHealthRecordType,
   MedicationStatusEnum
 } from './health';
-export { WeightUnit } from './health';
 
 // Litter and puppy types
 export { Dog as SimpleDog } from './litter';
@@ -68,10 +68,7 @@ export type {
   SocializationReactionOption,
   SocializationProgress,
   PuppyCareLog,
-  SocializationExperience,
-  WeightRecord as PuppyWeightRecord,
-  VaccinationScheduleItem as PuppyVaccinationSchedule,
-  VaccinationRecord,
+  SocializationExperience
 } from './puppyTracking';
 
 // Daily care types
@@ -96,5 +93,5 @@ export * from './user';
 // Socialization types
 export * from './socialization';
 
-// Utility type for form values
-export type WeightUnitValue = 'lb' | 'kg' | 'g' | 'oz' | 'lbs';
+// Utility type for form values - kept for backward compatibility but should use WeightUnit instead
+export type WeightUnitValue = WeightUnit | 'lbs';
