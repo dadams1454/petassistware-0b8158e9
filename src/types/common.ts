@@ -1,51 +1,58 @@
-// Common types used across the application
 
-// Weight unit type
+// Common type definitions used across multiple modules
+
+// Define weight unit type
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
-// Legacy type alias for backward compatibility
-export type WeightUnitWithLegacy = WeightUnit | 'lbs';
-
-// Weight unit metadata (name, symbol, conversion ratio)
-export interface WeightUnitInfo {
-  code: WeightUnit;
-  name: string;
-  symbol: string;
-  toGrams: number; // Conversion ratio to grams
-}
-
-// Standard weight units with metadata
-export const weightUnits: WeightUnitInfo[] = [
-  { code: 'oz', name: 'Ounces', symbol: 'oz', toGrams: 28.35 },
-  { code: 'g', name: 'Grams', symbol: 'g', toGrams: 1 },
-  { code: 'lb', name: 'Pounds', symbol: 'lb', toGrams: 453.59 },
-  { code: 'kg', name: 'Kilograms', symbol: 'kg', toGrams: 1000 }
+// Weight units for selects and conversion
+export const weightUnits = [
+  { code: 'lb', name: 'Pounds (lb)' },
+  { code: 'kg', name: 'Kilograms (kg)' },
+  { code: 'oz', name: 'Ounces (oz)' },
+  { code: 'g', name: 'Grams (g)' }
 ];
 
-// Standardize weight unit for consistency (handle legacy 'lbs')
-export const standardizeWeightUnit = (unit?: WeightUnitWithLegacy): WeightUnit => {
-  if (!unit) return 'lb';
-  if (unit === 'lbs') return 'lb';
-  return unit;
-};
+// Common status types shared across modules
+export type Status = 'active' | 'inactive' | 'pending' | 'completed' | 'archived';
 
-// Other common types can be added here
+// Common user role type
+export type UserRole = 'admin' | 'staff' | 'breeder' | 'vet' | 'viewer';
 
-// Date format options
-export interface DateFormatOptions {
-  includeTime?: boolean;
-  includeSeconds?: boolean;
-  use12Hour?: boolean;
-  dateOnly?: boolean;
+// Common interface for audit fields
+export interface AuditFields {
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string;
+  updated_by?: string;
 }
 
-// Status types
-export type EntityStatus = 'active' | 'inactive' | 'archived' | 'deleted';
-
-// Common pagination parameters
+// Common interface for pagination
 export interface PaginationParams {
   page: number;
   pageSize: number;
-  totalItems?: number;
-  totalPages?: number;
 }
+
+// Common interface for sorting
+export interface SortParams {
+  field: string;
+  direction: 'asc' | 'desc';
+}
+
+// Common interface for filtering
+export interface FilterParams {
+  field: string;
+  operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains';
+  value: string | number | boolean | null;
+}
+
+// Common response for paginated data
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+// Re-export for legacy code compatibility
+export type WeightUnitWithLegacy = WeightUnit | string;

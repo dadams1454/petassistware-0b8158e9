@@ -108,6 +108,7 @@ export interface SocializationCategory {
   description: string;
   order: number;
   color?: string; // Adding for compatibility with existing code
+  examples?: string[]; // Adding for compatibility with existing code
 }
 
 export interface SocializationCategoryOption {
@@ -116,6 +117,9 @@ export interface SocializationCategoryOption {
   name: string;
   description?: string;
   color?: string; // Adding for compatibility with existing code
+  examples?: string[]; // Adding for compatibility with existing code
+  label?: string; // Adding for compatibility with existing code
+  value?: string; // Adding for compatibility with existing code
 }
 
 export interface SocializationReactionOption {
@@ -126,6 +130,7 @@ export interface SocializationReactionOption {
   color: string;
   emoji: string;
   value?: string; // Adding for compatibility with existing code
+  label?: string; // Adding for compatibility with existing code
 }
 
 export interface SocializationProgress {
@@ -215,6 +220,19 @@ export interface PuppyMilestone {
   notes?: string;
   created_at?: string;
   is_completed?: boolean;
+  category?: string; // Adding for compatibility
+  description?: string; // Adding for compatibility
+  expected_age_days?: number; // Adding for compatibility
+  completion_date?: string; // Adding for compatibility
+}
+
+// Define SocializationReaction interface for compatibility
+export interface SocializationReaction {
+  id: string;
+  name: string;
+  color: string;
+  emoji?: string;
+  value: string;
 }
 
 // Re-export WeightUnit to ensure it's available to importers

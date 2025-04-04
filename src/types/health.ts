@@ -39,7 +39,8 @@ export enum HealthRecordTypeEnum {
   Preventive = 'preventive',
   Observation = 'observation',
   Deworming = 'deworming',
-  Grooming = 'grooming'
+  Grooming = 'grooming',
+  Procedure = 'procedure'
 }
 
 // Health record interface
@@ -119,6 +120,8 @@ export function stringToHealthRecordType(value: string): HealthRecordTypeEnum {
       return HealthRecordTypeEnum.Deworming;
     case 'grooming':
       return HealthRecordTypeEnum.Grooming;
+    case 'procedure':
+      return HealthRecordTypeEnum.Procedure;
     default:
       return HealthRecordTypeEnum.Other;
   }
@@ -327,4 +330,3 @@ export type { WeightUnit };
 export const AppetiteEnum = AppetiteLevelEnum;
 export const EnergyEnum = EnergyLevelEnum;
 export const StoolEnum = StoolConsistencyEnum;
-

@@ -57,7 +57,7 @@ const WeightTable: React.FC<WeightTableProps> = ({
                   {record.age_days || '-'}
                 </TableCell>
                 <TableCell>
-                  {record.weight} {record.weight_unit || 'lb'}
+                  {record.weight} {record.weight_unit}
                 </TableCell>
                 <TableCell>
                   {percentChange !== null ? (
