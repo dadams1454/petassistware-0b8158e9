@@ -25,9 +25,8 @@ export type {
 } from './health';
 export { 
   AppetiteEnum, 
-  EnergyLevelEnum, 
+  EnergyEnum, 
   StoolConsistencyEnum,
-  stringToHealthRecordType,
   mapToHealthRecord,
   mapToWeightRecord
 } from './health';
@@ -35,7 +34,8 @@ export {
 // Breeding and reproductive types
 export { 
   ReproductiveStatus, 
-  normalizeBreedingRecord
+  normalizeBreedingRecord,
+  HeatIntensity
 } from './reproductive';
 export type { 
   BreedingRecord, 
@@ -44,7 +44,6 @@ export type {
   ReproductiveCycleData,
   BreedingChecklistItem,
   BreedingPrepFormData,
-  HeatIntensity,
   HeatStage
 } from './reproductive';
 
@@ -66,7 +65,6 @@ export type {
 export type { 
   PuppyAgeGroupData, 
   PuppyManagementStats,
-  SocializationRecord,
   SocializationReactionType,
   SocializationCategory,
   SocializationCategoryOption,
@@ -74,8 +72,8 @@ export type {
   SocializationProgress,
   PuppyCareLog,
   SocializationExperience,
-  WeightRecord as PuppyWeightRecord,
-  VaccinationSchedule as PuppyVaccinationSchedule,
+  PuppyWeightRecord,
+  VaccinationScheduleItem as PuppyVaccinationSchedule,
   VaccinationRecord,
 } from './puppyTracking';
 
