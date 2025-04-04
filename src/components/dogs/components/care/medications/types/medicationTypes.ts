@@ -1,14 +1,15 @@
 
-import { MedicationStatus, MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
+import { MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 
 export interface MedicationInfo {
   id: string;
   name: string;
   dosage?: string | number;
+  dosage_unit?: string;
   frequency: string;
   lastAdministered: string;
   nextDue?: string;
-  status?: MedicationStatusEnum | MedicationStatus | MedicationStatusResult;
+  status?: MedicationStatusEnum | string | MedicationStatusResult;
   notes?: string;
   isPreventative?: boolean;
   startDate?: string;

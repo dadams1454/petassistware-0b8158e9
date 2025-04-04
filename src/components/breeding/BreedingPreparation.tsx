@@ -53,6 +53,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         const dogWithRequiredProps: ExtendedDog = {
           ...dogData,
           gender: dogData.gender as DogGender || DogGender.Female, // Ensure gender is typed correctly
+          created_at: dogData.created_at || new Date().toISOString(),
           status: dogData.status || 'active' // Add default status property if not present
         };
         
@@ -73,6 +74,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         const malesWithRequiredProps: ExtendedDog[] = malesData.map(male => ({
           ...male,
           gender: male.gender as DogGender || DogGender.Male,
+          created_at: male.created_at || new Date().toISOString(),
           status: male.status || 'active' // Add default status property if not present
         }));
         

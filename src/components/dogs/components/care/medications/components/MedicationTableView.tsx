@@ -61,7 +61,7 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
                 {medication.name}
               </TableCell>
               <TableCell>
-                {medication.dosage ? `${medication.dosage} ${medication.dosage_unit}` : 'N/A'}
+                {medication.dosage ? `${medication.dosage} ${medication.dosage_unit || ''}` : 'N/A'}
               </TableCell>
               <TableCell>{medication.frequency}</TableCell>
               <TableCell>

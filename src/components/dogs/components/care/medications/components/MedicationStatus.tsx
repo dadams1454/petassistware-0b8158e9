@@ -2,11 +2,11 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatus as MedicationStatusType, MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
+import { MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {
-  status: MedicationStatusResult | MedicationStatusType | MedicationStatusEnum | string | null;
+  status: MedicationStatusResult | MedicationStatusEnum | string | null;
   nextDue?: string | Date | null;
   showIcon?: boolean;
   showLabel?: boolean;

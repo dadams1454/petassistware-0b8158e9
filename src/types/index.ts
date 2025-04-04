@@ -10,7 +10,8 @@ export { DogGender, DogStatus, DocumentType } from './dog';
 export type { 
   HealthRecord, 
   Medication, 
-  MedicationStatus, 
+  MedicationStatusEnum, // Correctly export as a type
+  MedicationStatus,     // Include the type alias
   MedicationStatusResult,
   VaccinationSchedule as HealthVaccinationSchedule,
   GrowthStats,
@@ -28,8 +29,7 @@ export {
   StoolConsistencyEnum,
   mapToHealthRecord,
   mapToWeightRecord,
-  stringToHealthRecordType,
-  MedicationStatusEnum,
+  MedicationStatusEnum as MedicationStatusEnumValue, // Export the enum values separately
   AppetiteLevelEnum,
   EnergyLevelEnum
 } from './health';

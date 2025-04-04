@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
-import { Syringe, Stethoscope, Pill, Scissors, FileText } from 'lucide-react';
+import { HealthRecordTypeEnum } from '@/types/health';
+import { Syringe, Stethoscope, Pill, Scissors, FileText, Eye } from 'lucide-react';
 
 // Define record type options with icons and labels
 export const recordTypeOptions = [
@@ -30,6 +30,12 @@ export const recordTypeOptions = [
     description: 'Surgical procedures'
   },
   {
+    value: HealthRecordTypeEnum.OBSERVATION,
+    label: 'Observation',
+    icon: <Eye className="h-4 w-4 mr-2" />,
+    description: 'General health observations'
+  },
+  {
     value: HealthRecordTypeEnum.OTHER,
     label: 'Other',
     icon: <FileText className="h-4 w-4 mr-2" />,
@@ -39,28 +45,38 @@ export const recordTypeOptions = [
 
 // Helper function to get record type label
 export const getRecordTypeLabel = (type: string | HealthRecordTypeEnum): string => {
-  const typeEnum = typeof type === 'string' ? stringToHealthRecordType(type) : type;
-  const option = recordTypeOptions.find(option => option.value === typeEnum);
+  // Normalize the record type to uppercase for comparison
+  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordTypeEnum : type;
+  const option = recordTypeOptions.find(option => option.value === normalizedType);
   return option ? option.label : 'Unknown';
 };
 
 // Helper function to get record type icon
-export const getRecordTypeIcon = (type: string | HealthRecordTypeEnum): React.ReactNode => {
-  const typeEnum = typeof type === 'string' ? stringToHealthRecordType(type) : type;
-  const option = recordTypeOptions.find(option => option.value === typeEnum);
-  return option ? option.icon : <FileText className="h-4 w-4 mr-2" />;
+export const getRecordTypeIcon = (type: string | HealthRecordTypeEnum): React.ComponentType => {
+  // Normalize the record type to uppercase for comparison
+  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordTypeEnum : type;
+  const option = recordTypeOptions.find(option => option.value === normalizedType);
+  
+  if (option) {
+    // Extract icon component from JSX element
+    const iconElement = option.icon as React.ReactElement;
+    return iconElement.type as React.ComponentType;
+  }
+  
+  return FileText; // Default fallback
 };
 
 // Helper function to get health record icon
-export const getHealthRecordIcon = (type: string | HealthRecordTypeEnum): React.ReactNode => {
+export const getHealthRecordIcon = (type: string | HealthRecordTypeEnum): React.ComponentType => {
   return getRecordTypeIcon(type);
 };
 
 // Helper function to get health record color class
 export const getHealthRecordColor = (type: string | HealthRecordTypeEnum): string => {
-  const typeEnum = typeof type === 'string' ? stringToHealthRecordType(type) : type;
+  // Normalize the record type to uppercase for comparison
+  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordTypeEnum : type;
   
-  switch (typeEnum) {
+  switch (normalizedType) {
     case HealthRecordTypeEnum.VACCINATION:
       return 'text-blue-500';
     case HealthRecordTypeEnum.MEDICATION:

@@ -3,8 +3,8 @@ import React from 'react';
 import { format } from 'date-fns';
 import { FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { HealthRecord, HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
-import { getHealthRecordIcon } from '@/components/dogs/components/utils/healthRecordUtils';
+import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { getHealthRecordIcon } from '../utils/healthRecordUtils';
 
 interface HealthRecordCardProps {
   record: HealthRecord;
@@ -13,7 +13,10 @@ interface HealthRecordCardProps {
 
 const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) => {
   const getIcon = (recordType: string | HealthRecordTypeEnum) => {
-    const type = typeof recordType === 'string' ? stringToHealthRecordType(recordType) : recordType;
+    const type = typeof recordType === 'string' 
+      ? recordType.toUpperCase() as HealthRecordTypeEnum
+      : recordType;
+    
     const Icon = getHealthRecordIcon(type);
     
     let iconColor = 'text-gray-500';

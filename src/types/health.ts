@@ -1,4 +1,3 @@
-
 import { Json } from '../integrations/supabase/types';
 import { WeightUnit } from './common';
 
@@ -80,11 +79,22 @@ export enum StoolConsistencyEnum {
   SOFT = 'soft',
   LOOSE = 'loose',
   WATERY = 'watery',
-  HARD = 'hard'
+  HARD = 'hard',
+  MUCOUSY = 'mucousy',
+  BLOODY = 'bloody'
 }
 
 export type AppetiteEnum = AppetiteLevelEnum;
 export type EnergyEnum = EnergyLevelEnum;
+
+// Define type for MedicationStatus for compatibility
+export type MedicationStatus = MedicationStatusEnum;
+export type MedicationStatusResult = {
+  status: MedicationStatusEnum;
+  daysUntilDue?: number;
+  daysOverdue?: number;
+  nextDue?: string | Date;
+};
 
 // Health record interface
 export interface HealthRecord {
@@ -137,12 +147,12 @@ export interface HealthRecord {
   recovery_notes?: string;
 }
 
-// Weight record interface
+// Update weight record interface
 export interface WeightRecord {
   id?: string;
   dog_id: string;
   weight: number;
-  weight_unit: string;
+  weight_unit: string; // Using string instead of WeightUnit for DB compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -181,14 +191,6 @@ export interface MedicationAdministration {
   administered_by?: string;
   notes?: string;
   created_at: string;
-}
-
-// Medication status results
-export interface MedicationStatusResult {
-  status: MedicationStatusEnum;
-  daysUntilDue?: number;
-  daysOverdue?: number;
-  nextDue?: string | Date;
 }
 
 // Health indicator interface
