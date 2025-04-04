@@ -19,7 +19,7 @@ export interface PuppyWithAge {
   status?: string;
   photo_url?: string;
   microchip_number?: string;
-  birth_weight?: number;
+  birth_weight?: number | string;
   birth_weight_unit?: WeightUnit;
   current_weight?: number;
   current_weight_unit?: WeightUnit;
@@ -33,6 +33,8 @@ export interface PuppyWithAge {
   created_at?: string;
   updated_at?: string;
   is_test_data?: boolean;
+  birth_order?: number;
+  developmentalStage?: string;
 }
 
 // Age group data
@@ -109,8 +111,8 @@ export interface SocializationCategory {
   name: string;
   description: string;
   order: number;
-  color?: string; // Adding for compatibility with existing code
-  examples?: string[]; // Adding for compatibility with existing code
+  color?: string;
+  examples?: string[];
 }
 
 export interface SocializationCategoryOption {
@@ -118,10 +120,10 @@ export interface SocializationCategoryOption {
   categoryId: string;
   name: string;
   description?: string;
-  color?: string; // Adding for compatibility with existing code
-  examples?: string[]; // Adding for compatibility with existing code
-  label?: string; // Adding for compatibility with existing code
-  value?: string; // Adding for compatibility with existing code
+  color?: string;
+  examples?: string[];
+  label?: string;
+  value?: string;
 }
 
 export interface SocializationReactionOption {
@@ -131,8 +133,8 @@ export interface SocializationReactionOption {
   description?: string;
   color: string;
   emoji: string;
-  value?: string; // Adding for compatibility with existing code
-  label?: string; // Adding for compatibility with existing code
+  value?: string;
+  label?: string;
 }
 
 export interface SocializationProgress {
@@ -181,6 +183,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -194,9 +197,11 @@ export interface VaccinationSchedule {
   id: string;
   puppy_id: string;
   vaccine_name: string;
+  vaccination_type?: string;
   due_date: string;
   administered: boolean;
   administered_date?: string;
+  scheduled_date?: string;
   notes?: string;
   created_at?: string;
 }
@@ -235,4 +240,48 @@ export interface SocializationReaction {
   color: string;
   emoji?: string;
   value: string;
+}
+
+// Health certificate
+export interface HealthCertificate {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  certificate_type: string;
+  issue_date: string;
+  expiry_date?: string;
+  issuing_authority: string;
+  issuer?: string; // For backward compatibility
+  file_url?: string;
+  notes?: string;
+  created_at: string;
+}
+
+// Medication
+export interface Medication {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  medication_name: string;
+  dosage: number;
+  dosage_unit: string;
+  frequency: string;
+  administration_route: string;
+  start_date: string;
+  end_date?: string;
+  is_active?: boolean;
+  last_administered?: string;
+  notes?: string;
+  created_at: string;
+}
+
+// Medication administration
+export interface MedicationAdministration {
+  id: string;
+  medication_id: string;
+  administered_date: string;
+  administered_at?: string; // For backward compatibility
+  administered_by: string;
+  notes?: string;
+  created_at: string;
 }

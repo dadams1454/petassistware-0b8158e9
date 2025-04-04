@@ -45,7 +45,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
           <div className="text-sm">
             <span className="text-muted-foreground">Age:</span>{' '}
             <span className="font-medium">
-              {puppy.ageInWeeks} weeks ({puppy.ageInDays} days)
+              {puppy.ageInWeeks || 0} weeks ({puppy.ageInDays || 0} days)
             </span>
           </div>
           

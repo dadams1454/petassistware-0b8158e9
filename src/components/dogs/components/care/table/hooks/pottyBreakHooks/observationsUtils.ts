@@ -1,42 +1,50 @@
 
-import { ObservationRecord } from './observationTypes';
+import { format } from 'date-fns';
+import { ObservationRecord, ObservationType } from './observationTypes';
 
-export const isObservationValid = (timestamp: string): boolean => {
-  try {
-    const date = new Date(timestamp);
-    const now = new Date();
-    // Valid if within the last 7 days
-    return now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000;
-  } catch (e) {
-    return false;
-  }
-};
+// Check if observation is still valid (within 24 hours)
+export function isObservationValid(timestamp: string | Date): boolean {
+  const observationDate = new Date(timestamp);
+  const now = new Date();
+  const hourDifference = (now.getTime() - observationDate.getTime()) / (1000 * 60 * 60);
+  return hourDifference <= 24; // Valid for 24 hours
+}
 
-export const getTimeSlotFromTimestamp = (timestamp: string): string => {
+// Convert timestamp to time slot format
+export function getTimeSlotFromTimestamp(timestamp: string): string {
   try {
     const date = new Date(timestamp);
     const hours = date.getHours();
-    return `${hours % 12 || 12}:00 ${hours >= 12 ? 'PM' : 'AM'}`;
-  } catch (e) {
-    return '';
+    let slot = '';
+    
+    if (hours >= 5 && hours < 8) {
+      slot = 'morning';
+    } else if (hours >= 8 && hours < 12) {
+      slot = 'morning';
+    } else if (hours >= 12 && hours < 17) {
+      slot = 'afternoon';
+    } else {
+      slot = 'evening';
+    }
+    
+    return slot;
+  } catch (error) {
+    console.error('Error parsing timestamp for time slot:', error);
+    return 'morning'; // Default fallback
   }
-};
+}
 
-// Updated to use a more generic type since CareLog is not available
-export const convertCareLogToObservation = (log: any): ObservationRecord => {
-  const timeSlot = getTimeSlotFromTimestamp(log.timestamp);
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
-  
+// Convert care log to observation record
+export function convertCareLogToObservation(careLog: any): ObservationRecord {
   return {
-    id: log.id,
-    dog_id: log.dog_id,
-    created_at: log.created_at,
-    observation: log.notes || log.task_name,
-    observation_type: (log.task_name as any) || 'other',
-    created_by: log.created_by,
-    expires_at: expiresAt,
-    timeSlot,
-    category: log.category
+    id: careLog.id,
+    dog_id: careLog.dog_id,
+    observation: careLog.notes || `${careLog.task_name} observed`,
+    observation_type: (careLog.task_name as ObservationType) || 'other',
+    created_at: careLog.timestamp || careLog.created_at,
+    created_by: careLog.created_by,
+    timeSlot: getTimeSlotFromTimestamp(careLog.timestamp || careLog.created_at),
+    category: careLog.category || 'observation',
+    expires_at: new Date(new Date(careLog.timestamp || careLog.created_at).getTime() + 24 * 60 * 60 * 1000).toISOString(),
   };
-};
+}

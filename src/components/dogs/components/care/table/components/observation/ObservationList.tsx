@@ -33,7 +33,7 @@ const ObservationList: React.FC<ObservationListProps> = ({
   
   if (visibleObservations.length === 0) return null;
   
-  const getObservationIcon = (type: 'accident' | 'heat' | 'behavior' | 'other') => {
+  const getObservationIcon = (type: ObservationType) => {
     switch (type) {
       case 'accident':
         return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
@@ -41,6 +41,8 @@ const ObservationList: React.FC<ObservationListProps> = ({
         return <Heart className="h-4 w-4 text-red-500 flex-shrink-0" />;
       case 'behavior':
         return <Activity className="h-4 w-4 text-blue-500 flex-shrink-0" />;
+      case 'health':
+        return <Activity className="h-4 w-4 text-green-500 flex-shrink-0" />;
       default:
         return <MessageCircle className="h-4 w-4 text-gray-500 flex-shrink-0" />;
     }
@@ -87,7 +89,8 @@ const ObservationList: React.FC<ObservationListProps> = ({
                 "flex items-start gap-2 p-3 rounded-lg bg-muted/50 relative group",
                 obs.observation_type === 'accident' && "bg-amber-50 dark:bg-amber-950/20",
                 obs.observation_type === 'heat' && "bg-red-50 dark:bg-red-950/20",
-                obs.observation_type === 'behavior' && "bg-blue-50 dark:bg-blue-950/20"
+                obs.observation_type === 'behavior' && "bg-blue-50 dark:bg-blue-950/20",
+                obs.observation_type === 'health' && "bg-green-50 dark:bg-green-950/20"
               )}
             >
               {getObservationIcon(obs.observation_type)}

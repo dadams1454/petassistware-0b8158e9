@@ -3,13 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays } from 'date-fns';
-import { HeatCycle, HeatIntensity } from '@/types';
+import { HeatCycle, HeatIntensityType } from '@/types';
 
 // Helper to ensure intensity is a valid HeatIntensity value
-const validateHeatIntensity = (intensity: string | null): HeatIntensity => {
-  const validIntensities: HeatIntensity[] = ['mild', 'moderate', 'strong', 'medium', 'low', 'high', 'peak', 'unknown'];
-  if (intensity && validIntensities.includes(intensity as HeatIntensity)) {
-    return intensity as HeatIntensity;
+const validateHeatIntensity = (intensity: string | null): HeatIntensityType => {
+  const validIntensities: HeatIntensityType[] = ['mild', 'moderate', 'strong', 'medium', 'low', 'high', 'peak', 'unknown'];
+  if (intensity && validIntensities.includes(intensity as HeatIntensityType)) {
+    return intensity as HeatIntensityType;
   }
   return 'moderate'; // Default fallback
 };

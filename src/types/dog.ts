@@ -1,7 +1,7 @@
 
 // Import WeightUnit from common
 import { WeightUnit } from './common';
-import { HeatIntensity } from './reproductive';
+import { HeatIntensityType } from './reproductive';
 
 export enum DogGender {
   Male = 'male',
@@ -110,6 +110,7 @@ export interface WeightRecord {
   dog_id: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -193,7 +194,7 @@ export interface HeatCycle {
   end_date?: string;
   cycle_number?: number;
   cycle_length?: number;
-  intensity: HeatIntensity;
+  intensity: HeatIntensityType;
   symptoms?: string[];
   fertility_indicators?: any;
   notes?: string;
