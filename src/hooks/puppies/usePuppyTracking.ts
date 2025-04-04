@@ -35,7 +35,7 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     }
   } = usePuppyStats(processedPuppies) || {};
 
-  // Set up empty byAgeGroup data structure
+  // Set up puppy age group data structure
   const byAgeGroup: PuppyAgeGroupData = {
     newborn: [],
     twoWeek: [],
@@ -54,6 +54,9 @@ export const usePuppyTracking = (): PuppyManagementStats => {
       (byAgeGroup as any)[key] = puppiesByAgeGroup[key] || [];
     }
   });
+  
+  // Fill in the "all" category
+  byAgeGroup.all = processedPuppies;
 
   // Construct PuppyManagementStats object
   return {

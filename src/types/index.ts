@@ -3,8 +3,37 @@
 // This file functions as a central hub for importing types
 
 // Dog-related types
-export type { Dog, DogProfile, HealthRecord, Vaccination } from './dog';
-export { DogGender, DogStatus, HealthRecordTypeEnum, DocumentType } from './dog';
+export type { Dog, DogProfile, Vaccination } from './dog';
+export { DogGender, DogStatus, DocumentType } from './dog';
+
+// Health-related types
+export type { 
+  HealthRecord, 
+  Medication, 
+  MedicationStatus, 
+  MedicationStatusResult,
+  VaccinationSchedule as HealthVaccinationSchedule,
+  GrowthStats,
+  HealthIndicator,
+  HealthAlert,
+  HealthCertificate,
+  MedicationAdministration,
+  WeightRecord,
+  WeightUnit
+} from './health';
+
+export { 
+  HealthRecordTypeEnum,
+  AppetiteEnum, 
+  EnergyEnum, 
+  StoolConsistencyEnum,
+  mapToHealthRecord,
+  mapToWeightRecord,
+  stringToHealthRecordType,
+  MedicationStatusEnum,
+  AppetiteLevelEnum,
+  EnergyLevelEnum
+} from './health';
 
 // Reproductive cycle types
 export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensityType, HeatStage } from './reproductive';
@@ -17,34 +46,9 @@ export type {
 } from './reproductive';
 
 // Common types
-export type { Gender, WeightUnit, WeightUnitWithLegacy } from './common';
+export type { Gender, WeightUnitWithLegacy } from './common';
 export { standardizeWeightUnit, weightUnits } from './common';
-
-// Health-related types
-export type { 
-  Medication, 
-  MedicationStatus, 
-  MedicationStatusResult,
-  VaccinationSchedule as HealthVaccinationSchedule,
-  GrowthStats,
-  HealthIndicator,
-  HealthAlert,
-  HealthCertificate,
-  MedicationAdministration,
-  WeightRecord
-} from './health';
-
-export { 
-  AppetiteEnum, 
-  EnergyEnum, 
-  StoolConsistencyEnum,
-  mapToHealthRecord,
-  mapToWeightRecord,
-  stringToHealthRecordType,
-  MedicationStatusEnum,
-  AppetiteLevelEnum,
-  EnergyLevelEnum
-} from './health';
+export { type WeightUnit } from './common';  // Explicitly export WeightUnit using the 'export type' syntax
 
 // Litter and puppy types
 export { type Dog as SimpleDog } from './litter';

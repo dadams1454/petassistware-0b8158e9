@@ -26,4 +26,9 @@ export const standardizeWeightUnit = (unit?: string): WeightUnit => {
 };
 
 // Available weight units for use in forms
-export const weightUnits: WeightUnit[] = ['kg', 'lb', 'g', 'oz'];
+export const weightUnits = [
+  { code: 'kg', name: 'Kilograms' },
+  { code: 'lb', name: 'Pounds' },
+  { code: 'g', name: 'Grams' },
+  { code: 'oz', name: 'Ounces' }
+];

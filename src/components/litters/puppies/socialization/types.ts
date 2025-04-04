@@ -9,7 +9,7 @@ export interface SocializationTrackerProps {
 export interface SocializationRecord {
   id: string;
   puppy_id: string;
-  category: SocializationCategory;
+  category: string;
   experience: string;
   experience_date: string;
   reaction?: SocializationReactionType;
@@ -23,6 +23,7 @@ export const SOCIALIZATION_CATEGORIES: SocializationCategoryOption[] = [
     name: 'People Interactions',
     description: 'Interactions with different types of people',
     color: 'blue',
+    targetCount: 5,
     examples: ['Adults', 'Children', 'Elderly'],
     categoryId: 'people',
     value: 'people',
@@ -34,6 +35,7 @@ export const SOCIALIZATION_CATEGORIES: SocializationCategoryOption[] = [
     name: 'Animal Interactions',
     description: 'Interactions with other animals',
     color: 'green',
+    targetCount: 5,
     examples: ['Dogs', 'Cats', 'Farm animals'],
     categoryId: 'animals',
     value: 'animals',
@@ -45,6 +47,7 @@ export const SOCIALIZATION_CATEGORIES: SocializationCategoryOption[] = [
     name: 'New Environments',
     description: 'Exposure to different environments',
     color: 'purple',
+    targetCount: 5,
     examples: ['Parks', 'Urban areas', 'Stores'],
     categoryId: 'environments',
     value: 'environments',
@@ -56,6 +59,7 @@ export const SOCIALIZATION_CATEGORIES: SocializationCategoryOption[] = [
     name: 'Sounds & Noises',
     description: 'Exposure to different sounds',
     color: 'yellow',
+    targetCount: 5,
     examples: ['Thunder', 'Vacuums', 'Sirens'],
     categoryId: 'sounds',
     value: 'sounds',
@@ -67,6 +71,7 @@ export const SOCIALIZATION_CATEGORIES: SocializationCategoryOption[] = [
     name: 'Different Surfaces',
     description: 'Walking on various surfaces',
     color: 'orange',
+    targetCount: 5,
     examples: ['Grass', 'Tile', 'Carpet'],
     categoryId: 'surfaces',
     value: 'surfaces',
@@ -78,6 +83,7 @@ export const SOCIALIZATION_CATEGORIES: SocializationCategoryOption[] = [
     name: 'Handling & Grooming',
     description: 'Getting used to being handled',
     color: 'pink',
+    targetCount: 5,
     examples: ['Nail trimming', 'Brushing', 'Bathing'],
     categoryId: 'handling',
     value: 'handling',
@@ -89,6 +95,7 @@ export const SOCIALIZATION_CATEGORIES: SocializationCategoryOption[] = [
     name: 'Objects & Toys',
     description: 'Exposure to different objects',
     color: 'red',
+    targetCount: 5,
     examples: ['Umbrellas', 'Bicycles', 'Toys'],
     categoryId: 'objects',
     value: 'objects',
@@ -101,10 +108,10 @@ export const REACTION_OPTIONS: SocializationReactionOption[] = [
   { 
     id: 'very_positive',
     name: 'Very Positive',
-    value: 'positive',
+    value: 'very_positive',
     label: 'Very Positive',
     color: 'green',
-    type: 'positive',
+    type: 'very_positive',
     emoji: '😃'
   },
   { 
@@ -146,10 +153,10 @@ export const REACTION_OPTIONS: SocializationReactionOption[] = [
   { 
     id: 'very_fearful',
     name: 'Very Fearful',
-    value: 'fearful',
+    value: 'very_fearful',
     label: 'Very Fearful',
     color: 'red',
-    type: 'fearful',
+    type: 'very_fearful',
     emoji: '😱'
   },
 ];

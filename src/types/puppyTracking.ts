@@ -1,29 +1,24 @@
 
 import { Puppy } from './litter';
+import { WeightUnit } from './common';
 
-// Make sure to properly export PuppyWithAge
+// Extend Puppy with age information
 export interface PuppyWithAge extends Puppy {
   ageInDays?: number;
   age_days?: number;
   ageInWeeks?: number;
   age_weeks?: number;
   age?: number;
+  developmentalStage?: string;
+  weightHistory?: WeightRecord[];
+  litter?: any;
+  currentWeight?: number;
+  current_weight?: string;
+  current_weight_unit?: string;
+  weight_unit?: string;
 }
 
 // Define age groups for puppies
-export interface PuppyAgeGroupData {
-  newborn: PuppyWithAge[];
-  twoWeek: PuppyWithAge[];
-  fourWeek: PuppyWithAge[];
-  sixWeek: PuppyWithAge[];
-  eightWeek: PuppyWithAge[];
-  tenWeek: PuppyWithAge[];
-  twelveWeek: PuppyWithAge[];
-  older: PuppyWithAge[];
-  all: PuppyWithAge[];
-}
-
-// Define puppy age group type
 export interface PuppyAgeGroup {
   id: string;
   name: string;
@@ -38,6 +33,19 @@ export interface PuppyAgeGroup {
   unit: string;
   color: string;
   milestones?: string;
+}
+
+// Define puppy age group data
+export interface PuppyAgeGroupData {
+  newborn: PuppyWithAge[];
+  twoWeek: PuppyWithAge[];
+  fourWeek: PuppyWithAge[];
+  sixWeek: PuppyWithAge[];
+  eightWeek: PuppyWithAge[];
+  tenWeek: PuppyWithAge[];
+  twelveWeek: PuppyWithAge[];
+  older: PuppyWithAge[];
+  all: PuppyWithAge[];
 }
 
 // Define puppy management statistics
@@ -79,70 +87,52 @@ export interface PuppyManagementStats {
   };
 }
 
-// Socialization related types
-export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'fearful' | 'aggressive' | 'unknown';
-
-export interface SocializationReaction {
+// Weight record interface
+export interface WeightRecord {
   id: string;
-  type: SocializationReactionType;
-  label?: string;
-  description: string;
-  value?: string; // For compatibility
-  icon?: string;
-  name?: string;   // Adding for compatibility
-  color?: string;  // Adding for compatibility
-  emoji?: string;  // Adding for compatibility
+  puppy_id: string;
+  dog_id?: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;
 }
 
+// Socialization types
 export interface SocializationCategory {
   id: string;
   name: string;
   description: string;
   targetCount: number;
-  icon?: string;
-  color?: string; // Adding for compatibility
-  examples?: string[]; // Adding for compatibility
+  color?: string;
+  examples?: string[];
 }
 
-export interface SocializationCategoryOption {
+export interface SocializationCategoryOption extends SocializationCategory {
+  categoryId?: string;
+  value?: string;
+  label?: string;
+  order?: number;
+}
+
+export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'fearful' | 'cautious' | 'curious' | 'very_positive' | 'very_fearful';
+
+export interface SocializationReaction {
   id: string;
-  categoryId: string;
+  type: SocializationReactionType;
   name: string;
   description?: string;
-  color?: string; // Adding for compatibility
-  examples?: string[]; // Adding for compatibility
-}
-
-export interface SocializationReactionOption {
-  id: string;
-  name: string;
   color: string;
+  emoji?: string;
+}
+
+export interface SocializationReactionOption extends SocializationReaction {
+  value?: string;
+  label?: string;
   icon?: string;
-  value?: string; // Adding for compatibility
-  label?: string; // Adding for compatibility
-}
-
-export interface SocializationProgress {
-  categoryId: string;
-  categoryName: string;
-  total: number;
-  count: number;
-  target: number;
-  percentage: number;
-  completion_percentage?: number; // For compatibility
-  category?: string; // Adding for compatibility
-  id?: string; // Adding for compatibility
-}
-
-// Puppy care related types
-export interface PuppyCareLog {
-  id: string;
-  puppy_id: string;
-  activity_type: string;
-  timestamp: string;
-  notes?: string;
-  performed_by?: string;
-  created_at: string;
 }
 
 export interface SocializationExperience {
@@ -150,55 +140,46 @@ export interface SocializationExperience {
   puppy_id: string;
   category: string;
   experience: string;
-  date: string;
-  reaction: SocializationReactionType;
+  experience_date: string;
+  reaction?: SocializationReactionType;
   notes?: string;
   created_at: string;
-  // Adding for compatibility
-  experience_date?: string;
-  experience_type?: string;
 }
 
-// Weight tracking
-export interface WeightRecord {
-  id: string;
-  dog_id: string;
-  puppy_id?: string;
-  weight: number;
-  weight_unit: string;
-  unit?: string; // For backward compatibility
-  date: string;
-  notes?: string;
-  percent_change?: number;
-  created_at: string;
-  age_days?: number; // For puppy weight tracking
-  birth_date?: string; // For age calculation
+export interface SocializationProgress {
+  categoryId: string;
+  categoryName: string;
+  count: number;
+  total: number;
+  percentage: number;
+  target?: number;
 }
 
-// Puppy milestone
-export interface PuppyMilestone {
+export interface PuppyCareLog {
   id: string;
   puppy_id: string;
-  milestone_type: string;
-  milestone_date: string;
+  log_type: string;
+  log_date: string;
   notes?: string;
   created_at: string;
-  title?: string;
-  is_completed?: boolean;
-  description?: string;
+  created_by?: string;
+  weight?: number;
+  weight_unit?: WeightUnit;
 }
 
-// Vaccination types
+// Vaccination-related types
 export interface VaccinationSchedule {
   id: string;
   puppy_id: string;
-  vaccination_type: string;
-  scheduled_date?: string;
-  due_date: string;
-  administered?: boolean;
+  dog_id?: string;
+  vaccine_name: string;
+  scheduled_date: string;
+  due_date?: string;
+  administered: boolean;
+  administered_date?: string;
   notes?: string;
-  created_at: string;
-  vaccine_name?: string;
+  created_at?: string;
+  vaccination_type?: string;
 }
 
 export interface VaccinationRecord {
@@ -206,8 +187,26 @@ export interface VaccinationRecord {
   puppy_id: string;
   vaccination_type: string;
   vaccination_date: string;
-  administered_by?: string;
   lot_number?: string;
+  administered_by?: string;
   notes?: string;
   created_at: string;
+}
+
+// Puppy milestone interface
+export interface PuppyMilestone {
+  id?: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
+  notes?: string;
+  created_at?: string;
+  title?: string;
+  is_completed?: boolean;
+  description?: string;
+  expected_age_days?: number;
+  completion_date?: string;
+  actual_age_days?: number;
+  milestone_category?: string;
+  photo_url?: string;
 }

@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Calendar, Check, AlertTriangle, ArrowRight } from 'lucide-react';
-import { Dog, DogProfile, dogProfileToBasicDog } from '@/types/dog';
+import { Dog } from '@/types/dog';
 import { Gender } from '@/types/common';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays } from 'date-fns';
@@ -45,17 +44,11 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           
         if (dogError) throw dogError;
         
-        // Process the dog data
-        const processedDog: DogProfile = {
+        // Convert to Dog type with required status
+        const dogWithStatus: Dog = {
           ...dogData,
           gender: (dogData.gender as Gender) || 'Female', // Ensure gender is typed correctly
           status: dogData.status || 'active' // Add status property which is needed for Dog type
-        };
-        
-        // Convert to Dog type which requires status
-        const dogWithStatus: Dog = {
-          ...dogProfileToBasicDog(processedDog),
-          status: processedDog.status || 'active'
         };
         
         setDog(dogWithStatus);
@@ -71,19 +64,12 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           
         if (malesError) throw malesError;
         
-        // Process and convert males to Dog type
-        const malesWithStatus: Dog[] = malesData.map(male => {
-          const maleProfile: DogProfile = {
-            ...male,
-            gender: (male.gender as Gender) || 'Male',
-            status: male.status || 'active' // Add status property
-          };
-          
-          return {
-            ...dogProfileToBasicDog(maleProfile),
-            status: maleProfile.status || 'active'
-          };
-        });
+        // Process and convert males to Dog type with status
+        const malesWithStatus: Dog[] = malesData.map(male => ({
+          ...male,
+          gender: (male.gender as Gender) || 'Male',
+          status: male.status || 'active' // Add status property
+        }));
         
         setCompatibleMales(malesWithStatus);
       } catch (error) {
