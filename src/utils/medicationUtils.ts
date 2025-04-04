@@ -1,5 +1,19 @@
-
 import { MedicationStatusEnum } from '@/types/health';
+
+/**
+ * Medication frequency constants
+ */
+export const MedicationFrequencyConstants = {
+  DAILY: 'daily',
+  TWICE_DAILY: 'twice-daily',
+  THREE_TIMES_DAILY: 'three-times-daily',
+  WEEKLY: 'weekly',
+  BIWEEKLY: 'biweekly',
+  MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  ANNUALLY: 'annually',
+  AS_NEEDED: 'as-needed'
+};
 
 /**
  * Get label and style for medication status
@@ -86,4 +100,61 @@ export const calculateMedicationStatus = (
   
   // Medication is active
   return MedicationStatusEnum.Active;
+};
+
+/**
+ * Process medication logs into categorized structure
+ */
+export const processMedicationLogs = (logs: any[]) => {
+  const processedLogs = {
+    preventative: [],
+    other: []
+  };
+  
+  if (!logs || logs.length === 0) {
+    return processedLogs;
+  }
+  
+  // Group logs by medication name
+  const logsByMedication: Record<string, any[]> = {};
+  
+  logs.forEach(log => {
+    const medicationName = log.task_name || 'Unknown';
+    if (!logsByMedication[medicationName]) {
+      logsByMedication[medicationName] = [];
+    }
+    logsByMedication[medicationName].push(log);
+  });
+  
+  // Process each medication group
+  Object.keys(logsByMedication).forEach(name => {
+    const medicationLogs = logsByMedication[name];
+    const latestLog = medicationLogs.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )[0];
+    
+    const isPreventative = name.toLowerCase().includes('preventative') || 
+                          name.toLowerCase().includes('preventive');
+    
+    const medicationInfo = {
+      id: latestLog.id,
+      name: name,
+      dosage: latestLog.dosage,
+      frequency: latestLog.frequency || 'daily',
+      lastAdministered: latestLog.timestamp,
+      nextDue: latestLog.next_due_date,
+      status: latestLog.status,
+      notes: latestLog.notes,
+      isPreventative: isPreventative,
+      startDate: latestLog.start_date
+    };
+    
+    if (isPreventative) {
+      processedLogs.preventative.push(medicationInfo);
+    } else {
+      processedLogs.other.push(medicationInfo);
+    }
+  });
+  
+  return processedLogs;
 };
