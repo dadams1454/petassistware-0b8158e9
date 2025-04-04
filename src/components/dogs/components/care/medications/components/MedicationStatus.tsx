@@ -61,10 +61,10 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
       case MedicationStatusEnum.Active:
         return <Check className="h-4 w-4 text-green-500" />;
       case 'overdue':
-      case MedicationStatusEnum.Overdue:
+      case MedicationStatusEnum.Discontinued: // Using existing enum instead of 'Overdue'
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       case 'upcoming':
-      case MedicationStatusEnum.Upcoming:
+      case MedicationStatusEnum.Scheduled: // Using existing enum instead of 'Upcoming'
         return <Calendar className="h-4 w-4 text-blue-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;

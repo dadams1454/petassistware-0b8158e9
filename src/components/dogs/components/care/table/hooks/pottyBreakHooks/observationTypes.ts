@@ -1,5 +1,15 @@
 
-export type ObservationType = 'accident' | 'heat' | 'behavior' | 'other' | 'health';
+export type ObservationType = 
+  | 'accident' 
+  | 'heat' 
+  | 'behavior' 
+  | 'other' 
+  | 'health'
+  | 'activity'
+  | 'medication'
+  | 'feeding'
+  | 'weight'
+  | 'milestone';
 
 export interface ObservationRecord {
   id: string;

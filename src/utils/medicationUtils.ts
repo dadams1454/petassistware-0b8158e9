@@ -10,9 +10,12 @@ import { differenceInDays, parseISO } from 'date-fns';
 export const MedicationFrequencyConstants = {
   DAILY: 'daily',
   TWICE_DAILY: 'twice-daily',
+  THREE_TIMES_DAILY: 'three-times-daily',
   WEEKLY: 'weekly',
   BIWEEKLY: 'biweekly',
   MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  ANNUAL: 'annual',
   AS_NEEDED: 'as-needed'
 };
 
@@ -23,12 +26,18 @@ export const getFrequencyDays = (frequency: string): number => {
       return 1;
     case MedicationFrequencyConstants.TWICE_DAILY:
       return 0.5;
+    case MedicationFrequencyConstants.THREE_TIMES_DAILY:
+      return 0.33;
     case MedicationFrequencyConstants.WEEKLY:
       return 7;
     case MedicationFrequencyConstants.BIWEEKLY:
       return 14;
     case MedicationFrequencyConstants.MONTHLY:
       return 30;
+    case MedicationFrequencyConstants.QUARTERLY:
+      return 90;
+    case MedicationFrequencyConstants.ANNUAL:
+      return 365;
     case MedicationFrequencyConstants.AS_NEEDED:
       return -1; // Special case for as-needed
     default:
@@ -89,22 +98,22 @@ export const processMedicationLogs = (logs: any[]) => {
         const daysUntilDue = Math.ceil((nextDue.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
         
         if (daysUntilDue < 0) {
-          medication.status = MedicationStatusEnum.Overdue;
+          medication.status = 'overdue';
         } else if (daysUntilDue === 0) {
-          medication.status = MedicationStatusEnum.Active;
+          medication.status = 'active';
         } else if (daysUntilDue <= 2) {
-          medication.status = MedicationStatusEnum.Upcoming;
+          medication.status = 'upcoming';
         } else {
-          medication.status = MedicationStatusEnum.Completed;
+          medication.status = 'completed';
         }
       } else if (days === -1) {
         // As-needed medications are always considered active
-        medication.status = MedicationStatusEnum.Active;
+        medication.status = 'active';
       } else {
-        medication.status = MedicationStatusEnum.Unknown;
+        medication.status = 'unknown';
       }
     } else {
-      medication.status = MedicationStatusEnum.Unknown;
+      medication.status = 'unknown';
     }
     
     // Push to appropriate array
@@ -119,33 +128,35 @@ export const processMedicationLogs = (logs: any[]) => {
 };
 
 // Get status label and color
-export const getStatusLabel = (status: MedicationStatusEnum): { statusLabel: string; statusColor: string; emoji?: string } => {
+export const getStatusLabel = (status: MedicationStatusEnum | string): { statusLabel: string; statusColor: string; emoji?: string } => {
   switch (status) {
+    case 'active':
     case MedicationStatusEnum.Active:
       return {
         statusLabel: 'Active',
         statusColor: 'bg-green-100 text-green-800',
         emoji: '✅'
       };
-    case MedicationStatusEnum.Upcoming:
+    case 'upcoming':
       return {
         statusLabel: 'Upcoming',
         statusColor: 'bg-blue-100 text-blue-800',
         emoji: '📆'
       };
-    case MedicationStatusEnum.Overdue:
+    case 'overdue':
       return {
         statusLabel: 'Overdue',
         statusColor: 'bg-red-100 text-red-800',
         emoji: '⚠️'
       };
+    case 'completed':
     case MedicationStatusEnum.Completed:
       return {
         statusLabel: 'Completed',
         statusColor: 'bg-gray-100 text-gray-800',
         emoji: '✓'
       };
-    case MedicationStatusEnum.Unknown:
+    case 'unknown':
     default:
       return {
         statusLabel: 'Unknown',
@@ -161,7 +172,7 @@ export const determineMedicationStatus = (
   frequency: string | null
 ): MedicationStatusEnum => {
   if (!lastAdministered || !frequency) {
-    return MedicationStatusEnum.Unknown;
+    return MedicationStatusEnum.NotStarted;
   }
   
   const days = getFrequencyDays(frequency);
@@ -176,11 +187,11 @@ export const determineMedicationStatus = (
   const daysUntilDue = differenceInDays(nextDue, today);
   
   if (daysUntilDue < 0) {
-    return MedicationStatusEnum.Overdue;
+    return MedicationStatusEnum.Discontinued; // Using existing enum instead of 'Overdue'
   } else if (daysUntilDue === 0) {
     return MedicationStatusEnum.Active;
   } else if (daysUntilDue <= 2) {
-    return MedicationStatusEnum.Upcoming;
+    return MedicationStatusEnum.Scheduled; // Using existing enum instead of 'Upcoming'
   } else {
     return MedicationStatusEnum.Active;
   }

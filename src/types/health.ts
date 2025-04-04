@@ -7,7 +7,10 @@ export enum AppetiteEnum {
   Normal = 'normal',
   Increased = 'increased',
   Decreased = 'decreased',
-  None = 'none'
+  None = 'none',
+  Excellent = 'excellent',
+  Good = 'good',
+  Fair = 'fair'
 }
 
 // Backward compatibility enum names
@@ -16,7 +19,10 @@ export enum AppetiteLevelEnum {
   Normal = 'normal',
   Increased = 'increased',
   Decreased = 'decreased',
-  None = 'none'
+  None = 'none',
+  Excellent = 'excellent',
+  Good = 'good',
+  Fair = 'fair'
 }
 
 export enum EnergyEnum {
@@ -42,7 +48,9 @@ export enum StoolConsistencyEnum {
   Watery = 'watery',
   Hard = 'hard',
   Bloody = 'bloody',
-  None = 'none'
+  None = 'none',
+  Soft = 'soft',
+  Mucousy = 'mucousy'
 }
 
 export enum MedicationStatusEnum {
@@ -52,6 +60,9 @@ export enum MedicationStatusEnum {
   Scheduled = 'scheduled',
   NotStarted = 'not_started'
 }
+
+// Define string literals for compatibility
+export type MedicationStatus = 'active' | 'completed' | 'discontinued' | 'scheduled' | 'not_started' | 'overdue' | 'upcoming' | 'unknown';
 
 // Health record type enum - synchronized with HealthRecordTypeEnum in dog.ts
 export enum HealthRecordTypeEnum {
@@ -102,6 +113,8 @@ export interface Medication {
   end_date?: string;
   notes?: string;
   created_at: string;
+  last_administered?: string;
+  is_active?: boolean;
 }
 
 // Medication status interface
@@ -115,7 +128,7 @@ export interface MedicationStatus {
 
 // Medication status result
 export interface MedicationStatusResult {
-  status: MedicationStatusEnum;
+  status: MedicationStatusEnum | string;
   nextDue?: string;
   lastAdministered?: string;
   daysSinceStart?: number;
@@ -124,6 +137,8 @@ export interface MedicationStatusResult {
   dosesTaken?: number;
   dosesRemaining?: number;
   adherenceRate?: number;
+  statusLabel?: string;
+  statusColor?: string;
 }
 
 // Medication administration
@@ -131,6 +146,7 @@ export interface MedicationAdministration {
   id: string;
   medication_id: string;
   administered_date: string;
+  administered_at?: string; // For backward compatibility
   administered_by: string;
   notes?: string;
   created_at: string;
@@ -144,6 +160,7 @@ export interface VaccinationSchedule {
   due_date: string;
   administered: boolean;
   administered_date?: string;
+  scheduled_date?: string;
   notes?: string;
   created_at?: string;
 }
@@ -193,10 +210,13 @@ export interface HealthAlert {
 export interface HealthCertificate {
   id: string;
   dog_id: string;
+  puppy_id?: string;
   certificate_type: string;
   issue_date: string;
   expiry_date?: string;
   issuing_authority: string;
+  issuer?: string; // For compatibility
+  file_url?: string;
   notes?: string;
   created_at: string;
 }
@@ -246,13 +266,17 @@ export interface HealthRecord {
   surgeon?: string;
   anesthesia_used?: string;
   recovery_notes?: string;
+  notes?: string; // For compatibility
 }
+
+// Export WeightUnit for use in other modules
+export { WeightUnit };
 
 // Helper functions
 export function mapToHealthRecord(data: any): HealthRecord {
   return {
-    id: data.id,
-    dog_id: data.dog_id,
+    id: data.id || '',
+    dog_id: data.dog_id || '',
     record_type: stringToHealthRecordType(data.record_type),
     title: data.title || '',
     visit_date: data.visit_date || data.date || new Date().toISOString().split('T')[0],
@@ -264,6 +288,7 @@ export function mapToHealthRecord(data: any): HealthRecord {
     created_at: data.created_at || new Date().toISOString(),
     next_due_date: data.next_due_date,
     performed_by: data.performed_by,
+    notes: data.notes,
     
     // Type-specific fields
     vaccine_name: data.vaccine_name,
@@ -316,3 +341,4 @@ export function stringToHealthRecordType(type: string): HealthRecordTypeEnum {
   }
   return HealthRecordTypeEnum.Other;
 }
+

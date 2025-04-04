@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { format, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Settings } from 'lucide-react';
@@ -102,7 +101,7 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
 // Helper function to render the status badge
 const getStatusBadge = (status: MedicationStatus | MedicationStatusResult | undefined) => {
   if (!status) {
-    return getStatusLabelBadge(MedicationStatusEnum.Unknown);
+    return getStatusLabelBadge(MedicationStatusEnum.NotStarted);
   }
   
   if (typeof status === 'string') {
@@ -110,19 +109,20 @@ const getStatusBadge = (status: MedicationStatus | MedicationStatusResult | unde
   } 
   
   if (typeof status === 'object' && status && 'status' in status) {
+    const statusInfo = getStatusLabel(status.status as MedicationStatusEnum);
     return (
-      <span className={`text-xs px-2 py-0.5 rounded-full ${(status as MedicationStatusResult).statusColor}`}>
-        {(status as MedicationStatusResult).statusLabel}
+      <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.statusColor}`}>
+        {statusInfo.statusLabel}
       </span>
     );
   }
   
   // Default fallback
-  return getStatusLabelBadge(MedicationStatusEnum.Unknown);
+  return getStatusLabelBadge(MedicationStatusEnum.NotStarted);
 };
 
-const getStatusLabelBadge = (status: MedicationStatus) => {
-  const statusInfo = getStatusLabel(status as MedicationStatusEnum);
+const getStatusLabelBadge = (status: MedicationStatus | string) => {
+  const statusInfo = getStatusLabel(status as unknown as MedicationStatusEnum);
   
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.statusColor}`}>

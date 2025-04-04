@@ -29,11 +29,15 @@ export enum ReproductiveStatus {
   Spayed = 'spayed',
   Neutered = 'neutered',
   InHeat = 'in_heat',
+  PreHeat = 'pre_heat',
   Pregnant = 'pregnant',
   Nursing = 'nursing',
   InDiestrus = 'in_diestrus',
   InAnestrus = 'in_anestrus',
-  Recovery = 'recovery'
+  Recovery = 'recovery',
+  Whelping = 'whelping',
+  NotInHeat = 'not_in_heat',
+  Altered = 'altered'
 }
 
 // Heat cycle interface
@@ -62,6 +66,11 @@ export interface BreedingRecord extends AuditFields {
   notes?: string;
   dam?: Dog;
   sire?: Dog;
+  // Add support for alternative field names for backwards compatibility
+  tie_date?: string;
+  breeding_method?: string;
+  is_successful?: boolean;
+  estimated_due_date?: string;
 }
 
 // Pregnancy record interface
@@ -73,6 +82,11 @@ export interface PregnancyRecord extends AuditFields {
   due_date?: string;
   status: 'pending' | 'confirmed' | 'completed' | 'terminated';
   notes?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 // Heat stage interface
@@ -83,6 +97,8 @@ export interface HeatStage {
   fertility: string;
   signs: string[];
   actions: string[];
+  day?: number;
+  id?: string;
 }
 
 // Reproductive milestone interface
@@ -92,6 +108,7 @@ export interface ReproductiveMilestone extends AuditFields {
   milestone_type: string;
   milestone_date: string;
   notes?: string;
+  date?: string; // For compatibility
 }
 
 // Reproductive cycle data
@@ -108,9 +125,16 @@ export interface ReproductiveCycleData {
   isPregnant?: boolean;
   isInHeat?: boolean;
   lastHeatDate?: string;
-  nextHeatDate?: string;
+  nextHeatDate?: string | Date;
   dueDate?: string;
   averageCycleLength?: number;
+  heatCycles?: HeatCycle[];
+  pregnancyRecords?: PregnancyRecord[];
+  currentStage?: HeatStage;
+  fertilityWindow?: { start: Date; end: Date };
+  gestationDays?: number;
+  estimatedDueDate?: Date;
+  daysUntilNextHeat?: number;
 }
 
 // Breeding checklist item
@@ -121,6 +145,7 @@ export interface BreedingChecklistItem {
   completed: boolean;
   due_date?: string;
   task_name?: string; // For backward compatibility
+  task?: string; // For backward compatibility
 }
 
 // Breeding preparation form data
@@ -147,6 +172,10 @@ export function normalizeBreedingRecord(record: any): BreedingRecord {
     created_at: record.created_at,
     updated_at: record.updated_at,
     created_by: record.created_by,
-    updated_by: record.updated_by
+    updated_by: record.updated_by,
+    tie_date: record.tie_date,
+    breeding_method: record.breeding_method,
+    is_successful: record.is_successful,
+    estimated_due_date: record.estimated_due_date
   };
 }
