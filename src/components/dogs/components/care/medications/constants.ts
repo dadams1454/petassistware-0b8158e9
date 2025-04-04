@@ -1,17 +1,17 @@
 
-import { MedicationFrequency } from '@/utils/medicationUtils';
+import { MedicationFrequencyConstants } from '@/utils/medicationUtils';
 
 // Medication frequency options
 export const MedicationFrequencyOptions: {
-  value: MedicationFrequency;
+  value: string;
   label: string;
 }[] = [
-  { value: MedicationFrequency.DAILY, label: 'Once daily' },
-  { value: MedicationFrequency.TWICE_DAILY, label: 'Twice daily' },
-  { value: MedicationFrequency.WEEKLY, label: 'Weekly' },
-  { value: MedicationFrequency.BIWEEKLY, label: 'Every two weeks' },
-  { value: MedicationFrequency.MONTHLY, label: 'Monthly' },
-  { value: MedicationFrequency.AS_NEEDED, label: 'As needed' }
+  { value: MedicationFrequencyConstants.DAILY, label: 'Once daily' },
+  { value: MedicationFrequencyConstants.TWICE_DAILY, label: 'Twice daily' },
+  { value: MedicationFrequencyConstants.WEEKLY, label: 'Weekly' },
+  { value: MedicationFrequencyConstants.BIWEEKLY, label: 'Every two weeks' },
+  { value: MedicationFrequencyConstants.MONTHLY, label: 'Monthly' },
+  { value: MedicationFrequencyConstants.AS_NEEDED, label: 'As needed' }
 ];
 
 // Administration route options

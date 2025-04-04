@@ -232,8 +232,47 @@ export const getStatusLabel = (status: MedicationStatus): { statusLabel: string,
   }
 };
 
-// For compatibility with older code
-export const MedicationFrequency = {
+/**
+ * Process medication logs to group them by preventative and other types
+ */
+export const processMedicationLogs = (logs: any[]) => {
+  const preventative: any[] = [];
+  const other: any[] = [];
+  
+  // Process each log entry
+  logs.forEach(log => {
+    if (log.medication_metadata?.preventative) {
+      preventative.push({
+        id: log.id,
+        name: log.task_name,
+        dosage: log.medication_metadata.dosage,
+        frequency: log.medication_metadata.frequency,
+        lastAdministered: log.timestamp,
+        notes: log.notes,
+        isPreventative: true,
+        startDate: log.medication_metadata.start_date,
+        endDate: log.medication_metadata.end_date,
+      });
+    } else {
+      other.push({
+        id: log.id,
+        name: log.task_name,
+        dosage: log.medication_metadata?.dosage,
+        frequency: log.medication_metadata?.frequency || 'as_needed',
+        lastAdministered: log.timestamp,
+        notes: log.notes,
+        isPreventative: false,
+        startDate: log.medication_metadata?.start_date,
+        endDate: log.medication_metadata?.end_date,
+      });
+    }
+  });
+  
+  return { preventative, other };
+};
+
+// Constants for backward compatibility
+export const MedicationFrequencyConstants = {
   DAILY: 'daily',
   TWICE_DAILY: 'twice_daily',
   THREE_TIMES_DAILY: 'three_times_daily',

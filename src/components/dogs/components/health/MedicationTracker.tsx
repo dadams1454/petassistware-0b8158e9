@@ -10,7 +10,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { getUpcomingMedications, getExpiringMedications, updateHealthRecord } from '@/services/healthService';
 import { HealthRecord, HealthRecordTypeEnum } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { MedicationFrequency } from '@/utils/medicationUtils';
+import { MedicationFrequencyConstants } from '@/utils/medicationUtils';
 
 interface MedicationTrackerProps {
   dogId?: string; // Optional: if provided, only shows medications for this dog
@@ -58,22 +58,22 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
       const frequencyStr = medication.frequency || 'monthly';
       
       switch (frequencyStr) {
-        case MedicationFrequency.Daily:
+        case MedicationFrequencyConstants.DAILY:
           nextDueDate.setDate(today.getDate() + 1);
           break;
-        case MedicationFrequency.Weekly:
+        case MedicationFrequencyConstants.WEEKLY:
           nextDueDate.setDate(today.getDate() + 7);
           break;
-        case MedicationFrequency.Biweekly:
+        case MedicationFrequencyConstants.BIWEEKLY:
           nextDueDate.setDate(today.getDate() + 14);
           break;
-        case MedicationFrequency.Monthly:
+        case MedicationFrequencyConstants.MONTHLY:
           nextDueDate.setMonth(today.getMonth() + 1);
           break;
-        case MedicationFrequency.Quarterly:
+        case MedicationFrequencyConstants.QUARTERLY:
           nextDueDate.setMonth(today.getMonth() + 3);
           break;
-        case MedicationFrequency.Annual:
+        case MedicationFrequencyConstants.ANNUAL:
           nextDueDate.setFullYear(today.getFullYear() + 1);
           break;
         default:
