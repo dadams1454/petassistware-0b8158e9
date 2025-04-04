@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PuppyWithAge } from '@/types/puppyTracking';
 import { differenceInDays } from 'date-fns';
-import { fetchPuppyWeightRecords } from '@/services/puppyWeightService';
+import { getPuppyWeightRecords } from '@/services/puppyWeightService';
 
 export const usePuppyData = () => {
   const { 
@@ -52,7 +52,7 @@ export const usePuppyData = () => {
           }
           
           // Fetch weight records
-          const weightHistory = await fetchPuppyWeightRecords(puppy.id);
+          const weightHistory = await getPuppyWeightRecords(puppy.id);
           
           // Determine developmental stage based on age
           let developmentalStage = 'Unknown';
@@ -65,6 +65,7 @@ export const usePuppyData = () => {
           return {
             ...puppy,
             age,
+            ageInDays: age,
             ageInWeeks,
             developmentalStage,
             weightHistory

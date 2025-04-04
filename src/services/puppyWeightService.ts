@@ -44,6 +44,9 @@ export const getPuppyWeightRecords = async (puppyId: string): Promise<PuppyWeigh
   }
 };
 
+// Alias for backward compatibility
+export const fetchPuppyWeightRecords = getPuppyWeightRecords;
+
 /**
  * Add a new weight record for a puppy
  */
