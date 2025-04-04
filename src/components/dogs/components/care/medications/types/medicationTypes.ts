@@ -8,7 +8,7 @@ export interface MedicationInfo {
   frequency: string;
   lastAdministered: string;
   nextDue?: string;
-  status?: string | MedicationStatus | MedicationStatusResult;
+  status?: MedicationStatus | MedicationStatusResult;
   notes?: string;
   isPreventative?: boolean;
   startDate?: string;
@@ -82,4 +82,12 @@ export interface MedicationCardProps {
   preventativeMeds: MedicationInfo[];
   otherMeds: MedicationInfo[];
   onSuccess: () => void;
+}
+
+export interface MedicationFormProps {
+  dogId: string;
+  onSave: (data: any) => Promise<boolean>;
+  onCancel: () => void;
+  isEditing?: boolean;
+  initialData?: any;
 }

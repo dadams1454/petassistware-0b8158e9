@@ -67,6 +67,7 @@ export interface DogCareStatus {
   };
   flags?: DogFlag[];
   incompatible_with?: string[];
+  dog_weight?: number;
 }
 
 export interface TimeSlot {
@@ -99,4 +100,51 @@ export interface CareLog {
   notes?: string;
   created_at: string;
   created_by: string;
+}
+
+// Daily Care Log (for compatibility)
+export interface DailyCarelog {
+  id: string;
+  dog_id: string;
+  category: string;
+  task_name: string;
+  timestamp: string;
+  notes?: string;
+  created_at: string;
+  created_by: string;
+}
+
+// Care Log Entry for display
+export interface CareLogEntry {
+  id: string;
+  dog_id: string;
+  dog_name: string;
+  category: string;
+  task_name: string;
+  timestamp: string;
+  notes?: string;
+  created_by: string;
+  created_at: string;
+}
+
+// Activity Log for history
+export interface CareActivityLog {
+  id: string;
+  dog_id: string;
+  activity_type: string;
+  timestamp: string;
+  notes?: string;
+  created_at: string;
+  created_by: string;
+}
+
+// Special Conditions
+export interface DogSpecialCondition {
+  id: string;
+  dog_id: string;
+  condition_type: string;
+  start_date: string;
+  end_date?: string;
+  notes?: string;
+  created_at: string;
 }

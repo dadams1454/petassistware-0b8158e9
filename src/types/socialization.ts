@@ -1,7 +1,8 @@
 
 export type SocializationReactionType = 
   'very_positive' | 'positive' | 'neutral' | 
-  'cautious' | 'fearful' | 'very_fearful' | 'no_reaction';
+  'cautious' | 'fearful' | 'very_fearful' | 'no_reaction' |
+  'negative' | 'unknown';
 
 export interface SocializationReaction {
   id: string;
@@ -21,11 +22,13 @@ export interface SocializationCategory {
 }
 
 export interface SocializationCategoryOption {
-  value: string;
-  label: string;
+  id: string;
+  name: string;
   description?: string;
   examples?: string[];
   color?: string;
+  value?: string;
+  label?: string;
 }
 
 export interface SocializationRecord {
@@ -52,10 +55,13 @@ export interface SocializationExperience {
 
 export interface SocializationProgress {
   category: string;
+  categoryName: string;
   total: number;
   completed: number;
   positive: number;
   neutral: number;
-  cautious: number;
   negative: number;
+  count?: number;
+  target?: number;
+  completion_percentage?: number;
 }

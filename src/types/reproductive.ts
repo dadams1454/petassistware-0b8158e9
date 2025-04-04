@@ -36,7 +36,7 @@ export interface HeatCycle {
   symptoms?: string[];
   notes?: string;
   fertility_indicators?: any;
-  created_at?: string;
+  created_at: string;
   updated_at?: string;
   recorded_by?: string;
 }
@@ -114,12 +114,12 @@ export interface ReproductiveCycleData {
   isInHeat: boolean;
   isPregnant: boolean;
   isNursing: boolean;
+  isLactating: boolean;
   gestationDays: number;
   dueDate?: string;
   currentHeatStage?: HeatStage;
   heatStages: HeatStage[];
   currentHeatDay?: number;
-  isLactating: boolean;
   nextMilestone?: ReproductiveMilestone;
   timeInGestation?: string;
   nextHeatDate?: string;

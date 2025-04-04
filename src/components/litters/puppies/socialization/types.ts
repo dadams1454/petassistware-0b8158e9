@@ -1,5 +1,5 @@
 
-import { SocializationCategory as AppSocializationCategory, SocializationCategoryOption, SocializationReactionOption } from '@/types/puppyTracking';
+import { SocializationCategory, SocializationCategoryOption, SocializationReactionOption, SocializationReactionType } from '@/types/puppyTracking';
 
 export interface SocializationTrackerProps {
   puppyId: string;
@@ -9,10 +9,10 @@ export interface SocializationTrackerProps {
 export interface SocializationRecord {
   id: string;
   puppy_id: string;
-  category: AppSocializationCategory;
+  category: SocializationCategory;
   experience: string;
   experience_date: string;
-  reaction?: string;
+  reaction?: SocializationReactionType;
   notes?: string;
   created_at: string;
 }

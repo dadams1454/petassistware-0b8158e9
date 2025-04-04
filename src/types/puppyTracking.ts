@@ -28,7 +28,7 @@ export interface PuppyAgeGroupData {
   description?: string;
   color?: string;
   milestones?: string;
-  careChecks?: string[];
+  careChecks: string[];
 }
 
 // Puppy management statistics
@@ -83,8 +83,8 @@ export interface MilestoneCategory {
   color: string;
 }
 
-// Vaccination schedule
-export interface VaccinationSchedule {
+// Vaccination schedule - renamed to match import expectation
+export interface VaccinationScheduleItem {
   id?: string;
   puppy_id: string;
   vaccination_type: string;
@@ -131,16 +131,18 @@ export interface SocializationCategoryOption {
 
 // Socialization reaction type
 export type SocializationReactionType =
+  | 'very_positive'
   | 'positive'
   | 'neutral'
   | 'cautious'
   | 'fearful'
+  | 'very_fearful'
+  | 'no_reaction'
   | 'aggressive'
-  | 'avoidant'
   | 'curious'
   | 'excited'
-  | 'very_positive'
-  | 'very_fearful';
+  | 'negative'
+  | 'unknown';
 
 // Socialization reaction option
 export interface SocializationReactionOption {
@@ -183,7 +185,8 @@ export interface SocializationProgress {
 // Weight record
 export interface WeightRecord {
   id: string;
-  puppy_id: string;
+  puppy_id?: string;
+  dog_id: string;
   weight: number;
   weight_unit: WeightUnit;
   date: string;
@@ -191,5 +194,15 @@ export interface WeightRecord {
   created_at: string;
   percent_change?: number;
   age_days?: number;
-  unit?: WeightUnit;
+}
+
+// Puppy care log
+export interface PuppyCareLog {
+  id: string;
+  puppy_id: string;
+  activity_type: string;
+  timestamp: string;
+  notes?: string;
+  created_at: string;
+  created_by?: string;
 }

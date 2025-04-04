@@ -1,17 +1,23 @@
 
-// This file defines types for health-related data structures
+import { WeightUnit } from './common';
 
-import { Dog } from './dog';
-
-// Health Record Enums
 export enum HealthRecordTypeEnum {
-  Examination = 'examination',
   Vaccination = 'vaccination',
+  Examination = 'examination',
   Medication = 'medication',
   Surgery = 'surgery',
+  Laboratory = 'laboratory',
+  Imaging = 'imaging',
+  Dental = 'dental',
+  Allergy = 'allergy',
+  Emergency = 'emergency',
+  Preventive = 'preventive',
+  Observation = 'observation',
   Deworming = 'deworming',
+  Grooming = 'grooming',
   Test = 'test',
-  Observation = 'observation'
+  Other = 'other',
+  Procedure = 'procedure'
 }
 
 export enum AppetiteEnum {
@@ -23,225 +29,249 @@ export enum AppetiteEnum {
 
 export enum EnergyEnum {
   Normal = 'normal',
-  Hyperactive = 'hyperactive',
-  Lethargic = 'lethargic',
-  Depressed = 'depressed'
+  High = 'high',
+  Low = 'low',
+  Lethargic = 'lethargic'
 }
 
 export enum StoolConsistencyEnum {
   Normal = 'normal',
-  Firm = 'firm',
-  Soft = 'soft',
   Loose = 'loose',
-  Watery = 'watery',
+  Diarrhea = 'diarrhea',
   Hard = 'hard',
-  Mucousy = 'mucousy',
-  Bloody = 'bloody'
+  Bloody = 'bloody',
+  None = 'none'
+}
+
+export enum MedicationFrequency {
+  DAILY = 'daily',
+  TWICE_DAILY = 'twice_daily',
+  THREE_TIMES_DAILY = 'three_times_daily',
+  WEEKLY = 'weekly',
+  BIWEEKLY = 'biweekly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  ANNUAL = 'annual',
+  AS_NEEDED = 'as_needed',
+  ONE_TIME = 'one_time'
 }
 
 export enum MedicationStatus {
   active = 'active',
   overdue = 'overdue',
   upcoming = 'upcoming',
-  completed = 'completed'
+  completed = 'completed',
+  inactive = 'inactive'
 }
 
-export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
+export interface MedicationStatusResult {
+  status: MedicationStatus;
+  statusLabel: string;
+  statusColor: string;
+  nextDue?: Date | string;
+  lastDosed?: Date | string;
+  daysOverdue?: number;
+  daysUntilDue?: number;
+}
 
-// Health Record type
 export interface HealthRecord {
   id: string;
   dog_id: string;
-  title: string;
   record_type: HealthRecordTypeEnum;
-  date: string;
-  visit_date?: string;
-  vet_name?: string;
+  title: string;
+  date?: string; // For form compatibility
+  visit_date: string;
+  vet_name: string;
   description?: string;
-  findings?: string;
-  recommendations?: string;
   document_url?: string;
-  notes?: string;
-  created_at?: string;
   record_notes?: string;
-  follow_up_date?: string;
+  created_at: string;
+  next_due_date?: string;
   performed_by?: string;
   
-  // Medication fields
-  medication_name?: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency?: string;
-  administration_route?: string;
-  start_date?: string;
-  end_date?: string;
-  prescription_number?: string;
-  
-  // Vaccination fields
+  // Vaccination-specific fields
   vaccine_name?: string;
   manufacturer?: string;
   lot_number?: string;
   expiration_date?: string;
-  next_due_date?: string;
   
-  // Surgery fields
+  // Medication-specific fields
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string;
+  duration?: number;
+  duration_unit?: string;
+  administration_route?: string;
+  
+  // Examination-specific fields
+  examination_type?: string;
+  findings?: string;
+  recommendations?: string;
+  follow_up_date?: string;
+  
+  // Surgery-specific fields
   procedure_name?: string;
   surgeon?: string;
   anesthesia_used?: string;
   recovery_notes?: string;
-  
-  // Duration
-  duration?: number;
-  duration_unit?: string;
-  
-  // For reminder notifications
-  reminder_sent?: boolean;
-
-  // For completion status
-  is_completed?: boolean;
-  completion_date?: string;
 }
 
-// Health Indicator
 export interface HealthIndicator {
   id: string;
   dog_id: string;
   date: string;
-  appetite?: AppetiteEnum;
-  energy?: EnergyEnum;
-  stool_consistency?: StoolConsistencyEnum;
-  abnormal?: boolean;
+  appetite: AppetiteEnum;
+  energy: EnergyEnum;
+  stool_consistency: StoolConsistencyEnum;
+  abnormal: boolean;
   notes?: string;
+  alert_generated: boolean;
   created_at: string;
   created_by?: string;
-  alert_generated?: boolean;
 }
 
-// Weight Record
-export interface WeightRecord {
-  id: string;
-  dog_id: string;
-  weight: number;
-  weight_unit: WeightUnit;
-  unit?: WeightUnit;
-  date: string;
-  notes?: string;
-  created_at: string;
-  percent_change?: number;
-  puppy_id?: string;
-  age_days?: number;
-  birth_date?: string;
-}
-
-// Health Alert
 export interface HealthAlert {
   id: string;
   dog_id: string;
   indicator_id: string;
-  status: 'active' | 'resolved';
-  created_at: string;
-  resolved?: boolean;
+  status: string;
+  resolved: boolean;
   resolved_at?: string;
+  created_at: string;
 }
 
-// Growth Stats
 export interface GrowthStats {
-  currentWeight: number;
-  weightUnit: WeightUnit;
-  averageGrowth: number;
-  growthRate: number;
-  lastWeekGrowth: number;
-  projectedWeight: number;
-  percentChange?: number;
-  averageGrowthRate?: number;
-  weightGoal?: number;
-  onTrack?: boolean;
+  percentChange: number;
+  averageGrowthRate: number;
+  weightGoal: number | null;
+  onTrack: boolean | null;
+  totalGrowth?: number | null;
+  currentWeight?: number;
+  weightUnit?: string;
+  averageGrowth?: number;
+  growthRate?: number;
+  lastWeekGrowth?: number;
+  projectedWeight?: number;
 }
 
-// Medication Status Result
-export interface MedicationStatusResult {
-  status: MedicationStatus;
-  nextDue?: string;
-  lastAdministered?: string;
+export interface Medication {
+  id: string;
+  puppy_id: string;
+  medication_name: string;
+  dosage: number;
+  dosage_unit: string;
+  frequency: string;
+  administration_route: string;
+  start_date: string;
+  end_date?: string;
+  is_active: boolean;
+  notes?: string;
+  last_administered?: string;
+  created_at: string;
 }
 
-// Helper function to map database record to Health Record
-export const mapToHealthRecord = (record: any): HealthRecord => {
-  return {
-    id: record.id,
-    dog_id: record.dog_id,
-    title: record.title || 'Health Record',
-    record_type: record.record_type || HealthRecordTypeEnum.Examination,
-    date: record.date || record.visit_date,
-    visit_date: record.visit_date,
-    vet_name: record.vet_name,
-    description: record.description,
-    findings: record.findings,
-    recommendations: record.recommendations,
-    document_url: record.document_url,
-    notes: record.notes || record.record_notes,
-    record_notes: record.record_notes,
-    created_at: record.created_at,
-    follow_up_date: record.follow_up_date,
-    medication_name: record.medication_name,
-    dosage: record.dosage,
-    dosage_unit: record.dosage_unit,
-    frequency: record.frequency,
-    administration_route: record.administration_route,
-    start_date: record.start_date,
-    end_date: record.end_date,
-    prescription_number: record.prescription_number,
-    vaccine_name: record.vaccine_name,
-    manufacturer: record.manufacturer,
-    lot_number: record.lot_number,
-    expiration_date: record.expiration_date,
-    next_due_date: record.next_due_date,
-    procedure_name: record.procedure_name,
-    surgeon: record.surgeon,
-    anesthesia_used: record.anesthesia_used,
-    recovery_notes: record.recovery_notes,
-    duration: record.duration,
-    duration_unit: record.duration_unit,
-    reminder_sent: record.reminder_sent,
-    performed_by: record.performed_by
-  };
-};
+export interface MedicationAdministration {
+  id: string;
+  medication_id: string;
+  administered_at: string;
+  administered_by: string;
+  notes?: string;
+  created_at: string;
+}
 
-// Helper function to map database record to Weight Record
-export const mapToWeightRecord = (record: any): WeightRecord => {
-  return {
-    id: record.id,
-    dog_id: record.dog_id,
-    weight: record.weight,
-    weight_unit: record.weight_unit || record.unit,
-    unit: record.unit || record.weight_unit,
-    date: record.date,
-    notes: record.notes,
-    created_at: record.created_at,
-    percent_change: record.percent_change,
-    puppy_id: record.puppy_id,
-    age_days: record.age_days
-  };
-};
+export interface HealthCertificate {
+  id: string;
+  puppy_id: string;
+  certificate_type: string;
+  issuer: string;
+  issue_date: string;
+  expiry_date?: string;
+  file_url?: string;
+  notes?: string;
+  created_at: string;
+}
 
-// Helper function to convert string to HealthRecordType enum
+export interface VaccinationSchedule {
+  id?: string;
+  puppy_id: string;
+  vaccination_type: string;
+  vaccine_name?: string;
+  due_date: string;
+  scheduled_date?: string;
+  administered: boolean;
+  notes?: string;
+  created_at?: string;
+}
+
+export interface VaccinationRecord {
+  id?: string;
+  puppy_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  lot_number?: string;
+  administered_by?: string;
+  notes?: string;
+  created_at?: string;
+}
+
+// Helper function to convert string to HealthRecordTypeEnum
 export const stringToHealthRecordType = (type: string): HealthRecordTypeEnum => {
-  switch (type.toLowerCase()) {
-    case 'examination':
-      return HealthRecordTypeEnum.Examination;
-    case 'vaccination':
-      return HealthRecordTypeEnum.Vaccination;
-    case 'medication':
-      return HealthRecordTypeEnum.Medication;
-    case 'surgery':
-      return HealthRecordTypeEnum.Surgery;
-    case 'deworming':
-      return HealthRecordTypeEnum.Deworming;
-    case 'test':
-      return HealthRecordTypeEnum.Test;
-    case 'observation':
-      return HealthRecordTypeEnum.Observation;
-    default:
-      return HealthRecordTypeEnum.Examination;
+  if (Object.values(HealthRecordTypeEnum).includes(type as HealthRecordTypeEnum)) {
+    return type as HealthRecordTypeEnum;
   }
+  return HealthRecordTypeEnum.Other;
+};
+
+// Helper function to map data to health record
+export const mapToHealthRecord = (data: any): HealthRecord => {
+  return {
+    id: data.id,
+    dog_id: data.dog_id,
+    record_type: stringToHealthRecordType(data.record_type),
+    title: data.title || 'Health Record',
+    visit_date: data.visit_date || data.date || new Date().toISOString().slice(0, 10),
+    vet_name: data.vet_name || 'Not Specified',
+    description: data.description,
+    document_url: data.document_url,
+    record_notes: data.record_notes || data.notes,
+    created_at: data.created_at || new Date().toISOString(),
+    next_due_date: data.next_due_date,
+    performed_by: data.performed_by,
+    
+    // Map all other fields
+    vaccine_name: data.vaccine_name,
+    medication_name: data.medication_name,
+    dosage: data.dosage,
+    dosage_unit: data.dosage_unit,
+    frequency: data.frequency,
+    start_date: data.start_date,
+    end_date: data.end_date,
+    administration_route: data.administration_route,
+    examination_type: data.examination_type,
+    findings: data.findings,
+    recommendations: data.recommendations,
+    follow_up_date: data.follow_up_date,
+    procedure_name: data.procedure_name,
+    surgeon: data.surgeon,
+    anesthesia_used: data.anesthesia_used,
+    recovery_notes: data.recovery_notes
+  };
+};
+
+// Helper function to map data to weight record
+export const mapToWeightRecord = (data: any) => {
+  return {
+    id: data.id,
+    dog_id: data.dog_id,
+    puppy_id: data.puppy_id,
+    weight: data.weight,
+    weight_unit: data.weight_unit || data.unit || 'lb',
+    date: data.date,
+    notes: data.notes,
+    percent_change: data.percent_change,
+    created_at: data.created_at
+  };
 };

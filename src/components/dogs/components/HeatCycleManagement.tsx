@@ -37,7 +37,7 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeat
     const startDate = formData.get('start_date') as string;
     const endDate = formData.get('end_date') as string || null;
     const notes = formData.get('notes') as string || null;
-    const intensity = formData.get('intensity') as HeatIntensity || HeatIntensity.Moderate;
+    const intensity = formData.get('intensity') as unknown as HeatIntensity || HeatIntensity.Moderate;
     
     try {
       setLoading(true);
@@ -78,82 +78,87 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeat
     }
   };
   
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
   return (
     <div>
+      <Button variant="outline" onClick={handleAddCycle}>
+        Record Heat Cycle
+      </Button>
+      
       <HeatCycleMonitor 
         dogId={dogId} 
-        onAddCycle={handleAddCycle} 
+        refreshKey={refreshCounter} 
       />
       
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Record Heat Cycle</DialogTitle>
           </DialogHeader>
           
           <form onSubmit={handleRecordHeatCycle} className="space-y-4">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <label htmlFor="start_date" className="text-sm font-medium">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  id="start_date"
-                  name="start_date"
-                  defaultValue={format(new Date(), 'yyyy-MM-dd')}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="end_date" className="text-sm font-medium">
-                  End Date (Optional)
-                </label>
-                <input
-                  type="date"
-                  id="end_date"
-                  name="end_date"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="intensity" className="text-sm font-medium">
-                  Intensity
-                </label>
-                <select
-                  id="intensity"
-                  name="intensity"
-                  defaultValue={HeatIntensity.Moderate}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value={HeatIntensity.Light}>Light</option>
-                  <option value={HeatIntensity.Moderate}>Moderate</option>
-                  <option value={HeatIntensity.Heavy}>Heavy</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="notes" className="text-sm font-medium">
-                  Notes (Optional)
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  rows={3}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Start Date</label>
+              <input 
+                type="date" 
+                name="start_date"
+                defaultValue={format(new Date(), 'yyyy-MM-dd')}
+                className="w-full p-2 border rounded" 
+                required
+              />
             </div>
             
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+            <div>
+              <label className="block text-sm font-medium mb-1">End Date (Optional)</label>
+              <input 
+                type="date" 
+                name="end_date"
+                min={format(new Date(), 'yyyy-MM-dd')}
+                defaultValue={format(tomorrow, 'yyyy-MM-dd')}
+                className="w-full p-2 border rounded" 
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Leave blank if cycle is ongoing
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Intensity</label>
+              <select 
+                name="intensity"
+                className="w-full p-2 border rounded"
+                defaultValue={HeatIntensity.Moderate}
+              >
+                <option value={HeatIntensity.Low}>Low</option>
+                <option value={HeatIntensity.Moderate}>Moderate</option>
+                <option value={HeatIntensity.Medium}>Medium</option>
+                <option value={HeatIntensity.High}>High</option>
+                <option value={HeatIntensity.Peak}>Peak</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Notes</label>
+              <textarea 
+                name="notes"
+                className="w-full p-2 border rounded h-24" 
+                placeholder="Any observations or details about this heat cycle"
+              ></textarea>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowDialog(false)}
+                disabled={loading}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : 'Save'}
+                {loading ? 'Saving...' : 'Record Heat Cycle'}
               </Button>
             </div>
           </form>

@@ -30,9 +30,6 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, className }) => {
     ? "bg-blue-100 text-blue-800" 
     : "bg-pink-100 text-pink-800";
 
-  // Get photo_url safely
-  const photoUrl = (puppy as any).photo_url || undefined;
-
   return (
     <Card className={className}>
       <CardHeader className="pb-2">
@@ -53,10 +50,10 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, className }) => {
             <p className="text-muted-foreground">Color</p>
             <p className="font-medium">{puppy.color || 'Not specified'}</p>
           </div>
-          {puppy.current_weight && (
+          {puppy.currentWeight && (
             <div className="col-span-2">
               <p className="text-muted-foreground">Current Weight</p>
-              <p className="font-medium">{puppy.current_weight} oz</p>
+              <p className="font-medium">{puppy.currentWeight} {puppy.weightUnit || 'oz'}</p>
             </div>
           )}
         </div>

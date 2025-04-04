@@ -40,32 +40,24 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
     }
   };
   
-  const { statusLabel, statusColor, emoji } = getStatusLabel(status);
+  // Convert string status to MedicationStatusEnum if needed
+  const statusValue = typeof status === 'string' 
+    ? status as MedicationStatusEnum 
+    : (status as MedicationStatusResult).status;
+  
+  const { statusLabel, statusColor } = getStatusLabel(statusValue);
   
   // Determine the icon based on status
   const getIcon = () => {
-    if (typeof status === 'object' && status.status) {
-      switch (status.status) {
-        case MedicationStatusEnum.active:
-          return <Check className="h-4 w-4 text-green-500" />;
-        case MedicationStatusEnum.overdue:
-          return <AlertTriangle className="h-4 w-4 text-red-500" />;
-        case MedicationStatusEnum.upcoming:
-          return <Calendar className="h-4 w-4 text-blue-500" />;
-        default:
-          return <Clock className="h-4 w-4 text-gray-500" />;
-      }
-    } else {
-      switch (status as MedicationStatusEnum) {
-        case MedicationStatusEnum.active:
-          return <Check className="h-4 w-4 text-green-500" />;
-        case MedicationStatusEnum.overdue:
-          return <AlertTriangle className="h-4 w-4 text-red-500" />;
-        case MedicationStatusEnum.upcoming:
-          return <Calendar className="h-4 w-4 text-blue-500" />;
-        default:
-          return <Clock className="h-4 w-4 text-gray-500" />;
-      }
+    switch (statusValue) {
+      case MedicationStatusEnum.active:
+        return <Check className="h-4 w-4 text-green-500" />;
+      case MedicationStatusEnum.overdue:
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      case MedicationStatusEnum.upcoming:
+        return <Calendar className="h-4 w-4 text-blue-500" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
   

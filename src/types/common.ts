@@ -4,6 +4,9 @@
 // Weight units
 export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
 
+// Legacy compatibility for code that might use 'lbs'
+export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+
 // Select option
 export interface SelectOption {
   value: string;

@@ -6,8 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Settings } from 'lucide-react';
 import { MedicationInfo } from '../types/medicationTypes';
 import TimeManager from '../../table/components/TimeManager';
-import { MedicationStatus } from '@/types/health';
-import { getMedicationStatus, getStatusLabel } from '@/utils/medicationUtils';
+import { MedicationStatus, MedicationStatusResult } from '@/types/health';
+import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationTableViewProps {
   medications: MedicationInfo[];
@@ -100,19 +100,29 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
 };
 
 // Helper function to render the status badge
-const getStatusBadge = (status: any) => {
-  let statusInfo;
+const getStatusBadge = (status: MedicationStatus | MedicationStatusResult | undefined) => {
+  if (!status) {
+    return getStatusLabelBadge('unknown');
+  }
   
   if (typeof status === 'string') {
-    statusInfo = getStatusLabel(status);
-  } else if (typeof status === 'object' && status) {
-    statusInfo = {
-      statusLabel: status.statusLabel || 'Unknown',
-      statusColor: status.statusColor || 'bg-gray-100 text-gray-800'
-    };
-  } else {
-    statusInfo = getStatusLabel('unknown');
+    return getStatusLabelBadge(status as MedicationStatus);
+  } 
+  
+  if (typeof status === 'object' && 'statusLabel' in status && 'statusColor' in status) {
+    return (
+      <span className={`text-xs px-2 py-0.5 rounded-full ${status.statusColor}`}>
+        {status.statusLabel}
+      </span>
+    );
   }
+  
+  // Default fallback
+  return getStatusLabelBadge('unknown');
+};
+
+const getStatusLabelBadge = (status: MedicationStatus) => {
+  const statusInfo = getStatusLabel(status);
   
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.statusColor}`}>

@@ -41,7 +41,8 @@ const VaccinationRecords: React.FC<VaccinationRecordsProps> = ({
               <TableRow key={vaccination.id}>
                 <TableCell className="font-medium">{vaccination.vaccination_type}</TableCell>
                 <TableCell>
-                  {vaccination.vaccination_date && format(new Date(vaccination.vaccination_date), 'MMM d, yyyy')}
+                  {vaccination.administered && vaccination.due_date && 
+                    format(new Date(vaccination.due_date), 'MMM d, yyyy')}
                 </TableCell>
                 <TableCell>{vaccination.notes || '-'}</TableCell>
               </TableRow>
