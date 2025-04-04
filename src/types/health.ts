@@ -1,4 +1,5 @@
 
+// Import WeightUnit from common
 import { WeightUnit } from '@/types/common';
 
 // Medication status enum
@@ -321,5 +322,10 @@ export function mapToWeightRecord(record: any): WeightRecord {
   };
 }
 
-// Export type for proper TypeScript isolation mode compatibility
+// Export WeightUnit for proper TypeScript isolation mode compatibility
 export type { WeightUnit };
+
+// Export enums as constants for compatibility with components that expect string values
+export const AppetiteEnum = AppetiteLevelEnum;
+export const EnergyEnum = EnergyLevelEnum;
+export const StoolConsistencyEnum = StoolConsistencyEnum;

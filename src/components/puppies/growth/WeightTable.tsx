@@ -14,9 +14,15 @@ import { WeightUnit } from '@/types/common';
 
 interface WeightTableProps {
   weightRecords: WeightRecord[];
+  onDelete?: (id: string) => void;
+  displayUnit?: WeightUnit;
 }
 
-const WeightTable: React.FC<WeightTableProps> = ({ weightRecords }) => {
+const WeightTable: React.FC<WeightTableProps> = ({ 
+  weightRecords, 
+  onDelete, 
+  displayUnit 
+}) => {
   // Sort records by date (newest first)
   const sortedRecords = [...weightRecords].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -31,6 +37,7 @@ const WeightTable: React.FC<WeightTableProps> = ({ weightRecords }) => {
             <TableHead>Age (days)</TableHead>
             <TableHead>Weight</TableHead>
             <TableHead>Change</TableHead>
+            {onDelete && <TableHead className="w-24">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -61,6 +68,16 @@ const WeightTable: React.FC<WeightTableProps> = ({ weightRecords }) => {
                     '-'
                   )}
                 </TableCell>
+                {onDelete && (
+                  <TableCell>
+                    <button 
+                      onClick={() => onDelete(record.id)}
+                      className="text-red-500 hover:text-red-700 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </TableCell>
+                )}
               </TableRow>
             );
           })}

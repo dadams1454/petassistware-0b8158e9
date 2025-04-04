@@ -1,6 +1,7 @@
+
 // Puppy tracking related types
 
-import { WeightUnit } from './common';
+import { WeightUnit } from '@/types/common';
 
 // Puppy with age information
 export interface PuppyWithAge {
@@ -178,6 +179,7 @@ export interface WeightRecord {
   percent_change?: number;
   created_at: string;
   age_days?: number;
+  birth_date?: string;
 }
 
 // Add vaccination schedule types
