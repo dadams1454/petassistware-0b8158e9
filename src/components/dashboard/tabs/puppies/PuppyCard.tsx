@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroup } from '@/types/puppyTracking';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowUpRight, Baby, Calendar, Ruler, Weight } from 'lucide-react';
@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface PuppyCardProps {
   puppy: PuppyWithAge;
-  ageGroup: PuppyAgeGroupData;
+  ageGroup: PuppyAgeGroup;
 }
 
 const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
@@ -23,7 +23,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
     }
   };
   
-  const getGenderColor = (gender: string | null) => {
+  const getGenderColor = (gender: string | null | undefined) => {
     return gender?.toLowerCase() === 'male' ? 'text-blue-500' : 'text-pink-500';
   };
   

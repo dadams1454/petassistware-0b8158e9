@@ -1,3 +1,4 @@
+
 // Reproductive cycle related types
 
 import { Dog } from '@/types/dog';
@@ -33,7 +34,7 @@ export const ReproductiveStatusMapping = {
   NEUTERED: ReproductiveStatus.Neutered
 };
 
-// Heat intensity options
+// Heat intensity values as proper enum
 export enum HeatIntensity {
   Low = 'Low',
   Mild = 'Mild',
@@ -44,15 +45,16 @@ export enum HeatIntensity {
   Peak = 'Peak'
 }
 
-export const HeatIntensityValues: HeatIntensity[] = [
-  HeatIntensity.Low, 
-  HeatIntensity.Mild, 
-  HeatIntensity.Moderate, 
-  HeatIntensity.Medium, 
-  HeatIntensity.High, 
-  HeatIntensity.Strong, 
-  HeatIntensity.Peak
-];
+// Convenience object for accessing intensity values
+export const HeatIntensityValues = {
+  Low: HeatIntensity.Low,
+  Mild: HeatIntensity.Mild,
+  Moderate: HeatIntensity.Moderate,
+  Medium: HeatIntensity.Medium,
+  High: HeatIntensity.High,
+  Strong: HeatIntensity.Strong,
+  Peak: HeatIntensity.Peak
+};
 
 // Heat stage definition
 export interface HeatStage {

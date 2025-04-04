@@ -107,6 +107,7 @@ export interface SocializationCategory {
   name: string;
   description: string;
   order: number;
+  color?: string; // Adding for compatibility with existing code
 }
 
 export interface SocializationCategoryOption {
@@ -114,6 +115,7 @@ export interface SocializationCategoryOption {
   categoryId: string;
   name: string;
   description?: string;
+  color?: string; // Adding for compatibility with existing code
 }
 
 export interface SocializationReactionOption {
@@ -123,6 +125,7 @@ export interface SocializationReactionOption {
   description?: string;
   color: string;
   emoji: string;
+  value?: string; // Adding for compatibility with existing code
 }
 
 export interface SocializationProgress {
@@ -131,6 +134,11 @@ export interface SocializationProgress {
   total: number;
   completed: number;
   percentage: number;
+  // For backwards compatibility
+  completion_percentage?: number;
+  count?: number;
+  target?: number;
+  categoryName?: string;
 }
 
 export interface SocializationExperience {
@@ -143,6 +151,10 @@ export interface SocializationExperience {
   notes?: string;
   created_at: string;
   created_by?: string;
+  // For backwards compatibility
+  experience?: string;
+  experience_date?: string;
+  experience_type?: string;
 }
 
 export interface PuppyCareLog {
@@ -153,4 +165,53 @@ export interface PuppyCareLog {
   notes?: string;
   created_at: string;
   created_by?: string;
+}
+
+// Add weight record type since it's referenced from other modules
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;
+}
+
+// Add vaccination schedule types
+export interface VaccinationSchedule {
+  id: string;
+  puppy_id: string;
+  vaccine_name: string;
+  due_date: string;
+  administered: boolean;
+  administered_date?: string;
+  notes?: string;
+  created_at?: string;
+}
+
+export interface VaccinationRecord {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  lot_number?: string;
+  administered_by?: string;
+  notes?: string;
+  created_at: string;
+}
+
+// Add puppy milestone for hooks
+export interface PuppyMilestone {
+  id?: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
+  title?: string;
+  notes?: string;
+  created_at?: string;
+  is_completed?: boolean;
 }

@@ -129,15 +129,15 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeat
               <select 
                 name="intensity"
                 className="w-full p-2 border rounded"
-                defaultValue={HeatIntensityValues.Moderate}
+                defaultValue={HeatIntensity.Moderate}
               >
-                <option value={HeatIntensityValues.Low}>Low</option>
-                <option value={HeatIntensityValues.Mild}>Mild</option>
-                <option value={HeatIntensityValues.Moderate}>Moderate</option>
-                <option value={HeatIntensityValues.Medium}>Medium</option>
-                <option value={HeatIntensityValues.High}>High</option>
-                <option value={HeatIntensityValues.Strong}>Strong</option>
-                <option value={HeatIntensityValues.Peak}>Peak</option>
+                <option value={HeatIntensity.Low}>Low</option>
+                <option value={HeatIntensity.Mild}>Mild</option>
+                <option value={HeatIntensity.Moderate}>Moderate</option>
+                <option value={HeatIntensity.Medium}>Medium</option>
+                <option value={HeatIntensity.High}>High</option>
+                <option value={HeatIntensity.Strong}>Strong</option>
+                <option value={HeatIntensity.Peak}>Peak</option>
               </select>
             </div>
             
