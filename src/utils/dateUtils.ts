@@ -89,3 +89,81 @@ export const formatRelativeDate = (date: string): string => {
     return `${Math.abs(daysDiff)} days ago`;
   }
 };
+
+/**
+ * Parse frequency string into interval and unit
+ * Example: "every 7 days" -> { interval: 7, unit: "day" }
+ */
+export const parseFrequency = (frequency: string): { interval: number | null; unit: string | null } => {
+  if (!frequency) {
+    return { interval: null, unit: null };
+  }
+  
+  // Common frequency patterns
+  if (frequency.toLowerCase() === 'daily') {
+    return { interval: 1, unit: 'day' };
+  }
+  
+  if (frequency.toLowerCase() === 'twice-daily' || frequency.toLowerCase() === 'twice daily') {
+    return { interval: 12, unit: 'hour' };
+  }
+  
+  if (frequency.toLowerCase() === 'weekly') {
+    return { interval: 1, unit: 'week' };
+  }
+  
+  if (frequency.toLowerCase() === 'biweekly') {
+    return { interval: 2, unit: 'week' };
+  }
+  
+  if (frequency.toLowerCase() === 'monthly') {
+    return { interval: 1, unit: 'month' };
+  }
+  
+  if (frequency.toLowerCase() === 'quarterly') {
+    return { interval: 3, unit: 'month' };
+  }
+  
+  if (frequency.toLowerCase() === 'yearly' || frequency.toLowerCase() === 'annual') {
+    return { interval: 12, unit: 'month' };
+  }
+  
+  // For "every X days/weeks/months" pattern
+  const everyPattern = /every\s+(\d+)\s+(day|week|month|hour|year)s?/i;
+  const everyMatch = frequency.match(everyPattern);
+  
+  if (everyMatch) {
+    return {
+      interval: parseInt(everyMatch[1], 10),
+      unit: everyMatch[2].toLowerCase()
+    };
+  }
+  
+  // Pattern for "X times per day/week"
+  const timesPattern = /(\d+)\s+times?\s+per\s+(day|week|month|year)/i;
+  const timesMatch = frequency.match(timesPattern);
+  
+  if (timesMatch) {
+    const times = parseInt(timesMatch[1], 10);
+    const period = timesMatch[2].toLowerCase();
+    
+    // Calculate interval in hours
+    if (period === 'day') {
+      return { interval: 24 / times, unit: 'hour' };
+    }
+    
+    if (period === 'week') {
+      return { interval: 7 / times, unit: 'day' };
+    }
+    
+    if (period === 'month') {
+      return { interval: 30 / times, unit: 'day' };
+    }
+    
+    if (period === 'year') {
+      return { interval: 12 / times, unit: 'month' };
+    }
+  }
+  
+  return { interval: null, unit: null };
+};

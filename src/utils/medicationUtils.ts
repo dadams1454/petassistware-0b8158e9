@@ -11,6 +11,19 @@ export interface StatusInfo {
   emoji: string;
 }
 
+// Constants for medication frequencies
+export const MedicationFrequencyConstants = {
+  DAILY: 'daily',
+  TWICE_DAILY: 'twice-daily',
+  THREE_TIMES_DAILY: 'three-times-daily',
+  WEEKLY: 'weekly',
+  BIWEEKLY: 'biweekly',
+  MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  ANNUAL: 'annual',
+  AS_NEEDED: 'as-needed'
+};
+
 // Helper function to get the appropriate label and color for a medication status
 export function getStatusLabel(status: MedicationStatusEnum | string): { statusLabel: string; statusColor: string } {
   let statusLabel = '';
@@ -214,4 +227,40 @@ export function getMedicationStatusInfo(status: MedicationStatusEnum | string): 
   }
   
   return { statusLabel, statusColor, emoji };
+}
+
+// Function to process medication logs and organize them by type
+export function processMedicationLogs(logs: any[]) {
+  const preventativeMeds: any[] = [];
+  const otherMeds: any[] = [];
+
+  if (!logs || !Array.isArray(logs)) {
+    return { preventative: preventativeMeds, other: otherMeds };
+  }
+
+  logs.forEach(log => {
+    const medication = {
+      id: log.id,
+      name: log.medication_name || 'Unknown Medication',
+      dosage: log.dosage ? `${log.dosage} ${log.dosage_unit || ''}` : '',
+      frequency: log.frequency || 'As needed',
+      lastAdministered: log.administered_at || log.timestamp || log.created_at,
+      nextDue: log.next_due || '',
+      status: log.status || 'active',
+      isPreventative: log.is_preventative === true,
+      notes: log.notes || '',
+      startDate: log.start_date || ''
+    };
+
+    if (medication.isPreventative) {
+      preventativeMeds.push(medication);
+    } else {
+      otherMeds.push(medication);
+    }
+  });
+
+  return {
+    preventative: preventativeMeds,
+    other: otherMeds
+  };
 }
