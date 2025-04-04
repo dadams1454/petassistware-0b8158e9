@@ -35,12 +35,12 @@ const MedicationsTab: React.FC = () => {
           
         if (todayError) throw todayError;
         
-        // Get pending count
+        // Get pending count (overdue)
         const { count: pendingCount, error: pendingError } = await supabase
           .from('health_records')
           .select('*', { count: 'exact', head: true })
           .eq('record_type', 'medication')
-          .lte('next_due_date', today);
+          .lt('next_due_date', today);
           
         if (pendingError) throw pendingError;
         

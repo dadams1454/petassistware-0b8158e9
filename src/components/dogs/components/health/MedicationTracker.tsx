@@ -57,23 +57,27 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({ dogId }) => {
       // Simple frequency handling
       const frequencyStr = medication.frequency || 'monthly';
       
-      switch (frequencyStr) {
-        case MedicationFrequencyConstants.DAILY:
+      switch (frequencyStr.toLowerCase()) {
+        case MedicationFrequencyConstants.DAILY.toLowerCase():
+        case MedicationFrequencyConstants.ONCE_DAILY.toLowerCase():
           nextDueDate.setDate(today.getDate() + 1);
           break;
-        case MedicationFrequencyConstants.WEEKLY:
+        case MedicationFrequencyConstants.TWICE_DAILY.toLowerCase():
+          nextDueDate.setDate(today.getDate() + 1); // Simplified for now
+          break;
+        case MedicationFrequencyConstants.WEEKLY.toLowerCase():
           nextDueDate.setDate(today.getDate() + 7);
           break;
-        case MedicationFrequencyConstants.BIWEEKLY:
+        case MedicationFrequencyConstants.BIWEEKLY.toLowerCase():
           nextDueDate.setDate(today.getDate() + 14);
           break;
-        case MedicationFrequencyConstants.MONTHLY:
+        case MedicationFrequencyConstants.MONTHLY.toLowerCase():
           nextDueDate.setMonth(today.getMonth() + 1);
           break;
-        case MedicationFrequencyConstants.QUARTERLY:
+        case MedicationFrequencyConstants.QUARTERLY.toLowerCase():
           nextDueDate.setMonth(today.getMonth() + 3);
           break;
-        case MedicationFrequencyConstants.ANNUALLY:
+        case MedicationFrequencyConstants.ANNUALLY.toLowerCase():
           nextDueDate.setFullYear(today.getFullYear() + 1);
           break;
         default:

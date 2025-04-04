@@ -49,7 +49,11 @@ const AdministerMedicationForm: React.FC<AdministerMedicationFormProps> = ({
   
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await onSubmit(values);
+      await onSubmit({
+        ...values,
+        medicationId: medication.id,
+        dogId: medication.dog_id
+      });
       form.reset();
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -59,6 +63,18 @@ const AdministerMedicationForm: React.FC<AdministerMedicationFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        <div className="mb-4 border-b pb-4">
+          <h3 className="text-lg font-medium">Administer {medication.name}</h3>
+          <p className="text-sm text-muted-foreground">
+            Dosage: {medication.dosage} {medication.dosage_unit}
+          </p>
+          {medication.frequency && (
+            <p className="text-sm text-muted-foreground">
+              Frequency: {medication.frequency}
+            </p>
+          )}
+        </div>
+        
         <FormField
           control={form.control}
           name="administeredAt"

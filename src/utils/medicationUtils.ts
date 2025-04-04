@@ -171,8 +171,12 @@ export const getStatusLabel = (status: MedicationStatusEnum) => {
 export const processMedicationLogs = (logs: any[] = []): Record<string, any> => {
   const processedLogs: Record<string, any> = {};
   
+  if (!logs || !Array.isArray(logs)) {
+    return processedLogs;
+  }
+  
   logs.forEach(log => {
-    if (!log.medication_metadata) return;
+    if (!log || !log.medication_metadata) return;
     
     const medicationId = log.medication_metadata.medication_id;
     if (!medicationId) return;
