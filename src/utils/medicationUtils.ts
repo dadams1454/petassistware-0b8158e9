@@ -1,4 +1,3 @@
-
 import { Medication, MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 import { addDays, isBefore, isAfter, parseISO, differenceInDays } from 'date-fns';
 
@@ -169,8 +168,6 @@ export const getStatusLabel = (status: MedicationStatusEnum) => {
 
 // Process medication logs from daily care data
 export const processMedicationLogs = (logs: any[] = []): Record<string, any> => {
-  const processedLogs: Record<string, any> = {};
-  
   logs.forEach(log => {
     if (!log.medication_metadata) return;
     
@@ -222,4 +219,22 @@ export const getOverdueMedications = (medications: Medication[]): Medication[] =
     const status = getMedicationStatus(med);
     return status.isOverdue === true;
   });
+};
+
+// Add the missing function that healthService.ts is trying to import
+export const calculateMedicationStatus = (startDate?: string, endDate?: string): MedicationStatusEnum => {
+  const today = new Date();
+  
+  // Check if the medication has an end date that's in the past
+  if (endDate && isBefore(new Date(endDate), today)) {
+    return MedicationStatusEnum.Completed;
+  }
+  
+  // Check if the medication has a start date that's in the future
+  if (startDate && isAfter(new Date(startDate), today)) {
+    return MedicationStatusEnum.Scheduled;
+  }
+  
+  // If it's active
+  return MedicationStatusEnum.Active;
 };
