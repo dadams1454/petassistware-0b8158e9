@@ -88,8 +88,8 @@ export interface DogProfile {
 
 // Define enums for Dog gender and status
 export enum DogGender {
-  Male = 'male',
-  Female = 'female'
+  Male = 'Male',
+  Female = 'Female'
 }
 
 export enum DogStatus {

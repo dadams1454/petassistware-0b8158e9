@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +42,14 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           .single();
           
         if (dogError) throw dogError;
-        setDog(dogData);
+        
+        // Create Dog object with required status field
+        const dogWithStatus: Dog = {
+          ...dogData,
+          status: dogData.status || 'active' // Default to 'active' if status is not provided
+        };
+        
+        setDog(dogWithStatus);
         
         // Fetch compatible male dogs
         const { data: malesData, error: malesError } = await supabase
@@ -55,7 +61,14 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           .order('name');
           
         if (malesError) throw malesError;
-        setCompatibleMales(malesData);
+        
+        // Add status to male dogs
+        const malesWithStatus: Dog[] = malesData.map(male => ({
+          ...male,
+          status: male.status || 'active' // Default to 'active' if status is not provided
+        }));
+        
+        setCompatibleMales(malesWithStatus);
       } catch (error) {
         console.error('Error fetching dog data:', error);
       } finally {

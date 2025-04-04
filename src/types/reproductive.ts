@@ -1,137 +1,70 @@
 
 import { Dog } from './dog';
 
-// Heat cycle intensity type with all needed values
-export type HeatIntensityType = 'mild' | 'moderate' | 'strong' | 'medium' | 'low' | 'high' | 'peak' | 'unknown';
-
-// Heat intensity enum values
-export const HeatIntensityValues = {
-  MILD: 'mild',
-  MODERATE: 'moderate',
-  STRONG: 'strong',
-  LOW: 'low',
-  MEDIUM: 'medium',
-  HIGH: 'high',
-  PEAK: 'peak',
-  UNKNOWN: 'unknown',
-  // Alias using capitalized first letter for compatibility
-  Mild: 'mild',
-  Moderate: 'moderate',
-  Strong: 'strong',
-  Low: 'low',
-  Medium: 'medium',
-  High: 'high',
-  Peak: 'peak',
-  Unknown: 'unknown'
-} as const;
-
-// For backward compatibility
-export type HeatIntensity = HeatIntensityType;
-
 // Heat cycle interface
 export interface HeatCycle {
   id: string;
   dog_id: string;
   start_date: string;
   end_date?: string;
-  cycle_number?: number;
-  cycle_length?: number;
   intensity?: HeatIntensityType;
   symptoms?: string[];
-  fertility_indicators?: any;
   notes?: string;
   created_at: string;
   updated_at?: string;
+  cycle_number?: number;
+  cycle_length?: number;
+  fertility_indicators?: any;
   recorded_by?: string;
 }
 
-// Reproductive status types
-export enum ReproductiveStatus {
-  InHeat = 'in_heat',
-  PreHeat = 'pre_heat',
-  Pregnant = 'pregnant',
-  Available = 'available',
-  Resting = 'resting',
-  Nursing = 'nursing',
-  Recovery = 'recovery',
-  Whelping = 'whelping',
-  Intact = 'intact',
-  NotInHeat = 'not_in_heat',
-  Altered = 'altered',
-  Spayed = 'spayed',
-  Neutered = 'neutered',
-  Unknown = 'unknown',
-  
-  // For backward compatibility
-  IN_HEAT = 'in_heat',
-  PREGNANT = 'pregnant'
+// Heat intensity type and enum
+export type HeatIntensityType = 'mild' | 'moderate' | 'strong' | 'unknown';
+
+export enum HeatIntensity {
+  Mild = 'mild',
+  Moderate = 'moderate',
+  Strong = 'strong',
+  Unknown = 'unknown'
 }
 
-// Heat stage types
-export type HeatStageType = 'proestrus' | 'estrus' | 'diestrus' | 'anestrus' | 'unknown';
-
-// Heat stage enum values
-export const HeatStageValues = {
-  PROESTRUS: 'proestrus',
-  ESTRUS: 'estrus',
-  DIESTRUS: 'diestrus',
-  ANESTRUS: 'anestrus',
-  UNKNOWN: 'unknown'
-} as const;
-
-// Heat Stage interface
-export interface HeatStage {
-  name: string;
-  day: number;
-  fertility: 'low' | 'medium' | 'high' | 'peak';
-  id?: string; // For compatibility
-  description?: string; // For compatibility
-}
+// Heat intensity values for compatibility
+export const HeatIntensityValues = {
+  Mild: 'mild',
+  Moderate: 'moderate',
+  Strong: 'strong',
+  Unknown: 'unknown'
+};
 
 // Breeding record interface
 export interface BreedingRecord {
   id: string;
-  dog_id?: string;
-  dam_id?: string;
-  sire_id: string;
+  dog_id: string;
+  sire_id?: string;
   breeding_date: string;
-  tie_date?: string;
   method?: string;
-  breeding_method?: string;
   success?: boolean;
-  is_successful?: boolean;
   notes?: string;
   created_at: string;
   created_by?: string;
-  dam?: Dog;
   sire?: Dog;
-  heat_cycle_id?: string;
-  estimated_due_date?: string;
-  data?: any; // For compatibility with some components
+  dam?: Dog;
 }
 
-// Helper function to normalize breeding records
-export function normalizeBreedingRecord(record: any): BreedingRecord {
+// Helper to normalize breeding record
+export const normalizeBreedingRecord = (record: any): BreedingRecord => {
   return {
     id: record.id,
-    dog_id: record.dog_id,
-    dam_id: record.dam_id,
+    dog_id: record.dog_id || record.dam_id,
     sire_id: record.sire_id,
-    breeding_date: record.breeding_date,
-    tie_date: record.tie_date,
+    breeding_date: record.breeding_date || record.tie_date,
     method: record.method || record.breeding_method,
-    breeding_method: record.method || record.breeding_method,
-    success: record.success !== undefined ? record.success : record.is_successful,
-    is_successful: record.success !== undefined ? record.success : record.is_successful,
+    success: record.success || record.is_successful,
     notes: record.notes,
     created_at: record.created_at,
-    created_by: record.created_by,
-    sire: record.sire,
-    dam: record.dam,
-    heat_cycle_id: record.heat_cycle_id,
-    estimated_due_date: record.estimated_due_date
+    created_by: record.created_by
   };
-}
+};
 
 // Pregnancy record interface
 export interface PregnancyRecord {
@@ -140,15 +73,21 @@ export interface PregnancyRecord {
   breeding_record_id?: string;
   confirmation_date?: string;
   due_date?: string;
-  status: 'pending' | 'confirmed' | 'lost' | 'delivered' | 'completed';
+  status: string;
   notes?: string;
   created_at: string;
   created_by?: string;
-  estimated_whelp_date?: string;
-  actual_whelp_date?: string;
-  puppies_born?: number;
-  puppies_alive?: number;
-  outcome?: string;
+}
+
+// Reproductive status enum
+export enum ReproductiveStatus {
+  Intact = 'intact',
+  Spayed = 'spayed',
+  Neutered = 'neutered',
+  InHeat = 'in_heat',
+  Pregnant = 'pregnant',
+  Breeding = 'breeding',
+  NotBreeding = 'not_breeding'
 }
 
 // Reproductive milestone interface
@@ -157,72 +96,69 @@ export interface ReproductiveMilestone {
   dog_id: string;
   milestone_type: string;
   milestone_date: string;
-  date?: string; // For backward compatibility
   notes?: string;
   created_at: string;
   created_by?: string;
+}
+
+// Heat stage interface
+export interface HeatStage {
+  id: string;
+  name: string;
+  description: string;
+  start_day: number;
+  end_day: number;
+  fertility_level: 'none' | 'low' | 'medium' | 'high' | 'peak';
+}
+
+// Reproductive cycle data interface
+export interface ReproductiveCycleData {
+  dog: Dog;
+  heatCycles: HeatCycle[];
+  breedingRecords: BreedingRecord[];
+  pregnancyRecords: PregnancyRecord[];
+  milestones: ReproductiveMilestone[];
+  isInHeat: boolean;
+  currentHeatCycle?: HeatCycle;
+  lastHeatCycle?: HeatCycle;
+  nextHeatDate?: Date;
+  lastBreedingRecord?: BreedingRecord;
+  currentPregnancy?: PregnancyRecord;
+  isPregnant: boolean;
+  estimatedDueDate?: Date;
+  gestationDays: number;
+  currentStatus: string;
+  heatCycle?: {
+    isInHeat: boolean;
+    lastHeatDate?: Date;
+    nextHeatDate?: Date;
+    currentHeatCycle?: HeatCycle;
+    currentHeatStage?: HeatStage;
+    dayOfHeat?: number;
+    fertileDays?: {
+      start: Date;
+      end: Date;
+    };
+  };
+  pregnancyConfirmed: boolean;
+  pregnancyLost: boolean;
 }
 
 // Breeding checklist item interface
 export interface BreedingChecklistItem {
   id: string;
   title: string;
-  description?: string;
-  is_completed: boolean;
-  completed?: boolean; // For backward compatibility
-  completion_date?: string;
-  due_date?: string;
-  task?: string; // Some components use task instead of title
+  description: string;
+  completed: boolean;
+  timeframe?: string;
+  priority: 'low' | 'medium' | 'high';
 }
 
-// Breeding preparation form data
+// Breeding prep form data interface
 export interface BreedingPrepFormData {
-  dam_id: string;
-  sire_id: string;
-  damId?: string; // For backward compatibility
-  sireId?: string; // For backward compatibility
-  breeding_method: string;
-  estimated_due_date: string;
-  plannedTieDate?: string; // For backward compatibility
-  plannedDate?: string; // For backward compatibility
-  notes: string;
-}
-
-// Reproductive cycle data
-export interface ReproductiveCycleData {
-  dog: Dog;
-  currentStatus: ReproductiveStatus;
-  status?: ReproductiveStatus; // For backward compatibility
-  heatCycles: HeatCycle[];
-  breedingRecords: BreedingRecord[];
-  pregnancyRecords: PregnancyRecord[];
-  milestones: ReproductiveMilestone[];
-  lastHeatDate?: string;
-  nextHeatDate?: string;
-  daysUntilNextHeat?: number;
-  averageCycleLength?: number;
-  lastBreedingDate?: string;
-  currentHeatStage?: HeatStage;
-  currentHeatCycle?: HeatCycle;
-  currentStage?: HeatStage; // For backward compatibility
-  heatStages?: {
-    proestrus?: [Date, Date];
-    estrus?: [Date, Date];
-    diestrus?: [Date, Date];
-    anestrus?: [Date, Date];
-  };
-  fertileDays?: {
-    start: Date;
-    end: Date;
-  };
-  fertilityWindow?: {
-    start: Date;
-    end: Date;
-  };
-  dueDate?: string;
-  estimatedDueDate?: Date;
-  isPregnant: boolean;
-  pregnancyConfirmed: boolean;
-  pregnancyLost: boolean;
-  gestationDays: number;
+  damId: string;
+  sireId?: string;
+  breedingMethod: string;
+  plannedBreedingDate?: Date;
+  notes?: string;
 }

@@ -37,17 +37,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { HeatCycle } from '@/types/dog';
-import { HeatIntensity } from '@/types/reproductive';
+import { HeatIntensity, HeatIntensityType, HeatCycle } from '@/types/reproductive';
 
 const formSchema = z.object({
   start_date: z.date({
     required_error: 'Start date is required',
   }),
   end_date: z.date().optional(),
-  intensity: z.enum(['mild', 'moderate', 'strong', 'unknown']).or(
-    z.nativeEnum(HeatIntensity)
-  ),
+  intensity: z.enum(['mild', 'moderate', 'strong', 'unknown']) as z.ZodType<HeatIntensityType>,
   notes: z.string().optional(),
 });
 
@@ -69,9 +66,9 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      start_date: cycle ? new Date(cycle.start_date) : new Date(),
+      start_date: cycle?.start_date ? new Date(cycle.start_date) : new Date(),
       end_date: cycle?.end_date ? new Date(cycle.end_date) : undefined,
-      intensity: (String(cycle?.intensity || 'moderate') as HeatIntensity),
+      intensity: (cycle?.intensity || 'moderate') as HeatIntensityType,
       notes: cycle?.notes || '',
     },
   });
@@ -80,7 +77,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     await onSubmit({
       start_date: format(values.start_date, 'yyyy-MM-dd'),
       end_date: values.end_date ? format(values.end_date, 'yyyy-MM-dd') : undefined,
-      intensity: values.intensity as HeatIntensity,
+      intensity: values.intensity,
       notes: values.notes,
     });
   };
@@ -110,7 +107,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, 'PPP')
+                            format(field.value, "PPP")
                           ) : (
                             <span>Pick a date</span>
                           )}
@@ -148,7 +145,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, 'PPP')
+                            format(field.value, "PPP")
                           ) : (
                             <span>Pick a date</span>
                           )}
@@ -200,9 +197,9 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={HeatIntensity.Mild}>Mild</SelectItem>
-                      <SelectItem value={HeatIntensity.Moderate}>Moderate</SelectItem>
-                      <SelectItem value={HeatIntensity.Strong}>Strong</SelectItem>
+                      <SelectItem value={HeatIntensityValues.Mild}>Mild</SelectItem>
+                      <SelectItem value={HeatIntensityValues.Moderate}>Moderate</SelectItem>
+                      <SelectItem value={HeatIntensityValues.Strong}>Strong</SelectItem>
                       <SelectItem value="unknown">Unknown</SelectItem>
                     </SelectContent>
                   </Select>

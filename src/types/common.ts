@@ -25,3 +25,25 @@ export interface ValidationResult {
   valid: boolean;
   message?: string;
 }
+
+// Weight units array for selecting in forms
+export const weightUnits: SelectOption[] = [
+  { value: 'g', label: 'Grams (g)' },
+  { value: 'kg', label: 'Kilograms (kg)' },
+  { value: 'oz', label: 'Ounces (oz)' },
+  { value: 'lb', label: 'Pounds (lb)' }
+];
+
+// Helper function to standardize weight unit
+export const standardizeWeightUnit = (unit?: string): WeightUnit => {
+  if (!unit) return 'lb';
+  
+  const lowerUnit = unit.toLowerCase();
+  
+  if (lowerUnit === 'g' || lowerUnit === 'grams') return 'g';
+  if (lowerUnit === 'kg' || lowerUnit === 'kilograms') return 'kg';
+  if (lowerUnit === 'oz' || lowerUnit === 'ounces') return 'oz';
+  if (lowerUnit === 'lb' || lowerUnit === 'lbs' || lowerUnit === 'pounds') return 'lb';
+  
+  return 'lb'; // Default fallback
+};
