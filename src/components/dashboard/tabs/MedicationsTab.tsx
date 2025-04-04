@@ -108,7 +108,7 @@ const MedicationsTab: React.FC = () => {
             <h4 className="text-sm font-medium mb-2">Pending</h4>
             <div className="text-2xl font-bold mb-1">{medicationCounts.pending}</div>
             <p className="text-xs text-muted-foreground">
-              Medications due today or overdue
+              Medications overdue
             </p>
           </div>
           
@@ -134,11 +134,11 @@ const MedicationsTab: React.FC = () => {
           </TabsList>
           
           <TabsContent value="upcoming" className="pt-4">
-            <MedicationTracker />
+            <MedicationTracker filter="upcoming" />
           </TabsContent>
           
           <TabsContent value="expiring" className="pt-4">
-            <MedicationTracker />
+            <MedicationTracker filter="overdue" />
           </TabsContent>
         </Tabs>
       </CardContent>

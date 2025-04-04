@@ -87,6 +87,10 @@ export const getNextDueDate = (frequency: string, lastAdministered?: string | Da
 
 // Determine medication status
 export const getMedicationStatus = (medication: Medication): MedicationStatusResult => {
+  if (!medication) {
+    return { status: MedicationStatusEnum.Unknown };
+  }
+  
   const today = new Date();
   const startDate = medication.start_date ? parseISO(medication.start_date) : null;
   const endDate = medication.end_date ? parseISO(medication.end_date) : null;
@@ -120,8 +124,8 @@ export const getMedicationStatus = (medication: Medication): MedicationStatusRes
   }
   
   // If it's active and has been administered
-  const daysUntilNextDose = getDaysUntilNextDose(medication.frequency, lastAdministered);
-  const nextDueDate = getNextDueDate(medication.frequency, lastAdministered);
+  const daysUntilNextDose = getDaysUntilNextDose(medication.frequency || '', lastAdministered);
+  const nextDueDate = getNextDueDate(medication.frequency || '', lastAdministered);
   
   return {
     status: MedicationStatusEnum.Active,
@@ -158,6 +162,11 @@ export const getStatusLabel = (status: MedicationStatusEnum) => {
       return {
         statusLabel: 'Scheduled',
         statusColor: 'bg-purple-100 text-purple-800'
+      };
+    case MedicationStatusEnum.Unknown:
+      return {
+        statusLabel: 'Unknown',
+        statusColor: 'bg-gray-100 text-gray-800'
       };
     default:
       return {
@@ -207,6 +216,10 @@ export const processMedicationLogs = (logs: any[] = []): Record<string, any> => 
 
 // Get list of upcoming medications
 export const getUpcomingMedications = (medications: Medication[], days: number = 7): Medication[] => {
+  if (!medications || !Array.isArray(medications)) {
+    return [];
+  }
+  
   const today = new Date();
   const futureDate = addDays(today, days);
   
@@ -222,6 +235,10 @@ export const getUpcomingMedications = (medications: Medication[], days: number =
 
 // Get list of overdue medications
 export const getOverdueMedications = (medications: Medication[]): Medication[] => {
+  if (!medications || !Array.isArray(medications)) {
+    return [];
+  }
+  
   return medications.filter(med => {
     const status = getMedicationStatus(med);
     return status.isOverdue === true;
