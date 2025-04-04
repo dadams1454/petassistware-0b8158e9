@@ -1,171 +1,104 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
-import { standardizeWeightUnit, WeightUnit } from '@/types/common';
+import { WeightRecord } from '@/types/health';
 
-/**
- * Interface for puppy weight record 
- */
+// Define the PuppyWeightRecord interface 
 export interface PuppyWeightRecord {
-  id?: string;
+  id: string;
   puppy_id: string;
   weight: number;
-  weight_unit: WeightUnit;
+  weight_unit: string;
   date: string;
-  notes?: string;
   age_days?: number;
-  created_at?: string;
+  notes?: string;
+  created_at: string;
 }
 
 /**
- * Get weight records for a specific puppy
+ * Fetch all weight records for a puppy
  */
 export const getPuppyWeightRecords = async (puppyId: string): Promise<PuppyWeightRecord[]> => {
   try {
     const { data, error } = await supabase
-      .from('weight_records')
+      .from('puppy_weights')
       .select('*')
       .eq('puppy_id', puppyId)
       .order('date', { ascending: false });
       
-    if (error) {
-      console.error('Error fetching puppy weight records:', error);
-      throw error;
-    }
+    if (error) throw error;
     
-    // Convert legacy weight units
-    return (data || []).map(record => ({
-      ...record,
-      weight_unit: standardizeWeightUnit(record.weight_unit),
-    })) as PuppyWeightRecord[];
+    return data as PuppyWeightRecord[];
   } catch (error) {
     console.error('Error in getPuppyWeightRecords:', error);
-    throw error;
+    return [];
   }
 };
-
-// Alias for backward compatibility
-export const fetchPuppyWeightRecords = getPuppyWeightRecords;
 
 /**
  * Add a new weight record for a puppy
  */
-export const addPuppyWeightRecord = async (
-  puppyId: string, 
-  weight: number, 
-  weightUnit: WeightUnit, 
-  date: string | Date,
-  notes: string = ''
-) => {
+export const addPuppyWeightRecord = async (recordData: Partial<PuppyWeightRecord>): Promise<PuppyWeightRecord | null> => {
   try {
-    // Format date
-    const formattedDate = formatDateToYYYYMMDD(date);
-    const standardizedUnit = standardizeWeightUnit(weightUnit);
-    
-    // We need to get the dog_id from the puppy record
-    const { data: puppyData, error: puppyError } = await supabase
-      .from('puppies')
-      .select('litter_id')
-      .eq('id', puppyId)
-      .single();
-      
-    if (puppyError) {
-      console.error('Error fetching puppy details for weight record:', puppyError);
-      throw puppyError;
-    }
-    
-    // Get the litter's dam_id to use as the dog_id (may need to adjust based on your schema)
-    const { data: litterData, error: litterError } = await supabase
-      .from('litters')
-      .select('dam_id')
-      .eq('id', puppyData.litter_id)
-      .single();
-      
-    if (litterError) {
-      console.error('Error fetching litter details for weight record:', litterError);
-      throw litterError;
-    }
+    // Ensure required fields are present
+    if (!recordData.puppy_id) throw new Error('Puppy ID is required');
+    if (!recordData.weight) throw new Error('Weight is required');
+    if (!recordData.weight_unit) throw new Error('Weight unit is required');
+    if (!recordData.date) throw new Error('Date is required');
     
     const { data, error } = await supabase
-      .from('weight_records')
-      .insert({
-        puppy_id: puppyId,
-        dog_id: litterData.dam_id, // Use the dam's ID as the required dog_id
-        weight: weight,
-        weight_unit: standardizedUnit,
-        date: formattedDate,
-        notes: notes,
-      })
+      .from('puppy_weights')
+      .insert(recordData)
       .select()
       .single();
       
-    if (error) {
-      console.error('Error adding puppy weight record:', error);
-      throw error;
-    }
+    if (error) throw error;
     
     return data as PuppyWeightRecord;
   } catch (error) {
     console.error('Error in addPuppyWeightRecord:', error);
-    throw error;
+    return null;
   }
 };
 
 /**
  * Update a puppy weight record
  */
-export const updatePuppyWeightRecord = async (
-  recordId: string, 
-  updates: Partial<PuppyWeightRecord>
-) => {
+export const updatePuppyWeightRecord = async (id: string, recordData: Partial<PuppyWeightRecord>): Promise<PuppyWeightRecord | null> => {
   try {
-    // Format date if present
-    if (updates.date) {
-      updates.date = formatDateToYYYYMMDD(updates.date);
-    }
-    
-    // Standardize weight unit if present
-    if (updates.weight_unit) {
-      updates.weight_unit = standardizeWeightUnit(updates.weight_unit);
-    }
-    
     const { data, error } = await supabase
-      .from('weight_records')
-      .update(updates)
-      .eq('id', recordId)
+      .from('puppy_weights')
+      .update(recordData)
+      .eq('id', id)
       .select()
       .single();
       
-    if (error) {
-      console.error('Error updating puppy weight record:', error);
-      throw error;
-    }
+    if (error) throw error;
     
     return data as PuppyWeightRecord;
   } catch (error) {
     console.error('Error in updatePuppyWeightRecord:', error);
-    throw error;
+    return null;
   }
 };
 
 /**
  * Delete a puppy weight record
  */
-export const deletePuppyWeightRecord = async (recordId: string) => {
+export const deletePuppyWeightRecord = async (id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from('weight_records')
+      .from('puppy_weights')
       .delete()
-      .eq('id', recordId);
+      .eq('id', id);
       
-    if (error) {
-      console.error('Error deleting puppy weight record:', error);
-      throw error;
-    }
+    if (error) throw error;
     
     return true;
   } catch (error) {
     console.error('Error in deletePuppyWeightRecord:', error);
-    throw error;
+    return false;
   }
 };
+
+// For backward compatibility
+export const fetchPuppyWeightRecords = getPuppyWeightRecords;

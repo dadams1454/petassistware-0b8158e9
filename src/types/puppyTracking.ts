@@ -16,6 +16,7 @@ export interface Puppy {
   birth_weight?: string;
   current_weight?: string;
   current_weight_unit?: string;
+  weight_unit?: string;
   birth_order?: number;
   photo_url?: string;
   microchip_number?: string;
@@ -43,7 +44,9 @@ export interface Puppy {
 export interface PuppyWithAge extends Puppy {
   age: number;  // Age in days
   ageInDays: number;  // Alias for age
+  age_days?: number;  // For backward compatibility
   ageInWeeks: number;
+  age_weeks?: number;  // For backward compatibility
   developmentalStage: string;
   weightHistory?: PuppyWeightRecord[];
   // Optional litter reference
@@ -54,12 +57,17 @@ export interface PuppyWithAge extends Puppy {
 export interface PuppyAgeGroup {
   id: string;
   name: string;
-  displayName: string;
+  displayName?: string;
   description: string;
   minDays: number;
   maxDays: number;
+  minAge?: number; // For backward compatibility
+  maxAge?: number; // For backward compatibility
   unit?: string;
   color: string;
+  startDay?: number; // For backward compatibility
+  endDay?: number; // For backward compatibility
+  milestones?: string[]; // For backward compatibility
 }
 
 // Puppy age group data structure
@@ -113,7 +121,7 @@ export interface PuppyManagementStats extends PuppyStats {
 }
 
 // Socialization tracking types
-export type SocializationReactionType = 'positive' | 'neutral' | 'cautious' | 'fearful' | 'curious';
+export type SocializationReactionType = 'positive' | 'neutral' | 'cautious' | 'fearful' | 'curious' | 'very_positive' | 'very_fearful';
 
 export interface SocializationCategory {
   id: string;
@@ -144,24 +152,30 @@ export interface SocializationExperience {
   id: string;
   puppy_id: string;
   category_id: string;
-  category?: SocializationCategory;
+  category?: string;
   experience: string;
   date: string;
   experience_date?: string; // For backward compatibility
   reaction?: SocializationReactionType;
   notes?: string;
   created_at: string;
+  experience_type?: string; // For backward compatibility
 }
 
 export interface SocializationProgress {
   categoryId: string;
+  category?: string; // For backward compatibility
+  categoryName?: string; // For backward compatibility
   total: number;
+  count?: number; // For backward compatibility
+  target?: number; // For backward compatibility
   percentage: number;
+  completion_percentage?: number; // For backward compatibility
 }
 
 // Puppy milestone types
 export interface PuppyMilestone {
-  id: string;
+  id?: string;
   puppy_id: string;
   title: string;
   milestone_type: string;
@@ -169,6 +183,7 @@ export interface PuppyMilestone {
   description?: string;
   is_completed: boolean;
   completion_date?: string;
+  category?: string; // For backward compatibility
 }
 
 // Vaccination schedule for puppies
@@ -194,4 +209,19 @@ export interface VaccinationRecord {
   lot_number?: string;
   notes?: string;
   created_at: string;
+}
+
+// For additional compatibility
+export type SocializationRecord = SocializationExperience;
+export type WeightRecord = import('./health').WeightRecord;
+
+// For care logs
+export interface PuppyCareLog {
+  id: string;
+  puppy_id: string;
+  activity: string;
+  notes?: string;
+  timestamp: string;
+  created_at: string;
+  created_by?: string;
 }
