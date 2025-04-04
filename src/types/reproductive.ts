@@ -52,10 +52,18 @@ export type ReproductiveStatusType = 'available' | 'in_heat' | 'pregnant' | 'nur
 export enum ReproductiveStatus {
   Available = 'available',
   InHeat = 'in_heat',
+  PreHeat = 'pre_heat',
   Pregnant = 'pregnant', 
   Nursing = 'nursing',
+  Recovery = 'recovery',
   Inactive = 'inactive',
-  Unknown = 'unknown'
+  Unknown = 'unknown',
+  Intact = 'intact',
+  NotInHeat = 'not_in_heat',
+  Altered = 'altered',
+  Spayed = 'spayed',
+  Neutered = 'neutered',
+  Whelping = 'whelping'
 }
 
 // Heat stage interface
@@ -66,6 +74,8 @@ export interface HeatStage {
   day_end: number;
   description: string;
   color?: string;
+  day?: number;
+  fertility?: string;
 }
 
 // Breeding method types
@@ -99,6 +109,7 @@ export interface BreedingRecord {
   updated_by?: string;
   dam?: Dog;
   sire?: Dog;
+  estimated_due_date?: string;
 }
 
 // Reproductive milestone type
@@ -135,6 +146,7 @@ export interface BreedingChecklistItem {
   category?: string;
   completion_date?: string;
   notes?: string;
+  task?: string; // For compatibility
 }
 
 // Pregnancy record interface
@@ -150,6 +162,11 @@ export interface PregnancyRecord {
   created_by?: string;
   updated_at?: string;
   updated_by?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 // Reproductive cycle data interface
@@ -175,6 +192,10 @@ export interface ReproductiveCycleData {
   dueDate?: string;
   gestationDays: number;
   breedingChecklist: BreedingChecklistItem[];
+  daysUntilNextHeat?: number;
+  averageCycleLength?: number;
+  fertilityWindow?: { start: string; end: string };
+  estimatedDueDate?: string;
 }
 
 // Normalize breeding record to ensure consistent structure
@@ -194,6 +215,17 @@ export function normalizeBreedingRecord(record: any): BreedingRecord {
     updated_at: record.updated_at,
     updated_by: record.updated_by,
     sire: record.sire,
-    dam: record.dam
+    dam: record.dam,
+    estimated_due_date: record.estimated_due_date
   };
+}
+
+// Added for compatibility
+export interface BreedingPrepFormData {
+  dog_id: string;
+  sire_id: string;
+  tie_date: string;
+  estimated_due_date: string;
+  breeding_method: string;
+  notes: string;
 }

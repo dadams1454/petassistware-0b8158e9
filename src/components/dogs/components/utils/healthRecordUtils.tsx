@@ -96,9 +96,9 @@ export const getHealthRecordColor = (recordType: HealthRecordTypeEnum): string =
   }
 };
 
-export const HealthRecordIcon: React.FC<{ recordType: HealthRecordTypeEnum }> = ({ recordType }) => {
+export const HealthRecordIcon: React.FC<{ recordType: HealthRecordTypeEnum, className?: string }> = ({ recordType, className }) => {
   const Icon = getHealthRecordIcon(recordType);
   const colorClass = getHealthRecordColor(recordType);
   
-  return <Icon className={`h-5 w-5 ${colorClass}`} />;
+  return <Icon className={`h-5 w-5 ${colorClass} ${className || ''}`} />;
 };

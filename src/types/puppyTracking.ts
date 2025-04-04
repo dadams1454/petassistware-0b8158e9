@@ -21,7 +21,7 @@ export interface PuppyWithAge {
   microchip_number?: string;
   birth_weight?: number | string;
   birth_weight_unit?: WeightUnit;
-  current_weight?: number;
+  current_weight?: number | string;
   current_weight_unit?: WeightUnit;
   weight_unit?: WeightUnit;
   sale_price?: number;
@@ -104,7 +104,7 @@ export interface PuppyManagementStats {
 }
 
 // Add socialization types that were missing
-export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'fearful' | 'curious';
+export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'fearful' | 'curious' | 'very_positive' | 'very_fearful' | 'cautious';
 
 export interface SocializationCategory {
   id: string;
@@ -148,6 +148,7 @@ export interface SocializationProgress {
   count?: number;
   target?: number;
   categoryName?: string;
+  id?: string;
 }
 
 export interface SocializationExperience {
@@ -176,7 +177,7 @@ export interface PuppyCareLog {
   created_by?: string;
 }
 
-// Add weight record type since it's referenced from other modules
+// Weight record type (imported from health.ts to avoid circular references)
 export interface WeightRecord {
   id: string;
   dog_id: string;
@@ -205,6 +206,9 @@ export interface VaccinationSchedule {
   notes?: string;
   created_at?: string;
 }
+
+// For compatibility with older code
+export type VaccinationScheduleItem = VaccinationSchedule;
 
 export interface VaccinationRecord {
   id: string;
@@ -285,3 +289,6 @@ export interface MedicationAdministration {
   notes?: string;
   created_at: string;
 }
+
+// AgeGroup type for compatibility
+export type AgeGroup = PuppyAgeGroup;

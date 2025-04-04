@@ -1,106 +1,52 @@
 
-import { PuppyFormValues } from '@/hooks/usePuppyForm';
-import { UseFormReturn } from 'react-hook-form';
-import { SocializationReactionType } from '@/types/puppyTracking';
+import { WeightUnit } from '@/types/common';
 
+// Puppy interface for PuppyForm component
 export interface Puppy {
   id: string;
-  name: string | null;
-  gender: string | null;
-  color: string | null;
-  birth_date?: string;
-  litter_id: string;
-  microchip_number?: string | null;
-  photo_url?: string | null;
-  current_weight?: string | null;
-  weight_unit?: string | null;
-  status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable' | string;
-  birth_order?: number | null;
-  birth_weight?: string | null;
-  birth_time?: string | null;
-  presentation?: string | null;
-  assistance_required?: boolean | null;
-  assistance_notes?: string | null;
-  sale_price?: number | null;
-  notes?: string | null;
+  name: string;
+  litter_id?: string;
+  birth_date: string;
+  birth_weight?: string;
+  birth_order?: number;
+  gender: string;
+  color: string;
+  status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
+  microchip_number?: string;
+  akc_registration_number?: string;
+  akc_litter_number?: string;
+  notes?: string;
+  photo_url?: string;
   created_at?: string;
-  updated_at?: string;
+  birth_time?: string;
+  assistance_required?: boolean;
+  assistance_notes?: string;
+  eyes_open_date?: string;
+  ears_open_date?: string;
+  first_walk_date?: string;
+  fully_mobile_date?: string;
+  current_weight?: string;
+  sale_price?: number;
+  reservation_date?: string;
+  deworming_dates?: string;
+  vaccination_dates?: string;
+  vet_check_dates?: string;
+  presentation?: string;
+  weight_unit?: WeightUnit;
+  weight_notes?: string;
+  health_notes?: string;
 }
 
+// Type used in PuppyForm for form values
+export type PuppyFormValues = Partial<Puppy>;
+
+// Type for PuppyForm component props
 export interface PuppyFormProps {
   litterId: string;
-  initialData?: Puppy | null;
+  initialData?: PuppyFormValues;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export interface EditPuppyDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  litterId: string;
-  puppy: Puppy | null;
-  onSuccess: () => void;
-}
-
-export interface BasicInfoTabProps {
-  form: UseFormReturn<PuppyFormValues>;
-  litterId?: string;
-}
-
-export interface WeightsTabProps {
-  form: UseFormReturn<PuppyFormValues>;
-}
-
-export interface HealthTabProps {
-  form: UseFormReturn<PuppyFormValues>;
-}
-
-export interface AKCRegistrationTabProps {
-  form: UseFormReturn<PuppyFormValues>;
-}
-
-export interface NewOwnerTabProps {
-  form: UseFormReturn<PuppyFormValues>;
-}
-
-// Socialization types
-export type SocializationCategory = {
-  id: string;
-  name: string;
-  color?: string;
-  description?: string;
-  examples?: string[];
-};
-
-export interface SocializationRecord {
-  id: string;
-  puppy_id: string;
-  category: SocializationCategory;
-  experience: string;
-  experience_date: string;
-  reaction?: SocializationReactionType;
-  notes?: string;
-  created_at: string;
-}
-
-export interface SocializationCategoryOption {
-  id: string;
-  name: string;
-  value: string;
-  label: string;
-  color?: string;
-  examples?: string[];
-}
-
-export interface SocializationReactionOption {
-  id: string;
-  name: string;
-  value: SocializationReactionType;
-  label: string;
-  color: string;
-}
-
-export interface SocializationTrackerProps {
-  puppyId: string;
-  onExperienceAdded?: () => void;
-}
+// Form data type for compatibility
+export type PuppyFormData = Puppy;

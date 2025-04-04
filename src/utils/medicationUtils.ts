@@ -1,9 +1,7 @@
-
 import { format, parseISO, isAfter, subDays, isBefore, addDays } from 'date-fns';
 import { parseFrequency } from './dateUtils';
-import { MedicationStatusEnum, MedicationStatus } from '@/types/health';
+import { MedicationStatusEnum, MedicationStatus, MedicationStatusResult } from '@/types/health';
 import { StatusColor } from '@/types/ui';
-import { MedicationStatusResult } from '@/types/health';
 
 export interface StatusInfo {
   statusLabel: string;
