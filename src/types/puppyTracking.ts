@@ -215,3 +215,6 @@ export interface PuppyMilestone {
   created_at?: string;
   is_completed?: boolean;
 }
+
+// Re-export WeightUnit to ensure it's available to importers
+export type { WeightUnit };

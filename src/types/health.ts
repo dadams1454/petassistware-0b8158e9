@@ -1,5 +1,5 @@
 
-import { WeightUnit } from './common';
+import { WeightUnit } from '@/types/common';
 
 // Medication status enum
 export enum MedicationStatusEnum {
@@ -321,5 +321,5 @@ export function mapToWeightRecord(record: any): WeightRecord {
   };
 }
 
-// Export WeightUnit for use in other files
-export { WeightUnit };
+// Export type for proper TypeScript isolation mode compatibility
+export type { WeightUnit };

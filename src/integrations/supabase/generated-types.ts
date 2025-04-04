@@ -7,5 +7,8 @@ export type Json =
   | { [key: string]: Json }
   | Json[];
 
-// Add the WeightUnit type that's referenced in components
-export type WeightUnit = 'lb' | 'kg' | 'oz' | 'g';
+// Import WeightUnit from common types
+import { WeightUnit } from '@/types/common';
+
+// Re-export WeightUnit for use in other files
+export type { WeightUnit };
