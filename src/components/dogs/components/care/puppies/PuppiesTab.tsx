@@ -41,7 +41,12 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     error,
     total = { count: 0, male: 0, female: 0 },
     byGender = { male: 0, female: 0, unknown: 0 },
-    byStatus = {}
+    byStatus = {
+      available: 0,
+      reserved: 0,
+      sold: 0,
+      unavailable: 0
+    }
   } = usePuppyTracking();
   
   const navigate = useNavigate();

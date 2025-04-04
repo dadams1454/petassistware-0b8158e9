@@ -96,7 +96,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
             <Weight className="h-4 w-4 text-muted-foreground" />
             <span className="text-muted-foreground">Weight:</span>
             <span className="font-medium">
-              {puppy.currentWeight ? `${puppy.currentWeight}` : 'Not recorded'}
+              {puppy.current_weight ? `${puppy.current_weight}` : 'Not recorded'}
             </span>
           </div>
           

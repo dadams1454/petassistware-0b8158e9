@@ -50,10 +50,10 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, className }) => {
             <p className="text-muted-foreground">Color</p>
             <p className="font-medium">{puppy.color || 'Not specified'}</p>
           </div>
-          {puppy.currentWeight && (
+          {puppy.current_weight && (
             <div className="col-span-2">
               <p className="text-muted-foreground">Current Weight</p>
-              <p className="font-medium">{puppy.currentWeight} {puppy.weightUnit || 'oz'}</p>
+              <p className="font-medium">{puppy.current_weight} {puppy.weight_unit || 'oz'}</p>
             </div>
           )}
         </div>

@@ -1,25 +1,59 @@
 
-// Common types used across the application
+// Common types shared across the application
 
-// Weight unit types
-export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
-export type WeightUnitWithLegacy = WeightUnit | 'lbs'; // For backward compatibility
+// Weight unit type
+export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
-// Add name and code for UI display purposes
-export interface WeightUnitOption {
-  code: WeightUnit;
-  name: string;
+// Weight unit with legacy support
+export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+
+// Date range type
+export interface DateRange {
+  start: Date;
+  end: Date;
 }
 
-export const weightUnits: WeightUnitOption[] = [
-  { code: 'lb', name: 'Pounds' },
-  { code: 'kg', name: 'Kilograms' },
-  { code: 'g', name: 'Grams' },
-  { code: 'oz', name: 'Ounces' }
-];
+// Time of day options
+export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
 
-// Standardize weight units (handle legacy 'lbs' -> 'lb')
-export const standardizeWeightUnit = (unit: WeightUnitWithLegacy): WeightUnit => {
-  if (unit === 'lbs') return 'lb';
-  return unit as WeightUnit;
-};
+// Status type
+export type Status = 'active' | 'inactive' | 'pending' | 'completed' | 'archived';
+
+// Alert levels
+export type AlertLevel = 'info' | 'success' | 'warning' | 'error';
+
+// Common id type
+export type ID = string;
+
+// Pagination params
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  offset?: number;
+}
+
+// Sort direction
+export type SortDirection = 'asc' | 'desc';
+
+// Sort params
+export interface SortParams {
+  field: string;
+  direction: SortDirection;
+}
+
+// Filter operator
+export type FilterOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'like';
+
+// Filter param
+export interface FilterParam {
+  field: string;
+  operator: FilterOperator;
+  value: any;
+}
+
+// Query params
+export interface QueryParams {
+  pagination?: PaginationParams;
+  sort?: SortParams[];
+  filters?: FilterParam[];
+}

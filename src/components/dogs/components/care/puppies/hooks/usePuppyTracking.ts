@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from 'react';
 import { usePuppyData } from '@/hooks/puppies/usePuppyData';
 import { usePuppyAgeGroups } from '@/hooks/puppies/usePuppyAgeGroups';
 import { usePuppyStats } from '@/hooks/puppies/usePuppyStats';
@@ -9,8 +8,17 @@ export const usePuppyTracking = (): PuppyManagementStats => {
   // Fetch puppy data
   const { puppies, isLoading: puppiesLoading, error } = usePuppyData();
   
+  // Ensure the puppies have the correct properties
+  const processedPuppies = puppies.map(puppy => {
+    return {
+      ...puppy,
+      ageInDays: puppy.ageInDays || puppy.age_days || puppy.age || 0,
+      ageInWeeks: puppy.ageInWeeks || puppy.age_weeks || Math.floor((puppy.age_days || puppy.age || 0) / 7),
+    };
+  });
+  
   // Group puppies by age
-  const { ageGroups, puppiesByAgeGroup } = usePuppyAgeGroups(puppies);
+  const { ageGroups, puppiesByAgeGroup } = usePuppyAgeGroups(processedPuppies);
   
   // Get puppy statistics
   const { 
@@ -19,29 +27,42 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     reservedPuppies = 0,
     soldPuppies = 0,
     byGender = { male: 0, female: 0, unknown: 0 },
-    byStatus = {},
+    byStatus = {
+      available: 0,
+      reserved: 0,
+      sold: 0,
+      unavailable: 0
+    },
     byAgeGroup = {}
-  } = usePuppyStats(puppies) || {};
+  } = usePuppyStats(processedPuppies) || {};
 
-  const isLoading = puppiesLoading;
-
+  // Construct PuppyManagementStats object
   return {
-    puppies,
+    totalPuppies,
+    puppies: processedPuppies,
     ageGroups,
     puppiesByAgeGroup,
-    totalPuppies,
+    byAgeGroup: puppiesByAgeGroup, // Use puppiesByAgeGroup for byAgeGroup
+    activeCount: totalPuppies, // Same as total for backward compatibility
+    reservedCount: reservedPuppies,
+    availableCount: availablePuppies,
+    soldCount: soldPuppies,
+    currentWeek: Math.ceil(new Date().getTime() / (7 * 24 * 60 * 60 * 1000)),
+    
+    // Legacy properties
     availablePuppies,
     reservedPuppies,
     soldPuppies,
-    isLoading,
+    isLoading: puppiesLoading,
     error,
+    
+    // Extended statistics
     total: {
       count: totalPuppies,
       male: byGender.male || 0,
       female: byGender.female || 0
     },
     byGender,
-    byStatus,
-    byAgeGroup
+    byStatus
   };
 };

@@ -45,7 +45,9 @@ const formSchema = z.object({
     required_error: 'Start date is required',
   }),
   end_date: z.date().optional(),
-  intensity: z.enum(['mild', 'moderate', 'strong', 'unknown']),
+  intensity: z.enum(['mild', 'moderate', 'strong', 'unknown']).or(
+    z.nativeEnum(HeatIntensity)
+  ),
   notes: z.string().optional(),
 });
 
@@ -69,7 +71,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     defaultValues: {
       start_date: cycle ? new Date(cycle.start_date) : new Date(),
       end_date: cycle?.end_date ? new Date(cycle.end_date) : undefined,
-      intensity: ((cycle?.intensity as 'mild' | 'moderate' | 'strong' | 'unknown') || 'moderate'),
+      intensity: (String(cycle?.intensity || 'moderate') as HeatIntensity),
       notes: cycle?.notes || '',
     },
   });
@@ -78,7 +80,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     await onSubmit({
       start_date: format(values.start_date, 'yyyy-MM-dd'),
       end_date: values.end_date ? format(values.end_date, 'yyyy-MM-dd') : undefined,
-      intensity: values.intensity,
+      intensity: values.intensity as HeatIntensity,
       notes: values.notes,
     });
   };
@@ -198,9 +200,9 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="mild">Mild</SelectItem>
-                      <SelectItem value="moderate">Moderate</SelectItem>
-                      <SelectItem value="strong">Strong</SelectItem>
+                      <SelectItem value={HeatIntensity.Mild}>Mild</SelectItem>
+                      <SelectItem value={HeatIntensity.Moderate}>Moderate</SelectItem>
+                      <SelectItem value={HeatIntensity.Strong}>Strong</SelectItem>
                       <SelectItem value="unknown">Unknown</SelectItem>
                     </SelectContent>
                   </Select>

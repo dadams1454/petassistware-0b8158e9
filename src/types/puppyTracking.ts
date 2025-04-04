@@ -27,19 +27,27 @@ export interface PuppyWithAge {
   age_weeks?: number;
 }
 
-// Age group definition
-export interface AgeGroup {
+// Age group definition for puppy management
+export interface PuppyAgeGroupData {
   id: string;
   name: string;
+  range?: string;
   ageRange: [number, number];
-  color: string;
+  startDay: number;
+  endDay: number;
+  developmentalPhase?: string;
   description?: string;
+  milestones?: string[] | string;
+  color: string;
+  puppies?: PuppyWithAge[];
+  count?: number;
+  careChecks?: string[];
 }
 
 // Puppy statistics organized by age groups
 export interface PuppyManagementStats {
   puppies: PuppyWithAge[];
-  ageGroups: AgeGroup[];
+  ageGroups: PuppyAgeGroupData[];
   puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
   totalPuppies: number;
   
@@ -134,7 +142,7 @@ export type SocializationReactionType =
   | 'very_positive'
   | 'positive'
   | 'neutral'
-  | 'curious'  // Changed from 'cautious' to 'curious'
+  | 'curious'  
   | 'fearful';
 
 // Socialization category option
@@ -145,6 +153,7 @@ export interface SocializationCategoryOption {
   label: string;
   color?: string;
   examples?: string[];
+  description?: string;
 }
 
 // Socialization reaction option
@@ -181,7 +190,35 @@ export interface SocializationProgress {
   count?: number;
   target?: number;
   completion_percentage?: number;
+  id?: string;
 }
 
 // Export types using 'export type' for isolatedModules compatibility
 export type { WeightRecord } from './health';
+
+// Vaccination Schedule type
+export interface VaccinationSchedule {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  due_date: string;
+  scheduled_date?: string;
+  administered?: boolean;
+  notes?: string;
+  vaccine_name?: string;
+  created_at?: string;
+}
+
+// Vaccination Record type
+export interface VaccinationRecord {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  date: string;
+  administered_by?: string;
+  notes?: string;
+  created_at: string;
+}
+
+// Export for SocializationExperience compatibility
+export type SocializationExperience = SocializationRecord;

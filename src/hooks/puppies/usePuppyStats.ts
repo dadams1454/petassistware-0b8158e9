@@ -5,7 +5,7 @@ import { PuppyWithAge, PuppyManagementStats } from '@/types/puppyTracking';
 /**
  * Hook to generate statistics from puppy data
  */
-export const usePuppyStats = (puppies: PuppyWithAge[]): PuppyManagementStats => {
+export const usePuppyStats = (puppies: PuppyWithAge[]): Partial<PuppyManagementStats> => {
   const stats = useMemo(() => {
     // Count total puppies
     const totalCount = puppies.length;
@@ -25,7 +25,7 @@ export const usePuppyStats = (puppies: PuppyWithAge[]): PuppyManagementStats => 
     
     // Count puppies by status
     const byStatus = puppies.reduce((acc, puppy) => {
-      const status = puppy.status || 'Unknown';
+      const status = puppy.status?.toLowerCase() || 'unknown';
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -40,7 +40,7 @@ export const usePuppyStats = (puppies: PuppyWithAge[]): PuppyManagementStats => 
     };
     
     puppies.forEach(puppy => {
-      const ageInDays = puppy.age_days || 0;
+      const ageInDays = puppy.age_days || puppy.ageInDays || 0;
       
       if (ageInDays <= 14) {
         byAgeGroup['newborn']++;
@@ -56,23 +56,29 @@ export const usePuppyStats = (puppies: PuppyWithAge[]): PuppyManagementStats => 
     });
     
     // Puppies by status - common statuses
-    const availablePuppies = byStatus['Available'] || 0;
-    const reservedPuppies = byStatus['Reserved'] || 0;
-    const soldPuppies = byStatus['Sold'] || 0;
+    const availablePuppies = byStatus['available'] || 0;
+    const reservedPuppies = byStatus['reserved'] || 0;
+    const soldPuppies = byStatus['sold'] || 0;
+    const unavailablePuppies = byStatus['unavailable'] || 0;
     
     return {
       puppies,
       totalPuppies: totalCount,
       isLoading: false,
       error: null,
-      // Puppies by age group (placeholder - will come from puppy tracking)
-      puppiesByAgeGroup: {},
-      // Age groups (placeholder - will come from puppy tracking)
-      ageGroups: [],
+      
       // Common status counts
       availablePuppies,
       reservedPuppies,
       soldPuppies,
+      
+      // For backwards compatibility 
+      activeCount: totalCount,
+      availableCount: availablePuppies,
+      reservedCount: reservedPuppies,
+      soldCount: soldPuppies,
+      currentWeek: Math.ceil(new Date().getTime() / (7 * 24 * 60 * 60 * 1000)),
+      
       // Additional stats for dashboard
       total: {
         count: totalCount,
@@ -84,7 +90,12 @@ export const usePuppyStats = (puppies: PuppyWithAge[]): PuppyManagementStats => 
         female: femaleCount,
         unknown: unknownGenderCount
       },
-      byStatus,
+      byStatus: {
+        available: availablePuppies,
+        reserved: reservedPuppies,
+        sold: soldPuppies,
+        unavailable: unavailablePuppies
+      },
       byAgeGroup
     };
   }, [puppies]);
