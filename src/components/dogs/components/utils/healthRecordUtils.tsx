@@ -1,100 +1,85 @@
 
 import React from 'react';
 import { 
-  Syringe, Stethoscope, PillIcon, ScalpelIcon, 
-  FlaskConical, ScanIcon, Tooth, DropletIcon, HeartPulseIcon, 
-  BadgeCheck, EyeIcon, BugIcon, ScissorsIcon, TestTubeIcon, HelpCircle
+  Stethoscope, 
+  Syringe, 
+  Pill, 
+  Scalpel, 
+  FileText, 
+  Microscope, 
+  Camera, 
+  Tooth, 
+  AlertTriangle, 
+  ShieldAlert, 
+  Eye, 
+  Droplets, 
+  Scissors, 
+  TestTube,
+  LucideIcon
 } from 'lucide-react';
 import { HealthRecordTypeEnum } from '@/types/health';
 
-// Helper function to get icon based on record type
-export const getHealthRecordIcon = (type: HealthRecordTypeEnum | string) => {
-  const recordType = typeof type === 'string' 
-    ? stringToHealthRecordType(type) 
-    : type;
-  
-  switch (recordType) {
-    case HealthRecordTypeEnum.Vaccination:
-      return Syringe;
+// Function to get the appropriate icon for each health record type
+export function getHealthRecordIcon(recordType: HealthRecordTypeEnum): LucideIcon {
+  switch(recordType) {
     case HealthRecordTypeEnum.Examination:
       return Stethoscope;
+    case HealthRecordTypeEnum.Vaccination:
+      return Syringe;
     case HealthRecordTypeEnum.Medication:
-      return PillIcon;
+      return Pill;
     case HealthRecordTypeEnum.Surgery:
-      return ScalpelIcon;
+      return Scalpel;
     case HealthRecordTypeEnum.Laboratory:
-      return FlaskConical;
+      return Microscope;
     case HealthRecordTypeEnum.Imaging:
-      return ScanIcon;
+      return Camera;
     case HealthRecordTypeEnum.Dental:
       return Tooth;
     case HealthRecordTypeEnum.Allergy:
-      return DropletIcon;
+      return AlertTriangle;
     case HealthRecordTypeEnum.Emergency:
-      return HeartPulseIcon;
+      return ShieldAlert;
     case HealthRecordTypeEnum.Preventive:
-      return BadgeCheck;
+      return Eye;
     case HealthRecordTypeEnum.Observation:
-      return EyeIcon;
+      return Eye;
     case HealthRecordTypeEnum.Deworming:
-      return BugIcon;
+      return Droplets;
     case HealthRecordTypeEnum.Grooming:
-      return ScissorsIcon;
+      return Scissors;
     case HealthRecordTypeEnum.Test:
-      return TestTubeIcon;
+      return TestTube;
+    case HealthRecordTypeEnum.Procedure:
+      return Scalpel;
     case HealthRecordTypeEnum.Other:
-      return HelpCircle;
     default:
-      return Stethoscope;
+      return FileText;
   }
-};
+}
 
-// Helper function to get color based on record type
-export const getHealthRecordColor = (type: HealthRecordTypeEnum | string) => {
-  const recordType = typeof type === 'string' 
-    ? stringToHealthRecordType(type) 
-    : type;
-  
-  switch (recordType) {
-    case HealthRecordTypeEnum.Vaccination:
-      return "text-green-500";
+// Function to get color for health record types
+export function getHealthRecordColor(recordType: HealthRecordTypeEnum): string {
+  switch(recordType) {
     case HealthRecordTypeEnum.Examination:
-      return "text-blue-500";
+      return 'text-blue-500';
+    case HealthRecordTypeEnum.Vaccination:
+      return 'text-green-500';
     case HealthRecordTypeEnum.Medication:
-      return "text-purple-500";
+      return 'text-purple-500';
     case HealthRecordTypeEnum.Surgery:
-      return "text-red-500";
-    case HealthRecordTypeEnum.Laboratory:
-      return "text-indigo-500";
-    case HealthRecordTypeEnum.Imaging:
-      return "text-cyan-500";
-    case HealthRecordTypeEnum.Dental:
-      return "text-sky-500";
-    case HealthRecordTypeEnum.Allergy:
-      return "text-rose-500";
+      return 'text-red-500';
     case HealthRecordTypeEnum.Emergency:
-      return "text-red-600";
+      return 'text-red-600';
     case HealthRecordTypeEnum.Preventive:
-      return "text-green-600";
-    case HealthRecordTypeEnum.Observation:
-      return "text-amber-500";
+      return 'text-sky-500';
     case HealthRecordTypeEnum.Deworming:
-      return "text-lime-500";
-    case HealthRecordTypeEnum.Grooming:
-      return "text-teal-500";
-    case HealthRecordTypeEnum.Test:
-      return "text-violet-500";
-    case HealthRecordTypeEnum.Other:
-      return "text-gray-500";
+      return 'text-teal-500';
+    case HealthRecordTypeEnum.Laboratory:
+      return 'text-amber-500';
+    case HealthRecordTypeEnum.Observation:
+      return 'text-amber-600';
     default:
-      return "text-gray-500";
+      return 'text-gray-500';
   }
-};
-
-// Ensure types are properly converted
-export function stringToHealthRecordType(recordType: string): HealthRecordTypeEnum {
-  if (Object.values(HealthRecordTypeEnum).includes(recordType as HealthRecordTypeEnum)) {
-    return recordType as HealthRecordTypeEnum;
-  }
-  return HealthRecordTypeEnum.Other;
 }

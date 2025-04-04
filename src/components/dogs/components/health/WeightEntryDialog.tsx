@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,34 +8,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { WeightUnit } from '@/types/common';
-import { weightUnits } from '@/types/common';
 
 interface WeightEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (data: any) => void;
   dogId: string;
+  initialData?: any;
 }
 
 const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({ 
   open, 
   onOpenChange, 
   onSave, 
-  dogId 
+  dogId,
+  initialData
 }) => {
-  const [weight, setWeight] = React.useState('');
-  const [unit, setUnit] = React.useState<WeightUnit>('lb');
-  const [notes, setNotes] = React.useState('');
+  const [weight, setWeight] = useState(initialData?.weight || '');
+  const [unit, setUnit] = useState<WeightUnit>(initialData?.weight_unit || 'lb');
+  const [notes, setNotes] = useState(initialData?.notes || '');
+  const [date, setDate] = useState(initialData?.date || format(new Date(), 'yyyy-MM-dd'));
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     const weightData = {
       dog_id: dogId,
-      weight: parseFloat(weight),
+      weight: parseFloat(weight.toString()),
       weight_unit: unit,
-      date: format(new Date(), 'yyyy-MM-dd'),
-      notes: notes
+      date: date || format(new Date(), 'yyyy-MM-dd'),
+      notes: notes,
+      ...(initialData?.id ? { id: initialData.id } : {})
     };
     
     onSave(weightData);
@@ -43,9 +46,12 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
   };
   
   const resetForm = () => {
-    setWeight('');
-    setUnit('lb');
-    setNotes('');
+    if (!initialData) {
+      setWeight('');
+      setUnit('lb');
+      setNotes('');
+      setDate(format(new Date(), 'yyyy-MM-dd'));
+    }
   };
   
   const handleDialogClose = (open: boolean) => {
@@ -59,10 +65,24 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Weight Entry</DialogTitle>
+          <DialogTitle>{initialData ? 'Edit Weight Entry' : 'Add Weight Entry'}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                max={format(new Date(), 'yyyy-MM-dd')}
+                required
+              />
+            </div>
+          </div>
+          
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="weight">Weight</Label>
@@ -83,15 +103,14 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
                 value={unit}
                 onValueChange={(value) => setUnit(value as WeightUnit)}
               >
-                <SelectTrigger>
+                <SelectTrigger id="unit">
                   <SelectValue placeholder="Select unit" />
                 </SelectTrigger>
                 <SelectContent>
-                  {weightUnits.map(unit => (
-                    <SelectItem key={unit.code} value={unit.code}>
-                      {unit.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="lb">lb</SelectItem>
+                  <SelectItem value="kg">kg</SelectItem>
+                  <SelectItem value="oz">oz</SelectItem>
+                  <SelectItem value="g">g</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -116,7 +135,7 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
             >
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit">{initialData ? 'Update' : 'Save'}</Button>
           </div>
         </form>
       </DialogContent>

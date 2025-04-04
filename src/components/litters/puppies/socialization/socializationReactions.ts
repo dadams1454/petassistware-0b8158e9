@@ -44,7 +44,7 @@ export const socializationReactions: SocializationReactionOption[] = [
     value: 'excited',
     label: 'Excited',
     color: 'purple',
-    type: 'excited' as SocializationReactionType, // Type assertion for compatibility
+    type: 'curious' as SocializationReactionType, // Map to an existing type for compatibility
     emoji: '🤩'
   }
 ];
