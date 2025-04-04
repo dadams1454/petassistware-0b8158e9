@@ -2,7 +2,7 @@
 import { usePuppyData } from '@/hooks/puppies/usePuppyData';
 import { usePuppyAgeGroups } from '@/hooks/puppies/usePuppyAgeGroups';
 import { usePuppyStats } from '@/hooks/puppies/usePuppyStats';
-import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats, PuppyAgeGroup } from '@/types/puppyTracking';
 
 export const usePuppyTracking = (): PuppyManagementStats => {
   // Fetch puppy data
@@ -32,17 +32,31 @@ export const usePuppyTracking = (): PuppyManagementStats => {
       reserved: 0,
       sold: 0,
       unavailable: 0
-    },
-    byAgeGroup = {}
+    }
   } = usePuppyStats(processedPuppies) || {};
+
+  // Set up puppy age group data structure with correct typing
+  const byAgeGroup: PuppyAgeGroupData = {
+    newborn: puppiesByAgeGroup.newborn || [],
+    twoWeek: puppiesByAgeGroup.twoWeek || [],
+    fourWeek: puppiesByAgeGroup.fourWeek || [],
+    sixWeek: puppiesByAgeGroup.sixWeek || [],
+    eightWeek: puppiesByAgeGroup.eightWeek || [],
+    tenWeek: puppiesByAgeGroup.tenWeek || [],
+    twelveWeek: puppiesByAgeGroup.twelveWeek || [],
+    older: puppiesByAgeGroup.older || [],
+    all: processedPuppies
+  };
 
   // Construct PuppyManagementStats object
   return {
     totalPuppies,
     puppies: processedPuppies,
-    ageGroups,
+    ageGroups: ageGroups as PuppyAgeGroup[],
     puppiesByAgeGroup,
-    byAgeGroup: puppiesByAgeGroup, // Use puppiesByAgeGroup for byAgeGroup
+    byAgeGroup,
+    byStatus,
+    byGender,
     activeCount: totalPuppies, // Same as total for backward compatibility
     reservedCount: reservedPuppies,
     availableCount: availablePuppies,
@@ -61,8 +75,6 @@ export const usePuppyTracking = (): PuppyManagementStats => {
       count: totalPuppies,
       male: byGender.male || 0,
       female: byGender.female || 0
-    },
-    byGender,
-    byStatus
+    }
   };
 };

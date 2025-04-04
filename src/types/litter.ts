@@ -11,6 +11,7 @@ export interface SimpleDog {
   gender?: string;
   color?: string;
   registration_number?: string;
+  status: string; // Add status to match the Dog interface
 }
 
 // Litter interface

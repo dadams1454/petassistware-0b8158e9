@@ -18,8 +18,7 @@ export type {
   HealthAlert,
   HealthCertificate,
   MedicationAdministration,
-  WeightRecord,
-  WeightUnit
+  WeightRecord
 } from './health';
 
 export { 
@@ -48,7 +47,7 @@ export type {
 // Common types
 export type { Gender, WeightUnitWithLegacy } from './common';
 export { standardizeWeightUnit, weightUnits } from './common';
-export { type WeightUnit } from './common';  // Explicitly export WeightUnit using the 'export type' syntax
+export { type WeightUnit } from './common';  // Correctly export WeightUnit
 
 // Litter and puppy types
 export { type Dog as SimpleDog } from './litter';

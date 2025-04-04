@@ -118,7 +118,7 @@ export interface SocializationCategoryOption extends SocializationCategory {
   order?: number;
 }
 
-export type SocializationReactionType = 'positive' | 'neutral' | 'negative' | 'fearful' | 'cautious' | 'curious' | 'very_positive' | 'very_fearful';
+export type SocializationReactionType = 'very_positive' | 'positive' | 'neutral' | 'cautious' | 'fearful' | 'curious' | 'very_fearful' | 'negative';
 
 export interface SocializationReaction {
   id: string;

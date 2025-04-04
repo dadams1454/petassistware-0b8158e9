@@ -16,10 +16,13 @@ const HealthIndicatorDialog: React.FC<HealthIndicatorDialogProps> = ({
   onOpenChange,
   dogId
 }) => {
-  const { addIndicator, isAdding } = useHealthIndicators(dogId);
+  const { 
+    addHealthIndicator, 
+    isSubmitting 
+  } = useHealthIndicators(dogId);
   
   const handleSave = async (data: any) => {
-    await addIndicator(data);
+    await addHealthIndicator(data);
     onOpenChange(false);
   };
   
@@ -34,7 +37,7 @@ const HealthIndicatorDialog: React.FC<HealthIndicatorDialogProps> = ({
         
         <HealthIndicatorForm 
           dogId={dogId}
-          isSubmitting={isAdding}
+          isSubmitting={isSubmitting}
           onCancel={() => onOpenChange(false)}
           onSubmit={handleSave}
         />

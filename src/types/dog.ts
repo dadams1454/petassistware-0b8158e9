@@ -1,4 +1,3 @@
-
 import { Gender, WeightUnit } from './common';
 
 // Dog gender enum for legacy compatibility
@@ -45,7 +44,7 @@ export interface DogProfile {
   vaccination_type?: string;
   tie_date?: string;
   tenant_id?: string;
-  status?: string; // For compatibility with Dog interface
+  status: string; // Make status required
   sire_id?: string; // For breeding compatibility
   reproductive_status?: string; // For reproductive tracking
   group_ids?: string[]; // For dog groups
@@ -56,7 +55,7 @@ export interface DogProfile {
 export interface Dog {
   id: string;
   name: string;
-  status: string;
+  status: string; // Status is required
   gender: Gender; // Using updated Gender type
   breed: string;
   color?: string;
@@ -81,8 +80,8 @@ export interface Dog {
   vaccination_type?: string;
   tie_date?: string;
   tenant_id?: string;
-  reproductive_status?: string; // Add missing field
-  dam_id?: string; // Added for compatibility
+  reproductive_status?: string;
+  dam_id?: string;
 }
 
 // Dogs query parameters interface
@@ -221,12 +220,11 @@ export enum DocumentType {
   Other = 'other'
 }
 
-// Export the HealthRecord and HealthRecordTypeEnum from health.ts
+// Export WeightUnit - export type syntax to avoid re-exporting errors
+export type { WeightUnit } from './common';
+// Export HealthRecord and related types
 export type { HealthRecord } from './health';
 export { HealthRecordTypeEnum } from './health';
-
-// Export WeightUnit from common.ts for compatibility
-export { WeightUnit } from './common';
 
 // Export Vaccination interface
 export interface Vaccination {

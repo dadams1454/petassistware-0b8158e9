@@ -6,7 +6,6 @@ import PuppiesTable from './puppies/PuppiesTable';
 import DeletePuppyDialog from './puppies/DeletePuppyDialog';
 import EditPuppyDialog from './puppies/EditPuppyDialog';
 import { Puppy } from '@/types/litter';
-import { PuppyFormData } from './puppies/types';
 
 interface PuppiesListProps {
   puppies: Puppy[];
@@ -69,27 +68,18 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
     }
   };
 
-  // Transform puppies to match the expected type in PuppiesTable
-  const adaptedPuppies = puppies.map(puppy => ({
-    ...puppy,
-    color: puppy.color || '',  // Ensure color is not undefined
-    gender: puppy.gender || 'Unknown', // Ensure gender is not undefined
-    birth_date: puppy.birth_date || '', // Ensure birth_date is not undefined
-    status: (puppy.status as 'Available' | 'Reserved' | 'Sold' | 'Unavailable') || 'Available'
-  })) as PuppyFormData[];
-
   return (
     <div>
       <PuppiesTable 
-        puppies={adaptedPuppies as any} 
-        onEditPuppy={handleEditPuppy as any}
-        onDeletePuppy={setPuppyToDelete as any} 
+        puppies={puppies} 
+        onEditPuppy={handleEditPuppy}
+        onDeletePuppy={setPuppyToDelete} 
         onAddPuppy={handleAddPuppy}
       />
 
       {/* Edit Puppy Dialog */}
       <EditPuppyDialog
-        puppy={selectedPuppy as any}
+        puppy={selectedPuppy}
         litterId={litterId}
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -107,7 +97,7 @@ const PuppiesList: React.FC<PuppiesListProps> = ({ puppies, litterId, onRefresh 
 
       {/* Delete Confirmation Dialog */}
       <DeletePuppyDialog
-        puppy={puppyToDelete as any}
+        puppy={puppyToDelete}
         onClose={() => setPuppyToDelete(null)}
         onConfirm={handleDeletePuppy}
       />
