@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { WeightRecord } from '@/types/health';
+import { WeightRecord } from '@/types/puppyTracking';
 import { WeightUnit } from '@/types/common';
 
 interface WeightTableProps {

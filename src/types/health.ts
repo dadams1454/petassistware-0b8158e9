@@ -181,7 +181,6 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
-  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -312,7 +311,6 @@ export function mapToWeightRecord(record: any): WeightRecord {
     puppy_id: record.puppy_id,
     weight: record.weight,
     weight_unit: record.weight_unit || record.unit || 'lb',
-    unit: record.weight_unit || record.unit || 'lb', // For backward compatibility
     date: record.date,
     notes: record.notes,
     percent_change: record.percent_change,
