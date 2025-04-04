@@ -1,3 +1,4 @@
+
 import { WeightUnit } from './common';
 
 // Health record type enum
@@ -245,4 +246,80 @@ export function mapToHealthRecord(data: any): HealthRecord {
     recovery_notes: data.recovery_notes,
     expiration_date: data.expiration_date,
   };
+}
+
+// Add the missing mapToWeightRecord function
+export function mapToWeightRecord(data: any): WeightRecord {
+  return {
+    id: data.id,
+    dog_id: data.dog_id,
+    weight: Number(data.weight),
+    weight_unit: data.weight_unit as WeightUnit,
+    unit: data.weight_unit as WeightUnit, // For compatibility
+    date: data.date,
+    notes: data.notes || '',
+    percent_change: data.percent_change,
+    created_at: data.created_at,
+    puppy_id: data.puppy_id,
+    age_days: data.age_days,
+    birth_date: data.birth_date
+  };
+}
+
+// Growth stats interface
+export interface GrowthStats {
+  currentWeight: number;
+  weightUnit: WeightUnit;
+  percentChange: number;
+  averageGrowth: number;
+  growthRate: number;
+  averageGrowthRate: number;
+  lastWeekGrowth: number;
+  projectedWeight: number;
+  weightGoal: number | null;
+  onTrack: boolean | null;
+}
+
+// Appetite level enum
+export enum AppetiteLevelEnum {
+  Excellent = 'excellent',
+  Good = 'good',
+  Fair = 'fair',
+  Poor = 'poor',
+  None = 'none'
+}
+
+// Energy level enum
+export enum EnergyLevelEnum {
+  High = 'high',
+  Normal = 'normal',
+  Low = 'low',
+  Lethargic = 'lethargic'
+}
+
+// Stool consistency enum
+export enum StoolConsistencyEnum {
+  Normal = 'normal',
+  Soft = 'soft',
+  Loose = 'loose',
+  Watery = 'watery',
+  Hard = 'hard',
+  None = 'none'
+}
+
+// For backward compatibility
+export const AppetiteEnum = AppetiteLevelEnum;
+export const EnergyEnum = EnergyLevelEnum;
+
+// Vaccination schedule
+export interface VaccinationSchedule {
+  id: string;
+  puppy_id: string;
+  vaccination_type: string;
+  vaccine_name?: string;
+  scheduled_date: string;
+  due_date?: string;
+  notes?: string;
+  administered: boolean;
+  created_at: string;
 }

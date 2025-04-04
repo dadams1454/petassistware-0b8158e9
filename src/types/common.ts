@@ -4,6 +4,9 @@
 // Weight unit type
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
+// Legacy weight unit type for backward compatibility
+export type WeightUnitWithLegacy = WeightUnit | string;
+
 // Date range type
 export interface DateRange {
   start: Date;
@@ -33,4 +36,36 @@ export interface ResponseStatus {
   success: boolean;
   message?: string;
   code?: number;
+}
+
+// Weight units array for dropdown options
+export const weightUnits: WeightUnit[] = ['oz', 'g', 'lb', 'kg'];
+
+// Helper function to standardize weight unit
+export function standardizeWeightUnit(unit?: string): WeightUnit {
+  if (!unit) return 'lb';
+  
+  const lowerUnit = unit.toLowerCase();
+  
+  switch (lowerUnit) {
+    case 'oz':
+    case 'ounce':
+    case 'ounces':
+      return 'oz';
+    case 'g':
+    case 'gram':
+    case 'grams':
+      return 'g';
+    case 'lb':
+    case 'lbs':
+    case 'pound':
+    case 'pounds':
+      return 'lb';
+    case 'kg':
+    case 'kilogram':
+    case 'kilograms':
+      return 'kg';
+    default:
+      return 'lb'; // Default to pounds if unknown
+  }
 }
