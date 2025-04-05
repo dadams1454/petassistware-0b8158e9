@@ -18,7 +18,6 @@ export type {
   HealthCertificate,
   MedicationAdministration,
   WeightRecord,
-  WeightUnit,
 } from './health';
 
 export { 
@@ -35,18 +34,9 @@ export {
   stringToHealthRecordType
 } from './health';
 
-// Reproductive cycle types
-export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensityType, HeatStage } from './reproductive';
-export { ReproductiveStatus, normalizeBreedingRecord, HeatIntensity, HeatIntensityValues } from './reproductive';
-export type { 
-  ReproductiveMilestone, 
-  ReproductiveCycleData,
-  BreedingChecklistItem,
-  BreedingPrepFormData
-} from './reproductive';
-
 // Common types
 export type { 
+  WeightUnit,
   WeightUnitWithLegacy,
   WeightUnitInfo,
   WeightUnitOption
@@ -59,6 +49,16 @@ export {
   getWeightUnitInfo,
   getWeightUnitName
 } from './common';
+
+// Reproductive cycle types
+export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensityType, HeatStage } from './reproductive';
+export { ReproductiveStatus, normalizeBreedingRecord, HeatIntensity, HeatIntensityValues } from './reproductive';
+export type { 
+  ReproductiveMilestone, 
+  ReproductiveCycleData,
+  BreedingChecklistItem,
+  BreedingPrepFormData
+} from './reproductive';
 
 // Litter and puppy types
 export { type Dog as SimpleDog } from './litter';
@@ -86,8 +86,7 @@ export type {
   PuppyCareLog,
   SocializationExperience,
   SocializationReaction,
-  PuppyWeightRecord,
-  PuppyTrackingMilestone,
+  WeightRecord as PuppyWeightRecord,
   VaccinationSchedule,
   VaccinationRecord,
   PuppyAgeGroup

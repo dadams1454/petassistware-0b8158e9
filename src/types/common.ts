@@ -1,77 +1,77 @@
 
-// Define common types used across the application
+// Define weight unit types and utilities
 
-// Weight unit type definition - using string literal union type
-export type WeightUnit = 'g' | 'oz' | 'lb' | 'kg';
+// Standard weight units
+export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
 
-// Legacy weight unit for backward compatibility
-export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+// For backward compatibility
+export type WeightUnitWithLegacy = WeightUnit | 'gram' | 'kilogram' | 'ounce' | 'pound';
 
-// WeightUnit information for display and selection
+// Information about each weight unit for display
 export interface WeightUnitInfo {
-  code: WeightUnit;
   name: string;
+  shortName: string;
+  conversionToGrams: number;
 }
 
-// For backwards compatibility
+// Weight unit option for select dropdowns
 export interface WeightUnitOption {
-  label: string;  // For Select components
-  value: WeightUnit;  // For Select components
+  value: WeightUnit;
+  label: string;
 }
 
-// Convert WeightUnit to WeightUnitOption for UI display
-export const weightUnitOptions: Record<WeightUnit, WeightUnitOption> = {
-  'g': { value: 'g', label: 'Grams' },
-  'oz': { value: 'oz', label: 'Ounces' },
-  'lb': { value: 'lb', label: 'Pounds' },
-  'kg': { value: 'kg', label: 'Kilograms' }
-};
-
-// Define weight units with full information
+// Map of weight unit info
 export const weightUnitInfos: Record<WeightUnit, WeightUnitInfo> = {
-  'g': { code: 'g', name: 'Grams' },
-  'oz': { code: 'oz', name: 'Ounces' },
-  'lb': { code: 'lb', name: 'Pounds' },
-  'kg': { code: 'kg', name: 'Kilograms' }
+  g: { name: 'Grams', shortName: 'g', conversionToGrams: 1 },
+  kg: { name: 'Kilograms', shortName: 'kg', conversionToGrams: 1000 },
+  oz: { name: 'Ounces', shortName: 'oz', conversionToGrams: 28.3495 },
+  lb: { name: 'Pounds', shortName: 'lb', conversionToGrams: 453.592 }
 };
 
-// Available weight units array for select components
-export const weightUnits: WeightUnit[] = ['g', 'oz', 'lb', 'kg'];
+// Weight unit options for select elements
+export const weightUnitOptions: WeightUnitOption[] = Object.entries(weightUnitInfos)
+  .map(([value, info]) => ({
+    value: value as WeightUnit,
+    label: info.name
+  }));
 
-// Helper to standardize weight unit to a consistent format
-export function standardizeWeightUnit(unit: WeightUnitWithLegacy): WeightUnit {
-  if (unit === 'lbs') return 'lb';
-  return unit as WeightUnit;
-}
-
-// Helper function to get full weight unit information
+// Helper to get weight unit info
 export function getWeightUnitInfo(unit: WeightUnit): WeightUnitInfo {
-  return weightUnitInfos[unit] || weightUnitInfos['lb']; // Default to pounds if invalid
+  return weightUnitInfos[unit] || weightUnitInfos.lb;
 }
 
-// Helper function to get weight unit display name
+// Helper to get weight unit name
 export function getWeightUnitName(unit: WeightUnit): string {
-  const unitInfo = getWeightUnitInfo(unit);
-  return unitInfo.name;
+  return getWeightUnitInfo(unit).name;
 }
 
-// Basic pagination type
-export interface Pagination {
-  page: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
+// Standardize weight unit from legacy formats
+export function standardizeWeightUnit(unit?: string): WeightUnit {
+  if (!unit) return 'lb';
+  
+  const lowerUnit = unit.toLowerCase();
+  
+  switch (lowerUnit) {
+    case 'g':
+    case 'gram':
+    case 'grams':
+      return 'g';
+    case 'kg':
+    case 'kilogram':
+    case 'kilograms':
+      return 'kg';
+    case 'oz':
+    case 'ounce':
+    case 'ounces':
+      return 'oz';
+    case 'lb':
+    case 'pound':
+    case 'pounds':
+      return 'lb';
+    default:
+      return 'lb';
+  }
 }
 
-// Basic sort configuration
-export interface SortConfig {
-  key: string;
-  direction: 'asc' | 'desc';
-}
-
-// Common filter interface
-export interface FilterConfig {
-  field: string;
-  operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'like';
-  value: string | number | boolean | Array<string | number>;
-}
+// List of all weight units for quick access
+export const weightUnits: WeightUnit[] = ['g', 'kg', 'oz', 'lb'];

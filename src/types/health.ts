@@ -104,7 +104,7 @@ export interface HealthRecord {
   dog_id: string;
   record_type: HealthRecordTypeEnum;
   title: string;
-  visit_date: string;
+  visit_date: string;  // This is the 'date' property referenced in code
   vet_name: string;
   record_notes?: string;
   next_due_date?: string | null;
@@ -146,6 +146,9 @@ export interface HealthRecord {
   performed_by?: string;
   description?: string;
   reminder_sent?: boolean;
+  
+  // Alias for visit_date for compatibility
+  date?: string;
 }
 
 // Weight record interface
@@ -160,6 +163,9 @@ export interface WeightRecord {
   puppy_id?: string;
   created_at: string;
   age_days?: number;
+  
+  // Alias for weight_unit for backward compatibility
+  unit?: WeightUnit;
 }
 
 // Health indicator interface
@@ -241,7 +247,7 @@ export interface GrowthStats {
 
 // Helper function to map a health record from API to frontend model
 export function mapToHealthRecord(record: any): HealthRecord {
-  return {
+  const result: HealthRecord = {
     id: record.id,
     dog_id: record.dog_id,
     record_type: record.record_type || HealthRecordTypeEnum.EXAMINATION,
@@ -289,21 +295,29 @@ export function mapToHealthRecord(record: any): HealthRecord {
     description: record.description,
     reminder_sent: record.reminder_sent,
   };
+
+  // Add date alias for backward compatibility
+  result.date = record.visit_date;
+  
+  return result;
 }
 
 // Helper function to map a weight record from API to frontend model
 export function mapToWeightRecord(record: any): WeightRecord {
+  const weightUnit = record.weight_unit || record.unit || 'lb';
+  
   return {
     id: record.id,
     dog_id: record.dog_id,
     weight: record.weight,
-    weight_unit: record.weight_unit || record.unit || 'lb',
+    weight_unit: weightUnit,
     date: record.date,
     notes: record.notes || '',
     percent_change: record.percent_change,
     puppy_id: record.puppy_id,
     created_at: record.created_at,
     age_days: record.age_days,
+    unit: weightUnit, // Add unit alias for backward compatibility
   };
 }
 

@@ -19,9 +19,9 @@ const VaccinationsTabContent: React.FC<VaccinationsTabContentProps> = ({ dogId }
     openAddVaccinationDialog 
   } = useHealthTabContext();
   
-  // Filter for vaccination records
+  // Filter for vaccination records - using the correct enum case
   const vaccinationRecords = healthRecords.filter(
-    record => record.record_type === HealthRecordTypeEnum.Vaccination
+    record => record.record_type === HealthRecordTypeEnum.VACCINATION
   );
 
   if (isLoading) {
@@ -63,7 +63,7 @@ const VaccinationsTabContent: React.FC<VaccinationsTabContentProps> = ({ dogId }
       
       <HealthRecordsList
         records={vaccinationRecords}
-        recordType={HealthRecordTypeEnum.Vaccination}
+        recordType={HealthRecordTypeEnum.VACCINATION}
         emptyMessage="No vaccination records found."
       />
     </div>

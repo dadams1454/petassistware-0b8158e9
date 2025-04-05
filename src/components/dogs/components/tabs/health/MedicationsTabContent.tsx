@@ -19,7 +19,7 @@ const MedicationsTabContent: React.FC = () => {
     handleEditRecord 
   } = useHealthTabContext();
   
-  const medications = getRecordsByType(HealthRecordTypeEnum.Medication);
+  const medications = getRecordsByType(HealthRecordTypeEnum.MEDICATION);
   
   if (isLoading) {
     return <LoadingState message="Loading medication records..." />;
@@ -29,7 +29,7 @@ const MedicationsTabContent: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-end">
         <Button 
-          onClick={() => handleAddRecord(HealthRecordTypeEnum.Medication)}
+          onClick={() => handleAddRecord(HealthRecordTypeEnum.MEDICATION)}
           size="sm"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -52,7 +52,7 @@ const MedicationsTabContent: React.FC = () => {
           description="Add your first medication record to keep track of your dog's medications."
           action={{
             label: "Add Medication",
-            onClick: () => handleAddRecord(HealthRecordTypeEnum.Medication)
+            onClick: () => handleAddRecord(HealthRecordTypeEnum.MEDICATION)
           }}
         />
       ) : (
@@ -67,7 +67,7 @@ const MedicationsTabContent: React.FC = () => {
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium">{med.title}</h3>
                     <span className="text-sm text-muted-foreground">
-                      {format(new Date(med.date), 'MMM d, yyyy')}
+                      {format(new Date(med.visit_date), 'MMM d, yyyy')}
                     </span>
                   </div>
                   

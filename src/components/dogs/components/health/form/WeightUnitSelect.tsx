@@ -15,7 +15,7 @@ interface WeightUnitSelectProps {
 export const WeightUnitSelect: React.FC<WeightUnitSelectProps> = ({
   form,
   label = 'Unit',
-  name = 'unit',
+  name = 'weight_unit', // Changed from 'unit' to 'weight_unit' to match our types
   defaultValue = 'lb'
 }) => {
   return (

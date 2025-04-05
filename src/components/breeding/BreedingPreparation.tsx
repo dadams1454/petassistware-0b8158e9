@@ -14,17 +14,12 @@ interface BreedingPreparationProps {
   dogId?: string;
 }
 
-// Create a type that extends Dog to ensure all required properties
-interface ExtendedDog extends Omit<Dog, 'status'> {
-  status: string;
-}
-
 const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [dog, setDog] = useState<ExtendedDog | null>(null);
+  const [dog, setDog] = useState<Dog | null>(null);
   const [loading, setLoading] = useState(true);
-  const [compatibleMales, setCompatibleMales] = useState<ExtendedDog[]>([]);
+  const [compatibleMales, setCompatibleMales] = useState<Dog[]>([]);
   const [selectedSire, setSelectedSire] = useState<string | null>(null);
   
   // Get dog ID from URL if not provided as prop
@@ -49,37 +44,35 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         if (dogError) throw dogError;
         
         // Ensure dog has required properties by providing defaults
-        const dogWithRequiredProps: ExtendedDog = {
+        const dogWithRequiredProps: Dog = {
           ...dogData,
-          gender: dogData.gender as DogGender || DogGender.Female, // Ensure gender is typed correctly
+          gender: dogData.gender || DogGender.Female, // Ensure gender is typed correctly
           created_at: dogData.created_at || new Date().toISOString(),
-          status: dogData.status || DogStatus.active // Add default status property if not present
+          status: dogData.status || DogStatus.active // Ensure status is set
         };
         
         setDog(dogWithRequiredProps);
         
-        // Fetch compatible male dogs
-        const { data: malesData, error: malesError } = await supabase
-          .from('dogs')
-          .select('*')
-          .eq('gender', DogGender.Male)
-          .eq('breed', dogData.breed) // Same breed
-          .neq('id', effectiveDogId) // Not the same dog
-          .order('name');
+        // Only fetch compatible males if this is a female dog
+        if (dogWithRequiredProps.gender === DogGender.Female) {
+          const { data: males, error: malesError } = await supabase
+            .from('dogs')
+            .select('*')
+            .eq('gender', DogGender.Male)
+            .eq('status', DogStatus.active);
+            
+          if (malesError) throw malesError;
           
-        if (malesError) throw malesError;
-        
-        // Process and convert males to Dog type with status
-        const malesWithRequiredProps: ExtendedDog[] = malesData.map(male => ({
-          ...male,
-          gender: male.gender as DogGender || DogGender.Male,
-          created_at: male.created_at || new Date().toISOString(),
-          status: male.status || DogStatus.active // Add default status property if not present
-        }));
-        
-        setCompatibleMales(malesWithRequiredProps);
+          // Ensure all male dogs have the required status property
+          const malesWithRequiredProps: Dog[] = males.map(male => ({
+            ...male,
+            status: male.status || DogStatus.active
+          }));
+          
+          setCompatibleMales(malesWithRequiredProps);
+        }
       } catch (error) {
-        console.error('Error fetching dog data:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
@@ -87,7 +80,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
     
     fetchDogData();
   }, [effectiveDogId]);
-  
+
   // Use our dog status hook to get heat cycle and fertility information
   const dogStatus = dog ? useDogStatus(dog) : null;
   
