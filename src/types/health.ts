@@ -6,7 +6,16 @@ export enum HealthRecordTypeEnum {
   MEDICATION = 'medication',
   SURGERY = 'surgery',
   LABORATORY = 'laboratory',
-  PREVENTIVE = 'preventative'
+  PREVENTIVE = 'preventative',
+  TEST = 'test',
+  IMAGING = 'imaging',
+  DEWORMING = 'deworming',
+  OTHER = 'other',
+  OBSERVATION = 'observation',
+  PROCEDURE = 'procedure',
+  GROOMING = 'grooming',
+  DENTAL = 'dental',
+  ALLERGY = 'allergy'
 }
 
 // Medication status enum
@@ -17,6 +26,7 @@ export enum MedicationStatusEnum {
   NOT_STARTED = 'not_started',
   COMPLETED = 'completed',
   MISSED = 'missed',
+  DISCONTINUED = 'discontinued',
   UNKNOWN = 'unknown'
 }
 
@@ -45,7 +55,10 @@ export enum StoolConsistencyEnum {
   DIARRHEA = 'diarrhea',
   HARD = 'hard',
   BLOODY = 'bloody',
-  MUCUS = 'mucus'
+  MUCUS = 'mucus',
+  SOFT = 'soft',
+  WATERY = 'watery',
+  MUCOUSY = 'mucousy'
 }
 
 // For compatibility with older code
@@ -108,7 +121,11 @@ export interface WeightRecord {
   created_at: string;
   puppy_id?: string;
   age_days?: number;
+  birth_date?: string;
 }
+
+// Export WeightUnit from common to maintain compatibility
+export { type WeightUnit } from './common';
 
 // Medication interfaces
 export interface Medication {
@@ -252,4 +269,15 @@ export interface MedicationAdministration {
   administered_by: string;
   notes?: string;
   created_at: string;
+}
+
+// Document type for health records
+export enum DocumentType {
+  HEALTH_RECORD = 'health_record',
+  VACCINATION = 'vaccination',
+  CERTIFICATE = 'certificate',
+  PEDIGREE = 'pedigree',
+  REGISTRATION = 'registration',
+  CONTRACT = 'contract',
+  OTHER = 'other'
 }

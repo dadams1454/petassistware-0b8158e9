@@ -2,16 +2,22 @@
 import { Dog } from './dog';
 
 // Type for heat intensity values
-export type HeatIntensityType = 'light' | 'moderate' | 'heavy' | 'unknown';
+export type HeatIntensityType = 'light' | 'moderate' | 'heavy' | 'mild' | 'medium' | 'low' | 'high' | 'peak' | 'strong' | 'unknown';
 
 // Heat intensity values
-export const HeatIntensityValues: HeatIntensityType[] = ['light', 'moderate', 'heavy', 'unknown'];
+export const HeatIntensityValues: HeatIntensityType[] = ['light', 'moderate', 'heavy', 'mild', 'medium', 'low', 'high', 'peak', 'strong', 'unknown'];
 
 // Heat intensity enum for backward compatibility
 export enum HeatIntensity {
   LIGHT = 'light',
   MODERATE = 'moderate',
   HEAVY = 'heavy',
+  MILD = 'mild',
+  MEDIUM = 'medium',
+  LOW = 'low',
+  HIGH = 'high',
+  PEAK = 'peak',
+  STRONG = 'strong',
   UNKNOWN = 'unknown'
 }
 
@@ -47,6 +53,7 @@ export interface HeatStage {
 // Reproductive status enum
 export enum ReproductiveStatus {
   InHeat = 'in_heat',
+  PreHeat = 'pre_heat',
   Pregnant = 'pregnant',
   Whelping = 'whelping',
   Nursing = 'nursing',
@@ -54,7 +61,12 @@ export enum ReproductiveStatus {
   Resting = 'resting',
   TooYoung = 'too_young',
   TooOld = 'too_old',
-  Spayed = 'spayed'
+  Spayed = 'spayed',
+  Recovery = 'recovery',
+  Intact = 'intact',
+  NotInHeat = 'not_in_heat',
+  Altered = 'altered',
+  Neutered = 'neutered'
 }
 
 // Breeding record interface
@@ -89,6 +101,11 @@ export interface PregnancyRecord {
   notes?: string;
   created_at: string;
   created_by?: string;
+  estimated_whelp_date?: string;
+  actual_whelp_date?: string;
+  puppies_born?: number;
+  puppies_alive?: number;
+  outcome?: string;
 }
 
 // Reproductive milestone interface
@@ -118,7 +135,7 @@ export interface ReproductiveCycleData {
   pregnancyLost: boolean;
   
   // Heat cycle data
-  lastHeatDate?: Date;
+  lastHeatDate?: Date | null;
   nextHeatDate?: Date | null;
   currentHeatCycle?: HeatCycle | null;
   daysInHeat?: number | null;
@@ -133,6 +150,12 @@ export interface ReproductiveCycleData {
   estimatedDueDate?: Date | null;
   weightBeforePregnancy?: number | null;
   currentBreedingRecord?: BreedingRecord | null;
+  
+  // Additional properties
+  daysUntilNextHeat?: number | null;
+  averageCycleLength?: number | null;
+  fertilityWindow?: { start: Date; end: Date } | null;
+  status?: ReproductiveStatus;
   
   // Loading states
   isLoading: boolean;
@@ -158,6 +181,8 @@ export interface BreedingPrepFormData {
   breedingMethod: string;
   breedingDate: Date;
   notes: string;
+  plannedTieDate?: Date;
+  plannedDate?: Date;
 }
 
 // Helper function to normalize breeding record format

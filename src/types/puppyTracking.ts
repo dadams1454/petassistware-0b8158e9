@@ -40,6 +40,8 @@ export interface PuppyWithAge {
   first_walk_date?: string;
   fully_mobile_date?: string;
   current_weight?: string;
+  current_weight_unit?: string;
+  weight_unit?: string;
   sale_price?: number;
   reservation_date?: string;
   deworming_dates?: string;
@@ -68,6 +70,9 @@ export interface PuppyAgeGroup {
   color: string;
   description: string;
   milestones?: string;
+  displayName?: string;
+  minDays?: number;
+  maxDays?: number;
 }
 
 // Puppy age group data structure
@@ -139,7 +144,7 @@ export interface SocializationCategory {
 }
 
 // Socialization reaction types
-export type SocializationReactionType = 'positive' | 'neutral' | 'cautious' | 'fearful' | 'aggressive' | 'avoidant';
+export type SocializationReactionType = 'positive' | 'neutral' | 'cautious' | 'fearful' | 'aggressive' | 'avoidant' | 'very_positive' | 'very_fearful' | 'negative' | 'curious';
 
 // Socialization reaction data
 export interface SocializationReaction {
@@ -148,15 +153,22 @@ export interface SocializationReaction {
   label: string;
   description: string;
   statusColor: string;
+  color?: string;
   emoji?: string;
   statusLabel: string;
+  name?: string;
 }
 
 // Socialization category option
-export interface SocializationCategoryOption extends SocializationCategory {}
+export interface SocializationCategoryOption extends SocializationCategory {
+  categoryId?: string;
+}
 
 // Socialization reaction option
-export interface SocializationReactionOption extends SocializationReaction {}
+export interface SocializationReactionOption extends SocializationReaction {
+  name?: string;
+  color?: string;
+}
 
 // Socialization progress tracking
 export interface SocializationProgress {
@@ -192,6 +204,7 @@ export interface SocializationExperience {
   reaction: SocializationReactionType;
   notes?: string;
   created_at: string;
+  experience_type?: string;
 }
 
 // Vaccination schedule
@@ -207,6 +220,10 @@ export interface VaccinationSchedule {
   created_at?: string;
 }
 
+// Vaccination schedule item (for compatibility)
+export interface VaccinationScheduleItem extends VaccinationSchedule {
+}
+
 // Vaccination record
 export interface VaccinationRecord {
   id: string;
@@ -217,4 +234,22 @@ export interface VaccinationRecord {
   lot_number?: string;
   notes?: string;
   created_at?: string;
+}
+
+// Puppy Milestone
+export interface PuppyMilestone {
+  id?: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
+  title?: string;
+  is_completed?: boolean;
+  notes?: string;
+  created_at?: string;
+}
+
+// Define an interface for Milestones (for compatibility)
+export interface Milestone extends PuppyMilestone {
+  title: string;
+  is_completed: boolean;
 }

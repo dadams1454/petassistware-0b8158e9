@@ -150,9 +150,14 @@ export const getStatusLabel = (status: MedicationStatusEnum): { statusLabel: str
       return { statusLabel: 'Not Started', statusColor: 'bg-gray-100 text-gray-800' };
     case MedicationStatusEnum.MISSED:
       return { statusLabel: 'Missed', statusColor: 'bg-amber-100 text-amber-800' };
+    case MedicationStatusEnum.DISCONTINUED:
+      return { statusLabel: 'Discontinued', statusColor: 'bg-purple-100 text-purple-800' };
     case MedicationStatusEnum.UNKNOWN:
       return { statusLabel: 'Unknown', statusColor: 'bg-gray-100 text-gray-600' };
     default:
       return { statusLabel: 'Unknown', statusColor: 'bg-gray-100 text-gray-600' };
   }
 };
+
+// For backward compatibility
+export const calculateMedicationStatus = getMedicationStatus;

@@ -48,6 +48,7 @@ export interface DogProfile {
   registration_organization?: string;
   microchip_location?: string;
   group_ids?: string[];
+  reproductive_status?: string;
 }
 
 // Basic Dog information type (used in many places)
@@ -65,8 +66,32 @@ export interface Dog {
   is_pregnant?: boolean;
   dam_id?: string;
   sire_id?: string;
+  reproductive_status?: string;
+  registration_number?: string;
+  tie_date?: string;
 }
 
 // Re-export weight units for compatibility
-export type { WeightUnit };
-export { WeightUnit as WeightUnitEnum };
+export { type WeightUnit };
+
+// Document type enum
+export enum DocumentType {
+  HEALTH_RECORD = 'health_record',
+  VACCINATION = 'vaccination',
+  CERTIFICATE = 'certificate',
+  PEDIGREE = 'pedigree',
+  REGISTRATION = 'registration',
+  CONTRACT = 'contract',
+  OTHER = 'other'
+}
+
+// Vaccination type for compatibility
+export interface Vaccination {
+  id: string;
+  dog_id: string;
+  vaccination_type: string;
+  vaccination_date: string;
+  veterinarian?: string;
+  notes?: string;
+  created_at: string;
+}
