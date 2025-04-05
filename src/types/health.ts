@@ -61,7 +61,7 @@ export enum MedicationStatusEnum {
 export enum AppetiteLevelEnum {
   EXCELLENT = 'EXCELLENT',
   GOOD = 'GOOD',
-  FAIR = 'FAIR',
+  FAIR = 'FAIR', 
   POOR = 'POOR',
   NONE = 'NONE'
 }
@@ -84,17 +84,19 @@ export enum StoolConsistencyEnum {
   BLOODY = 'bloody'
 }
 
+// Define type for MedicationStatus for compatibility
 export type AppetiteEnum = AppetiteLevelEnum;
 export type EnergyEnum = EnergyLevelEnum;
-
-// Define type for MedicationStatus for compatibility
 export type MedicationStatus = MedicationStatusEnum;
 export type MedicationStatusResult = {
   status: MedicationStatusEnum;
-  daysUntilDue?: number;
-  daysOverdue?: number;
-  nextDue?: string | Date;
+  daysUntilDue?: number | null;
+  daysOverdue?: number | null;
+  nextDue?: string | Date | null;
 };
+
+// Make sure WeightUnit is properly defined and exported
+export type WeightUnit = 'g' | 'oz' | 'lb' | 'kg';
 
 // Health record interface
 export interface HealthRecord {

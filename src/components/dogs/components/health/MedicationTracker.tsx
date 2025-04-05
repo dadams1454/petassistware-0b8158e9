@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -94,9 +93,9 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
     const nextDueDate = new Date(lastAdministered);
     
     // Simple frequency handling
-    const frequencyStr = medication.frequency || 'monthly';
+    const frequencyStr = medication.frequency.toLowerCase() || 'monthly';
     
-    switch (frequencyStr.toLowerCase()) {
+    switch (frequencyStr) {
       case MedicationFrequencyConstants.DAILY.toLowerCase():
       case MedicationFrequencyConstants.ONCE_DAILY.toLowerCase():
         nextDueDate.setDate(today.getDate() + 1);
