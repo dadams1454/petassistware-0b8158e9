@@ -10,28 +10,30 @@ export { DogGender, DogStatus, DocumentType } from './dog';
 export type { 
   HealthRecord, 
   Medication, 
-  MedicationStatusEnum, // Correctly export as a type
   MedicationStatus,     // Include the type alias
   MedicationStatusResult,
-  VaccinationSchedule as HealthVaccinationSchedule,
   GrowthStats,
   HealthIndicator,
   HealthAlert,
   HealthCertificate,
   MedicationAdministration,
-  WeightRecord
+  WeightRecord,
+  AppetiteEnum,
+  EnergyEnum
 } from './health';
 
 export { 
   HealthRecordTypeEnum,
-  AppetiteEnum, 
-  EnergyEnum, 
+  HealthRecordType,
+  AppetiteLevelEnum, 
+  EnergyLevelEnum, 
   StoolConsistencyEnum,
   mapToHealthRecord,
   mapToWeightRecord,
-  MedicationStatusEnum as MedicationStatusEnumValue, // Export the enum values separately
-  AppetiteLevelEnum,
-  EnergyLevelEnum
+  MedicationStatusEnum,
+  AppetiteEnum,
+  EnergyEnum,
+  stringToHealthRecordType
 } from './health';
 
 // Reproductive cycle types
@@ -45,8 +47,19 @@ export type {
 } from './reproductive';
 
 // Common types
-export type { WeightUnitWithLegacy, WeightUnit } from './common';  // Explicitly export WeightUnit as a type
-export { standardizeWeightUnit, weightUnits, weightUnitOptions } from './common';
+export type { 
+  WeightUnit, 
+  WeightUnitWithLegacy,
+  WeightUnitInfo,
+  WeightUnitOption
+} from './common';
+export { 
+  standardizeWeightUnit, 
+  weightUnits, 
+  weightUnitOptions,
+  weightUnitInfos,
+  getWeightUnitInfo
+} from './common';
 
 // Litter and puppy types
 export { type Dog as SimpleDog } from './litter';

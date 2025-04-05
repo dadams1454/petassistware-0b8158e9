@@ -7,10 +7,16 @@ export type WeightUnit = 'g' | 'oz' | 'lb' | 'kg';
 // Legacy weight unit for backward compatibility
 export type WeightUnitWithLegacy = WeightUnit | 'lbs';
 
+// WeightUnit information for display and selection
+export interface WeightUnitInfo {
+  code: WeightUnit;
+  name: string;
+}
+
 // For backwards compatibility
 export interface WeightUnitOption {
-  label: string;  // Changed from code to label for Select components
-  value: WeightUnit;  // Changed from name to value for Select components
+  label: string;  // For Select components
+  value: WeightUnit;  // For Select components
 }
 
 // Convert WeightUnit to WeightUnitOption for UI display
@@ -21,6 +27,14 @@ export const weightUnitOptions: Record<WeightUnit, WeightUnitOption> = {
   'kg': { value: 'kg', label: 'Kilograms' }
 };
 
+// Define weight units with full information
+export const weightUnitInfos: Record<WeightUnit, WeightUnitInfo> = {
+  'g': { code: 'g', name: 'Grams' },
+  'oz': { code: 'oz', name: 'Ounces' },
+  'lb': { code: 'lb', name: 'Pounds' },
+  'kg': { code: 'kg', name: 'Kilograms' }
+};
+
 // Available weight units array for select components
 export const weightUnits: WeightUnit[] = ['g', 'oz', 'lb', 'kg'];
 
@@ -28,6 +42,11 @@ export const weightUnits: WeightUnit[] = ['g', 'oz', 'lb', 'kg'];
 export function standardizeWeightUnit(unit: WeightUnitWithLegacy): WeightUnit {
   if (unit === 'lbs') return 'lb';
   return unit as WeightUnit;
+}
+
+// Helper function to get full weight unit information
+export function getWeightUnitInfo(unit: WeightUnit): WeightUnitInfo {
+  return weightUnitInfos[unit] || weightUnitInfos['lb']; // Default to pounds if invalid
 }
 
 // Basic pagination type

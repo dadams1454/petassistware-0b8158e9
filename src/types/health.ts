@@ -1,4 +1,3 @@
-
 import type { WeightUnit } from './common';
 import { Json } from '../integrations/supabase/types';
 
@@ -19,6 +18,25 @@ export enum HealthRecordTypeEnum {
   PROCEDURE = 'PROCEDURE',
   OTHER = 'OTHER'
 }
+
+// For compatibility with legacy code - these should be migrated to use uppercase enum values
+export const HealthRecordType = {
+  Vaccination: HealthRecordTypeEnum.VACCINATION,
+  Examination: HealthRecordTypeEnum.EXAMINATION,
+  Medication: HealthRecordTypeEnum.MEDICATION,
+  Surgery: HealthRecordTypeEnum.SURGERY,
+  Observation: HealthRecordTypeEnum.OBSERVATION,
+  Deworming: HealthRecordTypeEnum.DEWORMING,
+  Grooming: HealthRecordTypeEnum.GROOMING,
+  Dental: HealthRecordTypeEnum.DENTAL,
+  Allergy: HealthRecordTypeEnum.ALLERGY,
+  Test: HealthRecordTypeEnum.TEST,
+  Laboratory: HealthRecordTypeEnum.LABORATORY,
+  Imaging: HealthRecordTypeEnum.IMAGING,
+  Preventive: HealthRecordTypeEnum.PREVENTIVE,
+  Procedure: HealthRecordTypeEnum.PROCEDURE,
+  Other: HealthRecordTypeEnum.OTHER
+};
 
 export const stringToHealthRecordType = (recordType: string): HealthRecordTypeEnum => {
   // Map legacy lowercase values to enum
@@ -67,6 +85,15 @@ export enum AppetiteLevelEnum {
   NONE = 'NONE'
 }
 
+// For backward compatibility
+export const AppetiteEnum = {
+  Excellent: AppetiteLevelEnum.EXCELLENT,
+  Good: AppetiteLevelEnum.GOOD,
+  Fair: AppetiteLevelEnum.FAIR,
+  Poor: AppetiteLevelEnum.POOR,
+  None: AppetiteLevelEnum.NONE
+};
+
 export enum EnergyLevelEnum {
   HYPERACTIVE = 'HYPERACTIVE',
   HIGH = 'HIGH',
@@ -74,6 +101,15 @@ export enum EnergyLevelEnum {
   LOW = 'LOW',
   LETHARGIC = 'LETHARGIC'
 }
+
+// For backward compatibility
+export const EnergyEnum = {
+  Hyperactive: EnergyLevelEnum.HYPERACTIVE,
+  High: EnergyLevelEnum.HIGH, 
+  Normal: EnergyLevelEnum.NORMAL,
+  Low: EnergyLevelEnum.LOW,
+  Lethargic: EnergyLevelEnum.LETHARGIC
+};
 
 export enum StoolConsistencyEnum {
   NORMAL = 'normal',
@@ -276,6 +312,6 @@ export const mapToWeightRecord = (record: any): WeightRecord => {
     ...record,
     date: record.date || new Date().toISOString().split('T')[0],
     weight_unit: record.weight_unit || 'lb',
-    unit: record.weight_unit || 'lb' // For backward compatibility
+    unit: record.weight_unit || record.unit || 'lb' // For backward compatibility
   };
 };

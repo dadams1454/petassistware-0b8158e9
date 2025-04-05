@@ -10,7 +10,11 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { WeightUnit, standardizeWeightUnit, weightUnits } from '@/types/common';
+import { 
+  WeightUnit, 
+  standardizeWeightUnit, 
+  weightUnitInfos
+} from '@/types/common';
 
 interface WeightFormProps {
   puppyId: string;
@@ -91,9 +95,9 @@ const WeightForm: React.FC<WeightFormProps> = ({
               <SelectValue placeholder="Select unit" />
             </SelectTrigger>
             <SelectContent>
-              {weightUnits.map(unit => (
-                <SelectItem key={unit.code} value={unit.code}>
-                  {unit.name}
+              {Object.entries(weightUnitInfos).map(([unitCode, unitInfo]) => (
+                <SelectItem key={unitCode} value={unitCode}>
+                  {unitInfo.name}
                 </SelectItem>
               ))}
             </SelectContent>

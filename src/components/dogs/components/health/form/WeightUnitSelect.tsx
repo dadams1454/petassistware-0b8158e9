@@ -3,7 +3,7 @@ import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { WeightUnit, weightUnits } from '@/types/common';
+import { WeightUnit, weightUnitInfos } from '@/types/common';
 
 interface WeightUnitSelectProps {
   form: UseFormReturn<any>;
@@ -33,9 +33,9 @@ export const WeightUnitSelect: React.FC<WeightUnitSelectProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {weightUnits.map((unit) => (
-                <SelectItem key={unit.code} value={unit.code}>
-                  {unit.name}
+              {Object.entries(weightUnitInfos).map(([code, info]) => (
+                <SelectItem key={code} value={code}>
+                  {info.name}
                 </SelectItem>
               ))}
             </SelectContent>
