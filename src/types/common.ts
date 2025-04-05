@@ -49,6 +49,12 @@ export function getWeightUnitInfo(unit: WeightUnit): WeightUnitInfo {
   return weightUnitInfos[unit] || weightUnitInfos['lb']; // Default to pounds if invalid
 }
 
+// Helper function to get weight unit display name
+export function getWeightUnitName(unit: WeightUnit): string {
+  const unitInfo = getWeightUnitInfo(unit);
+  return unitInfo.name;
+}
+
 // Basic pagination type
 export interface Pagination {
   page: number;

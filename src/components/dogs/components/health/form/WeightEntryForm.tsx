@@ -9,7 +9,7 @@ import { InputWithLabel } from '@/components/ui/input-with-label';
 import { SelectWithLabel } from '@/components/ui/select-with-label';
 import { DatePickerWithLabel } from '@/components/ui/date-picker-with-label';
 import { TextareaWithLabel } from '@/components/ui/textarea-with-label';
-import { weightUnits } from '@/types/common';
+import { weightUnitInfos } from '@/types/common';
 
 export interface WeightFormValues {
   weight?: number;
@@ -41,9 +41,9 @@ const WeightEntryForm: React.FC<WeightEntryFormProps> = ({
   const { errors } = formState;
   
   // Format the weight units array for the select component
-  const weightUnitOptions = weightUnits.map(unit => ({
-    value: unit.code,
-    label: unit.name
+  const weightUnitOptions = Object.entries(weightUnitInfos).map(([code, info]) => ({
+    value: code,
+    label: info.name
   }));
   
   return (

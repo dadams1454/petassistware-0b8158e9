@@ -13,7 +13,7 @@ export interface Dog {
   registration_number?: string;
   markings?: string;
   microchip_number?: string;
-  status: string;
+  status: string; // Make status required
   notes?: string;
   owner_id?: string;
   is_breeding?: boolean;

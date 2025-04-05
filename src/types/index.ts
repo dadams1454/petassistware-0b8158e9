@@ -56,7 +56,8 @@ export {
   weightUnits, 
   weightUnitOptions,
   weightUnitInfos,
-  getWeightUnitInfo
+  getWeightUnitInfo,
+  getWeightUnitName
 } from './common';
 
 // Litter and puppy types

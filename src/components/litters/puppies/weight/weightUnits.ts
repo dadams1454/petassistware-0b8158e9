@@ -1,5 +1,5 @@
 
-import { WeightUnit, WeightUnitInfo, getWeightUnitInfo } from '@/types/common';
+import { WeightUnit, WeightUnitInfo, getWeightUnitInfo, getWeightUnitName } from '@/types/common';
 
 /**
  * Calculate percent change between two weight values
@@ -68,11 +68,5 @@ export const weightUnits: WeightUnitInfo[] = [
   { code: 'g', name: 'Grams' }
 ];
 
-// Helper function to get weight unit display name
-export const getWeightUnitName = (unit: WeightUnit): string => {
-  const unitInfo = getWeightUnitInfo(unit);
-  return unitInfo.name;
-};
-
-// Export WeightUnit type for external use
+// Re-export WeightUnit type for external use
 export type { WeightUnit, WeightUnitInfo };
