@@ -1,5 +1,4 @@
-
-import { WeightUnit } from './common';
+import type { WeightUnit } from './common';
 
 export interface Dog {
   id: string;
@@ -84,4 +83,4 @@ export interface Vaccination {
 
 // Add HealthRecordTypeEnum from health.ts for compatibility
 export { HealthRecordTypeEnum } from './health';
-export { WeightUnit } from './common';
+export type { WeightUnit } from './common';

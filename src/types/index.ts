@@ -1,4 +1,3 @@
-
 // Export all types from across the application
 // This file functions as a central hub for importing types
 
@@ -45,9 +44,9 @@ export type {
 } from './reproductive';
 
 // Common types
-export type { Gender, WeightUnitWithLegacy } from './common';
+export type { WeightUnitWithLegacy } from './common';
 export { standardizeWeightUnit, weightUnits } from './common';
-export type { WeightUnit } from './common';  // Explicitly export WeightUnit
+export type { WeightUnit } from './common';  // Explicitly export WeightUnit as a type
 
 // Litter and puppy types
 export { type Dog as SimpleDog } from './litter';

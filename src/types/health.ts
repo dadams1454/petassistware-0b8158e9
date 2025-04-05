@@ -1,6 +1,5 @@
-
+import type { WeightUnit } from './common';
 import { Json } from '../integrations/supabase/types';
-import { WeightUnit } from './common';
 
 export enum HealthRecordTypeEnum {
   VACCINATION = 'VACCINATION',
@@ -97,7 +96,7 @@ export type MedicationStatusResult = {
 };
 
 // Export WeightUnit for use in related components
-export { WeightUnit };
+export type { WeightUnit };
 
 // Health record interface
 export interface HealthRecord {
