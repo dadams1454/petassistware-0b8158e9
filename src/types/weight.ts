@@ -1,5 +1,5 @@
 
-import { WeightUnit } from './common';
+import type { WeightUnit } from './common';
 
 // Weight record interface
 export interface WeightRecord {

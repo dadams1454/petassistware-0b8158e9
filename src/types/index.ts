@@ -1,3 +1,4 @@
+
 // Export all types from across the application
 // This file functions as a central hub for importing types
 
@@ -45,7 +46,7 @@ export type {
 
 // Common types
 export type { WeightUnitWithLegacy } from './common';
-export { standardizeWeightUnit, weightUnits } from './common';
+export { standardizeWeightUnit, weightUnits, weightUnitOptions } from './common';
 export type { WeightUnit } from './common';  // Explicitly export WeightUnit as a type
 
 // Litter and puppy types

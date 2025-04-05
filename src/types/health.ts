@@ -154,7 +154,7 @@ export interface WeightRecord {
   id?: string;
   dog_id: string;
   weight: number;
-  weight_unit: string; // Using string instead of WeightUnit for DB compatibility
+  weight_unit: WeightUnit; // Using WeightUnit type for type safety
   date: string;
   notes?: string;
   percent_change?: number;
@@ -163,7 +163,7 @@ export interface WeightRecord {
   // Additions made for compatibility
   age_days?: number;
   birth_date?: string;
-  unit?: string; // For backward compatibility
+  unit?: WeightUnit; // For backward compatibility
 }
 
 // Medication interface

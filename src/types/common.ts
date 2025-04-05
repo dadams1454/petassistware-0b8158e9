@@ -9,16 +9,16 @@ export type WeightUnitWithLegacy = WeightUnit | 'lbs';
 
 // For backwards compatibility
 export interface WeightUnitOption {
-  code: string;
-  name: string;
+  label: string;  // Changed from code to label for Select components
+  value: WeightUnit;  // Changed from name to value for Select components
 }
 
 // Convert WeightUnit to WeightUnitOption for UI display
 export const weightUnitOptions: Record<WeightUnit, WeightUnitOption> = {
-  'g': { code: 'g', name: 'Grams' },
-  'oz': { code: 'oz', name: 'Ounces' },
-  'lb': { code: 'lb', name: 'Pounds' },
-  'kg': { code: 'kg', name: 'Kilograms' }
+  'g': { value: 'g', label: 'Grams' },
+  'oz': { value: 'oz', label: 'Ounces' },
+  'lb': { value: 'lb', label: 'Pounds' },
+  'kg': { value: 'kg', label: 'Kilograms' }
 };
 
 // Available weight units array for select components
