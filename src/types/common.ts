@@ -4,6 +4,9 @@
 // Weight unit type definition
 export type WeightUnit = 'g' | 'oz' | 'lb' | 'kg';
 
+// Legacy weight unit for backward compatibility
+export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+
 // For backwards compatibility
 export interface WeightUnitOption {
   code: string;
@@ -17,6 +20,15 @@ export const weightUnitOptions: Record<WeightUnit, WeightUnitOption> = {
   'lb': { code: 'lb', name: 'Pounds' },
   'kg': { code: 'kg', name: 'Kilograms' }
 };
+
+// Available weight units array for select components
+export const weightUnits: WeightUnit[] = ['g', 'oz', 'lb', 'kg'];
+
+// Helper to standardize weight unit to a consistent format
+export function standardizeWeightUnit(unit: WeightUnitWithLegacy): WeightUnit {
+  if (unit === 'lbs') return 'lb';
+  return unit as WeightUnit;
+}
 
 // Basic pagination type
 export interface Pagination {

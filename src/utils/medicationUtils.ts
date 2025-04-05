@@ -13,7 +13,8 @@ export const MedicationFrequencyConstants = {
   MONTHLY: 'Monthly',
   QUARTERLY: 'Quarterly',
   ANNUALLY: 'Annually',
-  AS_NEEDED: 'As needed'
+  AS_NEEDED: 'As needed',
+  EVERY_OTHER_DAY: 'Every other day'
 };
 
 // For backwards compatibility with code using MEDICATION_FREQUENCY
@@ -103,6 +104,9 @@ export const getMedicationStatus = (
     case MedicationFrequencyConstants.ANNUALLY.toLowerCase():
       nextDueDate = addDays(lastDate, 365);
       break;
+    case MedicationFrequencyConstants.EVERY_OTHER_DAY.toLowerCase():
+      nextDueDate = addDays(lastDate, 2);
+      break;
     default:
       // For as needed or unknown frequencies
       return {
@@ -153,4 +157,26 @@ export const getStatusLabel = (status: MedicationStatusEnum) => {
     default:
       return { statusLabel: 'Unknown', statusColor: 'text-gray-500 bg-gray-100' };
   }
+};
+
+// Process medication logs to organize by dog and type
+export const processMedicationLogs = (medications: any[]) => {
+  const logsByDog: Record<string, { preventative: any[], other: any[] }> = {};
+  
+  medications.forEach(med => {
+    if (!logsByDog[med.dog_id]) {
+      logsByDog[med.dog_id] = {
+        preventative: [],
+        other: []
+      };
+    }
+    
+    if (med.isPreventative) {
+      logsByDog[med.dog_id].preventative.push(med);
+    } else {
+      logsByDog[med.dog_id].other.push(med);
+    }
+  });
+  
+  return logsByDog;
 };

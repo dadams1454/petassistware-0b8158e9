@@ -85,7 +85,7 @@ export enum StoolConsistencyEnum {
   BLOODY = 'bloody'
 }
 
-// Define type for MedicationStatus for compatibility
+// Define type for AppetiteEnum for compatibility
 export type AppetiteEnum = AppetiteLevelEnum;
 export type EnergyEnum = EnergyLevelEnum;
 export type MedicationStatus = MedicationStatusEnum;
@@ -96,8 +96,8 @@ export type MedicationStatusResult = {
   nextDue?: string | Date | null;
 };
 
-// Make sure WeightUnit is properly defined and exported
-// WeightUnit is now imported from common.ts
+// Export WeightUnit for use in related components
+export { WeightUnit };
 
 // Health record interface
 export interface HealthRecord {
@@ -164,6 +164,7 @@ export interface WeightRecord {
   // Additions made for compatibility
   age_days?: number;
   birth_date?: string;
+  unit?: string; // For backward compatibility
 }
 
 // Medication interface
@@ -183,6 +184,7 @@ export interface Medication {
   last_administered?: string;
   status?: MedicationStatusEnum;
   next_due?: string;
+  medication_name?: string; // For backward compatibility
 }
 
 // Medication administration record
@@ -273,6 +275,7 @@ export const mapToWeightRecord = (record: any): WeightRecord => {
   return {
     ...record,
     date: record.date || new Date().toISOString().split('T')[0],
-    weight_unit: record.weight_unit || 'lb'
+    weight_unit: record.weight_unit || 'lb',
+    unit: record.weight_unit || 'lb' // For backward compatibility
   };
 };

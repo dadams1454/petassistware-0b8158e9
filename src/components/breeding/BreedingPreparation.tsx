@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Calendar, Check, AlertTriangle, ArrowRight } from 'lucide-react';
-import { Dog, DogGender } from '@/types/dog';
+import { Dog, DogGender, DogStatus } from '@/types/dog';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays } from 'date-fns';
 import { useDogStatus } from '@/components/dogs/hooks/useDogStatus';
@@ -54,7 +54,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           ...dogData,
           gender: dogData.gender as DogGender || DogGender.Female, // Ensure gender is typed correctly
           created_at: dogData.created_at || new Date().toISOString(),
-          status: dogData.status || 'active' // Add default status property if not present
+          status: dogData.status || DogStatus.active // Add default status property if not present
         };
         
         setDog(dogWithRequiredProps);
@@ -75,7 +75,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           ...male,
           gender: male.gender as DogGender || DogGender.Male,
           created_at: male.created_at || new Date().toISOString(),
-          status: male.status || 'active' // Add default status property if not present
+          status: male.status || DogStatus.active // Add default status property if not present
         }));
         
         setCompatibleMales(malesWithRequiredProps);

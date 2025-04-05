@@ -11,6 +11,7 @@ export const MedicationFrequencyOptions: {
   { value: MedicationFrequencyConstants.WEEKLY, label: 'Weekly' },
   { value: MedicationFrequencyConstants.BIWEEKLY, label: 'Every two weeks' },
   { value: MedicationFrequencyConstants.MONTHLY, label: 'Monthly' },
+  { value: MedicationFrequencyConstants.EVERY_OTHER_DAY, label: 'Every other day' },
   { value: MedicationFrequencyConstants.AS_NEEDED, label: 'As needed' }
 ];
 
