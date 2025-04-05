@@ -1,6 +1,20 @@
 
 import { WeightUnit, weightUnits } from '@/types/common';
 
+/**
+ * Calculate percent change between two weight values
+ */
+export const calculatePercentChange = (
+  oldWeight: number, 
+  newWeight: number
+): number => {
+  if (oldWeight === 0) return 0; // Prevent division by zero
+  // Calculate percentage change
+  const change = ((newWeight - oldWeight) / oldWeight) * 100;
+  // Return the rounded value to 1 decimal place
+  return Math.round(change * 10) / 10;
+};
+
 // Convert weight from one unit to another
 export const convertWeight = (
   weight: number, 
