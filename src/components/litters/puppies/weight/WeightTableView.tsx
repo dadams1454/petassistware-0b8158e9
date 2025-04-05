@@ -3,7 +3,8 @@ import React from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { WeightRecord, WeightUnit } from '@/types/health';
+import { WeightRecord } from '@/types/health';
+import { WeightUnit } from '@/types/common';
 import { convertWeight } from './weightUnits';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -58,7 +59,7 @@ const WeightTableView: React.FC<WeightTableViewProps> = ({
               // Convert weight to display unit
               const convertedWeight = convertWeight(
                 record.weight, 
-                record.weight_unit || record.unit, 
+                record.weight_unit, 
                 displayUnit
               );
 

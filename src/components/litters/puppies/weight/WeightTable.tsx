@@ -62,7 +62,7 @@ const WeightTable: React.FC<WeightTableProps> = ({
                     ? format(parseISO(record.date), 'MMM d, yyyy')
                     : format(record.date, 'MMM d, yyyy')}
                 </TableCell>
-                <TableCell>{displayWeight} {displayUnit}</TableCell>
+                <TableCell>{displayWeight.toFixed(2)} {displayUnit}</TableCell>
                 <TableCell>
                   {record.percent_change !== null && record.percent_change !== undefined ? (
                     <span 

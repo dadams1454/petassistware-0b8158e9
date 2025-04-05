@@ -120,7 +120,7 @@ const WeightTabContent: React.FC = () => {
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground">Projected Weight</h4>
                   <p className="text-xl font-semibold">
-                    {growthStats.projectedWeight.toFixed(1)} {sortedWeights[0].unit}
+                    {growthStats.projectedWeight.toFixed(1)} {sortedWeights[0].weight_unit}
                   </p>
                 </div>
               )}
@@ -129,7 +129,7 @@ const WeightTabContent: React.FC = () => {
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground">Weight Goal</h4>
                   <p className="text-xl font-semibold">
-                    {growthStats.weightGoal.toFixed(1)} {sortedWeights[0].unit}
+                    {growthStats.weightGoal.toFixed(1)} {sortedWeights[0].weight_unit}
                   </p>
                 </div>
               )}
@@ -175,7 +175,7 @@ const WeightTabContent: React.FC = () => {
                     <div className="flex items-center">
                       <Scale className="h-4 w-4 mr-2 text-gray-400" />
                       <span className="font-medium">{record.weight}</span>
-                      <span className="ml-1 text-gray-500">{record.unit}</span>
+                      <span className="ml-1 text-gray-500">{record.weight_unit}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
