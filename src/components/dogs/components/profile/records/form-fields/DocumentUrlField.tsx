@@ -15,9 +15,13 @@ const DocumentUrlField: React.FC<DocumentUrlFieldProps> = ({ form }) => {
       name="document_url"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Document URL</FormLabel>
+          <FormLabel>Document URL (Optional)</FormLabel>
           <FormControl>
-            <Input placeholder="Link to document or image" {...field} />
+            <Input 
+              placeholder="Link to related document" 
+              {...field} 
+              value={field.value || ''}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

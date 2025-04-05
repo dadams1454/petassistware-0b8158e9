@@ -1,79 +1,72 @@
 
-// Dog-related type definitions
+export enum DogGender {
+  Male = 'Male',
+  Female = 'Female',
+  male = 'Male', // For backward compatibility
+  female = 'Female' // For backward compatibility
+}
 
-// Dog status enumeration
 export enum DogStatus {
   active = 'active',
   inactive = 'inactive',
   deceased = 'deceased',
-  transferred = 'transferred',
-  breeding = 'breeding',
-  retired = 'retired'
+  rehomed = 'rehomed',
+  sold = 'sold'
 }
 
-// Dog gender enumeration
-export enum DogGender {
-  Male = 'Male',
-  Female = 'Female'
+export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
+
+export interface DogProfile {
+  id: string;
+  name: string;
+  breed: string;
+  gender: DogGender;
+  birthdate: string;
+  color: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  status: DogStatus; // Required
+  photo_url?: string;
+  microchip_number?: string;
+  registration_number?: string;
+  notes?: string;
+  is_pregnant?: boolean;
+  last_heat_date?: string;
+  tie_date?: string;
+  litter_number?: number;
+  created_at: string;
+  pedigree?: boolean;
+  requires_special_handling?: boolean;
+  potty_alert_threshold?: number;
+  max_time_between_breaks?: number;
+  vaccination_type?: string;
+  vaccination_notes?: string;
+  last_vaccination_date?: string;
+  owner_id?: string;
+  sire_id?: string | null;
+  dam_id?: string | null;
+  registration_organization?: string;
+  microchip_location?: string;
+  group_ids?: string[];
 }
 
-// Document type enumeration
-export enum DocumentType {
-  medical = 'medical',
-  registration = 'registration',
-  pedigree = 'pedigree',
-  contract = 'contract',
-  other = 'other'
-}
-
-// Dog interface
+// Basic Dog information type (used in many places)
 export interface Dog {
   id: string;
   name: string;
-  gender: DogGender;
   breed: string;
-  birthdate?: string;
+  gender: DogGender;
   color?: string;
-  registration_number?: string;
-  microchip_number?: string;
-  last_vaccination_date?: string;
-  last_heat_date?: string;
-  tie_date?: string;
-  is_pregnant?: boolean;
-  notes?: string;
+  birthdate?: string;
+  status: DogStatus; // Required
+  created_at: string;
+  // Additional properties that might be used
   photo_url?: string;
-  litter_number?: number;
-  weight?: number;
-  weight_unit?: WeightUnit; // Added weight_unit field
-  created_at: string;
-  owner_id?: string;
-  tenant_id?: string;
-  pedigree?: boolean;
-  status: DogStatus; // Required status property
-  reproductive_status?: string; // Added to fix errors
-  group_ids?: string[]; // Added to fix errors in DogCardContent
-  registration_organization?: string; // Added for completeness
-  microchip_location?: string; // Added for completeness
+  is_pregnant?: boolean;
+  dam_id?: string;
+  sire_id?: string;
 }
 
-// Dog profile interface (extended dog information)
-export interface DogProfile extends Dog {
-  vaccination_type?: string;
-  vaccination_notes?: string;
-  potty_alert_threshold?: number;
-  max_time_between_breaks?: number;
-  requires_special_handling?: boolean;
-}
-
-// Vaccination record interface
-export interface Vaccination {
-  id: string;
-  dog_id: string;
-  vaccination_type: string;
-  vaccination_date: string;
-  notes?: string;
-  created_at: string;
-}
-
-// Import the WeightUnit type from common
-import { WeightUnit } from './common';
+// Re-export weight units for compatibility
+export type { WeightUnit };
+export { WeightUnit as WeightUnitEnum };

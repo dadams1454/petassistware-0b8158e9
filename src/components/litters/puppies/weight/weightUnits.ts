@@ -1,5 +1,5 @@
 
-import { WeightUnit, WeightUnitInfo, getWeightUnitInfo, getWeightUnitName } from '@/types/common';
+import { WeightUnit, WeightUnitInfo } from '@/types/common';
 
 /**
  * Calculate percent change between two weight values
@@ -62,10 +62,10 @@ export const convertWeight = (
 
 // Export the weight units array for UI components
 export const weightUnits: WeightUnitInfo[] = [
-  { code: 'lb', name: 'Pounds' },
-  { code: 'kg', name: 'Kilograms' },
-  { code: 'oz', name: 'Ounces' },
-  { code: 'g', name: 'Grams' }
+  { name: 'Pounds', code: 'lb' },
+  { name: 'Kilograms', code: 'kg' },
+  { name: 'Ounces', code: 'oz' },
+  { name: 'Grams', code: 'g' }
 ];
 
 // Re-export WeightUnit type for external use

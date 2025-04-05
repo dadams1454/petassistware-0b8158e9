@@ -6,21 +6,27 @@ import { UseFormReturn } from 'react-hook-form';
 
 interface NotesFieldProps {
   form: UseFormReturn<any>;
+  label?: string;
+  name?: string;
 }
 
-const NotesField: React.FC<NotesFieldProps> = ({ form }) => {
+const NotesField: React.FC<NotesFieldProps> = ({ 
+  form, 
+  label = 'Notes', 
+  name = 'record_notes' 
+}) => {
   return (
     <FormField
       control={form.control}
-      name="record_notes"
+      name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Notes</FormLabel>
+          <FormLabel>{label}</FormLabel>
           <FormControl>
             <Textarea 
-              placeholder="Add any relevant notes or observations" 
-              className="min-h-[100px]"
+              placeholder="Add any additional notes here" 
               {...field} 
+              value={field.value || ''}
             />
           </FormControl>
           <FormMessage />
