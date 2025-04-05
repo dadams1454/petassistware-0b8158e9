@@ -22,7 +22,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
   limit = 5,
   filter = 'all'
 }) => {
-  const { medications, isLoading, error, addMedication, updateMedication, deleteMedication } = useMedication(dogId);
+  const { medications, isLoading, error, addMedication, updateMedication } = useMedication(dogId);
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
   const [isAdministerDialogOpen, setIsAdministerDialogOpen] = useState(false);
   
@@ -56,16 +56,26 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
       filtered = filtered.filter(med => med.active);
     } else if (filter === 'upcoming') {
       filtered = filtered.filter(med => {
-        const status = getMedicationStatus(med);
-        return status.status === MedicationStatusEnum.Active && 
-               !status.isOverdue && 
-               status.daysUntilNextDose !== undefined && 
-               status.daysUntilNextDose <= 7;
+        const status = getMedicationStatus(
+          med.start_date, 
+          med.end_date, 
+          med.last_administered, 
+          med.frequency
+        );
+        return status.status === MedicationStatusEnum.ACTIVE && 
+               status.daysOverdue === null && 
+               status.daysUntilDue !== null && 
+               status.daysUntilDue <= 7;
       });
     } else if (filter === 'overdue') {
       filtered = filtered.filter(med => {
-        const status = getMedicationStatus(med);
-        return status.status === MedicationStatusEnum.Active && status.isOverdue;
+        const status = getMedicationStatus(
+          med.start_date, 
+          med.end_date, 
+          med.last_administered, 
+          med.frequency
+        );
+        return status.status === MedicationStatusEnum.ACTIVE && status.daysOverdue !== null;
       });
     }
     
@@ -161,7 +171,13 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
   return (
     <div className="space-y-4">
       {filteredMedications.map((medication) => {
-        const status = getMedicationStatus(medication);
+        const status = getMedicationStatus(
+          medication.start_date,
+          medication.end_date,
+          medication.last_administered,
+          medication.frequency,
+          !medication.active
+        );
         const { statusLabel, statusColor } = getStatusLabel(status.status);
         const nextDue = status.nextDue ? new Date(status.nextDue) : getNextDueDate(medication);
         const daysUntil = nextDue ? differenceInDays(nextDue, new Date()) : null;
@@ -181,7 +197,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
               <Badge className={statusColor}>{statusLabel}</Badge>
             </div>
             
-            {status.status === MedicationStatusEnum.Active && (
+            {status.status === MedicationStatusEnum.ACTIVE && (
               <>
                 <div className="flex justify-between items-center mt-4 text-sm">
                   <div>

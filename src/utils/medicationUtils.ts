@@ -189,3 +189,40 @@ export const MEDICATION_FREQUENCY = {
   AS_NEEDED: 'as needed',
   ONCE: 'once'
 };
+
+// Export the same constants under the name MedicationFrequencyConstants for backward compatibility
+export const MedicationFrequencyConstants = MEDICATION_FREQUENCY;
+
+// Process medication logs for dogs
+export const processMedicationLogs = (logs: any[]) => {
+  // Group medications by type (preventative or other)
+  const preventative: any[] = [];
+  const other: any[] = [];
+  
+  logs.forEach(log => {
+    const medicationInfo = {
+      id: log.id,
+      name: log.medication_name || log.task_name || 'Unnamed Medication',
+      dosage: log.dosage,
+      dosage_unit: log.dosage_unit,
+      frequency: log.frequency || 'daily',
+      lastAdministered: log.timestamp || log.created_at,
+      nextDue: log.next_due_date,
+      status: log.status || 'active',
+      notes: log.notes,
+      isPreventative: log.is_preventative || false,
+      startDate: log.start_date
+    };
+    
+    if (medicationInfo.isPreventative) {
+      preventative.push(medicationInfo);
+    } else {
+      other.push(medicationInfo);
+    }
+  });
+  
+  return {
+    preventative,
+    other
+  };
+};
