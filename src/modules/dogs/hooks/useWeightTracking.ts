@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { calculatePercentChange } from '@/components/litters/puppies/weight/weightUnits';
 import { useToast } from '@/hooks/use-toast';
 import { WeightRecord, GrowthStats } from '@/types/weight';
-import { calculatePercentChange } from '@/components/litters/puppies/weight/weightUnits';
 
 export const useWeightTracking = (dogId: string) => {
   const { toast } = useToast();
@@ -153,7 +153,7 @@ export const useWeightTracking = (dogId: string) => {
       return {
         currentWeight: 0,
         weightUnit: 'lb',
-        averageGrowth: 0,
+        averageGrowthRate: 0,
         growthRate: 0,
         lastWeekGrowth: 0,
         projectedWeight: 0
@@ -200,7 +200,7 @@ export const useWeightTracking = (dogId: string) => {
       return {
         currentWeight,
         weightUnit,
-        averageGrowth,
+        averageGrowthRate: averageGrowth,
         growthRate,
         lastWeekGrowth,
         projectedWeight
@@ -210,7 +210,7 @@ export const useWeightTracking = (dogId: string) => {
     return {
       currentWeight,
       weightUnit,
-      averageGrowth: 0,
+      averageGrowthRate: 0,
       growthRate: 0,
       lastWeekGrowth: 0,
       projectedWeight: currentWeight
