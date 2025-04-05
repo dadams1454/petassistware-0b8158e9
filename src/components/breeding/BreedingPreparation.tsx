@@ -15,9 +15,9 @@ interface BreedingPreparationProps {
   dogId?: string;
 }
 
-// Create a type that ensures the dog has all required Dog properties
-interface ExtendedDog extends Dog {
-  // Any additional properties specific to this component can be added here
+// Create a type that extends Dog to ensure all required properties
+interface ExtendedDog extends Omit<Dog, 'status'> {
+  status: string;
 }
 
 const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {

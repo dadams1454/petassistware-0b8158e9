@@ -61,11 +61,11 @@ export const convertWeight = (
 };
 
 // Export the weight units array for UI components
-export const weightUnits = [
-  { code: 'lb' as WeightUnit, name: 'Pounds' },
-  { code: 'kg' as WeightUnit, name: 'Kilograms' },
-  { code: 'oz' as WeightUnit, name: 'Ounces' },
-  { code: 'g' as WeightUnit, name: 'Grams' }
+export const weightUnits: WeightUnitInfo[] = [
+  { code: 'lb', name: 'Pounds' },
+  { code: 'kg', name: 'Kilograms' },
+  { code: 'oz', name: 'Ounces' },
+  { code: 'g', name: 'Grams' }
 ];
 
 // Helper function to get weight unit display name

@@ -1,3 +1,4 @@
+
 import type { WeightUnit } from './common';
 import { Json } from '../integrations/supabase/types';
 
@@ -86,13 +87,7 @@ export enum AppetiteLevelEnum {
 }
 
 // For backward compatibility
-export const AppetiteEnum = {
-  Excellent: AppetiteLevelEnum.EXCELLENT,
-  Good: AppetiteLevelEnum.GOOD,
-  Fair: AppetiteLevelEnum.FAIR,
-  Poor: AppetiteLevelEnum.POOR,
-  None: AppetiteLevelEnum.NONE
-};
+export const AppetiteEnum = AppetiteLevelEnum;
 
 export enum EnergyLevelEnum {
   HYPERACTIVE = 'HYPERACTIVE',
@@ -103,13 +98,7 @@ export enum EnergyLevelEnum {
 }
 
 // For backward compatibility
-export const EnergyEnum = {
-  Hyperactive: EnergyLevelEnum.HYPERACTIVE,
-  High: EnergyLevelEnum.HIGH, 
-  Normal: EnergyLevelEnum.NORMAL,
-  Low: EnergyLevelEnum.LOW,
-  Lethargic: EnergyLevelEnum.LETHARGIC
-};
+export const EnergyEnum = EnergyLevelEnum;
 
 export enum StoolConsistencyEnum {
   NORMAL = 'normal',
@@ -121,9 +110,7 @@ export enum StoolConsistencyEnum {
   BLOODY = 'bloody'
 }
 
-// Define type for AppetiteEnum for compatibility
-export type AppetiteEnum = AppetiteLevelEnum;
-export type EnergyEnum = EnergyLevelEnum;
+// Define type for MedicationStatusEnum for compatibility
 export type MedicationStatus = MedicationStatusEnum;
 export type MedicationStatusResult = {
   status: MedicationStatusEnum;

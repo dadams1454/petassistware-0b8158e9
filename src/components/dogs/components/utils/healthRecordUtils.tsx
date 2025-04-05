@@ -21,28 +21,22 @@ import { HealthRecordTypeEnum } from '@/types/health';
  */
 export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string, className?: string) => {
   switch (recordType) {
-    case HealthRecordTypeEnum.Exam:
-    case HealthRecordTypeEnum.Examination:
+    case HealthRecordTypeEnum.EXAMINATION:
       return <Stethoscope className={className} />;
-    case HealthRecordTypeEnum.Vaccination:
+    case HealthRecordTypeEnum.VACCINATION:
       return <Syringe className={className} />;
-    case HealthRecordTypeEnum.Parasite:
-    case HealthRecordTypeEnum.Deworming:
+    case HealthRecordTypeEnum.DEWORMING:
       return <Bug className={className} />;
-    case HealthRecordTypeEnum.Medication:
+    case HealthRecordTypeEnum.MEDICATION:
       return <Pill className={className} />;
-    case HealthRecordTypeEnum.Surgery:
-    case HealthRecordTypeEnum.Procedure:
+    case HealthRecordTypeEnum.SURGERY:
+    case HealthRecordTypeEnum.PROCEDURE:
       return <Scissors className={className} />;
-    case HealthRecordTypeEnum.Emergency:
-      return <AlertTriangle className={className} />;
-    case HealthRecordTypeEnum.Lab:
-    case HealthRecordTypeEnum.Test:
+    case HealthRecordTypeEnum.TEST:
       return <FileText className={className} />;
-    case HealthRecordTypeEnum.Dental:
+    case HealthRecordTypeEnum.DENTAL:
       return <Tooth className={className} />;
-    case HealthRecordTypeEnum.Xray:
-    case HealthRecordTypeEnum.Ultrasound:
+    case HealthRecordTypeEnum.IMAGING:
       return <Image className={className} />;
     default:
       return <Activity className={className} />;
@@ -56,32 +50,26 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string, c
  */
 export const getHealthRecordColor = (recordType: HealthRecordTypeEnum | string) => {
   switch (recordType) {
-    case HealthRecordTypeEnum.Exam:
-    case HealthRecordTypeEnum.Examination:
+    case HealthRecordTypeEnum.EXAMINATION:
       return 'text-blue-500';
-    case HealthRecordTypeEnum.Vaccination:
+    case HealthRecordTypeEnum.VACCINATION:
       return 'text-green-500';
-    case HealthRecordTypeEnum.Parasite:
-    case HealthRecordTypeEnum.Deworming:
+    case HealthRecordTypeEnum.DEWORMING:
       return 'text-orange-500';
-    case HealthRecordTypeEnum.Medication:
+    case HealthRecordTypeEnum.MEDICATION:
       return 'text-purple-500';
-    case HealthRecordTypeEnum.Surgery:
-    case HealthRecordTypeEnum.Procedure:
+    case HealthRecordTypeEnum.SURGERY:
+    case HealthRecordTypeEnum.PROCEDURE:
       return 'text-red-500';
-    case HealthRecordTypeEnum.Emergency:
-      return 'text-red-600';
-    case HealthRecordTypeEnum.Lab:
-    case HealthRecordTypeEnum.Test:
+    case HealthRecordTypeEnum.TEST:
       return 'text-cyan-500';
-    case HealthRecordTypeEnum.Dental:
+    case HealthRecordTypeEnum.DENTAL:
       return 'text-yellow-500';
-    case HealthRecordTypeEnum.Xray:
-    case HealthRecordTypeEnum.Ultrasound:
+    case HealthRecordTypeEnum.IMAGING:
       return 'text-indigo-500';
-    case HealthRecordTypeEnum.Observation:
-    case HealthRecordTypeEnum.Grooming:
-    case HealthRecordTypeEnum.Allergy:
+    case HealthRecordTypeEnum.OBSERVATION:
+    case HealthRecordTypeEnum.GROOMING:
+    case HealthRecordTypeEnum.ALLERGY:
       return 'text-teal-500';
     default:
       return 'text-gray-500';

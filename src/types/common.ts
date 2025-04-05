@@ -1,7 +1,7 @@
 
 // Define common types used across the application
 
-// Weight unit type definition
+// Weight unit type definition - using string literal union type
 export type WeightUnit = 'g' | 'oz' | 'lb' | 'kg';
 
 // Legacy weight unit for backward compatibility

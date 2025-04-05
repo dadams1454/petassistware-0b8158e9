@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { HealthRecordTypeEnum } from '@/types/dog';
+import { HealthRecordTypeEnum } from '@/types/health';
 import {
   Form,
   FormControl,
@@ -47,7 +47,7 @@ const AddHealthRecordForm: React.FC<AddHealthRecordFormProps> = ({ onSubmit, onC
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
-      record_type: HealthRecordTypeEnum.Examination,
+      record_type: HealthRecordTypeEnum.EXAMINATION,
       record_notes: '',
       document_url: '',
       vet_name: '',
@@ -93,9 +93,9 @@ const AddHealthRecordForm: React.FC<AddHealthRecordFormProps> = ({ onSubmit, onC
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {Object.values(HealthRecordTypeEnum).map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                  {Object.entries(HealthRecordTypeEnum).map(([key, value]) => (
+                    <SelectItem key={value} value={value}>
+                      {key.charAt(0) + key.slice(1).toLowerCase()}
                     </SelectItem>
                   ))}
                 </SelectContent>

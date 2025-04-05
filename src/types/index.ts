@@ -18,8 +18,6 @@ export type {
   HealthCertificate,
   MedicationAdministration,
   WeightRecord,
-  AppetiteEnum,
-  EnergyEnum
 } from './health';
 
 export { 

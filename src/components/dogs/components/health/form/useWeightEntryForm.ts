@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { WeightUnit } from '@/types/common';
+import type { WeightUnit } from '@/types/common';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 
 // Schema for weight entry form
