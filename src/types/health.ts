@@ -1,5 +1,5 @@
 
-import { WeightUnit } from '@/types/common';
+import { type WeightUnit } from '@/types/common';
 
 // Health record types
 export enum HealthRecordTypeEnum {
@@ -194,7 +194,6 @@ export interface GrowthStats {
   totalGrowth?: number | null;
   currentWeight?: number;
   weightUnit?: WeightUnit;
-  averageGrowthRate?: number;
   lastWeekGrowth?: number;
   projectedWeight?: number;
 }
@@ -317,5 +316,5 @@ export function mapToHealthRecord(row: any): HealthRecord {
   };
 }
 
-// Export WeightUnit for use in other files
-export { WeightUnit };
+// Re-export WeightUnit
+export type { WeightUnit };

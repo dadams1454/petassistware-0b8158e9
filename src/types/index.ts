@@ -35,7 +35,6 @@ export {
 // Common types
 export type { 
   WeightUnit,
-  WeightUnitWithLegacy,
   WeightUnitInfo,
   WeightUnitOption
 } from './common';

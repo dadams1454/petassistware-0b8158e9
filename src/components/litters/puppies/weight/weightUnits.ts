@@ -1,5 +1,5 @@
 
-import { WeightUnit, WeightUnitInfo } from '@/types/common';
+import { type WeightUnit, type WeightUnitInfo } from '@/types/common';
 
 /**
  * Calculate percent change between two weight values
