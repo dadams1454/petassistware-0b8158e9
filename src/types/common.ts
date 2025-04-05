@@ -1,24 +1,40 @@
 
-// Common type definitions used across the application
+// Define common types used across the application
 
-export type Gender = 'male' | 'female';
+// Weight unit type definition
+export type WeightUnit = 'g' | 'oz' | 'lb' | 'kg';
 
-// Weight units with proper export
-export type WeightUnit = 'g' | 'kg' | 'lb' | 'oz';
+// For backwards compatibility
+export interface WeightUnitOption {
+  code: string;
+  name: string;
+}
 
-// For backward compatibility
-export type WeightUnitWithLegacy = WeightUnit | 'grams' | 'kilograms' | 'pounds' | 'ounces';
-
-// Standard unit conversion function
-export const standardizeWeightUnit = (unit: WeightUnitWithLegacy): WeightUnit => {
-  switch (unit) {
-    case 'grams': return 'g';
-    case 'kilograms': return 'kg';
-    case 'pounds': return 'lb';
-    case 'ounces': return 'oz';
-    default: return unit as WeightUnit;
-  }
+// Convert WeightUnit to WeightUnitOption for UI display
+export const weightUnitOptions: Record<WeightUnit, WeightUnitOption> = {
+  'g': { code: 'g', name: 'Grams' },
+  'oz': { code: 'oz', name: 'Ounces' },
+  'lb': { code: 'lb', name: 'Pounds' },
+  'kg': { code: 'kg', name: 'Kilograms' }
 };
 
-// Common weight units for UI dropdowns
-export const weightUnits: WeightUnit[] = ['g', 'kg', 'lb', 'oz'];
+// Basic pagination type
+export interface Pagination {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+// Basic sort configuration
+export interface SortConfig {
+  key: string;
+  direction: 'asc' | 'desc';
+}
+
+// Common filter interface
+export interface FilterConfig {
+  field: string;
+  operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'like';
+  value: string | number | boolean | Array<string | number>;
+}

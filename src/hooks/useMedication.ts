@@ -2,21 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-export interface Medication {
-  id: string;
-  dog_id: string;
-  name: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency: string;
-  administration_route?: string;
-  start_date: string;
-  end_date?: string;
-  notes?: string;
-  active: boolean;
-  created_at?: string;
-}
+import { Medication, MedicationStatusEnum } from '@/types/health';
 
 export const useMedication = (dogId: string) => {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -55,7 +41,8 @@ export const useMedication = (dogId: string) => {
             end_date: record.end_date,
             notes: record.notes || record.description,
             active: record.end_date ? new Date(record.end_date) > new Date() : true,
-            created_at: record.created_at
+            created_at: record.created_at,
+            last_administered: record.last_administered
           }));
           
           setMedications(mappedMedications);
@@ -85,7 +72,7 @@ export const useMedication = (dogId: string) => {
       // Create health record for the medication
       const healthRecord = {
         dog_id: medication.dog_id,
-        record_type: 'medication',
+        record_type: 'MEDICATION',
         title: medication.name,
         medication_name: medication.name,
         dosage: medication.dosage,
@@ -94,7 +81,9 @@ export const useMedication = (dogId: string) => {
         administration_route: medication.administration_route,
         start_date: medication.start_date,
         end_date: medication.end_date,
-        notes: medication.notes
+        notes: medication.notes,
+        vet_name: 'N/A', // Required field in health_records
+        visit_date: medication.start_date // Required field in health_records
       };
       
       const { data, error } = await supabase
@@ -118,7 +107,8 @@ export const useMedication = (dogId: string) => {
           end_date: data.end_date,
           notes: data.notes || data.description,
           active: data.end_date ? new Date(data.end_date) > new Date() : true,
-          created_at: data.created_at
+          created_at: data.created_at,
+          last_administered: data.last_administered
         };
         
         setMedications(prev => [newMedication, ...prev]);
@@ -160,7 +150,8 @@ export const useMedication = (dogId: string) => {
         ...(updates.administration_route && { administration_route: updates.administration_route }),
         ...(updates.start_date && { start_date: updates.start_date }),
         ...(updates.end_date && { end_date: updates.end_date }),
-        ...(updates.notes && { notes: updates.notes })
+        ...(updates.notes && { notes: updates.notes }),
+        ...(updates.last_administered && { last_administered: updates.last_administered })
       };
       
       const { data, error } = await supabase

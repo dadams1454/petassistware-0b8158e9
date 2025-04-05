@@ -1,3 +1,4 @@
+
 import { Json } from '../integrations/supabase/types';
 import { WeightUnit } from './common';
 
@@ -96,7 +97,7 @@ export type MedicationStatusResult = {
 };
 
 // Make sure WeightUnit is properly defined and exported
-export type WeightUnit = 'g' | 'oz' | 'lb' | 'kg';
+// WeightUnit is now imported from common.ts
 
 // Health record interface
 export interface HealthRecord {
@@ -167,18 +168,18 @@ export interface WeightRecord {
 
 // Medication interface
 export interface Medication {
-  id?: string;
+  id: string;
   dog_id: string;
   name: string;
   dosage?: number;
   dosage_unit?: string;
   frequency: string;
   administration_route?: string;
-  start_date?: string;
+  start_date: string;
   end_date?: string;
   active: boolean;
   notes?: string;
-  created_at: string;
+  created_at?: string;
   last_administered?: string;
   status?: MedicationStatusEnum;
   next_due?: string;

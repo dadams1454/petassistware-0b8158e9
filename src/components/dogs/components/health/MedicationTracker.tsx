@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -93,7 +94,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
     const nextDueDate = new Date(lastAdministered);
     
     // Simple frequency handling
-    const frequencyStr = medication.frequency.toLowerCase() || 'monthly';
+    const frequencyStr = (medication.frequency || 'monthly').toLowerCase();
     
     switch (frequencyStr) {
       case MedicationFrequencyConstants.DAILY.toLowerCase():
@@ -188,7 +189,7 @@ const MedicationTracker: React.FC<MedicationTrackerProps> = ({
           >
             <div className="flex justify-between items-start mb-2">
               <div>
-                <h3 className="font-medium">{medication.name || medication.medication_name}</h3>
+                <h3 className="font-medium">{medication.name}</h3>
                 <p className="text-sm text-muted-foreground">
                   {medication.dosage} {medication.dosage_unit}, {medication.frequency}
                 </p>

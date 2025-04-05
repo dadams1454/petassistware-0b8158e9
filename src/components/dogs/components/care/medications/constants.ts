@@ -1,5 +1,5 @@
 
-import { MEDICATION_FREQUENCY, MedicationFrequencyConstants } from '@/utils/medicationUtils';
+import { MedicationFrequencyConstants } from '@/utils/medicationUtils';
 
 // Medication frequency options
 export const MedicationFrequencyOptions: {
