@@ -10,7 +10,7 @@ export { DogGender, DogStatus, DocumentType } from './dog';
 export type { 
   HealthRecord, 
   Medication, 
-  MedicationStatus,     // Include the type alias
+  MedicationStatus,
   MedicationStatusResult,
   GrowthStats,
   HealthIndicator,
@@ -18,6 +18,7 @@ export type {
   HealthCertificate,
   MedicationAdministration,
   WeightRecord,
+  WeightUnit,
 } from './health';
 
 export { 
@@ -46,7 +47,6 @@ export type {
 
 // Common types
 export type { 
-  WeightUnit, 
   WeightUnitWithLegacy,
   WeightUnitInfo,
   WeightUnitOption
@@ -86,8 +86,8 @@ export type {
   PuppyCareLog,
   SocializationExperience,
   SocializationReaction,
-  WeightRecord as PuppyWeightRecord,
-  PuppyMilestone as PuppyTrackingMilestone,
+  PuppyWeightRecord,
+  PuppyTrackingMilestone,
   VaccinationSchedule,
   VaccinationRecord,
   PuppyAgeGroup

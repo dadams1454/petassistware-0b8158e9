@@ -36,7 +36,12 @@ export const getMedicationStatus = (
       status: MedicationStatusEnum.DISCONTINUED,
       daysUntilDue: null,
       daysOverdue: null,
-      nextDue: null
+      nextDue: null,
+      isActive: false,
+      isCompleted: false,
+      isDiscontinued: true,
+      isScheduled: false,
+      isMissed: false
     };
   }
   
@@ -46,7 +51,12 @@ export const getMedicationStatus = (
       status: MedicationStatusEnum.NOT_STARTED,
       daysUntilDue: null,
       daysOverdue: null,
-      nextDue: startDate
+      nextDue: startDate,
+      isActive: false,
+      isCompleted: false,
+      isDiscontinued: false,
+      isScheduled: true,
+      isMissed: false
     };
   }
   
@@ -56,7 +66,12 @@ export const getMedicationStatus = (
       status: MedicationStatusEnum.COMPLETED,
       daysUntilDue: null,
       daysOverdue: null,
-      nextDue: null
+      nextDue: null,
+      isActive: false,
+      isCompleted: true,
+      isDiscontinued: false,
+      isScheduled: false,
+      isMissed: false
     };
   }
   
@@ -66,7 +81,12 @@ export const getMedicationStatus = (
       status: MedicationStatusEnum.SCHEDULED,
       daysUntilDue: null,
       daysOverdue: null,
-      nextDue: null
+      nextDue: null,
+      isActive: false,
+      isCompleted: false,
+      isDiscontinued: false,
+      isScheduled: true,
+      isMissed: false
     };
   }
   
@@ -113,7 +133,12 @@ export const getMedicationStatus = (
         status: MedicationStatusEnum.ACTIVE,
         daysUntilDue: null,
         daysOverdue: null,
-        nextDue: null
+        nextDue: null,
+        isActive: true,
+        isCompleted: false,
+        isDiscontinued: false,
+        isScheduled: false,
+        isMissed: false
       };
   }
   
@@ -126,7 +151,12 @@ export const getMedicationStatus = (
       status: MedicationStatusEnum.OVERDUE,
       daysUntilDue: null,
       daysOverdue: Math.abs(daysUntilDue),
-      nextDue: nextDueDate.toISOString()
+      nextDue: nextDueDate.toISOString(),
+      isActive: true,
+      isCompleted: false,
+      isDiscontinued: false,
+      isScheduled: false,
+      isMissed: false
     };
   } else {
     // Active and on schedule
@@ -134,7 +164,12 @@ export const getMedicationStatus = (
       status: MedicationStatusEnum.ACTIVE,
       daysUntilDue,
       daysOverdue: null,
-      nextDue: nextDueDate.toISOString()
+      nextDue: nextDueDate.toISOString(),
+      isActive: true,
+      isCompleted: false,
+      isDiscontinued: false,
+      isScheduled: false,
+      isMissed: false
     };
   }
 };
@@ -154,6 +189,9 @@ export const getStatusLabel = (status: MedicationStatusEnum) => {
       return { statusLabel: 'Discontinued', statusColor: 'text-orange-500 bg-orange-100' };
     case MedicationStatusEnum.NOT_STARTED:
       return { statusLabel: 'Not Started', statusColor: 'text-purple-500 bg-purple-100' };
+    case MedicationStatusEnum.MISSED:
+      return { statusLabel: 'Missed', statusColor: 'text-red-500 bg-red-100' };
+    case MedicationStatusEnum.UNKNOWN:
     default:
       return { statusLabel: 'Unknown', statusColor: 'text-gray-500 bg-gray-100' };
   }

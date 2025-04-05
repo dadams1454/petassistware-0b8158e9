@@ -56,7 +56,10 @@ export enum MedicationStatusEnum {
   COMPLETED = 'completed',
   DISCONTINUED = 'discontinued',
   SCHEDULED = 'scheduled',
-  MISSED = 'missed'
+  MISSED = 'missed',
+  OVERDUE = 'overdue',
+  NOT_STARTED = 'not_started',
+  UNKNOWN = 'unknown'
 }
 
 // Legacy appetite enum (for backward compatibility)
@@ -82,10 +85,12 @@ export type MedicationStatus = keyof typeof MedicationStatusEnum;
 
 // Type for medication status result
 export interface MedicationStatusResult {
-  status: MedicationStatus;
+  status: MedicationStatusEnum;
   daysLeft?: number;
   daysOverdue?: number;
   daysActive?: number;
+  daysUntilDue?: number | null;
+  nextDue?: string | null;
   isActive: boolean;
   isCompleted: boolean;
   isDiscontinued: boolean;
@@ -210,6 +215,8 @@ export interface Medication {
   notes?: string;
   created_at: string;
   active: boolean;
+  last_administered?: string;
+  medication_name?: string;
 }
 
 // Medication administration interface
@@ -221,6 +228,7 @@ export interface MedicationAdministration {
   administered_by: string;
   notes?: string;
   created_at: string;
+  administered_at?: string;
 }
 
 // Growth statistics interface
@@ -303,3 +311,6 @@ export function mapToWeightRecord(record: any): WeightRecord {
 export function stringToHealthRecordType(value: string): HealthRecordTypeEnum {
   return (HealthRecordTypeEnum as any)[value] || HealthRecordTypeEnum.EXAMINATION;
 }
+
+// Export necessary types for external use
+export type { WeightUnit };

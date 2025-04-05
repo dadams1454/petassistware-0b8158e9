@@ -3,8 +3,7 @@ import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import type { WeightUnit } from '@/types/common';
-import { weightUnitInfos } from '@/types/common';
+import { WeightUnit, weightUnitInfos } from '@/types/common';
 
 interface WeightUnitSelectProps {
   form: UseFormReturn<any>;
