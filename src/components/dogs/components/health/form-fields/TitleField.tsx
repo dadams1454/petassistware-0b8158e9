@@ -11,17 +11,27 @@ import { Input } from '@/components/ui/input';
 
 interface TitleFieldProps {
   disabled?: boolean;
-  form: UseFormReturn<any>;
+  form?: UseFormReturn<any>;
+  required?: boolean;
+  className?: string;
 }
 
-const TitleField: React.FC<TitleFieldProps> = ({ disabled = false, form }) => {
+const TitleField: React.FC<TitleFieldProps> = ({ 
+  disabled = false, 
+  form,
+  required = false,
+  className
+}) => {
+  const formContext = useFormContext();
+  const formToUse = form || formContext;
+  
   return (
     <FormField
-      control={form.control}
+      control={formToUse.control}
       name="title"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>Title</FormLabel>
+        <FormItem className={className}>
+          <FormLabel>{required ? "Title*" : "Title"}</FormLabel>
           <FormControl>
             <Input 
               placeholder="Enter a title for this record"

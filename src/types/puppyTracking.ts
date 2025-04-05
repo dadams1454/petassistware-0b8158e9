@@ -6,11 +6,15 @@ import { WeightUnit } from './common';
 export interface PuppyWithAge extends Puppy {
   age: number;
   ageInDays: number;
+  age_days?: number; // For backward compatibility
   ageInWeeks: number;
+  age_weeks?: number; // For backward compatibility
   developmentalStage: string;
   weightHistory?: any[];
   litter?: any;
   currentWeight?: number;
+  current_weight_unit?: string;
+  weight_unit?: string;
   ageDescription?: string;
 }
 
@@ -29,6 +33,9 @@ export interface PuppyAgeGroup {
   minAge: number;
   maxAge: number;
   milestones: string;
+  ageRange?: string;
+  groupName?: string;
+  puppyCount?: number;
 }
 
 // Puppy age group info interface
@@ -46,6 +53,10 @@ export interface PuppyAgeGroupInfo {
   puppyCount?: number;
   minAge?: number;
   maxAge?: number;
+  displayName?: string;
+  minDays?: number;
+  maxDays?: number;
+  unit?: string;
 }
 
 // Age group data structure for puppies
@@ -112,6 +123,7 @@ export interface WeightRecord {
   notes?: string;
   created_at: string;
   age_days?: number;
+  percent_change?: number;
 }
 
 // Vaccination schedule
@@ -126,6 +138,9 @@ export interface VaccinationSchedule {
   notes?: string;
   created_at: string;
 }
+
+// Vaccination schedule item for compatibility
+export interface VaccinationScheduleItem extends VaccinationSchedule {}
 
 // Vaccination record
 export interface VaccinationRecord {
@@ -151,6 +166,7 @@ export interface SocializationReactionOption {
   color: string;
   emoji?: string;
   description?: string;
+  name?: string;
 }
 
 // Socialization category
@@ -160,6 +176,7 @@ export interface SocializationCategory {
   description: string;
   targetCount: number;
   color: string;
+  examples?: string[];
 }
 
 // Socialization category option
@@ -183,6 +200,7 @@ export interface SocializationExperience {
   category: string;
   experience: string;
   experience_date: string;
+  experience_type?: string;
   reaction?: SocializationReactionType;
   notes?: string;
   created_at: string;
@@ -197,6 +215,7 @@ export interface SocializationReaction {
   color: string;
   emoji?: string;
   description?: string;
+  name?: string;
 }
 
 // Socialization progress
@@ -207,6 +226,9 @@ export interface SocializationProgress {
   total: number;
   percentage: number;
   target: number;
+  completion_percentage?: number;
+  category?: string;
+  id?: string;
 }
 
 // Puppy care log
@@ -230,4 +252,11 @@ export interface PuppyMilestone {
   created_at?: string;
   title?: string;
   is_completed?: boolean;
+  milestone_category?: string;
+  expected_age_days?: number;
+  completion_date?: string;
+  description?: string;
 }
+
+// Care log alias
+export type CareLog = PuppyCareLog;

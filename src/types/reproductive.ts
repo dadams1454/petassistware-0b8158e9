@@ -53,8 +53,10 @@ export interface HeatStage {
 // Reproductive status enum
 export enum ReproductiveStatus {
   InHeat = 'in_heat',
+  IN_HEAT = 'in_heat', // For backward compatibility
   PreHeat = 'pre_heat',
   Pregnant = 'pregnant',
+  PREGNANT = 'pregnant', // For backward compatibility
   Whelping = 'whelping',
   Nursing = 'nursing',
   Available = 'available',
@@ -97,7 +99,7 @@ export interface PregnancyRecord {
   breeding_record_id?: string;
   confirmation_date?: string;
   due_date?: string;
-  status: 'pending' | 'confirmed' | 'lost' | 'delivered';
+  status: 'pending' | 'confirmed' | 'lost' | 'delivered' | 'completed';
   notes?: string;
   created_at: string;
   created_by?: string;
@@ -138,11 +140,14 @@ export interface ReproductiveCycleData {
   averageCycleLength?: number | null;
   heatStages: HeatStage[];
   currentStatus: ReproductiveStatus;
+  status?: ReproductiveStatus;
   dueDate?: string | null;
   daysUntilDue?: number | null;
   gestationDays?: number | null;
   pregnancyConfirmed: boolean;
   pregnancyLost: boolean;
+  estimatedDueDate?: string | null;
+  fertilityWindow?: { start: string; end: string } | null;
 }
 
 // Breeding checklist item interface
@@ -160,10 +165,15 @@ export interface BreedingChecklistItem {
 export interface BreedingPrepFormData {
   dog_id: string;
   sire_id: string;
+  dam_id?: string;
+  damId?: string;
+  sireId?: string;
   tie_date: string;
   estimated_due_date: string;
   breeding_method: string;
   notes: string;
+  plannedDate?: string;
+  plannedTieDate?: string;
 }
 
 // Helper function to normalize breeding records
@@ -182,6 +192,7 @@ export function normalizeBreedingRecord(record: any): BreedingRecord {
     notes: record.notes,
     created_at: record.created_at,
     created_by: record.created_by,
-    sire: record.sire
+    sire: record.sire,
+    dam: record.dam
   };
 }

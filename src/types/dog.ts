@@ -1,4 +1,7 @@
 
+// Import WeightUnit from common
+import { WeightUnit } from '@/types/common';
+
 export enum DogGender {
   Male = 'Male',
   Female = 'Female',
@@ -11,11 +14,11 @@ export enum DogStatus {
   inactive = 'inactive',
   deceased = 'deceased',
   rehomed = 'rehomed',
-  sold = 'sold'
+  sold = 'sold',
+  guardian = 'guardian',
+  archived = 'archived',
+  retired = 'retired'
 }
-
-// Import WeightUnit from common
-import { WeightUnit } from '@/types/common';
 
 export interface DogProfile {
   id: string;
@@ -72,6 +75,7 @@ export interface Dog {
   tie_date?: string;
   last_heat_date?: string; // Add for compatibility
   next_heat_date?: string; // Add for compatibility
+  litter_number?: number; // Add for breeder info
 }
 
 // Document type enum
@@ -95,3 +99,6 @@ export interface Vaccination {
   notes?: string;
   created_at: string;
 }
+
+// Export WeightUnit 
+export { WeightUnit };

@@ -133,7 +133,9 @@ export enum StoolConsistencyEnum {
   LOOSE = 'loose',
   WATERY = 'watery',
   HARD = 'hard',
-  NONE = 'none'
+  NONE = 'none',
+  MUCOUSY = 'mucousy',
+  BLOODY = 'bloody'
 }
 
 // Weight record interface
@@ -185,41 +187,30 @@ export interface HealthIndicator {
 
 // Growth statistics interface
 export interface GrowthStats {
-  percentChange: number;
+  percentChange?: number;
   averageGrowthRate: number;
   weightGoal: number | null;
   onTrack: boolean | null;
   totalGrowth?: number | null;
   currentWeight?: number;
   weightUnit?: WeightUnit;
-  growthRate?: number;
+  averageGrowthRate?: number;
   lastWeekGrowth?: number;
   projectedWeight?: number;
 }
 
-// Medication interface
-export interface Medication {
-  id: string;
-  dog_id: string;
-  medication_name: string;
-  dosage: number;
-  dosage_unit: string;
-  frequency: string;
-  administration_route: string;
-  start_date: string;
-  end_date?: string;
-  notes?: string;
-  is_active: boolean;
-  created_at: string;
-  last_administered?: string;
-}
-
 // Medication status enum
 export enum MedicationStatusEnum {
-  DUE = 'due',
+  ACTIVE = 'active',
   OVERDUE = 'overdue',
   UPCOMING = 'upcoming',
+  SCHEDULED = 'scheduled',
   COMPLETED = 'completed',
+  DISCONTINUED = 'discontinued',
+  NOT_STARTED = 'not_started',
+  MISSED = 'missed',
+  UNKNOWN = 'unknown',
+  DUE = 'due',
   NONE = 'none'
 }
 
@@ -228,6 +219,27 @@ export interface MedicationStatusResult {
   status: MedicationStatusEnum;
   daysOverdue?: number;
   daysTillDue?: number;
+  nextDue?: string | Date;
+  isActive?: boolean;
+}
+
+// Medication interface
+export interface Medication {
+  id: string;
+  dog_id: string;
+  medication_name: string;
+  name?: string;
+  dosage: number;
+  dosage_unit: string;
+  frequency: string;
+  administration_route: string;
+  start_date: string;
+  end_date?: string;
+  notes?: string;
+  is_active: boolean;
+  active?: boolean;
+  created_at: string;
+  last_administered?: string;
 }
 
 // Medication administration interface
@@ -304,3 +316,6 @@ export function mapToHealthRecord(row: any): HealthRecord {
     recovery_notes: row.recovery_notes
   };
 }
+
+// Export WeightUnit for use in other files
+export { WeightUnit };

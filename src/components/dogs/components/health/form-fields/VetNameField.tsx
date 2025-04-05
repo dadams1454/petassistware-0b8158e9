@@ -11,17 +11,27 @@ import { Input } from '@/components/ui/input';
 
 interface VetNameFieldProps {
   disabled?: boolean;
-  form: UseFormReturn<any>;
+  form?: UseFormReturn<any>;
+  required?: boolean;
+  className?: string;
 }
 
-const VetNameField: React.FC<VetNameFieldProps> = ({ disabled = false, form }) => {
+const VetNameField: React.FC<VetNameFieldProps> = ({
+  disabled = false,
+  form,
+  required = false,
+  className
+}) => {
+  const formContext = useFormContext();
+  const formToUse = form || formContext;
+
   return (
     <FormField
-      control={form.control}
+      control={formToUse.control}
       name="vet_name"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>Veterinarian</FormLabel>
+        <FormItem className={className}>
+          <FormLabel>{required ? "Veterinarian*" : "Veterinarian"}</FormLabel>
           <FormControl>
             <Input 
               placeholder="Enter veterinarian name"

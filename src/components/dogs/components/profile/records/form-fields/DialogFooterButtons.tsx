@@ -9,6 +9,8 @@ interface DialogFooterButtonsProps {
   isEdit?: boolean;
   disabled?: boolean;
   submitLabel?: string;
+  cancelLabel?: string;
+  className?: string;
 }
 
 const DialogFooterButtons: React.FC<DialogFooterButtonsProps> = ({
@@ -16,12 +18,14 @@ const DialogFooterButtons: React.FC<DialogFooterButtonsProps> = ({
   isSubmitting,
   isEdit = false,
   disabled = false,
-  submitLabel
+  submitLabel,
+  cancelLabel = "Cancel",
+  className
 }) => {
   return (
-    <div className="flex justify-end gap-2 pt-4">
+    <div className={`flex justify-end gap-2 pt-4 ${className || ''}`}>
       <Button type="button" variant="outline" onClick={onCancel}>
-        Cancel
+        {cancelLabel}
       </Button>
       <Button type="submit" disabled={isSubmitting || disabled}>
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

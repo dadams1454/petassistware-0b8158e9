@@ -1,93 +1,56 @@
 
-// Common type definitions used across the app
+// Define the basic weight unit type
+export type WeightUnit = 'lbs' | 'kg' | 'oz' | 'g';
+export type WeightUnitWithLegacy = WeightUnit | 'lb';
 
-// Weight units
-export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
-
-// For backward compatibility with older code that might use strings
-export type WeightUnitWithLegacy = WeightUnit | string;
-
-// Standardize weight unit function
-export const standardizeWeightUnit = (unit?: string): WeightUnit => {
-  if (!unit) return 'lb'; // Default to pounds
-  
-  const lowerUnit = unit.toLowerCase();
-  if (lowerUnit === 'lb' || lowerUnit === 'lbs' || lowerUnit === 'pound' || lowerUnit === 'pounds') {
-    return 'lb';
-  } else if (lowerUnit === 'kg' || lowerUnit === 'kgs' || lowerUnit === 'kilogram' || lowerUnit === 'kilograms') {
-    return 'kg';
-  } else if (lowerUnit === 'g' || lowerUnit === 'grams' || lowerUnit === 'gram') {
-    return 'g';
-  } else if (lowerUnit === 'oz' || lowerUnit === 'ounce' || lowerUnit === 'ounces') {
-    return 'oz';
-  }
-  
-  return 'lb'; // Default fallback
-};
-
-// Weight unit info structure
+// Information about each weight unit for display and conversion
 export interface WeightUnitInfo {
-  unit: WeightUnit;
+  id: WeightUnit;
   name: string;
-  shortName: string;
-  conversionToLb: number;
-  decimals: number;
+  abbreviation: string;
+  conversionToG: number;
 }
 
-// Weight unit option for dropdowns
 export interface WeightUnitOption {
   value: WeightUnit;
   label: string;
 }
 
-// Weight unit information array
-export const weightUnitInfos: WeightUnitInfo[] = [
-  { 
-    unit: 'lb', 
-    name: 'Pounds', 
-    shortName: 'lb', 
-    conversionToLb: 1, 
-    decimals: 1 
-  },
-  { 
-    unit: 'kg', 
-    name: 'Kilograms', 
-    shortName: 'kg', 
-    conversionToLb: 2.20462, 
-    decimals: 2 
-  },
-  { 
-    unit: 'g', 
-    name: 'Grams', 
-    shortName: 'g', 
-    conversionToLb: 0.00220462, 
-    decimals: 0 
-  },
-  { 
-    unit: 'oz', 
-    name: 'Ounces', 
-    shortName: 'oz', 
-    conversionToLb: 0.0625, 
-    decimals: 1 
-  }
+// Available weight units with their conversion rates to grams
+export const weightUnits: WeightUnitInfo[] = [
+  { id: 'g', name: 'Grams', abbreviation: 'g', conversionToG: 1 },
+  { id: 'oz', name: 'Ounces', abbreviation: 'oz', conversionToG: 28.3495 },
+  { id: 'lbs', name: 'Pounds', abbreviation: 'lbs', conversionToG: 453.592 },
+  { id: 'kg', name: 'Kilograms', abbreviation: 'kg', conversionToG: 1000 }
 ];
 
-// Weight unit options for select dropdowns
-export const weightUnitOptions: WeightUnitOption[] = weightUnitInfos.map(info => ({
-  value: info.unit,
-  label: info.name
+// Weight unit options for select inputs
+export const weightUnitOptions: WeightUnitOption[] = weightUnits.map(unit => ({
+  value: unit.id,
+  label: unit.name
 }));
 
-// Get weight unit info by unit
-export const getWeightUnitInfo = (unit: WeightUnit): WeightUnitInfo => {
-  const info = weightUnitInfos.find(info => info.unit === unit);
-  return info || weightUnitInfos[0]; // Default to pounds if not found
+// Get information about a weight unit
+export const getWeightUnitInfo = (unit: WeightUnit | string): WeightUnitInfo => {
+  const standardUnit = standardizeWeightUnit(unit);
+  return weightUnits.find(u => u.id === standardUnit) || weightUnits[0];
 };
 
-// Get weight unit name
-export const getWeightUnitName = (unit: WeightUnit): string => {
+// Get the display name for a weight unit
+export const getWeightUnitName = (unit: WeightUnit | string): string => {
   return getWeightUnitInfo(unit).name;
 };
 
-// Simple array of weight units for backward compatibility
-export const weightUnits: WeightUnit[] = ['lb', 'kg', 'g', 'oz'];
+// Standardize weight unit strings (handle legacy 'lb' vs 'lbs')
+export const standardizeWeightUnit = (unit: string): WeightUnit => {
+  if (unit === 'lb') return 'lbs';
+  return unit as WeightUnit;
+};
+
+// Weight unit information for use in UI
+export const weightUnitInfos: Record<WeightUnit, WeightUnitInfo> = {
+  g: { id: 'g', name: 'Grams', abbreviation: 'g', conversionToG: 1 },
+  oz: { id: 'oz', name: 'Ounces', abbreviation: 'oz', conversionToG: 28.3495 },
+  lbs: { id: 'lbs', name: 'Pounds', abbreviation: 'lbs', conversionToG: 453.592 },
+  kg: { id: 'kg', name: 'Kilograms', abbreviation: 'kg', conversionToG: 1000 }
+};
