@@ -14,17 +14,38 @@ export interface PuppyWithAge extends Puppy {
   ageDescription?: string;
 }
 
-// Puppy age group definitions
-export enum PuppyAgeGroup {
-  NEWBORN = 'newborn',
-  TWO_WEEK = 'twoWeek',
-  FOUR_WEEK = 'fourWeek',
-  SIX_WEEK = 'sixWeek',
-  EIGHT_WEEK = 'eightWeek',
-  TEN_WEEK = 'tenWeek',
-  TWELVE_WEEK = 'twelveWeek',
-  OLDER = 'older',
-  ALL = 'all'
+// Puppy age group interface
+export interface PuppyAgeGroup {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  minDays: number;
+  maxDays: number;
+  unit: string;
+  color: string;
+  startDay: number;
+  endDay: number;
+  minAge: number;
+  maxAge: number;
+  milestones: string;
+}
+
+// Puppy age group info interface
+export interface PuppyAgeGroupInfo {
+  id: string;
+  name: string;
+  groupName: string;
+  ageRange: string;
+  description: string;
+  imageUrl?: string;
+  startDay: number;
+  endDay: number;
+  color: string;
+  milestones?: string | string[];
+  puppyCount?: number;
+  minAge?: number;
+  maxAge?: number;
 }
 
 // Age group data structure for puppies
@@ -38,16 +59,6 @@ export interface PuppyAgeGroupData {
   twelveWeek: PuppyWithAge[];
   older: PuppyWithAge[];
   all: PuppyWithAge[];
-}
-
-// Age group structure with display information
-export interface PuppyAgeGroupInfo {
-  name: string;
-  puppyCount: number;
-  color: string;
-  ageRange: string;
-  minAge: number;
-  maxAge: number;
 }
 
 // Statistics for puppy management
@@ -129,14 +140,17 @@ export interface VaccinationRecord {
 }
 
 // Socialization reactions
-export type SocializationReactionType = 'excited' | 'curious' | 'neutral' | 'cautious' | 'fearful' | 'aggressive';
+export type SocializationReactionType = 'very_positive' | 'positive' | 'neutral' | 'cautious' | 'fearful' | 'very_fearful' | 'excited' | 'curious' | 'aggressive';
 
 // Socialization reaction option
 export interface SocializationReactionOption {
   id: string;
   label: string;
-  description: string;
+  value: string;
+  type: string;
   color: string;
+  emoji?: string;
+  description?: string;
 }
 
 // Socialization category
@@ -152,10 +166,14 @@ export interface SocializationCategory {
 export interface SocializationCategoryOption {
   id: string;
   categoryId: string;
+  value: string;
+  label: string;
   name: string;
   description: string;
   targetCount: number;
   color: string;
+  order?: number;
+  examples?: string[];
 }
 
 // Socialization experience
@@ -174,8 +192,11 @@ export interface SocializationExperience {
 export interface SocializationReaction {
   id: string;
   label: string;
-  description: string;
+  value: string;
+  type: string;
   color: string;
+  emoji?: string;
+  description?: string;
 }
 
 // Socialization progress
@@ -197,4 +218,16 @@ export interface PuppyCareLog {
   notes?: string;
   performed_by?: string;
   created_at: string;
+}
+
+// Puppy milestone
+export interface PuppyMilestone {
+  id?: string;
+  puppy_id: string;
+  milestone_type: string;
+  milestone_date: string;
+  notes?: string;
+  created_at?: string;
+  title?: string;
+  is_completed?: boolean;
 }

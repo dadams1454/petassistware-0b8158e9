@@ -14,7 +14,8 @@ export enum DogStatus {
   sold = 'sold'
 }
 
-export type WeightUnit = 'lb' | 'kg' | 'g' | 'oz';
+// Import WeightUnit from common
+import { WeightUnit } from '@/types/common';
 
 export interface DogProfile {
   id: string;
@@ -72,9 +73,6 @@ export interface Dog {
   last_heat_date?: string; // Add for compatibility
   next_heat_date?: string; // Add for compatibility
 }
-
-// Re-export weight units for compatibility
-export { type WeightUnit };
 
 // Document type enum
 export enum DocumentType {

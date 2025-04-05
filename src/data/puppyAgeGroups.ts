@@ -1,8 +1,8 @@
 
-import { AgeGroup, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { PuppyAgeGroupInfo } from '@/types/puppyTracking';
 
 // Extended version of DEFAULT_AGE_GROUPS with color property
-export const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
+export const DEFAULT_AGE_GROUPS: PuppyAgeGroupInfo[] = [
   {
     id: 'newborn',
     name: 'Newborn',
@@ -90,7 +90,7 @@ export const DEFAULT_AGE_GROUPS: PuppyAgeGroupData[] = [
 ];
 
 // Export a function to get age group by puppy age
-export const getAgeGroupByDays = (ageInDays: number): PuppyAgeGroupData | undefined => {
+export const getAgeGroupByDays = (ageInDays: number): PuppyAgeGroupInfo | undefined => {
   return DEFAULT_AGE_GROUPS.find(group => 
     ageInDays >= group.startDay && ageInDays <= group.endDay
   );

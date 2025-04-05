@@ -1,6 +1,6 @@
 
 import { HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
-import { FileText, Syringe, Stethoscope, Pill, Scissors, Eye, Droplet, Cut, AlarmClock, Flask, Scan, ShieldCheck, Activity } from 'lucide-react';
+import { FileText, Syringe, Stethoscope, Pill, Scissors, Eye, Droplet, Activity, AlertCircle, Flask, Image, ShieldCheck, Tooth } from 'lucide-react';
 
 // Get icon component for health record type
 export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string) => {
@@ -12,7 +12,7 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string) =
     case HealthRecordTypeEnum.EXAMINATION:
       return Stethoscope;
     case HealthRecordTypeEnum.PROCEDURE:
-      return Cut;
+      return Scissors;
     case HealthRecordTypeEnum.VACCINATION:
       return Syringe;
     case HealthRecordTypeEnum.MEDICATION:
@@ -22,7 +22,7 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string) =
     case HealthRecordTypeEnum.LABORATORY:
       return Flask;
     case HealthRecordTypeEnum.IMAGING:
-      return Scan;
+      return Image;
     case HealthRecordTypeEnum.PREVENTIVE:
       return ShieldCheck;
     case HealthRecordTypeEnum.OTHER:
@@ -34,11 +34,11 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string) =
     case HealthRecordTypeEnum.DEWORMING:
       return Droplet;
     case HealthRecordTypeEnum.GROOMING:
-      return Cut;
+      return Scissors;
     case HealthRecordTypeEnum.DENTAL:
-      return Activity;
+      return Tooth;
     case HealthRecordTypeEnum.ALLERGY:
-      return AlarmClock;
+      return AlertCircle;
     default:
       return FileText;
   }

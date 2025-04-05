@@ -2,7 +2,7 @@
 import { usePuppyData } from '@/hooks/puppies/usePuppyData';
 import { usePuppyAgeGroups } from '@/hooks/puppies/usePuppyAgeGroups';
 import { usePuppyStats } from '@/hooks/puppies/usePuppyStats';
-import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats, PuppyAgeGroup } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats, PuppyAgeGroup, PuppyAgeGroupInfo } from '@/types/puppyTracking';
 
 export const usePuppyTracking = (): PuppyManagementStats => {
   // Fetch puppy data
@@ -12,8 +12,8 @@ export const usePuppyTracking = (): PuppyManagementStats => {
   const processedPuppies = puppies.map(puppy => {
     return {
       ...puppy,
-      ageInDays: puppy.ageInDays || puppy.age_days || puppy.age || 0,
-      ageInWeeks: puppy.ageInWeeks || puppy.age_weeks || Math.floor((puppy.age_days || puppy.age || 0) / 7),
+      ageInDays: puppy.ageInDays || puppy.age || 0,
+      ageInWeeks: puppy.ageInWeeks || Math.floor((puppy.ageInDays || puppy.age || 0) / 7),
     };
   });
   
@@ -35,34 +35,39 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     }
   } = usePuppyStats(processedPuppies) || {};
 
-  // Set up puppy age group data structure
+  // Convert PuppyAgeGroup[] to PuppyAgeGroupInfo[]
+  const ageGroupInfos: PuppyAgeGroupInfo[] = ageGroups.map(group => ({
+    id: group.id,
+    name: group.name,
+    groupName: group.displayName,
+    ageRange: `${group.minDays}-${group.maxDays} ${group.unit}`,
+    description: group.description,
+    startDay: group.startDay,
+    endDay: group.endDay,
+    color: group.color,
+    milestones: group.milestones,
+    minAge: group.minAge,
+    maxAge: group.maxAge
+  }));
+
+  // Set up puppy age group data structure with correct typing
   const byAgeGroup: PuppyAgeGroupData = {
-    newborn: [],
-    twoWeek: [],
-    fourWeek: [],
-    sixWeek: [],
-    eightWeek: [],
-    tenWeek: [],
-    twelveWeek: [],
-    older: [],
-    all: []
+    newborn: puppiesByAgeGroup.newborn || [],
+    twoWeek: puppiesByAgeGroup.twoWeek || [],
+    fourWeek: puppiesByAgeGroup.fourWeek || [],
+    sixWeek: puppiesByAgeGroup.sixWeek || [],
+    eightWeek: puppiesByAgeGroup.eightWeek || [],
+    tenWeek: puppiesByAgeGroup.tenWeek || [],
+    twelveWeek: puppiesByAgeGroup.twelveWeek || [],
+    older: puppiesByAgeGroup.older || [],
+    all: processedPuppies
   };
-  
-  // Copy data from puppiesByAgeGroup to byAgeGroup
-  Object.keys(puppiesByAgeGroup).forEach(key => {
-    if (key in byAgeGroup) {
-      (byAgeGroup as any)[key] = puppiesByAgeGroup[key] || [];
-    }
-  });
-  
-  // Fill in the "all" category
-  byAgeGroup.all = processedPuppies;
 
   // Construct PuppyManagementStats object
   return {
     totalPuppies,
     puppies: processedPuppies,
-    ageGroups: ageGroups as PuppyAgeGroup[],
+    ageGroups: ageGroupInfos,
     puppiesByAgeGroup,
     byAgeGroup,
     byStatus,

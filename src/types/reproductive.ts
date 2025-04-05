@@ -126,84 +126,62 @@ export interface ReproductiveCycleData {
   breedingRecords: BreedingRecord[];
   pregnancyRecords: PregnancyRecord[];
   milestones: ReproductiveMilestone[];
-  
-  // Calculated statuses
-  currentStatus: ReproductiveStatus;
+  lastHeatCycle?: HeatCycle | null;
+  currentHeatCycle?: HeatCycle | null;
+  currentHeatStage?: HeatStage | null;
+  currentPregnancy?: PregnancyRecord | null;
   isInHeat: boolean;
   isPregnant: boolean;
+  nextHeatDate?: string | null;
+  daysUntilNextHeat?: number | null;
+  daysSinceLastHeat?: number | null;
+  averageCycleLength?: number | null;
+  heatStages: HeatStage[];
+  currentStatus: ReproductiveStatus;
+  dueDate?: string | null;
+  daysUntilDue?: number | null;
+  gestationDays?: number | null;
   pregnancyConfirmed: boolean;
   pregnancyLost: boolean;
-  
-  // Heat cycle data
-  lastHeatDate?: Date | null;
-  nextHeatDate?: Date | null;
-  currentHeatCycle?: HeatCycle | null;
-  daysInHeat?: number | null;
-  heatStages?: HeatStage[];
-  currentHeatStage?: HeatStage | null;
-  isInFertileWindow?: boolean;
-  fertilePeriod?: { start: Date; end: Date } | null;
-  
-  // Pregnancy data
-  currentPregnancy?: PregnancyRecord | null;
-  gestationDays?: number | null;
-  estimatedDueDate?: Date | null;
-  weightBeforePregnancy?: number | null;
-  currentBreedingRecord?: BreedingRecord | null;
-  
-  // Additional properties
-  daysUntilNextHeat?: number | null;
-  averageCycleLength?: number | null;
-  fertilityWindow?: { start: Date; end: Date } | null;
-  status?: ReproductiveStatus;
-  
-  // Loading states
-  isLoading: boolean;
-  isError: boolean;
-  error: any;
 }
 
-// Breeding checklist item
+// Breeding checklist item interface
 export interface BreedingChecklistItem {
   id: string;
-  title: string;
   task: string;
+  title: string;
   description: string;
-  category: string;
-  priority: 'high' | 'medium' | 'low';
   completed: boolean;
+  category: string;
+  priority: string;
 }
 
-// Breeding preparation form data
+// Breeding preparation form data interface
 export interface BreedingPrepFormData {
-  damId: string;
-  sireId: string;
-  breedingMethod: string;
-  breedingDate: Date;
+  dog_id: string;
+  sire_id: string;
+  tie_date: string;
+  estimated_due_date: string;
+  breeding_method: string;
   notes: string;
-  plannedTieDate?: Date;
-  plannedDate?: Date;
 }
 
-// Helper function to normalize breeding record format
-export const normalizeBreedingRecord = (record: any): BreedingRecord => {
+// Helper function to normalize breeding records
+export function normalizeBreedingRecord(record: any): BreedingRecord {
   return {
     id: record.id,
-    dam_id: record.dam_id || record.dog_id,
-    dog_id: record.dog_id || record.dam_id,
+    dog_id: record.dog_id,
+    dam_id: record.dam_id,
     sire_id: record.sire_id,
     breeding_date: record.breeding_date,
     tie_date: record.tie_date,
-    method: record.method || record.breeding_method,
-    breeding_method: record.breeding_method || record.method,
-    success: record.success !== undefined ? record.success : record.is_successful,
-    is_successful: record.is_successful !== undefined ? record.is_successful : record.success,
-    notes: record.notes || '',
-    created_at: record.created_at || new Date().toISOString(),
-    created_by: record.created_by || null,
-    heat_cycle_id: record.heat_cycle_id || null,
-    estimated_due_date: record.estimated_due_date || null,
-    dam: record.dam || null,
-    sire: record.sire || null
+    method: record.method,
+    breeding_method: record.method, // For compatibility
+    success: record.success,
+    is_successful: record.success, // For compatibility
+    notes: record.notes,
+    created_at: record.created_at,
+    created_by: record.created_by,
+    sire: record.sire
   };
-};
+}

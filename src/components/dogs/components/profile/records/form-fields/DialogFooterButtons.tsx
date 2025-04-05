@@ -23,7 +23,7 @@ const DialogFooterButtons: React.FC<DialogFooterButtonsProps> = ({
       <Button type="button" variant="outline" onClick={onCancel}>
         Cancel
       </Button>
-      <Button type="submit" disabled={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting || disabled}>
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {submitLabel || (isEdit ? 'Update' : 'Save')}
       </Button>

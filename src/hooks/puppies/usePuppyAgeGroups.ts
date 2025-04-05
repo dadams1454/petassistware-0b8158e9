@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupInfo } from '@/types/puppyTracking';
 
 // Default puppy age groups
 const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
@@ -108,7 +108,7 @@ export const usePuppyAgeGroups = (
     
     // Group puppies by their age
     return puppies.reduce((groups, puppy) => {
-      const ageInDays = puppy.ageInDays || puppy.age_days || 0;
+      const ageInDays = puppy.ageInDays || 0;
       
       // Find the matching age group
       for (const group of ageGroups) {

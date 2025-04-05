@@ -1,5 +1,6 @@
 
-import { useFormContext } from 'react-hook-form';
+import React from 'react';
+import { useFormContext, UseFormReturn } from 'react-hook-form';
 import { 
   FormControl, 
   FormField, 
@@ -10,13 +11,10 @@ import { Input } from '@/components/ui/input';
 
 interface TitleFieldProps {
   disabled?: boolean;
-  form?: any; // Added for compatibility with different form implementations
+  form: UseFormReturn<any>;
 }
 
-const TitleField = ({ disabled = false, form: externalForm }: TitleFieldProps) => {
-  const internalForm = useFormContext();
-  const form = externalForm || internalForm;
-
+const TitleField: React.FC<TitleFieldProps> = ({ disabled = false, form }) => {
   return (
     <FormField
       control={form.control}
