@@ -7,29 +7,19 @@ interface DialogFooterButtonsProps {
   onCancel: () => void;
   isSubmitting: boolean;
   submitLabel?: string;
-  cancelLabel?: string;
 }
 
 const DialogFooterButtons: React.FC<DialogFooterButtonsProps> = ({
   onCancel,
   isSubmitting,
-  submitLabel = "Save",
-  cancelLabel = "Cancel"
+  submitLabel = 'Save'
 }) => {
   return (
-    <div className="flex justify-end gap-2 mt-6">
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={onCancel}
-        disabled={isSubmitting}
-      >
-        {cancelLabel}
+    <div className="flex justify-end gap-2 pt-4">
+      <Button type="button" variant="outline" onClick={onCancel}>
+        Cancel
       </Button>
-      <Button 
-        type="submit" 
-        disabled={isSubmitting}
-      >
+      <Button type="submit" disabled={isSubmitting}>
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {submitLabel}
       </Button>

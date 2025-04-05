@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import { format, addDays } from 'date-fns';
 import { useDogStatus } from '@/components/dogs/hooks/useDogStatus';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ReproductiveStatus } from '@/types';
 
 interface BreedingPreparationProps {
   dogId?: string;
@@ -46,9 +48,9 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         // Ensure dog has required properties by providing defaults
         const dogWithRequiredProps: Dog = {
           ...dogData,
-          gender: dogData.gender || DogGender.Female, // Ensure gender is typed correctly
+          gender: (dogData.gender as DogGender) || DogGender.Female, // Ensure gender is typed correctly
           created_at: dogData.created_at || new Date().toISOString(),
-          status: dogData.status || DogStatus.active // Ensure status is set
+          status: (dogData.status as DogStatus) || DogStatus.active // Ensure status is set
         };
         
         setDog(dogWithRequiredProps);
@@ -66,7 +68,8 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
           // Ensure all male dogs have the required status property
           const malesWithRequiredProps: Dog[] = males.map(male => ({
             ...male,
-            status: male.status || DogStatus.active
+            gender: DogGender.Male,
+            status: (male.status as DogStatus) || DogStatus.active
           }));
           
           setCompatibleMales(malesWithRequiredProps);

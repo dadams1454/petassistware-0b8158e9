@@ -1,35 +1,23 @@
 
 import React from 'react';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
 
 interface DocumentUrlFieldProps {
   form: UseFormReturn<any>;
-  name?: string;
-  label?: string;
-  placeholder?: string;
 }
 
-const DocumentUrlField: React.FC<DocumentUrlFieldProps> = ({ 
-  form,
-  name = "document_url",
-  label = "Document URL",
-  placeholder = "https://example.com/document.pdf"
-}) => {
+const DocumentUrlField: React.FC<DocumentUrlFieldProps> = ({ form }) => {
   return (
     <FormField
       control={form.control}
-      name={name}
+      name="document_url"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          <FormLabel>Document URL</FormLabel>
           <FormControl>
-            <Input
-              placeholder={placeholder}
-              {...field}
-              value={field.value || ''}
-            />
+            <Input placeholder="Link to document or image" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>

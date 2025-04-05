@@ -44,11 +44,16 @@ export interface Dog {
   photo_url?: string;
   litter_number?: number;
   weight?: number;
+  weight_unit?: WeightUnit; // Added weight_unit field
   created_at: string;
   owner_id?: string;
   tenant_id?: string;
   pedigree?: boolean;
-  status: DogStatus; // Added required status property
+  status: DogStatus; // Required status property
+  reproductive_status?: string; // Added to fix errors
+  group_ids?: string[]; // Added to fix errors in DogCardContent
+  registration_organization?: string; // Added for completeness
+  microchip_location?: string; // Added for completeness
 }
 
 // Dog profile interface (extended dog information)
@@ -70,3 +75,5 @@ export interface Vaccination {
   created_at: string;
 }
 
+// Import the WeightUnit type from common
+import { WeightUnit } from './common';

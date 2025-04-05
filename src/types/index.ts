@@ -61,7 +61,7 @@ export type {
 } from './reproductive';
 
 // Litter and puppy types
-export { type Dog as SimpleDog } from './litter';
+export type { Dog as SimpleDog } from './litter';
 export type { 
   Litter, 
   LitterWithDogs, 

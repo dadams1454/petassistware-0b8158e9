@@ -1,33 +1,26 @@
 
 import React from 'react';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { UseFormReturn } from 'react-hook-form';
 
 interface NotesFieldProps {
-  form: any;
-  name?: string;
-  label?: string;
-  placeholder?: string;
+  form: UseFormReturn<any>;
 }
 
-const NotesField: React.FC<NotesFieldProps> = ({ 
-  form, 
-  name = "record_notes", 
-  label = "Notes",
-  placeholder = "Enter any additional notes about the record"
-}) => {
+const NotesField: React.FC<NotesFieldProps> = ({ form }) => {
   return (
     <FormField
       control={form.control}
-      name={name}
+      name="record_notes"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          <FormLabel>Notes</FormLabel>
           <FormControl>
-            <Textarea
-              placeholder={placeholder}
-              className="resize-none min-h-[100px]"
-              {...field}
+            <Textarea 
+              placeholder="Add any relevant notes or observations" 
+              className="min-h-[100px]"
+              {...field} 
             />
           </FormControl>
           <FormMessage />
