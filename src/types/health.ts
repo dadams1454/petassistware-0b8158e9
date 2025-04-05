@@ -1,4 +1,3 @@
-
 import type { WeightUnit } from '@/types/common';
 
 // Health record types
