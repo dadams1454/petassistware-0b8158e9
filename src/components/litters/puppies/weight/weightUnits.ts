@@ -62,11 +62,8 @@ export const convertWeight = (
 
 // Export the weight units array for UI components
 export const weightUnits: WeightUnitInfo[] = [
-  { unit: 'lb', name: 'Pounds', shortName: 'lb', conversionToLb: 1, decimals: 1 },
-  { unit: 'kg', name: 'Kilograms', shortName: 'kg', conversionToLb: 2.20462, decimals: 2 },
-  { unit: 'oz', name: 'Ounces', shortName: 'oz', conversionToLb: 0.0625, decimals: 1 },
-  { unit: 'g', name: 'Grams', shortName: 'g', conversionToLb: 0.00220462, decimals: 0 }
+  { id: 'lb', name: 'Pounds', abbreviation: 'lb', conversionToG: 453.592 },
+  { id: 'kg', name: 'Kilograms', abbreviation: 'kg', conversionToG: 1000 },
+  { id: 'oz', name: 'Ounces', abbreviation: 'oz', conversionToG: 28.3495 },
+  { id: 'g', name: 'Grams', abbreviation: 'g', conversionToG: 1 }
 ];
-
-// Re-export WeightUnit type for external use
-export type { WeightUnit, WeightUnitInfo };
