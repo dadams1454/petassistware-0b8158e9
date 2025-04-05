@@ -1,6 +1,6 @@
 
 // Import WeightUnit from common
-import { WeightUnit } from '@/types/common';
+import type { WeightUnit } from '@/types/common';
 
 export enum DogGender {
   Male = 'Male',
@@ -100,5 +100,5 @@ export interface Vaccination {
   created_at: string;
 }
 
-// Export WeightUnit 
-export { WeightUnit };
+// Export WeightUnit type
+export type { WeightUnit };

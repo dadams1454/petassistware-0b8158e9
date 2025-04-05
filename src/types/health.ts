@@ -1,5 +1,5 @@
 
-import { type WeightUnit } from '@/types/common';
+import type { WeightUnit } from '@/types/common';
 
 // Health record types
 export enum HealthRecordTypeEnum {
