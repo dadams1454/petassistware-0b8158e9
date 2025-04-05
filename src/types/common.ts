@@ -2,6 +2,9 @@
 // Define the basic weight unit type
 export type WeightUnit = 'lb' | 'kg' | 'oz' | 'g';
 
+// For backward compatibility with code using 'lbs' instead of 'lb'
+export type WeightUnitWithLegacy = WeightUnit | 'lbs';
+
 // Information about each weight unit for display and conversion
 export interface WeightUnitInfo {
   id: WeightUnit;

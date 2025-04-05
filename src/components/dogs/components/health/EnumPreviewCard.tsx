@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WeightUnitWithLegacy, standardizeWeightUnit } from '@/types/common';
+import { WeightUnit, standardizeWeightUnit } from '@/types/common';
 
 interface EnumPreviewCardProps {
   value: string;
@@ -31,7 +31,7 @@ const EnumPreviewCard: React.FC<EnumPreviewCardProps> = ({
   try {
     // Only attempt to standardize if it matches a weight unit pattern
     if (['lb', 'kg', 'g', 'oz', 'lbs'].includes(value)) {
-      standardizedValue = standardizeWeightUnit(value as WeightUnitWithLegacy);
+      standardizedValue = standardizeWeightUnit(value);
     }
   } catch (e) {
     // If it can't be standardized, just use the original value
