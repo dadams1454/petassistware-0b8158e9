@@ -3,6 +3,45 @@ import { format, differenceInDays, isAfter, addDays } from 'date-fns';
 import { MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 
 /**
+ * Medication Frequency Constants
+ */
+export const MedicationFrequencyConstants = {
+  DAILY: 'Daily',
+  ONCE_DAILY: 'Once Daily',
+  TWICE_DAILY: 'Twice Daily',
+  THREE_TIMES_DAILY: 'Three Times Daily',
+  EVERY_OTHER_DAY: 'Every Other Day',
+  WEEKLY: 'Weekly',
+  BIWEEKLY: 'Biweekly',
+  MONTHLY: 'Monthly',
+  QUARTERLY: 'Quarterly',
+  ANNUALLY: 'Annually',
+  AS_NEEDED: 'As Needed'
+};
+
+/**
+ * Process medication logs to organize them by category
+ */
+export const processMedicationLogs = (logs: any[]) => {
+  const result = {
+    preventative: [],
+    other: []
+  };
+  
+  if (!logs || !logs.length) return result;
+  
+  logs.forEach(log => {
+    if (log.category === 'preventative') {
+      result.preventative.push(log);
+    } else {
+      result.other.push(log);
+    }
+  });
+  
+  return result;
+};
+
+/**
  * Calculate the status of a medication based on last given and frequency
  */
 export const getMedicationStatus = (
