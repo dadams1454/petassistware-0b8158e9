@@ -1,3 +1,4 @@
+
 import type { WeightUnit } from './common';
 import { Json } from '../integrations/supabase/types';
 
@@ -95,7 +96,7 @@ export type MedicationStatusResult = {
   nextDue?: string | Date | null;
 };
 
-// Export WeightUnit for use in related components
+// Re-export WeightUnit for use in related components
 export type { WeightUnit };
 
 // Health record interface

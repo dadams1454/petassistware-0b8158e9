@@ -83,4 +83,4 @@ export interface Vaccination {
 
 // Add HealthRecordTypeEnum from health.ts for compatibility
 export { HealthRecordTypeEnum } from './health';
-export type { WeightUnit } from './common';
+export type { WeightUnit };
