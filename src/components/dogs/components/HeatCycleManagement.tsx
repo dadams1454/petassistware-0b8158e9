@@ -1,172 +1,217 @@
 
 import React, { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
-import HeatCycleMonitor from './breeding/HeatCycleMonitor';
-import { format } from 'date-fns';
-import { HeatCycle, HeatIntensityType, HeatIntensityValues } from '@/types/reproductive';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { CalendarDays, Plus } from 'lucide-react';
+import { format, differenceInDays } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle
+} from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
+import { HeatCycle } from '@/types';
+import { HeatIntensityValues } from '@/types/reproductive';
+import HeatCycleDialog from './breeding/HeatCycleDialog';
 
-export interface HeatCycleManagementProps {
+interface HeatCycleManagementProps {
   dogId: string;
-  onHeatCycleAdded?: (data: Partial<HeatCycle>) => Promise<void>;
 }
 
-interface HeatCycleInput {
-  dog_id: string;
-  start_date: string;
-  end_date: string | null;
-  notes: string | null;
-  intensity?: HeatIntensityType;
-}
-
-const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId, onHeatCycleAdded }) => {
-  const [showDialog, setShowDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [refreshCounter, setRefreshCounter] = useState(0);
+const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
+  const [heatCycles, setHeatCycles] = useState<HeatCycle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedCycle, setSelectedCycle] = useState<HeatCycle | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  const handleAddCycle = () => {
-    setShowDialog(true);
-  };
+  // Fetch heat cycles when component mounts
+  React.useEffect(() => {
+    fetchHeatCycles();
+  }, [dogId]);
   
-  const handleRecordHeatCycle = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    
-    const formData = new FormData(event.currentTarget);
-    const startDate = formData.get('start_date') as string;
-    const endDate = formData.get('end_date') as string || null;
-    const notes = formData.get('notes') as string || null;
-    const intensity = formData.get('intensity') as HeatIntensityType || HeatIntensityValues.moderate;
-    
+  const fetchHeatCycles = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      // Create heat cycle data object
-      const heatCycleData: HeatCycleInput = {
-        dog_id: dogId,
-        start_date: startDate,
-        end_date: endDate || null,
-        notes: notes || null,
-        intensity
-      };
-      
-      if (onHeatCycleAdded) {
-        // Use the provided handler if available
-        await onHeatCycleAdded(heatCycleData);
-        toast.success('Heat cycle recorded successfully');
-        setShowDialog(false);
-        setRefreshCounter(prev => prev + 1);
-        return;
-      }
-      
-      // Default behavior using supabase directly
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('heat_cycles')
-        .insert(heatCycleData);
-      
+        .select('*')
+        .eq('dog_id', dogId)
+        .order('start_date', { ascending: false });
+        
       if (error) throw error;
       
-      toast.success('Heat cycle recorded successfully');
-      setShowDialog(false);
-      setRefreshCounter(prev => prev + 1);
+      setHeatCycles(data || []);
     } catch (error) {
-      console.error('Error recording heat cycle:', error);
-      toast.error('Failed to record heat cycle');
+      console.error('Error fetching heat cycles:', error);
+      toast({
+        title: 'Error',
+        description: 'Could not fetch heat cycles',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
   
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const handleAddHeatCycle = () => {
+    setSelectedCycle(null);
+    setDialogOpen(true);
+  };
+  
+  const handleViewHeatCycle = (cycle: HeatCycle) => {
+    setSelectedCycle(cycle);
+    setDialogOpen(true);
+  };
+  
+  const handleSaveHeatCycle = async (cycle: HeatCycle) => {
+    try {
+      if (cycle.id) {
+        // Update existing cycle
+        const { error } = await supabase
+          .from('heat_cycles')
+          .update({
+            start_date: cycle.start_date,
+            end_date: cycle.end_date,
+            intensity: cycle.intensity,
+            symptoms: cycle.symptoms,
+            notes: cycle.notes,
+          })
+          .eq('id', cycle.id);
+          
+        if (error) throw error;
+        
+        toast({
+          title: 'Heat cycle updated',
+          description: 'The heat cycle has been updated successfully.',
+        });
+      } else {
+        // Add new cycle
+        const { error } = await supabase
+          .from('heat_cycles')
+          .insert({
+            dog_id: dogId,
+            start_date: cycle.start_date,
+            end_date: cycle.end_date,
+            intensity: cycle.intensity,
+            symptoms: cycle.symptoms,
+            notes: cycle.notes,
+          });
+          
+        if (error) throw error;
+        
+        toast({
+          title: 'Heat cycle added',
+          description: 'The new heat cycle has been added successfully.',
+        });
+      }
+      
+      fetchHeatCycles();
+      setDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving heat cycle:', error);
+      toast({
+        title: 'Error',
+        description: 'Could not save heat cycle',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  const getIntensityLabel = (intensity: string) => {
+    switch(intensity) {
+      case HeatIntensityValues[0]: return 'Light';
+      case HeatIntensityValues[1]: return 'Moderate';
+      case HeatIntensityValues[3]: return 'Mild';
+      case HeatIntensityValues[4]: return 'Medium';
+      case HeatIntensityValues[5]: return 'Low';
+      case HeatIntensityValues[6]: return 'High';
+      case HeatIntensityValues[7]: return 'Strong';
+      case HeatIntensityValues[8]: return 'Peak';
+      default: return 'Unknown';
+    }
+  };
+  
+  const getIntensityColor = (intensity: string) => {
+    switch(intensity) {
+      case 'light': return 'bg-blue-100 text-blue-800';
+      case 'moderate': return 'bg-yellow-100 text-yellow-800';
+      case 'heavy': return 'bg-red-100 text-red-800';
+      case 'mild': return 'bg-green-100 text-green-800';
+      case 'medium': return 'bg-orange-100 text-orange-800';
+      case 'high': return 'bg-pink-100 text-pink-800';
+      case 'peak': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
   
   return (
-    <div>
-      <Button variant="outline" onClick={handleAddCycle}>
-        Record Heat Cycle
-      </Button>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Heat Cycles</CardTitle>
+        <Button onClick={handleAddHeatCycle} size="sm">
+          <Plus className="h-4 w-4 mr-1" /> Add Heat Cycle
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center py-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : heatCycles.length === 0 ? (
+          <div className="text-center py-6 text-muted-foreground">
+            <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
+            <p>No heat cycles recorded yet.</p>
+            <p className="text-sm">Add a heat cycle to start tracking the dog's reproductive cycle.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {heatCycles.map((cycle) => (
+              <div 
+                key={cycle.id} 
+                className="border rounded-lg p-3 hover:border-primary cursor-pointer transition-colors"
+                onClick={() => handleViewHeatCycle(cycle)}
+              >
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
+                  <div className="font-medium">
+                    {format(new Date(cycle.start_date), 'MMMM d, yyyy')}
+                  </div>
+                  <div className={`rounded-full px-2 py-0.5 text-xs ${getIntensityColor(cycle.intensity || 'unknown')}`}>
+                    {getIntensityLabel(cycle.intensity || 'unknown')}
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {cycle.end_date ? (
+                    <span>
+                      Duration: {differenceInDays(new Date(cycle.end_date), new Date(cycle.start_date))} days 
+                      (Ended: {format(new Date(cycle.end_date), 'MMM d, yyyy')})
+                    </span>
+                  ) : (
+                    <span className="text-primary">In progress</span>
+                  )}
+                </div>
+                {cycle.notes && <p className="text-sm mt-2">{cycle.notes}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="border-t px-6 py-4">
+        <p className="text-sm text-muted-foreground">
+          Heat cycles typically occur every 6-8 months for most breeds. Tracking these cycles helps predict future heats.
+        </p>
+      </CardFooter>
       
-      <HeatCycleMonitor 
-        dogId={dogId} 
-        key={`heat-cycle-${refreshCounter}`}
+      <HeatCycleDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        cycle={selectedCycle}
+        onSave={handleSaveHeatCycle}
       />
-      
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Record Heat Cycle</DialogTitle>
-          </DialogHeader>
-          
-          <form onSubmit={handleRecordHeatCycle} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Start Date</label>
-              <input 
-                type="date" 
-                name="start_date"
-                defaultValue={format(new Date(), 'yyyy-MM-dd')}
-                className="w-full p-2 border rounded" 
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">End Date (Optional)</label>
-              <input 
-                type="date" 
-                name="end_date"
-                min={format(new Date(), 'yyyy-MM-dd')}
-                defaultValue={format(tomorrow, 'yyyy-MM-dd')}
-                className="w-full p-2 border rounded" 
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Leave blank if cycle is ongoing
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Intensity</label>
-              <select 
-                name="intensity"
-                className="w-full p-2 border rounded"
-                defaultValue={HeatIntensityValues.moderate}
-              >
-                <option value={HeatIntensityValues.low}>Low</option>
-                <option value={HeatIntensityValues.mild}>Mild</option>
-                <option value={HeatIntensityValues.moderate}>Moderate</option>
-                <option value={HeatIntensityValues.medium}>Medium</option>
-                <option value={HeatIntensityValues.high}>High</option>
-                <option value={HeatIntensityValues.strong}>Strong</option>
-                <option value={HeatIntensityValues.peak}>Peak</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Notes</label>
-              <textarea 
-                name="notes"
-                className="w-full p-2 border rounded h-24" 
-                placeholder="Any observations or details about this heat cycle"
-              ></textarea>
-            </div>
-            
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowDialog(false)}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : 'Record Heat Cycle'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </Card>
   );
 };
 

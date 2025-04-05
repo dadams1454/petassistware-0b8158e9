@@ -10,7 +10,6 @@ export { DogGender, DogStatus, DocumentType } from './dog';
 export type { 
   HealthRecord, 
   Medication, 
-  MedicationStatus,
   MedicationStatusResult,
   GrowthStats,
   HealthIndicator,
@@ -22,13 +21,12 @@ export type {
 
 export { 
   HealthRecordTypeEnum,
-  HealthRecordType,
+  MedicationStatusEnum,
   AppetiteLevelEnum, 
   EnergyLevelEnum, 
   StoolConsistencyEnum,
   mapToHealthRecord,
   mapToWeightRecord,
-  MedicationStatusEnum,
   AppetiteEnum,
   EnergyEnum,
   stringToHealthRecordType
@@ -89,21 +87,12 @@ export type {
   WeightRecord as PuppyWeightRecord,
   VaccinationSchedule,
   VaccinationRecord,
-  PuppyAgeGroup
+  PuppyAgeGroup,
+  PuppyAgeGroupInfo
 } from './puppyTracking';
 
 // Daily care types
-export type {
-  DogCareStatus,
-  DailyCareSummary,
-  CareLogEntry,
-  CareActivityLog,
-  DailyCarelog,
-  CareLogFormData,
-  CareTaskPreset,
-  DogFlag,
-  DogSpecialCondition
-} from './dailyCare';
+export * from './dailyCare';
 
 // Facility types
 export * from './facility';

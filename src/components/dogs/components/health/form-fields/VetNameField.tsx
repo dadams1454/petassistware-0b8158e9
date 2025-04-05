@@ -10,10 +10,12 @@ import { Input } from '@/components/ui/input';
 
 interface VetNameFieldProps {
   disabled?: boolean;
+  form?: any; // Added for compatibility with different form implementations
 }
 
-const VetNameField = ({ disabled = false }: VetNameFieldProps) => {
-  const form = useFormContext();
+const VetNameField = ({ disabled = false, form: externalForm }: VetNameFieldProps) => {
+  const internalForm = useFormContext();
+  const form = externalForm || internalForm;
 
   return (
     <FormField

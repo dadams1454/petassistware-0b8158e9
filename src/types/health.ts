@@ -70,6 +70,7 @@ export interface HealthRecord {
   id: string;
   dog_id: string;
   visit_date: string;
+  date?: string; // For backward compatibility
   record_type: HealthRecordTypeEnum;
   title?: string;
   vet_name?: string;
@@ -116,6 +117,7 @@ export interface WeightRecord {
   date: string;
   weight: number;
   weight_unit: string;
+  unit?: string; // For backward compatibility
   notes?: string;
   percent_change?: number;
   created_at: string;
@@ -131,7 +133,8 @@ export { type WeightUnit } from './common';
 export interface Medication {
   id: string;
   dog_id: string;
-  name: string;
+  puppy_id?: string; // Added for puppy medications
+  name?: string;
   medication_name?: string;
   dosage?: number;
   dosage_unit?: string;
@@ -140,7 +143,7 @@ export interface Medication {
   start_date: string;
   end_date?: string;
   last_administered?: string;
-  active: boolean;
+  active?: boolean;
   is_active?: boolean;
   notes?: string;
   created_at: string;
@@ -187,9 +190,19 @@ export interface GrowthStats {
   previousWeight?: number;
   percentChange?: number;
   averageGrowthRate: number;
+  averageGrowth?: number; // For backward compatibility
+  maxGrowthRate?: number;
+  minGrowthRate?: number;
+  dailyGrowthAverage?: number;
+  weeklyGrowthAverage?: number;
+  lastWeight?: number;
+  firstWeight?: number;
+  totalGain?: number;
+  percentGain?: number;
   projectedWeight: number;
   weightGoal: number;
   onTrack: boolean;
+  weightUnit?: string;
 }
 
 // Mapping helpers for health records
@@ -198,6 +211,7 @@ export const mapToHealthRecord = (data: any): HealthRecord => {
     id: data.id,
     dog_id: data.dog_id,
     visit_date: data.visit_date || data.date || new Date().toISOString().split('T')[0],
+    date: data.visit_date || data.date || new Date().toISOString().split('T')[0], // For backward compatibility
     record_type: data.record_type || HealthRecordTypeEnum.EXAMINATION,
     vet_name: data.vet_name || '',
     record_notes: data.record_notes || data.notes || '',
@@ -218,6 +232,7 @@ export const mapToWeightRecord = (data: any): WeightRecord => {
     date: data.date || new Date().toISOString().split('T')[0],
     weight: data.weight || 0,
     weight_unit: data.weight_unit || data.unit || 'lb',
+    unit: data.weight_unit || data.unit || 'lb', // For backward compatibility
     notes: data.notes || '',
     percent_change: data.percent_change || 0,
     created_at: data.created_at || new Date().toISOString(),

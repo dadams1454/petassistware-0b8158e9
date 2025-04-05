@@ -10,10 +10,12 @@ import { Input } from '@/components/ui/input';
 
 interface TitleFieldProps {
   disabled?: boolean;
+  form?: any; // Added for compatibility with different form implementations
 }
 
-const TitleField = ({ disabled = false }: TitleFieldProps) => {
-  const form = useFormContext();
+const TitleField = ({ disabled = false, form: externalForm }: TitleFieldProps) => {
+  const internalForm = useFormContext();
+  const form = externalForm || internalForm;
 
   return (
     <FormField

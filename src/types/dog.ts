@@ -69,6 +69,8 @@ export interface Dog {
   reproductive_status?: string;
   registration_number?: string;
   tie_date?: string;
+  last_heat_date?: string; // Add for compatibility
+  next_heat_date?: string; // Add for compatibility
 }
 
 // Re-export weight units for compatibility

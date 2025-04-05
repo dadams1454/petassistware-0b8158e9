@@ -1,18 +1,21 @@
 
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface DialogFooterButtonsProps {
   onCancel: () => void;
   isSubmitting: boolean;
   isEdit?: boolean;
   disabled?: boolean;
+  submitLabel?: string; // Added for compatibility
 }
 
 const DialogFooterButtons = ({
   onCancel,
   isSubmitting,
   isEdit = false,
-  disabled = false
+  disabled = false,
+  submitLabel
 }: DialogFooterButtonsProps) => {
   return (
     <div className="flex justify-end space-x-2 mt-4">
@@ -28,7 +31,12 @@ const DialogFooterButtons = ({
         type="submit"
         disabled={isSubmitting || disabled}
       >
-        {isSubmitting ? 'Saving...' : isEdit ? 'Update' : 'Save'}
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Saving...
+          </>
+        ) : submitLabel || (isEdit ? 'Update' : 'Save')}
       </Button>
     </div>
   );
