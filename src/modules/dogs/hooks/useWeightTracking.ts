@@ -37,7 +37,6 @@ export const useWeightTracking = (dogId: string) => {
         puppy_id: record.puppy_id,
         weight: record.weight,
         weight_unit: record.weight_unit,
-        unit: record.weight_unit, // For backward compatibility
         date: record.date,
         notes: record.notes || '',
         percent_change: record.percent_change,
