@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { HealthRecord, HealthRecordTypeEnum, stringToHealthRecordType } from '@/types';
+import { HealthRecord, HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
 import RecordTypeField from './form-fields/RecordTypeField';
 import TitleField from './form-fields/TitleField';
 import VisitDateField from './form-fields/VisitDateField';
@@ -65,22 +65,24 @@ interface HealthRecordFormProps {
   onCancel: () => void;
   isSubmitting?: boolean;
   initialData?: Partial<HealthRecord>;
+  dogId?: string;
 }
 
 const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
   onSubmit,
   onCancel,
   isSubmitting = false,
-  initialData
+  initialData,
+  dogId
 }) => {
   const [recordType, setRecordType] = useState<string>(
-    initialData?.record_type ? String(initialData.record_type) : HealthRecordTypeEnum.Examination
+    initialData?.record_type ? String(initialData.record_type) : HealthRecordTypeEnum.EXAMINATION
   );
   
   const form = useForm<z.infer<typeof healthRecordSchema>>({
     resolver: zodResolver(healthRecordSchema),
     defaultValues: {
-      record_type: initialData?.record_type ? String(initialData.record_type) : HealthRecordTypeEnum.Examination,
+      record_type: initialData?.record_type ? String(initialData.record_type) : HealthRecordTypeEnum.EXAMINATION,
       title: initialData?.title || '',
       visit_date: initialData?.visit_date ? new Date(initialData.visit_date) : new Date(),
       vet_name: initialData?.vet_name || '',
@@ -122,6 +124,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
     // Format dates to ISO strings
     const formattedData: Partial<HealthRecord> = {
       ...values,
+      dog_id: dogId || initialData?.dog_id,
       record_type: stringToHealthRecordType(values.record_type),
       visit_date: values.visit_date.toISOString().split('T')[0],
       next_due_date: values.next_due_date ? values.next_due_date.toISOString().split('T')[0] : null,
@@ -156,7 +159,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
         <NotesField form={form} />
         
         {/* Record type specific fields */}
-        {recordType === HealthRecordTypeEnum.Vaccination && (
+        {recordType === HealthRecordTypeEnum.VACCINATION && (
           <div className="space-y-4">
             <Separator />
             <h3 className="text-sm font-medium">Vaccination Details</h3>
@@ -165,7 +168,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
           </div>
         )}
         
-        {recordType === HealthRecordTypeEnum.Medication && (
+        {recordType === HealthRecordTypeEnum.MEDICATION && (
           <div className="space-y-4">
             <Separator />
             <h3 className="text-sm font-medium">Medication Details</h3>
@@ -174,7 +177,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
           </div>
         )}
         
-        {recordType === HealthRecordTypeEnum.Examination && (
+        {recordType === HealthRecordTypeEnum.EXAMINATION && (
           <div className="space-y-4">
             <Separator />
             <h3 className="text-sm font-medium">Examination Details</h3>
@@ -183,7 +186,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
           </div>
         )}
         
-        {recordType === HealthRecordTypeEnum.Surgery && (
+        {recordType === HealthRecordTypeEnum.SURGERY && (
           <div className="space-y-4">
             <Separator />
             <h3 className="text-sm font-medium">Surgery Details</h3>

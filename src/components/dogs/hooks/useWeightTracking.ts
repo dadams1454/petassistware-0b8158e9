@@ -6,6 +6,7 @@ import { WeightRecord } from '@/types/health';
 import { 
   getWeightHistory, 
   addWeightRecord, 
+  updateWeightRecord,
   deleteWeightRecord 
 } from '@/services/healthService';
 
@@ -47,6 +48,27 @@ export const useWeightTracking = (dogId: string) => {
       toast({
         title: 'Error',
         description: `Failed to add weight record: ${(error as Error).message}`,
+        variant: 'destructive'
+      });
+    }
+  });
+
+  // Update a weight record
+  const updateWeight = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<WeightRecord> }) => {
+      return updateWeightRecord(id, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Success',
+        description: 'Weight record updated successfully'
+      });
+      queryClient.invalidateQueries({ queryKey: ['weightHistory', dogId] });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to update weight record: ${(error as Error).message}`,
         variant: 'destructive'
       });
     }
@@ -95,8 +117,14 @@ export const useWeightTracking = (dogId: string) => {
     isAddDialogOpen,
     setIsAddDialogOpen,
     addWeight: addWeight.mutateAsync,
+    updateWeight: updateWeight.mutateAsync,
     deleteWeight: deleteWeight.mutateAsync,
     calculateWeightChange,
-    getLatestWeight
+    getLatestWeight,
+    
+    // For compatibility with older code
+    addWeightRecord: addWeight.mutateAsync,
+    updateWeightRecord: (id: string, data: Partial<WeightRecord>) => updateWeight.mutateAsync({ id, data }),
+    deleteWeightRecord: deleteWeight.mutateAsync
   };
 };

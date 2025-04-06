@@ -72,3 +72,6 @@ export const getAppropriateWeightUnit = (
   // Default to ounces for very small puppies
   return 'oz';
 };
+
+// Export the WeightUnit type for compatibility
+export type { WeightUnit } from '@/types/common';
