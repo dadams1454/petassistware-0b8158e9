@@ -1,6 +1,6 @@
 
 import { WeightUnit } from '@/types/common';
-import { WeightRecord } from '@/types/puppyTracking';
+import { WeightRecord } from '@/types/weight';
 
 export interface WeightTrackerProps {
   puppyId: string;

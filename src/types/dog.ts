@@ -4,20 +4,18 @@ import type { WeightUnit } from '@/types/common';
 
 export enum DogGender {
   Male = 'Male',
-  Female = 'Female',
-  male = 'Male', // For backward compatibility
-  female = 'Female' // For backward compatibility
+  Female = 'Female'
 }
 
 export enum DogStatus {
-  active = 'active',
-  inactive = 'inactive',
-  deceased = 'deceased',
-  rehomed = 'rehomed',
-  sold = 'sold',
-  guardian = 'guardian',
-  archived = 'archived',
-  retired = 'retired'
+  Active = 'active',
+  Inactive = 'inactive',
+  Deceased = 'deceased',
+  Rehomed = 'rehomed',
+  Sold = 'sold',
+  Guardian = 'guardian',
+  Archived = 'archived',
+  Retired = 'retired'
 }
 
 export interface DogProfile {
@@ -73,9 +71,9 @@ export interface Dog {
   reproductive_status?: string;
   registration_number?: string;
   tie_date?: string;
-  last_heat_date?: string; // Add for compatibility
-  next_heat_date?: string; // Add for compatibility
-  litter_number?: number; // Add for breeder info
+  last_heat_date?: string;
+  next_heat_date?: string;
+  litter_number?: number;
 }
 
 // Document type enum
@@ -100,5 +98,5 @@ export interface Vaccination {
   created_at: string;
 }
 
-// Export WeightUnit type
+// Export WeightUnit type for compatibility
 export type { WeightUnit };

@@ -11,12 +11,10 @@ export type {
   HealthRecord, 
   Medication, 
   MedicationStatusResult,
-  GrowthStats,
   HealthIndicator,
   HealthAlert,
   HealthCertificate,
   MedicationAdministration,
-  WeightRecord,
 } from './health';
 
 export { 
@@ -31,6 +29,18 @@ export {
   EnergyEnum,
   stringToHealthRecordType
 } from './health';
+
+// Weight-related types
+export type { 
+  WeightRecord,
+  GrowthRate,
+  WeightDataPoint,
+  GrowthStats,
+} from './weight';
+
+export {
+  calculatePercentChange
+} from './weight';
 
 // Common types
 export type { 
@@ -47,6 +57,15 @@ export {
   getWeightUnitName
 } from './common';
 
+// Puppy-related types
+export type {
+  Puppy,
+  PuppyWithAge,
+  PuppyPhoto,
+  PuppyCareLog,
+  PuppyCareLogProps
+} from './puppy';
+
 // Reproductive cycle types
 export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensityType, HeatStage } from './reproductive';
 export { ReproductiveStatus, normalizeBreedingRecord, HeatIntensity, HeatIntensityValues } from './reproductive';
@@ -57,13 +76,11 @@ export type {
   BreedingPrepFormData
 } from './reproductive';
 
-// Litter and puppy types
+// Litter types 
 export type { Dog as SimpleDog } from './litter';
 export type { 
   Litter, 
   LitterWithDogs, 
-  Puppy, 
-  PuppyWithAge,
   WhelpingRecord,
   WhelpingLogEntry,
   WhelpingObservation,
@@ -80,10 +97,8 @@ export type {
   SocializationCategoryOption,
   SocializationReactionOption,
   SocializationProgress,
-  PuppyCareLog,
   SocializationExperience,
   SocializationReaction,
-  WeightRecord as PuppyWeightRecord,
   VaccinationSchedule,
   VaccinationRecord,
   PuppyAgeGroup,
@@ -101,9 +116,6 @@ export * from './user';
 
 // Socialization types
 export * from './socialization';
-
-// Weight types
-export * from './weight';
 
 // Welping types
 export * from './welping';

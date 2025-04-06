@@ -73,5 +73,5 @@ export const getAppropriateWeightUnit = (
   return 'oz';
 };
 
-// Export the WeightUnit type for compatibility
+// Export the WeightUnit type from the canonical location
 export type { WeightUnit } from '@/types/common';

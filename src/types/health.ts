@@ -139,7 +139,7 @@ export interface Medication {
   last_administered?: string;
 }
 
-// Medication status enum - updating to add missing values
+// Medication status enum
 export enum MedicationStatusEnum {
   ACTIVE = 'active',
   COMPLETED = 'completed',
@@ -150,10 +150,22 @@ export enum MedicationStatusEnum {
   NOT_STARTED = 'not_started',
   DISCONTINUED = 'discontinued',
   MISSED = 'missed',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
+  ONCE = 'once',
+  DAILY = 'daily',
+  TWICE_DAILY = 'twice_daily',
+  THREE_TIMES_DAILY = 'three_times_daily',
+  FOUR_TIMES_DAILY = 'four_times_daily',
+  EVERY_OTHER_DAY = 'every_other_day',
+  WEEKLY = 'weekly',
+  BIWEEKLY = 'biweekly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  ANNUALLY = 'annually',
+  AS_NEEDED = 'as_needed'
 }
 
-// Medication status result - updating to include the missing properties
+// Medication status result
 export interface MedicationStatusResult {
   status: MedicationStatusEnum;
   daysTillDue: number | null;
@@ -161,7 +173,8 @@ export interface MedicationStatusResult {
   nextDose?: Date | null; // For compatibility
   daysUntilDue?: number | null; // For compatibility
   isOverdue?: boolean; // For compatibility
-  isActive?: boolean; // For compatibility with existing code
+  isActive?: boolean; // For compatibility
+  daysOverdue?: number; // For compatibility with MedicationTracker
 }
 
 // Medication administration
@@ -188,34 +201,6 @@ export interface HealthCertificate {
   created_at: string;
 }
 
-// Weight record interface
-export interface WeightRecord {
-  id: string;
-  dog_id: string;
-  puppy_id?: string;
-  weight: number;
-  weight_unit: WeightUnit;
-  unit?: WeightUnit; // For compatibility with older code
-  date: string;
-  notes?: string;
-  percent_change?: number;
-  created_at: string;
-  age_days?: number;
-  birth_date?: string;
-}
-
-// Export the calculatePercentChange function for external use
-export const calculatePercentChange = (
-  oldWeight: number, 
-  newWeight: number
-): number => {
-  if (oldWeight === 0) return 0; // Prevent division by zero
-  // Calculate percentage change
-  const change = ((newWeight - oldWeight) / oldWeight) * 100;
-  // Return the rounded value to 1 decimal place
-  return Math.round(change * 10) / 10;
-};
-
 // Helper function to map data to WeightRecord
 export const mapToWeightRecord = (data: any): WeightRecord => {
   return {
@@ -224,7 +209,6 @@ export const mapToWeightRecord = (data: any): WeightRecord => {
     puppy_id: data.puppy_id,
     weight: data.weight,
     weight_unit: data.weight_unit,
-    unit: data.weight_unit, // Add unit for compatibility
     date: data.date,
     notes: data.notes || '',
     percent_change: data.percent_change || 0,
@@ -306,27 +290,8 @@ export interface HealthAlert {
   created_at: string;
 }
 
-// Growth stats interface
-export interface GrowthStats {
-  currentWeight?: number;
-  weightUnit?: string;
-  averageGrowthRate: number;
-  maxGrowthRate: number;
-  minGrowthRate: number;
-  dailyGrowthAverage: number;
-  weeklyGrowthAverage: number;
-  lastWeight: number;
-  firstWeight: number;
-  totalGain: number;
-  percentGain: number;
-  projectedWeight?: number;
-  weightGoal?: number | null;
-  onTrack?: boolean | null;
-  percentChange?: number;
-  growthRate?: number;
-  lastWeekGrowth?: number;
-  totalGrowth?: number | null;
-}
+// Import WeightRecord from weight.ts
+import { WeightRecord, GrowthStats } from './weight';
 
-// Export WeightUnit from health.ts for backward compatibility
-export type { WeightUnit } from './common';
+// Re-export for backward compatibility
+export type { WeightRecord, GrowthStats, WeightUnit };

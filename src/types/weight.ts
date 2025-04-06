@@ -52,3 +52,16 @@ export interface GrowthStats {
   lastWeekGrowth?: number;
   totalGrowth?: number | null;
 }
+
+// Helper function for calculating percent change
+export const calculatePercentChange = (
+  oldWeight: number, 
+  newWeight: number
+): number => {
+  if (oldWeight === 0) return 0; // Prevent division by zero
+  const change = ((newWeight - oldWeight) / oldWeight) * 100;
+  return Math.round(change * 10) / 10;
+};
+
+// Export WeightUnit for compatibility
+export type { WeightUnit };

@@ -1,13 +1,17 @@
+
+import { WeightUnit } from '@/types/common';
+
 export interface Puppy {
   id: string;
   name: string;
-  gender: string;
+  gender: 'Male' | 'Female';
   color: string;
-  birth_date?: string;
+  birth_date: string;
   litter_id: string;
   microchip_number?: string;
   photo_url?: string;
   current_weight?: string;
+  weight_unit?: WeightUnit;
   status: 'Available' | 'Reserved' | 'Sold' | 'Unavailable';
   birth_order?: number;
   birth_weight?: string;
@@ -24,21 +28,45 @@ export interface Puppy {
   akc_registration_number?: string;
   health_notes?: string;
   weight_notes?: string;
-  weight_unit?: string;
   created_at: string;
   updated_at?: string;
   is_test_data?: boolean;
+  
+  // Visual tracking fields
+  eyes_open_date?: string;
+  ears_open_date?: string;
+  first_walk_date?: string;
+  fully_mobile_date?: string;
+  reservation_date?: string;
 }
 
-export interface PuppyWeight {
+export interface PuppyWithAge extends Puppy {
+  age: number;
+  ageInDays: number;
+  ageInWeeks: number;
+  developmentalStage: string;
+  weightHistory?: WeightRecord[];
+  age_days?: number; // For backward compatibility
+  age_weeks?: number; // For backward compatibility
+  ageDescription?: string;
+}
+
+export interface PuppyPhoto {
   id: string;
   puppy_id: string;
-  weight_grams: number;
-  weight_unit: string;
-  weight_date: string;
+  photo_url: string;
+  created_at: string;
+  is_main?: boolean;
+}
+
+export interface PuppyCareLog {
+  id: string;
+  puppy_id: string;
+  date: string;
+  activity_type: string;
   notes?: string;
-  created_at?: string;
-  updated_at?: string;
+  performed_by?: string;
+  created_at: string;
 }
 
 export interface PuppyCareLogProps {
@@ -51,10 +79,5 @@ export interface PuppyCareLogProps {
   onRefresh?: () => void;
 }
 
-export interface PuppyPhoto {
-  id: string;
-  puppy_id: string;
-  photo_url: string;
-  created_at: string;
-  is_main?: boolean;
-}
+// Re-export WeightRecord for Puppy usage
+export type { WeightRecord } from './weight';
