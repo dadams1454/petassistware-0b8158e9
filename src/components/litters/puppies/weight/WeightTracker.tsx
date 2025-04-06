@@ -10,7 +10,7 @@ import WeightEntryForm from './WeightEntryForm';
 import { PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { convertWeight } from './weightUnits';
-import { WeightRecord } from '@/types/puppyTracking';
+import { WeightRecord } from '@/types/weight';
 import { WeightUnit } from '@/types/common';
 
 interface WeightTrackerProps {
