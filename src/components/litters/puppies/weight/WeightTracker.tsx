@@ -1,41 +1,61 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import WeightChart from './WeightChart';
-import WeightTable from './WeightTable';
+import WeightChartView from './WeightChartView';
+import WeightTableView from './WeightTableView';
 import WeightEntryForm from './WeightEntryForm';
 import { PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { convertWeight } from './weightUnits';
 import { WeightRecord } from '@/types/weight';
 import { WeightUnit } from '@/types/common';
+import { getPuppyWeightRecords } from '@/services/puppyWeightService';
+import { mapWeightRecordFromDB } from '@/lib/mappers/weightMapper';
 
 interface WeightTrackerProps {
   puppyId: string;
   birthDate?: string;
-  initialRecords?: WeightRecord[];
-  onWeightAdded?: () => void;
+  onAddSuccess?: () => void;
 }
 
 const WeightTracker: React.FC<WeightTrackerProps> = ({
   puppyId,
   birthDate,
-  initialRecords = [],
-  onWeightAdded
+  onAddSuccess
 }) => {
   const [activeTab, setActiveTab] = useState('chart');
-  const [weightRecords, setWeightRecords] = useState<WeightRecord[]>(initialRecords);
+  const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
   const [isAddingWeight, setIsAddingWeight] = useState(false);
   const [displayUnit, setDisplayUnit] = useState<WeightUnit>('oz');
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Fetch weight records on mount and when puppyId changes
+  useEffect(() => {
+    const fetchWeightRecords = async () => {
+      if (!puppyId) return;
+      
+      setIsLoading(true);
+      try {
+        const records = await getPuppyWeightRecords(puppyId);
+        setWeightRecords(records);
+      } catch (error) {
+        console.error('Error fetching weight records:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchWeightRecords();
+  }, [puppyId]);
   
   // Handle adding a new weight record
   const handleAddWeight = (record: WeightRecord) => {
     setWeightRecords([record, ...weightRecords]);
     setIsAddingWeight(false);
-    if (onWeightAdded) onWeightAdded();
+    if (onAddSuccess) onAddSuccess();
   };
   
   // Handle deleting a weight record
@@ -127,32 +147,36 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({
             <TabsTrigger value="table">Table</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="chart" className="p-2">
-            <WeightChart 
-              weightRecords={weightRecords} 
-              displayUnit={displayUnit} 
+          <TabsContent value="chart">
+            <WeightChartView 
+              puppyId={puppyId}
+              birthDate={birthDate}
+              displayUnit={displayUnit}
+              weightRecords={weightRecords}
             />
           </TabsContent>
           
-          <TabsContent value="table" className="p-2">
-            <WeightTable 
-              weightRecords={weightRecords} 
-              onDelete={handleDeleteWeight}
+          <TabsContent value="table">
+            <WeightTableView 
+              puppyId={puppyId}
               displayUnit={displayUnit}
+              weightRecords={weightRecords}
+              onDelete={handleDeleteWeight}
             />
           </TabsContent>
         </Tabs>
       </CardContent>
       
+      {/* Weight Entry Dialog */}
       <Dialog open={isAddingWeight} onOpenChange={setIsAddingWeight}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Add Weight Record</DialogTitle>
           </DialogHeader>
-          <WeightEntryForm
-            puppyId={puppyId}
+          <WeightEntryForm 
+            puppyId={puppyId} 
             birthDate={birthDate}
-            onSave={handleAddWeight}
+            onSuccess={handleAddWeight}
             onCancel={() => setIsAddingWeight(false)}
           />
         </DialogContent>

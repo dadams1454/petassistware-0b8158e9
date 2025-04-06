@@ -2,10 +2,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { 
   HealthRecord, 
-  WeightRecord, 
-  mapToHealthRecord, 
-  mapToWeightRecord
-} from '@/types/health';
+  WeightRecord
+} from '@/types';
+import { mapHealthRecordFromDB, mapHealthRecordToDB } from '@/lib/mappers/healthMapper';
+import { mapWeightRecordFromDB, mapWeightRecordToDB } from '@/lib/mappers/weightMapper';
 
 // Get health records for a dog
 export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> => {
@@ -22,7 +22,7 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
     throw error;
   }
 
-  return (data || []).map(mapToHealthRecord);
+  return (data || []).map(record => mapHealthRecordFromDB(record));
 };
 
 // Add a health record
@@ -31,9 +31,11 @@ export const addHealthRecord = async (record: Partial<HealthRecord>): Promise<He
     throw new Error('Missing required fields for health record');
   }
 
+  const dbRecord = mapHealthRecordToDB(record);
+
   const { data, error } = await supabase
     .from('health_records')
-    .insert(record)
+    .insert(dbRecord)
     .select()
     .single();
 
@@ -42,14 +44,16 @@ export const addHealthRecord = async (record: Partial<HealthRecord>): Promise<He
     throw error;
   }
 
-  return mapToHealthRecord(data);
+  return mapHealthRecordFromDB(data);
 };
 
 // Update a health record
 export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>): Promise<HealthRecord> => {
+  const dbUpdates = mapHealthRecordToDB(updates);
+
   const { data, error } = await supabase
     .from('health_records')
-    .update(updates)
+    .update(dbUpdates)
     .eq('id', id)
     .select()
     .single();
@@ -59,7 +63,7 @@ export const updateHealthRecord = async (id: string, updates: Partial<HealthReco
     throw error;
   }
 
-  return mapToHealthRecord(data);
+  return mapHealthRecordFromDB(data);
 };
 
 // Delete a health record
@@ -90,7 +94,7 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
     throw error;
   }
 
-  return (data || []).map(mapToWeightRecord);
+  return (data || []).map(record => mapWeightRecordFromDB(record));
 };
 
 // Add a weight record
@@ -100,17 +104,11 @@ export const addWeightRecord = async (record: Partial<WeightRecord>): Promise<We
     throw new Error('Missing required fields for weight record');
   }
 
+  const dbRecord = mapWeightRecordToDB(record);
+
   const { data, error } = await supabase
     .from('weight_records')
-    .insert({
-      dog_id: record.dog_id,
-      weight: record.weight,
-      weight_unit: record.weight_unit,
-      date: record.date,
-      notes: record.notes || '',
-      percent_change: record.percent_change || 0,
-      puppy_id: record.puppy_id
-    })
+    .insert(dbRecord)
     .select()
     .single();
 
@@ -119,14 +117,16 @@ export const addWeightRecord = async (record: Partial<WeightRecord>): Promise<We
     throw error;
   }
 
-  return mapToWeightRecord(data);
+  return mapWeightRecordFromDB(data);
 };
 
 // Update a weight record
 export const updateWeightRecord = async (id: string, updates: Partial<WeightRecord>): Promise<WeightRecord> => {
+  const dbUpdates = mapWeightRecordToDB(updates);
+
   const { data, error } = await supabase
     .from('weight_records')
-    .update(updates)
+    .update(dbUpdates)
     .eq('id', id)
     .select()
     .single();
@@ -136,7 +136,7 @@ export const updateWeightRecord = async (id: string, updates: Partial<WeightReco
     throw error;
   }
 
-  return mapToWeightRecord(data);
+  return mapWeightRecordFromDB(data);
 };
 
 // Delete a weight record

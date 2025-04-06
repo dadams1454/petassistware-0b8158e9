@@ -1,237 +1,177 @@
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { WeightRecord } from '@/types/health';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
-import type { WeightUnit } from '@/types/common';
+import { WeightRecord } from '@/types/weight';
+import { 
+  getWeightHistory, 
+  addWeightRecord, 
+  updateWeightRecord,
+  deleteWeightRecord 
+} from '@/services/healthService';
+import { mapWeightRecordFromDB, mapWeightRecordToDB } from '@/lib/mappers/weightMapper';
 
-interface UseWeightTrackingParams {
-  dogId: string;
-  puppyId?: string;
-  onSuccess?: () => void;
-}
-
-export const useWeightTracking = ({ dogId, puppyId, onSuccess }: UseWeightTrackingParams) => {
-  const queryClient = useQueryClient();
+export const useWeightTracking = (dogId: string) => {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+  const [selectedWeight, setSelectedWeight] = useState<WeightRecord | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  // Mutation to add a weight record
-  const { mutate: addWeight } = useMutation({
-    mutationFn: async (weightData: Omit<WeightRecord, 'id' | 'created_at'>) => {
-      setIsSubmitting(true);
-      try {
-        // Make sure we have the required fields
-        const formattedDate = formatDateToYYYYMMDD(weightData.date);
-        
-        // Create the database record
-        const { data, error } = await supabase
-          .from('weight_records')
-          .insert({
-            dog_id: dogId,
-            puppy_id: puppyId,
-            weight: weightData.weight,
-            weight_unit: weightData.weight_unit,
-            date: formattedDate,
-            notes: weightData.notes || ''
-          })
-          .select()
-          .single();
+  // Fetch weight history
+  const {
+    data: weightHistory = [],
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['weightHistory', dogId],
+    queryFn: async () => {
+      const records = await getWeightHistory(dogId);
+      return records.map(record => mapWeightRecordFromDB(record));
+    },
+    enabled: !!dogId
+  });
 
-        if (error) throw error;
-        
-        // Show success message
-        toast({
-          title: "Weight recorded",
-          description: "Weight record has been successfully added."
-        });
-        
-        // Call the success callback if provided
-        if (onSuccess) onSuccess();
-        
-        return data as WeightRecord;
-      } catch (error) {
-        console.error('Error adding weight:', error);
-        toast({
-          title: "Error",
-          description: "There was a problem saving the weight record.",
-          variant: "destructive"
-        });
-        throw error;
-      } finally {
-        setIsSubmitting(false);
-      }
+  // Add a weight record
+  const addWeight = useMutation({
+    mutationFn: (record: Partial<WeightRecord>) => {
+      const dbRecord = mapWeightRecordToDB({
+        ...record,
+        dog_id: dogId
+      });
+      return addWeightRecord(dbRecord);
     },
     onSuccess: () => {
-      // Invalidate relevant queries to trigger refetching
-      queryClient.invalidateQueries({ queryKey: ['weight-records', dogId] });
-      if (puppyId) {
-        queryClient.invalidateQueries({ queryKey: ['puppy-weights', puppyId] });
-      }
+      toast({
+        title: 'Success',
+        description: 'Weight record added successfully'
+      });
+      queryClient.invalidateQueries({ queryKey: ['weightHistory', dogId] });
+      setIsAddDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to add weight record: ${(error as Error).message}`,
+        variant: 'destructive'
+      });
     }
   });
 
-  // Mutation to update a weight record
-  const { mutate: updateWeight } = useMutation({
-    mutationFn: async (weightRecord: WeightRecord) => {
-      setIsSubmitting(true);
-      try {
-        const formattedDate = formatDateToYYYYMMDD(weightRecord.date);
-        
-        const { data, error } = await supabase
-          .from('weight_records')
-          .update({
-            weight: weightRecord.weight,
-            weight_unit: weightRecord.weight_unit,
-            date: formattedDate,
-            notes: weightRecord.notes || ''
-          })
-          .eq('id', weightRecord.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        
-        toast({
-          title: "Weight updated",
-          description: "Weight record has been successfully updated."
-        });
-        
-        if (onSuccess) onSuccess();
-        
-        return data as WeightRecord;
-      } catch (error) {
-        console.error('Error updating weight:', error);
-        toast({
-          title: "Error",
-          description: "There was a problem updating the weight record.",
-          variant: "destructive"
-        });
-        throw error;
-      } finally {
-        setIsSubmitting(false);
-      }
+  // Update a weight record
+  const updateWeight = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<WeightRecord> }) => {
+      const dbRecord = mapWeightRecordToDB(data);
+      return updateWeightRecord(id, dbRecord);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['weight-records', dogId] });
-      if (puppyId) {
-        queryClient.invalidateQueries({ queryKey: ['puppy-weights', puppyId] });
-      }
+      toast({
+        title: 'Success',
+        description: 'Weight record updated successfully'
+      });
+      queryClient.invalidateQueries({ queryKey: ['weightHistory', dogId] });
+      setSelectedWeight(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to update weight record: ${(error as Error).message}`,
+        variant: 'destructive'
+      });
     }
   });
 
-  // Mutation to delete a weight record
-  const { mutate: deleteWeight } = useMutation({
-    mutationFn: async (weightId: string) => {
-      setIsSubmitting(true);
-      try {
-        const { error } = await supabase
-          .from('weight_records')
-          .delete()
-          .eq('id', weightId);
-
-        if (error) throw error;
-        
-        toast({
-          title: "Weight deleted",
-          description: "Weight record has been successfully deleted."
-        });
-        
-        if (onSuccess) onSuccess();
-        
-        return weightId;
-      } catch (error) {
-        console.error('Error deleting weight:', error);
-        toast({
-          title: "Error",
-          description: "There was a problem deleting the weight record.",
-          variant: "destructive"
-        });
-        throw error;
-      } finally {
-        setIsSubmitting(false);
-      }
+  // Delete a weight record
+  const deleteWeight = useMutation({
+    mutationFn: (id: string) => {
+      return deleteWeightRecord(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['weight-records', dogId] });
-      if (puppyId) {
-        queryClient.invalidateQueries({ queryKey: ['puppy-weights', puppyId] });
-      }
+      toast({
+        title: 'Success',
+        description: 'Weight record deleted successfully'
+      });
+      queryClient.invalidateQueries({ queryKey: ['weightHistory', dogId] });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to delete weight record: ${(error as Error).message}`,
+        variant: 'destructive'
+      });
     }
   });
 
-  // Helper function to calculate growth stats
+  // Calculate growth stats
   const calculateGrowthStats = (weights: WeightRecord[]) => {
-    if (!weights || weights.length === 0) {
+    if (!weights || weights.length < 2) {
       return {
-        currentWeight: 0,
-        weightUnit: 'lb' as WeightUnit,
-        averageGrowth: 0,
-        growthRate: 0,
-        lastWeekGrowth: 0,
-        projectedWeight: 0
+        percentChange: 0,
+        averageGrowthRate: 0,
+        weightGoal: null,
+        onTrack: null,
+        totalGrowth: null,
+        currentWeight: weights?.[0]?.weight || 0,
+        weightUnit: weights?.[0]?.weight_unit || 'lb'
       };
     }
 
-    // Sort weights by date (newest first)
-    const sortedWeights = [...weights].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+    // Sort by date, most recent first
+    const sortedWeights = [...weights].sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
 
-    const latestWeight = sortedWeights[0];
-    const previousWeights = sortedWeights.slice(1);
+    const current = sortedWeights[0];
+    const previous = sortedWeights[1];
+    const earliest = sortedWeights[sortedWeights.length - 1];
 
-    // Calculate average growth if we have multiple records
-    let averageGrowth = 0;
-    if (previousWeights.length > 0) {
-      const growthValues = previousWeights.map((prev, index) => {
-        const next = index === 0 ? latestWeight : previousWeights[index - 1];
-        return next.weight - prev.weight;
-      });
-      
-      averageGrowth = growthValues.reduce((sum, val) => sum + val, 0) / growthValues.length;
-    }
-
-    // Calculate growth rate (percentage)
-    let growthRate = 0;
-    if (previousWeights.length > 0) {
-      const oldestWeight = sortedWeights[sortedWeights.length - 1];
-      const totalGrowth = latestWeight.weight - oldestWeight.weight;
-      growthRate = (totalGrowth / oldestWeight.weight) * 100;
-    }
-
-    // Estimate last week's growth
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    // Calculate percent change
+    const percentChange = ((current.weight - previous.weight) / previous.weight) * 100;
     
-    const lastWeekWeight = sortedWeights.find(w => 
-      new Date(w.date) <= oneWeekAgo
-    );
+    // Calculate growth rates
+    let totalGrowthRate = 0;
+    for (let i = 0; i < sortedWeights.length - 1; i++) {
+      const currentEntry = sortedWeights[i];
+      const nextEntry = sortedWeights[i + 1];
+      const change = ((currentEntry.weight - nextEntry.weight) / nextEntry.weight) * 100;
+      totalGrowthRate += change;
+    }
     
-    const lastWeekGrowth = lastWeekWeight 
-      ? latestWeight.weight - lastWeekWeight.weight 
-      : 0;
-
-    // Project future weight (simple linear projection)
-    const projectedWeight = latestWeight.weight + (averageGrowth * 4); // 4 weeks projection
+    const averageGrowthRate = totalGrowthRate / (sortedWeights.length - 1);
+    const totalGrowth = current.weight - earliest.weight;
 
     return {
-      currentWeight: latestWeight.weight,
-      weightUnit: latestWeight.weight_unit,
-      averageGrowth,
-      growthRate,
-      lastWeekGrowth,
-      projectedWeight
+      percentChange: parseFloat(percentChange.toFixed(2)),
+      averageGrowthRate: parseFloat(averageGrowthRate.toFixed(2)),
+      weightGoal: null, // This would be calculated based on breed standards
+      onTrack: null, // This would be calculated based on breed standards
+      totalGrowth: parseFloat(totalGrowth.toFixed(2)),
+      currentWeight: current.weight,
+      weightUnit: current.weight_unit
     };
   };
 
   return {
-    isSubmitting,
-    addWeight,
-    updateWeight,
-    deleteWeight,
-    calculateGrowthStats
+    weightHistory,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    selectedWeight,
+    setSelectedWeight,
+    isAddDialogOpen,
+    setIsAddDialogOpen,
+    isSubmitting: addWeight.isPending || updateWeight.isPending || deleteWeight.isPending,
+    addWeight: addWeight.mutateAsync,
+    updateWeight: updateWeight.mutateAsync,
+    deleteWeight: deleteWeight.mutateAsync,
+    calculateGrowthStats,
+    
+    // For compatibility with older code
+    addWeightRecord: addWeight.mutateAsync,
+    updateWeightRecord: (id: string, data: Partial<WeightRecord>) => updateWeight.mutateAsync({ id, data }),
+    deleteWeightRecord: deleteWeight.mutateAsync,
+    growthStats: calculateGrowthStats(weightHistory)
   };
 };

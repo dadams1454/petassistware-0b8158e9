@@ -1,207 +1,229 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow, differenceInDays } from 'date-fns';
-import { WeightRecord } from '@/types/puppyTracking';
-
-// Interface for puppy weight records
-export interface PuppyWeightRecord {
-  id: string;
-  puppy_id: string;
-  weight: number;
-  weight_unit: string;
-  date: string;
-  age_days?: number;
-  notes?: string;
-  created_at: string;
-}
+import { WeightRecord } from '@/types/weight';
+import { differenceInDays } from 'date-fns';
+import { mapWeightRecordFromDB, mapWeightRecordToDB } from '@/lib/mappers/weightMapper';
 
 // Get weight records for a puppy
 export const getPuppyWeightRecords = async (puppyId: string): Promise<WeightRecord[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('puppy_weights')
-      .select('*')
-      .eq('puppy_id', puppyId)
-      .order('date', { ascending: false });
-      
-    if (error) throw error;
-    
-    // Calculate age in days for each record if birth date is available
-    const puppy = await getPuppyBirthDate(puppyId);
-    
-    return data.map(record => ({
-      ...record,
-      age_days: puppy?.birth_date 
-        ? differenceInDays(new Date(record.date), new Date(puppy.birth_date))
-        : undefined,
-      unit: record.weight_unit // For backward compatibility
-    })) as WeightRecord[];
-  } catch (error) {
-    console.error('Error fetching puppy weight records:', error);
-    return [];
-  }
-};
+  if (!puppyId) return [];
 
-// Get puppy birth date
-const getPuppyBirthDate = async (puppyId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('puppies')
-      .select('birth_date')
-      .eq('id', puppyId)
-      .single();
-      
-    if (error) throw error;
-    
-    return data;
-  } catch (error) {
-    console.error('Error fetching puppy birth date:', error);
-    return null;
+  const { data, error } = await supabase
+    .from('weight_records')
+    .select('*')
+    .eq('puppy_id', puppyId)
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching puppy weight records:', error);
+    throw error;
   }
+
+  return (data || []).map(record => mapWeightRecordFromDB(record));
 };
 
 // Add a weight record for a puppy
-export const addPuppyWeightRecord = async (record: Partial<PuppyWeightRecord>): Promise<PuppyWeightRecord | null> => {
-  try {
-    // Get the puppy's birth date to calculate age
-    const puppy = await getPuppyBirthDate(record.puppy_id as string);
-    
-    // Calculate age in days if birth date is available
-    const weightRecord = {
-      ...record,
-      age_days: puppy?.birth_date && record.date
-        ? differenceInDays(new Date(record.date), new Date(puppy.birth_date))
-        : undefined
-    };
-    
-    const { data, error } = await supabase
-      .from('puppy_weights')
-      .insert(weightRecord)
-      .select()
-      .single();
-      
-    if (error) throw error;
-    
-    return data as PuppyWeightRecord;
-  } catch (error) {
+export const addPuppyWeightRecord = async (
+  puppyId: string,
+  weight: number,
+  weightUnit: string,
+  date: string,
+  notes?: string,
+  birthDate?: string
+): Promise<WeightRecord> => {
+  // Calculate age in days if birth date is provided
+  let ageDays: number | undefined;
+  if (birthDate) {
+    ageDays = differenceInDays(new Date(date), new Date(birthDate));
+  }
+
+  const record: Partial<WeightRecord> = {
+    puppy_id: puppyId,
+    weight: weight,
+    weight_unit: weightUnit as any,
+    date: date,
+    notes: notes || '',
+    age_days: ageDays,
+    birth_date: birthDate
+  };
+
+  const dbRecord = mapWeightRecordToDB(record);
+
+  const { data, error } = await supabase
+    .from('weight_records')
+    .insert(dbRecord)
+    .select()
+    .single();
+
+  if (error) {
     console.error('Error adding puppy weight record:', error);
-    return null;
+    throw error;
   }
+
+  // Also update the current_weight field on the puppy
+  try {
+    await supabase
+      .from('puppies')
+      .update({
+        current_weight: weight.toString(),
+        weight_unit: weightUnit
+      })
+      .eq('id', puppyId);
+  } catch (updateError) {
+    console.warn('Failed to update puppy current weight:', updateError);
+    // Don't throw, as the weight record was already added successfully
+  }
+
+  return mapWeightRecordFromDB(data);
 };
 
-// Update a weight record for a puppy
-export const updatePuppyWeightRecord = async (id: string, updates: Partial<PuppyWeightRecord>): Promise<PuppyWeightRecord | null> => {
-  try {
-    // Get the puppy's birth date to recalculate age if date is being updated
-    if (updates.date && updates.puppy_id) {
-      const puppy = await getPuppyBirthDate(updates.puppy_id);
-      
-      if (puppy?.birth_date) {
-        updates.age_days = differenceInDays(new Date(updates.date), new Date(puppy.birth_date));
-      }
-    }
-    
-    const { data, error } = await supabase
-      .from('puppy_weights')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-      
-    if (error) throw error;
-    
-    return data as PuppyWeightRecord;
-  } catch (error) {
+// Update a weight record
+export const updatePuppyWeightRecord = async (
+  id: string,
+  updates: Partial<WeightRecord>
+): Promise<WeightRecord> => {
+  const dbUpdates = mapWeightRecordToDB(updates);
+
+  const { data, error } = await supabase
+    .from('weight_records')
+    .update(dbUpdates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
     console.error('Error updating puppy weight record:', error);
-    return null;
+    throw error;
   }
-};
 
-// Delete a weight record for a puppy
-export const deletePuppyWeightRecord = async (id: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('puppy_weights')
-      .delete()
-      .eq('id', id);
+  // If this is the most recent weight, update the puppy's current_weight
+  if (updates.puppy_id && updates.weight) {
+    try {
+      // Get all weights for this puppy
+      const { data: allWeights } = await supabase
+        .from('weight_records')
+        .select('*')
+        .eq('puppy_id', updates.puppy_id)
+        .order('date', { ascending: false });
       
-    if (error) throw error;
-    
-    return true;
-  } catch (error) {
-    console.error('Error deleting puppy weight record:', error);
-    return false;
-  }
-};
-
-// Calculate growth stats based on weight records
-export const calculatePuppyGrowthStats = (weights: WeightRecord[]) => {
-  if (!weights || weights.length === 0) {
-    return {
-      currentWeight: 0,
-      weightUnit: 'g',
-      percentChange: 0,
-      averageGrowth: 0,
-      growthRate: 0,
-      averageGrowthRate: 0,
-      lastWeekGrowth: 0,
-      projectedWeight: 0,
-      weightGoal: null,
-      onTrack: null
-    };
-  }
-  
-  // Sort weights by date (newest first)
-  const sortedWeights = [...weights].sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime());
-  
-  const latestWeight = sortedWeights[0];
-  const weightUnit = latestWeight.weight_unit || latestWeight.unit || 'g';
-  
-  let percentChange = 0;
-  let averageGrowth = 0;
-  let growthRate = 0;
-  let lastWeekGrowth = 0;
-  
-  if (sortedWeights.length > 1) {
-    // Calculate percent change from previous weight
-    const previousWeight = sortedWeights[1];
-    percentChange = ((latestWeight.weight - previousWeight.weight) / previousWeight.weight) * 100;
-    
-    // Calculate average daily growth
-    const oldestWeight = sortedWeights[sortedWeights.length - 1];
-    const daysDiff = differenceInDays(new Date(latestWeight.date), new Date(oldestWeight.date)) || 1;
-    const totalGrowth = latestWeight.weight - oldestWeight.weight;
-    averageGrowth = totalGrowth / daysDiff;
-    
-    // Calculate growth rate
-    growthRate = (totalGrowth / oldestWeight.weight) * 100;
-    
-    // Calculate last week's growth
-    const weekAgoDate = new Date();
-    weekAgoDate.setDate(weekAgoDate.getDate() - 7);
-    
-    const weekAgoWeights = sortedWeights.filter(w => new Date(w.date) >= weekAgoDate);
-    if (weekAgoWeights.length > 1) {
-      const latestWeekWeight = weekAgoWeights[0];
-      const oldestWeekWeight = weekAgoWeights[weekAgoWeights.length - 1];
-      lastWeekGrowth = latestWeekWeight.weight - oldestWeekWeight.weight;
+      // If this is the most recent weight, update the puppy record
+      if (allWeights && allWeights.length > 0 && allWeights[0].id === id) {
+        await supabase
+          .from('puppies')
+          .update({
+            current_weight: updates.weight.toString(),
+            weight_unit: updates.weight_unit
+          })
+          .eq('id', updates.puppy_id);
+      }
+    } catch (updateError) {
+      console.warn('Failed to update puppy current weight:', updateError);
+      // Don't throw, as the weight record was already updated successfully
     }
   }
-  
-  // Estimate projected weight (very simplified projection)
-  const projectedWeight = latestWeight.weight + (averageGrowth * 30); // Projected 30 days ahead
+
+  return mapWeightRecordFromDB(data);
+};
+
+// Delete a weight record
+export const deletePuppyWeightRecord = async (id: string): Promise<void> => {
+  // First get the record to know which puppy it belongs to
+  const { data: record, error: fetchError } = await supabase
+    .from('weight_records')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching weight record for deletion:', fetchError);
+    throw fetchError;
+  }
+
+  // Delete the record
+  const { error } = await supabase
+    .from('weight_records')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting weight record:', error);
+    throw error;
+  }
+
+  // If this was the most recent weight, update the puppy's current_weight to the next most recent weight
+  if (record.puppy_id) {
+    try {
+      // Get all remaining weights for this puppy
+      const { data: remainingWeights } = await supabase
+        .from('weight_records')
+        .select('*')
+        .eq('puppy_id', record.puppy_id)
+        .order('date', { ascending: false });
+      
+      if (remainingWeights && remainingWeights.length > 0) {
+        // Update to the most recent weight
+        await supabase
+          .from('puppies')
+          .update({
+            current_weight: remainingWeights[0].weight.toString(),
+            weight_unit: remainingWeights[0].weight_unit
+          })
+          .eq('id', record.puppy_id);
+      } else {
+        // No weights left, clear the current_weight
+        await supabase
+          .from('puppies')
+          .update({
+            current_weight: null,
+            weight_unit: null
+          })
+          .eq('id', record.puppy_id);
+      }
+    } catch (updateError) {
+      console.warn('Failed to update puppy current weight after deletion:', updateError);
+      // Don't throw, as the weight record was already deleted successfully
+    }
+  }
+};
+
+// Calculate growth rate between two weights
+export const calculateGrowthRate = (
+  oldWeight: number,
+  newWeight: number
+): { absoluteChange: number; percentageChange: number } => {
+  const absoluteChange = newWeight - oldWeight;
+  const percentageChange = oldWeight > 0 ? (absoluteChange / oldWeight) * 100 : 0;
   
   return {
-    currentWeight: latestWeight.weight,
-    weightUnit,
-    percentChange,
-    averageGrowth,
-    growthRate,
-    averageGrowthRate: averageGrowth > 0 ? (averageGrowth / latestWeight.weight) * 100 : 0,
-    lastWeekGrowth,
-    projectedWeight,
-    weightGoal: null, // This could be breed-specific target weight
-    onTrack: null // This would need breed-specific growth curves to determine
+    absoluteChange: parseFloat(absoluteChange.toFixed(2)),
+    percentageChange: parseFloat(percentageChange.toFixed(2))
   };
+};
+
+// Convert weight from one unit to another
+export const convertWeight = (weight: number, fromUnit: string, toUnit: string): number => {
+  // Convert to grams first
+  let weightInGrams = weight;
+  
+  if (fromUnit === 'oz') {
+    weightInGrams = weight * 28.35;
+  } else if (fromUnit === 'lb') {
+    weightInGrams = weight * 453.59;
+  } else if (fromUnit === 'kg') {
+    weightInGrams = weight * 1000;
+  }
+  
+  // Convert from grams to target unit
+  if (toUnit === 'g') {
+    return parseFloat(weightInGrams.toFixed(2));
+  } else if (toUnit === 'oz') {
+    return parseFloat((weightInGrams / 28.35).toFixed(2));
+  } else if (toUnit === 'lb') {
+    return parseFloat((weightInGrams / 453.59).toFixed(2));
+  } else if (toUnit === 'kg') {
+    return parseFloat((weightInGrams / 1000).toFixed(2));
+  }
+  
+  // Default case, return original weight
+  return weight;
 };

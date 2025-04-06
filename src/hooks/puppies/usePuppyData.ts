@@ -1,9 +1,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { PuppyWithAge } from '@/types/puppyTracking';
+import { PuppyWithAge } from '@/types/puppy';
 import { differenceInDays } from 'date-fns';
 import { getPuppyWeightRecords } from '@/services/puppyWeightService';
+import { mapPuppyWithAgeFromDB } from '@/lib/mappers/puppyMapper';
+import { mapWeightRecordFromDB } from '@/lib/mappers/weightMapper';
 
 export const usePuppyData = () => {
   const { 
@@ -44,32 +46,26 @@ export const usePuppyData = () => {
           // Calculate age
           const birthDate = puppy.birth_date || puppy.litter?.birth_date;
           let age = 0;
-          let ageInWeeks = 0;
           
           if (birthDate) {
             age = differenceInDays(new Date(), new Date(birthDate));
-            ageInWeeks = Math.floor(age / 7);
           }
           
           // Fetch weight records
-          const weightHistory = await getPuppyWeightRecords(puppy.id);
+          const weightRecords = await getPuppyWeightRecords(puppy.id);
+          const mappedWeightRecords = weightRecords.map(mapWeightRecordFromDB);
           
-          // Determine developmental stage based on age
-          let developmentalStage = 'Unknown';
-          if (age <= 14) developmentalStage = 'Neonatal';
-          else if (age <= 21) developmentalStage = 'Transitional';
-          else if (age <= 49) developmentalStage = 'Socialization';
-          else if (age <= 84) developmentalStage = 'Juvenile';
-          else developmentalStage = 'Adolescent';
-          
-          return {
+          // Create a puppy record with all necessary fields for mapping
+          const puppyWithAgeData = {
             ...puppy,
             age,
-            ageInDays: age,
-            ageInWeeks,
-            developmentalStage,
-            weightHistory
+            age_days: age,
+            age_weeks: Math.floor(age / 7),
+            weightHistory: mappedWeightRecords
           };
+          
+          // Use our mapper to get a properly typed PuppyWithAge
+          return mapPuppyWithAgeFromDB(puppyWithAgeData);
         }));
         
         return enhancedPuppies;

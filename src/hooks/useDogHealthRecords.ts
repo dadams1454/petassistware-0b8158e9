@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
 import { useToast } from '@/hooks/use-toast';
+import { mapHealthRecordFromDB, mapHealthRecordToDB } from '@/lib/mappers/healthMapper';
 
 export const useDogHealthRecords = (dogId: string) => {
   const [records, setRecords] = useState<HealthRecord[]>([]);
@@ -24,11 +25,8 @@ export const useDogHealthRecords = (dogId: string) => {
 
       if (error) throw new Error(error.message);
       
-      // Cast the records to ensure they have the correct type
-      const typedRecords = (data || []).map(record => ({
-        ...record,
-        record_type: record.record_type as HealthRecordTypeEnum
-      })) as HealthRecord[];
+      // Map each record using our mapper
+      const typedRecords = (data || []).map(record => mapHealthRecordFromDB(record));
       
       setRecords(typedRecords);
       setError(null);
@@ -46,13 +44,16 @@ export const useDogHealthRecords = (dogId: string) => {
         ...recordData,
         dog_id: dogId,
         vet_name: recordData.vet_name || 'Unknown', // Required
-        record_type: recordData.record_type || HealthRecordTypeEnum.Examination,
+        record_type: recordData.record_type || HealthRecordTypeEnum.EXAMINATION,
         visit_date: recordData.visit_date || new Date().toISOString().split('T')[0]
       };
 
+      // Convert to DB format
+      const dbRecord = mapHealthRecordToDB(record);
+
       const { data, error } = await supabase
         .from('health_records')
-        .insert(record as any)
+        .insert(dbRecord)
         .select();
 
       if (error) throw error;
@@ -87,9 +88,12 @@ export const useDogHealthRecords = (dogId: string) => {
 
   const updateHealthRecord = async (recordId: string, updates: Partial<HealthRecord>) => {
     try {
+      // Convert to DB format
+      const dbUpdates = mapHealthRecordToDB(updates);
+
       const { data, error } = await supabase
         .from('health_records')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', recordId)
         .select();
 
