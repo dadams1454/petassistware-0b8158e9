@@ -61,16 +61,25 @@ export const useWelping = (litterId: string) => {
     mutationFn: async (logData: Partial<WelpingLog>) => {
       if (!litterId) throw new Error('Litter ID is required');
       
+      // Ensure required fields are present
+      if (!logData.event_type) {
+        throw new Error('Event type is required');
+      }
+      
       const newLog = {
-        ...logData,
         litter_id: litterId,
         timestamp: logData.timestamp || new Date().toISOString(),
+        event_type: logData.event_type,
+        notes: logData.notes || null,
+        puppy_id: logData.puppy_id || null,
+        puppy_details: logData.puppy_details || null,
         created_at: new Date().toISOString()
       };
       
+      // Use array form for better type inference
       const { data, error } = await supabase
         .from('welping_logs')
-        .insert(newLog)
+        .insert([newLog])
         .select()
         .single();
       
@@ -98,16 +107,29 @@ export const useWelping = (litterId: string) => {
     mutationFn: async (observationData: Partial<WelpingObservation>) => {
       if (!litterId) throw new Error('Welping record ID is required');
       
+      // Ensure required fields are present
+      if (!observationData.observation_type) {
+        throw new Error('Observation type is required');
+      }
+      
+      if (!observationData.description) {
+        throw new Error('Description is required');
+      }
+      
       const newObservation = {
-        ...observationData,
         welping_record_id: litterId,
         observation_time: observationData.observation_time || new Date().toISOString(),
+        observation_type: observationData.observation_type,
+        description: observationData.description,
+        puppy_id: observationData.puppy_id || null,
+        action_taken: observationData.action_taken || null,
         created_at: new Date().toISOString()
       };
       
+      // Use array form for better type inference
       const { data, error } = await supabase
         .from('welping_observations')
-        .insert(newObservation)
+        .insert([newObservation])
         .select()
         .single();
       

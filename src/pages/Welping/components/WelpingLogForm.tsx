@@ -1,188 +1,87 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { WelpingLog } from '@/types/welping';
 
 interface WelpingLogFormProps {
   litterId: string;
-  onSave: (data: any) => Promise<void>;
+  onSave: (data: Partial<WelpingLog>) => Promise<void>;
 }
 
 const WelpingLogForm: React.FC<WelpingLogFormProps> = ({ litterId, onSave }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
   
-  const form = useForm({
-    defaultValues: {
-      eventType: 'note',
-      notes: '',
-      puppyDetails: {
-        gender: '',
-        color: '',
-        weight: ''
-      }
-    }
-  });
-  
-  const eventType = form.watch('eventType');
-  const showPuppyDetails = eventType === 'puppy_born';
-  
-  const handleSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: any) => {
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      
-      // Format data for API
-      const currentTime = new Date().toISOString();
-      
-      const logEntry = {
-        timestamp: currentTime,
-        event_type: data.eventType,
+      await onSave({
+        litter_id: litterId,
+        event_type: data.event_type, // Ensure this is provided
+        timestamp: new Date().toISOString(),
         notes: data.notes,
-        puppy_details: showPuppyDetails ? {
-          gender: data.puppyDetails.gender,
-          color: data.puppyDetails.color,
-          weight: data.puppyDetails.weight
-        } : undefined
-      };
-      
-      await onSave(logEntry);
-      
-      // Reset form
-      form.reset({
-        eventType: 'note',
-        notes: '',
-        puppyDetails: {
-          gender: '',
-          color: '',
-          weight: ''
-        }
+        puppy_id: data.puppy_id
       });
+      
+      reset();
     } catch (error) {
-      console.error('Error saving log entry:', error);
+      console.error('Error saving log:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
   
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="eventType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Event Type</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select event type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="start">Start of Whelping</SelectItem>
-                  <SelectItem value="contraction">Contraction</SelectItem>
-                  <SelectItem value="puppy_born">Puppy Born</SelectItem>
-                  <SelectItem value="end">End of Whelping</SelectItem>
-                  <SelectItem value="note">Note</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {showPuppyDetails && (
-          <div className="space-y-4 p-4 bg-muted/50 rounded-md">
-            <h4 className="text-sm font-medium">Puppy Details</h4>
-            
-            <FormField
-              control={form.control}
-              name="puppyDetails.gender"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gender</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="puppyDetails.color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Color</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Puppy color" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="puppyDetails.weight"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Weight (oz)</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="number" step="0.1" placeholder="0.0" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+    <Card>
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <CardContent className="space-y-4 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="event_type">Event Type</Label>
+            <Select 
+              onValueChange={(value) => setValue('event_type', value)} 
+              defaultValue=""
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select an event type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="start">Start of Whelping</SelectItem>
+                <SelectItem value="puppy_born">Puppy Born</SelectItem>
+                <SelectItem value="complication">Complication</SelectItem>
+                <SelectItem value="medication">Medication Given</SelectItem>
+                <SelectItem value="dam_check">Dam Check</SelectItem>
+                <SelectItem value="break">Break Taken</SelectItem>
+                <SelectItem value="feeding">Feeding</SelectItem>
+                <SelectItem value="end">End of Whelping</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.event_type && <p className="text-red-500 text-sm">Event type is required</p>}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea 
+              id="notes" 
+              {...register('notes')}
+              placeholder="Enter any relevant details about this event"
             />
           </div>
-        )}
-        
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea 
-                  {...field} 
-                  placeholder="Add any additional information" 
-                  rows={3}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="pt-2">
+        </CardContent>
+        <CardFooter>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Add Event'}
+            {isSubmitting ? 'Saving...' : 'Record Event'}
           </Button>
-        </div>
+        </CardFooter>
       </form>
-    </Form>
+    </Card>
   );
 };
 

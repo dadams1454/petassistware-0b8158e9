@@ -43,14 +43,14 @@ const WelpingObservationForm: React.FC<WelpingObservationFormProps> = ({ litterI
       // Create a new welping observation record
       const { error } = await supabase
         .from('welping_observations')
-        .insert({
+        .insert([{
           welping_record_id: litterId,
-          observation_type: data.observation_type,
+          observation_type: data.observation_type, // Required field
           observation_time: data.observation_time || format(new Date(), 'HH:mm:ss'),
-          description: data.description,
+          description: data.description, // Required field
           puppy_id: data.puppy_id || null,
           action_taken: data.action_taken || null
-        });
+        }]);
       
       if (error) throw error;
       
@@ -72,7 +72,10 @@ const WelpingObservationForm: React.FC<WelpingObservationFormProps> = ({ litterI
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="observation_type">Observation Type</Label>
-            <Select onValueChange={(value) => setValue('observation_type', value)}>
+            <Select 
+              onValueChange={(value) => setValue('observation_type', value)}
+              required
+            >
               <SelectTrigger id="observation_type">
                 <SelectValue placeholder="Select observation type" />
               </SelectTrigger>
@@ -121,6 +124,7 @@ const WelpingObservationForm: React.FC<WelpingObservationFormProps> = ({ litterI
             <Textarea 
               id="description" 
               {...register('description', { required: 'Description is required' })}
+              required
             />
             {errors.description && (
               <p className="text-red-500 text-sm">{errors.description.message as string}</p>

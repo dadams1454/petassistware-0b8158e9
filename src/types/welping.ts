@@ -4,7 +4,7 @@ import { Json } from '../integrations/supabase/types';
 export interface WelpingLog {
   id: string;
   litter_id: string;
-  event_type: string;
+  event_type: string; // Now required (was optional)
   timestamp: string;
   puppy_id?: string;
   notes?: string;
@@ -15,9 +15,9 @@ export interface WelpingLog {
 export interface WelpingObservation {
   id: string;
   welping_record_id: string;
-  observation_type: string;
+  observation_type: string; // Now required (was optional)
   observation_time: string;
-  description: string;
+  description: string; // Now required (was optional)
   puppy_id?: string;
   action_taken?: string;
   created_at?: string;
