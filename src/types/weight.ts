@@ -33,6 +33,8 @@ export interface WeightDataPoint {
 
 // Growth stats definition
 export interface GrowthStats {
+  currentWeight?: number;
+  weightUnit?: string;
   averageGrowthRate: number;
   maxGrowthRate: number;
   minGrowthRate: number;
@@ -42,10 +44,11 @@ export interface GrowthStats {
   firstWeight: number;
   totalGain: number;
   percentGain: number;
-  currentWeight?: number;
-  weightUnit?: string;
   projectedWeight?: number;
-  weightGoal?: number;
-  onTrack?: boolean;
+  weightGoal?: number | null;
+  onTrack?: boolean | null;
   percentChange?: number;
+  growthRate?: number;
+  lastWeekGrowth?: number;
+  totalGrowth?: number | null;
 }
