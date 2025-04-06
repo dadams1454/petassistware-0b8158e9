@@ -64,6 +64,7 @@ export function mapDogProfileFromDB(record: any): DogProfile {
   
   return {
     ...dog,
+    birthdate: dog.birthdate || '', // Ensure birthdate is required for DogProfile
     weight: record.weight || 0,
     weight_unit: record.weight_unit || 'lb',
     pedigree: record.pedigree || false,

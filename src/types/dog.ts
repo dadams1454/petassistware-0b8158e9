@@ -61,7 +61,7 @@ export interface Dog {
   gender: DogGender;
   color?: string;
   birthdate?: string;
-  status: DogStatus; // Required
+  status: DogStatus; // Added to fix the type mismatch
   created_at: string;
   // Additional properties that might be used
   photo_url?: string;
