@@ -8,10 +8,10 @@ import { WeightUnit } from '@/types/weight-units';
 export function mapWeightRecordFromDB(record: any): WeightRecord {
   if (!record) return null as unknown as WeightRecord;
 
-  // Ensure weight unit is a valid WeightUnit enum value
+  // Ensure weight unit is a valid WeightUnit value
   let weightUnit: WeightUnit = record.weight_unit as WeightUnit;
-  if (!Object.values(WeightUnit).includes(weightUnit)) {
-    weightUnit = WeightUnit.GRAMS; // Default to grams if invalid
+  if (!['g', 'kg', 'oz', 'lb'].includes(weightUnit)) {
+    weightUnit = 'g'; // Default to grams if invalid
   }
 
   return {

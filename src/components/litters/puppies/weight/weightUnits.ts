@@ -47,30 +47,30 @@ export const getAppropriateWeightUnit = (
   currentUnit: WeightUnit, 
   ageInDays: number
 ): WeightUnit => {
-  const weightInGrams = convertWeight(weight, currentUnit, WeightUnit.GRAMS);
+  const weightInGrams = convertWeight(weight, currentUnit, 'g');
   
   // For very young puppies (less than 14 days), use ounces if they're small
   if (ageInDays < 14 && weightInGrams < 1000) {
-    return WeightUnit.OUNCES;
+    return 'oz';
   }
   
   // For puppies between 2-8 weeks, use pounds if they're over 500g
   if (ageInDays < 56 && weightInGrams >= 500) {
-    return WeightUnit.POUNDS;
+    return 'lb';
   }
   
   // For older puppies and small breeds, use pounds
   if (weightInGrams >= 1000) {
-    return WeightUnit.POUNDS;
+    return 'lb';
   }
   
   // For larger dogs, use kilograms if over 20kg
   if (weightInGrams >= 20000) {
-    return WeightUnit.KILOGRAMS;
+    return 'kg';
   }
   
   // Default to ounces for very small puppies
-  return WeightUnit.OUNCES;
+  return 'oz';
 };
 
 // Export the WeightUnit type from the canonical location
