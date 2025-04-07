@@ -2,61 +2,52 @@
 import { WeightUnit, weightUnitInfos } from '@/types/weight-units';
 
 /**
- * Convert weight from any unit to grams
+ * Converts a weight from one unit to another
  */
-export const convertWeightToGrams = (weight: number, unit: WeightUnit): number => {
-  const unitInfo = weightUnitInfos.find(u => u.value === unit);
-  if (!unitInfo) {
-    console.error(`Unknown weight unit: ${unit}`);
-    return weight;
-  }
-  return weight * unitInfo.gramsPerUnit;
-};
-
-/**
- * Convert weight from one unit to another
- */
-export const convertWeight = (
-  weight: number, 
-  fromUnit: WeightUnit, 
-  toUnit: WeightUnit
-): number => {
+export const convertWeight = (weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number => {
   if (fromUnit === toUnit) {
     return weight;
   }
   
   // Convert to grams first as an intermediate step
-  const weightInGrams = convertWeightToGrams(weight, fromUnit);
-  
-  // Convert from grams to the target unit
+  const fromUnitInfo = weightUnitInfos.find(u => u.value === fromUnit);
   const toUnitInfo = weightUnitInfos.find(u => u.value === toUnit);
-  if (!toUnitInfo) {
-    console.error(`Unknown target weight unit: ${toUnit}`);
+  
+  if (!fromUnitInfo || !toUnitInfo) {
+    console.error(`Conversion failed: Unknown units - from ${fromUnit} to ${toUnit}`);
     return weight;
   }
+  
+  // Calculate the weight in grams
+  const weightInGrams = weight * fromUnitInfo.gramsPerUnit;
   
   // Convert from grams to the target unit
   return weightInGrams / toUnitInfo.gramsPerUnit;
 };
 
 /**
- * Format weight for display with appropriate units
+ * Converts a weight to grams
  */
-export const formatWeight = (
-  weight: number, 
-  unit: WeightUnit
-): string => {
+export const convertWeightToGrams = (weight: number, unit: WeightUnit): number => {
+  return convertWeight(weight, unit, 'g');
+};
+
+/**
+ * Formats a weight for display with the appropriate unit
+ */
+export const formatWeight = (weight: number, unit: WeightUnit): string => {
   const unitInfo = weightUnitInfos.find(u => u.value === unit);
+  
   if (!unitInfo) {
     return `${weight} ${unit}`;
   }
   
-  const formattedValue = Number(weight).toFixed(unitInfo.displayPrecision);
-  return `${formattedValue} ${unitInfo.displayUnit}`;
+  const formattedWeight = weight.toFixed(unitInfo.precision);
+  return `${formattedWeight} ${unit}`;
 };
 
 /**
- * Function to determine the appropriate weight unit based on age and weight
+ * Gets the appropriate weight unit for a weight value
  */
 export const getAppropriateWeightUnit = (
   weight: number, 

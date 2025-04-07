@@ -5,7 +5,6 @@ export {
   WeightUnitEnum,
   weightUnitInfos, 
   standardizeWeightUnit
-  // Remove getAppropriateWeightUnit export from weight-units to avoid duplicate
 } from './weight-units';
 
 // Export heat cycle related types
@@ -18,7 +17,7 @@ export {
 } from './heat-cycles';
 
 // Export health-related types and enums
-export type { MedicationStatusResult } from './health-enums';
+export type { MedicationStatusResult } from './health';
 export {
   HealthRecordType, 
   HealthRecordTypeEnum,
@@ -35,7 +34,7 @@ export {
 } from './health-enums';
 
 // Export weight-related types
-export type { WeightRecord } from './health';
+export type { WeightRecord } from './weight';
 
 // Export enum helpers
 export * from './enums';

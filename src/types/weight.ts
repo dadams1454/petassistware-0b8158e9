@@ -2,7 +2,7 @@
 import { WeightUnit } from './weight-units';
 
 /**
- * Weight record interface
+ * Interface for weight record data
  */
 export interface WeightRecord {
   id: string;
@@ -19,17 +19,13 @@ export interface WeightRecord {
 }
 
 /**
- * Statistics about growth based on weight records
+ * Growth statistics data
  */
 export interface GrowthStats {
   currentWeight: number;
+  averageGrowth: number;
   weightUnit: WeightUnit;
-  percentChange?: number;
-  dailyGrowthAverage: number;
-  weeklyGrowthAverage?: number;
-  growthRate: number; 
+  growthRate: number;
   lastWeekGrowth: number;
   projectedWeight: number;
-  onTrack?: boolean;
-  weightGoal?: number;
 }
