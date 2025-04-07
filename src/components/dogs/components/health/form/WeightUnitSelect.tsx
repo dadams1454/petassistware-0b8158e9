@@ -33,8 +33,8 @@ export const WeightUnitSelect: React.FC<WeightUnitSelectProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {Object.entries(weightUnitInfos).map(([unitCode, info]) => (
-                <SelectItem key={unitCode} value={unitCode}>
+              {weightUnitInfos.map((info) => (
+                <SelectItem key={info.id} value={info.id}>
                   {info.name}
                 </SelectItem>
               ))}

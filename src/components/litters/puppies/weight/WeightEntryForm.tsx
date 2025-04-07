@@ -109,8 +109,8 @@ const WeightEntryForm: React.FC<WeightEntryFormProps> = ({
               <SelectValue placeholder="Select unit" />
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(weightUnitInfos).map(([unitCode, unitInfo]) => (
-                <SelectItem key={unitCode} value={unitCode}>
+              {weightUnitInfos.map((unitInfo) => (
+                <SelectItem key={unitInfo.id} value={unitInfo.id}>
                   {unitInfo.name}
                 </SelectItem>
               ))}

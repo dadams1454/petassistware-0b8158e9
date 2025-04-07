@@ -52,6 +52,9 @@ export const weightUnits: WeightUnitInfo[] = [
   }
 ];
 
+// Export weightUnits with an alternative name for backward compatibility
+export const weightUnitInfos = weightUnits;
+
 /**
  * Standardize weight unit string to valid WeightUnit type
  */
