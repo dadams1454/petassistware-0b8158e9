@@ -16,7 +16,8 @@ import { Medication } from '@/types/health';
 import { 
   getMedicationStatus, 
   MedicationFrequencyConstants, 
-  getStatusLabel 
+  getStatusLabel,
+  processMedicationLogs
 } from '@/utils/medicationUtils';
 
 interface MedicationTrackerProps {
