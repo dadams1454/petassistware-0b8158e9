@@ -6,7 +6,13 @@ import { MedicationStatusEnum } from '@/types';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {
-  status: MedicationStatusEnum | string | null;
+  status: string | {
+    status: string;
+    message: string;
+    nextDue?: string | Date | null;
+    daysOverdue?: number;
+    daysUntilDue?: number;
+  } | null;
   nextDue?: string | Date | null;
   showIcon?: boolean;
   showLabel?: boolean;
@@ -41,7 +47,7 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   };
   
   // Convert different status types to a standard string
-  let statusValue: string = MedicationStatusEnum.UNKNOWN;
+  let statusValue: string = 'unknown';
   let statusObject: any = null;
   let nextDueDate: string | Date | null = nextDue;
   
@@ -57,16 +63,16 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
     statusValue = status;
     
     // Map legacy string status if needed
-    if (!Object.values(MedicationStatusEnum).includes(status as MedicationStatusEnum)) {
+    if (!Object.values(MedicationStatusEnum).includes(status as any)) {
       switch (status.toLowerCase()) {
-        case 'active': statusValue = MedicationStatusEnum.DUE; break;
-        case 'overdue': statusValue = MedicationStatusEnum.OVERDUE; break;
-        case 'discontinued': statusValue = MedicationStatusEnum.SKIPPED; break;
+        case 'active': statusValue = 'due'; break;
+        case 'overdue': statusValue = 'overdue'; break;
+        case 'discontinued': statusValue = 'skipped'; break;
         case 'upcoming': 
-        case 'scheduled': statusValue = MedicationStatusEnum.UPCOMING; break;
-        case 'not_started': statusValue = MedicationStatusEnum.DUE; break;
-        case 'completed': statusValue = MedicationStatusEnum.COMPLETED; break;
-        default: statusValue = MedicationStatusEnum.UNKNOWN;
+        case 'scheduled': statusValue = 'upcoming'; break;
+        case 'not_started': statusValue = 'due'; break;
+        case 'completed': statusValue = 'completed'; break;
+        default: statusValue = 'unknown';
       }
     }
   }
@@ -77,18 +83,13 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   // Determine the icon based on status
   const getIcon = () => {
     switch (statusValue) {
-      case MedicationStatusEnum.DUE:
       case 'due':
         return <Check className="h-4 w-4 text-green-500" />;
-      case MedicationStatusEnum.OVERDUE:
-      case MedicationStatusEnum.SKIPPED:
       case 'overdue':
       case 'skipped':
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case MedicationStatusEnum.UPCOMING:
       case 'upcoming':
         return <Calendar className="h-4 w-4 text-blue-500" />;
-      case MedicationStatusEnum.COMPLETED:
       case 'completed':
         return <Check className="h-4 w-4 text-green-500" />;
       default:

@@ -13,9 +13,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 const healthIndicatorSchema = z.object({
   dog_id: z.string(),
   date: z.date().default(new Date()),
-  appetite: z.string().optional(),
-  energy: z.string().optional(),
-  stool_consistency: z.string().optional(),
+  appetite: z.enum(['excellent', 'good', 'fair', 'poor', 'none']).optional(),
+  energy: z.enum(['hyperactive', 'high', 'normal', 'low', 'lethargic']).optional(),
+  stool_consistency: z.enum(['normal', 'soft', 'loose', 'watery', 'hard', 'bloody', 'mucus']).optional(),
   abnormal: z.boolean().default(false),
   notes: z.string().optional(),
 });
