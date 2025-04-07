@@ -3,11 +3,11 @@
 import { WeightUnit } from '@/types/weight-units';
 import type { Json } from '../integrations/supabase/types';
 import type { Dog } from '@/types/dog';
-import { HeatIntensityType, HeatIntensityValues, HeatCycle, HeatStage } from './heat-cycles';
+import type { HeatIntensityType, HeatCycle, HeatStage } from './heat-cycles';
 
 // Re-export heat cycle types
 export type { HeatIntensityType, HeatCycle, HeatStage };
-export { HeatIntensityValues };
+export { HeatIntensityValues } from './heat-cycles';
 
 // Reproductive status enum
 export enum ReproductiveStatus {
@@ -93,70 +93,28 @@ export interface ReproductiveCycleData {
   currentHeatStage?: HeatStage | null;
   currentStage?: HeatStage | null; // For backward compatibility
   currentPregnancy?: PregnancyRecord | null;
-  isInHeat: boolean;
-  isPregnant: boolean;
-  nextHeatDate?: string | null;
-  daysUntilNextHeat?: number | null;
-  daysSinceLastHeat?: number | null;
-  averageCycleLength?: number | null;
+  currentStatus?: ReproductiveStatus;
+  stats?: {
+    averageCycleLength?: number;
+    fertileStartDate?: string;
+    fertileEndDate?: string;
+    lastHeatDate?: string;
+    nextHeatDate?: string;
+    daysSinceLastHeat?: number;
+    daysUntilNextHeat?: number;
+    isInHeat?: boolean;
+    isFertile?: boolean;
+    isPregnant?: boolean;
+    pregnancyDays?: number;
+    estimatedDueDate?: string;
+  };
   heatStages: HeatStage[];
-  currentStatus: ReproductiveStatus;
-  status?: ReproductiveStatus;
-  dueDate?: string | null;
-  daysUntilDue?: number | null;
-  gestationDays?: number | null;
+  days: {
+    daysSinceLastHeat?: number;
+    daysUntilNextHeat?: number;
+  };
+  pregnant: boolean;
   pregnancyConfirmed: boolean;
   pregnancyLost: boolean;
-  estimatedDueDate?: string | null;
-  fertilityWindow?: { start: string; end: string } | null;
+  gestationDays: number;
 }
-
-// Breeding checklist item interface
-export interface BreedingChecklistItem {
-  id: string;
-  task: string;
-  title: string;
-  description: string;
-  completed: boolean;
-  category: string;
-  priority: string;
-}
-
-// Breeding preparation form data interface
-export interface BreedingPrepFormData {
-  dog_id: string;
-  sire_id: string;
-  dam_id?: string;
-  damId?: string;
-  sireId?: string;
-  tie_date: string;
-  estimated_due_date: string;
-  breeding_method: string;
-  notes: string;
-  plannedDate?: string;
-  plannedTieDate?: string;
-}
-
-// Helper function to normalize breeding records
-export function normalizeBreedingRecord(record: any): BreedingRecord {
-  return {
-    id: record.id,
-    dog_id: record.dog_id,
-    dam_id: record.dam_id,
-    sire_id: record.sire_id,
-    breeding_date: record.breeding_date,
-    tie_date: record.tie_date,
-    method: record.method,
-    breeding_method: record.method, // For compatibility
-    success: record.success,
-    is_successful: record.success, // For compatibility
-    notes: record.notes,
-    created_at: record.created_at,
-    created_by: record.created_by,
-    sire: record.sire,
-    dam: record.dam
-  };
-}
-
-// Export the Dog type correctly
-export type { Dog };

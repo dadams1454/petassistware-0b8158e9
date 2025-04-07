@@ -2,24 +2,15 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatus as MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
+import { MedicationStatusEnum, MedicationStatusResult } from '@/types';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {
-  status: MedicationStatusResult | MedicationStatusEnum | string | null;
+  status: MedicationStatusEnum | MedicationStatusResult | string | null;
   nextDue?: string | Date | null;
   showIcon?: boolean;
   showLabel?: boolean;
   showNextDue?: boolean;
-}
-
-// Define the MedicationStatusResult interface locally
-interface MedicationStatusResult {
-  status: MedicationStatusEnum;
-  daysOverdue?: number;
-  daysUntilDue?: number;
-  nextDue?: Date | null;
-  message: string;
 }
 
 const MedicationStatus: React.FC<MedicationStatusProps> = ({
@@ -92,6 +83,7 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
       case MedicationStatusEnum.DISCONTINUED:
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       case MedicationStatusEnum.SCHEDULED:
+      case MedicationStatusEnum.UPCOMING:
         return <Calendar className="h-4 w-4 text-blue-500" />;
       case MedicationStatusEnum.NOT_STARTED:
         return <Clock className="h-4 w-4 text-gray-500" />;

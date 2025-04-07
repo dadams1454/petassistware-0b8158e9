@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -9,7 +10,7 @@ const validateHeatIntensity = (intensity: string | null): HeatIntensityType => {
   if (intensity && HeatIntensityValues.includes(intensity as HeatIntensityType)) {
     return intensity as HeatIntensityType;
   }
-  return 'moderate'; // Default fallback
+  return 'moderate' as HeatIntensityType; // Default fallback
 };
 
 export const useHeatCycles = (dogId: string) => {

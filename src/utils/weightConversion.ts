@@ -2,50 +2,89 @@
 import { WeightUnit, weightUnitInfos } from '@/types/weight-units';
 
 /**
- * Convert a weight value to grams
+ * Convert weight from any unit to grams
  */
 export const convertWeightToGrams = (weight: number, unit: WeightUnit): number => {
-  const unitInfo = weightUnitInfos.find(info => info.value === unit);
+  const unitInfo = weightUnitInfos.find(u => u.value === unit);
   if (!unitInfo) {
     console.error(`Unknown weight unit: ${unit}`);
     return weight;
   }
-  
   return weight * unitInfo.gramsPerUnit;
 };
 
 /**
- * Convert a weight value from one unit to another
+ * Convert weight from one unit to another
  */
-export const convertWeight = (weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number => {
-  if (fromUnit === toUnit) return weight;
+export const convertWeight = (
+  weight: number, 
+  fromUnit: WeightUnit, 
+  toUnit: WeightUnit
+): number => {
+  if (fromUnit === toUnit) {
+    return weight;
+  }
   
-  // First convert to grams
+  // Convert to grams first as an intermediate step
   const weightInGrams = convertWeightToGrams(weight, fromUnit);
   
-  // Then convert from grams to target unit
-  const targetUnitInfo = weightUnitInfos.find(info => info.value === toUnit);
-  if (!targetUnitInfo) {
+  // Convert from grams to the target unit
+  const toUnitInfo = weightUnitInfos.find(u => u.value === toUnit);
+  if (!toUnitInfo) {
     console.error(`Unknown target weight unit: ${toUnit}`);
     return weight;
   }
   
-  return weightInGrams / targetUnitInfo.gramsPerUnit;
+  // Convert from grams to the target unit
+  return weightInGrams / toUnitInfo.gramsPerUnit;
 };
 
 /**
- * Format a weight with its unit for display
+ * Format weight for display with appropriate units
  */
-export const formatWeight = (weight: number, unit: WeightUnit): string => {
-  // Find the unit info to get display information
-  const unitInfo = weightUnitInfos.find(info => info.value === unit);
+export const formatWeight = (
+  weight: number, 
+  unit: WeightUnit
+): string => {
+  const unitInfo = weightUnitInfos.find(u => u.value === unit);
   if (!unitInfo) {
     return `${weight} ${unit}`;
   }
   
-  // Format the number based on the precision we want
-  const formattedWeight = weight.toFixed(unitInfo.displayPrecision);
+  const formattedValue = Number(weight).toFixed(unitInfo.displayPrecision);
+  return `${formattedValue} ${unitInfo.displayUnit}`;
+};
+
+/**
+ * Function to determine the appropriate weight unit based on age and weight
+ */
+export const getAppropriateWeightUnit = (
+  weight: number, 
+  currentUnit: WeightUnit, 
+  ageInDays: number
+): WeightUnit => {
+  const weightInGrams = convertWeight(weight, currentUnit, 'g');
   
-  // Return formatted weight with unit
-  return `${formattedWeight} ${unitInfo.displayUnit || unitInfo.value}`;
+  // For very young puppies (less than 14 days), use ounces if they're small
+  if (ageInDays < 14 && weightInGrams < 1000) {
+    return 'oz';
+  }
+  
+  // For puppies between 2-8 weeks, use pounds if they're over 500g
+  if (ageInDays < 56 && weightInGrams >= 500) {
+    return 'lb';
+  }
+  
+  // For older puppies and small breeds, use pounds
+  if (weightInGrams >= 1000) {
+    return 'lb';
+  }
+  
+  // For larger dogs, use kilograms if over 20kg
+  if (weightInGrams >= 20000) {
+    return 'kg';
+  }
+  
+  // Default to ounces for very small puppies
+  return 'oz';
 };

@@ -79,7 +79,7 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate ? endDate.toISOString().split('T')[0] : null,
         notes: notes.trim() || null,
-        intensity: intensity || 'moderate',
+        intensity: intensity,
         cycle_length: endDate && startDate 
           ? Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) 
           : null

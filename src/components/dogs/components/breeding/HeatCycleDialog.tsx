@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
 }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [intensity, setIntensity] = useState<string>('moderate');
+  const [intensity, setIntensity] = useState<HeatIntensityType>('moderate');
   const [notes, setNotes] = useState<string>('');
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +61,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
       dog_id: cycle?.dog_id || '',
       start_date: startDate ? format(startDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
       end_date: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
-      intensity: intensity as typeof HeatIntensityValues[number],
+      intensity: intensity,
       symptoms: symptoms,
       notes: notes,
       created_at: cycle?.created_at || new Date().toISOString()
@@ -143,7 +144,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
             <Label htmlFor="intensity">Intensity</Label>
             <Select 
               value={intensity} 
-              onValueChange={setIntensity}
+              onValueChange={(value) => setIntensity(value as HeatIntensityType)}
             >
               <SelectTrigger id="intensity">
                 <SelectValue placeholder="Select intensity" />

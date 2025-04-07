@@ -2,16 +2,10 @@
 /**
  * Heat intensity types
  */
-export enum HeatIntensityType {
-  NONE = "none",
-  MILD = "mild",
-  MODERATE = "moderate",
-  STRONG = "strong",
-  VERY_STRONG = "very_strong"
-}
+export type HeatIntensityType = 'none' | 'mild' | 'moderate' | 'strong' | 'very_strong';
 
 /**
- * Heat intensity enum
+ * Heat intensity enum for display purposes
  */
 export enum HeatIntensity {
   NONE = "None",
@@ -24,7 +18,7 @@ export enum HeatIntensity {
 /**
  * Heat intensity values for form options
  */
-export const HeatIntensityValues = ['none', 'mild', 'moderate', 'strong', 'very_strong'] as const;
+export const HeatIntensityValues: readonly HeatIntensityType[] = ['none', 'mild', 'moderate', 'strong', 'very_strong'] as const;
 
 /**
  * Convert HeatIntensity to HeatIntensityType
@@ -32,17 +26,17 @@ export const HeatIntensityValues = ['none', 'mild', 'moderate', 'strong', 'very_
 export const mapHeatIntensityToType = (intensity: HeatIntensity): HeatIntensityType => {
   switch (intensity) {
     case HeatIntensity.NONE:
-      return HeatIntensityType.NONE;
+      return 'none';
     case HeatIntensity.MILD:
-      return HeatIntensityType.MILD;
+      return 'mild';
     case HeatIntensity.MODERATE:
-      return HeatIntensityType.MODERATE;
+      return 'moderate';
     case HeatIntensity.STRONG:
-      return HeatIntensityType.STRONG;
+      return 'strong';
     case HeatIntensity.VERY_STRONG:
-      return HeatIntensityType.VERY_STRONG;
+      return 'very_strong';
     default:
-      return HeatIntensityType.NONE;
+      return 'none';
   }
 };
 
@@ -51,15 +45,15 @@ export const mapHeatIntensityToType = (intensity: HeatIntensity): HeatIntensityT
  */
 export const mapHeatIntensityTypeToDisplay = (type: HeatIntensityType): HeatIntensity => {
   switch (type) {
-    case HeatIntensityType.NONE:
+    case 'none':
       return HeatIntensity.NONE;
-    case HeatIntensityType.MILD:
+    case 'mild':
       return HeatIntensity.MILD;
-    case HeatIntensityType.MODERATE:
+    case 'moderate':
       return HeatIntensity.MODERATE;
-    case HeatIntensityType.STRONG:
+    case 'strong':
       return HeatIntensity.STRONG;
-    case HeatIntensityType.VERY_STRONG:
+    case 'very_strong':
       return HeatIntensity.VERY_STRONG;
     default:
       return HeatIntensity.NONE;

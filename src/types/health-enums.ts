@@ -1,6 +1,4 @@
 
-import { HeatIntensity, HeatIntensityType } from './heat-cycles';
-
 /**
  * Health record type enum
  */
@@ -20,7 +18,9 @@ export enum HealthRecordTypeEnum {
   PREVENTIVE = "preventive",
   OBSERVATION = "observation",
   DEWORMING = "deworming",
-  GROOMING = "grooming"
+  GROOMING = "grooming",
+  OTHER = "other",
+  ALLERGY = "allergy"
 }
 
 /**
@@ -42,7 +42,9 @@ export enum HealthRecordType {
   PREVENTIVE = "Preventive",
   OBSERVATION = "Observation",
   DEWORMING = "Deworming",
-  GROOMING = "Grooming"
+  GROOMING = "Grooming",
+  OTHER = "Other",
+  ALLERGY = "Allergy"
 }
 
 /**
@@ -124,9 +126,11 @@ export enum MedicationStatusEnum {
   PAUSED = "paused",
   STOPPED = "stopped",
   SCHEDULED = "scheduled",
+  UPCOMING = "upcoming",
   OVERDUE = "overdue",
   NOT_STARTED = "not_started",
-  UNKNOWN = "unknown"
+  UNKNOWN = "unknown",
+  DISCONTINUED = "discontinued"
 }
 
 /**
@@ -138,9 +142,22 @@ export enum MedicationStatus {
   PAUSED = "Paused",
   STOPPED = "Stopped",
   SCHEDULED = "Scheduled",
+  UPCOMING = "Upcoming",
   OVERDUE = "Overdue",
   NOT_STARTED = "Not Started",
-  UNKNOWN = "Unknown"
+  UNKNOWN = "Unknown",
+  DISCONTINUED = "Discontinued"
+}
+
+/**
+ * Medication status result interface
+ */
+export interface MedicationStatusResult {
+  status: MedicationStatusEnum;
+  daysOverdue?: number;
+  daysUntilDue?: number;
+  nextDue?: Date | null;
+  message: string;
 }
 
 /**
@@ -184,6 +201,10 @@ export function stringToHealthRecordType(type: string): HealthRecordTypeEnum {
       return HealthRecordTypeEnum.DEWORMING;
     case 'grooming':
       return HealthRecordTypeEnum.GROOMING;
+    case 'other':
+      return HealthRecordTypeEnum.OTHER;
+    case 'allergy':
+      return HealthRecordTypeEnum.ALLERGY;
     default:
       return HealthRecordTypeEnum.EXAMINATION; // Default fallback
   }
@@ -226,10 +247,14 @@ export const getHealthRecordTypeDisplay = (type: HealthRecordTypeEnum): string =
       return "Deworming";
     case HealthRecordTypeEnum.GROOMING:
       return "Grooming";
+    case HealthRecordTypeEnum.OTHER:
+      return "Other";
+    case HealthRecordTypeEnum.ALLERGY:
+      return "Allergy";
     default:
       return "Unknown";
   }
 };
 
-// Re-export for easier imports
-export { HeatIntensity, HeatIntensityType };
+// Re-export for compatibility with existing code
+export { type HeatIntensityType, HeatIntensity } from './heat-cycles';

@@ -1,20 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { CalendarDays, Plus } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle
-} from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
-import { HeatCycle } from '@/types';
-import { HeatIntensityValues } from '@/types/reproductive';
+import { HeatCycle, HeatIntensityType } from '@/types';
 import HeatCycleDialog from './breeding/HeatCycleDialog';
 
 interface HeatCycleManagementProps {
@@ -29,7 +21,7 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   // Fetch heat cycles when component mounts
-  React.useEffect(() => {
+  useEffect(() => {
     fetchHeatCycles();
   }, [dogId]);
   
@@ -44,7 +36,12 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
         
       if (error) throw error;
       
-      setHeatCycles(data || []);
+      const typedData = (data || []).map(cycle => ({
+        ...cycle,
+        intensity: (cycle.intensity || 'moderate') as HeatIntensityType
+      }));
+      
+      setHeatCycles(typedData);
     } catch (error) {
       console.error('Error fetching heat cycles:', error);
       toast({
@@ -121,30 +118,24 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
     }
   };
   
-  const getIntensityLabel = (intensity: string) => {
-    switch(intensity) {
-      case HeatIntensityValues[0]: return 'Light';
-      case HeatIntensityValues[1]: return 'Moderate';
-      case HeatIntensityValues[3]: return 'Mild';
-      case HeatIntensityValues[4]: return 'Medium';
-      case HeatIntensityValues[5]: return 'Low';
-      case HeatIntensityValues[6]: return 'High';
-      case HeatIntensityValues[7]: return 'Strong';
-      case HeatIntensityValues[8]: return 'Peak';
-      default: return 'Unknown';
-    }
+  const getIntensityLabel = (intensity: HeatIntensityType) => {
+    return intensity.charAt(0).toUpperCase() + intensity.slice(1);
   };
   
-  const getIntensityColor = (intensity: string) => {
+  const getIntensityColor = (intensity: HeatIntensityType) => {
     switch(intensity) {
-      case 'light': return 'bg-blue-100 text-blue-800';
-      case 'moderate': return 'bg-yellow-100 text-yellow-800';
-      case 'heavy': return 'bg-red-100 text-red-800';
-      case 'mild': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-orange-100 text-orange-800';
-      case 'high': return 'bg-pink-100 text-pink-800';
-      case 'peak': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'none':
+        return 'bg-gray-100 text-gray-800';
+      case 'mild':
+        return 'bg-blue-100 text-blue-800';
+      case 'moderate':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'strong':
+        return 'bg-orange-100 text-orange-800';
+      case 'very_strong':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
   
@@ -179,8 +170,8 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
                   <div className="font-medium">
                     {format(new Date(cycle.start_date), 'MMMM d, yyyy')}
                   </div>
-                  <div className={`rounded-full px-2 py-0.5 text-xs ${getIntensityColor(cycle.intensity || 'unknown')}`}>
-                    {getIntensityLabel(cycle.intensity || 'unknown')}
+                  <div className={`rounded-full px-2 py-0.5 text-xs ${getIntensityColor(cycle.intensity)}`}>
+                    {getIntensityLabel(cycle.intensity)}
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">
