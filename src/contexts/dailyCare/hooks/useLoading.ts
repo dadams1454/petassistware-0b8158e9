@@ -29,10 +29,6 @@ export const useLoading = (): UseLoadingResult => {
     return fn()
       .finally(() => {
         setLoading(false);
-      })
-      .catch((error: unknown) => {
-        console.error('Operation failed:', error);
-        throw error; // Re-throw to allow caller to handle
       });
   }, []);
   

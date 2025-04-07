@@ -42,10 +42,8 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps): UseWeight
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: weightQueryKey,
     queryFn: async (): Promise<WeightRecord[]> => {
-      let query = supabase.from('weights')
-        .select('*')
-        .order('date', { ascending: false });
-
+      let query = supabase.from('weights');
+      
       if (puppyId) {
         query = query.eq('puppy_id', puppyId);
       } else if (dogId) {
@@ -53,8 +51,10 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps): UseWeight
       } else {
         throw new Error('Either puppyId or dogId must be provided');
       }
-
-      const { data, error } = await query;
+      
+      const { data, error } = await query
+        .select('*')
+        .order('date', { ascending: false });
 
       if (error) {
         throw error;
@@ -76,7 +76,7 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps): UseWeight
         weightData.age_days = differenceInDays(recordDate, birthDate);
       }
       
-      // Set the correct id field based on whether this is for a dog or puppy
+      // Map the record before sending to the database
       const dbRecord = mapWeightRecordToDB(weightData);
       
       const { data, error } = await supabase
@@ -144,11 +144,16 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps): UseWeight
     }
   }, [data]);
 
+  // Function to refetch weight history
+  const fetchWeightHistory = async (): Promise<void> => {
+    await refetch();
+  };
+
   return {
     weightRecords,
     isLoading,
     error,
-    fetchWeightHistory: refetch,
+    fetchWeightHistory,
     addWeight: addWeightMutation.mutateAsync,
     deleteWeight: deleteWeightMutation.mutateAsync,
     isAdding: addWeightMutation.isPending,

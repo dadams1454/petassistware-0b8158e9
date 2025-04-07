@@ -1,5 +1,5 @@
 
-import { WeightUnit, weightUnitInfos } from '@/types/weight-units';
+import { WeightUnit, weightUnitInfos, getWeightUnitInfo } from '@/types/weight-units';
 
 /**
  * Converts a weight from one unit to grams
@@ -8,13 +8,8 @@ import { WeightUnit, weightUnitInfos } from '@/types/weight-units';
  * @returns Equivalent weight in grams
  */
 export function convertWeightToGrams(weight: number, unit: WeightUnit): number {
-  const unitInfo = weightUnitInfos.find(info => info.unit === unit);
-  if (!unitInfo) {
-    console.warn(`Unknown weight unit: ${unit}, using oz as default`);
-    return weight * 28.3495; // Default to oz conversion
-  }
-  
-  return weight * unitInfo.toGrams;
+  const unitInfo = getWeightUnitInfo(unit);
+  return weight * unitInfo.toGramsFactor;
 }
 
 /**
@@ -33,13 +28,8 @@ export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: Weig
   const weightInGrams = convertWeightToGrams(weight, fromUnit);
   
   // Then convert from grams to target unit
-  const targetUnitInfo = weightUnitInfos.find(info => info.unit === toUnit);
-  if (!targetUnitInfo) {
-    console.warn(`Unknown target weight unit: ${toUnit}, using g as default`);
-    return weightInGrams;
-  }
-  
-  return weightInGrams / targetUnitInfo.toGrams;
+  const targetUnitInfo = getWeightUnitInfo(toUnit);
+  return weightInGrams / targetUnitInfo.toGramsFactor;
 }
 
 /**
@@ -49,17 +39,14 @@ export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: Weig
  * @returns Formatted weight string (e.g., "5.2 kg")
  */
 export function formatWeight(weight: number, unit: WeightUnit): string {
-  const unitInfo = weightUnitInfos.find(info => info.unit === unit);
-  if (!unitInfo) {
-    return `${weight} ${unit}`;
-  }
+  const unitInfo = getWeightUnitInfo(unit);
   
-  const precision = unitInfo.precision;
+  const precision = unitInfo.displayPrecision;
   
   if (precision === 0) {
-    return `${Math.round(weight)} ${unit}`;
+    return `${Math.round(weight)}`;
   } else {
-    return `${weight.toFixed(precision)} ${unit}`;
+    return `${weight.toFixed(precision)}`;
   }
 }
 
@@ -69,9 +56,12 @@ export function formatWeight(weight: number, unit: WeightUnit): string {
  * @returns The most appropriate weight unit for display
  */
 export function getAppropriateWeightUnit(weightInGrams: number): WeightUnit {
-  // If very small weight
-  if (weightInGrams < 1000) { // Less than 1kg
+  if (weightInGrams < 100) { // Less than 100g
     return 'g';  // Use grams
+  } else if (weightInGrams < 1000) { // Less than 1kg
+    return 'oz'; // Use ounces
+  } else if (weightInGrams < 10000) { // Less than 10kg
+    return 'lb'; // Use pounds
   } else {
     return 'kg'; // Use kilograms
   }

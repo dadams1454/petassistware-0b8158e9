@@ -1,26 +1,31 @@
 
 import { useEffect } from 'react';
-import { useWeightData } from '@/hooks/useWeightData';
-import { useToast } from '@/hooks/use-toast';
+import { useWeightData } from '@/modules/weight/hooks/useWeightData';
+import { useToast } from '@/components/ui/use-toast';
 
+/**
+ * Custom hook to get weight records data for a dog
+ * @param dogId The ID of the dog
+ * @returns Weight records data and helper functions
+ */
 export const useWeightRecordsData = (dogId: string) => {
-  const { weightRecords, isLoading, error, refreshWeightRecords } = useWeightData(dogId);
+  const weightData = useWeightData({ dogId });
   const { toast } = useToast();
 
   useEffect(() => {
-    if (error) {
+    if (weightData.error) {
       toast({
         title: 'Error fetching weight records',
-        description: error.message,
+        description: weightData.error.message,
         variant: 'destructive',
       });
     }
-  }, [error, toast]);
+  }, [weightData.error, toast]);
 
   return {
-    weightRecords,
-    isLoading,
-    error,
-    refreshWeightRecords
+    weightRecords: weightData.weightRecords,
+    isLoading: weightData.isLoading,
+    error: weightData.error,
+    refreshWeightRecords: weightData.fetchWeightHistory
   };
 };

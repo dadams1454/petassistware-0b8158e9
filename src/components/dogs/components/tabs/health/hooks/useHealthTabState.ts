@@ -1,8 +1,9 @@
 
 import { useState } from 'react';
 import { useHealthRecordsData } from './useHealthRecordsData';
-import { useWeightRecordsData } from './useWeightRecordsData';
-import { HealthRecord, WeightRecord } from '@/types/health';
+import { useWeightData } from '@/modules/weight/hooks/useWeightData';
+import { HealthRecord } from '@/types/health';
+import { WeightRecord } from '@/types/weight';
 import { UseLoadingResult, useLoading } from '@/contexts/dailyCare/hooks/useLoading';
 
 /**
@@ -35,16 +36,17 @@ export const useHealthTabState = (dogId: string): HealthTabState => {
   const { loading, withLoading } = useLoading();
   
   const healthRecordsData = useHealthRecordsData(dogId);
-  const weightRecordsData = useWeightRecordsData(dogId);
+  const weightData = useWeightData({ dogId });
   
-  const isLoading = loading || healthRecordsData.isLoading || weightRecordsData.isLoading;
-  const error = healthRecordsData.error || weightRecordsData.error;
+  const isLoading = loading || healthRecordsData.isLoading || weightData.isLoading;
+  const error = healthRecordsData.error || weightData.error;
   
+  // Function to refresh all data
   const refreshAllData = async (): Promise<void> => {
     await withLoading(async () => {
       await Promise.all([
         healthRecordsData.refreshHealthRecords(),
-        weightRecordsData.refreshWeightRecords()
+        weightData.fetchWeightHistory()
       ]);
     });
   };
@@ -56,12 +58,12 @@ export const useHealthTabState = (dogId: string): HealthTabState => {
     isLoading,
     error,
     healthRecords: healthRecordsData.healthRecords,
-    weightRecords: weightRecordsData.weightRecords,
+    weightRecords: weightData.weightRecords,
     vaccinationRecords: healthRecordsData.vaccinationRecords,
     examinationRecords: healthRecordsData.examinationRecords,
     medicationRecords: healthRecordsData.medicationRecords,
     refreshHealthRecords: healthRecordsData.refreshHealthRecords,
-    refreshWeightRecords: weightRecordsData.refreshWeightRecords,
+    refreshWeightRecords: weightData.fetchWeightHistory,
     refreshAllData
   };
 };
