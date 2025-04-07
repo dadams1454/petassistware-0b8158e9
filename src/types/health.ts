@@ -48,7 +48,9 @@ export enum StoolConsistencyEnum {
   SOFT = 'soft',
   LOOSE = 'loose',
   WATERY = 'watery',
-  HARD = 'hard'
+  HARD = 'hard',
+  MUCOUSY = 'mucousy',
+  BLOODY = 'bloody'
 }
 
 // For backward compatibility
@@ -61,7 +63,11 @@ export enum MedicationStatusEnum {
   COMPLETED = 'completed',
   DISCONTINUED = 'discontinued',
   UPCOMING = 'upcoming',
-  OVERDUE = 'overdue'
+  OVERDUE = 'overdue',
+  SCHEDULED = 'scheduled',
+  NOT_STARTED = 'not_started',
+  MISSED = 'missed',
+  UNKNOWN = 'unknown'
 }
 
 export type MedicationStatusResult = {
@@ -69,6 +75,7 @@ export type MedicationStatusResult = {
   daysUntilDue?: number;
   daysOverdue?: number;
   nextDue?: string;
+  daysTillDue?: number; // For backward compatibility
 };
 
 // Helper function to convert string to enum
@@ -150,6 +157,8 @@ export interface Medication {
   end_date?: string;
   notes?: string;
   is_active: boolean;
+  active?: boolean; // For backward compatibility
+  name?: string; // For backward compatibility
   created_at: string;
   last_administered?: string;
 }
@@ -191,63 +200,10 @@ export interface HealthAlert {
   created_at: string;
 }
 
-// Genetic health marker
-export interface HealthMarker {
-  id: string;
-  name: string;
-  status: string;
-  risk_level: string;
-  description?: string;
-}
+// Export WeightUnit for use in health records
+export type { WeightUnit };
 
-// Field definitions for HealthRecordForm
-export interface RecordTypeFieldProps {
-  onTypeChange: (value: string) => void;
-  disabled?: boolean;
-  form?: any;
-}
-
-export interface TitleFieldProps {
-  form: any;
-}
-
-export interface VisitDateFieldProps {
-  form: any;
-}
-
-export interface VetNameFieldProps {
-  form: any;
-}
-
-export interface NotesFieldProps {
-  form: any;
-}
-
-export interface NextDueDateFieldProps {
-  form: any;
-}
-
-export interface DocumentUrlFieldProps {
-  form: any;
-}
-
-export interface DialogFooterButtonsProps {
-  onCancel: () => void;
-  isSubmitting?: boolean;
-  submitLabel?: string;
-}
-
-export interface HealthRecordFormProps {
-  onSubmit: (data: Partial<HealthRecord>) => void;
-  onCancel: () => void;
-  isSubmitting?: boolean;
-  initialData?: Partial<HealthRecord>;
-  dogId?: string;
-  recordId?: string;
-  recordType?: HealthRecordTypeEnum;
-}
-
-// Weight record interface (included here for completeness but should be in weight.ts)
+// Weight record interface (moved to weight.ts)
 export interface WeightRecord {
   id: string;
   dog_id: string;

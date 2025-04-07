@@ -49,6 +49,8 @@ export interface HeatStage {
   fertilityLevel: number;
   color: string;
   length: number;
+  startDay?: number; // For compatibility
+  endDay?: number; // For compatibility
 }
 
 // Reproductive status enum
@@ -123,6 +125,7 @@ export interface ReproductiveMilestone {
   notes?: string;
   created_at: string;
   created_by?: string;
+  date?: string; // For backward compatibility with some components
 }
 
 // Reproductive cycle data interface
@@ -135,6 +138,7 @@ export interface ReproductiveCycleData {
   lastHeatCycle?: HeatCycle | null;
   currentHeatCycle?: HeatCycle | null;
   currentHeatStage?: HeatStage | null;
+  currentStage?: HeatStage | null; // For backward compatibility
   currentPregnancy?: PregnancyRecord | null;
   isInHeat: boolean;
   isPregnant: boolean;
@@ -200,3 +204,6 @@ export function normalizeBreedingRecord(record: any): BreedingRecord {
     dam: record.dam
   };
 }
+
+// Export the Dog type for use in other modules
+export { Dog };

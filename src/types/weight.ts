@@ -3,7 +3,7 @@ import { WeightUnit } from './common';
 
 export interface WeightRecord {
   id: string;
-  dog_id: string;
+  dog_id: string; // Must be required for the database
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
@@ -13,6 +13,7 @@ export interface WeightRecord {
   created_at: string;
   age_days?: number;
   birth_date?: string;
+  unit?: WeightUnit; // For backward compatibility
 }
 
 export interface WeightStat {
@@ -36,6 +37,7 @@ export interface GrowthStats {
   averageGrowth?: number;
   growthRate?: number;
   lastWeekGrowth?: number;
+  maxGrowthRate?: number; // Adding this field referenced in the code
 }
 
 export interface WeightChartProps {
@@ -51,6 +53,7 @@ export interface WeightEntryFormProps {
   onSave: (data: WeightRecord) => void;
   onCancel: () => void;
   initialData?: Partial<WeightRecord>;
+  onSuccess?: () => void; // Adding this prop which is used in some components
 }
 
 export interface WeightTrackerProps {
@@ -58,11 +61,14 @@ export interface WeightTrackerProps {
   puppyId?: string;
   birthDate?: string;
   onWeightAdded?: () => void;
+  isAddingWeight?: boolean; // Adding this prop referenced in the code
+  onCancelAdd?: () => void; // Adding this prop referenced in the code
 }
 
 export interface WeightRecordsTableProps {
   weightRecords: WeightRecord[];
   onDelete: (id: string) => void;
+  onEdit?: (record: WeightRecord) => void; // Adding this prop referenced in the code
 }
 
 export interface WeightEntryDialogProps {
@@ -72,6 +78,8 @@ export interface WeightEntryDialogProps {
   puppyId?: string;
   onSave: (data: Partial<WeightRecord>) => void;
   onCancel: () => void;
+  onSuccess?: () => void; // Adding this prop referenced in the code
+  initialData?: Partial<WeightRecord>; // Adding this prop referenced in the code
 }
 
 // Helper for calculating percent change

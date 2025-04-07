@@ -39,7 +39,7 @@ export interface PuppyAgeGroup {
 }
 
 // Puppy age group info interface
-// Note: We're making the fields consistent between PuppyAgeGroup and PuppyAgeGroupInfo
+// Made compatible with PuppyAgeGroup by making required fields consistent
 export interface PuppyAgeGroupInfo {
   id: string;
   name: string;
@@ -54,10 +54,10 @@ export interface PuppyAgeGroupInfo {
   puppyCount?: number;
   minAge?: number;
   maxAge?: number;
-  displayName: string; // Making this required for consistency with PuppyAgeGroup
-  minDays?: number;
-  maxDays?: number;
-  unit?: string;
+  displayName: string;
+  minDays: number;
+  maxDays: number;
+  unit: string;
 }
 
 // Age group data structure for puppies
@@ -125,6 +125,7 @@ export interface WeightRecord {
   created_at: string;
   age_days?: number;
   percent_change?: number;
+  dog_id?: string; // Add this for compatibility with the database
 }
 
 // Vaccination schedule
@@ -170,7 +171,7 @@ export interface SocializationReactionOption {
   emoji?: string;
   description?: string;
   name?: string;
-  icon?: string; // Add the icon property to fix the errors
+  icon?: string;
 }
 
 // Socialization category
@@ -220,7 +221,7 @@ export interface SocializationReaction {
   emoji?: string;
   description?: string;
   name?: string;
-  icon?: string; // Add the icon property to fix the errors
+  icon?: string;
 }
 
 // Socialization progress
@@ -261,6 +262,7 @@ export interface PuppyMilestone {
   expected_age_days?: number;
   completion_date?: string;
   description?: string;
+  category?: string; // For component compatibility
 }
 
 // Care log alias

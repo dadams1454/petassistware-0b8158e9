@@ -15,6 +15,7 @@ export type Event = {
   tenant_id?: string;
   start_date?: string; // For compatibility with calendar systems
   end_date?: string; // For compatibility with calendar systems
+  all_day?: boolean; // For compatibility with calendar systems
 };
 
 export type NewEvent = Omit<Event, 'id' | 'created_at'>;

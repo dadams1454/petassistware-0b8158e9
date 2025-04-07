@@ -13,11 +13,11 @@ export interface WelpingLog {
 }
 
 export interface WelpingObservation {
-  id: string;
+  id?: string;
   welping_record_id: string;
-  observation_type: string; // Now required (was optional)
+  observation_type: string; // Now required
   observation_time: string;
-  description: string; // Now required (was optional)
+  description: string; // Now required
   puppy_id?: string;
   action_taken?: string;
   created_at?: string;

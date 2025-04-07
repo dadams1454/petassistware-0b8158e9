@@ -10,6 +10,7 @@ export interface WeightUnitInfo {
   label: string;
   abbr: string;
   conversionToG: number;
+  name?: string; // For backward compatibility with some components
 }
 
 // Weight unit option (for UI dropdowns)
@@ -20,10 +21,10 @@ export interface WeightUnitOption {
 
 // Weight units with display information
 export const weightUnits: WeightUnitInfo[] = [
-  { id: 'oz', label: 'Ounces', abbr: 'oz', conversionToG: 28.3495 },
-  { id: 'g', label: 'Grams', abbr: 'g', conversionToG: 1 },
-  { id: 'lb', label: 'Pounds', abbr: 'lb', conversionToG: 453.592 },
-  { id: 'kg', label: 'Kilograms', abbr: 'kg', conversionToG: 1000 }
+  { id: 'oz', label: 'Ounces', abbr: 'oz', conversionToG: 28.3495, name: 'Ounces' },
+  { id: 'g', label: 'Grams', abbr: 'g', conversionToG: 1, name: 'Grams' },
+  { id: 'lb', label: 'Pounds', abbr: 'lb', conversionToG: 453.592, name: 'Pounds' },
+  { id: 'kg', label: 'Kilograms', abbr: 'kg', conversionToG: 1000, name: 'Kilograms' }
 ];
 
 // Weight unit options for dropdowns
@@ -48,6 +49,7 @@ export type Currency = 'USD' | 'CAD' | 'EUR' | 'GBP';
 export const FrequencyTypes = {
   ONCE: 'once',
   DAILY: 'daily',
+  ONCE_DAILY: 'once_daily',
   TWICE_DAILY: 'twice_daily',
   THREE_TIMES_DAILY: 'three_times_daily',
   FOUR_TIMES_DAILY: 'four_times_daily',
@@ -55,11 +57,9 @@ export const FrequencyTypes = {
   WEEKLY: 'weekly',
   BIWEEKLY: 'biweekly',
   MONTHLY: 'monthly',
-  AS_NEEDED: 'as_needed',
-  // Additional frequencies for health records
   QUARTERLY: 'quarterly',
   ANNUALLY: 'annually',
-  ONCE_DAILY: 'once_daily'
+  AS_NEEDED: 'as_needed'
 };
 
 // Standardize weight unit (handles variations like 'lbs')

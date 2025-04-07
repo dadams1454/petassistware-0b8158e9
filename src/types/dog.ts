@@ -4,7 +4,9 @@ import type { WeightUnit } from '@/types/common';
 
 export enum DogGender {
   Male = 'Male',
-  Female = 'Female'
+  Female = 'Female',
+  male = 'Male', // For backward compatibility
+  female = 'Female' // For backward compatibility
 }
 
 export enum DogStatus {
@@ -98,6 +100,21 @@ export interface Vaccination {
   veterinarian?: string;
   notes?: string;
   created_at: string;
+}
+
+// Care status type for a dog
+export interface DogCareStatus {
+  dog_id: string;
+  last_meal_time?: string;
+  last_potty_time?: string;
+  last_exercise_time?: string;
+  last_medication_time?: string;
+  potty_alert_threshold?: number; // Adding this field to match usage
+  is_in_heat?: boolean;
+  heat_start_date?: string;
+  special_notes?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Export WeightUnit type for compatibility

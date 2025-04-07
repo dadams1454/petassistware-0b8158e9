@@ -3,7 +3,7 @@
 // This file functions as a central hub for importing types
 
 // Dog-related types
-export type { Dog, DogProfile, Vaccination } from './dog';
+export type { Dog, DogProfile, Vaccination, DogCareStatus } from './dog';
 export { DogGender, DogStatus, DocumentType } from './dog';
 
 // Health-related types
@@ -36,6 +36,10 @@ export type {
   GrowthRate,
   WeightDataPoint,
   GrowthStats,
+  WeightEntryFormProps,
+  WeightTrackerProps,
+  WeightRecordsTableProps,
+  WeightEntryDialogProps
 } from './weight';
 
 export {
@@ -54,7 +58,8 @@ export {
   weightUnitOptions,
   weightUnitInfos,
   getWeightUnitInfo,
-  getWeightUnitName
+  getWeightUnitName,
+  FrequencyTypes
 } from './common';
 
 // Puppy-related types
@@ -118,7 +123,21 @@ export * from './user';
 export * from './socialization';
 
 // Welping types
-export * from './welping';
+export type {
+  WelpingLog,
+  WelpingObservation,
+  PostpartumCare,
+  WelpingLogEntry
+} from './welping';
 
 // Events types
-export * from './events';
+export type {
+  Event,
+  NewEvent,
+  EventType,
+  EventListProps,
+  CalendarEvent
+} from './events';
+
+// Export utility functions
+export { convertWeightToGrams, convertWeight, getAppropriateWeightUnit } from '../utils/weightConversion';
