@@ -1,12 +1,11 @@
-
 // Import WeightUnit from common
 import type { WeightUnit } from '@/types/common';
 
 export enum DogGender {
-  Male = 'Male',
-  Female = 'Female',
-  male = 'Male', // For backward compatibility
-  female = 'Female' // For backward compatibility
+  Male = 'male',   // Changed to lowercase for consistency with comparison strings
+  Female = 'female',
+  male = 'male',     // For backward compatibility
+  female = 'female'  // For backward compatibility
 }
 
 export enum DogStatus {
@@ -119,3 +118,6 @@ export interface DogCareStatus {
 
 // Export WeightUnit type for compatibility
 export type { WeightUnit };
+
+// Export the Dog interface explicitly
+export { type Dog };

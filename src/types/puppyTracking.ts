@@ -51,6 +51,7 @@ export interface PuppyAgeGroup {
   ageRange?: string;
   groupName?: string;
   puppyCount?: number;
+  fertilityLevel?: number; // Added for HeatStage compatibility
 }
 
 // Puppy age group info interface
@@ -64,7 +65,7 @@ export interface PuppyAgeGroupInfo {
   startDay: number;
   endDay: number;
   color: string;
-  milestones?: string | string[];
+  milestones: string | string[];
   puppyCount?: number;
   minAge: number;
   maxAge: number;
@@ -159,7 +160,7 @@ export interface VaccinationRecord {
 }
 
 // Socialization reactions
-export type SocializationReactionType = 'very_positive' | 'positive' | 'neutral' | 'cautious' | 'fearful' | 'very_fearful' | 'excited' | 'curious' | 'aggressive';
+export type SocializationReactionType = 'very_positive' | 'positive' | 'neutral' | 'cautious' | 'fearful' | 'very_fearful' | 'excited' | 'curious' | 'aggressive' | 'no_reaction' | 'negative' | 'unknown';
 
 // Socialization reaction option
 export interface SocializationReactionOption {
@@ -265,5 +266,11 @@ export interface PuppyMilestone {
   category?: string; // For component compatibility
 }
 
+// Milestone interface alias
+export interface Milestone extends PuppyMilestone {}
+
 // Care log alias
 export type CareLog = PuppyCareLog;
+
+// Export WeightRecord
+export type { WeightRecordBase };

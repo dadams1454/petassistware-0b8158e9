@@ -1,46 +1,64 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
 import { Dog } from '@/types/dog';
-import { ReproductiveStatus } from '@/types/reproductive';
 
 interface WhelpingPreparationProps {
   dog: Dog;
 }
 
 const WhelpingPreparation: React.FC<WhelpingPreparationProps> = ({ dog }) => {
-  // Type-safe check for pregnancy status
-  const isPregnant = dog.is_pregnant === true || 
-                    (dog.reproductive_status === ReproductiveStatus.Pregnant);
-
-  if (!isPregnant) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Not Currently Pregnant</h3>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Whelping preparation features will be available when this dog's status is updated to pregnant.
-          </p>
-        </CardContent>
-      </Card>
-    );
+  if (!dog.is_pregnant) {
+    return null;
   }
 
-  // In a real implementation, we would have checklists and preparation guidelines
-  // For now, we'll just display a placeholder
-
   return (
-    <Card>
+    <Card className="mt-6">
       <CardHeader>
-        <CardTitle>Whelping Preparation Checklist</CardTitle>
+        <CardTitle>Whelping Preparation</CardTitle>
       </CardHeader>
-      <CardContent className="py-6 text-center">
-        <p className="text-muted-foreground mb-4">
-          Whelping preparation checklist feature is currently under development. 
-          Check back soon for detailed guidance on preparing for your dog's whelping!
+      <CardContent>
+        <p className="text-sm text-muted-foreground mb-4">
+          Whelping preparation details for {dog.name}.
         </p>
+        
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium">Estimated Due Date</h3>
+            <p>{dog.tie_date ? 'Calculating...' : 'Not available'}</p>
+          </div>
+          
+          <div>
+            <h3 className="font-medium">Whelping Supplies</h3>
+            <ul className="list-disc pl-5 text-sm">
+              <li>Whelping box</li>
+              <li>Clean towels and bedding</li>
+              <li>Heat lamp or heating pad</li>
+              <li>Digital thermometer</li>
+              <li>Surgical gloves</li>
+              <li>Scissors (for cutting umbilical cords)</li>
+              <li>Dental floss (for tying umbilical cords)</li>
+              <li>Iodine solution</li>
+              <li>Scale for weighing puppies</li>
+              <li>Notebook for record keeping</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="font-medium">Signs of Labor</h3>
+            <ul className="list-disc pl-5 text-sm">
+              <li>Drop in body temperature (below 99°F)</li>
+              <li>Restlessness and nesting behavior</li>
+              <li>Loss of appetite</li>
+              <li>Panting and shivering</li>
+              <li>Clear vaginal discharge</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="font-medium">Emergency Contacts</h3>
+            <p className="text-sm">Make sure to have your veterinarian's emergency number readily available.</p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

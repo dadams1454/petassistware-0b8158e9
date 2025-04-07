@@ -1,5 +1,11 @@
 
 // Define common types used across the application
+import { 
+  AppetiteLevelEnum, 
+  EnergyLevelEnum, 
+  StoolConsistencyEnum,
+  MedicationStatusEnum
+} from './health';
 
 // Weight units for consistent use throughout the app
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
@@ -102,8 +108,8 @@ export function getWeightUnitName(unit: WeightUnit): string {
   return info.label;
 }
 
-// Health related enums
-export { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum } from './health';
+// Re-export health-related enums
+export { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum, MedicationStatusEnum };
 
 // Add common types used by genetics services
 export interface BreedComposition {

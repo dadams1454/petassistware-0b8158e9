@@ -3,279 +3,151 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
-import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { WelpingObservation } from '@/types/welping';
-
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { WelpingObservation } from '@/types/welping';
+import { format } from 'date-fns';
 
-// Define the form schema with Zod
+// Define the schema for the form validation
 const observationSchema = z.object({
-  observation_type: z.string({ required_error: "Observation type is required" }),
-  description: z.string({ required_error: "Description is required" }).min(3, { message: "Description must be at least 3 characters" }),
-  observation_time: z.string({ required_error: "Observation time is required" }),
+  observation_type: z.string().min(1, 'Observation type is required'),
+  description: z.string().min(1, 'Description is required'),
+  observation_time: z.string().min(1, 'Observation time is required'),
   puppy_id: z.string().optional(),
-  action_taken: z.string().optional(),
+  action_taken: z.string().optional()
 });
-
-type ObservationFormValues = z.infer<typeof observationSchema>;
 
 interface ObservationFormProps {
   welpingRecordId: string;
-  onSuccess?: () => void;
-  onCancel?: () => void;
-  initialData?: Partial<WelpingObservation>;
+  onSave: (data: Partial<WelpingObservation>) => Promise<void>;
   puppyOptions?: { id: string; name: string }[];
+  onCancel?: () => void;
 }
 
-const ObservationForm: React.FC<ObservationFormProps> = ({
-  welpingRecordId,
-  onSuccess,
-  onCancel,
-  initialData,
-  puppyOptions = []
+const ObservationForm: React.FC<ObservationFormProps> = ({ 
+  welpingRecordId, 
+  onSave, 
+  puppyOptions = [],
+  onCancel
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  // Initialize the form with default values
-  const form = useForm<ObservationFormValues>({
+  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<z.infer<typeof observationSchema>>({
     resolver: zodResolver(observationSchema),
     defaultValues: {
-      observation_type: initialData?.observation_type || '',
-      description: initialData?.description || '',
-      observation_time: initialData?.observation_time || format(new Date(), 'HH:mm'),
-      puppy_id: initialData?.puppy_id || '',
-      action_taken: initialData?.action_taken || '',
-    },
+      observation_time: format(new Date(), 'HH:mm')
+    }
   });
-
-  // Define observation type options
-  const observationTypes = [
-    { value: 'behavioral', label: 'Behavioral' },
-    { value: 'physical', label: 'Physical' },
-    { value: 'contractions', label: 'Contractions' },
-    { value: 'delivery', label: 'Delivery' },
-    { value: 'nursing', label: 'Nursing' },
-    { value: 'maternal_care', label: 'Maternal Care' },
-    { value: 'rest', label: 'Rest' },
-    { value: 'vocalization', label: 'Vocalization' },
-    { value: 'medication', label: 'Medication' },
-    { value: 'complication', label: 'Complication' },
-    { value: 'other', label: 'Other' },
-  ];
-
-  const handleSubmit = async (values: ObservationFormValues) => {
+  
+  const onSubmit = async (data: z.infer<typeof observationSchema>) => {
     setIsSubmitting(true);
     try {
-      // Ensure all required fields are present
-      const observationData: Partial<WelpingObservation> & { 
-        welping_record_id: string;
-        observation_type: string;
-        description: string;
-        observation_time: string;
-      } = {
-        ...values,
+      // Prepare the data to match WelpingObservation type requirements
+      const observationData: WelpingObservation = {
         welping_record_id: welpingRecordId,
-        created_at: new Date().toISOString(),
+        observation_type: data.observation_type,
+        observation_time: data.observation_time,
+        description: data.description,
+        puppy_id: data.puppy_id || undefined,
+        action_taken: data.action_taken || undefined,
+        created_at: new Date().toISOString()
       };
-
-      if (initialData?.id) {
-        // Update existing observation
-        const { error } = await supabase
-          .from('welping_observations')
-          .update(observationData)
-          .eq('id', initialData.id);
-
-        if (error) throw error;
-        toast({
-          title: 'Observation Updated',
-          description: 'The whelping observation has been successfully updated.',
-        });
-      } else {
-        // Create new observation
-        const { error } = await supabase
-          .from('welping_observations')
-          .insert(observationData);
-
-        if (error) throw error;
-        toast({
-          title: 'Observation Recorded',
-          description: 'The whelping observation has been successfully recorded.',
-        });
-      }
-
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ['welping-observations', welpingRecordId] });
       
-      // Reset form and call success callback
-      form.reset();
-      if (onSuccess) onSuccess();
-    } catch (error: any) {
-      console.error('Error saving observation:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to save the observation. Please try again.',
-        variant: 'destructive',
-      });
+      await onSave(observationData);
+      reset();
+    } catch (error) {
+      console.error('Failed to save observation:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <Card className="w-full">
+    <Card>
       <CardHeader>
-        <CardTitle>{initialData?.id ? 'Edit Observation' : 'New Whelping Observation'}</CardTitle>
+        <CardTitle>Record Observation</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="observation_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Observation Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isSubmitting}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an observation type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {observationTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="observation_time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Time</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        placeholder="Select time"
-                        {...field}
-                        disabled={isSubmitting}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter detailed description of the observation"
-                      {...field}
-                      disabled={isSubmitting}
-                      rows={3}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {puppyOptions.length > 0 && (
-              <FormField
-                control={form.control}
-                name="puppy_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Related Puppy (Optional)</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isSubmitting}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a puppy (if applicable)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        {puppyOptions.map((puppy) => (
-                          <SelectItem key={puppy.id} value={puppy.id}>
-                            {puppy.name || `Puppy #${puppy.id.slice(-4)}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      If this observation is specific to a single puppy, select it here
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="observation_type">Observation Type</Label>
+            <Select 
+              onValueChange={(value) => setValue('observation_type', value)} 
+              defaultValue=""
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select observation type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="temperature">Temperature</SelectItem>
+                <SelectItem value="contractions">Contractions</SelectItem>
+                <SelectItem value="discharge">Discharge</SelectItem>
+                <SelectItem value="behavior">Behavior</SelectItem>
+                <SelectItem value="feeding">Feeding</SelectItem>
+                <SelectItem value="medication">Medication</SelectItem>
+                <SelectItem value="puppy_check">Puppy Check</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.observation_type && (
+              <p className="text-red-500 text-sm">{errors.observation_type.message}</p>
             )}
-
-            <FormField
-              control={form.control}
-              name="action_taken"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Action Taken (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe any actions taken in response to this observation"
-                      {...field}
-                      disabled={isSubmitting}
-                      rows={2}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex justify-end space-x-2">
-        {onCancel && (
-          <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
-            Cancel
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="observation_time">Time</Label>
+            <Input id="observation_time" type="time" {...register('observation_time')} />
+            {errors.observation_time && (
+              <p className="text-red-500 text-sm">{errors.observation_time.message}</p>
+            )}
+          </div>
+          
+          {puppyOptions && puppyOptions.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="puppy_id">Puppy (optional)</Label>
+              <Select onValueChange={(value) => setValue('puppy_id', value)} defaultValue="">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select puppy (if applicable)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {puppyOptions.map((puppy) => (
+                    <SelectItem key={puppy.id} value={puppy.id}>
+                      {puppy.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea id="description" {...register('description')} />
+            {errors.description && (
+              <p className="text-red-500 text-sm">{errors.description.message}</p>
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="action_taken">Action Taken (optional)</Label>
+            <Textarea id="action_taken" {...register('action_taken')} />
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Record Observation'}
           </Button>
-        )}
-        <Button onClick={form.handleSubmit(handleSubmit)} disabled={isSubmitting}>
-          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {initialData?.id ? 'Update' : 'Save'} Observation
-        </Button>
-      </CardFooter>
+        </CardFooter>
+      </form>
     </Card>
   );
 };

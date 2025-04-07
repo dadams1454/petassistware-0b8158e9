@@ -28,6 +28,8 @@ const TimeManager: React.FC<TimeManagerProps> = ({
     
     switch (frequency) {
       case MedicationFrequencyConstants.DAILY:
+        nextDue.setDate(nextDue.getDate() + 1);
+        break;
       case MedicationFrequencyConstants.ONCE_DAILY:
         nextDue.setDate(nextDue.getDate() + 1);
         break;
@@ -48,6 +50,12 @@ const TimeManager: React.FC<TimeManagerProps> = ({
         break;
       case MedicationFrequencyConstants.MONTHLY:
         nextDue.setMonth(nextDue.getMonth() + 1);
+        break;
+      case MedicationFrequencyConstants.QUARTERLY:
+        nextDue.setMonth(nextDue.getMonth() + 3);
+        break;
+      case MedicationFrequencyConstants.ANNUALLY:
+        nextDue.setFullYear(nextDue.getFullYear() + 1);
         break;
       default:
         nextDue.setDate(nextDue.getDate() + 1); // Default to daily

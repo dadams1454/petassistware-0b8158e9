@@ -1,6 +1,5 @@
-
 import { WeightUnit } from './common';
-import { type Dog } from './dog';
+import { type Dog } from '@/types/dog';
 
 // Health record types
 export enum HealthRecordTypeEnum {
@@ -19,7 +18,8 @@ export enum HealthRecordTypeEnum {
   GROOMING = 'grooming',
   TEST = 'test',
   OTHER = 'other',
-  PROCEDURE = 'procedure'
+  PROCEDURE = 'procedure',
+  UNKNOWN = 'unknown' // Added for default cases
 }
 
 // Appetit level values
@@ -64,7 +64,9 @@ export enum StoolConsistencyEnum {
   SOFT = 'soft',
   LOOSE = 'loose',
   WATERY = 'watery',
-  HARD = 'hard'
+  HARD = 'hard',
+  MUCOUSY = 'mucousy', // Added missing values
+  BLOODY = 'bloody'    // Added missing values
 }
 
 // Medication status values
@@ -73,7 +75,12 @@ export enum MedicationStatusEnum {
   COMPLETED = 'completed',
   DISCONTINUED = 'discontinued',
   PAUSED = 'paused',
-  SCHEDULED = 'scheduled'
+  SCHEDULED = 'scheduled',
+  OVERDUE = 'overdue',       // Added missing values
+  MISSED = 'missed',         // Added missing values
+  NOT_STARTED = 'not_started', // Added missing values
+  UPCOMING = 'upcoming',     // Added missing values
+  UNKNOWN = 'unknown'        // Added missing values
 }
 
 // Health indicator interface
@@ -306,5 +313,5 @@ export function mapToWeightRecord(data: any): WeightRecord {
   };
 }
 
-// Export the Dog type
-export { type Dog };
+// Export types for compatibility
+export type { WeightUnit, Dog };

@@ -1,4 +1,3 @@
-
 import { type WeightUnit } from './common';
 
 export interface WeightRecord {
