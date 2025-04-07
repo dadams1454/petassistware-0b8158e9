@@ -51,3 +51,31 @@ export function getAppropriateWeightUnit(weightInGrams: number): WeightUnit {
     return 'kg';
   }
 }
+
+/**
+ * Formats a weight value for display with the appropriate unit
+ * @param weight The weight value
+ * @param unit The unit of the weight value
+ * @returns A formatted string with the weight and unit
+ */
+export function formatWeight(weight: number, unit: WeightUnit): string {
+  const info = getWeightUnitInfo(unit);
+  const precision = info.displayPrecision;
+  const formattedWeight = weight.toFixed(precision);
+  
+  // Remove trailing zeros after decimal point
+  const cleanedWeight = formattedWeight.replace(/\.0+$/, '');
+  
+  return `${cleanedWeight} ${info.label}`;
+}
+
+/**
+ * Converts a weight record to a standard unit (grams) for comparison
+ * @param weight The weight value
+ * @param unit The unit of the weight value
+ * @returns The weight in grams
+ */
+export function standardizeWeight(weight: number, unit: WeightUnit): number {
+  return convertWeightToGrams(weight, unit);
+}
+

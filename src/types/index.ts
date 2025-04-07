@@ -2,9 +2,12 @@
 // Export all types from across the application
 // This file functions as a central hub for importing types
 
+// Re-export all the enums from the central enums file
+export * from './enums';
+
 // Dog-related types
-export type { Dog, DogProfile, Vaccination, DogCareStatus } from './dog';
-export { DogGender, DogStatus, DocumentType } from './dog';
+export type { Dog, DogProfile, DogCareStatus } from './dog';
+export { createMinimalDog, isValidDogGender, isValidDogStatus, normalizeDogGender, normalizeDogStatus } from './dog';
 
 // Health-related types
 export type { 
@@ -18,13 +21,6 @@ export type {
 } from './health';
 
 export { 
-  HealthRecordTypeEnum,
-  MedicationStatusEnum,
-  AppetiteLevelEnum, 
-  EnergyLevelEnum, 
-  StoolConsistencyEnum,
-  AppetiteEnum,
-  EnergyEnum,
   stringToHealthRecordType,
   mapToHealthRecord,
   mapToWeightRecord
@@ -59,7 +55,6 @@ export {
   weightUnitInfos,
   getWeightUnitInfo,
   getWeightUnitName,
-  FrequencyTypes
 } from './common';
 
 // Puppy-related types
@@ -73,7 +68,7 @@ export type {
 
 // Reproductive cycle types
 export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensityType, HeatStage } from './reproductive';
-export { ReproductiveStatus, normalizeBreedingRecord, HeatIntensity, HeatIntensityValues } from './reproductive';
+export { normalizeBreedingRecord, HeatIntensityValues } from './reproductive';
 export type { 
   ReproductiveMilestone, 
   ReproductiveCycleData,
@@ -134,10 +129,9 @@ export type {
 export type {
   Event,
   NewEvent,
-  EventType,
-  EventListProps,
   CalendarEvent
 } from './events';
 
 // Export utility functions
-export { convertWeightToGrams, convertWeight, getAppropriateWeightUnit } from '../utils/weightConversion';
+export { convertWeightToGrams, convertWeight, getAppropriateWeightUnit, formatWeight } from '../utils/weightConversion';
+export { ensureDogType, ensurePuppyType, ensureWeightRecordType, ensureHealthRecordType } from '../utils/typeCompatibility';

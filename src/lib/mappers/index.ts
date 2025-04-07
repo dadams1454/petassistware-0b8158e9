@@ -4,3 +4,4 @@ export * from './weightMapper';
 export * from './puppyMapper';
 export * from './dogMapper';
 export * from './healthMapper';
+export * from './typeMapper';
