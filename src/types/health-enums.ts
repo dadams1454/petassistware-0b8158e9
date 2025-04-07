@@ -2,7 +2,7 @@
 /**
  * Health record type enums
  */
-import { HeatIntensity, HeatIntensityType } from './heat-cycles';
+import { HeatIntensity } from './heat-cycles';
 
 // HealthRecordType as a union type
 export type HealthRecordType = 
@@ -103,8 +103,23 @@ export enum StoolConsistencyEnum {
   HARD = 'hard'
 }
 
-// Re-export HeatIntensity enum and type from heat-cycles for backward compatibility
-export { HeatIntensity, HeatIntensityType };
+// Re-export HeatIntensity enum from heat-cycles for backward compatibility
+export { HeatIntensity };
+
+// Define HeatIntensityType here for consistency
+export type HeatIntensityType = 
+  | 'none'
+  | 'light' 
+  | 'moderate' 
+  | 'heavy' 
+  | 'mild' 
+  | 'medium' 
+  | 'low' 
+  | 'high' 
+  | 'peak' 
+  | 'strong' 
+  | 'very_strong'
+  | 'unknown';
 
 // Helper function to convert string to HealthRecordType
 export function stringToHealthRecordType(value: string): HealthRecordType {

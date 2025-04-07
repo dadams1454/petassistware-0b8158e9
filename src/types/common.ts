@@ -6,6 +6,9 @@
 // Re-export everything from weight-units 
 export * from './weight-units';
 
+// Re-export HeatIntensity and HeatIntensityType from heat-cycles
+export { HeatIntensity, HeatIntensityType } from './heat-cycles';
+
 // Frequency types for medications and other scheduled events
 export enum FrequencyTypes {
   DAILY = 'daily',
