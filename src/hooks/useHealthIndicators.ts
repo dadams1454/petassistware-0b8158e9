@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { HealthIndicator, HealthAlert, AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum } from '@/types/health';
+import { HealthIndicator, HealthAlert, AppetiteLevel, EnergyLevel, StoolConsistency } from '@/types/health';
 
 export const useHealthIndicators = (dogId: string) => {
   const queryClient = useQueryClient();
@@ -152,11 +152,11 @@ export const useHealthIndicators = (dogId: string) => {
     if (!level) return 'Not recorded';
     
     switch (level) {
-      case AppetiteLevelEnum.Excellent: return 'Excellent';
-      case AppetiteLevelEnum.Good: return 'Good';
-      case AppetiteLevelEnum.Fair: return 'Fair';
-      case AppetiteLevelEnum.Poor: return 'Poor';
-      case AppetiteLevelEnum.None: return 'None';
+      case AppetiteLevel.EXCELLENT: return 'Excellent';
+      case AppetiteLevel.GOOD: return 'Good';
+      case AppetiteLevel.FAIR: return 'Fair';
+      case AppetiteLevel.POOR: return 'Poor';
+      case AppetiteLevel.NONE: return 'None';
       default: return level;
     }
   };
@@ -165,11 +165,11 @@ export const useHealthIndicators = (dogId: string) => {
     if (!level) return 'Not recorded';
     
     switch (level) {
-      case EnergyLevelEnum.Hyperactive: return 'Hyperactive';
-      case EnergyLevelEnum.High: return 'High';
-      case EnergyLevelEnum.Normal: return 'Normal';
-      case EnergyLevelEnum.Low: return 'Low';
-      case EnergyLevelEnum.Lethargic: return 'Lethargic';
+      case EnergyLevel.HYPERACTIVE: return 'Hyperactive';
+      case EnergyLevel.HIGH: return 'High';
+      case EnergyLevel.NORMAL: return 'Normal';
+      case EnergyLevel.LOW: return 'Low';
+      case EnergyLevel.LETHARGIC: return 'Lethargic';
       default: return level;
     }
   };
@@ -178,13 +178,13 @@ export const useHealthIndicators = (dogId: string) => {
     if (!consistency) return 'Not recorded';
     
     switch (consistency) {
-      case StoolConsistencyEnum.NORMAL: return 'Normal';
-      case StoolConsistencyEnum.SOFT: return 'Soft';
-      case StoolConsistencyEnum.LOOSE: return 'Loose';
-      case StoolConsistencyEnum.WATERY: return 'Watery';
-      case StoolConsistencyEnum.HARD: return 'Hard';
-      case StoolConsistencyEnum.MUCOUSY: return 'Mucousy';
-      case StoolConsistencyEnum.BLOODY: return 'Bloody';
+      case StoolConsistency.NORMAL: return 'Normal';
+      case StoolConsistency.SOFT: return 'Soft';
+      case StoolConsistency.LOOSE: return 'Loose';
+      case StoolConsistency.WATERY: return 'Watery';
+      case StoolConsistency.HARD: return 'Hard';
+      case StoolConsistency.MUCOUSY: return 'Mucousy';
+      case StoolConsistency.BLOODY: return 'Bloody';
       default: return consistency;
     }
   };

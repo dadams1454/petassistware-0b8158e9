@@ -2,15 +2,24 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatus, MedicationStatusEnum, type MedicationStatusResult } from '@/types/health';
+import { MedicationStatus as MedicationStatusEnum } from '@/types/health';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {
-  status: MedicationStatusResult | MedicationStatus | string | null;
+  status: MedicationStatusResult | MedicationStatusEnum | string | null;
   nextDue?: string | Date | null;
   showIcon?: boolean;
   showLabel?: boolean;
   showNextDue?: boolean;
+}
+
+// Define the MedicationStatusResult interface locally
+interface MedicationStatusResult {
+  status: MedicationStatusEnum;
+  daysOverdue?: number;
+  daysUntilDue?: number;
+  nextDue?: Date | null;
+  message: string;
 }
 
 const MedicationStatus: React.FC<MedicationStatusProps> = ({
@@ -41,7 +50,7 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   };
   
   // Convert different status types to a standard string
-  let statusValue: MedicationStatus = MedicationStatus.UNKNOWN;
+  let statusValue: MedicationStatusEnum = MedicationStatusEnum.UNKNOWN;
   let statusObject: MedicationStatusResult | null = null;
   let nextDueDate: string | Date | null = nextDue;
   
@@ -54,19 +63,19 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
     }
   } else if (typeof status === 'string') {
     // Handle status as string (or enum)
-    if (Object.values(MedicationStatus).includes(status as MedicationStatus)) {
-      statusValue = status as MedicationStatus;
+    if (Object.values(MedicationStatusEnum).includes(status as MedicationStatusEnum)) {
+      statusValue = status as MedicationStatusEnum;
     } else {
       // Try to map legacy string status to enum
       switch (status.toLowerCase()) {
-        case 'active': statusValue = MedicationStatus.ACTIVE; break;
-        case 'overdue': statusValue = MedicationStatus.OVERDUE; break;
-        case 'discontinued': statusValue = MedicationStatus.DISCONTINUED; break;
+        case 'active': statusValue = MedicationStatusEnum.ACTIVE; break;
+        case 'overdue': statusValue = MedicationStatusEnum.OVERDUE; break;
+        case 'discontinued': statusValue = MedicationStatusEnum.DISCONTINUED; break;
         case 'upcoming': 
-        case 'scheduled': statusValue = MedicationStatus.SCHEDULED; break;
-        case 'not_started': statusValue = MedicationStatus.NOT_STARTED; break;
-        case 'completed': statusValue = MedicationStatus.COMPLETED; break;
-        default: statusValue = MedicationStatus.UNKNOWN;
+        case 'scheduled': statusValue = MedicationStatusEnum.SCHEDULED; break;
+        case 'not_started': statusValue = MedicationStatusEnum.NOT_STARTED; break;
+        case 'completed': statusValue = MedicationStatusEnum.COMPLETED; break;
+        default: statusValue = MedicationStatusEnum.UNKNOWN;
       }
     }
   }
@@ -77,16 +86,16 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   // Determine the icon based on status
   const getIcon = () => {
     switch (statusValue) {
-      case MedicationStatus.ACTIVE:
+      case MedicationStatusEnum.ACTIVE:
         return <Check className="h-4 w-4 text-green-500" />;
-      case MedicationStatus.OVERDUE:
-      case MedicationStatus.DISCONTINUED:
+      case MedicationStatusEnum.OVERDUE:
+      case MedicationStatusEnum.DISCONTINUED:
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case MedicationStatus.SCHEDULED:
+      case MedicationStatusEnum.SCHEDULED:
         return <Calendar className="h-4 w-4 text-blue-500" />;
-      case MedicationStatus.NOT_STARTED:
+      case MedicationStatusEnum.NOT_STARTED:
         return <Clock className="h-4 w-4 text-gray-500" />;
-      case MedicationStatus.COMPLETED:
+      case MedicationStatusEnum.COMPLETED:
         return <Check className="h-4 w-4 text-green-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
