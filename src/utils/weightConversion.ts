@@ -1,39 +1,51 @@
 
-import { WeightUnit, convertWeight as convertWeightBase, getAppropriateWeightUnit } from '@/types/weight-units';
+import { WeightUnit, weightUnitInfos } from '@/types/weight-units';
 
 /**
- * Converts a weight value from one unit to grams
+ * Convert a weight value to grams
  */
-export function convertWeightToGrams(weight: number, unit: WeightUnit): number {
-  return convertWeightBase(weight, unit, 'g');
-}
-
-/**
- * Wraps the core convert weight function for broader compatibility
- */
-export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number {
-  return convertWeightBase(weight, fromUnit, toUnit);
-}
-
-/**
- * Formats a weight value with its unit for display
- */
-export function formatWeight(weight: number, unit: WeightUnit): string {
-  switch (unit) {
-    case 'oz':
-      return `${weight.toFixed(1)} oz`;
-    case 'g':
-      return `${Math.round(weight)} g`;
-    case 'lb':
-      return `${weight.toFixed(1)} lb`;
-    case 'kg':
-      return `${weight.toFixed(2)} kg`;
-    default:
-      return `${weight} ${unit}`;
+export const convertWeightToGrams = (weight: number, unit: WeightUnit): number => {
+  const unitInfo = weightUnitInfos.find(info => info.value === unit);
+  if (!unitInfo) {
+    console.error(`Unknown weight unit: ${unit}`);
+    return weight;
   }
-}
+  
+  return weight * unitInfo.gramsPerUnit;
+};
 
 /**
- * Export the appropriate weight unit calculation for compatibility
+ * Convert a weight value from one unit to another
  */
-export { getAppropriateWeightUnit };
+export const convertWeight = (weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number => {
+  if (fromUnit === toUnit) return weight;
+  
+  // First convert to grams
+  const weightInGrams = convertWeightToGrams(weight, fromUnit);
+  
+  // Then convert from grams to target unit
+  const targetUnitInfo = weightUnitInfos.find(info => info.value === toUnit);
+  if (!targetUnitInfo) {
+    console.error(`Unknown target weight unit: ${toUnit}`);
+    return weight;
+  }
+  
+  return weightInGrams / targetUnitInfo.gramsPerUnit;
+};
+
+/**
+ * Format a weight with its unit for display
+ */
+export const formatWeight = (weight: number, unit: WeightUnit): string => {
+  // Find the unit info to get display information
+  const unitInfo = weightUnitInfos.find(info => info.value === unit);
+  if (!unitInfo) {
+    return `${weight} ${unit}`;
+  }
+  
+  // Format the number based on the precision we want
+  const formattedWeight = weight.toFixed(unitInfo.displayPrecision);
+  
+  // Return formatted weight with unit
+  return `${formattedWeight} ${unitInfo.displayUnit || unitInfo.value}`;
+};
