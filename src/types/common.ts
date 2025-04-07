@@ -10,6 +10,56 @@ export * from './weight-units';
 export type { HeatIntensityType } from './heat-cycles';
 export { HeatIntensity } from './heat-cycles';
 
+// Re-export weight-related types
+export type { WeightRecord, GrowthStats } from './weight';
+
+// Re-export health enums
+export {
+  HealthRecordTypeEnum,
+  MedicationStatusEnum,
+  AppetiteEnum,
+  EnergyEnum,
+  StoolConsistencyEnum,
+  stringToHealthRecordType,
+  getHealthRecordTypeDisplay
+} from './health-enums';
+
+// Re-export health types
+export type {
+  HealthRecordType,
+  MedicationStatusResult,
+  AppetiteLevel,
+  EnergyLevel,
+  StoolConsistency
+} from './health-enums';
+
+// Re-export health record interfaces
+export type {
+  HealthRecord,
+  Medication,
+  MedicationAdministration,
+  HealthIndicator
+} from './health';
+
+// Re-export puppy tracking types
+export type {
+  PuppyAgeGroup,
+  PuppyAgeGroupInfo,
+  PuppyAgeGroupData,
+  PuppyManagementStats
+} from './puppyTracking';
+
+// Re-export daily care types
+export type {
+  DailyCarelog,
+  CareLogFormData,
+  CareTaskPreset,
+  DogCareStatus,
+  DogFlag,
+  DogCareObservation,
+  CareScheduleItem
+} from './dailyCare';
+
 // Frequency types for medications and other scheduled events
 export enum FrequencyTypes {
   DAILY = 'daily',

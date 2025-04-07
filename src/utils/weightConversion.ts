@@ -9,23 +9,27 @@ export const convertWeight = (
   fromUnit: WeightUnit,
   toUnit: WeightUnit
 ): number => {
+  // Don't convert if units are the same
   if (fromUnit === toUnit) return value;
-
-  const fromUnitInfo = weightUnitInfos.find(info => info.value === fromUnit);
-  const toUnitInfo = weightUnitInfos.find(info => info.value === toUnit);
-
-  if (!fromUnitInfo || !toUnitInfo) {
-    console.error(`Invalid weight units: ${fromUnit} to ${toUnit}`);
+  
+  // Find conversion factors
+  const fromInfo = weightUnitInfos.find(info => info.unit === fromUnit);
+  const toInfo = weightUnitInfos.find(info => info.unit === toUnit);
+  
+  if (!fromInfo || !toInfo) {
+    console.error(`Invalid weight units: ${fromUnit} -> ${toUnit}`);
     return value;
   }
-
-  // Convert to grams first (base unit), then to target unit
-  const grams = value * fromUnitInfo.gramsPerUnit;
-  return grams / toUnitInfo.gramsPerUnit;
+  
+  // Convert to grams first, then to target unit
+  const valueInGrams = value * fromInfo.toGrams;
+  const convertedValue = valueInGrams / toInfo.toGrams;
+  
+  return convertedValue;
 };
 
 /**
- * Converts a weight value to grams (base unit for conversion)
+ * Converts a weight value to grams
  */
 export const convertWeightToGrams = (
   value: number,
@@ -35,16 +39,43 @@ export const convertWeightToGrams = (
 };
 
 /**
- * Formats a weight value for display, using appropriate precision
+ * Formats a weight value for display
  */
 export const formatWeight = (
   value: number,
   unit: WeightUnit
 ): string => {
-  const unitInfo = weightUnitInfos.find(info => info.value === unit);
-  if (!unitInfo) return value.toString();
+  const info = weightUnitInfos.find(info => info.unit === unit);
   
-  return value.toFixed(unitInfo.precision);
+  if (!info) {
+    console.error(`Invalid weight unit: ${unit}`);
+    return `${value} ${unit}`;
+  }
+  
+  const formatted = value.toFixed(info.precision);
+  return `${formatted} ${info.label}`;
+};
+
+/**
+ * Gets the appropriate weight unit based on weight value in grams
+ */
+export const getAppropriateWeightUnit = (
+  weightInGrams: number
+): WeightUnit => {
+  // Default to oz
+  if (weightInGrams <= 0) return 'oz';
+  
+  // Find appropriate unit based on thresholds
+  for (const info of weightUnitInfos) {
+    if (info.thresholds && 
+        weightInGrams >= info.thresholds.min && 
+        weightInGrams < info.thresholds.max) {
+      return info.unit;
+    }
+  }
+  
+  // If nothing matched, use kg for large weights, oz for small
+  return weightInGrams > 1000 ? 'kg' : 'oz';
 };
 
 /**
@@ -56,15 +87,4 @@ export const calculatePercentChange = (
 ): number => {
   if (oldWeight === 0) return 0;
   return ((newWeight - oldWeight) / oldWeight) * 100;
-};
-
-/**
- * Determines the most appropriate weight unit based on weight value
- */
-export const getAppropriateWeightUnit = (
-  weightInGrams: number
-): WeightUnit => {
-  if (weightInGrams < 1000) return 'g';
-  if (weightInGrams < 4536) return 'oz'; // Under 10 lbs
-  return 'lb';
 };

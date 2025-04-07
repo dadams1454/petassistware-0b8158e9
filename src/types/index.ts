@@ -7,6 +7,9 @@ export {
   standardizeWeightUnit
 } from './weight-units';
 
+// Export weight-related types
+export type { WeightRecord, GrowthStats } from './weight';
+
 // Export heat cycle related types
 export type { HeatIntensityType, HeatCycle, HeatStage } from './heat-cycles';
 export { 
@@ -28,8 +31,8 @@ export type {
 export {
   HealthRecordTypeEnum, 
   HealthRecordType,
-  MedicationStatus, 
-  MedicationStatusEnum,
+  MedicationStatusEnum, 
+  MedicationStatusResult,
   AppetiteLevel, 
   AppetiteEnum,
   EnergyLevel, 
