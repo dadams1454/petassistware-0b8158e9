@@ -15,6 +15,30 @@ export type HealthRecordType =
   | 'other'
   | 'observation';
 
+/**
+ * Enum for health record types
+ * This provides both string literals and an enum for flexibility
+ */
+export enum HealthRecordTypeEnum {
+  VACCINATION = 'vaccination',
+  EXAMINATION = 'examination',
+  MEDICATION = 'medication',
+  SURGERY = 'surgery',
+  INJURY = 'injury',
+  ALLERGY = 'allergy',
+  TEST = 'test',
+  OTHER = 'other',
+  OBSERVATION = 'observation',
+  // Additional types used in other components
+  LABORATORY = 'laboratory',
+  IMAGING = 'imaging',
+  PREVENTIVE = 'preventive',
+  DEWORMING = 'deworming',
+  PROCEDURE = 'procedure',
+  DENTAL = 'dental',
+  GROOMING = 'grooming'
+}
+
 // Medication Status Enums
 export enum MedicationStatusEnum {
   DUE = 'due',
