@@ -1,101 +1,106 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { WeightRecord } from '@/types/puppyTracking';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { WeightRecord } from '@/types';
+import { WeightUnit } from '@/types/weight-units';
+import { calculatePercentChange } from '@/components/litters/puppies/weight/weightUnits';
+import { handleSupabaseError, showErrorToast } from '@/utils/errorHandling';
+import { getPuppyWeightRecords, addPuppyWeightRecord, deleteWeightRecord } from '@/services/weightService';
 
-export function usePuppyWeightRecords(puppyId: string) {
+export const usePuppyWeightRecords = (puppyId: string, birthDate?: string) => {
   const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [puppyBirthDate, setPuppyBirthDate] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchWeightHistory = useCallback(async () => {
-    if (!puppyId) return [];
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // Fetch the puppy's birth date for age calculation
-      const { data: puppyData, error: puppyError } = await supabase
-        .from('puppies')
-        .select('birth_date')
-        .eq('id', puppyId)
-        .single();
+  // Fetch weight records
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['puppyWeightRecords', puppyId],
+    queryFn: async () => {
+      if (!puppyId) return [];
       
-      if (puppyError) throw puppyError;
-      
-      if (puppyData && puppyData.birth_date) {
-        setPuppyBirthDate(puppyData.birth_date);
+      try {
+        const records = await getPuppyWeightRecords(puppyId);
+        setWeightRecords(records);
+        return records;
+      } catch (error) {
+        const appError = handleSupabaseError(error as Error);
+        showErrorToast(appError);
+        throw appError;
       }
-      
-      // Fetch weight records
-      const { data, error: recordsError } = await supabase
-        .from('weight_records')
-        .select('*')
-        .eq('dog_id', puppyId)
-        .order('date', { ascending: false });
-      
-      if (recordsError) throw recordsError;
-      
-      setWeightRecords(data || []);
-      return data || [];
-    } catch (err) {
-      console.error('Error fetching weight records:', err);
-      setError(err as Error);
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  }, [puppyId]);
+    },
+    enabled: !!puppyId
+  });
 
-  const addWeightRecord = useCallback(async (record: Omit<WeightRecord, 'id' | 'created_at'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('weight_records')
-        .insert(record)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      setWeightRecords(prev => [data, ...prev]);
-      return data;
-    } catch (err) {
-      console.error('Error adding weight record:', err);
-      throw err;
-    }
-  }, []);
+  // Add a weight record
+  const addWeightRecord = useMutation({
+    mutationFn: async (record: Omit<WeightRecord, 'id' | 'created_at'>) => {
+      try {
+        // Calculate percent change based on previous weight if available
+        let percentChange: number | undefined = undefined;
+        if (weightRecords.length > 0) {
+          const prevRecord = weightRecords[0]; // Most recent record
+          percentChange = calculatePercentChange(prevRecord.weight, record.weight);
+        }
 
-  const deleteWeightRecord = useCallback(async (recordId: string) => {
-    try {
-      const { error } = await supabase
-        .from('weight_records')
-        .delete()
-        .eq('id', recordId);
-      
-      if (error) throw error;
-      
-      setWeightRecords(prev => prev.filter(r => r.id !== recordId));
-      return true;
-    } catch (err) {
-      console.error('Error deleting weight record:', err);
-      throw err;
-    }
-  }, []);
+        // Calculate age in days if birth date is provided
+        let ageDays: number | undefined = undefined;
+        if (birthDate && record.date) {
+          const birthDateObj = new Date(birthDate);
+          const recordDateObj = new Date(record.date);
+          const diffTime = Math.abs(recordDateObj.getTime() - birthDateObj.getTime());
+          ageDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
 
-  useEffect(() => {
-    if (puppyId) {
-      fetchWeightHistory();
+        // Add the record
+        const newRecord = await addPuppyWeightRecord({
+          ...record,
+          puppy_id: puppyId,
+          percent_change: percentChange,
+          age_days: ageDays,
+          birth_date: birthDate
+        });
+
+        // Update local state
+        setWeightRecords(prev => [newRecord, ...prev]);
+        
+        return newRecord;
+      } catch (error) {
+        const appError = handleSupabaseError(error as Error);
+        showErrorToast(appError);
+        throw appError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['puppyWeightRecords', puppyId] });
     }
-  }, [puppyId, fetchWeightHistory]);
+  });
+
+  // Delete a weight record
+  const deleteWeightRecordMutation = useMutation({
+    mutationFn: async (id: string) => {
+      try {
+        await deleteWeightRecord(id);
+        return id;
+      } catch (error) {
+        const appError = handleSupabaseError(error as Error);
+        showErrorToast(appError);
+        throw appError;
+      }
+    },
+    onSuccess: (id) => {
+      // Update local state
+      setWeightRecords(prev => prev.filter(record => record.id !== id));
+      queryClient.invalidateQueries({ queryKey: ['puppyWeightRecords', puppyId] });
+    }
+  });
 
   return {
-    weightRecords,
+    weightRecords: data || [],
     isLoading,
-    fetchWeightHistory,
-    addWeightRecord,
-    deleteWeightRecord,
-    puppyBirthDate
+    error,
+    refetch,
+    addWeightRecord: addWeightRecord.mutateAsync,
+    isAddingWeight: addWeightRecord.isPending,
+    deleteWeightRecord: deleteWeightRecordMutation.mutateAsync,
+    isDeletingWeight: deleteWeightRecordMutation.isPending
   };
-}
+};

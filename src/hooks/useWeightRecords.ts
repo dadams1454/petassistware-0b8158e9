@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { WeightRecord } from '@/types';
 import { handleSupabaseError, showErrorToast } from '@/utils/errorHandling';
-import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
+import { getWeightRecords, addWeightRecord, deleteWeightRecord } from '@/services/weightService';
 
 /**
  * Hook for fetching and managing weight records
@@ -22,39 +22,27 @@ export const useWeightRecords = (dogId: string) => {
     queryFn: async (): Promise<WeightRecord[]> => {
       if (!dogId) return [];
       
-      const { data, error } = await supabase
-        .from('weight_records')
-        .select('*')
-        .eq('dog_id', dogId)
-        .order('date', { ascending: false });
-      
-      if (error) {
-        const appError = handleSupabaseError(error);
+      try {
+        return await getWeightRecords(dogId);
+      } catch (error) {
+        const appError = handleSupabaseError(error as Error);
         showErrorToast(appError);
         throw appError;
       }
-      
-      return data as WeightRecord[] || [];
     },
     enabled: !!dogId,
   });
   
   // Add a new weight record
-  const addWeightRecord = useMutation({
+  const addMutation = useMutation({
     mutationFn: async (record: Omit<WeightRecord, 'id' | 'created_at'>) => {
-      const { data, error } = await supabase
-        .from('weight_records')
-        .insert(record)
-        .select()
-        .single();
-      
-      if (error) {
-        const appError = handleSupabaseError(error);
+      try {
+        return await addWeightRecord(record);
+      } catch (error) {
+        const appError = handleSupabaseError(error as Error);
         showErrorToast(appError);
         throw appError;
       }
-      
-      return data as WeightRecord;
     },
     onSuccess: () => {
       // Invalidate the query to refresh data
@@ -63,20 +51,16 @@ export const useWeightRecords = (dogId: string) => {
   });
   
   // Delete a weight record
-  const deleteWeightRecord = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async (recordId: string) => {
-      const { error } = await supabase
-        .from('weight_records')
-        .delete()
-        .eq('id', recordId);
-      
-      if (error) {
-        const appError = handleSupabaseError(error);
+      try {
+        await deleteWeightRecord(recordId);
+        return recordId;
+      } catch (error) {
+        const appError = handleSupabaseError(error as Error);
         showErrorToast(appError);
         throw appError;
       }
-      
-      return recordId;
     },
     onSuccess: () => {
       // Invalidate the query to refresh data
@@ -89,9 +73,9 @@ export const useWeightRecords = (dogId: string) => {
     isLoading,
     error,
     refreshWeightRecords,
-    addWeightRecord: addWeightRecord.mutate,
-    isAdding: addWeightRecord.isPending,
-    deleteWeightRecord: deleteWeightRecord.mutate,
-    isDeleting: deleteWeightRecord.isPending
+    addWeightRecord: addMutation.mutate,
+    isAdding: addMutation.isPending,
+    deleteWeightRecord: deleteMutation.mutate,
+    isDeleting: deleteMutation.isPending
   };
 };

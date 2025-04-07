@@ -1,69 +1,69 @@
 
 /**
- * Heat cycle related types
+ * Heat intensity types
  */
-import { Json } from '../integrations/supabase/types';
+export enum HeatIntensityType {
+  NONE = "none",
+  MILD = "mild",
+  MODERATE = "moderate",
+  STRONG = "strong",
+  VERY_STRONG = "very_strong"
+}
 
-// Define the HeatIntensityType as a union type
-export type HeatIntensityType = 
-  | 'none'
-  | 'light' 
-  | 'moderate' 
-  | 'heavy' 
-  | 'mild' 
-  | 'medium' 
-  | 'low' 
-  | 'high' 
-  | 'peak' 
-  | 'strong' 
-  | 'very_strong'
-  | 'unknown';
-
-// Heat intensity enum - kept for backward compatibility
+/**
+ * Heat intensity enum
+ */
 export enum HeatIntensity {
-  NONE = 'none',
-  LIGHT = 'light',
-  MODERATE = 'moderate',
-  STRONG = 'strong',
-  VERY_STRONG = 'very_strong',
-  MILD = 'mild',     // Added for backward compatibility
-  MEDIUM = 'medium', // Added for backward compatibility
-  LOW = 'low',       // Added for backward compatibility
-  HIGH = 'high',     // Added for backward compatibility
-  PEAK = 'peak',     // Added for backward compatibility
-  HEAVY = 'heavy',   // Added for backward compatibility
-  UNKNOWN = 'unknown' // Added for backward compatibility
+  NONE = "None",
+  MILD = "Mild",
+  MODERATE = "Moderate",
+  STRONG = "Strong",
+  VERY_STRONG = "Very Strong"
 }
 
-// Heat intensity values array - for dropdowns and selects
-export const HeatIntensityValues: HeatIntensityType[] = [
-  'none',
-  'light', 
-  'moderate', 
-  'heavy', 
-  'mild', 
-  'medium', 
-  'low', 
-  'high', 
-  'peak', 
-  'strong',
-  'very_strong',
-  'unknown'
-];
-
-// Function to normalize heat intensity values
-export function normalizeHeatIntensity(intensity: string | HeatIntensityType): HeatIntensityType {
-  if (!intensity) return 'unknown';
-  
-  const intensityLower = intensity.toLowerCase() as HeatIntensityType;
-  if (HeatIntensityValues.includes(intensityLower)) {
-    return intensityLower;
+/**
+ * Convert HeatIntensity to HeatIntensityType
+ */
+export const mapHeatIntensityToType = (intensity: HeatIntensity): HeatIntensityType => {
+  switch (intensity) {
+    case HeatIntensity.NONE:
+      return HeatIntensityType.NONE;
+    case HeatIntensity.MILD:
+      return HeatIntensityType.MILD;
+    case HeatIntensity.MODERATE:
+      return HeatIntensityType.MODERATE;
+    case HeatIntensity.STRONG:
+      return HeatIntensityType.STRONG;
+    case HeatIntensity.VERY_STRONG:
+      return HeatIntensityType.VERY_STRONG;
+    default:
+      return HeatIntensityType.NONE;
   }
-  
-  return 'unknown';
-}
+};
 
-// Heat cycle interface
+/**
+ * Convert HeatIntensityType to HeatIntensity
+ */
+export const mapHeatIntensityTypeToDisplay = (type: HeatIntensityType): HeatIntensity => {
+  switch (type) {
+    case HeatIntensityType.NONE:
+      return HeatIntensity.NONE;
+    case HeatIntensityType.MILD:
+      return HeatIntensity.MILD;
+    case HeatIntensityType.MODERATE:
+      return HeatIntensity.MODERATE;
+    case HeatIntensityType.STRONG:
+      return HeatIntensity.STRONG;
+    case HeatIntensityType.VERY_STRONG:
+      return HeatIntensity.VERY_STRONG;
+    default:
+      return HeatIntensity.NONE;
+  }
+};
+
+/**
+ * Heat cycle interface
+ */
 export interface HeatCycle {
   id: string;
   dog_id: string;
@@ -74,28 +74,8 @@ export interface HeatCycle {
   notes?: string;
   cycle_number?: number;
   cycle_length?: number;
-  fertility_indicators?: Json;
+  fertility_indicators?: any;
   created_at: string;
   updated_at?: string;
   recorded_by?: string;
-}
-
-// Heat stage interface
-export interface HeatStage {
-  id: string;
-  name: string;
-  description: string;
-  day: number;
-  fertility: string;
-  fertilityLevel: number;
-  color: string;
-  length: number;
-  startDay?: number; // For compatibility
-  endDay?: number; // For compatibility
-  displayName?: string; // For compatibility
-  minDays?: number; // For compatibility
-  maxDays?: number; // For compatibility
-  unit?: string; // For compatibility
-  minAge?: number; // For compatibility
-  maxAge?: number; // For compatibility
 }

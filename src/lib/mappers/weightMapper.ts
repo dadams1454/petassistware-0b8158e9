@@ -1,54 +1,48 @@
 
-import { WeightRecord, WeightUnit } from '@/types/weight';
+import { WeightRecord } from '@/types';
+import { WeightUnit } from '@/types/weight-units';
 
 /**
  * Maps a weight record from Supabase DB format to frontend TypeScript format
- * @param record The database record to map
- * @returns A properly typed WeightRecord object
  */
 export function mapWeightRecordFromDB(record: any): WeightRecord {
-  // Validate record exists
   if (!record) return null as unknown as WeightRecord;
 
-  // Handle properly typed weight unit
-  const weightUnit = record.weight_unit || 'lb';
-  const safeWeightUnit = ['oz', 'g', 'lb', 'kg'].includes(weightUnit) 
-    ? weightUnit as WeightUnit 
-    : 'lb' as WeightUnit;
+  // Ensure weight unit is a valid WeightUnit enum value
+  let weightUnit: WeightUnit = record.weight_unit as WeightUnit;
+  if (!Object.values(WeightUnit).includes(weightUnit)) {
+    weightUnit = WeightUnit.GRAMS; // Default to grams if invalid
+  }
 
   return {
     id: record.id || '',
     dog_id: record.dog_id || '',
-    puppy_id: record.puppy_id || null,
-    weight: typeof record.weight === 'number' ? record.weight : 0,
-    weight_unit: safeWeightUnit,
+    puppy_id: record.puppy_id || '',
+    weight: Number(record.weight) || 0,
+    weight_unit: weightUnit,
     date: record.date || new Date().toISOString().split('T')[0],
     notes: record.notes || '',
-    percent_change: record.percent_change || 0,
+    percent_change: record.percent_change !== null ? Number(record.percent_change) : undefined,
     created_at: record.created_at || new Date().toISOString(),
-    // Optional fields
-    age_days: record.age_days || undefined,
+    age_days: record.age_days ? Number(record.age_days) : undefined,
     birth_date: record.birth_date || undefined
   };
 }
 
 /**
- * Maps a frontend WeightRecord to Supabase DB format
- * @param record The frontend record to map to DB format
- * @returns An object formatted for Supabase insertion/update
+ * Maps a weight record from frontend TypeScript format to Supabase DB format
  */
 export function mapWeightRecordToDB(record: Partial<WeightRecord>): any {
-  return {
-    id: record.id,
-    dog_id: record.dog_id,
-    puppy_id: record.puppy_id,
-    weight: record.weight,
-    weight_unit: record.weight_unit,
-    date: record.date,
-    notes: record.notes,
-    percent_change: record.percent_change,
-    created_at: record.created_at,
-    age_days: record.age_days,
-    birth_date: record.birth_date
-  };
+  const dbRecord: any = { ...record };
+  
+  // Remove any fields that shouldn't be sent to the database
+  if (dbRecord.id === '') {
+    delete dbRecord.id;
+  }
+  
+  if (dbRecord.created_at === '') {
+    delete dbRecord.created_at;
+  }
+  
+  return dbRecord;
 }

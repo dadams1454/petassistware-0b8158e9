@@ -1,164 +1,164 @@
 
+import { HeatIntensity, HeatIntensityType } from './heat-cycles';
+
 /**
- * Health record type enums
+ * Health record type enum
  */
-import { HeatIntensity } from './heat-cycles';
-
-// HealthRecordType as a union type
-export type HealthRecordType = 
-  | 'VACCINATION'
-  | 'EXAMINATION'
-  | 'MEDICATION'
-  | 'SURGERY'
-  | 'INJURY'
-  | 'ALLERGY'
-  | 'LAB_RESULT'
-  | 'PARASITE_TREATMENT'
-  | 'DENTAL'
-  | 'OTHER';
-
-// Health record type enum - using uppercase for consistency
 export enum HealthRecordTypeEnum {
-  VACCINATION = 'VACCINATION',
-  EXAMINATION = 'EXAMINATION',
-  MEDICATION = 'MEDICATION',
-  SURGERY = 'SURGERY',
-  INJURY = 'INJURY',
-  ALLERGY = 'ALLERGY',
-  LAB_RESULT = 'LAB_RESULT',
-  PARASITE_TREATMENT = 'PARASITE_TREATMENT',
-  DENTAL = 'DENTAL',
-  OTHER = 'OTHER'
+  EXAMINATION = "examination",
+  VACCINATION = "vaccination",
+  MEDICATION = "medication",
+  SURGERY = "surgery",
+  TREATMENT = "treatment",
+  EMERGENCY = "emergency",
+  DENTAL = "dental",
+  ROUTINE = "routine",
+  PROCEDURE = "procedure",
+  TEST = "test",
+  LABORATORY = "laboratory",
+  IMAGING = "imaging",
+  PREVENTIVE = "preventive",
+  OBSERVATION = "observation",
+  DEWORMING = "deworming",
+  GROOMING = "grooming"
 }
 
-// MedicationStatus as a union type
-export type MedicationStatus = 
-  | 'active'
-  | 'upcoming' 
-  | 'scheduled'
-  | 'overdue'
-  | 'completed'
-  | 'discontinued'
-  | 'expired';
+/**
+ * Health record type for display purposes
+ */
+export enum HealthRecordType {
+  EXAMINATION = "Examination",
+  VACCINATION = "Vaccination",
+  MEDICATION = "Medication",
+  SURGERY = "Surgery",
+  TREATMENT = "Treatment",
+  EMERGENCY = "Emergency",
+  DENTAL = "Dental",
+  ROUTINE = "Routine",
+  PROCEDURE = "Procedure",
+  TEST = "Test",
+  LABORATORY = "Laboratory",
+  IMAGING = "Imaging",
+  PREVENTIVE = "Preventive",
+  OBSERVATION = "Observation",
+  DEWORMING = "Deworming",
+  GROOMING = "Grooming"
+}
 
-// Medication status enum
+/**
+ * Appetite level enum
+ */
+export enum AppetiteLevel {
+  EXCELLENT = "excellent",
+  GOOD = "good",
+  FAIR = "fair",
+  POOR = "poor",
+  NONE = "none"
+}
+
+/**
+ * Appetite enum for display purposes
+ */
+export enum AppetiteEnum {
+  EXCELLENT = "Excellent",
+  GOOD = "Good",
+  FAIR = "Fair",
+  POOR = "Poor",
+  NONE = "None"
+}
+
+/**
+ * Energy level enum
+ */
+export enum EnergyLevel {
+  HYPERACTIVE = "hyperactive",
+  HIGH = "high",
+  NORMAL = "normal",
+  LOW = "low",
+  LETHARGIC = "lethargic"
+}
+
+/**
+ * Energy enum for display purposes
+ */
+export enum EnergyEnum {
+  HYPERACTIVE = "Hyperactive",
+  HIGH = "High",
+  NORMAL = "Normal",
+  LOW = "Low",
+  LETHARGIC = "Lethargic"
+}
+
+/**
+ * Stool consistency enum
+ */
+export enum StoolConsistency {
+  NORMAL = "normal",
+  SOFT = "soft",
+  LOOSE = "loose",
+  WATERY = "watery",
+  HARD = "hard",
+  BLOODY = "bloody",
+  MUCUS = "mucus"
+}
+
+/**
+ * Medication status enum
+ */
 export enum MedicationStatusEnum {
-  ACTIVE = 'active',
-  UPCOMING = 'upcoming',
-  SCHEDULED = 'scheduled',
-  OVERDUE = 'overdue',
-  COMPLETED = 'completed',
-  DISCONTINUED = 'discontinued',
-  EXPIRED = 'expired'
+  ACTIVE = "active",
+  COMPLETED = "completed",
+  PAUSED = "paused",
+  STOPPED = "stopped",
+  SCHEDULED = "scheduled",
+  OVERDUE = "overdue",
+  NOT_STARTED = "not_started",
+  UNKNOWN = "unknown"
 }
 
-// AppetiteLevel as a union type
-export type AppetiteLevel = 
-  | 'excellent' 
-  | 'good' 
-  | 'fair' 
-  | 'poor' 
-  | 'none';
-
-// Appetite level enum
-export enum AppetiteLevelEnum {
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  FAIR = 'fair',
-  POOR = 'poor',
-  NONE = 'none'
-}
-
-// EnergyLevel as a union type
-export type EnergyLevel = 
-  | 'hyperactive' 
-  | 'high' 
-  | 'normal' 
-  | 'low' 
-  | 'lethargic';
-
-// Energy level enum
-export enum EnergyLevelEnum {
-  HYPERACTIVE = 'hyperactive',
-  HIGH = 'high',
-  NORMAL = 'normal',
-  LOW = 'low',
-  LETHARGIC = 'lethargic'
-}
-
-// StoolConsistency as a union type
-export type StoolConsistency = 
-  | 'normal' 
-  | 'soft' 
-  | 'loose' 
-  | 'watery' 
-  | 'hard';
-
-// Stool consistency enum
-export enum StoolConsistencyEnum {
-  NORMAL = 'normal',
-  SOFT = 'soft',
-  LOOSE = 'loose',
-  WATERY = 'watery',
-  HARD = 'hard'
-}
-
-// Re-export HeatIntensity enum from heat-cycles for backward compatibility
-export { HeatIntensity };
-
-// Define HeatIntensityType here for consistency
-export type HeatIntensityType = 
-  | 'none'
-  | 'light' 
-  | 'moderate' 
-  | 'heavy' 
-  | 'mild' 
-  | 'medium' 
-  | 'low' 
-  | 'high' 
-  | 'peak' 
-  | 'strong' 
-  | 'very_strong'
-  | 'unknown';
-
-// Helper function to convert string to HealthRecordType
-export function stringToHealthRecordType(value: string): HealthRecordType {
-  // Normalize the input to uppercase
-  const normalizedValue = value.toUpperCase();
-  
-  // Check if the value is a valid HealthRecordType
-  if (Object.values(HealthRecordTypeEnum).includes(normalizedValue as HealthRecordType)) {
-    return normalizedValue as HealthRecordType;
-  }
-  
-  // Default to OTHER if not valid
-  return HealthRecordTypeEnum.OTHER;
-}
-
-// Helper function to get display name for health record type
-export function getHealthRecordTypeDisplayName(type: HealthRecordType): string {
+/**
+ * Maps a health record type enum value to its display name
+ */
+export const getHealthRecordTypeDisplay = (type: HealthRecordTypeEnum): string => {
   switch (type) {
-    case HealthRecordTypeEnum.VACCINATION:
-      return 'Vaccination';
     case HealthRecordTypeEnum.EXAMINATION:
-      return 'Examination';
+      return "Examination";
+    case HealthRecordTypeEnum.VACCINATION:
+      return "Vaccination";
     case HealthRecordTypeEnum.MEDICATION:
-      return 'Medication';
+      return "Medication";
     case HealthRecordTypeEnum.SURGERY:
-      return 'Surgery';
-    case HealthRecordTypeEnum.INJURY:
-      return 'Injury';
-    case HealthRecordTypeEnum.ALLERGY:
-      return 'Allergy';
-    case HealthRecordTypeEnum.LAB_RESULT:
-      return 'Lab Result';
-    case HealthRecordTypeEnum.PARASITE_TREATMENT:
-      return 'Parasite Treatment';
+      return "Surgery";
+    case HealthRecordTypeEnum.TREATMENT:
+      return "Treatment";
+    case HealthRecordTypeEnum.EMERGENCY:
+      return "Emergency";
     case HealthRecordTypeEnum.DENTAL:
-      return 'Dental';
-    case HealthRecordTypeEnum.OTHER:
-      return 'Other';
+      return "Dental";
+    case HealthRecordTypeEnum.ROUTINE:
+      return "Routine";
+    case HealthRecordTypeEnum.PROCEDURE:
+      return "Procedure";
+    case HealthRecordTypeEnum.TEST:
+      return "Test";
+    case HealthRecordTypeEnum.LABORATORY:
+      return "Laboratory";
+    case HealthRecordTypeEnum.IMAGING:
+      return "Imaging";
+    case HealthRecordTypeEnum.PREVENTIVE:
+      return "Preventive";
+    case HealthRecordTypeEnum.OBSERVATION:
+      return "Observation";
+    case HealthRecordTypeEnum.DEWORMING:
+      return "Deworming";
+    case HealthRecordTypeEnum.GROOMING:
+      return "Grooming";
     default:
-      return 'Unknown';
+      return "Unknown";
   }
-}
+};
+
+// Additional enums can be added here as needed
+
+// Re-export for easier imports
+export { HeatIntensity, HeatIntensityType };

@@ -1,11 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  HealthRecord, 
-  WeightRecord
-} from '@/types';
+import { HealthRecord } from '@/types';
 import { mapHealthRecordFromDB, mapHealthRecordToDB } from '@/lib/mappers/healthMapper';
-import { mapWeightRecordFromDB, mapWeightRecordToDB } from '@/lib/mappers/weightMapper';
 
 // Get health records for a dog
 export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> => {
