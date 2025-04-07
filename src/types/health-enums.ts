@@ -1,28 +1,19 @@
 
 // Health Record Type Enums
-export enum HealthRecordTypeEnum {
-  VACCINATION = 'vaccination',
-  EXAMINATION = 'examination',
-  TREATMENT = 'treatment',
-  MEDICATION = 'medication',
-  SURGERY = 'surgery',
-  INJURY = 'injury',
-  ALLERGY = 'allergy',
-  TEST = 'test',
-  OTHER = 'other'
-}
 
-// String value type for TypeScript safety
+/**
+ * String literal type for health record types
+ */
 export type HealthRecordType = 
   | 'vaccination'
   | 'examination'
-  | 'treatment'
   | 'medication'
   | 'surgery'
   | 'injury'
   | 'allergy'
   | 'test'
-  | 'other';
+  | 'other'
+  | 'observation';
 
 // Medication Status Enums
 export enum MedicationStatusEnum {
@@ -113,7 +104,12 @@ export type StoolConsistency =
 // Helper functions
 export function stringToHealthRecordType(str: string): HealthRecordType {
   const normalized = str.toLowerCase().trim();
-  if (Object.values(HealthRecordTypeEnum).includes(normalized as any)) {
+  const validTypes: HealthRecordType[] = [
+    'vaccination', 'examination', 'medication', 'surgery',
+    'injury', 'allergy', 'test', 'other', 'observation'
+  ];
+  
+  if (validTypes.includes(normalized as HealthRecordType)) {
     return normalized as HealthRecordType;
   }
   return 'other';

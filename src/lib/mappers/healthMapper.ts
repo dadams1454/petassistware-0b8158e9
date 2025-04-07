@@ -1,5 +1,9 @@
 
-import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { 
+  HealthRecordType,
+  HealthRecord
+} from '@/modules/health/types';
+import { stringToHealthRecordType } from '@/types/health-enums';
 
 /**
  * Maps a health record from Supabase DB format to frontend TypeScript format
@@ -11,24 +15,25 @@ export function mapHealthRecordFromDB(record: any): HealthRecord {
   if (!record) return null as unknown as HealthRecord;
 
   // Normalize record type
-  let recordType: HealthRecordTypeEnum;
-  if (Object.values(HealthRecordTypeEnum).includes(record.record_type as HealthRecordTypeEnum)) {
-    recordType = record.record_type as HealthRecordTypeEnum;
-  } else {
-    recordType = HealthRecordTypeEnum.EXAMINATION; // Default
+  let recordType: HealthRecordType = 'examination'; // Default
+  if (record.record_type) {
+    recordType = stringToHealthRecordType(record.record_type);
   }
 
   return {
     id: record.id || '',
-    dog_id: record.dog_id || '',
+    dog_id: record.dog_id || undefined,
+    puppy_id: record.puppy_id || undefined,
     record_type: recordType,
     title: record.title || '',
+    date: record.visit_date || record.date || new Date().toISOString().split('T')[0],
     visit_date: record.visit_date || record.date || new Date().toISOString().split('T')[0],
     vet_name: record.vet_name || '',
     description: record.description || '',
     document_url: record.document_url || undefined,
     record_notes: record.record_notes || record.notes || '',
     created_at: record.created_at || new Date().toISOString(),
+    updated_at: record.updated_at || undefined,
     next_due_date: record.next_due_date || undefined,
     performed_by: record.performed_by || undefined,
     
@@ -72,14 +77,14 @@ export function mapHealthRecordToDB(record: Partial<HealthRecord>): any {
   return {
     id: record.id,
     dog_id: record.dog_id,
+    puppy_id: record.puppy_id,
     record_type: record.record_type,
     title: record.title,
-    visit_date: record.visit_date,
+    visit_date: record.visit_date || record.date,
     vet_name: record.vet_name,
     description: record.description,
     document_url: record.document_url,
     record_notes: record.record_notes,
-    created_at: record.created_at,
     next_due_date: record.next_due_date,
     performed_by: record.performed_by,
     vaccine_name: record.vaccine_name,

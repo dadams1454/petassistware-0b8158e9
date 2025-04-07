@@ -17,52 +17,25 @@ export interface HealthRecord {
   dog_id?: string;
   puppy_id?: string;
   record_type: HealthRecordType;
-  record_notes?: string;
+  title?: string;
   date: string;
+  visit_date?: string;
   vet_name?: string;
+  record_notes?: string;
   document_url?: string;
   created_at: string;
   updated_at?: string;
   next_due_date?: string;
-  
-  // For vaccinations
-  manufacturer?: string;
-  lot_number?: string;
-  expiration_date?: string;
-  
-  // For medications
-  medication_name?: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency?: string;
-  duration?: number;
-  start_date?: string;
-  end_date?: string;
-  administration_route?: string;
-  
-  // For examinations
-  examination_type?: string;
-  findings?: string;
-  recommendations?: string;
-  follow_up_date?: string;
-  
-  // For surgeries/procedures
-  surgeon?: string;
-  anesthesia_used?: string;
-  recovery_time?: string;
-  
-  // For display purposes
-  title?: string;
-  visit_date?: string;
   performed_by?: string;
 }
 
 // Medication interface
 export interface Medication {
   id: string;
-  name: string;
   dog_id?: string;
   puppy_id?: string;
+  name: string;
+  medication_name?: string;
   dosage?: number;
   dosage_unit?: string;
   frequency?: string;
@@ -75,7 +48,6 @@ export interface Medication {
   date?: string;
   
   // Extended properties for medication tracking
-  medication_name?: string;
   administration_route?: string;
   last_administered?: string;
   is_active?: boolean;

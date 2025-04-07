@@ -1,10 +1,20 @@
 
+/**
+ * @deprecated - Please import from '@/modules/health' instead.
+ * This service will be removed in a future version.
+ */
+
 import { supabase } from '@/integrations/supabase/client';
-import { HealthRecord } from '@/types';
+import { HealthRecord } from '@/types/health';
 import { mapHealthRecordFromDB, mapHealthRecordToDB } from '@/lib/mappers/healthMapper';
 
 // Get health records for a dog
 export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> => {
+  console.warn(
+    'Warning: You are using a deprecated version of getHealthRecords. ' +
+    'Please update your import to use "@/modules/health" instead.'
+  );
+
   if (!dogId) return [];
 
   const { data, error } = await supabase
@@ -23,8 +33,13 @@ export const getHealthRecords = async (dogId: string): Promise<HealthRecord[]> =
 
 // Add a health record
 export const addHealthRecord = async (record: Partial<HealthRecord>): Promise<HealthRecord> => {
-  if (!record.dog_id || !record.visit_date || !record.vet_name) {
-    throw new Error('Missing required fields for health record');
+  console.warn(
+    'Warning: You are using a deprecated version of addHealthRecord. ' +
+    'Please update your import to use "@/modules/health" instead.'
+  );
+
+  if (!record.dog_id && !record.puppy_id) {
+    throw new Error('Either dog_id or puppy_id is required');
   }
 
   const dbRecord = mapHealthRecordToDB(record);
@@ -45,6 +60,11 @@ export const addHealthRecord = async (record: Partial<HealthRecord>): Promise<He
 
 // Update a health record
 export const updateHealthRecord = async (id: string, updates: Partial<HealthRecord>): Promise<HealthRecord> => {
+  console.warn(
+    'Warning: You are using a deprecated version of updateHealthRecord. ' +
+    'Please update your import to use "@/modules/health" instead.'
+  );
+
   const dbUpdates = mapHealthRecordToDB(updates);
 
   const { data, error } = await supabase
@@ -64,6 +84,11 @@ export const updateHealthRecord = async (id: string, updates: Partial<HealthReco
 
 // Delete a health record
 export const deleteHealthRecord = async (id: string): Promise<void> => {
+  console.warn(
+    'Warning: You are using a deprecated version of deleteHealthRecord. ' +
+    'Please update your import to use "@/modules/health" instead.'
+  );
+
   const { error } = await supabase
     .from('health_records')
     .delete()
