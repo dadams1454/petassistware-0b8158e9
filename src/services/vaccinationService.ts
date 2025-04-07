@@ -27,7 +27,18 @@ export const getVaccinationSchedules = async (puppyId: string): Promise<Vaccinat
       
     if (error) throw error;
     
-    return data as VaccinationSchedule[];
+    // Convert database fields to match VaccinationSchedule interface
+    return (data || []).map(record => ({
+      id: record.id,
+      puppy_id: record.puppy_id,
+      dog_id: record.dog_id,
+      vaccine_name: record.vaccination_type,  // Map vaccination_type to vaccine_name
+      due_date: record.due_date,
+      administered: record.administered || false,
+      administered_date: record.administered_date,
+      notes: record.notes,
+      created_at: record.created_at
+    })) as VaccinationSchedule[];
   } catch (error) {
     console.error('Error fetching vaccination schedules:', error);
     throw new Error('Failed to fetch vaccination schedules');
@@ -39,15 +50,37 @@ export const getVaccinationSchedules = async (puppyId: string): Promise<Vaccinat
  */
 export const saveVaccinationSchedule = async (data: Partial<VaccinationSchedule>): Promise<VaccinationSchedule> => {
   try {
+    // Prepare data for database - map VaccinationSchedule fields to database fields
+    const dbRecord = {
+      puppy_id: data.puppy_id,
+      dog_id: data.dog_id,
+      vaccination_type: data.vaccine_name, // Map vaccine_name to vaccination_type
+      due_date: data.due_date,
+      administered: data.administered !== undefined ? data.administered : false,
+      administered_date: data.administered_date,
+      notes: data.notes
+    };
+    
     const { data: savedData, error } = await supabase
       .from('puppy_vaccination_schedule')
-      .insert(data)
+      .insert(dbRecord)
       .select()
       .single();
       
     if (error) throw error;
     
-    return savedData as VaccinationSchedule;
+    // Convert back to VaccinationSchedule interface
+    return {
+      id: savedData.id,
+      puppy_id: savedData.puppy_id,
+      dog_id: savedData.dog_id,
+      vaccine_name: savedData.vaccination_type,
+      due_date: savedData.due_date,
+      administered: savedData.administered || false,
+      administered_date: savedData.administered_date,
+      notes: savedData.notes,
+      created_at: savedData.created_at
+    } as VaccinationSchedule;
   } catch (error) {
     console.error('Error saving vaccination schedule:', error);
     throw new Error('Failed to save vaccination schedule');
@@ -59,16 +92,37 @@ export const saveVaccinationSchedule = async (data: Partial<VaccinationSchedule>
  */
 export const updateVaccinationSchedule = async (id: string, data: Partial<VaccinationSchedule>): Promise<VaccinationSchedule> => {
   try {
+    // Prepare data for database - map VaccinationSchedule fields to database fields
+    const dbRecord: Record<string, any> = {};
+    
+    if (data.vaccine_name !== undefined) dbRecord.vaccination_type = data.vaccine_name;
+    if (data.due_date !== undefined) dbRecord.due_date = data.due_date;
+    if (data.administered !== undefined) dbRecord.administered = data.administered;
+    if (data.administered_date !== undefined) dbRecord.administered_date = data.administered_date;
+    if (data.notes !== undefined) dbRecord.notes = data.notes;
+    if (data.dog_id !== undefined) dbRecord.dog_id = data.dog_id;
+    
     const { data: updatedData, error } = await supabase
       .from('puppy_vaccination_schedule')
-      .update(data)
+      .update(dbRecord)
       .eq('id', id)
       .select()
       .single();
       
     if (error) throw error;
     
-    return updatedData as VaccinationSchedule;
+    // Convert back to VaccinationSchedule interface
+    return {
+      id: updatedData.id,
+      puppy_id: updatedData.puppy_id,
+      dog_id: updatedData.dog_id,
+      vaccine_name: updatedData.vaccination_type,
+      due_date: updatedData.due_date,
+      administered: updatedData.administered || false,
+      administered_date: updatedData.administered_date,
+      notes: updatedData.notes,
+      created_at: updatedData.created_at
+    } as VaccinationSchedule;
   } catch (error) {
     console.error('Error updating vaccination schedule:', error);
     throw new Error('Failed to update vaccination schedule');
