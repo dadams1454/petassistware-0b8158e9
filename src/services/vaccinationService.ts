@@ -12,6 +12,8 @@ export interface VaccinationSchedule {
   administered_date?: string;
   notes?: string;
   created_at?: string;
+  vaccination_type?: string; // For backward compatibility
+  scheduled_date?: string; // For backward compatibility
 }
 
 /**
@@ -33,7 +35,9 @@ export const getVaccinationSchedules = async (puppyId: string): Promise<Vaccinat
       puppy_id: record.puppy_id,
       dog_id: record.dog_id,
       vaccine_name: record.vaccination_type,  // Map vaccination_type to vaccine_name
+      vaccination_type: record.vaccination_type, // Keep for backward compatibility
       due_date: record.due_date,
+      scheduled_date: record.due_date, // For backward compatibility
       administered: record.administered || false,
       administered_date: record.administered_date,
       notes: record.notes,
@@ -50,12 +54,12 @@ export const getVaccinationSchedules = async (puppyId: string): Promise<Vaccinat
  */
 export const saveVaccinationSchedule = async (data: Partial<VaccinationSchedule>): Promise<VaccinationSchedule> => {
   try {
-    // Prepare data for database - map VaccinationSchedule fields to database fields
-    const dbRecord = {
+    // Ensure required fields have default values
+    const schedulingData = {
       puppy_id: data.puppy_id,
       dog_id: data.dog_id,
-      vaccination_type: data.vaccine_name, // Map vaccine_name to vaccination_type
-      due_date: data.due_date,
+      vaccination_type: data.vaccine_name || data.vaccination_type, // Map vaccine_name to vaccination_type
+      due_date: data.due_date || data.scheduled_date, // Use scheduled_date as fallback
       administered: data.administered !== undefined ? data.administered : false,
       administered_date: data.administered_date,
       notes: data.notes
@@ -63,7 +67,7 @@ export const saveVaccinationSchedule = async (data: Partial<VaccinationSchedule>
     
     const { data: savedData, error } = await supabase
       .from('puppy_vaccination_schedule')
-      .insert(dbRecord)
+      .insert(schedulingData)
       .select()
       .single();
       
@@ -75,7 +79,9 @@ export const saveVaccinationSchedule = async (data: Partial<VaccinationSchedule>
       puppy_id: savedData.puppy_id,
       dog_id: savedData.dog_id,
       vaccine_name: savedData.vaccination_type,
+      vaccination_type: savedData.vaccination_type, // For backward compatibility
       due_date: savedData.due_date,
+      scheduled_date: savedData.due_date, // For backward compatibility
       administered: savedData.administered || false,
       administered_date: savedData.administered_date,
       notes: savedData.notes,
@@ -96,7 +102,9 @@ export const updateVaccinationSchedule = async (id: string, data: Partial<Vaccin
     const dbRecord: Record<string, any> = {};
     
     if (data.vaccine_name !== undefined) dbRecord.vaccination_type = data.vaccine_name;
+    if (data.vaccination_type !== undefined) dbRecord.vaccination_type = data.vaccination_type;
     if (data.due_date !== undefined) dbRecord.due_date = data.due_date;
+    if (data.scheduled_date !== undefined && !data.due_date) dbRecord.due_date = data.scheduled_date;
     if (data.administered !== undefined) dbRecord.administered = data.administered;
     if (data.administered_date !== undefined) dbRecord.administered_date = data.administered_date;
     if (data.notes !== undefined) dbRecord.notes = data.notes;
@@ -117,7 +125,9 @@ export const updateVaccinationSchedule = async (id: string, data: Partial<Vaccin
       puppy_id: updatedData.puppy_id,
       dog_id: updatedData.dog_id,
       vaccine_name: updatedData.vaccination_type,
+      vaccination_type: updatedData.vaccination_type, // For backward compatibility
       due_date: updatedData.due_date,
+      scheduled_date: updatedData.due_date, // For backward compatibility
       administered: updatedData.administered || false,
       administered_date: updatedData.administered_date,
       notes: updatedData.notes,

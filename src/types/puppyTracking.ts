@@ -10,7 +10,7 @@ export interface PuppyWithAge extends Puppy {
   ageInWeeks: number;
   age_weeks?: number; // For backward compatibility
   developmentalStage: string;
-  weightHistory?: any[];
+  weightHistory?: WeightRecord[];
   litter?: any;
   currentWeight?: number;
   current_weight_unit?: string;
@@ -167,6 +167,7 @@ export interface SocializationReactionOption {
   emoji?: string;
   description?: string;
   name?: string;
+  icon?: string; // Add the icon property to fix the errors
 }
 
 // Socialization category
@@ -216,6 +217,7 @@ export interface SocializationReaction {
   emoji?: string;
   description?: string;
   name?: string;
+  icon?: string; // Add the icon property to fix the errors
 }
 
 // Socialization progress

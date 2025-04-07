@@ -1,5 +1,6 @@
 
 import { WeightUnit } from './common';
+import { DogGender, DogStatus } from './dog';
 
 export interface Dog {
   id: string;
@@ -12,7 +13,7 @@ export interface Dog {
   registration_number?: string;
   markings?: string;
   microchip_number?: string;
-  status?: string;
+  status?: DogStatus;
   notes?: string;
   owner_id?: string;
   is_breeding?: boolean;
@@ -40,7 +41,5 @@ export interface Dog {
   tenant_id?: string;
 }
 
-export enum DogGender {
-  Male = 'Male',
-  Female = 'Female'
-}
+// Re-export DogGender enum for compatibility
+export { DogGender, DogStatus };

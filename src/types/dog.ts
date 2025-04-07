@@ -51,6 +51,7 @@ export interface DogProfile {
   microchip_location?: string;
   group_ids?: string[];
   reproductive_status?: string;
+  tenant_id?: string;
 }
 
 // Basic Dog information type (used in many places)
@@ -74,6 +75,7 @@ export interface Dog {
   last_heat_date?: string;
   next_heat_date?: string;
   litter_number?: number;
+  tenant_id?: string;
 }
 
 // Document type enum

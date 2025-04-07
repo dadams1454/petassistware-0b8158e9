@@ -76,7 +76,7 @@ export interface BreedingRecord {
   id: string;
   dam_id?: string;
   dog_id?: string;
-  sire_id?: string;
+  sire_id: string;
   breeding_date: string;
   tie_date?: string;
   method?: string;

@@ -71,6 +71,20 @@ export interface DogCareStatus {
   potty_alert_threshold?: number;
   max_time_between_breaks?: number;
   requires_special_handling?: boolean;
+  last_potty_time?: string | null;
+  last_feeding_time?: string | null;
+  last_medication_time?: string | null;
+  last_grooming_time?: string | null;
+  last_exercise_time?: string | null;
+  last_wellness_time?: string | null;
+  last_training_time?: string | null;
+  feeding_times_today?: any[];
+  potty_times_today?: any[];
+  medication_times_today?: any[];
+  exercise_times_today?: any[];
+  grooming_times_today?: any[];
+  wellness_times_today?: any[];
+  training_times_today?: any[];
 }
 
 export interface TimeSlot {

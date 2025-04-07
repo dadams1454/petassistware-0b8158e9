@@ -64,6 +64,9 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         potty_alert_threshold: dog.potty_alert_threshold,
         max_time_between_breaks: dog.max_time_between_breaks,
         requires_special_handling: dog.requires_special_handling,
+        flags: [] as DogFlag[],
+        
+        // Add the latest activity times
         last_potty_time: latestLogs.pottybreaks?.timestamp || null,
         last_feeding_time: latestLogs.feeding?.timestamp || null,
         last_medication_time: latestLogs.medication?.timestamp || null,
@@ -71,6 +74,8 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         last_exercise_time: latestLogs.exercise?.timestamp || null,
         last_wellness_time: latestLogs.wellness?.timestamp || null,
         last_training_time: latestLogs.training?.timestamp || null,
+        
+        // Initialize arrays for today's activities
         feeding_times_today: [],
         potty_times_today: [],
         medication_times_today: [],
@@ -78,9 +83,9 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         grooming_times_today: [],
         wellness_times_today: [],
         training_times_today: [],
+        
         // Determine the most recent care of any type for the "last_care" field
         last_care: determineLastCare(latestLogs),
-        flags: [] as DogFlag[]
       };
       
       // Fetch today's care logs for each category to populate the *_times_today arrays

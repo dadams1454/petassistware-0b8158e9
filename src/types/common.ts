@@ -1,94 +1,57 @@
 
-// Common type definitions for the application
+// Define common types used across the application
+
+// Weight units for consistent use throughout the app
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
-// Weight unit information with display names and conversion rates
-export interface WeightUnitInfo {
-  id: WeightUnit;
-  name: string;
-  conversionToG: number;
-}
-
-export type WeightUnitOption = {
-  value: WeightUnit;
-  label: string;
-};
-
-// Weight unit conversion and display utilities
-export const weightUnitInfos: Record<WeightUnit, WeightUnitInfo> = {
-  'g': { id: 'g', name: 'Grams', conversionToG: 1 },
-  'kg': { id: 'kg', name: 'Kilograms', conversionToG: 1000 },
-  'oz': { id: 'oz', name: 'Ounces', conversionToG: 28.3495 },
-  'lb': { id: 'lb', name: 'Pounds', conversionToG: 453.59237 }
-};
-
-export const weightUnits: WeightUnitInfo[] = [
-  { id: 'oz', name: 'Ounces', conversionToG: 28.3495 },
-  { id: 'g', name: 'Grams', conversionToG: 1 },
-  { id: 'lb', name: 'Pounds', conversionToG: 453.59237 },
-  { id: 'kg', name: 'Kilograms', conversionToG: 1000 }
+// Weight units with display information
+export const weightUnits = [
+  { id: 'oz', label: 'Ounces', abbr: 'oz', conversionToG: 28.3495 },
+  { id: 'g', label: 'Grams', abbr: 'g', conversionToG: 1 },
+  { id: 'lb', label: 'Pounds', abbr: 'lb', conversionToG: 453.592 },
+  { id: 'kg', label: 'Kilograms', abbr: 'kg', conversionToG: 1000 }
 ];
 
-export const weightUnitOptions: WeightUnitOption[] = [
-  { value: 'oz', label: 'Ounces (oz)' },
-  { value: 'g', label: 'Grams (g)' },
-  { value: 'lb', label: 'Pounds (lb)' },
-  { value: 'kg', label: 'Kilograms (kg)' }
-];
+// Common date format
+export type DateFormat = 'MM/dd/yyyy' | 'dd/MM/yyyy' | 'yyyy-MM-dd';
 
-// Helper function to standardize weight unit values
-export const standardizeWeightUnit = (unit: string): WeightUnit => {
-  const normalized = unit.toLowerCase();
-  
-  if (normalized === 'oz' || normalized === 'ounce' || normalized === 'ounces') {
-    return 'oz';
-  } else if (normalized === 'g' || normalized === 'gram' || normalized === 'grams') {
-    return 'g';
-  } else if (normalized === 'lb' || normalized === 'lbs' || normalized === 'pound' || normalized === 'pounds') {
-    return 'lb';
-  } else if (normalized === 'kg' || normalized === 'kilogram' || normalized === 'kilograms') {
-    return 'kg';
-  }
-  
-  // Default to pounds if not recognized
-  return 'lb';
+// Common status types
+export type Status = 'active' | 'inactive' | 'pending' | 'completed' | 'archived';
+
+// Common currency types
+export type Currency = 'USD' | 'CAD' | 'EUR' | 'GBP';
+
+// Common frequency types for medications, feedings, etc.
+export const FrequencyTypes = {
+  ONCE: 'once',
+  DAILY: 'daily',
+  TWICE_DAILY: 'twice_daily',
+  THREE_TIMES_DAILY: 'three_times_daily',
+  FOUR_TIMES_DAILY: 'four_times_daily',
+  EVERY_OTHER_DAY: 'every_other_day',
+  WEEKLY: 'weekly',
+  BIWEEKLY: 'biweekly',
+  MONTHLY: 'monthly',
+  AS_NEEDED: 'as_needed',
+  // Additional frequencies for health records
+  QUARTERLY: 'quarterly',
+  ANNUALLY: 'annually',
+  ONCE_DAILY: 'once_daily'
 };
 
-// Helper functions for working with weight units
-export const getWeightUnitInfo = (unit: WeightUnit): WeightUnitInfo => {
-  return weightUnitInfos[unit] || weightUnitInfos.lb;
-};
-
-export const getWeightUnitName = (unit: WeightUnit): string => {
-  return getWeightUnitInfo(unit).name;
-};
-
-// Helper types for genetic data
-export interface BreedComposition {
-  primary?: string;
-  secondary?: string;
-  mixed?: boolean;
-  breeds?: Array<{breed: string, percentage: number}>;
+// Health related enums
+export enum AppetiteLevelEnum {
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  FAIR = 'fair',
+  POOR = 'poor',
+  NONE = 'none'
 }
 
-export interface ColorGenetics {
-  base?: string;
-  dilution?: string;
-  brown_dilution?: string;
-  agouti?: string;
-  mask?: string;
-  pattern?: string;
-}
-
-export interface GeneticTraitResults {
-  color?: ColorGenetics;
-  size?: {
-    expected_weight?: number;
-    height_category?: string;
-  };
-  coat?: {
-    type?: string;
-    length?: string;
-    shedding?: string;
-  };
+export enum EnergyLevelEnum {
+  HYPERACTIVE = 'hyperactive',
+  HIGH = 'high',
+  NORMAL = 'normal',
+  LOW = 'low',
+  LETHARGIC = 'lethargic'
 }
