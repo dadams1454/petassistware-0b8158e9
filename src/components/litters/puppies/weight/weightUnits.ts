@@ -1,5 +1,5 @@
 
-import { WeightUnit, weightUnits } from '@/types/common';
+import { WeightUnit, weightUnits } from '@/types/weight-units';
 
 /**
  * Calculate percent change between two weight values
@@ -74,4 +74,4 @@ export const getAppropriateWeightUnit = (
 };
 
 // Export the WeightUnit type from the canonical location
-export type { WeightUnit } from '@/types/common';
+export type { WeightUnit } from '@/types/weight-units';

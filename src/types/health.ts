@@ -1,4 +1,7 @@
 
+/**
+ * Health-related types and interfaces
+ */
 import { 
   HealthRecordType, HealthRecordTypeEnum,
   MedicationStatus, MedicationStatusEnum,
@@ -21,7 +24,7 @@ export {
 } from './health-enums';
 
 // Re-export HeatIntensityType
-export type { HeatIntensityType } from './health-enums';
+export type { HeatIntensityType } from './heat-cycles';
 
 // Re-export the stringToHealthRecordType helper
 export { stringToHealthRecordType } from './health-enums';

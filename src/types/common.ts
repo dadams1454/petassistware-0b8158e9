@@ -20,3 +20,8 @@ export enum FrequencyTypes {
   AS_NEEDED = 'as needed',
   ONCE_DAILY = 'once daily'
 }
+
+// Re-export the weight calculation utility functions
+export { 
+  calculatePercentChange 
+} from '../components/litters/puppies/weight/weightUnits';

@@ -10,7 +10,10 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { WeightUnit, weightUnitInfos } from '@/types/common';
+import { 
+  WeightUnit, 
+  weightUnitInfos
+} from '@/types/weight-units';
 import { WeightRecord } from '@/types/puppyTracking';
 
 interface WeightEntryFormProps {

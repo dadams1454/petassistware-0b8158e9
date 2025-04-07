@@ -81,41 +81,17 @@ export function ensureDogType(dog: any): Dog {
 export function ensurePuppyType(puppy: any): Puppy {
   if (!puppy) return null as unknown as Puppy;
   
-  // Normalize gender
-  const gender = typeof puppy.gender === 'string' && puppy.gender.toLowerCase() === 'female' 
-    ? 'Female' 
-    : 'Male';
-  
-  // Normalize status
-  const validStatuses = ['Available', 'Reserved', 'Sold', 'Unavailable'];
-  const status = puppy.status && validStatuses.includes(puppy.status) 
-    ? puppy.status 
-    : 'Available';
-  
-  // Handle weight unit standardization
-  let weightUnit: WeightUnit | undefined;
-  if (puppy.weight_unit) {
-    weightUnit = standardizeWeightUnit(puppy.weight_unit);
-  }
-  
+  // Default puppy object with required fields
   return {
     id: puppy.id || '',
     name: puppy.name || '',
-    gender: gender,
-    color: puppy.color || '',
-    birth_date: puppy.birth_date || '',
     litter_id: puppy.litter_id || '',
-    microchip_number: puppy.microchip_number || undefined,
-    photo_url: puppy.photo_url || undefined,
-    current_weight: puppy.current_weight || undefined,
-    weight_unit: weightUnit,
-    status: status,
-    birth_order: puppy.birth_order || undefined,
-    birth_weight: puppy.birth_weight || undefined,
-    birth_time: puppy.birth_time || undefined,
-    presentation: puppy.presentation || undefined,
-    assistance_required: Boolean(puppy.assistance_required),
-    assistance_notes: puppy.assistance_notes || undefined
+    birth_date: puppy.birth_date || puppy.birthdate || new Date().toISOString().split('T')[0],
+    gender: puppy.gender || 'Male',
+    color: puppy.color || '',
+    status: puppy.status || 'Available',
+    created_at: puppy.created_at || new Date().toISOString(),
+    ...puppy // Spread the rest of the properties
   };
 }
 
@@ -125,21 +101,23 @@ export function ensurePuppyType(puppy: any): Puppy {
 export function ensureWeightRecordType(record: any): WeightRecord {
   if (!record) return null as unknown as WeightRecord;
   
-  // Handle unit vs weight_unit compatibility
-  const unit = standardizeWeightUnit(record.weight_unit || record.unit || 'lb');
+  // Ensure weight unit is valid
+  const weightUnit = record.weight_unit ? 
+    standardizeWeightUnit(record.weight_unit) : 
+    standardizeWeightUnit(record.unit || 'lb');
   
   return {
-    id: record.id || '',
+    id: record.id || crypto.randomUUID(),
     dog_id: record.dog_id || '',
-    puppy_id: record.puppy_id || undefined,
-    weight: typeof record.weight === 'number' ? record.weight : 0,
-    weight_unit: unit,
+    puppy_id: record.puppy_id,
+    weight: typeof record.weight === 'number' ? record.weight : parseFloat(record.weight || '0'),
+    weight_unit: weightUnit,
     date: record.date || new Date().toISOString().split('T')[0],
     notes: record.notes || '',
-    percent_change: record.percent_change !== undefined ? record.percent_change : 0,
+    percent_change: record.percent_change,
     created_at: record.created_at || new Date().toISOString(),
-    age_days: record.age_days || undefined,
-    birth_date: record.birth_date || undefined
+    age_days: record.age_days,
+    birth_date: record.birth_date
   };
 }
 
@@ -149,43 +127,40 @@ export function ensureWeightRecordType(record: any): WeightRecord {
 export function ensureHealthRecordType(record: any): HealthRecord {
   if (!record) return null as unknown as HealthRecord;
   
-  // Convert record type to enum value
+  // Convert record_type to proper enum if needed
   let recordType: HealthRecordType;
   if (typeof record.record_type === 'string') {
-    const typeLower = record.record_type.toLowerCase();
-    const enumKey = Object.keys(HealthRecordType).find(
-      key => HealthRecordType[key as keyof typeof HealthRecordType].toLowerCase() === typeLower
-    );
-    recordType = enumKey 
-      ? HealthRecordType[enumKey as keyof typeof HealthRecordType] 
-      : HealthRecordType.EXAMINATION;
+    // Check if it's already one of the enum values
+    if (Object.values(HealthRecordType).includes(record.record_type as HealthRecordType)) {
+      recordType = record.record_type as HealthRecordType;
+    } else {
+      // Try to convert from a string
+      const upperType = record.record_type.toUpperCase();
+      if (Object.keys(HealthRecordType).includes(upperType)) {
+        recordType = HealthRecordType[upperType as keyof typeof HealthRecordType];
+      } else {
+        recordType = HealthRecordType.EXAMINATION; // Default
+      }
+    }
   } else {
     recordType = record.record_type || HealthRecordType.EXAMINATION;
   }
   
   return {
     id: record.id,
-    dog_id: record.dog_id,
+    dog_id: record.dog_id || '',
     puppy_id: record.puppy_id,
     record_type: recordType,
-    title: record.title,
+    title: record.title || '',
     visit_date: record.visit_date || record.date || new Date().toISOString().split('T')[0],
     vet_name: record.vet_name || '',
-    description: record.description,
+    description: record.description || '',
     document_url: record.document_url,
-    record_notes: record.record_notes || record.notes,
-    created_at: record.created_at,
-    next_due_date: record.next_due_date
+    record_notes: record.record_notes || record.notes || '',
+    created_at: record.created_at || new Date().toISOString(),
+    next_due_date: record.next_due_date,
+    performed_by: record.performed_by,
+    // Include all remaining properties
+    ...record
   };
-}
-
-/**
- * Convert array to a consistent format, ensuring all elements are of the specified type
- */
-export function ensureArrayOfType<T>(
-  arr: any[] | undefined | null, 
-  transformFn: (item: any) => T
-): T[] {
-  if (!arr || !Array.isArray(arr)) return [];
-  return arr.map(item => transformFn(item));
 }

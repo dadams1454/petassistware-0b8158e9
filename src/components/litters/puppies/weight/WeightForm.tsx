@@ -14,7 +14,7 @@ import {
   WeightUnit, 
   standardizeWeightUnit, 
   weightUnitInfos
-} from '@/types/common';
+} from '@/types/weight-units';
 
 interface WeightFormProps {
   puppyId: string;

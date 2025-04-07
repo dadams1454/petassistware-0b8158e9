@@ -51,6 +51,18 @@ export const HeatIntensityValues: HeatIntensityType[] = [
   'unknown'
 ];
 
+// Function to normalize heat intensity values
+export function normalizeHeatIntensity(intensity: string | HeatIntensityType): HeatIntensityType {
+  if (!intensity) return 'unknown';
+  
+  const intensityLower = intensity.toLowerCase() as HeatIntensityType;
+  if (HeatIntensityValues.includes(intensityLower)) {
+    return intensityLower;
+  }
+  
+  return 'unknown';
+}
+
 // Heat cycle interface
 export interface HeatCycle {
   id: string;

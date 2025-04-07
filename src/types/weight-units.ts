@@ -52,7 +52,7 @@ export const weightUnits: WeightUnitInfo[] = [
   }
 ];
 
-// Export weightUnits with an alternative name for backward compatibility
+// Export weightUnits with the name weightUnitInfos for backward compatibility
 export const weightUnitInfos = weightUnits;
 
 /**
@@ -108,4 +108,42 @@ export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: Weig
 export function formatWeight(weight: number, unit: WeightUnit): string {
   const unitInfo = getWeightUnitInfo(unit);
   return `${weight.toFixed(unitInfo.precision)} ${unitInfo.abbreviation}`;
+}
+
+// Convert weight to grams (utility function)
+export function convertWeightToGrams(weight: number, unit: WeightUnit): number {
+  const unitInfo = getWeightUnitInfo(unit);
+  return weight * unitInfo.conversionToG;
+}
+
+// Determine appropriate weight unit based on weight value and current unit
+export function getAppropriateWeightUnit(
+  weight: number, 
+  currentUnit: WeightUnit, 
+  ageInDays?: number
+): WeightUnit {
+  const weightInGrams = convertWeight(weight, currentUnit, 'g');
+  
+  // For very young puppies (less than 14 days), use ounces if they're small
+  if (ageInDays && ageInDays < 14 && weightInGrams < 1000) {
+    return 'oz';
+  }
+  
+  // For puppies between 2-8 weeks, use pounds if they're over 500g
+  if (ageInDays && ageInDays < 56 && weightInGrams >= 500) {
+    return 'lb';
+  }
+  
+  // For older puppies and small breeds, use pounds
+  if (weightInGrams >= 1000) {
+    return 'lb';
+  }
+  
+  // For larger dogs, use kilograms if over 20kg
+  if (weightInGrams >= 20000) {
+    return 'kg';
+  }
+  
+  // Default to ounces for very small puppies
+  return 'oz';
 }

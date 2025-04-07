@@ -11,6 +11,7 @@ import {
   AppetiteLevel,
   EnergyLevel,
   StoolConsistency,
+  HeatIntensity,
   stringToHealthRecordType
 } from './health-enums';
 
@@ -21,6 +22,7 @@ export {
   AppetiteLevel,
   EnergyLevel,
   StoolConsistency,
+  HeatIntensity,
   stringToHealthRecordType
 };
 
@@ -73,20 +75,6 @@ export enum DocumentType {
   REGISTRATION = 'registration',
   CONTRACT = 'contract',
   OTHER = 'other'
-}
-
-// Heat Intensity Enum
-export enum HeatIntensity {
-  LIGHT = 'light',
-  MODERATE = 'moderate',
-  HEAVY = 'heavy',
-  MILD = 'mild',
-  MEDIUM = 'medium',
-  LOW = 'low',
-  HIGH = 'high',
-  PEAK = 'peak',
-  STRONG = 'strong',
-  UNKNOWN = 'unknown'
 }
 
 // Reproductive Status Enum

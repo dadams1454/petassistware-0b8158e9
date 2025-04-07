@@ -2,13 +2,10 @@
 // Export all types from across the application
 // This file functions as a central hub for importing types
 
-// Re-export all the enums from the central enums file
-export * from './enums';
-
-// Re-export all weight-units
+// Re-export all weight-related types from the weight-units file
 export * from './weight-units';
 
-// Re-export all health-enums
+// Re-export health-enums
 export * from './health-enums';
 
 // Re-export heat-cycles types
@@ -126,6 +123,23 @@ export type {
   CalendarEvent
 } from './events';
 
-// Export utility functions
-export { convertWeightToGrams, convertWeight, getAppropriateWeightUnit, formatWeight } from '../utils/weightConversion';
-export { ensureDogType, ensurePuppyType, ensureWeightRecordType, ensureHealthRecordType } from '../utils/typeCompatibility';
+// Export utility functions from weight-units and heat-cycles
+export { 
+  convertWeight, 
+  getAppropriateWeightUnit, 
+  formatWeight,
+  standardizeWeightUnit,
+  convertWeightToGrams
+} from './weight-units';
+
+export { 
+  normalizeHeatIntensity 
+} from './heat-cycles';
+
+// Export type compatibility helpers 
+export { 
+  ensureDogType, 
+  ensurePuppyType, 
+  ensureWeightRecordType, 
+  ensureHealthRecordType 
+} from '../utils/typeCompatibility';
