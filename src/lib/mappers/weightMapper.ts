@@ -1,6 +1,6 @@
 
 import { WeightRecord } from '@/types/weight';
-import { WeightUnit } from '@/types/weight-units';
+import { WeightUnit, standardizeWeightUnit } from '@/types/weight-units';
 
 /**
  * Maps a weight record from Supabase DB format to frontend TypeScript format
@@ -9,10 +9,7 @@ export function mapWeightRecordFromDB(record: any): WeightRecord {
   if (!record) return null as unknown as WeightRecord;
 
   // Ensure weight unit is a valid WeightUnit value
-  let weightUnit: WeightUnit = record.weight_unit as WeightUnit;
-  if (!['g', 'kg', 'oz', 'lb'].includes(weightUnit)) {
-    weightUnit = 'g'; // Default to grams if invalid
-  }
+  const weightUnit: WeightUnit = standardizeWeightUnit(record.weight_unit || 'g');
 
   return {
     id: record.id || '',

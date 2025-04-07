@@ -57,7 +57,8 @@ export {
   convertWeightToGrams, 
   convertWeight, 
   formatWeight, 
-  getAppropriateWeightUnit 
+  getAppropriateWeightUnit,
+  calculatePercentChange
 } from '../utils/weightConversion';
 
 // Export welping types
