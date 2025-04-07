@@ -72,6 +72,13 @@ export enum StoolConsistency {
 }
 
 // Backwards compatibility aliases - explicitly exported
+export const HealthRecordTypeEnum = HealthRecordType;
+export const MedicationStatusEnum = MedicationStatus;
+export const AppetiteLevelEnum = AppetiteLevel;
+export const EnergyLevelEnum = EnergyLevel;
+export const StoolConsistencyEnum = StoolConsistency;
+
+// Also export these as types for type-checking
 export type HealthRecordTypeEnum = HealthRecordType;
 export type MedicationStatusEnum = MedicationStatus;
 export type AppetiteLevelEnum = AppetiteLevel;

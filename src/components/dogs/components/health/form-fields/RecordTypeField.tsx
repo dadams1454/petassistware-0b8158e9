@@ -13,7 +13,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordType } from '@/types/health';
 
 interface RecordTypeFieldProps {
   disabled?: boolean;
@@ -23,16 +23,16 @@ const RecordTypeField = ({ disabled = false }: RecordTypeFieldProps) => {
   const form = useFormContext();
 
   const recordTypes = [
-    { label: 'Examination', value: HealthRecordTypeEnum.EXAMINATION },
-    { label: 'Vaccination', value: HealthRecordTypeEnum.VACCINATION },
-    { label: 'Medication', value: HealthRecordTypeEnum.MEDICATION },
-    { label: 'Surgery', value: HealthRecordTypeEnum.SURGERY },
-    { label: 'Laboratory', value: HealthRecordTypeEnum.LABORATORY },
-    { label: 'Preventative', value: HealthRecordTypeEnum.PREVENTIVE },
-    { label: 'Test', value: HealthRecordTypeEnum.TEST },
-    { label: 'Imaging', value: HealthRecordTypeEnum.IMAGING },
-    { label: 'Deworming', value: HealthRecordTypeEnum.DEWORMING },
-    { label: 'Other', value: HealthRecordTypeEnum.OTHER }
+    { label: 'Examination', value: HealthRecordType.EXAMINATION },
+    { label: 'Vaccination', value: HealthRecordType.VACCINATION },
+    { label: 'Medication', value: HealthRecordType.MEDICATION },
+    { label: 'Surgery', value: HealthRecordType.SURGERY },
+    { label: 'Laboratory', value: HealthRecordType.LABORATORY },
+    { label: 'Preventative', value: HealthRecordType.PREVENTIVE },
+    { label: 'Test', value: HealthRecordType.TEST },
+    { label: 'Imaging', value: HealthRecordType.IMAGING },
+    { label: 'Deworming', value: HealthRecordType.DEWORMING },
+    { label: 'Other', value: HealthRecordType.OTHER }
   ];
 
   return (

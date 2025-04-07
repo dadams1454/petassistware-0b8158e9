@@ -3,7 +3,7 @@ import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordType } from '@/types/health';
 
 interface RecordTypeFieldProps {
   form: UseFormReturn<any>;
@@ -32,14 +32,14 @@ const RecordTypeField: React.FC<RecordTypeFieldProps> = ({ form, onTypeChange, d
                 <SelectValue placeholder="Select record type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={HealthRecordTypeEnum.EXAMINATION}>Examination</SelectItem>
-                <SelectItem value={HealthRecordTypeEnum.VACCINATION}>Vaccination</SelectItem>
-                <SelectItem value={HealthRecordTypeEnum.MEDICATION}>Medication</SelectItem>
-                <SelectItem value={HealthRecordTypeEnum.SURGERY}>Surgery</SelectItem>
-                <SelectItem value={HealthRecordTypeEnum.TEST}>Test</SelectItem>
-                <SelectItem value={HealthRecordTypeEnum.IMAGING}>Imaging</SelectItem>
-                <SelectItem value={HealthRecordTypeEnum.DEWORMING}>Deworming</SelectItem>
-                <SelectItem value={HealthRecordTypeEnum.OTHER}>Other</SelectItem>
+                <SelectItem value={HealthRecordType.EXAMINATION}>Examination</SelectItem>
+                <SelectItem value={HealthRecordType.VACCINATION}>Vaccination</SelectItem>
+                <SelectItem value={HealthRecordType.MEDICATION}>Medication</SelectItem>
+                <SelectItem value={HealthRecordType.SURGERY}>Surgery</SelectItem>
+                <SelectItem value={HealthRecordType.TEST}>Test</SelectItem>
+                <SelectItem value={HealthRecordType.IMAGING}>Imaging</SelectItem>
+                <SelectItem value={HealthRecordType.DEWORMING}>Deworming</SelectItem>
+                <SelectItem value={HealthRecordType.OTHER}>Other</SelectItem>
               </SelectContent>
             </Select>
           </FormControl>

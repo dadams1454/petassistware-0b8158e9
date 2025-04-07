@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Settings } from 'lucide-react';
 import { MedicationInfo } from '../types/medicationTypes';
 import TimeManager from '../../table/components/TimeManager';
-import { MedicationStatusEnum } from '@/types/health';
+import { MedicationStatus, MedicationStatusEnum } from '@/types/health';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationTableViewProps {
@@ -101,21 +101,21 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
 // Helper function to render the status badge
 const getStatusBadge = (status: any) => {
   if (!status) {
-    return getStatusLabelBadge(MedicationStatusEnum.NOT_STARTED);
+    return getStatusLabelBadge(MedicationStatus.NOT_STARTED);
   }
   
   if (typeof status === 'string') {
     // Handle string status (convert to enum)
     const upperStatus = status.toUpperCase();
-    const medicationEnumKeys = Object.keys(MedicationStatusEnum);
+    const medicationEnumKeys = Object.keys(MedicationStatus);
     const enumStatus = medicationEnumKeys.includes(upperStatus) 
-      ? MedicationStatusEnum[upperStatus as keyof typeof MedicationStatusEnum] 
-      : MedicationStatusEnum.NOT_STARTED;
+      ? MedicationStatus[upperStatus as keyof typeof MedicationStatus] 
+      : MedicationStatus.NOT_STARTED;
     return getStatusLabelBadge(enumStatus);
   } 
   
   if (typeof status === 'object' && status && 'status' in status) {
-    const statusInfo = getStatusLabel(status.status as MedicationStatusEnum);
+    const statusInfo = getStatusLabel(status.status as MedicationStatus);
     return (
       <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.statusColor}`}>
         {statusInfo.statusLabel}
@@ -124,19 +124,19 @@ const getStatusBadge = (status: any) => {
   }
   
   // Default fallback
-  return getStatusLabelBadge(MedicationStatusEnum.NOT_STARTED);
+  return getStatusLabelBadge(MedicationStatus.NOT_STARTED);
 };
 
-const getStatusLabelBadge = (status: MedicationStatusEnum | string) => {
+const getStatusLabelBadge = (status: MedicationStatus | string) => {
   // Normalize string status to enum
-  let statusEnum = status as MedicationStatusEnum;
+  let statusEnum = status as MedicationStatus;
   if (typeof status === 'string') {
     const upperStatus = status.toUpperCase();
-    const medicationEnumKeys = Object.keys(MedicationStatusEnum);
+    const medicationEnumKeys = Object.keys(MedicationStatus);
     if (!medicationEnumKeys.includes(upperStatus)) {
-      statusEnum = MedicationStatusEnum.NOT_STARTED;
+      statusEnum = MedicationStatus.NOT_STARTED;
     } else {
-      statusEnum = MedicationStatusEnum[upperStatus as keyof typeof MedicationStatusEnum];
+      statusEnum = MedicationStatus[upperStatus as keyof typeof MedicationStatus];
     }
   }
   

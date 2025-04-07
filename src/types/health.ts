@@ -9,7 +9,7 @@ import {
   AppetiteLevel, 
   EnergyLevel, 
   StoolConsistency,
-  // Type aliases for backward compatibility
+  // Value aliases for backward compatibility
   HealthRecordTypeEnum,
   MedicationStatusEnum,
   AppetiteLevelEnum,
@@ -26,7 +26,7 @@ export {
   AppetiteLevel,
   EnergyLevel, 
   StoolConsistency,
-  // Type aliases for backward compatibility 
+  // Value aliases for backward compatibility 
   HealthRecordTypeEnum,
   MedicationStatusEnum,
   AppetiteLevelEnum,
@@ -34,6 +34,15 @@ export {
   StoolConsistencyEnum,
   // Helper functions
   stringToHealthRecordType
+};
+
+// Also re-export as types
+export type {
+  HealthRecordTypeEnum as HealthRecordTypeEnumType,
+  MedicationStatusEnum as MedicationStatusEnumType,
+  AppetiteLevelEnum as AppetiteLevelEnumType,
+  EnergyLevelEnum as EnergyLevelEnumType,
+  StoolConsistencyEnum as StoolConsistencyEnumType
 };
 
 // Health record interface

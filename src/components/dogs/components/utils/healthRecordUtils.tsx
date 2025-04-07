@@ -12,7 +12,7 @@ import {
   Stethoscope,
   Bug
 } from 'lucide-react';
-import { HealthRecordType } from '@/types/health-enums';
+import { HealthRecordType } from '@/types/health';
 
 /**
  * Get the appropriate icon for a health record type
