@@ -7,12 +7,28 @@ import { mapWeightRecordFromDB, mapWeightRecordToDB } from '@/lib/mappers/weight
 import { useToast } from '@/components/ui/use-toast';
 import { differenceInDays } from 'date-fns';
 
-interface UseWeightDataProps {
+// Props for the useWeightData hook
+export interface UseWeightDataProps {
   puppyId?: string;
   dogId?: string;
 }
 
-export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps) => {
+// Return type for the useWeightData hook
+export interface UseWeightDataResult {
+  weightRecords: WeightRecord[];
+  isLoading: boolean;
+  error: Error | null;
+  fetchWeightHistory: () => Promise<void>;
+  addWeight: (data: Partial<WeightRecord>) => Promise<WeightRecord>;
+  deleteWeight: (id: string) => Promise<string>;
+  isAdding: boolean;
+  isDeleting: boolean;
+}
+
+/**
+ * Custom hook for managing weight data with proper typing and error handling
+ */
+export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps): UseWeightDataResult => {
   const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -25,7 +41,7 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps) => {
   // Fetch weight history
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: weightQueryKey,
-    queryFn: async () => {
+    queryFn: async (): Promise<WeightRecord[]> => {
       let query = supabase.from('weights')
         .select('*')
         .order('date', { ascending: false });
@@ -51,7 +67,7 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps) => {
 
   // Add weight mutation
   const addWeightMutation = useMutation({
-    mutationFn: async (weightData: Partial<WeightRecord>) => {
+    mutationFn: async (weightData: Partial<WeightRecord>): Promise<WeightRecord> => {
       // If a birth date is provided and not age_days, calculate age_days
       if (weightData.birth_date && !weightData.age_days && weightData.date) {
         const birthDate = new Date(weightData.birth_date);
@@ -82,7 +98,7 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps) => {
         description: 'Weight record has been successfully saved.',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error adding weight',
         description: error.message || 'Failed to save weight record.',
@@ -93,7 +109,7 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps) => {
 
   // Delete weight mutation
   const deleteWeightMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: string): Promise<string> => {
       const { error } = await supabase
         .from('weights')
         .delete()
@@ -112,7 +128,7 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps) => {
         description: 'Weight record has been successfully deleted.',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error deleting weight',
         description: error.message || 'Failed to delete weight record.',

@@ -19,7 +19,7 @@ export interface PuppyAgeGroup {
   endDay: number;
   minAge: number;
   maxAge: number;
-  milestones: string[]; // Changed from string to string[]
+  milestones: string[]; // Array of milestone strings
 }
 
 // Enhanced info for age groups
@@ -32,7 +32,7 @@ export interface PuppyAgeGroupInfo {
   startDay: number;
   endDay: number;
   color: string;
-  milestones: string[]; // Changed from string to string[]
+  milestones: string[]; // Array of milestone strings
   minAge: number;
   maxAge: number;
 }

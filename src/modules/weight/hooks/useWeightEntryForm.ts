@@ -25,9 +25,11 @@ const weightEntrySchema = z.object({
   notes: z.string().optional(),
 });
 
+// Export the inferred type from our schema
 export type WeightEntryValues = z.infer<typeof weightEntrySchema>;
 
-interface UseWeightEntryFormProps {
+// Props for the useWeightEntryForm hook
+export interface UseWeightEntryFormProps {
   dogId?: string;
   puppyId?: string;
   birthDate?: string;
@@ -36,6 +38,16 @@ interface UseWeightEntryFormProps {
   initialData?: Partial<WeightEntryValues>;
 }
 
+// Return type for the useWeightEntryForm hook
+export interface UseWeightEntryFormResult {
+  form: ReturnType<typeof useForm<WeightEntryValues>>;
+  isSubmitting: boolean;
+  handleSubmit: () => void;
+}
+
+/**
+ * Custom hook for weight entry form handling with proper typing
+ */
 export const useWeightEntryForm = ({ 
   dogId, 
   puppyId, 
@@ -43,7 +55,7 @@ export const useWeightEntryForm = ({
   previousWeight,
   onSave, 
   initialData 
-}: UseWeightEntryFormProps) => {
+}: UseWeightEntryFormProps): UseWeightEntryFormResult => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<WeightEntryValues>({

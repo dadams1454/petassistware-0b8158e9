@@ -2,14 +2,33 @@
 import { useState, useCallback } from 'react';
 
 /**
- * Custom hook to manage loading state
+ * Type for the return value of the useLoading hook
  */
-export const useLoading = () => {
-  const [loading, setLoading] = useState(false);
+export interface UseLoadingResult {
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  withLoading: <T>(fn: () => Promise<T>) => Promise<T>;
+}
+
+/**
+ * Custom hook to manage loading state with proper typing
+ */
+export const useLoading = (): UseLoadingResult => {
+  const [loading, setLoading] = useState<boolean>(false);
   
+  /**
+   * Utility function to wrap async operations with automatic loading state management
+   * @param fn Async function to execute
+   * @returns A promise that resolves to the result of fn
+   */
   const withLoading = useCallback(<T>(fn: () => Promise<T>): Promise<T> => {
     setLoading(true);
-    return fn().finally(() => setLoading(false));
+    return fn()
+      .finally(() => setLoading(false))
+      .catch(error => {
+        console.error('Operation failed:', error);
+        throw error; // Re-throw to allow caller to handle
+      });
   }, []);
   
   return {

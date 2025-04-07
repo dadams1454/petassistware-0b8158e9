@@ -17,7 +17,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 13,
     minAge: 0,
     maxAge: 13,
-    milestones: 'Eyes open, ears begin to open'
+    milestones: ['Eyes open', 'Ears begin to open'] // Fixed to be an array
   },
   {
     id: 'twoWeek',
@@ -32,7 +32,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 27,
     minAge: 14,
     maxAge: 27,
-    milestones: 'Beginning to walk, starting to interact with siblings'
+    milestones: ['Beginning to walk', 'Starting to interact with siblings'] // Fixed to be an array
   },
   {
     id: 'fourWeek',
@@ -47,7 +47,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 41,
     minAge: 28,
     maxAge: 41,
-    milestones: 'Weaning begins, solid food introduction, socialization begins'
+    milestones: ['Weaning begins', 'Solid food introduction', 'Socialization begins'] // Fixed to be an array
   },
   {
     id: 'sixWeek',
@@ -62,7 +62,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 55,
     minAge: 42,
     maxAge: 55,
-    milestones: 'Fully weaned, vaccinations, active socialization'
+    milestones: ['Fully weaned', 'Vaccinations', 'Active socialization'] // Fixed to be an array
   },
   {
     id: 'eightWeek',
@@ -77,9 +77,17 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 365, 
     minAge: 56,
     maxAge: 365,
-    milestones: 'Ready for new homes, continued socialization'
+    milestones: ['Ready for new homes', 'Continued socialization'] // Fixed to be an array
   }
 ];
+
+/**
+ * Return type for the usePuppyAgeGroups hook
+ */
+export interface UsePuppyAgeGroupsResult {
+  ageGroups: PuppyAgeGroup[];
+  puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
+}
 
 /**
  * Hook to group puppies by their age ranges
@@ -90,11 +98,11 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
 export const usePuppyAgeGroups = (
   puppies: PuppyWithAge[],
   customAgeGroups?: PuppyAgeGroup[]
-) => {
+): UsePuppyAgeGroupsResult => {
   const ageGroups = customAgeGroups || DEFAULT_AGE_GROUPS;
   
   // Group puppies by age groups
-  const puppiesByAgeGroup = useMemo(() => {
+  const puppiesByAgeGroup = useMemo<Record<string, PuppyWithAge[]>>(() => {
     // Initialize with empty arrays for all defined age groups
     const initialGroups: Record<string, PuppyWithAge[]> = {};
     
@@ -107,7 +115,7 @@ export const usePuppyAgeGroups = (
     initialGroups['all'] = [...puppies];
     
     // Group puppies by their age
-    return puppies.reduce((groups, puppy) => {
+    return puppies.reduce<Record<string, PuppyWithAge[]>>((groups, puppy) => {
       const ageInDays = puppy.ageInDays || 0;
       
       // Find the matching age group
