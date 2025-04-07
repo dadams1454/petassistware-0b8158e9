@@ -3,6 +3,9 @@
  * Health-related enums used throughout the application
  */
 
+// Import the HeatIntensity enum and HeatIntensityType from the central location
+import { HeatIntensity, HeatIntensityType } from './heat-cycles';
+
 // Re-export the HeatIntensityType from the central location
 export type { HeatIntensityType } from './heat-cycles';
 export { HeatIntensity } from './heat-cycles';
@@ -82,7 +85,7 @@ export const MedicationStatusEnum = MedicationStatus;
 export const AppetiteLevelEnum = AppetiteLevel;
 export const EnergyLevelEnum = EnergyLevel;
 export const StoolConsistencyEnum = StoolConsistency;
-export const HeatIntensityEnum = HeatIntensity; // Import already established at top
+export const HeatIntensityEnum = HeatIntensity; // Now properly referencing the imported HeatIntensity
 
 // Export these as types for type-checking
 export type HealthRecordTypeEnum = HealthRecordType;
@@ -90,4 +93,4 @@ export type MedicationStatusEnum = MedicationStatus;
 export type AppetiteLevelEnum = AppetiteLevel;
 export type EnergyLevelEnum = EnergyLevel;
 export type StoolConsistencyEnum = StoolConsistency;
-export type HeatIntensityEnum = HeatIntensity; // Properly reference the imported HeatIntensity
+export type HeatIntensityEnum = HeatIntensity; // Now properly referencing the imported HeatIntensity
