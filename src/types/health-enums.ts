@@ -51,6 +51,7 @@ export enum AppetiteEnum {
   NONE = 'none'
 }
 
+// Export AppetiteLevel as a string union type
 export type AppetiteLevel = 
   | 'excellent'
   | 'good'

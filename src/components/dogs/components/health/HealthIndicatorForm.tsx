@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AppetiteLevel, EnergyLevel, StoolConsistency } from '@/types/health-enums';
+import { AppetiteLevel, EnergyLevel, StoolConsistency } from '@/types';
 
 // Form schema using zod
 const healthIndicatorSchema = z.object({
@@ -74,11 +73,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={AppetiteLevel.EXCELLENT}>Excellent</SelectItem>
-                    <SelectItem value={AppetiteLevel.GOOD}>Good</SelectItem>
-                    <SelectItem value={AppetiteLevel.FAIR}>Fair</SelectItem>
-                    <SelectItem value={AppetiteLevel.POOR}>Poor</SelectItem>
-                    <SelectItem value={AppetiteLevel.NONE}>None</SelectItem>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="fair">Fair</SelectItem>
+                    <SelectItem value="poor">Poor</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -102,11 +101,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={EnergyLevel.HYPERACTIVE}>Hyperactive</SelectItem>
-                    <SelectItem value={EnergyLevel.HIGH}>High</SelectItem>
-                    <SelectItem value={EnergyLevel.NORMAL}>Normal</SelectItem>
-                    <SelectItem value={EnergyLevel.LOW}>Low</SelectItem>
-                    <SelectItem value={EnergyLevel.LETHARGIC}>Lethargic</SelectItem>
+                    <SelectItem value="hyperactive">Hyperactive</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="lethargic">Lethargic</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -130,13 +129,13 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={StoolConsistency.NORMAL}>Normal</SelectItem>
-                    <SelectItem value={StoolConsistency.SOFT}>Soft</SelectItem>
-                    <SelectItem value={StoolConsistency.LOOSE}>Loose</SelectItem>
-                    <SelectItem value={StoolConsistency.WATERY}>Watery</SelectItem>
-                    <SelectItem value={StoolConsistency.HARD}>Hard</SelectItem>
-                    <SelectItem value={StoolConsistency.MUCOUSY}>Mucousy</SelectItem>
-                    <SelectItem value={StoolConsistency.BLOODY}>Bloody</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="soft">Soft</SelectItem>
+                    <SelectItem value="loose">Loose</SelectItem>
+                    <SelectItem value="watery">Watery</SelectItem>
+                    <SelectItem value="hard">Hard</SelectItem>
+                    <SelectItem value="bloody">Bloody</SelectItem>
+                    <SelectItem value="mucus">Mucus</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

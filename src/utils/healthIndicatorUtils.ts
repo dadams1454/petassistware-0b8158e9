@@ -1,11 +1,7 @@
-
 import { 
   AppetiteLevel, 
   EnergyLevel, 
-  StoolConsistency,
-  AppetiteEnum,
-  EnergyEnum,
-  StoolConsistencyEnum
+  StoolConsistency
 } from '@/types';
 
 /**
@@ -14,15 +10,15 @@ import {
 export const getAppetiteLevelLabel = (level: AppetiteLevel): string => {
   switch (level) {
     case 'excellent':
-      return AppetiteEnum.EXCELLENT;
+      return 'Excellent';
     case 'good':
-      return AppetiteEnum.GOOD;
+      return 'Good';
     case 'fair':
-      return AppetiteEnum.FAIR;
+      return 'Fair';
     case 'poor':
-      return AppetiteEnum.POOR;
+      return 'Poor';
     case 'none':
-      return AppetiteEnum.NONE;
+      return 'None';
     default:
       return 'Unknown';
   }
@@ -34,15 +30,15 @@ export const getAppetiteLevelLabel = (level: AppetiteLevel): string => {
 export const getEnergyLevelLabel = (level: EnergyLevel): string => {
   switch (level) {
     case 'hyperactive':
-      return EnergyEnum.HYPERACTIVE;
+      return 'Hyperactive';
     case 'high':
-      return EnergyEnum.HIGH;
+      return 'High';
     case 'normal':
-      return EnergyEnum.NORMAL;
+      return 'Normal';
     case 'low':
-      return EnergyEnum.LOW;
+      return 'Low';
     case 'lethargic':
-      return EnergyEnum.LETHARGIC;
+      return 'Lethargic';
     default:
       return 'Unknown';
   }
@@ -54,19 +50,19 @@ export const getEnergyLevelLabel = (level: EnergyLevel): string => {
 export const getStoolConsistencyLabel = (consistency: StoolConsistency): string => {
   switch (consistency) {
     case 'normal':
-      return StoolConsistencyEnum.NORMAL;
+      return 'Normal';
     case 'soft':
-      return StoolConsistencyEnum.SOFT;
+      return 'Soft';
     case 'loose':
-      return StoolConsistencyEnum.LOOSE;
+      return 'Loose';
     case 'watery':
-      return StoolConsistencyEnum.WATERY;
+      return 'Watery';
     case 'hard':
-      return StoolConsistencyEnum.HARD;
+      return 'Hard';
     case 'bloody':
-      return StoolConsistencyEnum.BLOODY;
+      return 'Bloody';
     case 'mucus':
-      return StoolConsistencyEnum.MUCUS;
+      return 'Mucus';
     default:
       return 'Unknown';
   }

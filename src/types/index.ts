@@ -1,4 +1,3 @@
-
 // Export standard types from core type definitions
 export type { WeightUnit, WeightUnitInfo } from './weight-units';
 export { 
@@ -19,7 +18,7 @@ export {
   mapHeatIntensityTypeToDisplay
 } from './heat-cycles';
 
-// Export health-related types and enums - fix the duplicate MedicationStatusResult
+// Export health-related types and enums
 export type { 
   HealthRecord,
   Medication, 
