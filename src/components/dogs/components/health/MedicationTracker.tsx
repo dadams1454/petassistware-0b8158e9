@@ -25,6 +25,7 @@ interface MedicationTrackerProps {
   onDelete?: (medicationId: string) => void;
   onAdminister?: (medicationId: string, data: any) => void;
   className?: string;
+  filter?: string;
 }
 
 export const MedicationTracker: React.FC<MedicationTrackerProps> = ({
@@ -32,10 +33,20 @@ export const MedicationTracker: React.FC<MedicationTrackerProps> = ({
   onEdit,
   onDelete,
   onAdminister,
-  className
+  className,
+  filter
 }) => {
   const { toast } = useToast();
   const [expandedMedications, setExpandedMedications] = useState<Record<string, boolean>>({});
+
+  // Apply filter if provided
+  const filteredMedications = filter 
+    ? medications.filter(med => 
+        med.medication_name.toLowerCase().includes(filter.toLowerCase()) ||
+        med.dosage_unit.toLowerCase().includes(filter.toLowerCase()) ||
+        med.administration_route.toLowerCase().includes(filter.toLowerCase())
+      )
+    : medications;
 
   const toggleExpand = (id: string) => {
     setExpandedMedications(prev => ({
@@ -57,10 +68,10 @@ export const MedicationTracker: React.FC<MedicationTrackerProps> = ({
     }
   };
 
-  const activeMedications = medications.filter(med => med.is_active !== false);
-  const inactiveMedications = medications.filter(med => med.is_active === false);
+  const activeMedications = filteredMedications.filter(med => med.is_active !== false);
+  const inactiveMedications = filteredMedications.filter(med => med.is_active === false);
 
-  if (medications.length === 0) {
+  if (filteredMedications.length === 0) {
     return (
       <Card className={className}>
         <CardHeader>

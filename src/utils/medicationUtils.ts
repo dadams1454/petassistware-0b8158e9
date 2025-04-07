@@ -20,7 +20,8 @@ export const MedicationFrequencyConstants = {
   MONTHLY: 'monthly',
   QUARTERLY: 'quarterly',
   ANNUALLY: 'annually',
-  AS_NEEDED: 'as needed'
+  AS_NEEDED: 'as needed',
+  ONCE_DAILY: 'once daily'
 };
 
 // Helper function to get a friendly label for status
