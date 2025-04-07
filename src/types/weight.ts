@@ -10,6 +10,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -28,4 +29,5 @@ export interface GrowthStats {
   growthRate: number;
   lastWeekGrowth: number;
   projectedWeight: number;
+  averageGrowthRate?: number; // For backward compatibility
 }

@@ -79,3 +79,23 @@ export const getAppropriateWeightUnit = (
   // Default to ounces for very small puppies
   return 'oz';
 };
+
+/**
+ * Calculate percent change between two weight values
+ */
+export const calculatePercentChange = (
+  oldWeight: { weight: number, unit: WeightUnit }, 
+  newWeight: { weight: number, unit: WeightUnit }
+): number => {
+  if (oldWeight.weight === 0) return 0; // Prevent division by zero
+  
+  // Convert both weights to the same unit (grams) for comparison
+  const oldWeightInGrams = convertWeightToGrams(oldWeight.weight, oldWeight.unit);
+  const newWeightInGrams = convertWeightToGrams(newWeight.weight, newWeight.unit);
+  
+  // Calculate percentage change
+  const change = ((newWeightInGrams - oldWeightInGrams) / oldWeightInGrams) * 100;
+  
+  // Return the rounded value to 1 decimal place
+  return Math.round(change * 10) / 10;
+};

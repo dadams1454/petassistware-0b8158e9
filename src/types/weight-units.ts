@@ -22,6 +22,8 @@ export interface WeightUnitInfo {
   precision: number;
   minValue: number;
   maxValue: number;
+  name?: string; // For backward compatibility
+  id?: string;   // For backward compatibility
 }
 
 // Weight unit conversion information
@@ -32,7 +34,9 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     gramsPerUnit: 1,
     precision: 0,
     minValue: 1,
-    maxValue: 1000
+    maxValue: 1000,
+    name: 'Grams',
+    id: 'g'
   },
   {
     value: 'kg',
@@ -40,7 +44,9 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     gramsPerUnit: 1000,
     precision: 2,
     minValue: 0.01,
-    maxValue: 100
+    maxValue: 100,
+    name: 'Kilograms',
+    id: 'kg'
   },
   {
     value: 'oz',
@@ -48,7 +54,9 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     gramsPerUnit: 28.3495,
     precision: 1,
     minValue: 0.1,
-    maxValue: 100
+    maxValue: 100,
+    name: 'Ounces',
+    id: 'oz'
   },
   {
     value: 'lb',
@@ -56,7 +64,9 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     gramsPerUnit: 453.592,
     precision: 2,
     minValue: 0.01,
-    maxValue: 200
+    maxValue: 200,
+    name: 'Pounds',
+    id: 'lb'
   }
 ];
 

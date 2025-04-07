@@ -150,17 +150,6 @@ export enum MedicationStatus {
 }
 
 /**
- * Medication status result interface
- */
-export interface MedicationStatusResult {
-  status: MedicationStatusEnum;
-  daysOverdue?: number;
-  daysUntilDue?: number;
-  nextDue?: Date | null;
-  message: string;
-}
-
-/**
  * Maps a string to the corresponding HealthRecordType enum value
  * @param type - Type of health record as a string
  * @returns The corresponding HealthRecordType enum value
@@ -256,5 +245,6 @@ export const getHealthRecordTypeDisplay = (type: HealthRecordTypeEnum): string =
   }
 };
 
-// Re-export for compatibility with existing code
-export { type HeatIntensityType, HeatIntensity } from './heat-cycles';
+// Re-export from heat cycles for backward compatibility
+export { type HeatIntensityType } from './heat-cycles';
+export { HeatIntensity } from './heat-cycles';

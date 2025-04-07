@@ -17,10 +17,17 @@ export {
 } from './heat-cycles';
 
 // Export health-related types and enums
-export type { MedicationStatusResult } from './health';
+export type { 
+  HealthRecord,
+  MedicationStatusResult, 
+  Medication, 
+  MedicationAdministration, 
+  HealthIndicator 
+} from './health';
+
 export {
-  HealthRecordType, 
-  HealthRecordTypeEnum,
+  HealthRecordTypeEnum, 
+  HealthRecordType,
   MedicationStatus, 
   MedicationStatusEnum,
   AppetiteLevel, 
@@ -34,7 +41,7 @@ export {
 } from './health-enums';
 
 // Export weight-related types
-export type { WeightRecord } from './weight';
+export type { WeightRecord, GrowthStats } from './weight';
 
 // Export enum helpers
 export * from './enums';
@@ -45,10 +52,24 @@ export * from './puppy';
 export * from './litter';
 export * from './dailyCare';
 
-// Re-export weight utilities
+// Export weight utilities
 export { 
   convertWeightToGrams, 
   convertWeight, 
   formatWeight, 
   getAppropriateWeightUnit 
 } from '../utils/weightConversion';
+
+// Export welping types
+export type { WelpingLog, WelpingObservation, PostpartumCare, WelpingLogEntry } from './welping';
+
+// Export socialization types
+export type {
+  SocializationCategory,
+  SocializationCategoryOption,
+  SocializationRecord,
+  SocializationExperience,
+  SocializationProgress,
+  SocializationReactionType,
+  SocializationReaction
+} from './socialization';

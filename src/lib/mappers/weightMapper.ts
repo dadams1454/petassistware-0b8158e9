@@ -1,5 +1,5 @@
 
-import { WeightRecord } from '@/types';
+import { WeightRecord } from '@/types/weight';
 import { WeightUnit } from '@/types/weight-units';
 
 /**
@@ -20,6 +20,7 @@ export function mapWeightRecordFromDB(record: any): WeightRecord {
     puppy_id: record.puppy_id || '',
     weight: Number(record.weight) || 0,
     weight_unit: weightUnit,
+    unit: weightUnit, // For backward compatibility
     date: record.date || new Date().toISOString().split('T')[0],
     notes: record.notes || '',
     percent_change: record.percent_change !== null ? Number(record.percent_change) : undefined,
@@ -42,6 +43,11 @@ export function mapWeightRecordToDB(record: Partial<WeightRecord>): any {
   
   if (dbRecord.created_at === '') {
     delete dbRecord.created_at;
+  }
+  
+  // Ensure the unit field is properly mapped to weight_unit
+  if (dbRecord.unit && !dbRecord.weight_unit) {
+    dbRecord.weight_unit = dbRecord.unit;
   }
   
   return dbRecord;

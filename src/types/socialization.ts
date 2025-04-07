@@ -7,9 +7,11 @@ export type SocializationReactionType =
 export interface SocializationReaction {
   id: string;
   name: string;
+  label: string;
   color: string;
   emoji?: string;
   value: SocializationReactionType;
+  type?: string;
 }
 
 export interface SocializationCategory {
@@ -19,6 +21,7 @@ export interface SocializationCategory {
   color?: string;
   examples?: string[];
   icon?: string;
+  targetCount: number;
 }
 
 export interface SocializationCategoryOption {
@@ -56,6 +59,7 @@ export interface SocializationExperience {
 export interface SocializationProgress {
   category: string;
   categoryName: string;
+  categoryId: string;
   total: number;
   completed: number;
   positive: number;
@@ -64,4 +68,5 @@ export interface SocializationProgress {
   count?: number;
   target?: number;
   completion_percentage?: number;
+  percentage: number;
 }

@@ -1,6 +1,7 @@
 
-import { WeightRecord } from './weight';
+import { WeightUnit } from './weight-units';
 import { MedicationStatusEnum } from './health-enums';
+import { WeightRecord } from './weight';
 
 export interface HealthRecord {
   id: string;
@@ -38,6 +39,11 @@ export interface HealthRecord {
   examination_type?: string;
   created_at: string;
   reminder_sent?: boolean;
+  
+  // Backward compatibility fields
+  description?: string;
+  date?: string;
+  performed_by?: string;
 }
 
 export interface MedicationStatusResult {
@@ -52,6 +58,7 @@ export interface Medication {
   id: string;
   dog_id: string;
   medication_name: string;
+  name?: string; // For backward compatibility
   dosage: number;
   dosage_unit: string;
   frequency: string;
@@ -60,6 +67,7 @@ export interface Medication {
   end_date?: string;
   notes?: string;
   is_active: boolean;
+  active?: boolean; // For backward compatibility
   created_at: string;
   last_administered?: string;
 }
@@ -89,4 +97,4 @@ export interface HealthIndicator {
 }
 
 // Re-export WeightRecord for backward compatibility
-export { WeightRecord };
+export type { WeightRecord, WeightUnit };
