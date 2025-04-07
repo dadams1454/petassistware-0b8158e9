@@ -78,9 +78,23 @@ export const AppetiteLevelEnum = AppetiteLevel;
 export const EnergyLevelEnum = EnergyLevel;
 export const StoolConsistencyEnum = StoolConsistency;
 
-// Also export these as types for type-checking
+// Export these as types for type-checking
 export type HealthRecordTypeEnum = HealthRecordType;
 export type MedicationStatusEnum = MedicationStatus;
 export type AppetiteLevelEnum = AppetiteLevel;
 export type EnergyLevelEnum = EnergyLevel;
 export type StoolConsistencyEnum = StoolConsistency;
+
+// Heat intensity types
+export enum HeatIntensity {
+  NONE = 'none',
+  LIGHT = 'light',
+  MODERATE = 'moderate',
+  STRONG = 'strong',
+  VERY_STRONG = 'very_strong'
+}
+
+// Export for backward compatibility
+export const HeatIntensityEnum = HeatIntensity;
+export type HeatIntensityEnum = HeatIntensity;
+export type HeatIntensityType = keyof typeof HeatIntensity | (typeof HeatIntensity)[keyof typeof HeatIntensity];
