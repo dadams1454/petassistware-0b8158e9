@@ -1,11 +1,11 @@
 
 import React, { useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Baby, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { usePuppyTracking } from '@/hooks/puppyTracking/usePuppyTracking';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/types';
+import { usePuppyTracking } from '@/modules/puppies';
+import { PuppyWithAge } from '@/modules/puppies/types';
 import PuppyAgeGroupSection from './PuppyAgeGroupSection';
 
 interface PuppiesTabProps {
