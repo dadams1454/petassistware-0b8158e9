@@ -22,16 +22,20 @@ import {
 // Re-export the health enums
 export {
   HealthRecordTypeEnum,
-  HealthRecordType,
   MedicationStatusEnum,
-  MedicationStatusResult,
   AppetiteEnum,
-  AppetiteLevel,
   EnergyEnum,
-  EnergyLevel,
   StoolConsistencyEnum,
-  StoolConsistency,
   stringToHealthRecordType
+};
+
+// Re-export types using export type
+export type {
+  HealthRecordType,
+  MedicationStatusResult,
+  AppetiteLevel,
+  EnergyLevel,
+  StoolConsistency
 };
 
 // Dog Gender Enum

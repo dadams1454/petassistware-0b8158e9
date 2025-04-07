@@ -2,11 +2,11 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatusEnum, MedicationStatusResult } from '@/types';
+import { MedicationStatusEnum } from '@/types';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {
-  status: MedicationStatusEnum | MedicationStatusResult | string | null;
+  status: MedicationStatusEnum | string | null;
   nextDue?: string | Date | null;
   showIcon?: boolean;
   showLabel?: boolean;
@@ -41,23 +41,23 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   };
   
   // Convert different status types to a standard string
-  let statusValue: MedicationStatusEnum = MedicationStatusEnum.UNKNOWN;
+  let statusValue: string = MedicationStatusEnum.UNKNOWN;
   let statusObject: any = null;
   let nextDueDate: string | Date | null = nextDue;
   
   if (typeof status === 'object' && status !== null && 'status' in status) {
-    // Handle MedicationStatusResult
+    // Handle complex status object
     statusObject = status;
     statusValue = statusObject.status;
     if (!nextDueDate && statusObject.nextDue) {
       nextDueDate = statusObject.nextDue;
     }
   } else if (typeof status === 'string') {
-    // Handle status as string (or enum)
-    if (Object.values(MedicationStatusEnum).includes(status as MedicationStatusEnum)) {
-      statusValue = status as MedicationStatusEnum;
-    } else {
-      // Try to map legacy string status to enum
+    // Handle status as string
+    statusValue = status;
+    
+    // Map legacy string status if needed
+    if (!Object.values(MedicationStatusEnum).includes(status as MedicationStatusEnum)) {
       switch (status.toLowerCase()) {
         case 'active': statusValue = MedicationStatusEnum.DUE; break;
         case 'overdue': statusValue = MedicationStatusEnum.OVERDUE; break;
@@ -78,13 +78,18 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   const getIcon = () => {
     switch (statusValue) {
       case MedicationStatusEnum.DUE:
+      case 'due':
         return <Check className="h-4 w-4 text-green-500" />;
       case MedicationStatusEnum.OVERDUE:
       case MedicationStatusEnum.SKIPPED:
+      case 'overdue':
+      case 'skipped':
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       case MedicationStatusEnum.UPCOMING:
+      case 'upcoming':
         return <Calendar className="h-4 w-4 text-blue-500" />;
       case MedicationStatusEnum.COMPLETED:
+      case 'completed':
         return <Check className="h-4 w-4 text-green-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;

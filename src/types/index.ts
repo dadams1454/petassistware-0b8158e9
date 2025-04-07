@@ -1,3 +1,4 @@
+
 // Export standard types from core type definitions
 export type { WeightUnit, WeightUnitInfo } from './weight-units';
 export { 
@@ -6,7 +7,7 @@ export {
   standardizeWeightUnit
 } from './weight-units';
 
-// Export weight-related types (only export once)
+// Export weight-related types (only once)
 export type { WeightRecord, GrowthStats } from './weight';
 
 // Export heat cycle related types
@@ -26,20 +27,24 @@ export type {
   HealthIndicator 
 } from './health';
 
-// Export health enums separately to avoid duplicate exports
+// Export health enums
 export {
   HealthRecordTypeEnum, 
-  HealthRecordType,
   MedicationStatusEnum, 
-  MedicationStatusResult,
-  AppetiteLevel, 
   AppetiteEnum,
-  EnergyLevel, 
   EnergyEnum,
-  StoolConsistency, 
   StoolConsistencyEnum,
   stringToHealthRecordType,
   getHealthRecordTypeDisplay
+} from './health-enums';
+
+// Export health type definitions using export type
+export type {
+  HealthRecordType,
+  MedicationStatusResult,
+  AppetiteLevel, 
+  EnergyLevel,
+  StoolConsistency
 } from './health-enums';
 
 // Export enum helpers

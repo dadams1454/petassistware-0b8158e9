@@ -1,13 +1,10 @@
-import { 
-  AppetiteLevel, 
-  EnergyLevel, 
-  StoolConsistency
-} from '@/types';
 
 /**
- * Get a display label for appetite level
+ * Utility functions for working with health indicators
  */
-export const getAppetiteLevelLabel = (level: AppetiteLevel): string => {
+
+// Get a display label for appetite level
+export const getAppetiteLevelLabel = (level: string): string => {
   switch (level) {
     case 'excellent':
       return 'Excellent';
@@ -27,7 +24,7 @@ export const getAppetiteLevelLabel = (level: AppetiteLevel): string => {
 /**
  * Get a display label for energy level
  */
-export const getEnergyLevelLabel = (level: EnergyLevel): string => {
+export const getEnergyLevelLabel = (level: string): string => {
   switch (level) {
     case 'hyperactive':
       return 'Hyperactive';
@@ -47,7 +44,7 @@ export const getEnergyLevelLabel = (level: EnergyLevel): string => {
 /**
  * Get a display label for stool consistency
  */
-export const getStoolConsistencyLabel = (consistency: StoolConsistency): string => {
+export const getStoolConsistencyLabel = (consistency: string): string => {
   switch (consistency) {
     case 'normal':
       return 'Normal';
@@ -71,21 +68,21 @@ export const getStoolConsistencyLabel = (consistency: StoolConsistency): string 
 /**
  * Check if an appetite level is concerning
  */
-export const isAppetiteConcerning = (level: AppetiteLevel): boolean => {
+export const isAppetiteConcerning = (level: string): boolean => {
   return level === 'none' || level === 'poor';
 };
 
 /**
  * Check if an energy level is concerning
  */
-export const isEnergyConcerning = (level: EnergyLevel): boolean => {
+export const isEnergyConcerning = (level: string): boolean => {
   return level === 'lethargic' || level === 'low';
 };
 
 /**
  * Check if a stool consistency is concerning
  */
-export const isStoolConcerning = (consistency: StoolConsistency): boolean => {
+export const isStoolConcerning = (consistency: string): boolean => {
   return (
     consistency === 'watery' ||
     consistency === 'bloody' ||
@@ -96,7 +93,7 @@ export const isStoolConcerning = (consistency: StoolConsistency): boolean => {
 /**
  * Get a color for displaying appetite level
  */
-export const getAppetiteColor = (level: AppetiteLevel): string => {
+export const getAppetiteColor = (level: string): string => {
   switch (level) {
     case 'excellent':
       return 'text-green-600';
@@ -116,7 +113,7 @@ export const getAppetiteColor = (level: AppetiteLevel): string => {
 /**
  * Get a color for displaying energy level
  */
-export const getEnergyColor = (level: EnergyLevel): string => {
+export const getEnergyColor = (level: string): string => {
   switch (level) {
     case 'hyperactive':
       return 'text-purple-500';
@@ -136,7 +133,7 @@ export const getEnergyColor = (level: EnergyLevel): string => {
 /**
  * Get a color for displaying stool consistency
  */
-export const getStoolColor = (consistency: StoolConsistency): string => {
+export const getStoolColor = (consistency: string): string => {
   switch (consistency) {
     case 'normal':
       return 'text-green-500';

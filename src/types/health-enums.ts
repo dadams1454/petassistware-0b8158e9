@@ -31,7 +31,14 @@ export enum MedicationStatusEnum {
   OVERDUE = 'overdue',
   COMPLETED = 'completed',
   SKIPPED = 'skipped',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
+  // For backward compatibility
+  ACTIVE = 'active',
+  PAUSED = 'paused',
+  STOPPED = 'stopped',
+  SCHEDULED = 'scheduled',
+  NOT_STARTED = 'not_started',
+  DISCONTINUED = 'discontinued'
 }
 
 // Define MedicationStatusResult as a string union type
@@ -40,7 +47,15 @@ export type MedicationStatusResult =
   | 'upcoming'
   | 'overdue'
   | 'completed'
-  | 'skipped';
+  | 'skipped'
+  | 'unknown'
+  | {
+      status: MedicationStatusEnum;
+      message: string;
+      nextDue?: Date | string | null;
+      daysOverdue?: number;
+      daysUntilDue?: number;
+    };
 
 // Appetite Level Enums
 export enum AppetiteEnum {
