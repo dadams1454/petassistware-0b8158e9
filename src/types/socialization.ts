@@ -1,37 +1,17 @@
 
-export type SocializationReactionType = 
-  'very_positive' | 'positive' | 'neutral' | 
-  'cautious' | 'fearful' | 'very_fearful' | 'no_reaction' |
-  'negative' | 'unknown';
-
-export interface SocializationReaction {
-  id: string;
-  name: string;
-  label: string;
-  color: string;
-  emoji?: string;
-  value: SocializationReactionType;
-  type?: string;
-}
-
 export interface SocializationCategory {
   id: string;
   name: string;
-  description?: string;
-  color?: string;
-  examples?: string[];
+  description: string;
+  color: string;
   icon?: string;
-  targetCount: number;
 }
 
 export interface SocializationCategoryOption {
   id: string;
+  categoryId: string;
   name: string;
   description?: string;
-  examples?: string[];
-  color?: string;
-  value?: string;
-  label?: string;
 }
 
 export interface SocializationRecord {
@@ -47,26 +27,37 @@ export interface SocializationRecord {
 
 export interface SocializationExperience {
   id: string;
-  puppy_id: string;
   category: string;
   experience: string;
-  experience_date: string;
-  reaction?: SocializationReactionType;
+  date: string;
+  puppy_id: string;
+  reaction?: SocializationReaction;
   notes?: string;
-  created_at: string;
 }
 
 export interface SocializationProgress {
-  category: string;
-  categoryName: string;
   categoryId: string;
-  total: number;
+  categoryName: string;
   completed: number;
-  positive: number;
-  neutral: number;
-  negative: number;
-  count?: number;
-  target?: number;
-  completion_percentage?: number;
+  total: number;
   percentage: number;
+}
+
+export type SocializationReactionType = 
+  | 'positive'
+  | 'neutral'
+  | 'negative'
+  | 'fearful'
+  | 'curious'
+  | 'excited'
+  | 'calm'
+  | 'anxious'
+  | 'unknown';
+
+export interface SocializationReaction {
+  type: SocializationReactionType;
+  name: string;
+  description?: string;
+  emoji?: string;
+  color?: string;
 }

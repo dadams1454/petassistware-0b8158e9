@@ -50,7 +50,7 @@ export type MedicationStatusResult =
   | 'skipped'
   | 'unknown'
   | {
-      status: MedicationStatusEnum;
+      status: string;
       message: string;
       nextDue?: Date | string | null;
       daysOverdue?: number;
@@ -113,7 +113,7 @@ export type StoolConsistency =
 // Helper functions
 export function stringToHealthRecordType(str: string): HealthRecordType {
   const normalized = str.toLowerCase().trim();
-  if (Object.values(HealthRecordTypeEnum).includes(normalized as HealthRecordTypeEnum)) {
+  if (Object.values(HealthRecordTypeEnum).includes(normalized as any)) {
     return normalized as HealthRecordType;
   }
   return 'other';

@@ -1,6 +1,6 @@
 
-import { WeightUnit } from '@/types/common';
-import { WeightRecord } from '@/types/weight';
+import { WeightUnit } from './weight-units';
+import { WeightRecord } from './weight';
 
 export interface Puppy {
   id: string;

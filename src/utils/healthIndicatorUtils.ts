@@ -1,155 +1,119 @@
 
-/**
- * Utility functions for working with health indicators
- */
-
-// Get a display label for appetite level
-export const getAppetiteLevelLabel = (level: string): string => {
-  switch (level) {
-    case 'excellent':
-      return 'Excellent';
-    case 'good':
-      return 'Good';
-    case 'fair':
-      return 'Fair';
-    case 'poor':
-      return 'Poor';
-    case 'none':
-      return 'None';
-    default:
-      return 'Unknown';
-  }
-};
+import { 
+  AppetiteLevel, 
+  EnergyLevel, 
+  StoolConsistency,
+  isAppetiteLevel,
+  isEnergyLevel, 
+  isStoolConsistency,
+  safelyConvertValue
+} from '@/types';
 
 /**
- * Get a display label for energy level
+ * Get the display label for an appetite level
  */
-export const getEnergyLevelLabel = (level: string): string => {
-  switch (level) {
-    case 'hyperactive':
-      return 'Hyperactive';
-    case 'high':
-      return 'High';
-    case 'normal':
-      return 'Normal';
-    case 'low':
-      return 'Low';
-    case 'lethargic':
-      return 'Lethargic';
-    default:
-      return 'Unknown';
-  }
-};
+export function getAppetiteLevelLabel(level: AppetiteLevel): string {
+  const appetiteLabels: Record<AppetiteLevel, string> = {
+    'excellent': 'Excellent',
+    'good': 'Good',
+    'fair': 'Fair',
+    'poor': 'Poor',
+    'none': 'None'
+  };
+  return appetiteLabels[level] || 'Unknown';
+}
 
 /**
- * Get a display label for stool consistency
+ * Get the display label for an energy level
  */
-export const getStoolConsistencyLabel = (consistency: string): string => {
-  switch (consistency) {
-    case 'normal':
-      return 'Normal';
-    case 'soft':
-      return 'Soft';
-    case 'loose':
-      return 'Loose';
-    case 'watery':
-      return 'Watery';
-    case 'hard':
-      return 'Hard';
-    case 'bloody':
-      return 'Bloody';
-    case 'mucus':
-      return 'Mucus';
-    default:
-      return 'Unknown';
-  }
-};
+export function getEnergyLevelLabel(level: EnergyLevel): string {
+  const energyLabels: Record<EnergyLevel, string> = {
+    'hyperactive': 'Hyperactive',
+    'high': 'High',
+    'normal': 'Normal',
+    'low': 'Low',
+    'lethargic': 'Lethargic'
+  };
+  return energyLabels[level] || 'Unknown';
+}
 
 /**
- * Check if an appetite level is concerning
+ * Get the display label for a stool consistency
  */
-export const isAppetiteConcerning = (level: string): boolean => {
-  return level === 'none' || level === 'poor';
-};
+export function getStoolConsistencyLabel(consistency: StoolConsistency): string {
+  const consistencyLabels: Record<StoolConsistency, string> = {
+    'normal': 'Normal',
+    'soft': 'Soft',
+    'loose': 'Loose',
+    'watery': 'Watery',
+    'hard': 'Hard',
+    'bloody': 'Bloody',
+    'mucus': 'Contains Mucus'
+  };
+  return consistencyLabels[consistency] || 'Unknown';
+}
 
 /**
- * Check if an energy level is concerning
+ * Safely convert a value to an appetite level
  */
-export const isEnergyConcerning = (level: string): boolean => {
-  return level === 'lethargic' || level === 'low';
-};
+export function toAppetiteLevel(value: unknown): AppetiteLevel {
+  return safelyConvertValue(value, 'normal', isAppetiteLevel);
+}
 
 /**
- * Check if a stool consistency is concerning
+ * Safely convert a value to an energy level
  */
-export const isStoolConcerning = (consistency: string): boolean => {
-  return (
-    consistency === 'watery' ||
-    consistency === 'bloody' ||
-    consistency === 'mucus'
-  );
-};
+export function toEnergyLevel(value: unknown): EnergyLevel {
+  return safelyConvertValue(value, 'normal', isEnergyLevel);
+}
 
 /**
- * Get a color for displaying appetite level
+ * Safely convert a value to a stool consistency
  */
-export const getAppetiteColor = (level: string): string => {
-  switch (level) {
-    case 'excellent':
-      return 'text-green-600';
-    case 'good':
-      return 'text-green-500';
-    case 'fair':
-      return 'text-yellow-500';
-    case 'poor':
-      return 'text-orange-500';
-    case 'none':
-      return 'text-red-500';
-    default:
-      return 'text-gray-500';
-  }
-};
+export function toStoolConsistency(value: unknown): StoolConsistency {
+  return safelyConvertValue(value, 'normal', isStoolConsistency);
+}
 
 /**
- * Get a color for displaying energy level
+ * Get color for appetite level
  */
-export const getEnergyColor = (level: string): string => {
-  switch (level) {
-    case 'hyperactive':
-      return 'text-purple-500';
-    case 'high':
-      return 'text-blue-500';
-    case 'normal':
-      return 'text-green-500';
-    case 'low':
-      return 'text-orange-500';
-    case 'lethargic':
-      return 'text-red-500';
-    default:
-      return 'text-gray-500';
-  }
-};
+export function getAppetiteLevelColor(level: AppetiteLevel): string {
+  const colors: Record<AppetiteLevel, string> = {
+    'excellent': 'bg-green-100 text-green-800',
+    'good': 'bg-green-50 text-green-700',
+    'fair': 'bg-yellow-100 text-yellow-800',
+    'poor': 'bg-orange-100 text-orange-800',
+    'none': 'bg-red-100 text-red-800'
+  };
+  return colors[level] || 'bg-gray-100 text-gray-800';
+}
 
 /**
- * Get a color for displaying stool consistency
+ * Get color for energy level
  */
-export const getStoolColor = (consistency: string): string => {
-  switch (consistency) {
-    case 'normal':
-      return 'text-green-500';
-    case 'soft':
-      return 'text-yellow-500';
-    case 'loose':
-      return 'text-orange-400';
-    case 'watery':
-      return 'text-red-500';
-    case 'hard':
-      return 'text-orange-500';
-    case 'bloody':
-      return 'text-red-600';
-    case 'mucus':
-      return 'text-red-500';
-    default:
-      return 'text-gray-500';
-  }
-};
+export function getEnergyLevelColor(level: EnergyLevel): string {
+  const colors: Record<EnergyLevel, string> = {
+    'hyperactive': 'bg-purple-100 text-purple-800',
+    'high': 'bg-blue-100 text-blue-800',
+    'normal': 'bg-green-100 text-green-800',
+    'low': 'bg-yellow-100 text-yellow-800',
+    'lethargic': 'bg-red-100 text-red-800'
+  };
+  return colors[level] || 'bg-gray-100 text-gray-800';
+}
+
+/**
+ * Get color for stool consistency
+ */
+export function getStoolConsistencyColor(consistency: StoolConsistency): string {
+  const colors: Record<StoolConsistency, string> = {
+    'normal': 'bg-green-100 text-green-800',
+    'soft': 'bg-yellow-50 text-yellow-700',
+    'loose': 'bg-yellow-100 text-yellow-800',
+    'watery': 'bg-orange-100 text-orange-800',
+    'hard': 'bg-amber-100 text-amber-800',
+    'bloody': 'bg-red-100 text-red-800',
+    'mucus': 'bg-purple-100 text-purple-800'
+  };
+  return colors[consistency] || 'bg-gray-100 text-gray-800';
+}

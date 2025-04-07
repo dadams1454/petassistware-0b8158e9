@@ -2,89 +2,92 @@
 import { WeightUnit, weightUnitInfos } from '@/types/weight-units';
 
 /**
- * Converts a weight value from one unit to another
+ * Converts a weight from one unit to grams
+ * @param weight Weight value to convert
+ * @param unit Source weight unit
+ * @returns Equivalent weight in grams
  */
-export const convertWeight = (
-  value: number,
-  fromUnit: WeightUnit,
-  toUnit: WeightUnit
-): number => {
-  // Don't convert if units are the same
-  if (fromUnit === toUnit) return value;
-  
-  // Find conversion factors
-  const fromInfo = weightUnitInfos.find(info => info.unit === fromUnit);
-  const toInfo = weightUnitInfos.find(info => info.unit === toUnit);
-  
-  if (!fromInfo || !toInfo) {
-    console.error(`Invalid weight units: ${fromUnit} -> ${toUnit}`);
-    return value;
+export function convertWeightToGrams(weight: number, unit: WeightUnit): number {
+  const unitInfo = weightUnitInfos.find(info => info.unit === unit);
+  if (!unitInfo) {
+    console.warn(`Unknown weight unit: ${unit}, using oz as default`);
+    return weight * 28.3495; // Default to oz conversion
   }
   
-  // Convert to grams first, then to target unit
-  const valueInGrams = value * fromInfo.toGrams;
-  const convertedValue = valueInGrams / toInfo.toGrams;
-  
-  return convertedValue;
-};
+  return weight * unitInfo.toGrams;
+}
 
 /**
- * Converts a weight value to grams
+ * Converts a weight from one unit to another
+ * @param weight Weight value to convert
+ * @param fromUnit Source weight unit
+ * @param toUnit Target weight unit
+ * @returns Converted weight value
  */
-export const convertWeightToGrams = (
-  value: number,
-  unit: WeightUnit
-): number => {
-  return convertWeight(value, unit, 'g');
-};
-
-/**
- * Formats a weight value for display
- */
-export const formatWeight = (
-  value: number,
-  unit: WeightUnit
-): string => {
-  const info = weightUnitInfos.find(info => info.unit === unit);
-  
-  if (!info) {
-    console.error(`Invalid weight unit: ${unit}`);
-    return `${value} ${unit}`;
+export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number {
+  if (fromUnit === toUnit) {
+    return weight;
   }
   
-  const formatted = value.toFixed(info.precision);
-  return `${formatted} ${info.label}`;
-};
-
-/**
- * Gets the appropriate weight unit based on weight value in grams
- */
-export const getAppropriateWeightUnit = (
-  weightInGrams: number
-): WeightUnit => {
-  // Default to oz
-  if (weightInGrams <= 0) return 'oz';
+  // Convert to grams first (common intermediate unit)
+  const weightInGrams = convertWeightToGrams(weight, fromUnit);
   
-  // Find appropriate unit based on thresholds
-  for (const info of weightUnitInfos) {
-    if (info.thresholds && 
-        weightInGrams >= info.thresholds.min && 
-        weightInGrams < info.thresholds.max) {
-      return info.unit;
-    }
+  // Then convert from grams to target unit
+  const targetUnitInfo = weightUnitInfos.find(info => info.unit === toUnit);
+  if (!targetUnitInfo) {
+    console.warn(`Unknown target weight unit: ${toUnit}, using g as default`);
+    return weightInGrams;
   }
   
-  // If nothing matched, use kg for large weights, oz for small
-  return weightInGrams > 1000 ? 'kg' : 'oz';
-};
+  return weightInGrams / targetUnitInfo.toGrams;
+}
 
 /**
- * Calculates percent change between two weight values
+ * Format a weight value for display with the appropriate unit and precision
+ * @param weight Weight value to format
+ * @param unit Weight unit
+ * @returns Formatted weight string (e.g., "5.2 kg")
  */
-export const calculatePercentChange = (
-  oldWeight: number,
-  newWeight: number
-): number => {
-  if (oldWeight === 0) return 0;
-  return ((newWeight - oldWeight) / oldWeight) * 100;
-};
+export function formatWeight(weight: number, unit: WeightUnit): string {
+  const unitInfo = weightUnitInfos.find(info => info.unit === unit);
+  if (!unitInfo) {
+    return `${weight} ${unit}`;
+  }
+  
+  const precision = unitInfo.precision;
+  
+  if (precision === 0) {
+    return `${Math.round(weight)} ${unit}`;
+  } else {
+    return `${weight.toFixed(precision)} ${unit}`;
+  }
+}
+
+/**
+ * Determine the most appropriate weight unit based on the weight in grams
+ * @param weightInGrams Weight in grams
+ * @returns The most appropriate weight unit for display
+ */
+export function getAppropriateWeightUnit(weightInGrams: number): WeightUnit {
+  // If very small weight
+  if (weightInGrams < 1000) { // Less than 1kg
+    return 'g';  // Use grams
+  } else {
+    return 'kg'; // Use kilograms
+  }
+}
+
+/**
+ * Calculate the percentage change between two weight values
+ * @param oldWeight Old weight value
+ * @param newWeight New weight value
+ * @returns Percentage change (positive for gain, negative for loss)
+ */
+export function calculatePercentChange(oldWeight: number, newWeight: number): number {
+  if (oldWeight === 0) {
+    return 0; // Avoid division by zero
+  }
+  
+  const change = ((newWeight - oldWeight) / oldWeight) * 100;
+  return Math.round(change * 10) / 10; // Round to 1 decimal place
+}

@@ -7,7 +7,7 @@ export {
   standardizeWeightUnit
 } from './weight-units';
 
-// Export weight-related types (only once)
+// Export weight-related types
 export type { WeightRecord, GrowthStats } from './weight';
 
 // Export heat cycle related types
@@ -47,17 +47,49 @@ export type {
   StoolConsistency
 } from './health-enums';
 
-// Export enum helpers
-export * from './enums';
+// Export puppy tracking types with explicit naming to avoid conflicts
+export type {
+  PuppyAgeGroup,
+  PuppyAgeGroupInfo,
+  PuppyAgeGroupData,
+  PuppyManagementStats
+} from './puppyTracking';
 
-// Export dog and puppy types
-export * from './dog';
-export * from './puppy';
-export * from './litter';
-export * from './dailyCare';
+// Export puppy types
+export type { Puppy, PuppyWithAge, PuppyPhoto, PuppyCareLog } from './puppy';
 
-// Export puppy tracking types
-export * from './puppyTracking';
+// Export dog types and helpers
+export { 
+  DogGender, 
+  DogStatus, 
+  isValidDogGender, 
+  normalizeDogGender, 
+  isValidDogStatus, 
+  normalizeDogStatus, 
+  createMinimalDog 
+} from './dog';
+export type { Dog, DogProfile, DogCareStatus, Vaccination } from './dog';
+
+// Export litter types
+export type { 
+  Litter, 
+  LitterWithDogs, 
+  SimpleDog, 
+  WhelpingRecord, 
+  WhelpingObservation, 
+  WhelpingLogEntry, 
+  PuppyMilestone 
+} from './litter';
+
+// Export daily care types
+export type {
+  DailyCarelog,
+  CareLogFormData,
+  CareTaskPreset,
+  DogFlag,
+  DogCareObservation,
+  CareScheduleItem
+} from './dailyCare';
 
 // Export weight utilities
 export { 
@@ -81,3 +113,6 @@ export type {
   SocializationReactionType,
   SocializationReaction
 } from './socialization';
+
+// Export the central enum types
+export * from './enums';

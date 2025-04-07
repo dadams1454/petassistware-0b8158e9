@@ -57,7 +57,7 @@ export function isHealthRecordType(value: unknown): value is HealthRecordType {
 }
 
 /**
- * Type guard for MedicationStatusEnum
+ * Type guard for MedicationStatus
  */
 export function isMedicationStatus(value: unknown): value is string {
   if (typeof value !== 'string') return false;
