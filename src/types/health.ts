@@ -118,10 +118,6 @@ export interface MedicationAdministration {
   created_at: string;
 }
 
-// Backwards compatibility for older code
-export const AppetiteEnum = AppetiteLevel;
-export const EnergyEnum = EnergyLevel;
-
 // Health indicator
 export interface HealthIndicator {
   id: string;

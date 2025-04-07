@@ -12,31 +12,31 @@ import {
   Stethoscope,
   Bug
 } from 'lucide-react';
-import { HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordType } from '@/types/health-enums';
 
 /**
  * Get the appropriate icon for a health record type
  * @param recordType - Type of health record
  * @returns React component with the appropriate icon
  */
-export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string, className?: string) => {
+export const getHealthRecordIcon = (recordType: HealthRecordType | string, className?: string) => {
   switch (recordType) {
-    case HealthRecordTypeEnum.EXAMINATION:
+    case HealthRecordType.EXAMINATION:
       return <Stethoscope className={className} />;
-    case HealthRecordTypeEnum.VACCINATION:
+    case HealthRecordType.VACCINATION:
       return <Syringe className={className} />;
-    case HealthRecordTypeEnum.DEWORMING:
+    case HealthRecordType.DEWORMING:
       return <Bug className={className} />;
-    case HealthRecordTypeEnum.MEDICATION:
+    case HealthRecordType.MEDICATION:
       return <Pill className={className} />;
-    case HealthRecordTypeEnum.SURGERY:
-    case HealthRecordTypeEnum.PROCEDURE:
+    case HealthRecordType.SURGERY:
+    case HealthRecordType.PROCEDURE:
       return <Scissors className={className} />;
-    case HealthRecordTypeEnum.TEST:
+    case HealthRecordType.TEST:
       return <FileText className={className} />;
-    case HealthRecordTypeEnum.DENTAL:
+    case HealthRecordType.DENTAL:
       return <Tooth className={className} />;
-    case HealthRecordTypeEnum.IMAGING:
+    case HealthRecordType.IMAGING:
       return <Image className={className} />;
     default:
       return <Activity className={className} />;
@@ -48,35 +48,35 @@ export const getHealthRecordIcon = (recordType: HealthRecordTypeEnum | string, c
  * @param recordType - Type of health record
  * @returns CSS color class
  */
-export const getHealthRecordColor = (recordType: HealthRecordTypeEnum | string) => {
+export const getHealthRecordColor = (recordType: HealthRecordType | string) => {
   switch (recordType) {
-    case HealthRecordTypeEnum.EXAMINATION:
+    case HealthRecordType.EXAMINATION:
       return 'text-blue-500';
-    case HealthRecordTypeEnum.VACCINATION:
+    case HealthRecordType.VACCINATION:
       return 'text-green-500';
-    case HealthRecordTypeEnum.DEWORMING:
+    case HealthRecordType.DEWORMING:
       return 'text-orange-500';
-    case HealthRecordTypeEnum.MEDICATION:
+    case HealthRecordType.MEDICATION:
       return 'text-purple-500';
-    case HealthRecordTypeEnum.SURGERY:
-    case HealthRecordTypeEnum.PROCEDURE:
+    case HealthRecordType.SURGERY:
+    case HealthRecordType.PROCEDURE:
       return 'text-red-500';
-    case HealthRecordTypeEnum.TEST:
+    case HealthRecordType.TEST:
       return 'text-cyan-500';
-    case HealthRecordTypeEnum.DENTAL:
+    case HealthRecordType.DENTAL:
       return 'text-yellow-500';
-    case HealthRecordTypeEnum.IMAGING:
+    case HealthRecordType.IMAGING:
       return 'text-indigo-500';
-    case HealthRecordTypeEnum.OBSERVATION:
-    case HealthRecordTypeEnum.GROOMING:
-    case HealthRecordTypeEnum.ALLERGY:
+    case HealthRecordType.OBSERVATION:
+    case HealthRecordType.GROOMING:
+    case HealthRecordType.ALLERGY:
       return 'text-teal-500';
     default:
       return 'text-gray-500';
   }
 };
 
-export const HealthRecordIcon: React.FC<{ type: HealthRecordTypeEnum | string, className?: string }> = ({ 
+export const HealthRecordIcon: React.FC<{ type: HealthRecordType | string, className?: string }> = ({ 
   type, 
   className 
 }) => {

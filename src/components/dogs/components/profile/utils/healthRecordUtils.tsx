@@ -1,42 +1,42 @@
 
 import React from 'react';
-import { HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordType } from '@/types/health-enums';
 import { Syringe, Stethoscope, Pill, Scissors, FileText, Eye } from 'lucide-react';
 
 // Define record type options with icons and labels
 export const recordTypeOptions = [
   {
-    value: HealthRecordTypeEnum.EXAMINATION,
+    value: HealthRecordType.EXAMINATION,
     label: 'Examination',
     icon: <Stethoscope className="h-4 w-4 mr-2" />,
     description: 'Regular check-ups and health examinations'
   },
   {
-    value: HealthRecordTypeEnum.VACCINATION,
+    value: HealthRecordType.VACCINATION,
     label: 'Vaccination',
     icon: <Syringe className="h-4 w-4 mr-2" />,
     description: 'Vaccines and immunizations'
   },
   {
-    value: HealthRecordTypeEnum.MEDICATION,
+    value: HealthRecordType.MEDICATION,
     label: 'Medication',
     icon: <Pill className="h-4 w-4 mr-2" />,
     description: 'Prescribed medications and treatments'
   },
   {
-    value: HealthRecordTypeEnum.SURGERY,
+    value: HealthRecordType.SURGERY,
     label: 'Surgery',
     icon: <Scissors className="h-4 w-4 mr-2" />,
     description: 'Surgical procedures'
   },
   {
-    value: HealthRecordTypeEnum.OBSERVATION,
+    value: HealthRecordType.OBSERVATION,
     label: 'Observation',
     icon: <Eye className="h-4 w-4 mr-2" />,
     description: 'General health observations'
   },
   {
-    value: HealthRecordTypeEnum.OTHER,
+    value: HealthRecordType.OTHER,
     label: 'Other',
     icon: <FileText className="h-4 w-4 mr-2" />,
     description: 'Other health-related records'
@@ -44,17 +44,17 @@ export const recordTypeOptions = [
 ];
 
 // Helper function to get record type label
-export const getRecordTypeLabel = (type: string | HealthRecordTypeEnum): string => {
+export const getRecordTypeLabel = (type: string | HealthRecordType): string => {
   // Normalize the record type to uppercase for comparison
-  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordTypeEnum : type;
+  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordType : type;
   const option = recordTypeOptions.find(option => option.value === normalizedType);
   return option ? option.label : 'Unknown';
 };
 
 // Helper function to get record type icon
-export const getRecordTypeIcon = (type: string | HealthRecordTypeEnum): React.ComponentType => {
+export const getRecordTypeIcon = (type: string | HealthRecordType): React.ComponentType => {
   // Normalize the record type to uppercase for comparison
-  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordTypeEnum : type;
+  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordType : type;
   const option = recordTypeOptions.find(option => option.value === normalizedType);
   
   if (option) {
@@ -67,23 +67,23 @@ export const getRecordTypeIcon = (type: string | HealthRecordTypeEnum): React.Co
 };
 
 // Helper function to get health record icon
-export const getHealthRecordIcon = (type: string | HealthRecordTypeEnum): React.ComponentType => {
+export const getHealthRecordIcon = (type: string | HealthRecordType): React.ComponentType => {
   return getRecordTypeIcon(type);
 };
 
 // Helper function to get health record color class
-export const getHealthRecordColor = (type: string | HealthRecordTypeEnum): string => {
+export const getHealthRecordColor = (type: string | HealthRecordType): string => {
   // Normalize the record type to uppercase for comparison
-  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordTypeEnum : type;
+  const normalizedType = typeof type === 'string' ? type.toUpperCase() as HealthRecordType : type;
   
   switch (normalizedType) {
-    case HealthRecordTypeEnum.VACCINATION:
+    case HealthRecordType.VACCINATION:
       return 'text-blue-500';
-    case HealthRecordTypeEnum.MEDICATION:
+    case HealthRecordType.MEDICATION:
       return 'text-purple-500';
-    case HealthRecordTypeEnum.SURGERY:
+    case HealthRecordType.SURGERY:
       return 'text-red-500';
-    case HealthRecordTypeEnum.EXAMINATION:
+    case HealthRecordType.EXAMINATION:
       return 'text-green-500';
     default:
       return 'text-gray-500';
@@ -124,4 +124,4 @@ export const isOverdue = (dueDate: string | null | undefined): boolean => {
 };
 
 // Re-export directly to ensure proper type exports
-export { HealthRecordTypeEnum };
+export { HealthRecordType };

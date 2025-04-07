@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { HealthRecord, HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
+import { HealthRecord, HealthRecordType, stringToHealthRecordType } from '@/types/health';
 import { toast } from '@/components/ui/use-toast';
 
 export const useHealthRecords = (dogId: string) => {
@@ -167,7 +167,7 @@ export const useHealthRecords = (dogId: string) => {
   // Get vaccinations that have a next_due_date
   const upcomingVaccinations = healthRecords.filter(
     (record) => 
-      record.record_type === HealthRecordTypeEnum.Vaccination && 
+      record.record_type === HealthRecordType.VACCINATION && 
       record.next_due_date && 
       new Date(record.next_due_date) > new Date()
   ).sort((a, b) => 

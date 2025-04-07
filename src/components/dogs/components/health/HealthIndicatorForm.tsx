@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum } from '@/types/health';
+import { AppetiteLevel, EnergyLevel, StoolConsistency } from '@/types/health-enums';
 
 // Form schema using zod
 const healthIndicatorSchema = z.object({
@@ -74,11 +74,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={AppetiteLevelEnum.EXCELLENT}>Excellent</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.GOOD}>Good</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.FAIR}>Fair</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.POOR}>Poor</SelectItem>
-                    <SelectItem value={AppetiteLevelEnum.NONE}>None</SelectItem>
+                    <SelectItem value={AppetiteLevel.EXCELLENT}>Excellent</SelectItem>
+                    <SelectItem value={AppetiteLevel.GOOD}>Good</SelectItem>
+                    <SelectItem value={AppetiteLevel.FAIR}>Fair</SelectItem>
+                    <SelectItem value={AppetiteLevel.POOR}>Poor</SelectItem>
+                    <SelectItem value={AppetiteLevel.NONE}>None</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -102,11 +102,11 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={EnergyLevelEnum.HYPERACTIVE}>Hyperactive</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.HIGH}>High</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.NORMAL}>Normal</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.LOW}>Low</SelectItem>
-                    <SelectItem value={EnergyLevelEnum.LETHARGIC}>Lethargic</SelectItem>
+                    <SelectItem value={EnergyLevel.HYPERACTIVE}>Hyperactive</SelectItem>
+                    <SelectItem value={EnergyLevel.HIGH}>High</SelectItem>
+                    <SelectItem value={EnergyLevel.NORMAL}>Normal</SelectItem>
+                    <SelectItem value={EnergyLevel.LOW}>Low</SelectItem>
+                    <SelectItem value={EnergyLevel.LETHARGIC}>Lethargic</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -130,13 +130,13 @@ const HealthIndicatorForm: React.FC<HealthIndicatorFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={StoolConsistencyEnum.NORMAL}>Normal</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.SOFT}>Soft</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.LOOSE}>Loose</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.WATERY}>Watery</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.HARD}>Hard</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.MUCOUSY}>Mucousy</SelectItem>
-                    <SelectItem value={StoolConsistencyEnum.BLOODY}>Bloody</SelectItem>
+                    <SelectItem value={StoolConsistency.NORMAL}>Normal</SelectItem>
+                    <SelectItem value={StoolConsistency.SOFT}>Soft</SelectItem>
+                    <SelectItem value={StoolConsistency.LOOSE}>Loose</SelectItem>
+                    <SelectItem value={StoolConsistency.WATERY}>Watery</SelectItem>
+                    <SelectItem value={StoolConsistency.HARD}>Hard</SelectItem>
+                    <SelectItem value={StoolConsistency.MUCOUSY}>Mucousy</SelectItem>
+                    <SelectItem value={StoolConsistency.BLOODY}>Bloody</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

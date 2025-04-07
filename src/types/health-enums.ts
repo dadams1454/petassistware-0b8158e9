@@ -71,7 +71,7 @@ export enum StoolConsistency {
   BLOODY = 'bloody'    // Added for compatibility with existing code
 }
 
-// Backwards compatibility aliases
+// Backwards compatibility aliases - explicitly exported
 export type HealthRecordTypeEnum = HealthRecordType;
 export type MedicationStatusEnum = MedicationStatus;
 export type AppetiteLevelEnum = AppetiteLevel;
