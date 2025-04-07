@@ -1,149 +1,58 @@
 
 /**
- * Weight unit types and utility functions
+ * Weight units and conversion utilities
  */
 
-// WeightUnit type as a string union type (for simpler type checking)
+// Define the WeightUnit as a union type
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
-// WeightUnitInfo interface for detailed weight unit information
-export interface WeightUnitInfo {
-  id: WeightUnit;
-  name: string;
-  abbreviation: string;
-  system: 'imperial' | 'metric';
-  conversionToG: number; // Conversion factor to grams
-  precision: number; // Decimal places for display
-}
-
-// Weight units array with detailed information
-export const weightUnits: WeightUnitInfo[] = [
-  {
-    id: 'oz',
-    name: 'Ounces',
-    abbreviation: 'oz',
-    system: 'imperial',
-    conversionToG: 28.3495,
-    precision: 1
-  },
-  {
-    id: 'g',
-    name: 'Grams',
-    abbreviation: 'g',
-    system: 'metric',
-    conversionToG: 1,
-    precision: 0
-  },
-  {
-    id: 'lb',
-    name: 'Pounds',
-    abbreviation: 'lb',
-    system: 'imperial',
-    conversionToG: 453.592,
-    precision: 1
-  },
-  {
-    id: 'kg',
-    name: 'Kilograms',
-    abbreviation: 'kg',
-    system: 'metric',
-    conversionToG: 1000,
-    precision: 2
-  }
+// Weight unit information - kept for backward compatibility
+export const weightUnits = [
+  { id: 'oz', name: 'Ounces', conversionToG: 28.3495 },
+  { id: 'g', name: 'Grams', conversionToG: 1 },
+  { id: 'lb', name: 'Pounds', conversionToG: 453.592 },
+  { id: 'kg', name: 'Kilograms', conversionToG: 1000 }
 ];
 
-// Export weightUnits with the name weightUnitInfos for backward compatibility
+// Renamed to weightUnitInfos for clarity and consistency
 export const weightUnitInfos = weightUnits;
 
-/**
- * Standardize weight unit string to valid WeightUnit type
- */
-export function standardizeWeightUnit(unit: string): WeightUnit {
-  const unitLower = unit.toLowerCase();
+// Function to normalize a weight unit value
+export function normalizeWeightUnit(unit: string | WeightUnit): WeightUnit {
+  if (!unit) return 'oz';
   
-  // Check for common variations
-  if (unitLower === 'ounce' || unitLower === 'ounces' || unitLower === 'oz') {
-    return 'oz';
+  const normalizedUnit = unit.toLowerCase() as WeightUnit;
+  
+  if (['oz', 'g', 'lb', 'kg'].includes(normalizedUnit)) {
+    return normalizedUnit as WeightUnit;
   }
   
-  if (unitLower === 'gram' || unitLower === 'grams' || unitLower === 'g') {
-    return 'g';
-  }
-  
-  if (unitLower === 'pound' || unitLower === 'pounds' || unitLower === 'lb' || unitLower === 'lbs') {
-    return 'lb';
-  }
-  
-  if (unitLower === 'kilogram' || unitLower === 'kilograms' || unitLower === 'kg' || unitLower === 'kgs') {
-    return 'kg';
-  }
-  
-  // Default to lb if unknown
-  return 'lb';
+  return 'oz'; // Default to ounces
 }
 
-// Helper to get the weight unit info by ID
-export function getWeightUnitInfo(unitId: WeightUnit): WeightUnitInfo {
-  const unit = weightUnits.find(u => u.id === unitId);
-  return unit || weightUnits[2]; // Default to lb if not found
-}
-
-// Function to convert weight from one unit to another
+// Convert weight from one unit to another
 export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number {
   if (fromUnit === toUnit) {
     return weight;
   }
   
-  const fromInfo = getWeightUnitInfo(fromUnit);
-  const toInfo = getWeightUnitInfo(toUnit);
+  // Convert to grams first as an intermediate step
+  const fromUnitInfo = weightUnits.find(u => u.id === fromUnit);
+  const toUnitInfo = weightUnits.find(u => u.id === toUnit);
   
-  // Convert to grams first
-  const weightInGrams = weight * fromInfo.conversionToG;
+  if (!fromUnitInfo || !toUnitInfo) {
+    console.error(`Conversion failed: Unknown units - from ${fromUnit} to ${toUnit}`);
+    return weight;
+  }
   
-  // Then convert from grams to target unit
-  return weightInGrams / toInfo.conversionToG;
+  // Calculate the weight in grams
+  const weightInGrams = weight * fromUnitInfo.conversionToG;
+  
+  // Convert from grams to the target unit
+  return weightInGrams / toUnitInfo.conversionToG;
 }
 
-// Format weight with appropriate precision
-export function formatWeight(weight: number, unit: WeightUnit): string {
-  const unitInfo = getWeightUnitInfo(unit);
-  return `${weight.toFixed(unitInfo.precision)} ${unitInfo.abbreviation}`;
-}
-
-// Convert weight to grams (utility function)
-export function convertWeightToGrams(weight: number, unit: WeightUnit): number {
-  const unitInfo = getWeightUnitInfo(unit);
-  return weight * unitInfo.conversionToG;
-}
-
-// Determine appropriate weight unit based on weight value and current unit
-export function getAppropriateWeightUnit(
-  weight: number, 
-  currentUnit: WeightUnit, 
-  ageInDays?: number
-): WeightUnit {
-  const weightInGrams = convertWeight(weight, currentUnit, 'g');
-  
-  // For very young puppies (less than 14 days), use ounces if they're small
-  if (ageInDays && ageInDays < 14 && weightInGrams < 1000) {
-    return 'oz';
-  }
-  
-  // For puppies between 2-8 weeks, use pounds if they're over 500g
-  if (ageInDays && ageInDays < 56 && weightInGrams >= 500) {
-    return 'lb';
-  }
-  
-  // For older puppies and small breeds, use pounds
-  if (weightInGrams >= 1000) {
-    return 'lb';
-  }
-  
-  // For larger dogs, use kilograms if over 20kg
-  if (weightInGrams >= 20000) {
-    return 'kg';
-  }
-  
-  // Default to ounces for very small puppies
-  return 'oz';
+// Standardize a weight unit input
+export function standardizeWeightUnit(unit: string): WeightUnit {
+  return normalizeWeightUnit(unit);
 }

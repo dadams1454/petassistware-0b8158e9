@@ -1,14 +1,8 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { useHealthRecords } from '@/hooks/useHealthRecords';
-import { useWeightData } from '@/hooks/useWeightData';
-import { HealthRecord, HealthRecordType } from '@/types/health';
-import { WeightRecord } from '@/types/weight';
-import { useDogProfileData } from '@/hooks/useDogProfileData';
-import { useMedication } from '@/hooks/useMedication';
-import { useMedicationTime } from '@/hooks/useMedicationTime';
-import { useToast } from '@/components/ui/use-toast';
+import { useHealthTabState } from './hooks/useHealthTabState';
+import { HealthRecord, WeightRecord } from '@/types/health';
 
 interface HealthTabContextProps {
   healthRecords: HealthRecord[];
@@ -17,11 +11,13 @@ interface HealthTabContextProps {
   setActiveTab: (tab: string) => void;
   dogId: string;
   isLoading: boolean;
-  isWeightLoading: boolean;
   error: any;
-  weightError: any;
   refreshHealthRecords: () => void;
   refreshWeightRecords: () => void;
+  refreshAllData: () => Promise<void>;
+  vaccinationRecords: HealthRecord[];
+  examinationRecords: HealthRecord[];
+  medicationRecords: HealthRecord[];
 }
 
 const HealthTabContext = createContext<HealthTabContextProps | undefined>(undefined);
@@ -36,59 +32,32 @@ export const useHealthTabContext = () => {
 
 interface HealthTabProviderProps {
   children: React.ReactNode;
+  dogId?: string;
 }
 
-export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ children }) => {
+export const HealthTabProvider: React.FC<HealthTabProviderProps> = ({ 
+  children,
+  dogId: propsDogId 
+}) => {
   const { dogId: dogIdParam } = useParams();
-  const dogId = dogIdParam as string;
-  const [activeTab, setActiveTab] = useState('all');
-  const { healthRecords, isLoading, error, refreshHealthRecords } = useHealthRecords(dogId);
-  const { weightRecords, isLoading: isWeightLoading, error: weightError, refreshWeightRecords } = useWeightData(dogId);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: 'Error fetching health records',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-    if (weightError) {
-      toast({
-        title: 'Error fetching weight records',
-        description: weightError.message,
-        variant: 'destructive',
-      });
-    }
-  }, [error, weightError, toast]);
-
-  // Use correct enum capitalization
-  const tabByRecordType = (record: HealthRecord): string => {
-    switch (record.record_type) {
-      case HealthRecordType.VACCINATION:
-        return 'vaccinations';
-      case HealthRecordType.EXAMINATION:
-        return 'examinations';
-      case HealthRecordType.MEDICATION:
-        return 'medications';
-      default:
-        return 'all';
-    }
-  };
+  const dogId = propsDogId || (dogIdParam as string);
+  
+  const healthTabState = useHealthTabState(dogId);
 
   const value: HealthTabContextProps = {
-    healthRecords,
-    weightRecords,
-    activeTab,
-    setActiveTab,
+    healthRecords: healthTabState.healthRecords,
+    weightRecords: healthTabState.weightRecords,
+    activeTab: healthTabState.activeTab,
+    setActiveTab: healthTabState.setActiveTab,
     dogId,
-    isLoading,
-    isWeightLoading,
-    error,
-    weightError,
-    refreshHealthRecords,
-    refreshWeightRecords
+    isLoading: healthTabState.isLoading,
+    error: healthTabState.error,
+    refreshHealthRecords: healthTabState.refreshHealthRecords,
+    refreshWeightRecords: healthTabState.refreshWeightRecords,
+    refreshAllData: healthTabState.refreshAllData,
+    vaccinationRecords: healthTabState.vaccinationRecords,
+    examinationRecords: healthTabState.examinationRecords,
+    medicationRecords: healthTabState.medicationRecords
   };
 
   return (
