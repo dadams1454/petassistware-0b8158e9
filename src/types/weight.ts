@@ -1,5 +1,5 @@
 
-import { WeightUnit } from './common';
+import { type WeightUnit } from './common';
 
 export interface WeightRecord {
   id: string;
@@ -13,7 +13,7 @@ export interface WeightRecord {
   created_at: string;
   age_days?: number;
   birth_date?: string;
-  unit?: WeightUnit; // For backward compatibility
+  // Remove unit field to avoid confusion with weight_unit
 }
 
 export interface WeightStat {
@@ -39,6 +39,7 @@ export interface GrowthStats {
   lastWeekGrowth?: number;
   maxGrowthRate?: number;
   minGrowthRate?: number; // Adding this field referenced in the code
+  dailyGrowthAverage?: number; // Adding missing field referenced in hooks
 }
 
 export interface WeightChartProps {
@@ -106,5 +107,5 @@ export interface GrowthRate {
   unit: WeightUnit;
 }
 
-// Export the WeightUnit type for compatibility
-export { WeightUnit };
+// Properly re-export the WeightUnit type
+export type { WeightUnit };

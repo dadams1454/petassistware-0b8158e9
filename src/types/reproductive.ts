@@ -2,7 +2,7 @@
 // Import WeightUnit from common
 import { WeightUnit } from '@/types/common';
 import type { Json } from '../integrations/supabase/types';
-import type { Dog } from '@/types/dog';
+import { type Dog } from '@/types/dog';
 
 // Type for heat intensity values
 export type HeatIntensityType = 'light' | 'moderate' | 'heavy' | 'mild' | 'medium' | 'low' | 'high' | 'peak' | 'strong' | 'unknown';

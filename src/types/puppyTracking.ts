@@ -1,6 +1,7 @@
 
-import { Puppy } from './litter';
-import { WeightUnit } from './common';
+import { type Puppy } from './litter';
+import { type WeightUnit } from './common';
+import { type WeightRecord as WeightRecordBase } from './weight';
 
 // Puppy with age calculation
 export interface PuppyWithAge extends Puppy {
@@ -10,12 +11,26 @@ export interface PuppyWithAge extends Puppy {
   ageInWeeks: number;
   age_weeks?: number; // For backward compatibility
   developmentalStage: string;
-  weightHistory?: WeightRecord[];
+  weightHistory?: WeightRecordBase[];
   litter?: any;
   currentWeight?: number;
   current_weight_unit?: string;
   weight_unit?: string;
   ageDescription?: string;
+}
+
+// Weight record for puppies - with puppy_id required
+export interface WeightRecord {
+  id: string;
+  puppy_id: string;
+  date: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  notes?: string;
+  created_at: string;
+  age_days?: number;
+  percent_change?: number;
+  dog_id?: string; // Add this for compatibility with the database
 }
 
 // Puppy age group interface
@@ -111,20 +126,6 @@ export interface PuppyManagementStats {
     male: number;
     female: number;
   };
-}
-
-// Weight record for puppies
-export interface WeightRecord {
-  id: string;
-  puppy_id: string;
-  date: string;
-  weight: number;
-  weight_unit: WeightUnit;
-  notes?: string;
-  created_at: string;
-  age_days?: number;
-  percent_change?: number;
-  dog_id?: string; // Add this for compatibility with the database
 }
 
 // Vaccination schedule
