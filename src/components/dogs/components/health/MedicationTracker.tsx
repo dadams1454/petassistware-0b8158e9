@@ -1,255 +1,255 @@
 
-import React, { useState, useEffect } from 'react';
-import { format, differenceInDays } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from 'react';
+import { format } from 'date-fns';
+import { Check, Clock, AlarmClock, AlertCircle, Edit, Calendar, MoreHorizontal } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Medication, MedicationStatusEnum } from '@/types/health';
-import { useMedication } from '@/hooks/useMedication';
-import { MedicationFrequencyConstants, getStatusLabel, getMedicationStatus } from '@/utils/medicationUtils';
-import AdministerMedicationForm from '@/components/puppies/health/AdministerMedicationForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
+import { Medication } from '@/types/health';
+import { 
+  getMedicationStatus, 
+  MedicationFrequencyConstants, 
+  getStatusLabel 
+} from '@/utils/medicationUtils';
 
 interface MedicationTrackerProps {
-  dogId?: string;
-  showDoses?: boolean;
-  limit?: number;
-  filter?: 'all' | 'upcoming' | 'overdue' | 'active';
+  medications: Medication[];
+  onEdit?: (medication: Medication) => void;
+  onDelete?: (medicationId: string) => void;
+  onAdminister?: (medicationId: string, data: any) => void;
+  className?: string;
 }
 
-const MedicationTracker: React.FC<MedicationTrackerProps> = ({ 
-  dogId, 
-  showDoses = true,
-  limit = 5,
-  filter = 'all'
+export const MedicationTracker: React.FC<MedicationTrackerProps> = ({
+  medications = [],
+  onEdit,
+  onDelete,
+  onAdminister,
+  className
 }) => {
-  const { medications, isLoading, error, addMedication, updateMedication } = useMedication(dogId);
-  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
-  const [isAdministerDialogOpen, setIsAdministerDialogOpen] = useState(false);
-  
-  const addMedicationLog = async (administrationData: any) => {
-    if (!selectedMedication) return;
-    
-    try {
-      // Update medication with last_administered date
-      const updatedMedication = {
-        ...selectedMedication,
-        last_administered: administrationData.administeredAt
-      };
-      
-      await updateMedication(selectedMedication.id, updatedMedication);
-      
-      // Here you would also add the log to a separate table if needed
-      
-      return true;
-    } catch (error) {
-      console.error('Error logging medication administration:', error);
-      return false;
-    }
+  const { toast } = useToast();
+  const [expandedMedications, setExpandedMedications] = useState<Record<string, boolean>>({});
+
+  const toggleExpand = (id: string) => {
+    setExpandedMedications(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
-  
-  const filteredMedications = React.useMemo(() => {
-    if (!medications) return [];
-    
-    let filtered = [...medications];
-    
-    if (filter === 'active') {
-      filtered = filtered.filter(med => med.active);
-    } else if (filter === 'upcoming') {
-      filtered = filtered.filter(med => {
-        const status = getMedicationStatus(
-          med.last_administered,
-          med.end_date
-        );
-        return status.status === MedicationStatusEnum.ACTIVE && 
-               status.daysOverdue === undefined && 
-               status.daysUntilDue !== undefined && 
-               status.daysUntilDue <= 7;
+
+  const handleAdminister = (medicationId: string) => {
+    if (onAdminister) {
+      onAdminister(medicationId, {
+        administered_at: new Date().toISOString(),
+        notes: ''
       });
-    } else if (filter === 'overdue') {
-      filtered = filtered.filter(med => {
-        const status = getMedicationStatus(
-          med.last_administered,
-          med.end_date
-        );
-        return status.status === MedicationStatusEnum.OVERDUE;
+      toast({
+        title: 'Medication administered',
+        description: 'The medication administration has been recorded.',
       });
     }
-    
-    return filtered.slice(0, limit);
-  }, [medications, filter, limit]);
-  
-  // Calculate next due date based on last administration and frequency
-  const getNextDueDate = (medication: Medication) => {
-    const today = new Date();
-    const lastAdministered = medication.last_administered 
-      ? new Date(medication.last_administered) 
-      : null;
-      
-    if (!lastAdministered || !medication.frequency) return today;
-    
-    const nextDueDate = new Date(lastAdministered);
-    
-    // Simple frequency handling
-    const frequencyStr = (medication.frequency || 'monthly').toLowerCase();
-    
-    switch (frequencyStr) {
-      case MedicationFrequencyConstants.DAILY.toLowerCase():
-      case MedicationFrequencyConstants.ONCE_DAILY.toLowerCase():
-        nextDueDate.setDate(today.getDate() + 1);
-        break;
-      case MedicationFrequencyConstants.TWICE_DAILY.toLowerCase():
-        nextDueDate.setDate(today.getDate() + 1); // Simplified for now
-        break;
-      case MedicationFrequencyConstants.WEEKLY.toLowerCase():
-        nextDueDate.setDate(today.getDate() + 7);
-        break;
-      case MedicationFrequencyConstants.BIWEEKLY.toLowerCase():
-        nextDueDate.setDate(today.getDate() + 14);
-        break;
-      case MedicationFrequencyConstants.MONTHLY.toLowerCase():
-        nextDueDate.setMonth(today.getMonth() + 1);
-        break;
-      case MedicationFrequencyConstants.QUARTERLY.toLowerCase():
-        nextDueDate.setMonth(today.getMonth() + 3);
-        break;
-      case MedicationFrequencyConstants.ANNUALLY.toLowerCase():
-        nextDueDate.setFullYear(today.getFullYear() + 1);
-        break;
-      default:
-        // For as needed, or unknown frequencies
-        nextDueDate.setDate(today.getDate() + 30); // Default to monthly
-    }
-    
-    return nextDueDate;
   };
-  
-  const handleAdminister = (medication: Medication) => {
-    setSelectedMedication(medication);
-    setIsAdministerDialogOpen(true);
-  };
-  
-  const handleSubmitAdministration = async (formData: any) => {
-    if (!selectedMedication) return;
-    
-    try {
-      const administrationData = {
-        medicationId: formData.medicationId,
-        dogId: formData.dogId,
-        administeredAt: formData.administeredAt,
-        administeredBy: formData.administeredBy,
-        notes: formData.notes
-      };
-      
-      await addMedicationLog(administrationData);
-      setIsAdministerDialogOpen(false);
-      setSelectedMedication(null);
-    } catch (error) {
-      console.error('Error recording administration:', error);
-    }
-  };
-  
-  if (isLoading) {
-    return <div className="p-4 text-center">Loading medications...</div>;
-  }
-  
-  if (error) {
-    return <div className="p-4 text-center text-red-500">Error loading medications</div>;
-  }
-  
-  if (!filteredMedications.length) {
+
+  const activeMedications = medications.filter(med => med.is_active !== false);
+  const inactiveMedications = medications.filter(med => med.is_active === false);
+
+  if (medications.length === 0) {
     return (
-      <div className="p-4 text-center text-muted-foreground">
-        No {filter !== 'all' ? filter : ''} medications found.
-      </div>
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="text-lg">Medications</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No medications have been prescribed yet.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
-  
-  return (
-    <div className="space-y-4">
-      {filteredMedications.map((medication) => {
-        const status = getMedicationStatus(
-          medication.last_administered,
-          medication.end_date,
-          medication.active
-        );
-        const { statusLabel, statusColor } = getStatusLabel(status.status);
-        const nextDue = status.nextDue ? new Date(status.nextDue) : getNextDueDate(medication);
-        const daysUntil = nextDue ? differenceInDays(nextDue, new Date()) : null;
-        
+
+  const renderMedicationStatus = (medication: Medication) => {
+    const status = getMedicationStatus(
+      medication.start_date,
+      medication.end_date,
+      medication.frequency || MedicationFrequencyConstants.DAILY,
+      medication.last_administered
+    );
+    
+    const { label, color } = getStatusLabel(status.status);
+    
+    switch (status.status) {
+      case 'active':
         return (
-          <div 
-            key={medication.id} 
-            className="p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h3 className="font-medium">{medication.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {medication.dosage} {medication.dosage_unit}, {medication.frequency}
-                </p>
-              </div>
-              <Badge className={statusColor}>{statusLabel}</Badge>
+          <Badge className="bg-green-500 hover:bg-green-600">
+            {label}
+          </Badge>
+        );
+      case 'upcoming':
+        return (
+          <Badge variant="outline" className="border-blue-500 text-blue-600">
+            {label}
+          </Badge>
+        );
+      case 'overdue':
+        return (
+          <Badge className="bg-red-500 hover:bg-red-600">
+            {label}
+          </Badge>
+        );
+      case 'completed':
+        return (
+          <Badge variant="outline" className="border-gray-400 text-gray-500">
+            {label}
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline">
+            {label}
+          </Badge>
+        );
+    }
+  };
+
+  const renderMedicationItem = (medication: Medication, index: number) => {
+    const isExpanded = expandedMedications[medication.id] || false;
+    
+    const status = getMedicationStatus(
+      medication.start_date,
+      medication.end_date,
+      medication.frequency || MedicationFrequencyConstants.DAILY,
+      medication.last_administered
+    );
+    
+    return (
+      <div key={medication.id} className="mb-4 last:mb-0">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start space-x-2">
+            <div className="flex flex-col">
+              <h4 className="font-semibold text-base">
+                {medication.medication_name}
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                {medication.dosage} {medication.dosage_unit} ({medication.frequency})
+              </p>
             </div>
-            
-            {status.status === MedicationStatusEnum.ACTIVE && (
-              <>
-                <div className="flex justify-between items-center mt-4 text-sm">
-                  <div>
-                    <p className="font-medium">Next Due:</p>
-                    <p>{nextDue ? format(nextDue, 'MMM d, yyyy') : 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Last Administered:</p>
-                    <p>
-                      {medication.last_administered 
-                        ? format(new Date(medication.last_administered), 'MMM d, yyyy') 
-                        : 'Never'}
-                    </p>
-                  </div>
-                  {daysUntil !== null && (
-                    <div className={daysUntil < 0 ? 'text-red-500' : daysUntil === 0 ? 'text-amber-500' : ''}>
-                      <p className="font-medium">Status:</p>
-                      <p>
-                        {daysUntil < 0 
-                          ? `Overdue by ${Math.abs(daysUntil)} days` 
-                          : daysUntil === 0 
-                            ? 'Due today' 
-                            : `Due in ${daysUntil} days`}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                {showDoses && (
-                  <div className="mt-4">
-                    <Button 
-                      className="w-full"
-                      variant="outline"
-                      onClick={() => handleAdminister(medication)}
-                    >
-                      Record Administration
-                    </Button>
-                  </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            {renderMedicationStatus(medication)}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onAdminister && (
+                  <DropdownMenuItem onClick={() => handleAdminister(medication.id)}>
+                    <Check className="mr-2 h-4 w-4" />
+                    Administer
+                  </DropdownMenuItem>
                 )}
-              </>
+                {onEdit && (
+                  <DropdownMenuItem onClick={() => onEdit(medication)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <DropdownMenuItem 
+                    onClick={() => onDelete(medication.id)}
+                    className="text-destructive"
+                  >
+                    <AlertCircle className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 px-2 text-xs"
+              onClick={() => toggleExpand(medication.id)}
+            >
+              {isExpanded ? 'Less' : 'More'}
+            </Button>
+          </div>
+        </div>
+        
+        {isExpanded && (
+          <div className="mt-2 pl-2 border-l-2 border-gray-200 space-y-1">
+            <div className="flex text-xs">
+              <span className="text-gray-500 w-28">Start Date:</span>
+              <span>{medication.start_date ? format(new Date(medication.start_date), 'MMM d, yyyy') : 'Not set'}</span>
+            </div>
+            {medication.end_date && (
+              <div className="flex text-xs">
+                <span className="text-gray-500 w-28">End Date:</span>
+                <span>{format(new Date(medication.end_date), 'MMM d, yyyy')}</span>
+              </div>
+            )}
+            <div className="flex text-xs">
+              <span className="text-gray-500 w-28">Administration:</span>
+              <span>{medication.administration_route}</span>
+            </div>
+            {medication.last_administered && (
+              <div className="flex text-xs">
+                <span className="text-gray-500 w-28">Last Given:</span>
+                <span>{format(new Date(medication.last_administered), 'MMM d, yyyy h:mm a')}</span>
+              </div>
+            )}
+            {status.nextDue && (
+              <div className="flex text-xs">
+                <span className="text-gray-500 w-28">Next Due:</span>
+                <span>{format(status.nextDue, 'MMM d, yyyy')}</span>
+              </div>
+            )}
+            {medication.notes && (
+              <div className="flex text-xs">
+                <span className="text-gray-500 w-28">Notes:</span>
+                <span className="text-gray-700">{medication.notes}</span>
+              </div>
             )}
           </div>
-        );
-      })}
-      
-      <Dialog open={isAdministerDialogOpen} onOpenChange={setIsAdministerDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Record Medication Administration</DialogTitle>
-          </DialogHeader>
-          {selectedMedication && (
-            <AdministerMedicationForm 
-              medication={selectedMedication}
-              onSubmit={handleSubmitAdministration}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <Card className={className}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Medications</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {activeMedications.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-sm font-medium mb-2">Active Medications</h3>
+            <div className="space-y-2 divide-y">
+              {activeMedications.map(renderMedicationItem)}
+            </div>
+          </div>
+        )}
+        
+        {inactiveMedications.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium mb-2">Inactive Medications</h3>
+            <div className="space-y-2 divide-y text-gray-500">
+              {inactiveMedications.map(renderMedicationItem)}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
