@@ -82,7 +82,7 @@ export const MedicationStatusEnum = MedicationStatus;
 export const AppetiteLevelEnum = AppetiteLevel;
 export const EnergyLevelEnum = EnergyLevel;
 export const StoolConsistencyEnum = StoolConsistency;
-export const HeatIntensityEnum = HeatIntensity;
+export const HeatIntensityEnum = HeatIntensity; // Import already established at top
 
 // Export these as types for type-checking
 export type HealthRecordTypeEnum = HealthRecordType;
@@ -90,4 +90,4 @@ export type MedicationStatusEnum = MedicationStatus;
 export type AppetiteLevelEnum = AppetiteLevel;
 export type EnergyLevelEnum = EnergyLevel;
 export type StoolConsistencyEnum = StoolConsistency;
-export type HeatIntensityEnum = HeatIntensity;
+export type HeatIntensityEnum = HeatIntensity; // Properly reference the imported HeatIntensity
