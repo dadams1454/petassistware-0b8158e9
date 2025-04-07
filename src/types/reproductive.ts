@@ -1,6 +1,8 @@
 
 // Import WeightUnit from common
 import { WeightUnit } from '@/types/common';
+import type { Json } from '../integrations/supabase/types';
+import type { Dog } from '@/types/dog';
 
 // Type for heat intensity values
 export type HeatIntensityType = 'light' | 'moderate' | 'heavy' | 'mild' | 'medium' | 'low' | 'high' | 'peak' | 'strong' | 'unknown';
@@ -33,7 +35,7 @@ export interface HeatCycle {
   notes?: string;
   cycle_number?: number;
   cycle_length?: number;
-  fertility_indicators?: any;
+  fertility_indicators?: Json;
   created_at: string;
   updated_at?: string;
   recorded_by?: string;
@@ -73,9 +75,6 @@ export enum ReproductiveStatus {
   Altered = 'altered',
   Neutered = 'neutered'
 }
-
-// Import Dog type from types/dog
-import { Dog } from '@/types/dog';
 
 // Breeding record interface
 export interface BreedingRecord {
@@ -206,4 +205,4 @@ export function normalizeBreedingRecord(record: any): BreedingRecord {
 }
 
 // Export the Dog type for use in other modules
-export { Dog };
+export type { Dog };

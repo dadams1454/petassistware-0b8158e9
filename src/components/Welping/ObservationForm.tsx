@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Loader2 } from 'lucide-react';
 
 // Define the form schema with Zod
 const observationSchema = z.object({
@@ -77,7 +77,13 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
   const handleSubmit = async (values: ObservationFormValues) => {
     setIsSubmitting(true);
     try {
-      const observationData: Partial<WelpingObservation> = {
+      // Ensure all required fields are present
+      const observationData: Partial<WelpingObservation> & { 
+        welping_record_id: string;
+        observation_type: string;
+        description: string;
+        observation_time: string;
+      } = {
         ...values,
         welping_record_id: welpingRecordId,
         created_at: new Date().toISOString(),
@@ -266,7 +272,7 @@ const ObservationForm: React.FC<ObservationFormProps> = ({
           </Button>
         )}
         <Button onClick={form.handleSubmit(handleSubmit)} disabled={isSubmitting}>
-          {isSubmitting ? <LoadingSpinner className="mr-2" /> : null}
+          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           {initialData?.id ? 'Update' : 'Save'} Observation
         </Button>
       </CardFooter>

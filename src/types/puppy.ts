@@ -1,5 +1,6 @@
 
 import { WeightUnit } from '@/types/common';
+import { WeightRecord } from '@/types/weight';
 
 export interface Puppy {
   id: string;
@@ -79,5 +80,5 @@ export interface PuppyCareLogProps {
   onRefresh?: () => void;
 }
 
-// Re-export WeightRecord for Puppy usage
-export type { WeightRecord } from './weight';
+// Export WeightRecord type for Puppy usage
+export type { WeightRecord };

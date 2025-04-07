@@ -31,11 +31,12 @@ export function useInsertRecord<T extends Record<string, any>>(
         // Make sure the required fields are present based on common tables
         validateRequiredFields(tableName, payload);
 
+        // Type assertion needed since we can't predict exact table structure
+        // This is a simplification to make TypeScript happy
         const { data, error: insertError } = await supabase
           .from(tableName)
-          .insert(payload)
-          .select()
-          .single();
+          .insert(payload as any)
+          .select();
 
         if (insertError) {
           console.error(`Error inserting into ${tableName}:`, insertError);
@@ -43,7 +44,7 @@ export function useInsertRecord<T extends Record<string, any>>(
         }
 
         console.log(`Successfully inserted record into ${tableName}:`, data);
-        return data as T;
+        return (data as any)[0] as T;
       } catch (err: any) {
         setError(err);
         console.error(`Failed to insert record into ${tableName}:`, err);

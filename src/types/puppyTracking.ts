@@ -39,7 +39,6 @@ export interface PuppyAgeGroup {
 }
 
 // Puppy age group info interface
-// Made compatible with PuppyAgeGroup by making required fields consistent
 export interface PuppyAgeGroupInfo {
   id: string;
   name: string;
