@@ -27,6 +27,35 @@ export interface HealthRecord {
   updated_at?: string;
   next_due_date?: string;
   performed_by?: string;
+  
+  // Vaccination-specific fields
+  vaccine_name?: string;
+  manufacturer?: string;
+  lot_number?: string;
+  expiration_date?: string;
+  
+  // Medication-specific fields
+  medication_name?: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string;
+  duration?: number;
+  duration_unit?: string;
+  administration_route?: string;
+  
+  // Examination-specific fields
+  examination_type?: string;
+  findings?: string;
+  recommendations?: string;
+  follow_up_date?: string;
+  
+  // Surgery-specific fields
+  procedure_name?: string;
+  surgeon?: string;
+  anesthesia_used?: string;
+  recovery_notes?: string;
 }
 
 // Medication interface
@@ -94,6 +123,21 @@ export interface HealthCertificate {
   issuer: string;
   certificate_number?: string;
   document_url?: string;
+  file_url?: string; // For backward compatibility
   notes?: string;
   created_at: string;
+}
+
+// Health alert interface
+export interface HealthAlert {
+  id: string;
+  dog_id?: string;
+  puppy_id?: string;
+  alert_type: string;
+  severity: 'low' | 'medium' | 'high';
+  message: string;
+  resolved: boolean;
+  created_at: string;
+  resolved_at?: string;
+  record_id?: string;
 }

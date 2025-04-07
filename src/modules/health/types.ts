@@ -18,6 +18,8 @@ import {
   MedicationStatusResult
 } from '@/types/health-enums';
 
+import { WeightUnit } from '@/types/weight-units';
+
 // Re-export types from health and health-enums for convenience and consistency
 export type { 
   BaseHealthRecord,
@@ -107,7 +109,7 @@ export interface WeightRecord {
   dog_id?: string;
   puppy_id?: string;
   weight: number;
-  weight_unit: string;
+  weight_unit: WeightUnit;
   date: string;
   notes?: string;
   percent_change?: number;

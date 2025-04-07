@@ -1,5 +1,7 @@
 
-// Health Record Type Enums
+/**
+ * Health Record Type Enums
+ */
 
 /**
  * String literal type for health record types
@@ -9,11 +11,18 @@ export type HealthRecordType =
   | 'examination'
   | 'medication'
   | 'surgery'
+  | 'laboratory'
+  | 'test'
+  | 'imaging'
+  | 'preventive'
+  | 'deworming'
+  | 'other'
   | 'injury'
   | 'allergy'
-  | 'test'
-  | 'other'
-  | 'observation';
+  | 'observation'
+  | 'procedure'
+  | 'dental'
+  | 'grooming';
 
 /**
  * Enum for health record types
@@ -24,16 +33,15 @@ export enum HealthRecordTypeEnum {
   EXAMINATION = 'examination',
   MEDICATION = 'medication',
   SURGERY = 'surgery',
-  INJURY = 'injury',
-  ALLERGY = 'allergy',
-  TEST = 'test',
-  OTHER = 'other',
-  OBSERVATION = 'observation',
-  // Additional types used in other components
   LABORATORY = 'laboratory',
+  TEST = 'test',
   IMAGING = 'imaging',
   PREVENTIVE = 'preventive',
   DEWORMING = 'deworming',
+  OTHER = 'other',
+  INJURY = 'injury',
+  ALLERGY = 'allergy',
+  OBSERVATION = 'observation',
   PROCEDURE = 'procedure',
   DENTAL = 'dental',
   GROOMING = 'grooming'
@@ -128,14 +136,15 @@ export type StoolConsistency =
 // Helper functions
 export function stringToHealthRecordType(str: string): HealthRecordType {
   const normalized = str.toLowerCase().trim();
-  const validTypes: HealthRecordType[] = [
-    'vaccination', 'examination', 'medication', 'surgery',
-    'injury', 'allergy', 'test', 'other', 'observation'
-  ];
   
-  if (validTypes.includes(normalized as HealthRecordType)) {
-    return normalized as HealthRecordType;
+  // Check if it's a valid health record type
+  for (const key in HealthRecordTypeEnum) {
+    if (HealthRecordTypeEnum[key as keyof typeof HealthRecordTypeEnum].toLowerCase() === normalized) {
+      return HealthRecordTypeEnum[key as keyof typeof HealthRecordTypeEnum] as HealthRecordType;
+    }
   }
+  
+  // Default to 'other' if not found
   return 'other';
 }
 

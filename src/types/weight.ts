@@ -1,5 +1,6 @@
 
 import { WeightRecord as HealthModuleWeightRecord } from '@/modules/health/types';
+import { WeightUnit } from './weight-units';
 
 /**
  * Re-export WeightRecord type for backward compatibility
@@ -17,7 +18,10 @@ export interface GrowthStats {
   onTrack?: boolean;
   currentWeight?: {
     value: number;
-    unit: string;
+    unit: WeightUnit;
     date: string;
   };
+  totalGrowth?: number;
+  lastWeekGrowth?: number;
+  growthRate?: number;
 }
