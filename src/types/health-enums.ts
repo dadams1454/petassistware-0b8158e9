@@ -30,7 +30,8 @@ export enum MedicationStatusEnum {
   UPCOMING = 'upcoming',
   OVERDUE = 'overdue',
   COMPLETED = 'completed',
-  SKIPPED = 'skipped'
+  SKIPPED = 'skipped',
+  UNKNOWN = 'unknown'
 }
 
 // Define MedicationStatusResult as a string union type
@@ -79,7 +80,9 @@ export enum StoolConsistencyEnum {
   SOFT = 'soft',
   LOOSE = 'loose',
   WATERY = 'watery',
-  HARD = 'hard'
+  HARD = 'hard',
+  BLOODY = 'bloody',
+  MUCUS = 'mucus'
 }
 
 export type StoolConsistency = 
@@ -87,7 +90,9 @@ export type StoolConsistency =
   | 'soft'
   | 'loose'
   | 'watery'
-  | 'hard';
+  | 'hard'
+  | 'bloody'
+  | 'mucus';
 
 // Helper functions
 export function stringToHealthRecordType(str: string): HealthRecordType {

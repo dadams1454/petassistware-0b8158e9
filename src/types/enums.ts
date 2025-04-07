@@ -6,23 +6,31 @@
 
 // Import the common enum types from their specialized files
 import { 
+  HealthRecordTypeEnum,
   HealthRecordType,
-  MedicationStatus,
+  MedicationStatusEnum,
+  MedicationStatusResult,
+  AppetiteEnum,
   AppetiteLevel,
+  EnergyEnum,
   EnergyLevel,
+  StoolConsistencyEnum,
   StoolConsistency,
-  HeatIntensity,
   stringToHealthRecordType
 } from './health-enums';
 
 // Re-export the health enums
 export {
+  HealthRecordTypeEnum,
   HealthRecordType,
-  MedicationStatus,
+  MedicationStatusEnum,
+  MedicationStatusResult,
+  AppetiteEnum,
   AppetiteLevel,
+  EnergyEnum,
   EnergyLevel,
+  StoolConsistencyEnum,
   StoolConsistency,
-  HeatIntensity,
   stringToHealthRecordType
 };
 
@@ -46,9 +54,6 @@ export enum DogStatus {
   ARCHIVED = 'archived',
   RETIRED = 'retired'
 }
-
-// For backward compatibility, alias the HealthRecordType enum
-export { HealthRecordType as HealthRecordTypeEnum };
 
 // Puppy Status Enum
 export enum PuppyStatus {

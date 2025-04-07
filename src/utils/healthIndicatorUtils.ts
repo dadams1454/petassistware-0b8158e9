@@ -13,15 +13,15 @@ import {
  */
 export const getAppetiteLevelLabel = (level: AppetiteLevel): string => {
   switch (level) {
-    case AppetiteLevel.EXCELLENT:
+    case 'excellent':
       return AppetiteEnum.EXCELLENT;
-    case AppetiteLevel.GOOD:
+    case 'good':
       return AppetiteEnum.GOOD;
-    case AppetiteLevel.FAIR:
+    case 'fair':
       return AppetiteEnum.FAIR;
-    case AppetiteLevel.POOR:
+    case 'poor':
       return AppetiteEnum.POOR;
-    case AppetiteLevel.NONE:
+    case 'none':
       return AppetiteEnum.NONE;
     default:
       return 'Unknown';
@@ -33,15 +33,15 @@ export const getAppetiteLevelLabel = (level: AppetiteLevel): string => {
  */
 export const getEnergyLevelLabel = (level: EnergyLevel): string => {
   switch (level) {
-    case EnergyLevel.HYPERACTIVE:
+    case 'hyperactive':
       return EnergyEnum.HYPERACTIVE;
-    case EnergyLevel.HIGH:
+    case 'high':
       return EnergyEnum.HIGH;
-    case EnergyLevel.NORMAL:
+    case 'normal':
       return EnergyEnum.NORMAL;
-    case EnergyLevel.LOW:
+    case 'low':
       return EnergyEnum.LOW;
-    case EnergyLevel.LETHARGIC:
+    case 'lethargic':
       return EnergyEnum.LETHARGIC;
     default:
       return 'Unknown';
@@ -53,19 +53,19 @@ export const getEnergyLevelLabel = (level: EnergyLevel): string => {
  */
 export const getStoolConsistencyLabel = (consistency: StoolConsistency): string => {
   switch (consistency) {
-    case StoolConsistency.NORMAL:
+    case 'normal':
       return StoolConsistencyEnum.NORMAL;
-    case StoolConsistency.SOFT:
+    case 'soft':
       return StoolConsistencyEnum.SOFT;
-    case StoolConsistency.LOOSE:
+    case 'loose':
       return StoolConsistencyEnum.LOOSE;
-    case StoolConsistency.WATERY:
+    case 'watery':
       return StoolConsistencyEnum.WATERY;
-    case StoolConsistency.HARD:
+    case 'hard':
       return StoolConsistencyEnum.HARD;
-    case StoolConsistency.BLOODY:
+    case 'bloody':
       return StoolConsistencyEnum.BLOODY;
-    case StoolConsistency.MUCUS:
+    case 'mucus':
       return StoolConsistencyEnum.MUCUS;
     default:
       return 'Unknown';
@@ -76,14 +76,14 @@ export const getStoolConsistencyLabel = (consistency: StoolConsistency): string 
  * Check if an appetite level is concerning
  */
 export const isAppetiteConcerning = (level: AppetiteLevel): boolean => {
-  return level === AppetiteLevel.NONE || level === AppetiteLevel.POOR;
+  return level === 'none' || level === 'poor';
 };
 
 /**
  * Check if an energy level is concerning
  */
 export const isEnergyConcerning = (level: EnergyLevel): boolean => {
-  return level === EnergyLevel.LETHARGIC || level === EnergyLevel.LOW;
+  return level === 'lethargic' || level === 'low';
 };
 
 /**
@@ -91,9 +91,9 @@ export const isEnergyConcerning = (level: EnergyLevel): boolean => {
  */
 export const isStoolConcerning = (consistency: StoolConsistency): boolean => {
   return (
-    consistency === StoolConsistency.WATERY ||
-    consistency === StoolConsistency.BLOODY ||
-    consistency === StoolConsistency.MUCUS
+    consistency === 'watery' ||
+    consistency === 'bloody' ||
+    consistency === 'mucus'
   );
 };
 
@@ -102,15 +102,15 @@ export const isStoolConcerning = (consistency: StoolConsistency): boolean => {
  */
 export const getAppetiteColor = (level: AppetiteLevel): string => {
   switch (level) {
-    case AppetiteLevel.EXCELLENT:
+    case 'excellent':
       return 'text-green-600';
-    case AppetiteLevel.GOOD:
+    case 'good':
       return 'text-green-500';
-    case AppetiteLevel.FAIR:
+    case 'fair':
       return 'text-yellow-500';
-    case AppetiteLevel.POOR:
+    case 'poor':
       return 'text-orange-500';
-    case AppetiteLevel.NONE:
+    case 'none':
       return 'text-red-500';
     default:
       return 'text-gray-500';
@@ -122,15 +122,15 @@ export const getAppetiteColor = (level: AppetiteLevel): string => {
  */
 export const getEnergyColor = (level: EnergyLevel): string => {
   switch (level) {
-    case EnergyLevel.HYPERACTIVE:
+    case 'hyperactive':
       return 'text-purple-500';
-    case EnergyLevel.HIGH:
+    case 'high':
       return 'text-blue-500';
-    case EnergyLevel.NORMAL:
+    case 'normal':
       return 'text-green-500';
-    case EnergyLevel.LOW:
+    case 'low':
       return 'text-orange-500';
-    case EnergyLevel.LETHARGIC:
+    case 'lethargic':
       return 'text-red-500';
     default:
       return 'text-gray-500';
@@ -142,19 +142,19 @@ export const getEnergyColor = (level: EnergyLevel): string => {
  */
 export const getStoolColor = (consistency: StoolConsistency): string => {
   switch (consistency) {
-    case StoolConsistency.NORMAL:
+    case 'normal':
       return 'text-green-500';
-    case StoolConsistency.SOFT:
+    case 'soft':
       return 'text-yellow-500';
-    case StoolConsistency.LOOSE:
+    case 'loose':
       return 'text-orange-400';
-    case StoolConsistency.WATERY:
+    case 'watery':
       return 'text-red-500';
-    case StoolConsistency.HARD:
+    case 'hard':
       return 'text-orange-500';
-    case StoolConsistency.BLOODY:
+    case 'bloody':
       return 'text-red-600';
-    case StoolConsistency.MUCUS:
+    case 'mucus':
       return 'text-red-500';
     default:
       return 'text-gray-500';
