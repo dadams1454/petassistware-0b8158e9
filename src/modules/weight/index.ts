@@ -1,14 +1,23 @@
 
-// Export components
-export { default as WeightUnitSelect } from './components/WeightUnitSelect';
-export { default as WeightEntryForm } from './components/WeightEntryForm';
-export { default as WeightTracker } from './components/WeightTracker';
-export { default as WeightChartView } from './components/WeightChartView';
-export { default as WeightTableView } from './components/WeightTableView';
+/**
+ * Weight Module - Provides functionality for tracking and managing weight records
+ * 
+ * This module centralizes all weight-related functionality to ensure consistency
+ * across the application.
+ */
 
-// Export hooks
-export { useWeightEntryForm } from './hooks/useWeightEntryForm';
-export { useWeightData } from './hooks/useWeightData';
-
-// Export types
+// Export all types from the module
 export * from './types';
+
+// Export hooks with proper error handling
+export * from './hooks/useWeightRecords';
+export * from './hooks/useWeightStats';
+export * from './hooks/useWeightData';
+
+// Re-export utility functions from main utils to maintain API consistency
+export { 
+  convertWeight, 
+  calculatePercentChange, 
+  formatWeight, 
+  getAppropriateWeightUnit 
+} from '@/utils/weightConversion';
