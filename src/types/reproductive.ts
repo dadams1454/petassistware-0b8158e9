@@ -1,6 +1,6 @@
 
 // Import WeightUnit from common
-import { WeightUnit } from '@/types/common';
+import { WeightUnit } from '@/types/weight-units';
 import type { Json } from '../integrations/supabase/types';
 import type { Dog } from '@/types/dog';
 import { HeatIntensityType, HeatIntensityValues, HeatCycle, HeatStage } from './heat-cycles';

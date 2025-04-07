@@ -117,4 +117,3 @@ export type AppetiteLevelEnum = AppetiteLevel;
 export type EnergyLevelEnum = EnergyLevel;
 export type StoolConsistencyEnum = StoolConsistency;
 export type HeatIntensityEnum = HeatIntensity;
-

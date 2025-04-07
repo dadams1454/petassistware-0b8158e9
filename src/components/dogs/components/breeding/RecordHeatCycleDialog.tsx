@@ -10,20 +10,25 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { HeatCycle, HeatIntensity } from '@/types';
+import { HeatCycle, HeatIntensityType, HeatIntensityValues } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export interface RecordHeatCycleDialogProps {
   open?: boolean;
   onOpenChange?: (value: boolean) => void;
   dogId: string;
   editData?: HeatCycle | null;
+  onSuccess?: () => void;
 }
 
 const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
   open = false,
   onOpenChange = () => {},
   dogId,
-  editData = null
+  editData = null,
+  onSuccess = () => {}
 }) => {
   const { toast } = useToast();
   const [startDate, setStartDate] = useState<Date | undefined>(
@@ -33,10 +38,11 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
     editData?.end_date ? new Date(editData.end_date) : undefined
   );
   const [notes, setNotes] = useState(editData?.notes || '');
-  const [intensity, setIntensity] = useState<string>(
-    editData?.intensity || 'moderate'
+  const [intensity, setIntensity] = useState<HeatIntensityType>(
+    (editData?.intensity as HeatIntensityType) || 'moderate'
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updateDogLastHeat, setUpdateDogLastHeat] = useState(!editData);
 
   // Update form when edit data changes
   useEffect(() => {
@@ -44,12 +50,14 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
       setStartDate(editData.start_date ? new Date(editData.start_date) : new Date());
       setEndDate(editData.end_date ? new Date(editData.end_date) : undefined);
       setNotes(editData.notes || '');
-      setIntensity(editData.intensity || 'moderate');
+      setIntensity((editData.intensity as HeatIntensityType) || 'moderate');
+      setUpdateDogLastHeat(false);
     } else {
       setStartDate(new Date());
       setEndDate(undefined);
       setNotes('');
       setIntensity('moderate');
+      setUpdateDogLastHeat(true);
     }
   }, [editData]);
 
@@ -71,41 +79,54 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate ? endDate.toISOString().split('T')[0] : null,
         notes: notes.trim() || null,
-        intensity
+        intensity: intensity || 'moderate',
+        cycle_length: endDate && startDate 
+          ? Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) 
+          : null
       };
 
-      let result;
-
       if (editData?.id) {
-        // Update existing record
-        result = await supabase
+        // Update existing cycle
+        const { error } = await supabase
           .from('heat_cycles')
           .update(heatCycleData)
           .eq('id', editData.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Heat cycle updated successfully"
+        });
       } else {
-        // Insert new record
-        result = await supabase
+        // Add new cycle
+        const { error } = await supabase
           .from('heat_cycles')
           .insert(heatCycleData);
+
+        if (error) throw error;
+        
+        // Update dog's last heat date if checkbox is checked
+        if (updateDogLastHeat) {
+          await supabase
+            .from('dogs')
+            .update({ last_heat_date: heatCycleData.start_date })
+            .eq('id', dogId);
+        }
+
+        toast({
+          title: "Success",
+          description: "Heat cycle recorded successfully"
+        });
       }
 
-      if (result.error) throw result.error;
-
-      toast({
-        title: "Success",
-        description: editData?.id
-          ? "Heat cycle updated successfully"
-          : "Heat cycle recorded successfully"
-      });
-
-      if (onOpenChange) {
-        onOpenChange(false);
-      }
+      onOpenChange(false);
+      onSuccess();
     } catch (error) {
-      console.error('Error saving heat cycle:', error);
+      console.error("Error saving heat cycle:", error);
       toast({
         title: "Error",
-        description: "Failed to save heat cycle data",
+        description: `Failed to save heat cycle: ${(error as Error).message}`,
         variant: "destructive"
       });
     } finally {
@@ -115,25 +136,28 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{editData ? "Edit Heat Cycle" : "Record Heat Cycle"}</DialogTitle>
+          <DialogTitle>
+            {editData ? "Edit Heat Cycle" : "Record Heat Cycle"}
+          </DialogTitle>
         </DialogHeader>
-
-        <div className="space-y-4 py-4">
+        
+        <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Start Date</label>
+            <Label htmlFor="startDate">Start Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant={"outline"}
+                  id="startDate"
+                  variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
                     !startDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                  {startDate ? format(startDate, "PPP") : "Select date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -146,20 +170,21 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
               </PopoverContent>
             </Popover>
           </div>
-
+          
           <div className="space-y-2">
-            <label className="text-sm font-medium">End Date (Leave blank if still in heat)</label>
+            <Label htmlFor="endDate">End Date (Optional)</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant={"outline"}
+                  id="endDate"
+                  variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
                     !endDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                  {endDate ? format(endDate, "PPP") : "Select date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -167,57 +192,63 @@ const RecordHeatCycleDialog: React.FC<RecordHeatCycleDialogProps> = ({
                   mode="single"
                   selected={endDate}
                   onSelect={setEndDate}
-                  initialFocus
                   disabled={(date) => date < (startDate || new Date())}
+                  initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
-
+          
           <div className="space-y-2">
-            <label className="text-sm font-medium">Intensity</label>
-            <div className="flex space-x-2">
-              <Button 
-                variant={intensity === 'mild' ? "default" : "outline"}
-                onClick={() => setIntensity('mild')}
-                size="sm"
-              >
-                Mild
-              </Button>
-              <Button 
-                variant={intensity === 'moderate' ? "default" : "outline"}
-                onClick={() => setIntensity('moderate')}
-                size="sm"
-              >
-                Moderate
-              </Button>
-              <Button 
-                variant={intensity === 'strong' ? "default" : "outline"}
-                onClick={() => setIntensity('strong')}
-                size="sm"
-              >
-                Strong
-              </Button>
-            </div>
+            <Label htmlFor="intensity">Intensity</Label>
+            <Select 
+              value={intensity}
+              onValueChange={(value) => setIntensity(value as HeatIntensityType)}
+            >
+              <SelectTrigger id="intensity">
+                <SelectValue placeholder="Select intensity" />
+              </SelectTrigger>
+              <SelectContent>
+                {HeatIntensityValues.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value.charAt(0).toUpperCase() + value.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-
+          
           <div className="space-y-2">
-            <label className="text-sm font-medium">Notes (Optional)</label>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
+              id="notes"
+              placeholder="Add any relevant observations..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Enter any observations or notes"
-              className="min-h-[100px]"
+              rows={3}
             />
           </div>
+          
+          {!editData && (
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox 
+                id="updateLastHeat" 
+                checked={updateDogLastHeat} 
+                onCheckedChange={(checked) => setUpdateDogLastHeat(!!checked)}
+              />
+              <Label htmlFor="updateLastHeat" className="text-sm">
+                Update dog's last heat date
+              </Label>
+            </div>
+          )}
         </div>
-
+        
         <div className="flex justify-end space-x-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting ? "Saving..." : (editData ? "Update" : "Save")}
           </Button>
         </div>
       </DialogContent>
