@@ -68,6 +68,9 @@ export interface DogCareStatus {
   flags?: DogFlag[];
   incompatible_with?: string[];
   dog_weight?: number;
+  potty_alert_threshold?: number;
+  max_time_between_breaks?: number;
+  requires_special_handling?: boolean;
 }
 
 export interface TimeSlot {

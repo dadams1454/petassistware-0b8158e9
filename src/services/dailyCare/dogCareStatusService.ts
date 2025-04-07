@@ -31,7 +31,8 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         photo_url,
         weight,
         potty_alert_threshold,
-        requires_special_handling
+        requires_special_handling,
+        max_time_between_breaks
       `);
       
     if (dogsError) {
@@ -61,6 +62,7 @@ export const fetchAllDogsWithCareStatus = async (date = new Date()): Promise<Dog
         dog_photo: dog.photo_url,
         dog_weight: dog.weight,
         potty_alert_threshold: dog.potty_alert_threshold,
+        max_time_between_breaks: dog.max_time_between_breaks,
         requires_special_handling: dog.requires_special_handling,
         last_potty_time: latestLogs.pottybreaks?.timestamp || null,
         last_feeding_time: latestLogs.feeding?.timestamp || null,
