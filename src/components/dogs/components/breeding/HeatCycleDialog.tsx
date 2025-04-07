@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { HeatCycle, HeatIntensityValues } from '@/types';
+import { HeatCycle, HeatIntensityValues, HeatIntensityType } from '@/types';
 
 interface HeatCycleDialogProps {
   open: boolean;
@@ -150,9 +149,11 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
                 <SelectValue placeholder="Select intensity" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="mild">Mild</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="strong">Strong</SelectItem>
+                {HeatIntensityValues.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value.charAt(0).toUpperCase() + value.slice(1)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

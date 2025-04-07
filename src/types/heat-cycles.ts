@@ -22,6 +22,11 @@ export enum HeatIntensity {
 }
 
 /**
+ * Heat intensity values for form options
+ */
+export const HeatIntensityValues = ['none', 'mild', 'moderate', 'strong', 'very_strong'] as const;
+
+/**
  * Convert HeatIntensity to HeatIntensityType
  */
 export const mapHeatIntensityToType = (intensity: HeatIntensity): HeatIntensityType => {
