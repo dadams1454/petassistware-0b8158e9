@@ -1,12 +1,11 @@
-
 /**
  * Health-related types and interfaces
  */
 import { 
   HealthRecordType, HealthRecordTypeEnum,
   MedicationStatus, MedicationStatusEnum,
-  AppetiteLevel, AppetiteLevelEnum,
-  EnergyLevel, EnergyLevelEnum,
+  AppetiteLevel, AppetiteEnum,
+  EnergyLevel, EnergyEnum,
   StoolConsistency, StoolConsistencyEnum,
   HeatIntensity, HeatIntensityType,
   stringToHealthRecordType
@@ -17,24 +16,21 @@ import { WeightUnit } from './weight-units';
 export {
   HealthRecordType, HealthRecordTypeEnum,
   MedicationStatus, MedicationStatusEnum,
-  AppetiteLevel, AppetiteLevelEnum,
-  EnergyLevel, EnergyLevelEnum,
+  AppetiteLevel, AppetiteEnum,
+  EnergyLevel, EnergyEnum,
   StoolConsistency, StoolConsistencyEnum,
-  HeatIntensity
+  HeatIntensity, stringToHealthRecordType
 } from './health-enums';
 
 // Re-export HeatIntensityType
 export type { HeatIntensityType } from './heat-cycles';
-
-// Re-export the stringToHealthRecordType helper
-export { stringToHealthRecordType } from './health-enums';
 
 // Health Record interface
 export interface HealthRecord {
   id?: string;
   dog_id?: string;
   puppy_id?: string;
-  record_type: HealthRecordType;
+  record_type: HealthRecordTypeEnum;
   title?: string;
   visit_date: string;
   vet_name: string;
@@ -236,4 +232,4 @@ export function mapToWeightRecord(data: any) {
 export type { WeightUnit };
 
 // Heat cycle types - re-export from heat-cycles.ts
-export type { HeatCycle, HeatStage } from './heat-cycles';
+export type { HeatCycle } from './heat-cycles';

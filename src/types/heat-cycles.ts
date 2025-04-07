@@ -79,3 +79,14 @@ export interface HeatCycle {
   updated_at?: string;
   recorded_by?: string;
 }
+
+/**
+ * Heat stage interface
+ */
+export interface HeatStage {
+  name: string;
+  description: string;
+  days: number[];
+  signs: string[];
+  recommendations: string[];
+}

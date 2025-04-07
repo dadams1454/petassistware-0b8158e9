@@ -103,6 +103,19 @@ export enum StoolConsistency {
 }
 
 /**
+ * Stool consistency enum for display
+ */
+export enum StoolConsistencyEnum {
+  NORMAL = "Normal",
+  SOFT = "Soft",
+  LOOSE = "Loose",
+  WATERY = "Watery",
+  HARD = "Hard",
+  BLOODY = "Bloody",
+  MUCUS = "Mucus"
+}
+
+/**
  * Medication status enum
  */
 export enum MedicationStatusEnum {
@@ -114,6 +127,66 @@ export enum MedicationStatusEnum {
   OVERDUE = "overdue",
   NOT_STARTED = "not_started",
   UNKNOWN = "unknown"
+}
+
+/**
+ * Medication status enum for display
+ */
+export enum MedicationStatus {
+  ACTIVE = "Active",
+  COMPLETED = "Completed",
+  PAUSED = "Paused",
+  STOPPED = "Stopped",
+  SCHEDULED = "Scheduled",
+  OVERDUE = "Overdue",
+  NOT_STARTED = "Not Started",
+  UNKNOWN = "Unknown"
+}
+
+/**
+ * Maps a string to the corresponding HealthRecordType enum value
+ * @param type - Type of health record as a string
+ * @returns The corresponding HealthRecordType enum value
+ */
+export function stringToHealthRecordType(type: string): HealthRecordTypeEnum {
+  const normalizedType = type.toLowerCase();
+  
+  switch (normalizedType) {
+    case 'examination':
+      return HealthRecordTypeEnum.EXAMINATION;
+    case 'vaccination':
+      return HealthRecordTypeEnum.VACCINATION;
+    case 'medication':
+      return HealthRecordTypeEnum.MEDICATION;
+    case 'surgery':
+      return HealthRecordTypeEnum.SURGERY;
+    case 'treatment':
+      return HealthRecordTypeEnum.TREATMENT;
+    case 'emergency':
+      return HealthRecordTypeEnum.EMERGENCY;
+    case 'dental':
+      return HealthRecordTypeEnum.DENTAL;
+    case 'routine':
+      return HealthRecordTypeEnum.ROUTINE;
+    case 'procedure':
+      return HealthRecordTypeEnum.PROCEDURE;
+    case 'test':
+      return HealthRecordTypeEnum.TEST;
+    case 'laboratory':
+      return HealthRecordTypeEnum.LABORATORY;
+    case 'imaging':
+      return HealthRecordTypeEnum.IMAGING;
+    case 'preventive':
+      return HealthRecordTypeEnum.PREVENTIVE;
+    case 'observation':
+      return HealthRecordTypeEnum.OBSERVATION;
+    case 'deworming':
+      return HealthRecordTypeEnum.DEWORMING;
+    case 'grooming':
+      return HealthRecordTypeEnum.GROOMING;
+    default:
+      return HealthRecordTypeEnum.EXAMINATION; // Default fallback
+  }
 }
 
 /**
@@ -157,8 +230,6 @@ export const getHealthRecordTypeDisplay = (type: HealthRecordTypeEnum): string =
       return "Unknown";
   }
 };
-
-// Additional enums can be added here as needed
 
 // Re-export for easier imports
 export { HeatIntensity, HeatIntensityType };
