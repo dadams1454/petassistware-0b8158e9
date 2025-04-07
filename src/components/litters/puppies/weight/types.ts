@@ -1,5 +1,5 @@
 
-import { WeightUnit } from '@/types/common';
+import { WeightUnit } from '@/types/weight-units';
 import { WeightRecord } from '@/types/weight';
 
 export interface WeightTrackerProps {

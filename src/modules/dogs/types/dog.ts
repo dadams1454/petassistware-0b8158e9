@@ -1,4 +1,6 @@
 
+import { WeightUnit } from '@/types/weight-units';
+
 export enum DogGender {
   Male = 'male',
   Female = 'female'
@@ -22,7 +24,7 @@ export interface DogProfile {
   birthdate?: string;
   photo_url?: string;
   weight?: number;
-  weight_unit?: string;
+  weight_unit?: WeightUnit;
   is_pregnant?: boolean;
   last_heat_date?: string;
   tie_date?: string;
@@ -49,8 +51,8 @@ export interface WeightRecord {
   id: string;
   dog_id: string;
   weight: number;
-  weight_unit: string;
-  unit?: string; // Added for compatibility
+  weight_unit: WeightUnit;
+  unit?: WeightUnit; // Added for compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -109,7 +111,7 @@ export interface GrowthStats {
   onTrack: boolean | null;
   totalGrowth?: number | null;
   currentWeight?: number;
-  weightUnit?: string;
+  weightUnit?: WeightUnit;
   averageGrowth?: number;
   growthRate?: number;
   lastWeekGrowth?: number;

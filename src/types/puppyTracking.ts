@@ -1,6 +1,6 @@
 
 import { type Puppy } from './litter';
-import { type WeightUnit } from './common';
+import { type WeightUnit } from './weight-units';
 import { type WeightRecord as WeightRecordBase } from './weight';
 
 // Puppy with age calculation
@@ -14,8 +14,8 @@ export interface PuppyWithAge extends Puppy {
   weightHistory?: WeightRecordBase[];
   litter?: any;
   currentWeight?: number;
-  current_weight_unit?: string;
-  weight_unit?: string;
+  current_weight_unit?: WeightUnit;
+  weight_unit?: WeightUnit;
   ageDescription?: string;
 }
 
@@ -47,7 +47,7 @@ export interface PuppyAgeGroup {
   endDay: number;
   minAge: number;
   maxAge: number;
-  milestones: string;
+  milestones: string | string[]; // Updated to support both string and string[]
   ageRange?: string;
   groupName?: string;
   puppyCount?: number;
@@ -65,14 +65,14 @@ export interface PuppyAgeGroupInfo {
   startDay: number;
   endDay: number;
   color: string;
-  milestones: string | string[];
+  milestones: string | string[]; // Updated to support both string and string[]
   puppyCount?: number;
   minAge: number;
   maxAge: number;
-  displayName: string;
-  minDays: number;
-  maxDays: number;
-  unit: string;
+  displayName?: string;
+  minDays?: number;
+  maxDays?: number;
+  unit?: string;
 }
 
 // Age group data structure for puppies
@@ -104,7 +104,7 @@ export interface PuppyManagementStats {
     sold: number;
     unavailable: number;
   };
-  ageGroups: PuppyAgeGroupInfo[];
+  ageGroups: PuppyAgeGroupInfo[] | PuppyAgeGroup[]; // Allow both types for backward compatibility
   puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
   
   // Additional stats

@@ -1,5 +1,5 @@
 
-import { MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
+import { MedicationStatusEnum, MedicationStatusResult } from '@/types/health-enums';
 
 export interface MedicationInfo {
   id: string;

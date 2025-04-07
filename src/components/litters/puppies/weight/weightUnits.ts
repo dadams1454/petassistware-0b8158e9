@@ -1,5 +1,5 @@
 
-import { WeightUnit } from '@/types/weight-units';
+import { WeightUnit, weightUnitInfos } from '@/types/weight-units';
 
 /**
  * Converts a weight value from one unit to another
@@ -46,4 +46,4 @@ export const calculatePercentChange = (
 };
 
 // Export all constants and types from the central location
-export { weightUnitInfos } from '@/types/weight-units';
+export { weightUnitInfos };

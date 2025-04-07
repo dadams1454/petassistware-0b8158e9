@@ -4,6 +4,9 @@ import { usePuppyAgeGroups } from '@/hooks/puppies/usePuppyAgeGroups';
 import { usePuppyStats } from '@/hooks/puppies/usePuppyStats';
 import { PuppyWithAge, PuppyAgeGroupData, PuppyManagementStats, PuppyAgeGroup } from '@/types/puppyTracking';
 
+/**
+ * @deprecated - Please import from '@/hooks/puppies/usePuppyTracking' instead
+ */
 export const usePuppyTracking = (): PuppyManagementStats => {
   // Fetch puppy data
   const { puppies, isLoading: puppiesLoading, error } = usePuppyData();
@@ -52,7 +55,7 @@ export const usePuppyTracking = (): PuppyManagementStats => {
   return {
     totalPuppies,
     puppies: processedPuppies,
-    ageGroups: ageGroups as PuppyAgeGroup[],
+    ageGroups,
     puppiesByAgeGroup,
     byAgeGroup,
     byStatus,

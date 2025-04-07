@@ -52,6 +52,9 @@ export * from './puppy';
 export * from './litter';
 export * from './dailyCare';
 
+// Export puppy tracking types
+export * from './puppyTracking';
+
 // Export weight utilities
 export { 
   convertWeightToGrams, 

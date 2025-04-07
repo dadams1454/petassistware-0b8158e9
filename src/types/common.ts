@@ -28,7 +28,7 @@ export enum FrequencyTypes {
 // Re-export the weight calculation utility functions
 export { 
   calculatePercentChange 
-} from '../components/litters/puppies/weight/weightUnits';
+} from '../utils/weightConversion';
 
 // Re-export weightUnitInfos for backward compatibility
 export { weightUnitInfos } from './weight-units';

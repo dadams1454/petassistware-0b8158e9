@@ -47,7 +47,7 @@ export interface HealthRecord {
 }
 
 export interface MedicationStatusResult {
-  status: MedicationStatusEnum;
+  status: MedicationStatusEnum | string;
   message: string;
   daysUntilDue?: number;
   daysOverdue?: number;
