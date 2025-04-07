@@ -1,137 +1,92 @@
 
-// Define common types used across the application
-import { 
-  AppetiteLevelEnum, 
-  EnergyLevelEnum, 
-  StoolConsistencyEnum,
-  MedicationStatusEnum
-} from './health';
+/**
+ * Common types used throughout the application
+ */
 
-// Weight units for consistent use throughout the app
+// Weight unit type definition
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
-// Weight unit with display information
+// Weight unit information structure
 export interface WeightUnitInfo {
-  id: WeightUnit;
+  unit: WeightUnit;
   label: string;
-  abbr: string;
-  conversionToG: number;
-  name?: string; // For backward compatibility with some components
+  conversionToGrams: number;
+  displayPrecision: number;
 }
 
-// Weight unit option (for UI dropdowns)
+// Weight unit option for UI selects
 export interface WeightUnitOption {
   value: WeightUnit;
   label: string;
 }
 
-// Weight units with display information
-export const weightUnits: WeightUnitInfo[] = [
-  { id: 'oz', label: 'Ounces', abbr: 'oz', conversionToG: 28.3495, name: 'Ounces' },
-  { id: 'g', label: 'Grams', abbr: 'g', conversionToG: 1, name: 'Grams' },
-  { id: 'lb', label: 'Pounds', abbr: 'lb', conversionToG: 453.592, name: 'Pounds' },
-  { id: 'kg', label: 'Kilograms', abbr: 'kg', conversionToG: 1000, name: 'Kilograms' }
+// Frequency types for medications and other scheduled events
+export enum FrequencyTypes {
+  DAILY = 'daily',
+  TWICE_DAILY = 'twice daily',
+  THREE_TIMES_DAILY = 'three times daily',
+  EVERY_OTHER_DAY = 'every other day',
+  WEEKLY = 'weekly',
+  BIWEEKLY = 'biweekly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  ANNUALLY = 'annually',
+  AS_NEEDED = 'as needed',
+  ONCE_DAILY = 'once daily'
+}
+
+// Weight unit information
+export const weightUnitInfos: WeightUnitInfo[] = [
+  { unit: 'g', label: 'Grams', conversionToGrams: 1, displayPrecision: 0 },
+  { unit: 'oz', label: 'Ounces', conversionToGrams: 28.3495, displayPrecision: 1 },
+  { unit: 'lb', label: 'Pounds', conversionToGrams: 453.592, displayPrecision: 1 },
+  { unit: 'kg', label: 'Kilograms', conversionToGrams: 1000, displayPrecision: 1 }
 ];
 
-// Weight unit options for dropdowns
-export const weightUnitOptions: WeightUnitOption[] = weightUnits.map(unit => ({
-  value: unit.id,
-  label: unit.label
-}));
-
-// For easy access in components
-export const weightUnitInfos = weightUnits;
-
-// Common date format
-export type DateFormat = 'MM/dd/yyyy' | 'dd/MM/yyyy' | 'yyyy-MM-dd';
-
-// Common status types
-export type Status = 'active' | 'inactive' | 'pending' | 'completed' | 'archived';
-
-// Common currency types
-export type Currency = 'USD' | 'CAD' | 'EUR' | 'GBP';
-
-// Common frequency types for medications, feedings, etc.
-export const FrequencyTypes = {
-  ONCE: 'once',
-  DAILY: 'daily',
-  ONCE_DAILY: 'once_daily',
-  TWICE_DAILY: 'twice_daily',
-  THREE_TIMES_DAILY: 'three_times_daily',
-  FOUR_TIMES_DAILY: 'four_times_daily',
-  EVERY_OTHER_DAY: 'every_other_day',
-  WEEKLY: 'weekly',
-  BIWEEKLY: 'biweekly',
-  MONTHLY: 'monthly',
-  QUARTERLY: 'quarterly',
-  ANNUALLY: 'annually',
-  AS_NEEDED: 'as_needed'
+// Helper function to get weight unit info
+export const getWeightUnitInfo = (unit: WeightUnit): WeightUnitInfo => {
+  const info = weightUnitInfos.find(info => info.unit === unit);
+  return info || weightUnitInfos[0];
 };
 
-// Standardize weight unit (handles variations like 'lbs')
-export function standardizeWeightUnit(unit: string): WeightUnit {
-  if (!unit) return 'lb'; // Default to pounds if not provided
+// Helper function to get weight unit name
+export const getWeightUnitName = (unit: WeightUnit): string => {
+  return getWeightUnitInfo(unit).label;
+};
+
+// Weight unit options for select inputs
+export const weightUnitOptions: WeightUnitOption[] = weightUnitInfos.map(info => ({
+  value: info.unit,
+  label: info.label
+}));
+
+// Weight units array for validation
+export const weightUnits: WeightUnit[] = ['g', 'oz', 'lb', 'kg'];
+
+// Function to standardize weight unit to enum value
+export const standardizeWeightUnit = (unit: string): WeightUnit => {
+  const normalizedUnit = unit?.toLowerCase?.() || '';
   
-  const normalizedUnit = unit.toLowerCase().trim();
-  
-  if (normalizedUnit === 'lbs' || normalizedUnit === 'pound' || normalizedUnit === 'pounds') {
-    return 'lb';
+  switch (normalizedUnit) {
+    case 'gram':
+    case 'grams':
+    case 'g':
+      return 'g';
+    case 'ounce':
+    case 'ounces':
+    case 'oz':
+      return 'oz';
+    case 'pound':
+    case 'pounds':
+    case 'lb':
+    case 'lbs':
+      return 'lb';
+    case 'kilogram':
+    case 'kilograms':
+    case 'kg':
+    case 'kgs':
+      return 'kg';
+    default:
+      return 'lb'; // Default to pounds
   }
-  if (normalizedUnit === 'oz' || normalizedUnit === 'ounce' || normalizedUnit === 'ounces') {
-    return 'oz';
-  }
-  if (normalizedUnit === 'kg' || normalizedUnit === 'kilo' || normalizedUnit === 'kilos' || normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') {
-    return 'kg';
-  }
-  if (normalizedUnit === 'g' || normalizedUnit === 'gram' || normalizedUnit === 'grams') {
-    return 'g';
-  }
-  
-  // If no match, check if it's already a valid unit
-  if (['oz', 'g', 'lb', 'kg'].includes(normalizedUnit)) {
-    return normalizedUnit as WeightUnit;
-  }
-  
-  // Default to pounds if not recognized
-  return 'lb';
-}
-
-// Get weight unit info by unit
-export function getWeightUnitInfo(unit: WeightUnit): WeightUnitInfo {
-  const found = weightUnits.find(u => u.id === unit);
-  return found || weightUnits[2]; // Default to pounds if not found
-}
-
-// Get weight unit name
-export function getWeightUnitName(unit: WeightUnit): string {
-  const info = getWeightUnitInfo(unit);
-  return info.label;
-}
-
-// Re-export health-related enums
-export { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum, MedicationStatusEnum };
-
-// Add common types used by genetics services
-export interface BreedComposition {
-  breed: string;
-  percentage: number;
-}
-
-export interface ColorGenetics {
-  color: string;
-  genotype: string;
-  probability: number;
-}
-
-export interface GeneticTraitResults {
-  trait: string;
-  result: string;
-  description?: string;
-}
-
-export interface HealthMarker {
-  marker: string;
-  result: string;
-  risk?: string;
-  description?: string;
-}
+};

@@ -1,4 +1,8 @@
-import { type WeightUnit } from './common';
+
+/**
+ * Weight record types
+ */
+import { WeightUnit } from './common';
 
 export interface WeightRecord {
   id: string;
@@ -12,7 +16,6 @@ export interface WeightRecord {
   created_at: string;
   age_days?: number;
   birth_date?: string;
-  // Remove unit field to avoid confusion with weight_unit
 }
 
 export interface WeightStat {
@@ -37,8 +40,8 @@ export interface GrowthStats {
   growthRate?: number;
   lastWeekGrowth?: number;
   maxGrowthRate?: number;
-  minGrowthRate?: number; // Adding this field referenced in the code
-  dailyGrowthAverage?: number; // Adding missing field referenced in hooks
+  minGrowthRate?: number;
+  dailyGrowthAverage?: number;
 }
 
 export interface WeightChartProps {
@@ -54,7 +57,7 @@ export interface WeightEntryFormProps {
   onSave: (data: WeightRecord) => void;
   onCancel: () => void;
   initialData?: Partial<WeightRecord>;
-  onSuccess?: () => void; // Adding this prop which is used in some components
+  onSuccess?: () => void;
 }
 
 export interface WeightTrackerProps {
@@ -62,14 +65,14 @@ export interface WeightTrackerProps {
   puppyId?: string;
   birthDate?: string;
   onWeightAdded?: () => void;
-  isAddingWeight?: boolean; // Adding this prop referenced in the code
-  onCancelAdd?: () => void; // Adding this prop referenced in the code
+  isAddingWeight?: boolean;
+  onCancelAdd?: () => void;
 }
 
 export interface WeightRecordsTableProps {
   weightRecords: WeightRecord[];
   onDelete: (id: string) => void;
-  onEdit?: (record: WeightRecord) => void; // Adding this prop referenced in the code
+  onEdit?: (record: WeightRecord) => void;
 }
 
 export interface WeightEntryDialogProps {
@@ -79,8 +82,8 @@ export interface WeightEntryDialogProps {
   puppyId?: string;
   onSave: (data: Partial<WeightRecord>) => void;
   onCancel: () => void;
-  onSuccess?: () => void; // Adding this prop referenced in the code
-  initialData?: Partial<WeightRecord>; // Adding this prop referenced in the code
+  onSuccess?: () => void;
+  initialData?: Partial<WeightRecord>;
 }
 
 // Helper for calculating percent change
@@ -105,6 +108,3 @@ export interface GrowthRate {
   monthly: number;
   unit: WeightUnit;
 }
-
-// Properly re-export the WeightUnit type
-export type { WeightUnit };

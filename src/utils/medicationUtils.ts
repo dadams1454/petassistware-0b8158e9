@@ -1,13 +1,6 @@
 
 import { format, differenceInDays, isAfter, isBefore, isToday, parseISO, addDays } from 'date-fns';
-
-export interface MedicationStatusResult {
-  status: 'active' | 'upcoming' | 'overdue' | 'completed' | 'unknown';
-  daysOverdue?: number;
-  daysUntilDue?: number;
-  nextDue?: Date | null;
-  message: string;
-}
+import { MedicationStatusEnum, MedicationStatusResult } from '@/types/health';
 
 // Define medication frequency constants
 export const MedicationFrequencyConstants = {
@@ -25,19 +18,52 @@ export const MedicationFrequencyConstants = {
 };
 
 // Helper function to get a friendly label for status
-export const getStatusLabel = (status: string): { label: string; color: string } => {
+export const getStatusLabel = (status: MedicationStatusEnum | string): { statusLabel: string; statusColor: string; emoji: string } => {
   switch (status) {
-    case 'active':
-      return { label: 'Active', color: 'green' };
-    case 'upcoming':
-      return { label: 'Upcoming', color: 'blue' };
-    case 'overdue':
-      return { label: 'Overdue', color: 'red' };
-    case 'completed':
-      return { label: 'Completed', color: 'gray' };
-    case 'unknown':
+    case MedicationStatusEnum.ACTIVE:
+      return { 
+        statusLabel: 'Active', 
+        statusColor: 'bg-green-100 text-green-800', 
+        emoji: '✅' 
+      };
+    case MedicationStatusEnum.UPCOMING:
+    case MedicationStatusEnum.SCHEDULED:
+      return { 
+        statusLabel: 'Scheduled', 
+        statusColor: 'bg-blue-100 text-blue-800', 
+        emoji: '🕒' 
+      };
+    case MedicationStatusEnum.OVERDUE:
+      return { 
+        statusLabel: 'Overdue', 
+        statusColor: 'bg-red-100 text-red-800', 
+        emoji: '⚠️' 
+      };
+    case MedicationStatusEnum.COMPLETED:
+      return { 
+        statusLabel: 'Completed', 
+        statusColor: 'bg-gray-100 text-gray-800', 
+        emoji: '✓' 
+      };
+    case MedicationStatusEnum.DISCONTINUED:
+      return { 
+        statusLabel: 'Discontinued', 
+        statusColor: 'bg-orange-100 text-orange-800', 
+        emoji: '🛑' 
+      };
+    case MedicationStatusEnum.NOT_STARTED:
+      return { 
+        statusLabel: 'Not Started', 
+        statusColor: 'bg-yellow-100 text-yellow-800', 
+        emoji: '⏳' 
+      };
+    case MedicationStatusEnum.UNKNOWN:
     default:
-      return { label: 'Unknown', color: 'yellow' };
+      return { 
+        statusLabel: 'Unknown', 
+        statusColor: 'bg-gray-100 text-gray-800', 
+        emoji: '❓' 
+      };
   }
 };
 
@@ -60,7 +86,7 @@ export const getMedicationStatus = (
   // Handle missing start date
   if (!startDate) {
     return {
-      status: 'unknown',
+      status: MedicationStatusEnum.UNKNOWN,
       message: 'Missing start date',
       nextDue: null
     };
@@ -74,7 +100,7 @@ export const getMedicationStatus = (
   // Check if medication course is completed
   if (end && isBefore(end, today)) {
     return {
-      status: 'completed',
+      status: MedicationStatusEnum.COMPLETED,
       message: `Completed on ${format(end, 'MMM d, yyyy')}`,
       nextDue: null
     };
@@ -84,7 +110,7 @@ export const getMedicationStatus = (
   if (isAfter(start, today)) {
     const daysUntilStart = differenceInDays(start, today);
     return {
-      status: 'upcoming',
+      status: MedicationStatusEnum.SCHEDULED,
       message: `Starts ${format(start, 'MMM d, yyyy')} (in ${daysUntilStart} days)`,
       daysUntilDue: daysUntilStart,
       nextDue: start
@@ -147,7 +173,7 @@ export const getMedicationStatus = (
       case 'as_needed':
         // For as-needed medications, consider them always active but never overdue
         return {
-          status: 'active',
+          status: MedicationStatusEnum.ACTIVE,
           message: 'As needed',
           nextDue: null
         };
@@ -167,20 +193,20 @@ export const getMedicationStatus = (
   // Determine status based on calculated next due date
   if (isToday(nextDueDate)) {
     return {
-      status: 'active',
+      status: MedicationStatusEnum.ACTIVE,
       message: 'Due today',
       nextDue: nextDueDate
     };
   } else if (daysOverdue) {
     return {
-      status: 'overdue',
+      status: MedicationStatusEnum.OVERDUE,
       message: `Overdue by ${daysOverdue} day${daysOverdue !== 1 ? 's' : ''}`,
       daysOverdue,
       nextDue: nextDueDate
     };
   } else if (daysUntilDue) {
     return {
-      status: 'active',
+      status: MedicationStatusEnum.ACTIVE,
       message: `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`,
       daysUntilDue,
       nextDue: nextDueDate
@@ -189,7 +215,7 @@ export const getMedicationStatus = (
   
   // Fallback
   return {
-    status: 'active',
+    status: MedicationStatusEnum.ACTIVE,
     message: 'Active',
     nextDue: nextDueDate
   };

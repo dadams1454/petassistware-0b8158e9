@@ -95,37 +95,38 @@ export const MedicationTracker: React.FC<MedicationTrackerProps> = ({
       medication.last_administered
     );
     
-    const { label, color } = getStatusLabel(status.status);
+    const { statusLabel, statusColor } = getStatusLabel(status.status);
     
     switch (status.status) {
       case 'active':
         return (
           <Badge className="bg-green-500 hover:bg-green-600">
-            {label}
+            {statusLabel}
           </Badge>
         );
       case 'upcoming':
+      case 'scheduled':
         return (
           <Badge variant="outline" className="border-blue-500 text-blue-600">
-            {label}
+            {statusLabel}
           </Badge>
         );
       case 'overdue':
         return (
           <Badge className="bg-red-500 hover:bg-red-600">
-            {label}
+            {statusLabel}
           </Badge>
         );
       case 'completed':
         return (
           <Badge variant="outline" className="border-gray-400 text-gray-500">
-            {label}
+            {statusLabel}
           </Badge>
         );
       default:
         return (
           <Badge variant="outline">
-            {label}
+            {statusLabel}
           </Badge>
         );
     }
