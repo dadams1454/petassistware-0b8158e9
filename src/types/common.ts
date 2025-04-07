@@ -7,7 +7,8 @@
 export * from './weight-units';
 
 // Re-export HeatIntensity and HeatIntensityType from heat-cycles
-export { HeatIntensity, HeatIntensityType } from './heat-cycles';
+export type { HeatIntensityType } from './heat-cycles';
+export { HeatIntensity } from './heat-cycles';
 
 // Frequency types for medications and other scheduled events
 export enum FrequencyTypes {

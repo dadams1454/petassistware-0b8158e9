@@ -5,7 +5,8 @@ export {
   WeightUnitEnum,
   weightUnitInfos, 
   standardizeWeightUnit,
-  getAppropriateWeightUnit 
+  // Remove this export as it's also coming from weightConversion
+  // getAppropriateWeightUnit 
 } from './weight-units';
 
 // Export heat cycle related types
