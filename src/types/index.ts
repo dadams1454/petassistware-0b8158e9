@@ -10,11 +10,11 @@ export { DogGender, DogStatus, DocumentType } from './dog';
 export type { 
   HealthRecord, 
   Medication, 
-  MedicationStatusResult,
   HealthIndicator,
   HealthAlert,
   HealthCertificate,
   MedicationAdministration,
+  MedicationStatusResult
 } from './health';
 
 export { 
@@ -23,11 +23,11 @@ export {
   AppetiteLevelEnum, 
   EnergyLevelEnum, 
   StoolConsistencyEnum,
-  mapToHealthRecord,
-  mapToWeightRecord,
   AppetiteEnum,
   EnergyEnum,
-  stringToHealthRecordType
+  stringToHealthRecordType,
+  mapToHealthRecord,
+  mapToWeightRecord
 } from './health';
 
 // Weight-related types
@@ -119,3 +119,6 @@ export * from './socialization';
 
 // Welping types
 export * from './welping';
+
+// Events types
+export * from './events';

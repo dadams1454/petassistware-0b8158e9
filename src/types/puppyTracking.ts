@@ -39,6 +39,7 @@ export interface PuppyAgeGroup {
 }
 
 // Puppy age group info interface
+// Note: We're making the fields consistent between PuppyAgeGroup and PuppyAgeGroupInfo
 export interface PuppyAgeGroupInfo {
   id: string;
   name: string;
@@ -53,7 +54,7 @@ export interface PuppyAgeGroupInfo {
   puppyCount?: number;
   minAge?: number;
   maxAge?: number;
-  displayName?: string;
+  displayName: string; // Making this required for consistency with PuppyAgeGroup
   minDays?: number;
   maxDays?: number;
   unit?: string;
@@ -135,6 +136,8 @@ export interface VaccinationSchedule {
   due_date?: string; // For compatibility
   vaccine_name?: string;
   administered: boolean;
+  administered_date?: string;
+  dog_id?: string;
   notes?: string;
   created_at: string;
 }

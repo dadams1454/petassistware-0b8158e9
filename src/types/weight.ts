@@ -12,6 +12,7 @@ export interface WeightRecord {
   percent_change?: number;
   created_at: string;
   age_days?: number;
+  birth_date?: string;
 }
 
 export interface WeightStat {
@@ -29,6 +30,12 @@ export interface GrowthStats {
   weightGoal?: number;
   onTrack?: boolean;
   lastWeightDate?: string;
+  currentWeight?: number;
+  weightUnit?: WeightUnit;
+  totalGrowth?: number;
+  averageGrowth?: number;
+  growthRate?: number;
+  lastWeekGrowth?: number;
 }
 
 export interface WeightChartProps {
@@ -65,4 +72,27 @@ export interface WeightEntryDialogProps {
   puppyId?: string;
   onSave: (data: Partial<WeightRecord>) => void;
   onCancel: () => void;
+}
+
+// Helper for calculating percent change
+export function calculatePercentChange(oldWeight: number, newWeight: number): number {
+  if (oldWeight === 0) return 0;
+  const change = ((newWeight - oldWeight) / oldWeight) * 100;
+  return Math.round(change * 10) / 10;
+}
+
+// For data visualization
+export interface WeightDataPoint {
+  date: string;
+  weight: number;
+  unit: WeightUnit;
+  age?: number;
+}
+
+// Growth rate calculation type
+export interface GrowthRate {
+  daily: number;
+  weekly: number;
+  monthly: number;
+  unit: WeightUnit;
 }

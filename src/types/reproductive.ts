@@ -1,5 +1,6 @@
 
-import { Dog } from './dog';
+// Import WeightUnit from common
+import { WeightUnit } from '@/types/common';
 
 // Type for heat intensity values
 export type HeatIntensityType = 'light' | 'moderate' | 'heavy' | 'mild' | 'medium' | 'low' | 'high' | 'peak' | 'strong' | 'unknown';
@@ -70,6 +71,9 @@ export enum ReproductiveStatus {
   Altered = 'altered',
   Neutered = 'neutered'
 }
+
+// Import Dog type from types/dog
+import { Dog } from '@/types/dog';
 
 // Breeding record interface
 export interface BreedingRecord {

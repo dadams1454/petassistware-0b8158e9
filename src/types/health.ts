@@ -12,8 +12,64 @@ export enum HealthRecordTypeEnum {
   DIAGNOSTIC = 'diagnostic',
   INJURY = 'injury',
   EMERGENCY = 'emergency',
-  OTHER = 'other'
+  OTHER = 'other',
+  LABORATORY = 'laboratory',
+  PREVENTIVE = 'preventive',
+  TEST = 'test',
+  IMAGING = 'imaging',
+  DEWORMING = 'deworming',
+  GROOMING = 'grooming',
+  PROCEDURE = 'procedure',
+  OBSERVATION = 'observation',
+  ALLERGY = 'allergy'
 }
+
+// Appetite Level Enum
+export enum AppetiteLevelEnum {
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  FAIR = 'fair',
+  POOR = 'poor',
+  NONE = 'none'
+}
+
+// Energy Level Enum
+export enum EnergyLevelEnum {
+  HYPERACTIVE = 'hyperactive',
+  HIGH = 'high',
+  NORMAL = 'normal',
+  LOW = 'low',
+  LETHARGIC = 'lethargic'
+}
+
+// Stool Consistency Enum
+export enum StoolConsistencyEnum {
+  NORMAL = 'normal',
+  SOFT = 'soft',
+  LOOSE = 'loose',
+  WATERY = 'watery',
+  HARD = 'hard'
+}
+
+// For backward compatibility
+export const AppetiteEnum = AppetiteLevelEnum;
+export const EnergyEnum = EnergyLevelEnum;
+
+// Medication Status Enum
+export enum MedicationStatusEnum {
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
+  DISCONTINUED = 'discontinued',
+  UPCOMING = 'upcoming',
+  OVERDUE = 'overdue'
+}
+
+export type MedicationStatusResult = {
+  status: MedicationStatusEnum;
+  daysUntilDue?: number;
+  daysOverdue?: number;
+  nextDue?: string;
+};
 
 // Helper function to convert string to enum
 export function stringToHealthRecordType(type: string): HealthRecordTypeEnum {
@@ -148,6 +204,7 @@ export interface HealthMarker {
 export interface RecordTypeFieldProps {
   onTypeChange: (value: string) => void;
   disabled?: boolean;
+  form?: any;
 }
 
 export interface TitleFieldProps {
@@ -186,4 +243,75 @@ export interface HealthRecordFormProps {
   isSubmitting?: boolean;
   initialData?: Partial<HealthRecord>;
   dogId?: string;
+  recordId?: string;
+  recordType?: HealthRecordTypeEnum;
+}
+
+// Weight record interface (included here for completeness but should be in weight.ts)
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  created_at: string;
+  percent_change?: number;
+}
+
+// Health mapping functions
+export function mapToHealthRecord(record: any): HealthRecord {
+  return {
+    id: record.id || '',
+    dog_id: record.dog_id || '',
+    record_type: stringToHealthRecordType(record.record_type || 'examination'),
+    title: record.title || '',
+    visit_date: record.visit_date || record.date || new Date().toISOString().split('T')[0],
+    date: record.visit_date || record.date || new Date().toISOString().split('T')[0],
+    vet_name: record.vet_name || '',
+    performed_by: record.performed_by || '',
+    record_notes: record.record_notes || '',
+    description: record.description || '',
+    next_due_date: record.next_due_date || null,
+    document_url: record.document_url || '',
+    created_at: record.created_at || new Date().toISOString(),
+    // Additional fields based on record type
+    vaccine_name: record.vaccine_name || '',
+    manufacturer: record.manufacturer || '',
+    lot_number: record.lot_number || '',
+    expiration_date: record.expiration_date || '',
+    medication_name: record.medication_name || '',
+    dosage: record.dosage || 0,
+    dosage_unit: record.dosage_unit || '',
+    frequency: record.frequency || '',
+    start_date: record.start_date || '',
+    end_date: record.end_date || '',
+    duration: record.duration || 0,
+    duration_unit: record.duration_unit || '',
+    administration_route: record.administration_route || '',
+    prescription_number: record.prescription_number || '',
+    examination_type: record.examination_type || '',
+    findings: record.findings || '',
+    recommendations: record.recommendations || '',
+    follow_up_date: record.follow_up_date || null,
+    vet_clinic: record.vet_clinic || '',
+    procedure_name: record.procedure_name || '',
+    surgeon: record.surgeon || '',
+    anesthesia_used: record.anesthesia_used || '',
+    recovery_notes: record.recovery_notes || ''
+  };
+}
+
+// Weight mapping function
+export function mapToWeightRecord(record: any): WeightRecord {
+  return {
+    id: record.id || '',
+    dog_id: record.dog_id || '',
+    weight: typeof record.weight === 'number' ? record.weight : 0,
+    weight_unit: record.weight_unit || 'lb',
+    date: record.date || new Date().toISOString().split('T')[0],
+    notes: record.notes || '',
+    created_at: record.created_at || new Date().toISOString(),
+    percent_change: record.percent_change || 0
+  };
 }

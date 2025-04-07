@@ -4,13 +4,36 @@
 // Weight units for consistent use throughout the app
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
+// Weight unit with display information
+export interface WeightUnitInfo {
+  id: WeightUnit;
+  label: string;
+  abbr: string;
+  conversionToG: number;
+}
+
+// Weight unit option (for UI dropdowns)
+export interface WeightUnitOption {
+  value: WeightUnit;
+  label: string;
+}
+
 // Weight units with display information
-export const weightUnits = [
+export const weightUnits: WeightUnitInfo[] = [
   { id: 'oz', label: 'Ounces', abbr: 'oz', conversionToG: 28.3495 },
   { id: 'g', label: 'Grams', abbr: 'g', conversionToG: 1 },
   { id: 'lb', label: 'Pounds', abbr: 'lb', conversionToG: 453.592 },
   { id: 'kg', label: 'Kilograms', abbr: 'kg', conversionToG: 1000 }
 ];
+
+// Weight unit options for dropdowns
+export const weightUnitOptions: WeightUnitOption[] = weightUnits.map(unit => ({
+  value: unit.id,
+  label: unit.label
+}));
+
+// For easy access in components
+export const weightUnitInfos = weightUnits;
 
 // Common date format
 export type DateFormat = 'MM/dd/yyyy' | 'dd/MM/yyyy' | 'yyyy-MM-dd';
@@ -39,19 +62,45 @@ export const FrequencyTypes = {
   ONCE_DAILY: 'once_daily'
 };
 
-// Health related enums
-export enum AppetiteLevelEnum {
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  FAIR = 'fair',
-  POOR = 'poor',
-  NONE = 'none'
+// Standardize weight unit (handles variations like 'lbs')
+export function standardizeWeightUnit(unit: string): WeightUnit {
+  if (!unit) return 'lb'; // Default to pounds if not provided
+  
+  const normalizedUnit = unit.toLowerCase().trim();
+  
+  if (normalizedUnit === 'lbs' || normalizedUnit === 'pound' || normalizedUnit === 'pounds') {
+    return 'lb';
+  }
+  if (normalizedUnit === 'oz' || normalizedUnit === 'ounce' || normalizedUnit === 'ounces') {
+    return 'oz';
+  }
+  if (normalizedUnit === 'kg' || normalizedUnit === 'kilo' || normalizedUnit === 'kilos' || normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') {
+    return 'kg';
+  }
+  if (normalizedUnit === 'g' || normalizedUnit === 'gram' || normalizedUnit === 'grams') {
+    return 'g';
+  }
+  
+  // If no match, check if it's already a valid unit
+  if (['oz', 'g', 'lb', 'kg'].includes(normalizedUnit)) {
+    return normalizedUnit as WeightUnit;
+  }
+  
+  // Default to pounds if not recognized
+  return 'lb';
 }
 
-export enum EnergyLevelEnum {
-  HYPERACTIVE = 'hyperactive',
-  HIGH = 'high',
-  NORMAL = 'normal',
-  LOW = 'low',
-  LETHARGIC = 'lethargic'
+// Get weight unit info by unit
+export function getWeightUnitInfo(unit: WeightUnit): WeightUnitInfo {
+  const found = weightUnits.find(u => u.id === unit);
+  return found || weightUnits[2]; // Default to pounds if not found
 }
+
+// Get weight unit name
+export function getWeightUnitName(unit: WeightUnit): string {
+  const info = getWeightUnitInfo(unit);
+  return info.label;
+}
+
+// Health related enums
+export { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum } from './health';
