@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Baby, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { usePuppyTracking } from './hooks/usePuppyTracking';
-import { PuppyWithAge, PuppyAgeGroupData } from '@/types/puppyTracking';
+import { usePuppyTracking } from '@/hooks/puppyTracking/usePuppyTracking';
+import { PuppyWithAge, PuppyAgeGroupData } from '@/types';
 import PuppyAgeGroupSection from './PuppyAgeGroupSection';
 
 interface PuppiesTabProps {

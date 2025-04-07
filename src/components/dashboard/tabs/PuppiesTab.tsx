@@ -4,12 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Baby, Search, Filter } from 'lucide-react';
-import { usePuppyTracking } from '@/hooks/puppies/usePuppyTracking';
+import { usePuppyTracking } from '@/hooks/puppyTracking/usePuppyTracking';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PuppyAgeGroupList from './puppies/PuppyAgeGroupList';
 import PuppyStatCards from './puppies/PuppyStatCards';
-import { PuppyManagementStats, PuppyWithAge, PuppyAgeGroup } from '@/types/puppyTracking';
+import { PuppyManagementStats, PuppyWithAge, PuppyAgeGroup } from '@/types';
 import { LoadingState, ErrorState } from '@/components/ui/standardized';
 
 interface PuppiesTabProps {
