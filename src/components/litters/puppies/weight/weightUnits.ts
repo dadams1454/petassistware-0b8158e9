@@ -1,5 +1,5 @@
 
-import { WeightUnit, weightUnits } from '@/types/weight-units';
+import { WeightUnit, weightUnitInfos } from '@/types/weight-units';
 
 /**
  * Calculate percent change between two weight values
@@ -26,8 +26,8 @@ export const convertWeight = (
   }
   
   // Convert to grams first as an intermediate step
-  const fromUnitInfo = weightUnits.find(u => u.id === fromUnit);
-  const toUnitInfo = weightUnits.find(u => u.id === toUnit);
+  const fromUnitInfo = weightUnitInfos.find(u => u.value === fromUnit);
+  const toUnitInfo = weightUnitInfos.find(u => u.value === toUnit);
   
   if (!fromUnitInfo || !toUnitInfo) {
     console.error(`Conversion failed: Unknown units - from ${fromUnit} to ${toUnit}`);
@@ -35,10 +35,10 @@ export const convertWeight = (
   }
   
   // Calculate the weight in grams
-  const weightInGrams = weight * fromUnitInfo.conversionToG;
+  const weightInGrams = weight * fromUnitInfo.gramsPerUnit;
   
   // Convert from grams to the target unit
-  return weightInGrams / toUnitInfo.conversionToG;
+  return weightInGrams / toUnitInfo.gramsPerUnit;
 };
 
 // Function to get the appropriate weight unit for a puppy based on age and weight
@@ -47,30 +47,30 @@ export const getAppropriateWeightUnit = (
   currentUnit: WeightUnit, 
   ageInDays: number
 ): WeightUnit => {
-  const weightInGrams = convertWeight(weight, currentUnit, 'g');
+  const weightInGrams = convertWeight(weight, currentUnit, WeightUnit.GRAMS);
   
   // For very young puppies (less than 14 days), use ounces if they're small
   if (ageInDays < 14 && weightInGrams < 1000) {
-    return 'oz';
+    return WeightUnit.OUNCES;
   }
   
   // For puppies between 2-8 weeks, use pounds if they're over 500g
   if (ageInDays < 56 && weightInGrams >= 500) {
-    return 'lb';
+    return WeightUnit.POUNDS;
   }
   
   // For older puppies and small breeds, use pounds
   if (weightInGrams >= 1000) {
-    return 'lb';
+    return WeightUnit.POUNDS;
   }
   
   // For larger dogs, use kilograms if over 20kg
   if (weightInGrams >= 20000) {
-    return 'kg';
+    return WeightUnit.KILOGRAMS;
   }
   
   // Default to ounces for very small puppies
-  return 'oz';
+  return WeightUnit.OUNCES;
 };
 
 // Export the WeightUnit type from the canonical location
