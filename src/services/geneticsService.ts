@@ -1,6 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { DogGenotype, GeneticImportResult, HealthResult } from '@/types/genetics';
+import { DogGenotype, GeneticImportResult, HealthResult, HealthMarker } from '@/types/genetics';
+import { BreedComposition, ColorGenetics, GeneticTraitResults } from '@/types/common';
+import { Json } from '@/types/supabase';
 
 export const getDogGenetics = async (dogId: string): Promise<DogGenotype | null> => {
   try {
@@ -19,20 +20,25 @@ export const getDogGenetics = async (dogId: string): Promise<DogGenotype | null>
 
     if (!data) return null;
 
-    // Transform database data to DogGenotype format
+    // Transform database data to DogGenotype format with proper type safety
+    const breedComposition = data.breed_composition as BreedComposition || {};
+    const traitResults = data.trait_results as GeneticTraitResults || {};
+    const colorGenetics = traitResults?.color || {};
+    const healthResults = data.health_results as Record<string, HealthMarker> || {};
+
     return {
       dog_id: data.dog_id,
       id: data.id,
       name: data.name || 'Unknown',
-      breed: data.breed_composition?.primary || 'Mixed Breed',
-      baseColor: data.trait_results?.color?.base || 'Unknown',
-      brownDilution: data.trait_results?.color?.brown_dilution || 'Unknown',
-      dilution: data.trait_results?.color?.dilution || 'Unknown',
-      agouti: data.trait_results?.color?.agouti || 'Unknown',
-      healthMarkers: data.health_results || {},
+      breed: breedComposition?.primary || 'Mixed Breed',
+      baseColor: colorGenetics?.base || 'Unknown',
+      brownDilution: colorGenetics?.brown_dilution || 'Unknown',
+      dilution: colorGenetics?.dilution || 'Unknown',
+      agouti: colorGenetics?.agouti || 'Unknown',
+      healthMarkers: healthResults,
       updated_at: data.updated_at,
-      colorGenetics: data.trait_results?.color || {},
-      traits: data.trait_results || {}
+      colorGenetics: colorGenetics || {},
+      traits: traitResults || {}
     };
   } catch (error) {
     console.error('Error fetching dog genetics:', error);
@@ -90,7 +96,8 @@ export const importGeneticData = async (
         }
       });
 
-    const healthResultsCount = Object.keys(data?.health_results || {}).length;
+    const healthResults = data?.health_results as Record<string, any> || {};
+    const healthResultsCount = Object.keys(healthResults).length;
 
     return {
       success: true,
@@ -126,11 +133,11 @@ export const getHealthResults = async (dogId: string): Promise<HealthResult[]> =
       throw error;
     }
 
-    if (!geneticData?.health_results) return [];
-
+    const healthResults = geneticData?.health_results as Record<string, any> || {};
+    
     // Convert the health_results object to an array of HealthResult objects
     const results: HealthResult[] = [];
-    Object.entries(geneticData.health_results).forEach(([condition, data]) => {
+    Object.entries(healthResults).forEach(([condition, data]) => {
       if (typeof data === 'object' && data !== null) {
         const healthData = data as Record<string, any>;
         results.push({
