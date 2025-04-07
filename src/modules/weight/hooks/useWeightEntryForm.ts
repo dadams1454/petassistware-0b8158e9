@@ -7,6 +7,7 @@ import { WeightUnit } from '@/types/weight-units';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 import { WeightRecord } from '@/types/weight';
 import { calculatePercentChange } from '@/utils/weightConversion';
+import { useLoading } from '@/contexts/dailyCare/hooks/useLoading';
 
 // Schema for weight entry form
 const weightEntrySchema = z.object({
@@ -47,6 +48,9 @@ export interface UseWeightEntryFormResult {
 
 /**
  * Custom hook for weight entry form handling with proper typing
+ * 
+ * @param {UseWeightEntryFormProps} props Configuration options for the hook
+ * @returns {UseWeightEntryFormResult} Form controller and helper functions
  */
 export const useWeightEntryForm = ({ 
   dogId, 
@@ -56,7 +60,7 @@ export const useWeightEntryForm = ({
   onSave, 
   initialData 
 }: UseWeightEntryFormProps): UseWeightEntryFormResult => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { loading: isSubmitting, withLoading } = useLoading();
   
   const form = useForm<WeightEntryValues>({
     resolver: zodResolver(weightEntrySchema),
@@ -68,8 +72,7 @@ export const useWeightEntryForm = ({
     }
   });
   
-  const handleSubmit = async (values: WeightEntryValues) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (values: WeightEntryValues): Promise<boolean> => {
     try {
       // Format the data for the API, safely converting Date to string
       const formattedDate = values.date instanceof Date 
@@ -114,14 +117,12 @@ export const useWeightEntryForm = ({
     } catch (error) {
       console.error('Error saving weight record:', error);
       return false;
-    } finally {
-      setIsSubmitting(false);
     }
   };
   
   return {
     form,
     isSubmitting,
-    handleSubmit: form.handleSubmit(handleSubmit)
+    handleSubmit: form.handleSubmit((values) => withLoading(() => handleSubmit(values)))
   };
 };

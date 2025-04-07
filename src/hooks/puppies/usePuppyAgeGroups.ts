@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupInfo } from '@/types/puppyTracking';
 
-// Default puppy age groups
+// Default puppy age groups with properly typed milestones as string[]
 const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
   {
     id: 'newborn',
@@ -17,7 +17,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 13,
     minAge: 0,
     maxAge: 13,
-    milestones: ['Eyes open', 'Ears begin to open'] // Fixed to be an array
+    milestones: ['Eyes open', 'Ears begin to open']
   },
   {
     id: 'twoWeek',
@@ -32,7 +32,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 27,
     minAge: 14,
     maxAge: 27,
-    milestones: ['Beginning to walk', 'Starting to interact with siblings'] // Fixed to be an array
+    milestones: ['Beginning to walk', 'Starting to interact with siblings']
   },
   {
     id: 'fourWeek',
@@ -47,7 +47,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 41,
     minAge: 28,
     maxAge: 41,
-    milestones: ['Weaning begins', 'Solid food introduction', 'Socialization begins'] // Fixed to be an array
+    milestones: ['Weaning begins', 'Solid food introduction', 'Socialization begins']
   },
   {
     id: 'sixWeek',
@@ -62,7 +62,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 55,
     minAge: 42,
     maxAge: 55,
-    milestones: ['Fully weaned', 'Vaccinations', 'Active socialization'] // Fixed to be an array
+    milestones: ['Fully weaned', 'Vaccinations', 'Active socialization']
   },
   {
     id: 'eightWeek',
@@ -77,7 +77,7 @@ const DEFAULT_AGE_GROUPS: PuppyAgeGroup[] = [
     endDay: 365, 
     minAge: 56,
     maxAge: 365,
-    milestones: ['Ready for new homes', 'Continued socialization'] // Fixed to be an array
+    milestones: ['Ready for new homes', 'Continued socialization']
   }
 ];
 
@@ -116,7 +116,8 @@ export const usePuppyAgeGroups = (
     
     // Group puppies by their age
     return puppies.reduce<Record<string, PuppyWithAge[]>>((groups, puppy) => {
-      const ageInDays = puppy.ageInDays || 0;
+      // Safely access age with a fallback
+      const ageInDays = puppy.ageInDays ?? 0;
       
       // Find the matching age group
       for (const group of ageGroups) {
@@ -125,9 +126,6 @@ export const usePuppyAgeGroups = (
         
         if (ageInDays >= minDays && ageInDays <= maxDays) {
           // Add puppy to its appropriate age group
-          if (!groups[group.id]) {
-            groups[group.id] = [];
-          }
           groups[group.id].push(puppy);
           break;
         }

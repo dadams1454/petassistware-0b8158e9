@@ -12,6 +12,8 @@ export interface UseLoadingResult {
 
 /**
  * Custom hook to manage loading state with proper typing
+ * 
+ * @returns {UseLoadingResult} An object containing loading state and helper functions
  */
 export const useLoading = (): UseLoadingResult => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,9 +25,12 @@ export const useLoading = (): UseLoadingResult => {
    */
   const withLoading = useCallback(<T>(fn: () => Promise<T>): Promise<T> => {
     setLoading(true);
+    
     return fn()
-      .finally(() => setLoading(false))
-      .catch(error => {
+      .finally(() => {
+        setLoading(false);
+      })
+      .catch((error: unknown) => {
         console.error('Operation failed:', error);
         throw error; // Re-throw to allow caller to handle
       });
