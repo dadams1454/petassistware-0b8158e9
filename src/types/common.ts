@@ -104,3 +104,28 @@ export function getWeightUnitName(unit: WeightUnit): string {
 
 // Health related enums
 export { AppetiteLevelEnum, EnergyLevelEnum, StoolConsistencyEnum } from './health';
+
+// Add common types used by genetics services
+export interface BreedComposition {
+  breed: string;
+  percentage: number;
+}
+
+export interface ColorGenetics {
+  color: string;
+  genotype: string;
+  probability: number;
+}
+
+export interface GeneticTraitResults {
+  trait: string;
+  result: string;
+  description?: string;
+}
+
+export interface HealthMarker {
+  marker: string;
+  result: string;
+  risk?: string;
+  description?: string;
+}

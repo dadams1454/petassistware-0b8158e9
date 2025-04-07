@@ -37,7 +37,8 @@ export interface GrowthStats {
   averageGrowth?: number;
   growthRate?: number;
   lastWeekGrowth?: number;
-  maxGrowthRate?: number; // Adding this field referenced in the code
+  maxGrowthRate?: number;
+  minGrowthRate?: number; // Adding this field referenced in the code
 }
 
 export interface WeightChartProps {
@@ -104,3 +105,6 @@ export interface GrowthRate {
   monthly: number;
   unit: WeightUnit;
 }
+
+// Export the WeightUnit type for compatibility
+export { WeightUnit };

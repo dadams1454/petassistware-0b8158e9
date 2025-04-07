@@ -51,8 +51,8 @@ export interface PuppyAgeGroupInfo {
   color: string;
   milestones?: string | string[];
   puppyCount?: number;
-  minAge?: number;
-  maxAge?: number;
+  minAge: number;
+  maxAge: number;
   displayName: string;
   minDays: number;
   maxDays: number;
