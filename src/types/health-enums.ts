@@ -3,6 +3,10 @@
  * Health-related enums used throughout the application
  */
 
+// Re-export the HeatIntensityType from the central location
+export type { HeatIntensityType } from './heat-cycles';
+export { HeatIntensity } from './heat-cycles';
+
 // Health record type enum (using uppercase for consistency)
 export enum HealthRecordType {
   VACCINATION = 'vaccination',
@@ -70,36 +74,6 @@ export enum StoolConsistency {
   MUCOUSY = 'mucousy', // Added for compatibility with existing code
   BLOODY = 'bloody'    // Added for compatibility with existing code
 }
-
-// Heat intensity types
-export enum HeatIntensity {
-  NONE = 'none',
-  LIGHT = 'light',
-  MODERATE = 'moderate',
-  STRONG = 'strong',
-  VERY_STRONG = 'very_strong',
-  MILD = 'mild',     // Added for backward compatibility
-  MEDIUM = 'medium', // Added for backward compatibility
-  LOW = 'low',       // Added for backward compatibility
-  HIGH = 'high',     // Added for backward compatibility
-  PEAK = 'peak',     // Added for backward compatibility
-  UNKNOWN = 'unknown' // Added for backward compatibility
-}
-
-// Export Heat Intensity as a type
-export type HeatIntensityType = 
-  | 'none'
-  | 'light' 
-  | 'moderate' 
-  | 'heavy' 
-  | 'mild' 
-  | 'medium' 
-  | 'low' 
-  | 'high' 
-  | 'peak' 
-  | 'strong'
-  | 'very_strong'
-  | 'unknown';
 
 // Backward compatibility aliases for named exports
 // Export as constants to avoid name conflicts

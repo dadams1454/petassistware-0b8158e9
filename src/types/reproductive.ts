@@ -9,20 +9,6 @@ import { HeatIntensityType, HeatIntensityValues, HeatCycle, HeatStage } from './
 export type { HeatIntensityType, HeatCycle, HeatStage };
 export { HeatIntensityValues };
 
-// Heat intensity enum for backward compatibility
-export enum HeatIntensity {
-  LIGHT = 'light',
-  MODERATE = 'moderate',
-  HEAVY = 'heavy',
-  MILD = 'mild',
-  MEDIUM = 'medium',
-  LOW = 'low',
-  HIGH = 'high',
-  PEAK = 'peak',
-  STRONG = 'strong',
-  UNKNOWN = 'unknown'
-}
-
 // Reproductive status enum
 export enum ReproductiveStatus {
   InHeat = 'in_heat',

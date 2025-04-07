@@ -7,7 +7,7 @@ import { HeatCycle, HeatIntensityType } from '@/types';
 
 // Helper to ensure intensity is a valid HeatIntensity value
 const validateHeatIntensity = (intensity: string | null): HeatIntensityType => {
-  const validIntensities: HeatIntensityType[] = ['light', 'moderate', 'strong', 'medium', 'low', 'high', 'peak', 'unknown', 'heavy', 'mild'];
+  const validIntensities: HeatIntensityType[] = ['none', 'light', 'moderate', 'strong', 'very_strong', 'medium', 'low', 'high', 'peak', 'unknown', 'heavy', 'mild'];
   if (intensity && validIntensities.includes(intensity as HeatIntensityType)) {
     return intensity as HeatIntensityType;
   }

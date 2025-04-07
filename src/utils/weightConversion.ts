@@ -1,80 +1,99 @@
 
-import { WeightUnit, getWeightUnitInfo } from '@/types/weight-units';
+import { WeightUnit, standardizeWeightUnit, getWeightUnitInfo } from '@/types/weight-units';
 
 /**
- * Converts a weight value to grams
- * @param weight The weight value to convert
- * @param unit The unit of the weight value
- * @returns The weight in grams
+ * Convert a weight value to grams regardless of the original unit
  */
-export function convertWeightToGrams(weight: number, unit: WeightUnit): number {
-  const info = getWeightUnitInfo(unit);
-  return weight * info.conversionToGrams;
+export function convertWeightToGrams(weight: number, unit: WeightUnit | string): number {
+  // Standardize the unit to make sure it's a valid WeightUnit
+  const standardizedUnit = standardizeWeightUnit(unit);
+  
+  // Get the conversion factor for the unit
+  const unitInfo = getWeightUnitInfo(standardizedUnit);
+  
+  // Calculate the weight in grams
+  return weight * unitInfo.conversionToG;
 }
 
 /**
- * Converts a weight value from one unit to another
- * @param weight The weight value to convert
- * @param fromUnit The current unit of the weight
- * @param toUnit The target unit to convert to
- * @returns The converted weight value
+ * Convert weight from one unit to another
  */
-export function convertWeight(weight: number, fromUnit: WeightUnit, toUnit: WeightUnit): number {
-  if (fromUnit === toUnit) return weight;
+export function convertWeight(
+  weight: number, 
+  fromUnit: WeightUnit | string, 
+  toUnit: WeightUnit | string
+): number {
+  // Standardize the units
+  const standardFromUnit = standardizeWeightUnit(fromUnit);
+  const standardToUnit = standardizeWeightUnit(toUnit);
   
-  // Convert to grams first
-  const weightInGrams = convertWeightToGrams(weight, fromUnit);
-  
-  // Then convert to target unit
-  const toInfo = getWeightUnitInfo(toUnit);
-  const result = weightInGrams / toInfo.conversionToGrams;
-  
-  // Round to appropriate precision
-  const precision = toInfo.displayPrecision;
-  const factor = Math.pow(10, precision);
-  return Math.round(result * factor) / factor;
-}
-
-/**
- * Determines the most appropriate weight unit based on the weight value
- * @param weightInGrams The weight in grams
- * @returns The most appropriate weight unit
- */
-export function getAppropriateWeightUnit(weightInGrams: number): WeightUnit {
-  if (weightInGrams < 100) {
-    return 'g';
-  } else if (weightInGrams < 500) {
-    return 'oz';
-  } else if (weightInGrams < 10000) {
-    return 'lb';
-  } else {
-    return 'kg';
+  // If the units are the same, no conversion needed
+  if (standardFromUnit === standardToUnit) {
+    return weight;
   }
+  
+  // Convert to grams first (as an intermediate step)
+  const weightInGrams = convertWeightToGrams(weight, standardFromUnit);
+  
+  // Convert from grams to the target unit
+  const toUnitInfo = getWeightUnitInfo(standardToUnit);
+  
+  return weightInGrams / toUnitInfo.conversionToG;
 }
 
 /**
- * Formats a weight value for display with the appropriate unit
- * @param weight The weight value
- * @param unit The unit of the weight value
- * @returns A formatted string with the weight and unit
+ * Format weight with the appropriate unit display
  */
-export function formatWeight(weight: number, unit: WeightUnit): string {
-  const info = getWeightUnitInfo(unit);
-  const precision = info.displayPrecision;
+export function formatWeight(
+  weight: number, 
+  unit: WeightUnit | string, 
+  options?: { precision?: number; includeUnit?: boolean }
+): string {
+  const standardUnit = standardizeWeightUnit(unit);
+  const unitInfo = getWeightUnitInfo(standardUnit);
+  
+  // Determine precision (default to the unit's standard precision)
+  const precision = options?.precision !== undefined ? options.precision : unitInfo.precision;
+  
+  // Format the number
   const formattedWeight = weight.toFixed(precision);
   
-  // Remove trailing zeros after decimal point
-  const cleanedWeight = formattedWeight.replace(/\.0+$/, '');
-  
-  return `${cleanedWeight} ${info.label}`;
+  // Add unit abbreviation if requested (default to true)
+  const includeUnit = options?.includeUnit !== false;
+  return includeUnit ? `${formattedWeight} ${unitInfo.abbreviation}` : formattedWeight;
 }
 
 /**
- * Converts a weight record to a standard unit (grams) for comparison
- * @param weight The weight value
- * @param unit The unit of the weight value
- * @returns The weight in grams
+ * Determine the most appropriate weight unit based on the weight value and age
  */
-export function standardizeWeight(weight: number, unit: WeightUnit): number {
-  return convertWeightToGrams(weight, unit);
+export function getAppropriateWeightUnit(
+  weight: number, 
+  currentUnit: WeightUnit, 
+  ageInDays: number
+): WeightUnit {
+  // Convert the weight to grams for comparison
+  const weightInGrams = convertWeightToGrams(weight, currentUnit);
+  
+  // For very young puppies (under 2 weeks), use ounces if they're small
+  if (ageInDays < 14 && weightInGrams < 500) {
+    return 'oz';
+  }
+  
+  // For puppies between 2-8 weeks, use ounces if they're small, else pounds
+  if (ageInDays < 56) {
+    return weightInGrams < 500 ? 'oz' : 'lb';
+  }
+  
+  // For older puppies/dogs, use pounds
+  if (weightInGrams >= 500 && weightInGrams < 20000) {
+    return 'lb';
+  }
+  
+  // For large dogs, use kilograms
+  if (weightInGrams >= 20000) {
+    return 'kg';
+  }
+  
+  // Default to pounds for most dogs
+  return 'lb';
 }

@@ -3,13 +3,41 @@
  * Heat cycle related types
  */
 import { Json } from '../integrations/supabase/types';
-import { HeatIntensityType, HeatIntensity } from './health-enums';
 
-// Re-export heat intensity types
-export { HeatIntensityType, HeatIntensity };
+// Define the HeatIntensityType as a union type
+export type HeatIntensityType = 
+  | 'none'
+  | 'light' 
+  | 'moderate' 
+  | 'heavy' 
+  | 'mild' 
+  | 'medium' 
+  | 'low' 
+  | 'high' 
+  | 'peak' 
+  | 'strong' 
+  | 'very_strong'
+  | 'unknown';
+
+// Heat intensity enum - kept for backward compatibility
+export enum HeatIntensity {
+  NONE = 'none',
+  LIGHT = 'light',
+  MODERATE = 'moderate',
+  STRONG = 'strong',
+  VERY_STRONG = 'very_strong',
+  MILD = 'mild',     // Added for backward compatibility
+  MEDIUM = 'medium', // Added for backward compatibility
+  LOW = 'low',       // Added for backward compatibility
+  HIGH = 'high',     // Added for backward compatibility
+  PEAK = 'peak',     // Added for backward compatibility
+  HEAVY = 'heavy',   // Added for backward compatibility
+  UNKNOWN = 'unknown' // Added for backward compatibility
+}
 
 // Heat intensity values array - for dropdowns and selects
 export const HeatIntensityValues: HeatIntensityType[] = [
+  'none',
   'light', 
   'moderate', 
   'heavy', 
@@ -18,7 +46,8 @@ export const HeatIntensityValues: HeatIntensityType[] = [
   'low', 
   'high', 
   'peak', 
-  'strong', 
+  'strong',
+  'very_strong',
   'unknown'
 ];
 
@@ -51,4 +80,10 @@ export interface HeatStage {
   length: number;
   startDay?: number; // For compatibility
   endDay?: number; // For compatibility
+  displayName?: string; // For compatibility
+  minDays?: number; // For compatibility
+  maxDays?: number; // For compatibility
+  unit?: string; // For compatibility
+  minAge?: number; // For compatibility
+  maxAge?: number; // For compatibility
 }

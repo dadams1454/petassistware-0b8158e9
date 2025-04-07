@@ -26,7 +26,8 @@ export type {
   HealthAlert,
   HealthCertificate,
   MedicationAdministration,
-  MedicationStatusResult
+  MedicationStatusResult,
+  WeightRecord
 } from './health';
 
 export { 
@@ -37,7 +38,6 @@ export {
 
 // Weight-related types
 export type { 
-  WeightRecord,
   GrowthRate,
   WeightDataPoint,
   GrowthStats,

@@ -4,10 +4,10 @@ import {
   MedicationStatus, MedicationStatusEnum,
   AppetiteLevel, AppetiteLevelEnum,
   EnergyLevel, EnergyLevelEnum,
-  StoolConsistency, StoolConsistencyEnum,
-  HeatIntensity, HeatIntensityEnum, HeatIntensityType,
-  stringToHealthRecordType 
+  StoolConsistency, StoolConsistencyEnum
 } from './health-enums';
+import type { HeatIntensityType } from './heat-cycles';
+import { HeatIntensity } from './heat-cycles';
 import { WeightUnit } from './weight-units';
 
 // Re-export all enums for simpler imports elsewhere
@@ -17,9 +17,14 @@ export {
   AppetiteLevel, AppetiteLevelEnum,
   EnergyLevel, EnergyLevelEnum,
   StoolConsistency, StoolConsistencyEnum,
-  HeatIntensity, HeatIntensityEnum, HeatIntensityType,
-  stringToHealthRecordType
+  HeatIntensity
 } from './health-enums';
+
+// Re-export HeatIntensityType
+export type { HeatIntensityType } from './heat-cycles';
+
+// Re-export the stringToHealthRecordType helper
+export { stringToHealthRecordType } from './health-enums';
 
 // Health Record interface
 export interface HealthRecord {
@@ -66,6 +71,21 @@ export interface HealthRecord {
   surgeon?: string;
   anesthesia_used?: string;
   recovery_notes?: string;
+}
+
+// Weight Record interface (used in health tracking)
+export interface WeightRecord {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;
+  birth_date?: string;
 }
 
 // Medication interface
@@ -209,33 +229,8 @@ export function mapToWeightRecord(data: any) {
   };
 }
 
-// Heat cycle types - kept here for backward compatibility, but main definitions are in heat-cycles.ts
-export interface HeatCycle {
-  id: string;
-  dog_id: string;
-  start_date: string;
-  end_date?: string;
-  intensity: HeatIntensityType;
-  symptoms?: string[];
-  notes?: string;
-  cycle_number?: number;
-  cycle_length?: number;
-  fertility_indicators?: Record<string, any>;
-  created_at: string;
-  updated_at?: string;
-  recorded_by?: string;
-}
-
-export interface HeatStage {
-  id: string;
-  name: string;
-  description: string;
-  day: number;
-  fertility: string;
-  fertilityLevel: number;
-  color: string;
-  length: number;
-}
-
 // Re-export the WeightUnit type for convenience
 export type { WeightUnit };
+
+// Heat cycle types - re-export from main heat-cycles.ts
+export type { HeatCycle, HeatStage } from './heat-cycles';

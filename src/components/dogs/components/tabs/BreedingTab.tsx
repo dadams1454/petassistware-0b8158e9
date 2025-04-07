@@ -1,193 +1,302 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { DogProfile, DogGender } from '@/types/dog';
-import { Edit, Calendar, Calculator, Heart } from 'lucide-react';
-import { format } from 'date-fns';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { CalendarIcon, AlertCircle, Check, X, Clock, Calendar } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
-import { useDogStatus } from '../../hooks/useDogStatus';
-import BreedingCycleCard from '../breeding/BreedingCycleCard';
-import { BreedingTabProps } from '../profile/DogProfileTabs';
+import { format, addDays, differenceInDays } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { HeatCycleManagement } from '../HeatCycleManagement';
+import { DogGender } from '@/types/dog';
 
-// Define separate props interfaces for different usage contexts
-export interface BreedingTabViewProps {
-  dog: DogProfile;
-  onEdit?: () => void;
-}
-
-export interface BreedingTabFormProps {
+interface BreedingTabProps {
   form: UseFormReturn<any>;
-  lastHeatDate: Date | null;
-  isPregnant: boolean;
-  nextHeatDate: Date | null;
-  hasSchedulingConflict: boolean;
+  lastHeatDate?: Date;
+  isPregnant?: boolean;
+  nextHeatDate?: Date | null;
+  hasSchedulingConflict?: boolean;
+  dog: { id: string };
 }
 
-// Type guard to determine which props we're using
-const isViewProps = (props: BreedingTabViewProps | BreedingTabFormProps): props is BreedingTabViewProps => {
-  return 'dog' in props;
-};
-
-const BreedingTab: React.FC<BreedingTabProps> = ({ dog }) => {
-  // Use our enhanced status hook
-  const { 
-    isPregnant, 
-    heatCycle,
-    tieDate,
-    estimatedDueDate,
-    gestationProgressDays,
-    hasVaccinationHeatConflict
-  } = useDogStatus(dog);
+const BreedingTab: React.FC<BreedingTabProps> = ({
+  form,
+  lastHeatDate,
+  isPregnant = false,
+  nextHeatDate,
+  hasSchedulingConflict = false,
+  dog
+}) => {
+  // Get the current values from the form
+  const currentLastHeatDate = form.watch('last_heat_date');
+  const currentTieDate = form.watch('tie_date');
+  const currentIsPregnant = form.watch('is_pregnant');
   
-  const { 
-    lastHeatDate,
-    nextHeatDate,
-    daysUntilNextHeat,
-    daysIntoCurrentHeat,
-    isInHeat,
-    currentStage
-  } = heatCycle;
+  // Format dates for display
+  const formattedLastHeatDate = currentLastHeatDate 
+    ? format(new Date(currentLastHeatDate), 'PPP')
+    : 'Not recorded';
+  
+  const formattedTieDate = currentTieDate
+    ? format(new Date(currentTieDate), 'PPP')
+    : 'Not recorded';
+  
+  // Calculate estimated due date (63 days after tie date)
+  const estimatedDueDate = currentTieDate
+    ? format(addDays(new Date(currentTieDate), 63), 'PPP')
+    : 'Unknown';
+  
+  // Calculate days until due date
+  const daysUntilDue = currentTieDate && !isPregnant
+    ? differenceInDays(addDays(new Date(currentTieDate), 63), new Date())
+    : null;
+  
+  // Calculate next heat date (approximately 6 months after last heat)
+  const calculatedNextHeatDate = currentLastHeatDate
+    ? format(addDays(new Date(currentLastHeatDate), 180), 'PPP')
+    : 'Unknown';
+  
+  // Calculate days until next heat
+  const daysUntilNextHeat = currentLastHeatDate && !isPregnant
+    ? differenceInDays(addDays(new Date(currentLastHeatDate), 180), new Date())
+    : null;
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Breeding Information</h2>
-        {/* Remove Edit button for now */}
-      </div>
+      {/* Reproductive Status Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>Reproductive Status</CardTitle>
+          <CardDescription>
+            Track reproductive cycle information
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Pregnancy Checkbox */}
+          <FormField
+            control={form.control}
+            name="is_pregnant"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-base font-semibold">
+                    Currently Pregnant
+                  </FormLabel>
+                  <FormDescription>
+                    Mark this dog as currently pregnant to track gestation
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          
+          {/* Last Heat Date */}
+          <FormField
+            control={form.control}
+            name="last_heat_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Last Heat Date</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "PPP")
+                        ) : (
+                          <span>Select date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={field.value ? new Date(field.value) : undefined}
+                      onSelect={field.onChange}
+                      disabled={(date) => date > new Date()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormDescription>
+                  This helps calculate the next expected heat cycle
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          {/* Tie Date Selector */}
+          <FormField
+            control={form.control}
+            name="tie_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Breeding Date</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "PPP")
+                        ) : (
+                          <span>Select date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={field.value ? new Date(field.value) : undefined}
+                      onSelect={field.onChange}
+                      disabled={(date) => date > new Date()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormDescription>
+                  Date of successful breeding. Used to calculate due date.
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          
+          {/* Reproductive Notes */}
+          <FormField
+            control={form.control}
+            name="reproductive_notes"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Reproductive Notes</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Notes about heat cycles, breeding, etc."
+                    {...field}
+                    rows={3}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </CardContent>
+      </Card>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="h-5 w-5 mr-2" />
-              Important Dates
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="text-sm font-medium text-muted-foreground mb-1">Last Heat</div>
-                <div className="font-medium">
-                  {lastHeatDate ? format(lastHeatDate, 'PPP') : 'Not recorded'}
-                </div>
-              </div>
-              
-              {!isPregnant && (
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Current Status</div>
-                  <div className="font-medium">
-                    {isInHeat && currentStage ? (
-                      <span className="text-red-600">In Heat - {currentStage.name} Stage</span>
-                    ) : daysUntilNextHeat && daysUntilNextHeat <= 14 ? (
-                      <span className="text-purple-600">Heat Approaching (in {daysUntilNextHeat} days)</span>
-                    ) : (
-                      <span>Not in Heat</span>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {!isPregnant && nextHeatDate && (
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Projected Next Heat</div>
-                  <div className="font-medium flex items-center">
-                    {format(nextHeatDate, 'PPP')}
-                    {hasVaccinationHeatConflict && (
-                      <span className="inline-flex ml-2 items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                        Vaccination Conflict
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {tieDate && (
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Breeding Date</div>
-                  <div className="font-medium">
-                    {format(new Date(tieDate), 'PPP')}
-                  </div>
-                </div>
-              )}
-              
-              {isPregnant && estimatedDueDate && (
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Due Date</div>
-                  <div className="font-medium text-pink-600">
-                    {format(estimatedDueDate, 'PPP')}
-                    {gestationProgressDays !== null && (
-                      <span className="text-sm ml-2 text-muted-foreground">
-                        (Day {gestationProgressDays} of gestation)
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
+      {/* Reproductive Summary */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>Reproductive Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Last Heat Date</h4>
+              <p className="text-sm font-medium">{formattedLastHeatDate}</p>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calculator className="h-5 w-5 mr-2" />
-              Breeding Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="text-sm font-medium text-muted-foreground mb-1">Current Status</div>
-                <div className="font-medium">
-                  {isPregnant ? (
-                    <span className="text-pink-600 font-semibold">Pregnant</span>
-                  ) : isInHeat ? (
-                    <span className="text-red-600 font-semibold">In Heat</span>
-                  ) : (
-                    <span>Not Breeding</span>
-                  )}
-                </div>
-              </div>
-              
-              <div>
-                <div className="text-sm font-medium text-muted-foreground mb-1">Total Litters</div>
-                <div className="font-medium">
-                  {dog.litter_number || '0'}
-                </div>
-              </div>
-              
-              <div>
-                <div className="text-sm font-medium text-muted-foreground mb-1">Fertility</div>
-                <div className="font-medium">
-                  {dog.gender === DogGender.Female ? 'Intact Female' : 'Intact Male'}
-                </div>
-              </div>
-              
-              {dog.gender === DogGender.Female && isPregnant && gestationProgressDays !== null && (
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Pregnancy Progress</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div 
-                      className="bg-pink-600 h-2.5 rounded-full" 
-                      style={{ width: `${(gestationProgressDays / 63) * 100}%` }}
-                    ></div>
-                  </div>
-                  <div className="flex justify-between text-xs mt-1">
-                    <span>Day {gestationProgressDays}</span>
-                    <span>Day 63</span>
-                  </div>
-                </div>
-              )}
+            
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Expected Next Heat</h4>
+              <p className="text-sm font-medium flex items-center">
+                {calculatedNextHeatDate}
+                {daysUntilNextHeat !== null && !currentIsPregnant && (
+                  <Badge className="ml-2" variant="outline">
+                    <Clock className="mr-1 h-3 w-3" /> 
+                    {daysUntilNextHeat > 0 
+                      ? `In ${daysUntilNextHeat} days` 
+                      : 'Overdue'}
+                  </Badge>
+                )}
+              </p>
             </div>
-          </CardContent>
-        </Card>
-        
-        {/* Conditional display of cycle information only for females */}
-        {dog.gender === DogGender.Female && !isPregnant && (
-          <div className="md:col-span-2">
-            <BreedingCycleCard dog={dog} />
+            
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Last Breeding Date</h4>
+              <p className="text-sm font-medium">{formattedTieDate}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Estimated Due Date</h4>
+              <p className="text-sm font-medium flex items-center">
+                {estimatedDueDate}
+                {daysUntilDue !== null && currentIsPregnant && (
+                  <Badge className="ml-2" variant={daysUntilDue > 7 ? "outline" : "secondary"}>
+                    <Calendar className="mr-1 h-3 w-3" /> 
+                    {daysUntilDue > 0 
+                      ? `In ${daysUntilDue} days` 
+                      : 'Overdue'}
+                  </Badge>
+                )}
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Pregnancy Status</h4>
+              <p className="text-sm font-medium flex items-center">
+                {currentIsPregnant ? (
+                  <>
+                    <Badge variant="success" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      <Check className="mr-1 h-3 w-3" /> Pregnant
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <Badge variant="outline" className="text-muted-foreground">
+                      <X className="mr-1 h-3 w-3" /> Not Pregnant
+                    </Badge>
+                  </>
+                )}
+              </p>
+            </div>
           </div>
+          
+          {/* Scheduling Conflict Warning */}
+          {hasSchedulingConflict && (
+            <Alert variant="warning" className="bg-amber-50 dark:bg-amber-950">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Scheduling Notice</AlertTitle>
+              <AlertDescription>
+                The next vaccination and heat cycle dates are close to each other.
+                Consider adjusting the vaccination schedule.
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Heat Cycle Management */}
+      <div className="mt-8">
+        <h3 className="text-lg font-medium mb-4">Heat Cycle History</h3>
+        <Separator className="my-4" />
+        {dog && dog.id && (
+          <HeatCycleManagement dogId={dog.id} />
         )}
       </div>
     </div>
