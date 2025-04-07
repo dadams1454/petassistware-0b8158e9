@@ -6,6 +6,7 @@ import * as z from 'zod';
 import { WeightUnit } from '@/types/weight-units';
 import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
 import { WeightRecord } from '@/types/weight';
+import { calculatePercentChange } from '@/utils/weightConversion';
 
 // Schema for weight entry form
 const weightEntrySchema = z.object({
@@ -29,6 +30,8 @@ export type WeightEntryValues = z.infer<typeof weightEntrySchema>;
 interface UseWeightEntryFormProps {
   dogId?: string;
   puppyId?: string;
+  birthDate?: string;
+  previousWeight?: { weight: number; unit: WeightUnit };
   onSave: (data: Partial<WeightRecord>) => Promise<any>;
   initialData?: Partial<WeightEntryValues>;
 }
@@ -36,6 +39,8 @@ interface UseWeightEntryFormProps {
 export const useWeightEntryForm = ({ 
   dogId, 
   puppyId, 
+  birthDate,
+  previousWeight,
   onSave, 
   initialData 
 }: UseWeightEntryFormProps) => {
@@ -59,13 +64,37 @@ export const useWeightEntryForm = ({
         ? formatDateToYYYYMMDD(values.date) 
         : new Date().toISOString().split('T')[0];
       
-      const weightRecord = {
+      // Calculate percent change if previous weight exists
+      let percentChange: number | undefined = undefined;
+      
+      if (previousWeight) {
+        percentChange = calculatePercentChange(
+          previousWeight.weight,
+          values.weight
+        );
+      }
+      
+      // Include age_days if birthDate is available
+      let ageDays: number | undefined = undefined;
+      
+      if (birthDate) {
+        const recordDate = values.date instanceof Date 
+          ? values.date 
+          : new Date();
+        const birthDateObj = new Date(birthDate);
+        ageDays = Math.floor((recordDate.getTime() - birthDateObj.getTime()) / (1000 * 60 * 60 * 24));
+      }
+      
+      const weightRecord: Partial<WeightRecord> = {
         dog_id: dogId,
         puppy_id: puppyId,
         date: formattedDate,
         weight: values.weight,
         weight_unit: values.unit,
-        notes: values.notes
+        notes: values.notes,
+        percent_change: percentChange,
+        age_days: ageDays,
+        birth_date: birthDate
       };
       
       await onSave(weightRecord);

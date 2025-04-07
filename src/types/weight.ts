@@ -2,7 +2,7 @@
 import { WeightUnit } from './weight-units';
 
 /**
- * Interface for weight record data
+ * Represents a weight record in the system
  */
 export interface WeightRecord {
   id: string;
@@ -14,20 +14,23 @@ export interface WeightRecord {
   date: string;
   notes?: string;
   percent_change?: number;
-  created_at: string;
   age_days?: number;
   birth_date?: string;
+  created_at: string;
 }
 
 /**
- * Growth statistics data
+ * Growth statistics calculated from weight records
  */
 export interface GrowthStats {
-  currentWeight: number;
-  averageGrowth: number;
+  currentWeight: number | null;
   weightUnit: WeightUnit;
+  averageGrowth: number;
   growthRate: number;
+  totalGrowth: number | null;
+  percentChange: number;
   lastWeekGrowth: number;
-  projectedWeight: number;
-  averageGrowthRate?: number; // For backward compatibility
+  projectedWeight: number | null;
+  weightGoal: number | null;
+  onTrack: boolean | null;
 }

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -24,10 +23,13 @@ const WeightEntryForm: React.FC<WeightEntryFormProps> = ({
   const { form, isSubmitting, handleSubmit } = useWeightEntryForm({
     dogId,
     puppyId,
+    birthDate,
     onSave: async (data) => {
       try {
         // This will be handled by the parent component through onSuccess
-        await onSuccess?.(data);
+        if (onSuccess) {
+          await onSuccess(data);
+        }
         return data;
       } catch (error) {
         console.error('Error saving weight record:', error);

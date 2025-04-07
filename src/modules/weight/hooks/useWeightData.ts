@@ -5,6 +5,7 @@ import { WeightRecord } from '@/types/weight';
 import { supabase } from '@/integrations/supabase/client';
 import { mapWeightRecordFromDB, mapWeightRecordToDB } from '@/lib/mappers/weightMapper';
 import { useToast } from '@/components/ui/use-toast';
+import { differenceInDays } from 'date-fns';
 
 interface UseWeightDataProps {
   puppyId?: string;
@@ -25,8 +26,7 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps) => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: weightQueryKey,
     queryFn: async () => {
-      let query = supabase
-        .from('weights')
+      let query = supabase.from('weights')
         .select('*')
         .order('date', { ascending: false });
 
@@ -52,9 +52,20 @@ export const useWeightData = ({ puppyId, dogId }: UseWeightDataProps) => {
   // Add weight mutation
   const addWeightMutation = useMutation({
     mutationFn: async (weightData: Partial<WeightRecord>) => {
-      const { error, data } = await supabase
+      // If a birth date is provided and not age_days, calculate age_days
+      if (weightData.birth_date && !weightData.age_days && weightData.date) {
+        const birthDate = new Date(weightData.birth_date);
+        const recordDate = new Date(weightData.date);
+        
+        weightData.age_days = differenceInDays(recordDate, birthDate);
+      }
+      
+      // Set the correct id field based on whether this is for a dog or puppy
+      const dbRecord = mapWeightRecordToDB(weightData);
+      
+      const { data, error } = await supabase
         .from('weights')
-        .insert(mapWeightRecordToDB(weightData))
+        .insert(dbRecord)
         .select()
         .single();
 

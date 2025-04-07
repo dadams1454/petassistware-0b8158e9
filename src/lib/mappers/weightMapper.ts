@@ -1,51 +1,39 @@
 
 import { WeightRecord } from '@/types/weight';
-import { WeightUnit, standardizeWeightUnit } from '@/types/weight-units';
+import { standardizeWeightUnit } from '@/types/weight-units';
 
 /**
- * Maps a weight record from Supabase DB format to frontend TypeScript format
+ * Maps a weight record from the database format to the application format
  */
-export function mapWeightRecordFromDB(record: any): WeightRecord {
-  if (!record) return null as unknown as WeightRecord;
-
-  // Ensure weight unit is a valid WeightUnit value
-  const weightUnit: WeightUnit = standardizeWeightUnit(record.weight_unit || 'g');
-
+export const mapWeightRecordFromDB = (record: any): WeightRecord => {
   return {
-    id: record.id || '',
-    dog_id: record.dog_id || '',
-    puppy_id: record.puppy_id || '',
-    weight: Number(record.weight) || 0,
-    weight_unit: weightUnit,
-    unit: weightUnit, // For backward compatibility
-    date: record.date || new Date().toISOString().split('T')[0],
+    id: record.id,
+    dog_id: record.dog_id || null,
+    puppy_id: record.puppy_id || null,
+    weight: Number(record.weight),
+    weight_unit: standardizeWeightUnit(record.weight_unit),
+    date: record.date,
     notes: record.notes || '',
-    percent_change: record.percent_change !== null ? Number(record.percent_change) : undefined,
-    created_at: record.created_at || new Date().toISOString(),
-    age_days: record.age_days ? Number(record.age_days) : undefined,
-    birth_date: record.birth_date || undefined
+    percent_change: record.percent_change || null,
+    age_days: record.age_days || null,
+    birth_date: record.birth_date || null,
+    created_at: record.created_at
   };
-}
+};
 
 /**
- * Maps a weight record from frontend TypeScript format to Supabase DB format
+ * Maps a weight record from the application format to the database format
  */
-export function mapWeightRecordToDB(record: Partial<WeightRecord>): any {
-  const dbRecord: any = { ...record };
-  
-  // Remove any fields that shouldn't be sent to the database
-  if (dbRecord.id === '') {
-    delete dbRecord.id;
+export const mapWeightRecordToDB = (record: Partial<WeightRecord>): any => {
+  const mapped: any = {
+    ...record
+  };
+
+  // Handle the case where the weight record uses 'unit' instead of 'weight_unit'
+  if (!mapped.weight_unit && record.unit) {
+    mapped.weight_unit = standardizeWeightUnit(record.unit);
+    delete mapped.unit;
   }
-  
-  if (dbRecord.created_at === '') {
-    delete dbRecord.created_at;
-  }
-  
-  // Ensure the unit field is properly mapped to weight_unit
-  if (dbRecord.unit && !dbRecord.weight_unit) {
-    dbRecord.weight_unit = dbRecord.unit;
-  }
-  
-  return dbRecord;
-}
+
+  return mapped;
+};

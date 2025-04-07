@@ -1,92 +1,71 @@
 
+import { format, parse, isValid } from 'date-fns';
+
 /**
- * Format a date to YYYY-MM-DD string
- * @param date - Date object or date string
- * @returns Formatted date string in YYYY-MM-DD format
+ * Formats a Date object to a YYYY-MM-DD string
  */
-export const formatDateToYYYYMMDD = (date: Date | string): string => {
-  if (!date) return '';
+export const formatDateToYYYYMMDD = (date: Date): string => {
+  if (!isValid(date)) {
+    return new Date().toISOString().split('T')[0];
+  }
+  return format(date, 'yyyy-MM-dd');
+};
+
+/**
+ * Parses a date string in various formats to a Date object
+ */
+export const parseFlexibleDate = (dateString: string): Date | null => {
+  if (!dateString) return null;
   
-  let dateObj: Date;
+  const formats = [
+    'yyyy-MM-dd',
+    'MM/dd/yyyy',
+    'dd/MM/yyyy',
+    'yyyy/MM/dd',
+    'MMM dd, yyyy',
+    'MMMM dd, yyyy'
+  ];
   
-  // Convert string to Date object if necessary
-  if (typeof date === 'string') {
-    // Handle already formatted date strings
-    if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return date;
+  // Try to parse using the formats
+  for (const formatString of formats) {
+    try {
+      const parsedDate = parse(dateString, formatString, new Date());
+      if (isValid(parsedDate)) {
+        return parsedDate;
+      }
+    } catch (e) {
+      // Continue to next format if this one fails
     }
-    dateObj = new Date(date);
-  } else {
-    dateObj = date;
   }
   
-  // Check for invalid date
-  if (isNaN(dateObj.getTime())) {
-    console.error('Invalid date provided to formatDateToYYYYMMDD:', date);
-    return '';
+  // Try to create Date directly
+  const directDate = new Date(dateString);
+  if (isValid(directDate)) {
+    return directDate;
   }
   
-  // Format to YYYY-MM-DD
-  const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  
-  return `${year}-${month}-${day}`;
+  return null;
 };
 
 /**
- * Parse a frequency string to get the number of days
- * @param frequency - Frequency string (e.g., 'daily', 'weekly')
- * @returns Number of days for the frequency
+ * Calculates age in days from a birth date
  */
-export const parseFrequency = (frequency: string): number => {
-  const frequencyMap: Record<string, number> = {
-    'daily': 1,
-    'twice_daily': 0.5,
-    'once_daily': 1,
-    'every_other_day': 2,
-    'weekly': 7,
-    'twice_weekly': 3.5,
-    'biweekly': 14,
-    'monthly': 30,
-    'quarterly': 90,
-    'annually': 365,
-    'as_needed': 0,
-  };
+export const calculateAgeInDays = (birthDate: string | Date): number => {
+  const birthDateObj = typeof birthDate === 'string' ? new Date(birthDate) : birthDate;
+  const today = new Date();
   
-  return frequencyMap[frequency.toLowerCase()] || 0;
-};
-
-/**
- * Formats a date for display in UI
- * @param date - Date to format
- * @returns Formatted date string
- */
-export const formatDateForDisplay = (date: Date | string): string => {
-  if (!date) return '';
-  
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  // Check for invalid date
-  if (isNaN(dateObj.getTime())) {
-    return '';
+  if (!isValid(birthDateObj)) {
+    return 0;
   }
   
-  return dateObj.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  const diffTime = today.getTime() - birthDateObj.getTime();
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 };
 
 /**
- * Add days to a date
- * @param date - Starting date
- * @param days - Number of days to add
- * @returns New date with days added
+ * Calculates age in weeks from a birth date
  */
-export const addDays = (date: Date | string, days: number): Date => {
-  const dateObj = typeof date === 'string' ? new Date(date) : new Date(date);
-  dateObj.setDate(dateObj.getDate() + days);
-  return dateObj;
+export const calculateAgeInWeeks = (birthDate: string | Date): number => {
+  const ageInDays = calculateAgeInDays(birthDate);
+  return Math.floor(ageInDays / 7);
 };

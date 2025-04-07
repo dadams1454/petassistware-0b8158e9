@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { WeightRecord } from '@/types';
+import { WeightRecord } from '@/types/weight';
 import { mapWeightRecordFromDB, mapWeightRecordToDB } from '@/lib/mappers/weightMapper';
 
 /**
@@ -10,7 +10,7 @@ export const getWeightRecords = async (dogId: string): Promise<WeightRecord[]> =
   if (!dogId) return [];
 
   const { data, error } = await supabase
-    .from('weight_records')
+    .from('weights')
     .select('*')
     .eq('dog_id', dogId)
     .order('date', { ascending: false });
@@ -34,14 +34,18 @@ export const getWeightHistory = async (dogId: string): Promise<WeightRecord[]> =
  * Add a weight record
  */
 export const addWeightRecord = async (record: Partial<WeightRecord>): Promise<WeightRecord> => {
-  if (!record.dog_id || !record.date || record.weight === undefined) {
-    throw new Error('Missing required fields for weight record');
+  if (!record.dog_id && !record.puppy_id) {
+    throw new Error('Either dog_id or puppy_id is required for weight record');
+  }
+  
+  if (!record.date || record.weight === undefined) {
+    throw new Error('Date and weight are required fields');
   }
 
   const dbRecord = mapWeightRecordToDB(record);
 
   const { data, error } = await supabase
-    .from('weight_records')
+    .from('weights')
     .insert(dbRecord)
     .select()
     .single();
@@ -61,7 +65,7 @@ export const updateWeightRecord = async (id: string, updates: Partial<WeightReco
   const dbUpdates = mapWeightRecordToDB(updates);
 
   const { data, error } = await supabase
-    .from('weight_records')
+    .from('weights')
     .update(dbUpdates)
     .eq('id', id)
     .select()
@@ -80,7 +84,7 @@ export const updateWeightRecord = async (id: string, updates: Partial<WeightReco
  */
 export const deleteWeightRecord = async (id: string): Promise<void> => {
   const { error } = await supabase
-    .from('weight_records')
+    .from('weights')
     .delete()
     .eq('id', id);
 
@@ -97,7 +101,7 @@ export const getPuppyWeightRecords = async (puppyId: string): Promise<WeightReco
   if (!puppyId) return [];
 
   const { data, error } = await supabase
-    .from('weight_records')
+    .from('weights')
     .select('*')
     .eq('puppy_id', puppyId)
     .order('date', { ascending: false });
@@ -114,22 +118,9 @@ export const getPuppyWeightRecords = async (puppyId: string): Promise<WeightReco
  * Add a puppy weight record
  */
 export const addPuppyWeightRecord = async (record: Partial<WeightRecord>): Promise<WeightRecord> => {
-  if (!record.puppy_id || !record.date || record.weight === undefined) {
-    throw new Error('Missing required fields for puppy weight record');
+  if (!record.puppy_id) {
+    throw new Error('puppy_id is required for puppy weight record');
   }
-
-  const dbRecord = mapWeightRecordToDB(record);
-
-  const { data, error } = await supabase
-    .from('weight_records')
-    .insert(dbRecord)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error adding puppy weight record:', error);
-    throw error;
-  }
-
-  return mapWeightRecordFromDB(data);
+  
+  return addWeightRecord(record);
 };
