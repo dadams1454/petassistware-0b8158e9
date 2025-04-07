@@ -1,10 +1,9 @@
 
 import { useState } from 'react';
 import { useHealthRecordsData } from './useHealthRecordsData';
-import { useWeightData } from '@/modules/weight/hooks/useWeightData';
+import { useWeightRecords } from '@/modules/health';
 import { HealthRecord } from '@/types/health';
 import { WeightRecord } from '@/types/weight';
-import { UseLoadingResult, useLoading } from '@/contexts/dailyCare/hooks/useLoading';
 
 /**
  * Interface for the health tab state
@@ -33,22 +32,25 @@ export interface HealthTabState {
  */
 export const useHealthTabState = (dogId: string): HealthTabState => {
   const [activeTab, setActiveTab] = useState<string>('summary');
-  const { loading, withLoading } = useLoading();
   
+  // Use our standardized hooks
   const healthRecordsData = useHealthRecordsData(dogId);
-  const weightData = useWeightData({ dogId });
+  const { 
+    weightRecords, 
+    isLoading: isLoadingWeights, 
+    error: weightError,
+    fetchWeightHistory 
+  } = useWeightRecords({ dogId });
   
-  const isLoading = loading || healthRecordsData.isLoading || weightData.isLoading;
-  const error = healthRecordsData.error || weightData.error;
+  const isLoading = healthRecordsData.isLoading || isLoadingWeights;
+  const error = healthRecordsData.error || weightError;
   
   // Function to refresh all data
   const refreshAllData = async (): Promise<void> => {
-    await withLoading(async () => {
-      await Promise.all([
-        healthRecordsData.refreshHealthRecords(),
-        weightData.fetchWeightHistory()
-      ]);
-    });
+    await Promise.all([
+      healthRecordsData.refreshHealthRecords(),
+      fetchWeightHistory()
+    ]);
   };
 
   return {
@@ -58,12 +60,12 @@ export const useHealthTabState = (dogId: string): HealthTabState => {
     isLoading,
     error,
     healthRecords: healthRecordsData.healthRecords,
-    weightRecords: weightData.weightRecords,
+    weightRecords,
     vaccinationRecords: healthRecordsData.vaccinationRecords,
     examinationRecords: healthRecordsData.examinationRecords,
     medicationRecords: healthRecordsData.medicationRecords,
     refreshHealthRecords: healthRecordsData.refreshHealthRecords,
-    refreshWeightRecords: weightData.fetchWeightHistory,
+    refreshWeightRecords: fetchWeightHistory,
     refreshAllData
   };
 };

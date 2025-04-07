@@ -1,37 +1,40 @@
 
-import { useState, useCallback } from 'react';
+/**
+ * Hook for fetching and managing health records
+ */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { HealthRecord, HealthRecordOptions, HealthRecordType } from '../types';
-import { mapHealthRecordFromDB, mapHealthRecordToDB } from '@/lib/mappers/healthMapper';
-import { stringToHealthRecordType } from '@/types/health-enums';
 
 /**
- * Hook for managing health records for a dog or puppy
+ * Hook for fetching and managing health records
+ * 
+ * @param {HealthRecordOptions} options Options for filtering health records
+ * @returns {Object} Health records data and operations
  */
 export const useHealthRecords = (options: HealthRecordOptions = {}) => {
-  const { dogId, puppyId, recordType, startDate, endDate } = options;
-  const [selectedRecord, setSelectedRecord] = useState<HealthRecord | null>(null);
   const queryClient = useQueryClient();
-
-  const queryKey = ['healthRecords', dogId, puppyId, recordType, startDate, endDate];
-
+  const { dogId, puppyId, recordType, startDate, endDate, includeArchived = false } = options;
+  
+  // Build the query key based on provided options
+  const queryKey = ['healthRecords', dogId, puppyId, recordType, startDate, endDate, includeArchived];
+  
   // Fetch health records
   const {
     data: healthRecords = [],
     isLoading,
-    isError,
     error,
-    refetch
+    refetch: refreshHealthRecords
   } = useQuery({
     queryKey,
-    queryFn: async () => {
+    queryFn: async (): Promise<HealthRecord[]> => {
       try {
+        // Create a base query
         let query = supabase
           .from('health_records')
           .select('*');
-
+        
         // Apply filters
         if (dogId) {
           query = query.eq('dog_id', dogId);
@@ -46,109 +49,104 @@ export const useHealthRecords = (options: HealthRecordOptions = {}) => {
         }
         
         if (startDate) {
-          query = query.gte('visit_date', startDate);
+          query = query.gte('date', startDate);
         }
         
         if (endDate) {
-          query = query.lte('visit_date', endDate);
+          query = query.lte('date', endDate);
         }
-
-        // Order by date descending
-        query = query.order('visit_date', { ascending: false });
         
-        const { data, error } = await query;
+        // Execute the query
+        const { data, error } = await query.order('date', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
         
-        // Map the raw data to HealthRecord type
-        return (data || []).map(record => mapHealthRecordFromDB(record));
-      } catch (err) {
-        console.error('Error fetching health records:', err);
-        throw err;
+        return data as HealthRecord[];
+      } catch (error) {
+        console.error('Error fetching health records:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch health records',
+          variant: 'destructive',
+        });
+        return [];
       }
     },
-    enabled: !!(dogId || puppyId),
+    enabled: !!(dogId || puppyId) // Only run the query if either dogId or puppyId is provided
   });
 
-  // Add health record mutation
+  // Add a health record
   const addHealthRecord = useMutation({
-    mutationFn: async (record: Omit<HealthRecord, 'id'>) => {
+    mutationFn: async (record: Omit<HealthRecord, 'id' | 'created_at'>) => {
       try {
-        // Ensure required fields are present
-        if (!record.dog_id && !record.puppy_id) {
-          throw new Error('Either dog_id or puppy_id is required');
+        const { data, error } = await supabase
+          .from('health_records')
+          .insert(record)
+          .select()
+          .single();
+        
+        if (error) {
+          throw error;
         }
-
-        // Map the record for inserting into the database
-        const dbRecord = mapHealthRecordToDB(record);
-
-        const { data, error } = await supabase
-          .from('health_records')
-          .insert(dbRecord)
-          .select();
-
-        if (error) throw error;
         
-        return mapHealthRecordFromDB(data[0]);
-      } catch (err) {
-        console.error('Error adding health record:', err);
-        throw err;
+        return data as HealthRecord;
+      } catch (error) {
+        console.error('Error adding health record:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to add health record',
+          variant: 'destructive',
+        });
+        throw error;
       }
     },
     onSuccess: () => {
       toast({
-        title: 'Health record added',
-        description: 'The health record has been successfully added.'
+        title: 'Success',
+        description: 'Health record added successfully',
       });
-      queryClient.invalidateQueries({ queryKey });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: `Failed to add health record: ${error.message}`,
-        variant: 'destructive'
-      });
-    },
+      queryClient.invalidateQueries({ queryKey: ['healthRecords'] });
+    }
   });
-
-  // Update health record mutation
+  
+  // Update a health record
   const updateHealthRecord = useMutation({
-    mutationFn: async ({ id, ...updates }: HealthRecord) => {
+    mutationFn: async ({ id, ...record }: HealthRecord) => {
       try {
-        // Map the record for updating in the database
-        const dbUpdates = mapHealthRecordToDB(updates);
-
         const { data, error } = await supabase
           .from('health_records')
-          .update(dbUpdates)
+          .update(record)
           .eq('id', id)
-          .select();
-
-        if (error) throw error;
+          .select()
+          .single();
         
-        return mapHealthRecordFromDB(data[0]);
-      } catch (err) {
-        console.error('Error updating health record:', err);
-        throw err;
+        if (error) {
+          throw error;
+        }
+        
+        return data as HealthRecord;
+      } catch (error) {
+        console.error('Error updating health record:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to update health record',
+          variant: 'destructive',
+        });
+        throw error;
       }
     },
     onSuccess: () => {
       toast({
-        title: 'Health record updated',
-        description: 'The health record has been successfully updated.'
+        title: 'Success',
+        description: 'Health record updated successfully',
       });
-      queryClient.invalidateQueries({ queryKey });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: `Failed to update health record: ${error.message}`,
-        variant: 'destructive'
-      });
-    },
+      queryClient.invalidateQueries({ queryKey: ['healthRecords'] });
+    }
   });
-
-  // Delete health record mutation
+  
+  // Delete a health record
   const deleteHealthRecord = useMutation({
     mutationFn: async (id: string) => {
       try {
@@ -156,80 +154,67 @@ export const useHealthRecords = (options: HealthRecordOptions = {}) => {
           .from('health_records')
           .delete()
           .eq('id', id);
-
-        if (error) throw error;
+        
+        if (error) {
+          throw error;
+        }
         
         return id;
-      } catch (err) {
-        console.error('Error deleting health record:', err);
-        throw err;
+      } catch (error) {
+        console.error('Error deleting health record:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to delete health record',
+          variant: 'destructive',
+        });
+        throw error;
       }
     },
-    onSuccess: (id) => {
+    onSuccess: () => {
       toast({
-        title: 'Health record deleted',
-        description: 'The health record has been successfully deleted.'
+        title: 'Success',
+        description: 'Health record deleted successfully',
       });
-      
-      // Remove the record from selected if it was deleted
-      if (selectedRecord && selectedRecord.id === id) {
-        setSelectedRecord(null);
-      }
-      
-      queryClient.invalidateQueries({ queryKey });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: `Failed to delete health record: ${error.message}`,
-        variant: 'destructive'
-      });
-    },
+      queryClient.invalidateQueries({ queryKey: ['healthRecords'] });
+    }
   });
-
-  // Utility functions for accessing specific record types
-  const getRecordsByType = useCallback((type: HealthRecordType) => {
-    return healthRecords.filter(record => 
-      record.record_type === type || stringToHealthRecordType(record.record_type) === type
-    );
-  }, [healthRecords]);
-
-  // Return vaccinations
-  const vaccinationRecords = getRecordsByType('vaccination');
   
-  // Return examinations
-  const examinationRecords = getRecordsByType('examination');
+  // Group health records by type
+  const vaccinationRecords = healthRecords.filter(
+    record => record.record_type === 'vaccination'
+  );
   
-  // Return medications
-  const medicationRecords = getRecordsByType('medication');
+  const examinationRecords = healthRecords.filter(
+    record => record.record_type === 'examination'
+  );
   
-  // Find upcoming vaccinations
-  const upcomingVaccinations = vaccinationRecords
-    .filter(record => record.next_due_date && new Date(record.next_due_date) > new Date())
-    .sort((a, b) => {
-      const dateA = new Date(a.next_due_date || '');
-      const dateB = new Date(b.next_due_date || '');
-      return dateA.getTime() - dateB.getTime();
-    });
+  const medicationRecords = healthRecords.filter(
+    record => record.record_type === 'medication'
+  );
+  
+  const surgeryRecords = healthRecords.filter(
+    record => record.record_type === 'surgery'
+  );
+  
+  const otherRecords = healthRecords.filter(
+    record => !['vaccination', 'examination', 'medication', 'surgery'].includes(record.record_type)
+  );
 
   return {
     healthRecords,
-    selectedRecord,
-    setSelectedRecord,
     isLoading,
-    isError,
     error,
-    refetch,
-    addHealthRecord: addHealthRecord.mutateAsync,
-    updateHealthRecord: updateHealthRecord.mutateAsync,
-    deleteHealthRecord: deleteHealthRecord.mutateAsync,
+    refreshHealthRecords,
+    addHealthRecord: addHealthRecord.mutate,
+    updateHealthRecord: updateHealthRecord.mutate,
+    deleteHealthRecord: deleteHealthRecord.mutate,
     isAdding: addHealthRecord.isPending,
     isUpdating: updateHealthRecord.isPending,
     isDeleting: deleteHealthRecord.isPending,
     vaccinationRecords,
     examinationRecords,
     medicationRecords,
-    upcomingVaccinations,
-    getRecordsByType
+    surgeryRecords,
+    otherRecords
   };
 };

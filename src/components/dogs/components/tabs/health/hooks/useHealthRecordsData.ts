@@ -1,43 +1,38 @@
 
-import { useEffect } from 'react';
-import { useHealthRecords } from '@/hooks/useHealthRecords';
-import { useToast } from '@/hooks/use-toast';
-import { HealthRecordType } from '@/types/health';
+/**
+ * Hook for fetching health records specific to the health tab context
+ */
+import { useHealthRecords } from '@/modules/health';
+import { HealthRecord } from '@/types/health';
 
+/**
+ * Custom hook to fetch health records for a specific dog
+ * 
+ * @param {string} dogId The ID of the dog to fetch health records for
+ * @returns {Object} The health records data and operations
+ */
 export const useHealthRecordsData = (dogId: string) => {
-  const { healthRecords, isLoading, error, refreshHealthRecords } = useHealthRecords(dogId);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: 'Error fetching health records',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  }, [error, toast]);
-
-  // Filter records by type for different tabs
-  const vaccinationRecords = healthRecords.filter(
-    record => record.record_type === HealthRecordType.VACCINATION
-  );
-  
-  const examinationRecords = healthRecords.filter(
-    record => record.record_type === HealthRecordType.EXAMINATION
-  );
-  
-  const medicationRecords = healthRecords.filter(
-    record => record.record_type === HealthRecordType.MEDICATION
-  );
-
-  return {
-    healthRecords,
+  const {
+    healthRecords = [],
+    isLoading,
+    error,
+    refreshHealthRecords,
     vaccinationRecords,
     examinationRecords,
     medicationRecords,
+    surgeryRecords,
+    otherRecords,
+  } = useHealthRecords({ dogId });
+
+  return {
+    healthRecords,
     isLoading,
     error,
-    refreshHealthRecords
+    refreshHealthRecords,
+    vaccinationRecords,
+    examinationRecords,
+    medicationRecords,
+    surgeryRecords,
+    otherRecords,
   };
 };

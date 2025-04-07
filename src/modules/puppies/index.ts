@@ -6,8 +6,14 @@
  * across the application.
  */
 
+// Export all types from the puppy module
+export * from './types';
+
+// Export hooks with proper error handling
 export * from './hooks/usePuppyTracking';
 export * from './hooks/usePuppyData';
-export * from './hooks/usePuppyStats';
 export * from './hooks/usePuppyAgeGroups';
-export * from './types';
+export * from './hooks/usePuppyStats';
+
+// Export utility functions
+export * from './utils/puppyAgeCalculator';

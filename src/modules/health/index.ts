@@ -11,6 +11,7 @@ export * from './types';
 
 // Export hooks with proper error handling
 export * from './hooks/useHealthRecords';
+export * from './hooks/useWeightRecords';
 
 // Export utility functions
 export * from './utils/healthRecordUtils';
