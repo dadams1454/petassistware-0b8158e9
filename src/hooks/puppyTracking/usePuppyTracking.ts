@@ -42,7 +42,8 @@ export const usePuppyTracking = (): PuppyManagementStats => {
       reserved: 0,
       sold: 0,
       unavailable: 0
-    }
+    },
+    byAgeGroup = {} as Record<string, number>
   } = usePuppyStats(processedPuppies) || {};
 
   // Convert PuppyAgeGroup[] to PuppyAgeGroupInfo[]
@@ -55,13 +56,13 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     startDay: group.startDay,
     endDay: group.endDay,
     color: group.color,
-    milestones: group.milestones,
+    milestones: Array.isArray(group.milestones) ? group.milestones : [group.milestones],
     minAge: group.minAge,
     maxAge: group.maxAge
   }));
 
   // Set up puppy age group data structure with correct typing
-  const byAgeGroup: PuppyAgeGroupData = {
+  const byAgeGroupData: PuppyAgeGroupData = {
     newborn: puppiesByAgeGroup.newborn || [],
     twoWeek: puppiesByAgeGroup.twoWeek || [],
     fourWeek: puppiesByAgeGroup.fourWeek || [],
@@ -82,7 +83,7 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     // Age grouping data
     ageGroups: ageGroupInfos,
     puppiesByAgeGroup,
-    byAgeGroup,
+    byAgeGroup: byAgeGroupData,
     
     // Status counts
     byStatus,

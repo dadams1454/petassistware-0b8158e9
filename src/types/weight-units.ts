@@ -1,8 +1,9 @@
 
-// Define weight units as a union type for better type safety
-export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
+/**
+ * Weight unit type definitions and utilities
+ */
 
-// Legacy enum for backward compatibility
+// Weight unit enum
 export enum WeightUnitEnum {
   OZ = 'oz',
   G = 'g',
@@ -10,69 +11,108 @@ export enum WeightUnitEnum {
   KG = 'kg'
 }
 
-// Information about each weight unit
+// Weight unit type (union type for easier usage)
+export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
+
+// Weight unit information with conversion factors
 export interface WeightUnitInfo {
-  unit: WeightUnit;
-  label: string;
-  toGrams: number; // Conversion factor to grams
-  precision: number; // Decimal precision for display
-  thresholds?: {
-    min: number; // Minimum weight in grams to use this unit
-    max: number; // Maximum weight in grams to use this unit
-  };
+  id: string;  // For dropdown selection
+  value: WeightUnit;  // The unit identifier
+  name: string;  // Display name
+  fullName: string;  // Full name (e.g., "Kilograms")
+  toGramsFactor: number;  // Conversion factor to grams
+  displayPrecision: number;  // Number of decimal places for display
+  defaultMin: number;  // Default minimum value
+  defaultMax: number;  // Default maximum value
+  defaultIncrement: number;  // Default increment/step value
 }
 
-// Weight unit information array
+// Weight unit information for each supported unit
 export const weightUnitInfos: WeightUnitInfo[] = [
-  { 
-    unit: 'oz', 
-    label: 'oz', 
-    toGrams: 28.3495, 
-    precision: 1,
-    thresholds: { min: 0, max: 1000 } 
+  {
+    id: 'oz',
+    value: 'oz',
+    name: 'oz',
+    fullName: 'Ounces',
+    toGramsFactor: 28.3495,
+    displayPrecision: 1,
+    defaultMin: 0,
+    defaultMax: 64,
+    defaultIncrement: 0.1
   },
-  { 
-    unit: 'g', 
-    label: 'g', 
-    toGrams: 1, 
-    precision: 0,
-    thresholds: { min: 0, max: 1000 } 
+  {
+    id: 'g',
+    value: 'g',
+    name: 'g',
+    fullName: 'Grams',
+    toGramsFactor: 1,
+    displayPrecision: 0,
+    defaultMin: 0,
+    defaultMax: 1000,
+    defaultIncrement: 1
   },
-  { 
-    unit: 'lb', 
-    label: 'lb', 
-    toGrams: 453.592, 
-    precision: 2,
-    thresholds: { min: 1000, max: 10000 } 
+  {
+    id: 'lb',
+    value: 'lb',
+    name: 'lb',
+    fullName: 'Pounds',
+    toGramsFactor: 453.592,
+    displayPrecision: 1,
+    defaultMin: 0,
+    defaultMax: 200,
+    defaultIncrement: 0.1
   },
-  { 
-    unit: 'kg', 
-    label: 'kg', 
-    toGrams: 1000, 
-    precision: 2,
-    thresholds: { min: 1000, max: Infinity } 
+  {
+    id: 'kg',
+    value: 'kg',
+    name: 'kg',
+    fullName: 'Kilograms',
+    toGramsFactor: 1000,
+    displayPrecision: 1,
+    defaultMin: 0,
+    defaultMax: 100,
+    defaultIncrement: 0.1
   }
 ];
 
-// Helper function to standardize weight unit values
+/**
+ * Standardize weight unit string to a valid WeightUnit
+ */
 export function standardizeWeightUnit(unit: string): WeightUnit {
-  const normalizedUnit = unit.toLowerCase().trim();
+  const normalizedUnit = unit?.toLowerCase()?.trim();
   
-  // Check if it's a valid weight unit
-  if (normalizedUnit === 'oz' || 
-      normalizedUnit === 'g' || 
-      normalizedUnit === 'lb' || 
-      normalizedUnit === 'kg') {
-    return normalizedUnit as WeightUnit;
+  switch (normalizedUnit) {
+    case 'ounce':
+    case 'ounces':
+    case 'oz':
+      return 'oz';
+    
+    case 'gram':
+    case 'grams':
+    case 'g':
+      return 'g';
+    
+    case 'pound':
+    case 'pounds':
+    case 'lb':
+    case 'lbs':
+      return 'lb';
+    
+    case 'kilogram':
+    case 'kilograms':
+    case 'kg':
+    case 'kgs':
+      return 'kg';
+    
+    default:
+      return 'g'; // Default to grams
   }
-  
-  // Map common variations
-  if (normalizedUnit === 'ounce' || normalizedUnit === 'ounces') return 'oz';
-  if (normalizedUnit === 'gram' || normalizedUnit === 'grams') return 'g';
-  if (normalizedUnit === 'pound' || normalizedUnit === 'pounds') return 'lb';
-  if (normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') return 'kg';
-  
-  // Default to oz if unknown
-  console.warn(`Unknown weight unit: ${unit}, defaulting to oz`);
-  return 'oz';
+}
+
+/**
+ * Get weight unit info by unit value
+ */
+export function getWeightUnitInfo(unit: WeightUnit): WeightUnitInfo {
+  const info = weightUnitInfos.find(u => u.value === standardizeWeightUnit(unit));
+  return info || weightUnitInfos[0]; // Default to oz if not found
 }

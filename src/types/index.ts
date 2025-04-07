@@ -4,7 +4,8 @@ export type { WeightUnit, WeightUnitInfo } from './weight-units';
 export { 
   WeightUnitEnum,
   weightUnitInfos, 
-  standardizeWeightUnit
+  standardizeWeightUnit,
+  getWeightUnitInfo
 } from './weight-units';
 
 // Export weight-related types
@@ -19,15 +20,25 @@ export {
   mapHeatIntensityTypeToDisplay
 } from './heat-cycles';
 
-// Export health-related types and enums
+// Export health-related types
 export type { 
   HealthRecord,
   Medication, 
   MedicationAdministration, 
-  HealthIndicator 
+  HealthIndicator,
+  HealthCertificate
 } from './health';
 
-// Export health enums
+// Export health enums and string literal types
+export type {
+  HealthRecordType,
+  MedicationStatusResult,
+  AppetiteLevel, 
+  EnergyLevel,
+  StoolConsistency
+} from './health-enums';
+
+// Export health enum objects and utility functions
 export {
   HealthRecordTypeEnum, 
   MedicationStatusEnum, 
@@ -38,21 +49,15 @@ export {
   getHealthRecordTypeDisplay
 } from './health-enums';
 
-// Export health type definitions using export type
-export type {
-  HealthRecordType,
-  MedicationStatusResult,
-  AppetiteLevel, 
-  EnergyLevel,
-  StoolConsistency
-} from './health-enums';
-
 // Export puppy tracking types with explicit naming to avoid conflicts
 export type {
   PuppyAgeGroup,
   PuppyAgeGroupInfo,
   PuppyAgeGroupData,
-  PuppyManagementStats
+  PuppyManagementStats,
+  PuppyMilestone,
+  VaccinationScheduleItem,
+  VaccinationRecord
 } from './puppyTracking';
 
 // Export puppy types
@@ -77,8 +82,7 @@ export type {
   SimpleDog, 
   WhelpingRecord, 
   WhelpingObservation, 
-  WhelpingLogEntry, 
-  PuppyMilestone 
+  WhelpingLogEntry
 } from './litter';
 
 // Export daily care types
@@ -101,7 +105,7 @@ export {
 } from '../utils/weightConversion';
 
 // Export welping types
-export type { WelpingLog, WelpingObservation, PostpartumCare, WelpingLogEntry } from './welping';
+export type { WelpingLog, WelpingObservation as WelpingObs, PostpartumCare, WelpingLogEntry as WelpingLog2 } from './welping';
 
 // Export socialization types
 export type {
@@ -114,5 +118,5 @@ export type {
   SocializationReaction
 } from './socialization';
 
-// Export the central enum types
+// Export enums
 export * from './enums';

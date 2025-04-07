@@ -1,6 +1,10 @@
 
+/**
+ * Weight-related type definitions
+ */
 import { WeightUnit } from './weight-units';
 
+// Weight record interface
 export interface WeightRecord {
   id: string;
   dog_id?: string;
@@ -9,19 +13,21 @@ export interface WeightRecord {
   weight_unit: WeightUnit;
   date: string;
   created_at: string;
-  notes?: string;
   percent_change?: number;
   age_days?: number;
   birth_date?: string;
-  unit?: WeightUnit; // For backward compatibility
+  notes?: string;
 }
 
+// Growth statistics type
 export interface GrowthStats {
-  currentWeight?: number;
-  previousWeight?: number;
-  percentChange?: number;
-  weeklyGrowth?: number;
+  recentWeights: WeightRecord[];
   averageGrowth?: number;
+  percentChange?: number;
   projectedWeight?: number;
-  weightUnit: WeightUnit;
+  minWeight?: number;
+  maxWeight?: number;
+  totalGrowth?: number;
+  weightGoal?: number;
+  onTrack?: boolean;
 }
