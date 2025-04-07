@@ -14,7 +14,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Customer } from '../types/customer';
-import { truncate } from '@/lib/utils';  // Updated import path
+import { truncate } from '@/lib/utils';
 
 interface CustomerRowProps {
   customer: Customer;
