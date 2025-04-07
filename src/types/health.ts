@@ -1,16 +1,23 @@
 
-import { HealthRecordType, HealthRecordTypeEnum, MedicationStatus, MedicationStatusEnum, 
-  AppetiteLevel, AppetiteLevelEnum, EnergyLevel, EnergyLevelEnum, 
-  StoolConsistency, StoolConsistencyEnum, HeatIntensity, HeatIntensityType } from './health-enums';
+import { 
+  HealthRecordType, HealthRecordTypeEnum,
+  MedicationStatus, MedicationStatusEnum,
+  AppetiteLevel, AppetiteLevelEnum,
+  EnergyLevel, EnergyLevelEnum,
+  StoolConsistency, StoolConsistencyEnum,
+  HeatIntensity, HeatIntensityEnum, HeatIntensityType,
+  stringToHealthRecordType 
+} from './health-enums';
 import { WeightUnit } from './weight-units';
 
+// Re-export all enums for simpler imports elsewhere
 export {
   HealthRecordType, HealthRecordTypeEnum,
   MedicationStatus, MedicationStatusEnum,
   AppetiteLevel, AppetiteLevelEnum,
   EnergyLevel, EnergyLevelEnum,
   StoolConsistency, StoolConsistencyEnum,
-  HeatIntensity, HeatIntensityType,
+  HeatIntensity, HeatIntensityEnum, HeatIntensityType,
   stringToHealthRecordType
 } from './health-enums';
 
@@ -202,7 +209,7 @@ export function mapToWeightRecord(data: any) {
   };
 }
 
-// Heat cycle types
+// Heat cycle types - kept here for backward compatibility, but main definitions are in heat-cycles.ts
 export interface HeatCycle {
   id: string;
   dog_id: string;
@@ -229,3 +236,6 @@ export interface HeatStage {
   color: string;
   length: number;
 }
+
+// Re-export the WeightUnit type for convenience
+export type { WeightUnit };

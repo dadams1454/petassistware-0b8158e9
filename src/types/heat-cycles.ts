@@ -3,21 +3,12 @@
  * Heat cycle related types
  */
 import { Json } from '../integrations/supabase/types';
+import { HeatIntensityType, HeatIntensity } from './health-enums';
 
-// Heat intensity type (string literal union)
-export type HeatIntensityType = 
-  | 'light' 
-  | 'moderate' 
-  | 'heavy' 
-  | 'mild' 
-  | 'medium' 
-  | 'low' 
-  | 'high' 
-  | 'peak' 
-  | 'strong' 
-  | 'unknown';
+// Re-export heat intensity types
+export { HeatIntensityType, HeatIntensity };
 
-// Heat intensity values array
+// Heat intensity values array - for dropdowns and selects
 export const HeatIntensityValues: HeatIntensityType[] = [
   'light', 
   'moderate', 
@@ -37,7 +28,7 @@ export interface HeatCycle {
   dog_id: string;
   start_date: string;
   end_date?: string;
-  intensity?: HeatIntensityType;
+  intensity: HeatIntensityType;
   symptoms?: string[];
   notes?: string;
   cycle_number?: number;

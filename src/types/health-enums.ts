@@ -71,12 +71,44 @@ export enum StoolConsistency {
   BLOODY = 'bloody'    // Added for compatibility with existing code
 }
 
+// Heat intensity types
+export enum HeatIntensity {
+  NONE = 'none',
+  LIGHT = 'light',
+  MODERATE = 'moderate',
+  STRONG = 'strong',
+  VERY_STRONG = 'very_strong',
+  MILD = 'mild',     // Added for backward compatibility
+  MEDIUM = 'medium', // Added for backward compatibility
+  LOW = 'low',       // Added for backward compatibility
+  HIGH = 'high',     // Added for backward compatibility
+  PEAK = 'peak',     // Added for backward compatibility
+  UNKNOWN = 'unknown' // Added for backward compatibility
+}
+
+// Export Heat Intensity as a type
+export type HeatIntensityType = 
+  | 'none'
+  | 'light' 
+  | 'moderate' 
+  | 'heavy' 
+  | 'mild' 
+  | 'medium' 
+  | 'low' 
+  | 'high' 
+  | 'peak' 
+  | 'strong'
+  | 'very_strong'
+  | 'unknown';
+
 // Backward compatibility aliases for named exports
+// Export as constants to avoid name conflicts
 export const HealthRecordTypeEnum = HealthRecordType;
 export const MedicationStatusEnum = MedicationStatus;
 export const AppetiteLevelEnum = AppetiteLevel;
 export const EnergyLevelEnum = EnergyLevel;
 export const StoolConsistencyEnum = StoolConsistency;
+export const HeatIntensityEnum = HeatIntensity;
 
 // Export these as types for type-checking
 export type HealthRecordTypeEnum = HealthRecordType;
@@ -84,17 +116,5 @@ export type MedicationStatusEnum = MedicationStatus;
 export type AppetiteLevelEnum = AppetiteLevel;
 export type EnergyLevelEnum = EnergyLevel;
 export type StoolConsistencyEnum = StoolConsistency;
-
-// Heat intensity types
-export enum HeatIntensity {
-  NONE = 'none',
-  LIGHT = 'light',
-  MODERATE = 'moderate',
-  STRONG = 'strong',
-  VERY_STRONG = 'very_strong'
-}
-
-// Export for backward compatibility
-export const HeatIntensityEnum = HeatIntensity;
 export type HeatIntensityEnum = HeatIntensity;
-export type HeatIntensityType = keyof typeof HeatIntensity | (typeof HeatIntensity)[keyof typeof HeatIntensity];
+
