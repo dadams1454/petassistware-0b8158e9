@@ -7,7 +7,7 @@ export {
   standardizeWeightUnit
 } from './weight-units';
 
-// Export weight-related types
+// Export weight-related types (only export once)
 export type { WeightRecord, GrowthStats } from './weight';
 
 // Export heat cycle related types
@@ -19,15 +19,15 @@ export {
   mapHeatIntensityTypeToDisplay
 } from './heat-cycles';
 
-// Export health-related types and enums
+// Export health-related types and enums - fix the duplicate MedicationStatusResult
 export type { 
   HealthRecord,
-  MedicationStatusResult, 
   Medication, 
   MedicationAdministration, 
   HealthIndicator 
 } from './health';
 
+// Export health enums separately to avoid duplicate exports
 export {
   HealthRecordTypeEnum, 
   HealthRecordType,
@@ -42,9 +42,6 @@ export {
   stringToHealthRecordType,
   getHealthRecordTypeDisplay
 } from './health-enums';
-
-// Export weight-related types
-export type { WeightRecord, GrowthStats } from './weight';
 
 // Export enum helpers
 export * from './enums';
