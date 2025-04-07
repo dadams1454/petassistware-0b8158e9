@@ -5,6 +5,15 @@
 // Re-export all the enums from the central enums file
 export * from './enums';
 
+// Re-export all weight-units
+export * from './weight-units';
+
+// Re-export all health-enums
+export * from './health-enums';
+
+// Re-export heat-cycles types
+export * from './heat-cycles';
+
 // Dog-related types
 export type { Dog, DogProfile, DogCareStatus } from './dog';
 export { createMinimalDog, isValidDogGender, isValidDogStatus, normalizeDogGender, normalizeDogStatus } from './dog';
@@ -42,21 +51,6 @@ export {
   calculatePercentChange
 } from './weight';
 
-// Common types
-export type { 
-  WeightUnit,
-  WeightUnitInfo,
-  WeightUnitOption
-} from './common';
-export { 
-  standardizeWeightUnit, 
-  weightUnits, 
-  weightUnitOptions,
-  weightUnitInfos,
-  getWeightUnitInfo,
-  getWeightUnitName,
-} from './common';
-
 // Puppy-related types
 export type {
   Puppy,
@@ -67,8 +61,8 @@ export type {
 } from './puppy';
 
 // Reproductive cycle types
-export type { HeatCycle, BreedingRecord, PregnancyRecord, HeatIntensityType, HeatStage } from './reproductive';
-export { normalizeBreedingRecord, HeatIntensityValues } from './reproductive';
+export type { BreedingRecord, PregnancyRecord } from './reproductive';
+export { normalizeBreedingRecord } from './reproductive';
 export type { 
   ReproductiveMilestone, 
   ReproductiveCycleData,

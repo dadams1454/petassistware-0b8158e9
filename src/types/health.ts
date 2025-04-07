@@ -2,42 +2,45 @@
 /**
  * Health-related type definitions
  */
-import { WeightUnit } from './common';
+import { WeightUnit } from './weight-units';
+import { 
+  HealthRecordType, 
+  MedicationStatus, 
+  AppetiteLevel, 
+  EnergyLevel, 
+  StoolConsistency,
+  // Type aliases for backward compatibility
+  HealthRecordTypeEnum,
+  MedicationStatusEnum,
+  AppetiteLevelEnum,
+  EnergyLevelEnum,
+  StoolConsistencyEnum,
+  // Helper functions
+  stringToHealthRecordType
+} from './health-enums';
 
-// Health record type enum
-export enum HealthRecordTypeEnum {
-  VACCINATION = 'vaccination',
-  EXAMINATION = 'examination', 
-  MEDICATION = 'medication',
-  SURGERY = 'surgery',
-  LABORATORY = 'laboratory',
-  IMAGING = 'imaging',
-  DENTAL = 'dental',
-  ALLERGY = 'allergy',
-  EMERGENCY = 'emergency',
-  PREVENTIVE = 'preventive',
-  OBSERVATION = 'observation',
-  DEWORMING = 'deworming',
-  GROOMING = 'grooming',
-  TEST = 'test',
-  OTHER = 'other',
-  PROCEDURE = 'procedure'
-}
-
-// Helper function to convert string to health record type
-export function stringToHealthRecordType(type: string): HealthRecordTypeEnum {
-  const upperType = type.toUpperCase();
-  if (Object.keys(HealthRecordTypeEnum).includes(upperType)) {
-    return HealthRecordTypeEnum[upperType as keyof typeof HealthRecordTypeEnum];
-  }
-  return HealthRecordTypeEnum.EXAMINATION;
-}
+// Re-export for backward compatibility
+export {
+  HealthRecordType,
+  MedicationStatus,
+  AppetiteLevel,
+  EnergyLevel, 
+  StoolConsistency,
+  // Type aliases for backward compatibility 
+  HealthRecordTypeEnum,
+  MedicationStatusEnum,
+  AppetiteLevelEnum,
+  EnergyLevelEnum,
+  StoolConsistencyEnum,
+  // Helper functions
+  stringToHealthRecordType
+};
 
 // Health record interface
 export interface HealthRecord {
   id: string;
   dog_id: string;
-  record_type: HealthRecordTypeEnum;
+  record_type: HealthRecordType;
   title: string;
   visit_date: string;
   vet_name: string;
@@ -78,20 +81,9 @@ export interface HealthRecord {
   recovery_notes?: string;
 }
 
-// Medication status enum
-export enum MedicationStatusEnum {
-  ACTIVE = 'active',
-  OVERDUE = 'overdue',
-  SCHEDULED = 'scheduled',
-  DISCONTINUED = 'discontinued',
-  COMPLETED = 'completed',
-  NOT_STARTED = 'not_started',
-  UNKNOWN = 'unknown'
-}
-
 // Medication status result
 export interface MedicationStatusResult {
-  status: MedicationStatusEnum;
+  status: MedicationStatus;
   daysOverdue?: number;
   daysUntilDue?: number;
   nextDue?: Date | null;
@@ -126,34 +118,9 @@ export interface MedicationAdministration {
   created_at: string;
 }
 
-// Health indicator enums
-export enum AppetiteLevelEnum {
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  FAIR = 'fair',
-  POOR = 'poor',
-  NONE = 'none'
-}
-
-export enum EnergyLevelEnum {
-  HYPERACTIVE = 'hyperactive',
-  HIGH = 'high',
-  NORMAL = 'normal',
-  LOW = 'low',
-  LETHARGIC = 'lethargic'
-}
-
-export enum StoolConsistencyEnum {
-  NORMAL = 'normal',
-  SOFT = 'soft',
-  LOOSE = 'loose',
-  WATERY = 'watery',
-  HARD = 'hard'
-}
-
 // Backwards compatibility for older code
-export const AppetiteEnum = AppetiteLevelEnum;
-export const EnergyEnum = EnergyLevelEnum;
+export const AppetiteEnum = AppetiteLevel;
+export const EnergyEnum = EnergyLevel;
 
 // Health indicator
 export interface HealthIndicator {
@@ -195,6 +162,12 @@ export interface HealthCertificate {
   created_at: string;
   puppy_id?: string;
 }
+
+// Import the WeightRecord type from the weight module
+import { WeightRecord } from './weight';
+
+// Re-export the WeightRecord type for convenience
+export type { WeightRecord, WeightUnit };
 
 // Helper function to map data to health record
 export function mapToHealthRecord(data: any): HealthRecord {

@@ -1,139 +1,121 @@
 
-import { Dog, DogGender, DogProfile, DogStatus } from '@/types/dog';
+import { DogGender, DogStatus } from '@/types/enums';
+import { Dog } from '@/types/dog';
+import { DogProfile } from '@/types/dog';
+import { WeightUnit, standardizeWeightUnit } from '@/types/weight-units';
 
 /**
- * Maps a dog record from Supabase DB format to frontend TypeScript format
- * @param record The database record to map
- * @returns A properly typed Dog object
+ * Maps data from the database to a Dog object
  */
-export function mapDogFromDB(record: any): Dog {
-  // Validate record exists
-  if (!record) return null as unknown as Dog;
+export function mapDogFromDB(dog: any): Dog {
+  if (!dog) {
+    return null as unknown as Dog;
+  }
 
-  // Normalize gender
+  // Handle gender conversion
   let gender: DogGender;
-  if (record.gender === 'Male' || record.gender === 'male') {
-    gender = DogGender.Male;
-  } else if (record.gender === 'Female' || record.gender === 'female') {
-    gender = DogGender.Female;
+  if (typeof dog.gender === 'string') {
+    const genderLower = dog.gender.toLowerCase();
+    if (genderLower === 'male' || genderLower === 'm') {
+      gender = DogGender.MALE;
+    } else if (genderLower === 'female' || genderLower === 'f') {
+      gender = DogGender.FEMALE;
+    } else {
+      gender = DogGender.MALE; // Default
+    }
   } else {
-    gender = DogGender.Male; // Default
+    gender = dog.gender || DogGender.MALE;
   }
 
-  // Normalize status
+  // Handle status conversion
   let status: DogStatus;
-  if (Object.values(DogStatus).includes(record.status as DogStatus)) {
-    status = record.status as DogStatus;
+  if (typeof dog.status === 'string') {
+    const statusLower = dog.status.toLowerCase();
+    if (Object.values(DogStatus).includes(statusLower as DogStatus)) {
+      status = statusLower as DogStatus;
+    } else {
+      status = DogStatus.ACTIVE; // Default
+    }
   } else {
-    status = DogStatus.Active; // Default to Active
+    status = dog.status || DogStatus.ACTIVE;
+  }
+
+  // Handle weight unit standardization
+  let weightUnit: WeightUnit | undefined;
+  if (dog.weight_unit) {
+    weightUnit = standardizeWeightUnit(dog.weight_unit);
   }
 
   return {
-    id: record.id || '',
-    name: record.name || '',
-    breed: record.breed || '',
+    id: dog.id || '',
+    name: dog.name || '',
+    breed: dog.breed || '',
     gender: gender,
-    birthdate: record.birthdate || record.birth_date || '',
-    color: record.color || '',
+    birthdate: dog.birthdate || dog.birth_date || '',
+    birth_date: dog.birth_date || dog.birthdate || '',
+    color: dog.color || '',
     status: status,
-    created_at: record.created_at || new Date().toISOString(),
-    // Additional properties that might be used
-    photo_url: record.photo_url || '',
-    is_pregnant: record.is_pregnant || false,
-    dam_id: record.dam_id || undefined,
-    sire_id: record.sire_id || undefined,
-    reproductive_status: record.reproductive_status || undefined,
-    registration_number: record.registration_number || '',
-    tie_date: record.tie_date || null,
-    last_heat_date: record.last_heat_date || null,
-    next_heat_date: record.next_heat_date || undefined,
-    litter_number: record.litter_number || 0
+    created_at: dog.created_at || new Date().toISOString(),
+    photo_url: dog.photo_url || '',
+    is_pregnant: Boolean(dog.is_pregnant),
+    dam_id: dog.dam_id || undefined,
+    sire_id: dog.sire_id || undefined,
+    reproductive_status: dog.reproductive_status || undefined,
+    registration_number: dog.registration_number || '',
+    tie_date: dog.tie_date || null,
+    last_heat_date: dog.last_heat_date || null,
+    next_heat_date: dog.next_heat_date || undefined,
+    litter_number: dog.litter_number || 0,
+    tenant_id: dog.tenant_id || undefined,
+    pedigree: Boolean(dog.pedigree),
+    weight: dog.weight || undefined,
+    weight_unit: weightUnit
   };
 }
 
 /**
- * Maps a dog profile record from Supabase DB format to frontend TypeScript format
- * @param record The database record to map
- * @returns A properly typed DogProfile object
+ * Maps a Dog object to a DogProfile object with all additional fields
  */
-export function mapDogProfileFromDB(record: any): DogProfile {
-  // Validate record exists
-  if (!record) return null as unknown as DogProfile;
-
-  const dog = mapDogFromDB(record);
-  
-  return {
-    ...dog,
-    birthdate: dog.birthdate || '', // Ensure birthdate is required for DogProfile
-    weight: record.weight || 0,
-    weight_unit: record.weight_unit || 'lb',
-    pedigree: record.pedigree || false,
-    requires_special_handling: record.requires_special_handling || false,
-    potty_alert_threshold: record.potty_alert_threshold || 300,
-    max_time_between_breaks: record.max_time_between_breaks || 360,
-    vaccination_type: record.vaccination_type || '',
-    vaccination_notes: record.vaccination_notes || '',
-    last_vaccination_date: record.last_vaccination_date || null,
-    owner_id: record.owner_id || null,
-    notes: record.notes || '',
-    microchip_number: record.microchip_number || '',
-    registration_organization: record.registration_organization || '',
-    microchip_location: record.microchip_location || '',
-    group_ids: record.group_ids || []
-  };
-}
-
-/**
- * Maps a frontend Dog to Supabase DB format
- * @param dog The frontend dog object to map to DB format
- * @returns An object formatted for Supabase insertion/update
- */
-export function mapDogToDB(dog: Partial<Dog>): any {
+export function mapDogToProfile(dog: Dog, additionalData: any = {}): DogProfile {
   return {
     id: dog.id,
     name: dog.name,
     breed: dog.breed,
     gender: dog.gender,
-    birthdate: dog.birthdate,
-    color: dog.color,
-    status: dog.status,
-    created_at: dog.created_at,
-    photo_url: dog.photo_url,
-    is_pregnant: dog.is_pregnant,
-    dam_id: dog.dam_id,
+    birthdate: dog.birthdate || dog.birth_date || '',
+    color: dog.color || '',
+    weight: dog.weight,
+    weight_unit: dog.weight_unit,
+    pedigree: dog.pedigree,
+    requires_special_handling: additionalData.requires_special_handling,
+    potty_alert_threshold: additionalData.potty_alert_threshold,
+    max_time_between_breaks: additionalData.max_time_between_breaks,
+    vaccination_type: additionalData.vaccination_type,
+    vaccination_notes: additionalData.vaccination_notes,
+    last_vaccination_date: additionalData.last_vaccination_date,
+    owner_id: additionalData.owner_id,
     sire_id: dog.sire_id,
+    dam_id: dog.dam_id,
+    registration_organization: additionalData.registration_organization,
+    microchip_location: additionalData.microchip_location,
+    group_ids: additionalData.group_ids,
     reproductive_status: dog.reproductive_status,
+    status: dog.status,
     registration_number: dog.registration_number,
-    tie_date: dog.tie_date,
-    last_heat_date: dog.last_heat_date,
-    litter_number: dog.litter_number
-  };
+    microchip_number: additionalData.microchip_number,
+    notes: additionalData.notes,
+    is_pregnant: dog.is_pregnant,
+    photo_url: dog.photo_url,
+    created_at: dog.created_at,
+    litter_number: dog.litter_number,
+    tenant_id: dog.tenant_id,
+  } as DogProfile;
 }
 
 /**
- * Maps a frontend DogProfile to Supabase DB format
- * @param profile The frontend dog profile to map to DB format
- * @returns An object formatted for Supabase insertion/update
+ * Maps a database record to profile data 
  */
-export function mapDogProfileToDB(profile: Partial<DogProfile>): any {
-  const dogFields = mapDogToDB(profile);
-  
-  return {
-    ...dogFields,
-    weight: profile.weight,
-    weight_unit: profile.weight_unit,
-    pedigree: profile.pedigree,
-    requires_special_handling: profile.requires_special_handling,
-    potty_alert_threshold: profile.potty_alert_threshold,
-    max_time_between_breaks: profile.max_time_between_breaks,
-    vaccination_type: profile.vaccination_type,
-    vaccination_notes: profile.vaccination_notes,
-    last_vaccination_date: profile.last_vaccination_date,
-    owner_id: profile.owner_id,
-    notes: profile.notes,
-    microchip_number: profile.microchip_number,
-    registration_organization: profile.registration_organization,
-    microchip_location: profile.microchip_location,
-    group_ids: profile.group_ids
-  };
+export function mapProfileFromDB(record: any): DogProfile {
+  const dog = mapDogFromDB(record);
+  return mapDogToProfile(dog, record);
 }

@@ -4,6 +4,26 @@
  * This file aims to standardize enum usage and prevent duplication
  */
 
+// Import the common enum types from their specialized files
+import { 
+  HealthRecordType,
+  MedicationStatus,
+  AppetiteLevel,
+  EnergyLevel,
+  StoolConsistency,
+  stringToHealthRecordType
+} from './health-enums';
+
+// Re-export the health enums
+export {
+  HealthRecordType,
+  MedicationStatus,
+  AppetiteLevel,
+  EnergyLevel,
+  StoolConsistency,
+  stringToHealthRecordType
+};
+
 // Dog Gender Enum
 export enum DogGender {
   MALE = 'Male',
@@ -25,61 +45,8 @@ export enum DogStatus {
   RETIRED = 'retired'
 }
 
-// Health Record Type Enum
-export enum HealthRecordType {
-  VACCINATION = 'vaccination',
-  EXAMINATION = 'examination',
-  MEDICATION = 'medication',
-  SURGERY = 'surgery',
-  LABORATORY = 'laboratory',
-  IMAGING = 'imaging',
-  DENTAL = 'dental',
-  ALLERGY = 'allergy',
-  EMERGENCY = 'emergency',
-  PREVENTIVE = 'preventive',
-  OBSERVATION = 'observation',
-  DEWORMING = 'deworming',
-  GROOMING = 'grooming',
-  TEST = 'test',
-  OTHER = 'other',
-  PROCEDURE = 'procedure'
-}
-
-// Medication Status Enum
-export enum MedicationStatus {
-  ACTIVE = 'active',
-  OVERDUE = 'overdue',
-  SCHEDULED = 'scheduled',
-  DISCONTINUED = 'discontinued',
-  COMPLETED = 'completed',
-  NOT_STARTED = 'not_started',
-  UNKNOWN = 'unknown'
-}
-
-// Health Indicator Enums
-export enum AppetiteLevel {
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  FAIR = 'fair',
-  POOR = 'poor',
-  NONE = 'none'
-}
-
-export enum EnergyLevel {
-  HYPERACTIVE = 'hyperactive',
-  HIGH = 'high',
-  NORMAL = 'normal',
-  LOW = 'low',
-  LETHARGIC = 'lethargic'
-}
-
-export enum StoolConsistency {
-  NORMAL = 'normal',
-  SOFT = 'soft',
-  LOOSE = 'loose',
-  WATERY = 'watery',
-  HARD = 'hard'
-}
+// For backward compatibility, alias the HealthRecordType enum
+export { HealthRecordType as HealthRecordTypeEnum };
 
 // Puppy Status Enum
 export enum PuppyStatus {
@@ -172,17 +139,6 @@ export enum FrequencyType {
 // Helper functions for enum value conversion
 
 /**
- * Converts a string to the corresponding HealthRecordType enum value
- */
-export function toHealthRecordType(type: string): HealthRecordType {
-  const upperType = type.toUpperCase();
-  if (Object.keys(HealthRecordType).includes(upperType)) {
-    return HealthRecordType[upperType as keyof typeof HealthRecordType];
-  }
-  return HealthRecordType.EXAMINATION;
-}
-
-/**
  * Converts a string to the corresponding DogGender enum value
  */
 export function toDogGender(gender: string): DogGender {
@@ -241,3 +197,7 @@ export function toLitterStatus(status: string): LitterStatus {
   return LitterStatus.ACTIVE; // Default
 }
 
+/**
+ * Alias for stringToHealthRecordType to maintain backward compatibility
+ */
+export const toHealthRecordType = stringToHealthRecordType;

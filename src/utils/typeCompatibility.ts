@@ -1,18 +1,16 @@
-
 /**
  * This utility file provides functions to ensure compatibility
  * between different type systems used in the codebase
  */
 
 import { 
-  DogGender, DogStatus, HealthRecordType, 
-  PuppyStatus, LitterStatus, ReproductiveStatus 
+  DogGender, DogStatus, PuppyStatus, LitterStatus
 } from '@/types/enums';
-import { WeightUnit, standardizeWeightUnit } from '@/types/common';
+import { HealthRecordType } from '@/types/health-enums';
+import { WeightUnit, standardizeWeightUnit } from '@/types/weight-units';
 import type { Dog as CoreDog } from '@/types/dog';
 import type { Puppy as CorePuppy } from '@/types/puppy';
 import type { WeightRecord as CoreWeightRecord } from '@/types/weight';
-import type { Litter as CoreLitter } from '@/types/litter';
 import type { HealthRecord as CoreHealthRecord } from '@/types/health';
 
 /**
@@ -309,4 +307,3 @@ export function ensureHealthRecordType(record: any): CoreHealthRecord {
   // Add specific properties based on type
   return normalized as CoreHealthRecord;
 }
-

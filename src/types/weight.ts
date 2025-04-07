@@ -2,7 +2,7 @@
 /**
  * Weight record types
  */
-import { WeightUnit } from './common';
+import { WeightUnit } from './weight-units';
 
 export interface WeightRecord {
   id: string;
@@ -108,3 +108,6 @@ export interface GrowthRate {
   monthly: number;
   unit: WeightUnit;
 }
+
+// Re-export WeightUnit for convenience
+export type { WeightUnit };

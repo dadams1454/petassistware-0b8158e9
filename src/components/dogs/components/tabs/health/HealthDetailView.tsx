@@ -1,276 +1,177 @@
-
 import React from 'react';
-import { format } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import {
+  ArrowLeft,
+  Pill,
+  Syringe,
+  Stethoscope,
+  Scissors,
+  Calendar,
+  Edit,
+  Trash2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, File, Pill, Stethoscope, Syringe, Scissors } from 'lucide-react';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { HealthRecord, HealthRecordType } from '@/types/health';
+import { formatDate, formatDateWithTime } from '@/lib/formatDate';
+import { Separator } from '@/components/ui/separator';
 
 interface HealthDetailViewProps {
   record: HealthRecord;
   onBack: () => void;
-  onEdit: (record: HealthRecord) => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-const HealthDetailView: React.FC<HealthDetailViewProps> = ({
-  record,
-  onBack,
-  onEdit
-}) => {
-  // Select icon based on record type
-  const getRecordIcon = () => {
+const HealthDetailView: React.FC<HealthDetailViewProps> = ({ record, onBack, onEdit, onDelete }) => {
+  const recordTypeIcon = () => {
     switch (record.record_type) {
-      case HealthRecordTypeEnum.Vaccination:
-        return <Syringe className="h-5 w-5" />;
-      case HealthRecordTypeEnum.Examination:
-        return <Stethoscope className="h-5 w-5" />;
-      case HealthRecordTypeEnum.Medication:
-        return <Pill className="h-5 w-5" />;
-      case HealthRecordTypeEnum.Surgery:
-        return <Scissors className="h-5 w-5" />;
+      case HealthRecordType.VACCINATION:
+        return <Syringe className="h-5 w-5 mr-2" />;
+      case HealthRecordType.EXAMINATION:
+        return <Stethoscope className="h-5 w-5 mr-2" />;
+      case HealthRecordType.MEDICATION:
+        return <Pill className="h-5 w-5 mr-2" />;
+      case HealthRecordType.SURGERY:
+        return <Scissors className="h-5 w-5 mr-2" />;
       default:
-        return <File className="h-5 w-5" />;
+        return <Stethoscope className="h-5 w-5 mr-2" />;
     }
   };
+
+  const renderDetailItem = (label: string, value: string | number | undefined) => (
+    <div className="grid grid-cols-3 gap-4 py-2">
+      <div className="text-right font-semibold">{label}:</div>
+      <div className="col-span-2">{value || 'N/A'}</div>
+    </div>
+  );
+
+  const renderDateDetail = (label: string, date: string | undefined) => (
+    <div className="grid grid-cols-3 gap-4 py-2">
+      <div className="text-right font-semibold">{label}:</div>
+      <div className="col-span-2">
+        {date ? formatDate(date) : 'N/A'}
+      </div>
+    </div>
+  );
+
+  const renderDateTimeDetail = (label: string, date: string | undefined) => (
+    <div className="grid grid-cols-3 gap-4 py-2">
+      <div className="text-right font-semibold">{label}:</div>
+      <div className="col-span-2">
+        {date ? formatDateWithTime(date) : 'N/A'}
+      </div>
+    </div>
+  );
+
+  const renderNotes = () => (
+    <div className="py-4">
+      <div className="font-semibold">Notes:</div>
+      <div className="whitespace-pre-line">{record.record_notes || 'No notes provided.'}</div>
+    </div>
+  );
   
-  // Format date for display
-  const formatDateString = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    return format(new Date(dateString), 'PPP');
+  const renderMedicationDetails = () => {
+    if (record.record_type !== HealthRecordType.MEDICATION) return null;
+    
+    return (
+      <>
+        <Separator className="my-4" />
+        <CardTitle className="text-lg">Medication Details</CardTitle>
+        {renderDetailItem('Medication Name', record.medication_name)}
+        {renderDetailItem('Dosage', record.dosage)}
+        {renderDetailItem('Dosage Unit', record.dosage_unit)}
+        {renderDetailItem('Frequency', record.frequency)}
+        {renderDetailItem('Administration Route', record.administration_route)}
+        {renderDateDetail('Start Date', record.start_date)}
+        {renderDateDetail('End Date', record.end_date)}
+        {renderDetailItem('Duration', record.duration)}
+        {renderDetailItem('Duration Unit', record.duration_unit)}
+      </>
+    );
   };
   
+  const renderVaccinationDetails = () => {
+    if (record.record_type !== HealthRecordType.VACCINATION) return null;
+    
+    return (
+      <>
+        <Separator className="my-4" />
+        <CardTitle className="text-lg">Vaccination Details</CardTitle>
+        {renderDetailItem('Vaccine Name', record.vaccine_name)}
+        {renderDetailItem('Manufacturer', record.manufacturer)}
+        {renderDetailItem('Lot Number', record.lot_number)}
+        {renderDateDetail('Expiration Date', record.expiration_date)}
+      </>
+    );
+  };
+  
+  const renderExaminationDetails = () => {
+    if (record.record_type !== HealthRecordType.EXAMINATION) return null;
+    
+    return (
+      <>
+        <Separator className="my-4" />
+        <CardTitle className="text-lg">Examination Details</CardTitle>
+        {renderDetailItem('Examination Type', record.examination_type)}
+        {renderDetailItem('Findings', record.findings)}
+        {renderDetailItem('Recommendations', record.recommendations)}
+        {renderDateDetail('Follow-up Date', record.follow_up_date)}
+      </>
+    );
+  };
+  
+  const renderSurgeryDetails = () => {
+    if (record.record_type !== HealthRecordType.SURGERY) return null;
+    
+    return (
+      <>
+        <Separator className="my-4" />
+        <CardTitle className="text-lg">Surgery Details</CardTitle>
+        {renderDetailItem('Procedure Name', record.procedure_name)}
+        {renderDetailItem('Surgeon', record.surgeon)}
+        {renderDetailItem('Anesthesia Used', record.anesthesia_used)}
+        {renderDetailItem('Recovery Notes', record.recovery_notes)}
+      </>
+    );
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <Button variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to List
-        </Button>
-        
-        <Button size="sm" onClick={() => onEdit(record)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Record
-        </Button>
-      </div>
-      
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-full">
-                {getRecordIcon()}
-              </div>
-              <CardTitle className="text-xl">{record.title}</CardTitle>
-            </div>
-            <Badge variant="outline" className="ml-2">
-              {record.record_type.charAt(0).toUpperCase() + record.record_type.slice(1)}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Date</h3>
-              <p>{formatDateString(record.date)}</p>
-            </div>
-            
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Performed By</h3>
-              <p>{record.performed_by || 'Not specified'}</p>
-            </div>
-            
-            {record.next_due_date && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Next Due Date</h3>
-                <p>{formatDateString(record.next_due_date)}</p>
-              </div>
-            )}
-          </div>
-          
-          {/* Record type specific details */}
-          {record.record_type === HealthRecordTypeEnum.Medication && (
-            <div className="border p-4 rounded-md space-y-4 mt-4">
-              <h3 className="font-medium">Medication Details</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {record.medication_name && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Medication</h4>
-                    <p>{record.medication_name}</p>
-                  </div>
-                )}
-                
-                {(record.dosage || record.dosage_unit) && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Dosage</h4>
-                    <p>{record.dosage} {record.dosage_unit}</p>
-                  </div>
-                )}
-                
-                {record.frequency && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Frequency</h4>
-                    <p>{record.frequency}</p>
-                  </div>
-                )}
-                
-                {(record.duration || record.duration_unit) && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Duration</h4>
-                    <p>{record.duration} {record.duration_unit}</p>
-                  </div>
-                )}
-                
-                {record.start_date && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Start Date</h4>
-                    <p>{formatDateString(record.start_date)}</p>
-                  </div>
-                )}
-                
-                {record.end_date && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">End Date</h4>
-                    <p>{formatDateString(record.end_date)}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {record.record_type === HealthRecordTypeEnum.Vaccination && (
-            <div className="border p-4 rounded-md space-y-4 mt-4">
-              <h3 className="font-medium">Vaccination Details</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {record.vaccine_name && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Vaccine</h4>
-                    <p>{record.vaccine_name}</p>
-                  </div>
-                )}
-                
-                {record.manufacturer && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Manufacturer</h4>
-                    <p>{record.manufacturer}</p>
-                  </div>
-                )}
-                
-                {record.lot_number && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Lot Number</h4>
-                    <p>{record.lot_number}</p>
-                  </div>
-                )}
-                
-                {record.administration_route && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Administration Route</h4>
-                    <p>{record.administration_route}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {record.record_type === HealthRecordTypeEnum.Examination && (
-            <div className="border p-4 rounded-md space-y-4 mt-4">
-              <h3 className="font-medium">Examination Details</h3>
-              
-              <div className="grid grid-cols-1 gap-4">
-                {record.examination_type && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Examination Type</h4>
-                    <p>{record.examination_type}</p>
-                  </div>
-                )}
-                
-                {record.findings && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Findings</h4>
-                    <p className="whitespace-pre-line">{record.findings}</p>
-                  </div>
-                )}
-                
-                {record.recommendations && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Recommendations</h4>
-                    <p className="whitespace-pre-line">{record.recommendations}</p>
-                  </div>
-                )}
-                
-                {record.follow_up_date && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Follow-up Date</h4>
-                    <p>{formatDateString(record.follow_up_date)}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {record.record_type === HealthRecordTypeEnum.Surgery && (
-            <div className="border p-4 rounded-md space-y-4 mt-4">
-              <h3 className="font-medium">Surgery Details</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {record.procedure_name && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Procedure</h4>
-                    <p>{record.procedure_name}</p>
-                  </div>
-                )}
-                
-                {record.surgeon && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Surgeon</h4>
-                    <p>{record.surgeon}</p>
-                  </div>
-                )}
-                
-                {record.anesthesia_used && (
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Anesthesia</h4>
-                    <p>{record.anesthesia_used}</p>
-                  </div>
-                )}
-                
-                {record.recovery_notes && (
-                  <div className="col-span-2">
-                    <h4 className="text-sm font-medium text-muted-foreground">Recovery Notes</h4>
-                    <p className="whitespace-pre-line">{record.recovery_notes}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {record.description && (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-              <p className="whitespace-pre-line mt-1">{record.description}</p>
-            </div>
-          )}
-          
-          {record.document_url && (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Attached Document</h3>
-              <a 
-                href={record.document_url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline flex items-center mt-1"
-              >
-                <File className="h-4 w-4 mr-1" />
-                View Document
-              </a>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="col-span-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-2xl font-bold">
+          {recordTypeIcon()}
+          {record.title}
+        </CardTitle>
+        <div className="space-x-2">
+          <Button variant="outline" size="sm" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <Button variant="secondary" size="sm" onClick={onEdit}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+          <Button variant="destructive" size="sm" onClick={onDelete}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="pl-2">
+        {renderDetailItem('Record Type', record.record_type)}
+        {renderDateTimeDetail('Visit Date', record.visit_date)}
+        {renderDetailItem('Veterinarian', record.vet_name)}
+        {renderDetailItem('Performed By', record.performed_by)}
+        {renderDetailItem('Description', record.description)}
+        {renderDetailItem('Document URL', record.document_url)}
+        {renderDateDetail('Next Due Date', record.next_due_date)}
+        {renderNotes()}
+        {renderMedicationDetails()}
+        {renderVaccinationDetails()}
+        {renderExaminationDetails()}
+        {renderSurgeryDetails()}
+      </CardContent>
+    </Card>
   );
 };
 

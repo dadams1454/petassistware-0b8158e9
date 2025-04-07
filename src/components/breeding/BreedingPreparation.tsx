@@ -79,7 +79,7 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
   }
   
   // Make sure we're using the correct enum value from DogStatus
-  const isActive = dog.status === DogStatus.Active;
+  const isActive = dog.status === DogStatus.ACTIVE;
   
   if (!isActive) {
     return (
@@ -108,13 +108,13 @@ const BreedingPreparation: React.FC<BreedingPreparationProps> = ({ dogId }) => {
         </CardHeader>
         <CardContent>
           <p className="mb-6">
-            {dog.gender === DogGender.Female 
+            {dog.gender === DogGender.FEMALE 
               ? "This dashboard helps you prepare and track the breeding process for your female dog."
               : "This dashboard helps you prepare and track the breeding process for your male dog."
             }
           </p>
           
-          {dog.gender === DogGender.Female ? (
+          {dog.gender === DogGender.FEMALE ? (
             <>
               <FemaleBreedingPreparation dog={dog} breedingData={breedingData} />
               <WhelpingPreparation dog={dog} />

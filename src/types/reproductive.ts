@@ -3,12 +3,11 @@
 import { WeightUnit } from '@/types/common';
 import type { Json } from '../integrations/supabase/types';
 import type { Dog } from '@/types/dog';
+import { HeatIntensityType, HeatIntensityValues, HeatCycle, HeatStage } from './heat-cycles';
 
-// Type for heat intensity values
-export type HeatIntensityType = 'light' | 'moderate' | 'heavy' | 'mild' | 'medium' | 'low' | 'high' | 'peak' | 'strong' | 'unknown';
-
-// Heat intensity values
-export const HeatIntensityValues: HeatIntensityType[] = ['light', 'moderate', 'heavy', 'mild', 'medium', 'low', 'high', 'peak', 'strong', 'unknown'];
+// Re-export heat cycle types
+export type { HeatIntensityType, HeatCycle, HeatStage };
+export { HeatIntensityValues };
 
 // Heat intensity enum for backward compatibility
 export enum HeatIntensity {
@@ -22,37 +21,6 @@ export enum HeatIntensity {
   PEAK = 'peak',
   STRONG = 'strong',
   UNKNOWN = 'unknown'
-}
-
-// Heat cycle interface
-export interface HeatCycle {
-  id: string;
-  dog_id: string;
-  start_date: string;
-  end_date?: string;
-  intensity?: HeatIntensityType;
-  symptoms?: string[];
-  notes?: string;
-  cycle_number?: number;
-  cycle_length?: number;
-  fertility_indicators?: Json;
-  created_at: string;
-  updated_at?: string;
-  recorded_by?: string;
-}
-
-// Heat stage interface
-export interface HeatStage {
-  id: string;
-  name: string;
-  description: string;
-  day: number;
-  fertility: string;
-  fertilityLevel: number;
-  color: string;
-  length: number;
-  startDay?: number; // For compatibility
-  endDay?: number; // For compatibility
 }
 
 // Reproductive status enum

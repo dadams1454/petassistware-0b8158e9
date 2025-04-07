@@ -1,17 +1,14 @@
 
 import { Dog as CoreDog, DogGender, DogStatus } from '@/types/dog';
-import { Dog as ModuleDog } from '@/modules/dogs/types/dog';
 import { Puppy as CorePuppy } from '@/types/puppy';
-import { Puppy as LitterPuppy } from '@/components/litters/puppies/types';
 import { WeightRecord as CoreWeightRecord } from '@/types/weight';
-import { WeightRecord as ModuleWeightRecord } from '@/modules/dogs/types/dog';
-import { standardizeWeightUnit, WeightUnit } from '@/types/common';
+import { standardizeWeightUnit, WeightUnit } from '@/types/weight-units';
 
 /**
  * Maps between different Dog type definitions in the codebase 
  * to ensure compatibility between components
  */
-export function mapToCoreDog(dog: ModuleDog | any): CoreDog {
+export function mapToCoreDog(dog: any): CoreDog {
   if (!dog) return null as unknown as CoreDog;
   
   // Map gender to the correct enum
@@ -79,7 +76,7 @@ export function mapToCoreDog(dog: ModuleDog | any): CoreDog {
  * Maps between different Puppy type definitions in the codebase
  * to ensure compatibility between components
  */
-export function mapToCorePuppy(puppy: LitterPuppy | any): CorePuppy {
+export function mapToCorePuppy(puppy: any): CorePuppy {
   if (!puppy) return null as unknown as CorePuppy;
   
   // Normalize gender to 'Male' | 'Female'
@@ -149,7 +146,7 @@ export function mapToCorePuppy(puppy: LitterPuppy | any): CorePuppy {
  * Maps between different WeightRecord type definitions in the codebase
  * to ensure compatibility between components 
  */
-export function mapToWeightRecord(record: ModuleWeightRecord | any): CoreWeightRecord {
+export function mapToWeightRecord(record: any): CoreWeightRecord {
   if (!record) return null as unknown as CoreWeightRecord;
   
   // Handle unit vs weight_unit compatibility
@@ -172,10 +169,10 @@ export function mapToWeightRecord(record: ModuleWeightRecord | any): CoreWeightR
 }
 
 /**
- * Updates the exports in the mappers/index.ts file to include the new mapper
+ * Maps CoreDog to ModuleDog for compatibility with module-specific types
  */
-export function mapToModuleDog(dog: CoreDog): ModuleDog {
-  if (!dog) return null as unknown as ModuleDog;
+export function mapToModuleDog(dog: CoreDog): any {
+  if (!dog) return null;
   
   let gender = 'male';
   if (dog.gender === DogGender.FEMALE || dog.gender === DogGender.FEMALE_LOWER) {
@@ -186,10 +183,10 @@ export function mapToModuleDog(dog: CoreDog): ModuleDog {
     id: dog.id || '',
     name: dog.name || '',
     breed: dog.breed || '',
-    gender: gender as any,
+    gender: gender,
     birthdate: dog.birthdate || dog.birth_date || '',
     color: dog.color || '',
-    status: dog.status?.toLowerCase() as any,
+    status: dog.status?.toLowerCase(),
     is_pregnant: dog.is_pregnant,
     last_heat_date: dog.last_heat_date,
     tie_date: dog.tie_date,
@@ -198,4 +195,3 @@ export function mapToModuleDog(dog: CoreDog): ModuleDog {
     weight_unit: dog.weight_unit
   };
 }
-

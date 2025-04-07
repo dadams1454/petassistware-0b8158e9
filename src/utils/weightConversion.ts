@@ -1,5 +1,5 @@
 
-import { WeightUnit, getWeightUnitInfo } from '@/types/common';
+import { WeightUnit, getWeightUnitInfo } from '@/types/weight-units';
 
 /**
  * Converts a weight value to grams
@@ -78,4 +78,3 @@ export function formatWeight(weight: number, unit: WeightUnit): string {
 export function standardizeWeight(weight: number, unit: WeightUnit): number {
   return convertWeightToGrams(weight, unit);
 }
-
