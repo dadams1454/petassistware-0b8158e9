@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DogGenotype } from '@/types/genetics';
+import { DogGenotype, GeneticHealthStatus } from '@/types/genetics';
 import { formatConditionName, getResultWithColorProps, formatDate } from '../utils/healthUtils';
 
 interface HealthMarkersPanelProps {
@@ -31,7 +31,7 @@ export const HealthMarkersPanel: React.FC<HealthMarkersPanelProps> = ({
               <div key={index} className="flex justify-between items-center text-sm py-1 border-b border-gray-100">
                 <div className="font-medium">{formatConditionName(condition)}</div>
                 <div className="flex items-center">
-                  <span className={`px-2 py-0.5 rounded-full text-xs ${getResultWithColorProps(data.status).color} ${getResultWithColorProps(data.status).bgColor}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs ${getResultWithColorProps(data.status as GeneticHealthStatus).color} ${getResultWithColorProps(data.status as GeneticHealthStatus).bgColor}`}>
                     {typeof data.status === 'string' 
                       ? data.status.charAt(0).toUpperCase() + data.status.slice(1) 
                       : 'Unknown'}

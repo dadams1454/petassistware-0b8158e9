@@ -34,7 +34,7 @@ export interface DogGenotype {
  * Interface for health marker in genetic testing
  */
 export interface HealthMarker {
-  status: string; // 'clear', 'carrier', 'at_risk', 'affected', 'unknown'
+  status: 'clear' | 'carrier' | 'at_risk' | 'affected' | 'unknown';
   testDate?: string;
   notes?: string;
   certified?: boolean;
@@ -52,7 +52,7 @@ export interface CompactGenotypeViewProps {
   showTitle?: boolean;
   showHealth?: boolean;
   showColor?: boolean;
-  title?: string; // Added to fix errors
+  title?: string;
 }
 
 /**
@@ -109,7 +109,7 @@ export interface GeneticImportResult {
   errors?: string[];
   testsImported?: number;
   provider?: string;
-  importedTests?: string[]; // Added to fix errors
+  importedTests?: string[];
 }
 
 /**
@@ -122,15 +122,9 @@ export interface TestResult {
 }
 
 /**
- * Type for genetic health status
+ * Type for genetic health status - this is now properly defined as a string union type
  */
-export interface GeneticHealthStatus {
-  clear: string[];
-  carrier: string[];
-  atRisk: string[];
-  affected: string[];
-  unknown: string[];
-}
+export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'affected' | 'unknown';
 
 /**
  * Interface for health risk

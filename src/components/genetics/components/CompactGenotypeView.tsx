@@ -36,8 +36,9 @@ export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
     baseColor: 'unknown',
     brownDilution: 'unknown',
     dilution: 'unknown',
+    agouti: 'unknown',
     healthMarkers: {},
-    healthResults: []
+    updated_at: new Date().toISOString()
   };
   
   return (
@@ -94,7 +95,7 @@ export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
           <div className="space-y-1">
             {Object.entries(dogGenetics.healthMarkers).map(([key, marker]) => (
               <div key={key} className="flex items-center p-1 rounded hover:bg-gray-50">
-                {getStatusIcon(marker.status)}
+                {getStatusIcon(marker.status as GeneticHealthStatus)}
                 <span className="ml-2 text-sm">{marker.name || key}</span>
                 <Badge variant="outline" className="ml-auto text-xs">
                   {marker.status.replace('_', ' ')}
