@@ -1,156 +1,128 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  CheckCircle, 
-  AlertTriangle, 
-  AlertCircle, 
-  Dna, 
-  Info 
-} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Info, AlertTriangle, Dna } from 'lucide-react';
 import { useGeneticPairing } from '@/hooks/useGeneticPairing';
+import DogGenotypeCard from './DogGenotypeCard';
 
 interface GeneticCompatibilityAnalyzerProps {
   sireId: string;
   damId: string;
-  showHealthWarnings?: boolean;
 }
 
-export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityAnalyzerProps> = ({ 
-  sireId,
-  damId,
-  showHealthWarnings = false
+const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityAnalyzerProps> = ({ 
+  sireId, 
+  damId 
 }) => {
   const { 
-    hasData,
+    sireGenotype,
+    damGenotype,
+    inbreedingCoefficient,
     isLoading,
-    error,
-    compatibilityScore,
-    healthConcernCounts,
-    inbreedingCoefficient 
+    error
   } = useGeneticPairing(sireId, damId);
-
+  
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="py-6">
-          <div className="text-center">
-            <Dna className="h-10 w-10 mx-auto mb-4 animate-pulse text-gray-400" />
-            <p className="text-muted-foreground">Analyzing genetic compatibility...</p>
+        <CardHeader>
+          <CardTitle>Genetic Compatibility Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center p-4">
+            <p className="text-muted-foreground">Loading genetic data...</p>
           </div>
         </CardContent>
       </Card>
     );
   }
-
+  
   if (error) {
     return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          Failed to analyze genetic compatibility. Please try again later.
-        </AlertDescription>
-      </Alert>
+      <Card>
+        <CardHeader>
+          <CardTitle>Genetic Compatibility Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center p-4 text-destructive">
+            <AlertTriangle className="h-5 w-5 mr-2" />
+            <p>Error loading genetic data. Please check if genetic profiles exist for both dogs.</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
-
-  if (!hasData) {
-    return (
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Missing Data</AlertTitle>
-        <AlertDescription>
-          Complete genetic data is not available for one or both of the selected dogs.
-        </AlertDescription>
-      </Alert>
-    );
+  
+  // COI risk levels
+  let coiRiskLevel = 'Low';
+  let coiColor = 'bg-green-500';
+  
+  if (inbreedingCoefficient > 0.125) {
+    coiRiskLevel = 'High';
+    coiColor = 'bg-red-500';
+  } else if (inbreedingCoefficient > 0.0625) {
+    coiRiskLevel = 'Medium';
+    coiColor = 'bg-amber-500';
   }
-
-  // Helper function to get score color
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
-  };
-
-  // Helper function to get progress color
-  const getProgressColor = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
-
+  
   return (
-    <Card>
-      <CardContent className="py-6">
-        <div className="space-y-6">
-          {/* Overall Compatibility Score */}
-          <div>
-            <div className="flex justify-between mb-2">
-              <h3 className="text-sm font-medium">Compatibility Score</h3>
-              <span className={`text-sm font-bold ${getScoreColor(compatibilityScore)}`}>
-                {compatibilityScore}/100
-              </span>
-            </div>
-            <Progress 
-              value={compatibilityScore} 
-              max={100} 
-              className={`h-2 ${getProgressColor(compatibilityScore)}`} 
-            />
-          </div>
-
-          {/* Summary Stats */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="border rounded-md p-3 text-center">
-              <div className="flex justify-center mb-1">
-                <AlertCircle className={`h-5 w-5 ${healthConcernCounts.atRisk > 0 ? 'text-red-500' : 'text-gray-400'}`} />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Genetic Compatibility</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Inbreeding Coefficient */}
+            <div>
+              <div className="flex justify-between mb-2">
+                <div className="font-medium">Inbreeding Coefficient (COI)</div>
+                <div>
+                  <Badge variant={coiRiskLevel === 'Low' ? 'default' : coiRiskLevel === 'Medium' ? 'secondary' : 'destructive'}>
+                    {coiRiskLevel} Risk
+                  </Badge>
+                </div>
               </div>
-              <div className="text-xl font-bold">{healthConcernCounts.atRisk}</div>
-              <div className="text-xs text-muted-foreground">At Risk</div>
+              <Progress 
+                value={inbreedingCoefficient * 100} 
+                className="h-2"
+                // @ts-ignore - variant property may not be in the component type but can be passed through
+                color={coiColor}
+              />
+              <div className="flex justify-between text-sm mt-1">
+                <span>{(inbreedingCoefficient * 100).toFixed(2)}%</span>
+                <span className="text-muted-foreground">
+                  {coiRiskLevel === 'Low' ? 'Healthy genetic diversity' : 
+                   coiRiskLevel === 'Medium' ? 'Caution advised' : 
+                   'High inbreeding risk'}
+                </span>
+              </div>
             </div>
             
-            <div className="border rounded-md p-3 text-center">
-              <div className="flex justify-center mb-1">
-                <AlertTriangle className={`h-5 w-5 ${healthConcernCounts.carrier > 0 ? 'text-amber-500' : 'text-gray-400'}`} />
-              </div>
-              <div className="text-xl font-bold">{healthConcernCounts.carrier}</div>
-              <div className="text-xs text-muted-foreground">Carrier</div>
-            </div>
-            
-            <div className="border rounded-md p-3 text-center">
-              <div className="flex justify-center mb-1">
-                <CheckCircle className={`h-5 w-5 ${healthConcernCounts.clear > 0 ? 'text-green-500' : 'text-gray-400'}`} />
-              </div>
-              <div className="text-xl font-bold">{healthConcernCounts.clear}</div>
-              <div className="text-xs text-muted-foreground">Clear</div>
+            <div className="text-sm text-muted-foreground">
+              <Info className="h-4 w-4 inline-block mr-1" />
+              Coefficient of Inbreeding (COI) estimates the probability that two alleles at a given locus are identical by descent.
             </div>
           </div>
-
-          {/* Inbreeding coefficient */}
-          <div>
-            <h3 className="text-sm font-medium mb-1">Inbreeding Coefficient</h3>
-            <div className="flex items-center">
-              <span className="text-lg font-semibold">
-                {(inbreedingCoefficient * 100).toFixed(2)}%
-              </span>
-              {inbreedingCoefficient > 0.125 && (
-                <AlertTriangle className="h-4 w-4 ml-2 text-amber-500" />
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {inbreedingCoefficient < 0.03 
-                ? "Low inbreeding coefficient - excellent genetic diversity"
-                : inbreedingCoefficient < 0.125
-                  ? "Moderate inbreeding coefficient - acceptable for breeding"
-                  : "High inbreeding coefficient - consider genetic diversity concerns"}
-            </p>
-          </div>
+        </CardContent>
+      </Card>
+      
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Sire Genetic Profile */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Sire: {sireGenotype?.name || 'Unknown Sire'}</h3>
+          <DogGenotypeCard dogId={sireId} genotype={sireGenotype} />
         </div>
-      </CardContent>
-    </Card>
+        
+        {/* Dam Genetic Profile */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Dam: {damGenotype?.name || 'Unknown Dam'}</h3>
+          <DogGenotypeCard dogId={damId} genotype={damGenotype} />
+        </div>
+      </div>
+    </div>
   );
 };
 

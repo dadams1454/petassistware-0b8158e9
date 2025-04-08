@@ -22,8 +22,12 @@ export interface DogGenotype {
   brownDilution: string;
   dilution: string;
   agouti: string;
-  healthMarkers: Record<string, string>;
+  healthMarkers: Record<string, HealthMarker>;
   updated_at: string;
+  // Additional fields that may be present
+  name?: string;
+  breed?: string;
+  colorProbabilities?: ColorProbability[];
 }
 
 /**
@@ -34,6 +38,20 @@ export interface HealthMarker {
   testDate?: string;
   notes?: string;
   certified?: boolean;
+  name?: string; // Name of the health marker
+}
+
+/**
+ * Interface for compact genotype view props
+ */
+export interface CompactGenotypeViewProps {
+  genotype: DogGenotype;
+  showBreed?: boolean;
+  showColorTraits?: boolean;
+  showHealthTests?: boolean;
+  showTitle?: boolean;
+  showHealth?: boolean;
+  showColor?: boolean;
 }
 
 /**
@@ -77,4 +95,74 @@ export interface GeneticTraitResults {
   size: Record<string, string>;
   performance: Record<string, string>;
   behavior: Record<string, string>;
+}
+
+/**
+ * Interface for genetic import result
+ */
+export interface GeneticImportResult {
+  success: boolean;
+  dogId?: string;
+  genotypeId?: string;
+  message: string;
+  errors?: string[];
+}
+
+/**
+ * Interface for test result
+ */
+export interface TestResult {
+  name: string;
+  result: string;
+  date: string;
+}
+
+/**
+ * Interface for genetic health status
+ */
+export interface GeneticHealthStatus {
+  clear: string[];
+  carrier: string[];
+  atRisk: string[];
+  affected: string[];
+  unknown: string[];
+}
+
+/**
+ * Interface for health risk
+ */
+export interface HealthRisk {
+  status: string;
+  probability: number;
+}
+
+/**
+ * Interface for health warning
+ */
+export interface HealthWarning {
+  condition: string;
+  status: string;
+  description: string;
+  recommendation: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
+/**
+ * Interface for genetic pairing result
+ */
+export interface GeneticPairingResult {
+  inbreedingCoefficient: number;
+  colorProbabilities: ColorProbability[];
+  healthRisks: Record<string, HealthRisk>;
+  traits: GeneticTraitResults;
+}
+
+/**
+ * Interface for historical COI chart props
+ */
+export interface HistoricalCOIChartProps {
+  data: {
+    generation: number;
+    coi: number;
+  }[];
 }
