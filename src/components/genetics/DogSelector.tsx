@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Dog } from '@/types/dog';
+import { Dog, DogStatus } from '@/types/dog';
 
 interface DogSelectorProps {
   value?: string;
@@ -53,10 +53,11 @@ export const DogSelector: React.FC<DogSelectorProps> = ({
         throw error;
       }
       
-      // Map to ensure all dogs have required fields
+      // Map to ensure all dogs have required fields including status
       return (data || []).map(dog => ({
         ...dog,
-        created_at: dog.created_at || new Date().toISOString()
+        created_at: dog.created_at || new Date().toISOString(),
+        status: DogStatus.ACTIVE // Add default status as it's required by the Dog type
       })) as Dog[];
     }
   });
