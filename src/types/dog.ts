@@ -2,7 +2,7 @@
 /**
  * Dog-related type definitions
  */
-import { WeightUnit } from './common';
+import { WeightUnit } from './weight-units';
 
 // Gender enum for dogs
 export enum DogGender {

@@ -1,14 +1,25 @@
 
 /**
- * Re-export WeightRecord type from health module for backward compatibility
+ * Weight-related type definitions
  */
-import { WeightRecord as HealthModuleWeightRecord } from '@/modules/health/types';
 import { WeightUnit } from './weight-units';
 
 /**
- * Re-export WeightRecord type for backward compatibility
+ * Interface for weight record
  */
-export type WeightRecord = HealthModuleWeightRecord;
+export interface WeightRecord {
+  id: string;
+  dog_id?: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;
+  birth_date?: string;
+}
 
 /**
  * Growth statistics interface

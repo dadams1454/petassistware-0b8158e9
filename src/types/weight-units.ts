@@ -9,16 +9,6 @@
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
 /**
- * Enum for weight units (for compatibility with existing code)
- */
-export enum WeightUnitEnum {
-  OZ = 'oz',
-  G = 'g',
-  LB = 'lb',
-  KG = 'kg'
-}
-
-/**
  * Interface for weight unit information
  */
 export interface WeightUnitInfo {
@@ -27,6 +17,16 @@ export interface WeightUnitInfo {
   abbreviation: string;
   toGrams: number; // Conversion factor to grams
   precision: number; // Default decimal precision
+}
+
+/**
+ * Enum for weight units (for compatibility with existing code)
+ */
+export enum WeightUnitEnum {
+  OZ = 'oz',
+  G = 'g',
+  LB = 'lb',
+  KG = 'kg'
 }
 
 /**
@@ -57,7 +57,7 @@ export function standardizeWeightUnit(unit: string): WeightUnit {
     return 'oz';
   } else if (normalizedUnit === 'g' || normalizedUnit === 'gram' || normalizedUnit === 'grams') {
     return 'g';
-  } else if (normalizedUnit === 'lb' || normalizedUnit === 'pound' || normalizedUnit === 'pounds') {
+  } else if (normalizedUnit === 'lb' || normalizedUnit === 'pound' || normalizedUnit === 'pounds' || normalizedUnit === 'lbs') {
     return 'lb';
   } else if (normalizedUnit === 'kg' || normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') {
     return 'kg';

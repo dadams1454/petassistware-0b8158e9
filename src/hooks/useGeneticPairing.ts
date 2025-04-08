@@ -1,221 +1,223 @@
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DogGenotype, ColorProbability } from '@/types/genetics';
 import { 
-  calculateColorProbabilities, 
-  calculateHealthRisks, 
-  calculateInbreedingCoefficient 
+  ColorProbability, 
+  HealthSummary,
+  DogGenotype
+} from '@/types/genetics';
+import { 
+  calculateColorProbabilities,
+  calculateHealthRisks,
+  calculateInbreedingCoefficient
 } from '@/components/genetics/utils/geneticCalculations';
 
-export const useGeneticPairing = (sireId?: string, damId?: string) => {
-  const [sireGenotype, setSireGenotype] = useState<DogGenotype | null>(null);
-  const [damGenotype, setDamGenotype] = useState<DogGenotype | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  
-  const [colorProbabilities, setColorProbabilities] = useState<ColorProbability[]>([]);
-  const [healthRisks, setHealthRisks] = useState<Record<string, { status: string; probability: number }>>({});
-  const [inbreedingCoefficient, setInbreedingCoefficient] = useState<number | null>(null);
-  
+interface GeneticPairingData {
+  hasData: boolean;
+  isLoading: boolean;
+  error: Error | null;
+  sireGenotype: DogGenotype | null;
+  damGenotype: DogGenotype | null;
+  colorProbabilities: ColorProbability[];
+  healthRisks: Record<string, { status: string; probability: number }>;
+  inbreedingCoefficient: number;
+  compatibilityScore: number;
+  healthConcernCounts: {
+    atRisk: number;
+    carrier: number;
+    clear: number;
+    unknown: number;
+  };
+  healthSummary: HealthSummary;
+  recommendations: string[];
+}
+
+export const useGeneticPairing = (sireId: string, damId: string): GeneticPairingData => {
+  const [geneticData, setGeneticData] = useState<GeneticPairingData>({
+    hasData: false,
+    isLoading: true,
+    error: null,
+    sireGenotype: null,
+    damGenotype: null,
+    colorProbabilities: [],
+    healthRisks: {},
+    inbreedingCoefficient: 0,
+    compatibilityScore: 0,
+    healthConcernCounts: {
+      atRisk: 0,
+      carrier: 0,
+      clear: 0,
+      unknown: 0
+    },
+    healthSummary: {
+      atRiskCount: 0,
+      carrierCount: 0,
+      clearCount: 0,
+      unknownCount: 0,
+      totalTests: 0
+    },
+    recommendations: []
+  });
+
   // Fetch genetic data for both dogs
-  useEffect(() => {
-    const fetchGeneticData = async () => {
-      if (!sireId && !damId) return;
-      
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        // Fetch sire genotype if ID provided
-        if (sireId) {
-          const { data: sireData, error: sireError } = await supabase
-            .from('genetic_data')
-            .select('*')
-            .eq('dog_id', sireId)
-            .single();
-            
-          if (sireError) {
-            console.log('No genetic data found for sire, using default placeholder data');
-            // Use placeholder data instead of throwing an error
-            setSireGenotype({
-              dog_id: sireId,
-              baseColor: 'Black', // Placeholder for testing
-              brownDilution: 'Unknown',
-              dilution: 'Unknown',
-              healthMarkers: {},
-              breed: 'Unknown Breed'
-            });
-          } else {
-            const healthMarkers: Record<string, any> = {};
-            if (sireData?.health_results) {
-              Object.entries(sireData.health_results).forEach(([key, value]: [string, any]) => {
-                healthMarkers[key] = {
-                  name: key,
-                  status: value.status || 'unknown',
-                  testDate: value.test_date || new Date().toISOString().slice(0, 10)
-                };
-              });
-            }
-            
-            setSireGenotype({
-              dog_id: sireId,
-              baseColor: 'Black', // Placeholder for testing
-              brownDilution: 'Unknown',
-              dilution: 'Unknown',
-              healthMarkers,
-              breed: 'Unknown Breed',
-              ...sireData
-            });
-          }
-        }
-        
-        // Fetch dam genotype if ID provided
-        if (damId) {
-          const { data: damData, error: damError } = await supabase
-            .from('genetic_data')
-            .select('*')
-            .eq('dog_id', damId)
-            .single();
-            
-          if (damError) {
-            console.log('No genetic data found for dam, using default placeholder data');
-            // Use placeholder data instead of throwing an error
-            setDamGenotype({
-              dog_id: damId,
-              baseColor: 'Brown', // Placeholder for testing
-              brownDilution: 'Unknown',
-              dilution: 'Unknown',
-              healthMarkers: {},
-              breed: 'Unknown Breed'
-            });
-          } else {
-            const healthMarkers: Record<string, any> = {};
-            if (damData?.health_results) {
-              Object.entries(damData.health_results).forEach(([key, value]: [string, any]) => {
-                healthMarkers[key] = {
-                  name: key,
-                  status: value.status || 'unknown',
-                  testDate: value.test_date || new Date().toISOString().slice(0, 10)
-                };
-              });
-            }
-            
-            setDamGenotype({
-              dog_id: damId,
-              baseColor: 'Brown', // Placeholder for testing
-              brownDilution: 'Unknown',
-              dilution: 'Unknown',
-              healthMarkers,
-              breed: 'Unknown Breed',
-              ...damData
-            });
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching genetic data:', err);
-        setError(err instanceof Error ? err : new Error('Failed to fetch genetic data'));
-      } finally {
-        setIsLoading(false);
+  const { data: geneticDataFetched, isLoading, error } = useQuery({
+    queryKey: ['genetic-data', sireId, damId],
+    queryFn: async () => {
+      if (!sireId || !damId) {
+        return { sireGenotype: null, damGenotype: null };
       }
-    };
-    
-    fetchGeneticData();
-  }, [sireId, damId]);
-  
-  // Calculate genetic predictions when both genotypes are available
-  useEffect(() => {
-    if (sireGenotype && damGenotype) {
-      // Calculate color probabilities
-      try {
-        const colors = calculateColorProbabilities(sireGenotype, damGenotype);
-        setColorProbabilities(colors);
-      
-        // Calculate health risks
-        const risks = calculateHealthRisks(sireGenotype, damGenotype);
-        setHealthRisks(risks);
-      
-        // Calculate inbreeding coefficient
-        const coefficient = calculateInbreedingCoefficient(sireGenotype, damGenotype);
-        setInbreedingCoefficient(coefficient);
-      } catch (error) {
-        console.error("Error calculating genetic predictions:", error);
-        // Provide fallback data if calculation fails
-        setColorProbabilities([
-          { color: 'Black', probability: 0.4, hex: '#000000' },
-          { color: 'Brown', probability: 0.3, hex: '#964B00' },
-          { color: 'Golden', probability: 0.2, hex: '#FFD700' },
-          { color: 'Cream', probability: 0.1, hex: '#FFFDD0' }
-        ]);
-        
-        setHealthRisks({
-          'generic_health': { status: 'unknown', probability: 0 }
-        });
-        
-        setInbreedingCoefficient(0);
+
+      const { data: sireData, error: sireError } = await supabase
+        .from('genetic_data')
+        .select('*')
+        .eq('dog_id', sireId)
+        .single();
+
+      const { data: damData, error: damError } = await supabase
+        .from('genetic_data')
+        .select('*')
+        .eq('dog_id', damId)
+        .single();
+
+      if (sireError) {
+        console.error('Error fetching sire genetic data:', sireError);
       }
+
+      if (damError) {
+        console.error('Error fetching dam genetic data:', damError);
+      }
+
+      // Convert the data to our DogGenotype type
+      const sireGenotype = sireData ? {
+        dog_id: sireId,
+        id: sireData.id,
+        baseColor: sireData.base_color || 'unknown',
+        brownDilution: sireData.brown_dilution || 'unknown',
+        dilution: sireData.dilution || 'unknown',
+        agouti: sireData.agouti || 'unknown',
+        healthMarkers: sireData.health_markers || {},
+        updated_at: sireData.updated_at
+      } as DogGenotype : null;
+
+      const damGenotype = damData ? {
+        dog_id: damId,
+        id: damData.id,
+        baseColor: damData.base_color || 'unknown',
+        brownDilution: damData.brown_dilution || 'unknown',
+        dilution: damData.dilution || 'unknown',
+        agouti: damData.agouti || 'unknown',
+        healthMarkers: damData.health_markers || {},
+        updated_at: damData.updated_at
+      } as DogGenotype : null;
+
+      return { sireGenotype, damGenotype };
+    },
+    enabled: Boolean(sireId) && Boolean(damId),
+  });
+
+  useEffect(() => {
+    if (isLoading || error || !geneticDataFetched) {
+      // Still loading or error occurred
+      setGeneticData(prev => ({
+        ...prev,
+        isLoading,
+        error: error as Error | null,
+        hasData: false
+      }));
+      return;
     }
-  }, [sireGenotype, damGenotype]);
-  
-  // Get the count of health concerns
-  const getHealthConcernCounts = () => {
-    if (!healthRisks) return { atRisk: 0, carrier: 0, clear: 0 };
+
+    const { sireGenotype, damGenotype } = geneticDataFetched;
     
-    let atRisk = 0;
-    let carrier = 0;
-    let clear = 0;
+    // If we don't have both genotypes, we can't calculate compatibility
+    if (!sireGenotype || !damGenotype) {
+      setGeneticData(prev => ({
+        ...prev,
+        isLoading: false,
+        hasData: false,
+        sireGenotype,
+        damGenotype
+      }));
+      return;
+    }
+
+    // Calculate genetic compatibility
+    const colorProbabilities = calculateColorProbabilities(sireGenotype, damGenotype);
+    const healthRisks = calculateHealthRisks(sireGenotype, damGenotype);
+    const inbreedingCoefficient = calculateInbreedingCoefficient(sireGenotype, damGenotype);
     
+    // Calculate health concern counts
+    const healthConcernCounts = {
+      atRisk: 0,
+      carrier: 0,
+      clear: 0,
+      unknown: 0
+    };
+
     Object.values(healthRisks).forEach(risk => {
-      if (risk.status === 'at_risk' || risk.status === 'at risk') {
-        atRisk++;
+      if (risk.status === 'at_risk' || risk.status === 'affected') {
+        healthConcernCounts.atRisk++;
       } else if (risk.status === 'carrier') {
-        carrier++;
+        healthConcernCounts.carrier++;
       } else if (risk.status === 'clear') {
-        clear++;
+        healthConcernCounts.clear++;
+      } else {
+        healthConcernCounts.unknown++;
       }
     });
-    
-    return { atRisk, carrier, clear };
-  };
-  
-  // Calculate overall compatibility score (0-100)
-  const calculateCompatibilityScore = () => {
-    if (!sireGenotype || !damGenotype) return null;
-    
-    const { atRisk, carrier } = getHealthConcernCounts();
-    
-    // Base score
-    let score = 100;
-    
-    // Deduct for health risks
-    score -= atRisk * 15; // Major deduction for at-risk conditions
-    score -= carrier * 5;  // Minor deduction for carrier status
-    
-    // Deduct for inbreeding
-    if (inbreedingCoefficient) {
-      score -= inbreedingCoefficient * 100; // e.g., 0.0625 COI = -6.25 points
-    }
-    
-    return Math.max(0, Math.min(100, score));
-  };
-  
-  const compatibilityScore = calculateCompatibilityScore() ?? 85; // Fallback value
-  const healthConcernCounts = getHealthConcernCounts();
-  
-  return {
-    sireGenotype,
-    damGenotype,
-    isLoading,
-    error,
-    colorProbabilities: colorProbabilities.length > 0 ? colorProbabilities : [
-      { color: 'Unknown', probability: 1, hex: '#CCCCCC' }
-    ],
-    healthRisks: Object.keys(healthRisks).length > 0 ? healthRisks : {},
-    inbreedingCoefficient: inbreedingCoefficient || 0,
-    healthConcernCounts,
-    compatibilityScore,
-    hasData: Boolean(sireGenotype && damGenotype)
-  };
-};
 
-export default useGeneticPairing;
+    // Calculate compatibility score (simple version)
+    let compatibilityScore = 100;
+    
+    // Reduce score for each at-risk condition
+    compatibilityScore -= healthConcernCounts.atRisk * 20;
+    
+    // Reduce score for each carrier condition (but less than at-risk)
+    compatibilityScore -= healthConcernCounts.carrier * 5;
+    
+    // Reduce score for inbreeding coefficient
+    compatibilityScore -= Math.round(inbreedingCoefficient * 100);
+    
+    // Ensure score is between 0 and 100
+    compatibilityScore = Math.max(0, Math.min(100, compatibilityScore));
+
+    // Create health summary
+    const healthSummary: HealthSummary = {
+      atRiskCount: healthConcernCounts.atRisk,
+      carrierCount: healthConcernCounts.carrier,
+      clearCount: healthConcernCounts.clear,
+      unknownCount: healthConcernCounts.unknown,
+      totalTests: Object.keys(healthRisks).length
+    };
+
+    // Generate recommendations
+    const recommendations: string[] = [];
+    if (healthConcernCounts.atRisk > 0) {
+      recommendations.push('Consider genetic counseling before breeding this pair.');
+    }
+    if (inbreedingCoefficient > 0.125) {
+      recommendations.push('High inbreeding coefficient detected. Consider a different pairing to maintain genetic diversity.');
+    }
+    if (healthConcernCounts.carrier > 0) {
+      recommendations.push('Carrier status detected for some conditions. Monitor offspring for these traits.');
+    }
+
+    setGeneticData({
+      hasData: true,
+      isLoading: false,
+      error: null,
+      sireGenotype,
+      damGenotype,
+      colorProbabilities,
+      healthRisks,
+      inbreedingCoefficient,
+      compatibilityScore,
+      healthConcernCounts,
+      healthSummary,
+      recommendations
+    });
+  }, [isLoading, error, geneticDataFetched, sireId, damId]);
+
+  return geneticData;
+};

@@ -10,6 +10,7 @@ import {
   StoolConsistency,
   MedicationStatusResult
 } from './health-enums';
+import { WeightUnit } from './weight-units';
 
 // Health record interface
 export interface HealthRecord {
@@ -20,13 +21,13 @@ export interface HealthRecord {
   title?: string;
   date: string;
   visit_date?: string;
-  vet_name?: string;
   record_notes?: string;
   document_url?: string;
   created_at: string;
   updated_at?: string;
   next_due_date?: string;
   performed_by?: string;
+  vet_name?: string;
   
   // Vaccination-specific fields
   vaccine_name?: string;
@@ -141,3 +142,19 @@ export interface HealthAlert {
   resolved_at?: string;
   record_id?: string;
 }
+
+// Re-export WeightRecord here for backwards compatibility
+export { WeightUnit };
+export type WeightRecord = {
+  id: string;
+  dog_id: string;
+  puppy_id?: string;
+  weight: number;
+  weight_unit: WeightUnit;
+  date: string;
+  notes?: string;
+  percent_change?: number;
+  created_at: string;
+  age_days?: number;
+  birth_date?: string;
+};
