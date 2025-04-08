@@ -52,6 +52,7 @@ export interface CompactGenotypeViewProps {
   showTitle?: boolean;
   showHealth?: boolean;
   showColor?: boolean;
+  title?: string; // Added to fix errors
 }
 
 /**
@@ -108,6 +109,7 @@ export interface GeneticImportResult {
   errors?: string[];
   testsImported?: number;
   provider?: string;
+  importedTests?: string[]; // Added to fix errors
 }
 
 /**
@@ -120,9 +122,9 @@ export interface TestResult {
 }
 
 /**
- * Interface for genetic health status
+ * Type for genetic health status
  */
-export type GeneticHealthStatus = {
+export interface GeneticHealthStatus {
   clear: string[];
   carrier: string[];
   atRisk: string[];

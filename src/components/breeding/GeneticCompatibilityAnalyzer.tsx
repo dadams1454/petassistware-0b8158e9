@@ -15,11 +15,13 @@ import { useGeneticPairing } from '@/hooks/useGeneticPairing';
 interface GeneticCompatibilityAnalyzerProps {
   sireId: string;
   damId: string;
+  showHealthWarnings?: boolean;
 }
 
 const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityAnalyzerProps> = ({ 
-  sireId,
-  damId 
+  sireId, 
+  damId,
+  showHealthWarnings = false
 }) => {
   const { 
     sireGenotype,

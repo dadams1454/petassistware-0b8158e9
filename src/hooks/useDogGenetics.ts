@@ -26,8 +26,9 @@ export const useDogGenetics = (dogId: string) => {
             baseColor: 'Unknown',
             brownDilution: 'Unknown',
             dilution: 'Unknown',
+            agouti: 'Unknown', // Added missing required property
             healthMarkers: {},
-            updated_at: new Date().toISOString() // Adding updated_at
+            updated_at: new Date().toISOString()
           });
         } else {
           setGeneticData(data);
@@ -44,8 +45,9 @@ export const useDogGenetics = (dogId: string) => {
           baseColor: 'Unknown',
           brownDilution: 'Unknown',
           dilution: 'Unknown',
+          agouti: 'Unknown', // Added missing required property
           healthMarkers: {},
-          updated_at: new Date().toISOString() // Adding updated_at
+          updated_at: new Date().toISOString()
         });
       } finally {
         setLoading(false);

@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DogSelector } from '@/components/genetics/DogSelector';
 import { useToast } from '@/hooks/use-toast';
 import { Dna } from 'lucide-react';
-import { GeneticCompatibilityAnalyzer } from '@/components/genetics/GeneticCompatibilityAnalyzer';
+import GeneticCompatibilityAnalyzer from '@/components/breeding/GeneticCompatibilityAnalyzer';
 
 interface RecordBreedingDialogProps {
   open: boolean;
