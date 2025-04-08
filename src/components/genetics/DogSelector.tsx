@@ -39,7 +39,7 @@ export const DogSelector: React.FC<DogSelectorProps> = ({
     queryFn: async () => {
       let query = supabase
         .from('dogs')
-        .select('id, name, breed, gender, color, microchip_number, status, created_at')
+        .select('id, name, breed, gender, color, microchip_number, created_at')
         .order('name');
       
       if (effectiveGenderFilter) {
@@ -53,10 +53,9 @@ export const DogSelector: React.FC<DogSelectorProps> = ({
         throw error;
       }
       
-      // Ensure all required fields are present in every dog
+      // Map to ensure all dogs have required fields
       return (data || []).map(dog => ({
         ...dog,
-        status: dog.status || 'active',
         created_at: dog.created_at || new Date().toISOString()
       })) as Dog[];
     }
