@@ -2,6 +2,7 @@
 // Export standard types from core type definitions
 export type { WeightUnit, WeightUnitInfo } from './weight-units';
 export { 
+  WeightUnitEnum,  // Re-add this export
   weightUnitInfos, 
   standardizeWeightUnit,
   getWeightUnitInfo
