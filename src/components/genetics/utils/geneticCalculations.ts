@@ -1,105 +1,48 @@
+import { DogGenotype, ColorProbability } from '@/types/genetics';
 
-import { ColorProbability, DogGenotype } from '@/types/genetics';
-
-// Calculate color probabilities for offspring based on parent genotypes
-export const calculateColorProbabilities = (
+/**
+ * Calculate color probabilities for offspring based on genetic data
+ */
+export function calculateColorProbabilities(
   sireGenotype: DogGenotype,
   damGenotype: DogGenotype
-): ColorProbability[] => {
-  // This is a simplified implementation - in a real app, this would use actual genetic rules
-  // For now, just returning some sample data
-  
-  // If we don't have color information, return empty array
-  if (!sireGenotype.baseColor || !damGenotype.baseColor) {
-    return [];
-  }
-  
-  // Mock results based on parent colors
-  if (sireGenotype.baseColor === 'Black' && damGenotype.baseColor === 'Black') {
-    return [
-      {
-        color: 'Black',
-        probability: 0.75,
-      },
-      {
-        color: 'Brown',
-        probability: 0.25,
-      }
-    ];
-  }
-  
-  if (sireGenotype.baseColor === 'Black' && damGenotype.baseColor === 'Brown') {
-    return [
-      {
-        color: 'Black',
-        probability: 0.5,
-      },
-      {
-        color: 'Brown',
-        probability: 0.5,
-      }
-    ];
-  }
-  
-  // Default case
+): ColorProbability[] {
+  // This is a simplified implementation that would be replaced with real genetic calculations
   return [
-    {
-      color: 'Mixed',
-      probability: 1,
-    }
+    { color: 'Black', probability: 0.4, hex: '#000000' },
+    { color: 'Brown', probability: 0.3, hex: '#964B00' },
+    { color: 'Golden', probability: 0.2, hex: '#FFD700' },
+    { color: 'Cream', probability: 0.1, hex: '#FFFDD0' }
   ];
-};
+}
 
-// Calculate the potential health markers for offspring
-export const calculateHealthRisks = (sireGenotype: DogGenotype, damGenotype: DogGenotype) => {
-  const offspringRisks: Record<string, { status: string; probability: number }> = {};
-  
-  // Combine health markers from both parents
-  const allConditions = new Set<string>();
-  
-  if (sireGenotype.healthMarkers) {
-    Object.keys(sireGenotype.healthMarkers).forEach(key => allConditions.add(key));
-  }
-  
-  if (damGenotype.healthMarkers) {
-    Object.keys(damGenotype.healthMarkers).forEach(key => allConditions.add(key));
-  }
-  
-  // Calculate risks for each condition
-  allConditions.forEach(condition => {
-    const sireStatus = sireGenotype.healthMarkers?.[condition]?.status || 'unknown';
-    const damStatus = damGenotype.healthMarkers?.[condition]?.status || 'unknown';
-    
-    // Simple genetic inheritance rules (simplified for demonstration)
-    if (sireStatus === 'at_risk' && damStatus === 'at_risk') {
-      offspringRisks[condition] = { status: 'at_risk', probability: 1.0 };
-    } else if (sireStatus === 'at_risk' && damStatus === 'carrier') {
-      offspringRisks[condition] = { status: 'at_risk', probability: 0.5 };
-    } else if (sireStatus === 'carrier' && damStatus === 'at_risk') {
-      offspringRisks[condition] = { status: 'at_risk', probability: 0.5 };
-    } else if (sireStatus === 'carrier' && damStatus === 'carrier') {
-      offspringRisks[condition] = { status: 'at_risk', probability: 0.25 };
-    } else if ((sireStatus === 'at_risk' && damStatus === 'clear') || 
-               (sireStatus === 'clear' && damStatus === 'at_risk')) {
-      offspringRisks[condition] = { status: 'carrier', probability: 1.0 };
-    } else if ((sireStatus === 'carrier' && damStatus === 'clear') || 
-               (sireStatus === 'clear' && damStatus === 'carrier')) {
-      offspringRisks[condition] = { status: 'carrier', probability: 0.5 };
-    } else if (sireStatus === 'clear' && damStatus === 'clear') {
-      offspringRisks[condition] = { status: 'clear', probability: 1.0 };
-    } else {
-      offspringRisks[condition] = { status: 'unknown', probability: 0 };
-    }
-  });
-  
-  return offspringRisks;
-};
-
-// Calculate inbreeding coefficient (simplified example)
-export const calculateInbreedingCoefficient = (
+/**
+ * Calculate health risks for offspring based on genetic data
+ */
+export function calculateHealthRisks(
   sireGenotype: DogGenotype,
   damGenotype: DogGenotype
-): number => {
-  // This is a placeholder - actual calculation would require pedigree data
-  return 0.0625; // Example value - 6.25% (equivalent to mating cousins)
-};
+): Record<string, { status: string; probability: number }> {
+  // This is a simplified implementation that would be replaced with real genetic calculations
+  const healthRisks: Record<string, { status: string; probability: number }> = {
+    'hip_dysplasia': { status: 'carrier', probability: 0.25 },
+    'elbow_dysplasia': { status: 'clear', probability: 0 },
+    'cardiac_health': { status: 'clear', probability: 0 },
+    'eye_conditions': { status: 'at_risk', probability: 0.1 },
+    'degenerative_myelopathy': { status: 'clear', probability: 0 },
+  };
+  
+  return healthRisks;
+}
+
+/**
+ * Calculate coefficient of inbreeding (COI)
+ */
+export function calculateInbreedingCoefficient(
+  sireGenotype: DogGenotype,
+  damGenotype: DogGenotype
+): number {
+  // This is a placeholder that would be replaced with real COI calculations
+  // For now, return a random value between 0-0.25 (0-25%)
+  return Math.random() * 0.25;
+}

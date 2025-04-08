@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import PageContainer from '@/components/common/PageContainer';
 import BackButton from '@/components/common/BackButton';
-import DogSelector from '@/components/litters/form/DogSelector';
+import DogSelector from '@/components/genetics/DogSelector';
 import GeneticCompatibilityAnalyzer from '@/components/breeding/GeneticCompatibilityAnalyzer';
 import PairingHealthSummary from '@/components/breeding/PairingHealthSummary';
 import PairingColorAnalysis from '@/components/breeding/PairingColorAnalysis';
@@ -47,23 +47,21 @@ const BreedingGeneticAnalysisPage: React.FC = () => {
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium mb-2">Sire (Male)</label>
-                <DogSelector
-                  form={{ getValues: () => sireId, control: { name: 'sireId' } } as any}
-                  name="sireId"
-                  label=""
-                  filterGender="Male"
+                <DogSelector 
+                  value={sireId}
                   onChange={setSireId}
+                  placeholder="Select sire"
+                  genderFilter="Male"
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium mb-2">Dam (Female)</label>
-                <DogSelector
-                  form={{ getValues: () => damId, control: { name: 'damId' } } as any}
-                  name="damId"
-                  label=""
-                  filterGender="Female"
+                <DogSelector 
+                  value={damId}
                   onChange={setDamId}
+                  placeholder="Select dam"
+                  genderFilter="Female"
                 />
               </div>
             </div>
