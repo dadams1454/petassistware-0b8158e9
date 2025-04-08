@@ -1,113 +1,148 @@
 
 /**
- * Hook for calculating weight statistics and trends
+ * Hook for calculating weight statistics
  */
 import { useMemo } from 'react';
 import { WeightRecord, GrowthStats } from '../types';
 import { WeightUnit } from '@/types/weight-units';
-import { 
-  convertWeight, 
-  calculatePercentChange, 
-  getAppropriateWeightUnit 
-} from '@/utils/weightConversion';
+import { convertWeight, calculatePercentChange } from '@/utils/weightConversion';
 
 /**
- * Calculate growth statistics from weight records
+ * Hook to calculate weight statistics based on weight records
  * 
- * @param weightRecords The array of weight records
- * @param preferredUnit The preferred weight unit for display
+ * @param weightRecords Array of weight records
+ * @param preferredUnit Preferred unit for weight display
  * @returns Growth statistics
  */
 export const useWeightStats = (
-  weightRecords: WeightRecord[] = [],
+  weightRecords: WeightRecord[],
   preferredUnit?: WeightUnit
-): GrowthStats | null => {
+): GrowthStats => {
   return useMemo(() => {
     if (!weightRecords || weightRecords.length === 0) {
-      return null;
+      return {
+        percentChange: 0,
+      };
     }
-
-    // Sort records by date (most recent first)
-    const sortedRecords = [...weightRecords].sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    });
-
-    // Get latest and previous records
-    const latestRecord = sortedRecords[0];
-    const previousRecord = sortedRecords.length > 1 ? sortedRecords[1] : null;
     
-    // Calculate percentage change
-    const percentChange = previousRecord 
-      ? calculatePercentChange(
-          convertWeight(previousRecord.weight, previousRecord.weight_unit, latestRecord.weight_unit),
-          latestRecord.weight
-        )
-      : 0;
+    // Sort records by date (oldest to newest for calculations)
+    const sortedRecords = [...weightRecords].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     
-    // Get the appropriate display unit if not specified
-    const displayUnit = preferredUnit || getAppropriateWeightUnit(latestRecord.weight, latestRecord.weight_unit);
+    const firstRecord = sortedRecords[0];
+    const latestRecord = sortedRecords[sortedRecords.length - 1];
     
-    // Calculate growth rate over the past week (if enough data points)
+    // Get unit to use (either preferred unit or unit from latest record)
+    const unit = preferredUnit || latestRecord.weight_unit;
+    
+    // Convert weights to the same unit for comparison
+    const firstWeight = convertWeight(
+      firstRecord.weight, 
+      firstRecord.weight_unit, 
+      unit
+    );
+    
+    const latestWeight = convertWeight(
+      latestRecord.weight, 
+      latestRecord.weight_unit, 
+      unit
+    );
+    
+    // Calculate overall percent change
+    const percentChange = calculatePercentChange(firstWeight, latestWeight);
+    
+    // Calculate growth rate (gain per day)
+    let growthRate = 0;
     let averageGrowthRate = 0;
-    let totalGrowth = 0;
-    let lastWeekGrowth = 0;
     
     if (sortedRecords.length > 1) {
-      // Calculate total growth
-      const oldestRecord = sortedRecords[sortedRecords.length - 1];
-      const oldestWeight = convertWeight(
-        oldestRecord.weight,
-        oldestRecord.weight_unit,
-        displayUnit
-      );
+      const firstDate = new Date(firstRecord.date);
+      const latestDate = new Date(latestRecord.date);
+      const daysDiff = (latestDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
       
-      const latestWeight = convertWeight(
-        latestRecord.weight,
-        latestRecord.weight_unit,
-        displayUnit
-      );
-      
-      totalGrowth = calculatePercentChange(oldestWeight, latestWeight);
-      
-      // Calculate days between first and last record
-      const daysDiff = (
-        new Date(latestRecord.date).getTime() - 
-        new Date(oldestRecord.date).getTime()
-      ) / (1000 * 60 * 60 * 24);
-      
-      // Calculate average daily growth rate
-      averageGrowthRate = daysDiff > 0 ? totalGrowth / daysDiff : 0;
-      
-      // Calculate growth over the past week
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      
-      const weekRecords = sortedRecords.filter(
-        record => new Date(record.date) >= oneWeekAgo
-      );
-      
-      if (weekRecords.length > 1) {
-        const oldestWeekRecord = weekRecords[weekRecords.length - 1];
-        const oldestWeekWeight = convertWeight(
-          oldestWeekRecord.weight,
-          oldestWeekRecord.weight_unit,
-          displayUnit
-        );
+      if (daysDiff > 0) {
+        growthRate = (latestWeight - firstWeight) / daysDiff;
         
-        lastWeekGrowth = calculatePercentChange(oldestWeekWeight, latestWeight);
+        // Calculate average daily growth rate
+        let totalDailyGrowth = 0;
+        let totalDays = 0;
+        
+        for (let i = 1; i < sortedRecords.length; i++) {
+          const prevRecord = sortedRecords[i - 1];
+          const currRecord = sortedRecords[i];
+          
+          const prevWeight = convertWeight(
+            prevRecord.weight, 
+            prevRecord.weight_unit, 
+            unit
+          );
+          
+          const currWeight = convertWeight(
+            currRecord.weight, 
+            currRecord.weight_unit, 
+            unit
+          );
+          
+          const prevDate = new Date(prevRecord.date);
+          const currDate = new Date(currRecord.date);
+          const days = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+          
+          if (days > 0) {
+            totalDailyGrowth += (currWeight - prevWeight) / days;
+            totalDays++;
+          }
+        }
+        
+        if (totalDays > 0) {
+          averageGrowthRate = totalDailyGrowth / totalDays;
+        }
       }
     }
     
-    // Create result object
+    // Calculate recent growth (last week)
+    let lastWeekGrowth = 0;
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const recentRecords = sortedRecords.filter(
+      record => new Date(record.date) >= oneWeekAgo
+    );
+    
+    if (recentRecords.length > 1) {
+      const firstRecentRecord = recentRecords[0];
+      const latestRecentRecord = recentRecords[recentRecords.length - 1];
+      
+      const firstRecentWeight = convertWeight(
+        firstRecentRecord.weight, 
+        firstRecentRecord.weight_unit, 
+        unit
+      );
+      
+      const latestRecentWeight = convertWeight(
+        latestRecentRecord.weight, 
+        latestRecentRecord.weight_unit, 
+        unit
+      );
+      
+      lastWeekGrowth = latestRecentWeight - firstRecentWeight;
+    }
+    
+    // Simple projection (if growth continues at the same rate)
+    const projectedWeight = growthRate > 0 ? 
+      latestWeight + (growthRate * 30) : // Project 30 days
+      undefined;
+    
     return {
       percentChange,
       averageGrowthRate,
-      totalGrowth,
+      projectedWeight,
+      growthRate,
       lastWeekGrowth,
-      growthRate: averageGrowthRate,
+      totalGrowth: latestWeight - firstWeight,
       currentWeight: {
-        value: convertWeight(latestRecord.weight, latestRecord.weight_unit, displayUnit),
-        unit: displayUnit,
+        value: latestWeight,
+        unit,
         date: latestRecord.date
       }
     };

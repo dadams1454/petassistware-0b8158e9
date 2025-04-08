@@ -1,102 +1,68 @@
 
 /**
- * Weight Units type definitions
+ * Standardized weight unit definitions
  */
 
-// WeightUnit as a string union type for flexibility
+/**
+ * Weight unit type as a string union
+ */
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
-// WeightUnit as an enum for type safety
+/**
+ * Enum for weight units (for compatibility with existing code)
+ */
 export enum WeightUnitEnum {
-  OUNCES = 'oz',
-  GRAMS = 'g',
-  POUNDS = 'lb',
-  KILOGRAMS = 'kg'
+  OZ = 'oz',
+  G = 'g',
+  LB = 'lb',
+  KG = 'kg'
 }
 
-// Interface for additional weight unit metadata
+/**
+ * Interface for weight unit information
+ */
 export interface WeightUnitInfo {
   unit: WeightUnit;
-  fullName: string;
-  displayName: string;
-  conversionToGrams: number;
-  isMassUnit: boolean;
-  isMetric: boolean;
-  decimalPlaces: number;
-  label?: string;
+  label: string;
+  abbreviation: string;
+  toGrams: number; // Conversion factor to grams
+  precision: number; // Default decimal precision
 }
 
-// Weight unit information lookup
-export const weightUnitInfos: Record<WeightUnit, WeightUnitInfo> = {
-  'oz': {
-    unit: 'oz',
-    fullName: 'ounces',
-    displayName: 'oz',
-    conversionToGrams: 28.3495,
-    isMassUnit: true,
-    isMetric: false,
-    decimalPlaces: 1,
-    label: 'Ounces (oz)'
-  },
-  'g': {
-    unit: 'g',
-    fullName: 'grams',
-    displayName: 'g',
-    conversionToGrams: 1,
-    isMassUnit: true,
-    isMetric: true,
-    decimalPlaces: 0,
-    label: 'Grams (g)'
-  },
-  'lb': {
-    unit: 'lb',
-    fullName: 'pounds',
-    displayName: 'lb',
-    conversionToGrams: 453.592,
-    isMassUnit: true,
-    isMetric: false,
-    decimalPlaces: 1,
-    label: 'Pounds (lb)'
-  },
-  'kg': {
-    unit: 'kg',
-    fullName: 'kilograms',
-    displayName: 'kg',
-    conversionToGrams: 1000,
-    isMassUnit: true,
-    isMetric: true,
-    decimalPlaces: 1,
-    label: 'Kilograms (kg)'
-  }
-};
+/**
+ * Weight unit information array
+ */
+export const weightUnitInfos: WeightUnitInfo[] = [
+  { unit: 'oz', label: 'Ounces', abbreviation: 'oz', toGrams: 28.3495, precision: 1 },
+  { unit: 'g', label: 'Grams', abbreviation: 'g', toGrams: 1, precision: 0 },
+  { unit: 'lb', label: 'Pounds', abbreviation: 'lb', toGrams: 453.592, precision: 2 },
+  { unit: 'kg', label: 'Kilograms', abbreviation: 'kg', toGrams: 1000, precision: 2 }
+];
 
-// Helper function to get weight unit info
-export function getWeightUnitInfo(unit: string | WeightUnit): WeightUnitInfo {
-  const standardUnit = standardizeWeightUnit(unit);
-  return weightUnitInfos[standardUnit];
+/**
+ * Get weight unit information for a specific unit
+ */
+export function getWeightUnitInfo(unit: WeightUnit): WeightUnitInfo {
+  const info = weightUnitInfos.find(info => info.unit === unit);
+  return info || weightUnitInfos[0]; // Default to oz if not found
 }
 
-// Helper function to standardize weight unit strings
-export function standardizeWeightUnit(unit: string | WeightUnit): WeightUnit {
-  const normalizedUnit = String(unit).toLowerCase().trim();
+/**
+ * Standardize a weight unit value to ensure it's a valid WeightUnit
+ */
+export function standardizeWeightUnit(unit: string): WeightUnit {
+  const normalizedUnit = String(unit).toLowerCase();
   
-  // Direct matches
   if (normalizedUnit === 'oz' || normalizedUnit === 'ounce' || normalizedUnit === 'ounces') {
     return 'oz';
-  }
-  
-  if (normalizedUnit === 'g' || normalizedUnit === 'gram' || normalizedUnit === 'grams') {
+  } else if (normalizedUnit === 'g' || normalizedUnit === 'gram' || normalizedUnit === 'grams') {
     return 'g';
-  }
-  
-  if (normalizedUnit === 'lb' || normalizedUnit === 'pound' || normalizedUnit === 'pounds') {
+  } else if (normalizedUnit === 'lb' || normalizedUnit === 'pound' || normalizedUnit === 'pounds') {
     return 'lb';
-  }
-  
-  if (normalizedUnit === 'kg' || normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') {
+  } else if (normalizedUnit === 'kg' || normalizedUnit === 'kilogram' || normalizedUnit === 'kilograms') {
     return 'kg';
   }
   
-  // Default to pounds if unknown
+  // Default to pounds if unrecognized
   return 'lb';
 }

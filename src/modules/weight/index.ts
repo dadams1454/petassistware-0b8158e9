@@ -13,11 +13,13 @@ export * from './types';
 export * from './hooks/useWeightRecords';
 export * from './hooks/useWeightStats';
 export * from './hooks/useWeightData';
+export * from './hooks/useWeightEntryForm';
 
 // Re-export utility functions from main utils to maintain API consistency
 export { 
   convertWeight, 
   calculatePercentChange, 
   formatWeight, 
-  getAppropriateWeightUnit 
+  getAppropriateWeightUnit,
+  convertWeightToGrams
 } from '@/utils/weightConversion';

@@ -1,4 +1,7 @@
 
+/**
+ * Re-export WeightRecord type from health module for backward compatibility
+ */
 import { WeightRecord as HealthModuleWeightRecord } from '@/modules/health/types';
 import { WeightUnit } from './weight-units';
 

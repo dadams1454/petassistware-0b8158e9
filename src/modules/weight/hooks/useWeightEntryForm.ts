@@ -1,128 +1,121 @@
 
+/**
+ * Hook for weight entry form
+ */
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { WeightUnit } from '@/types/weight-units';
-import { formatDateToYYYYMMDD } from '@/utils/dateUtils';
-import { WeightRecord } from '@/types/weight';
-import { calculatePercentChange } from '@/utils/weightConversion';
-import { useLoading } from '@/contexts/dailyCare/hooks/useLoading';
+import { calculateAgeInDays } from '@/modules/puppies/utils/puppyAgeCalculator';
 
-// Schema for weight entry form
+// Form values interface
+export interface WeightEntryValues {
+  weight: number;
+  unit: WeightUnit;
+  date: Date;
+  notes?: string;
+}
+
+// Zod schema for validation
 const weightEntrySchema = z.object({
-  date: z.date({
-    required_error: 'Date is required',
-  }).refine(date => date <= new Date(), {
-    message: 'Date cannot be in the future',
-  }),
-  weight: z.coerce.number({
-    required_error: 'Weight is required',
-    invalid_type_error: 'Weight must be a number',
-  }).positive({
-    message: 'Weight must be greater than 0',
-  }),
-  unit: z.enum(['oz', 'g', 'lb', 'kg']).default('lb'),
+  weight: z.number()
+    .positive('Weight must be positive')
+    .min(0.01, 'Weight must be greater than 0')
+    .max(999, 'Weight must be less than 1000'),
+  unit: z.enum(['oz', 'g', 'lb', 'kg'] as const),
+  date: z.date()
+    .max(new Date(), 'Date cannot be in the future'),
   notes: z.string().optional(),
 });
 
-// Export the inferred type from our schema
-export type WeightEntryValues = z.infer<typeof weightEntrySchema>;
-
-// Props for the useWeightEntryForm hook
-export interface UseWeightEntryFormProps {
+// Hook props
+interface UseWeightEntryFormProps {
   dogId?: string;
   puppyId?: string;
   birthDate?: string;
-  previousWeight?: { weight: number; unit: WeightUnit };
-  onSave: (data: Partial<WeightRecord>) => Promise<any>;
-  initialData?: Partial<WeightEntryValues>;
-}
-
-// Return type for the useWeightEntryForm hook
-export interface UseWeightEntryFormResult {
-  form: ReturnType<typeof useForm<WeightEntryValues>>;
-  isSubmitting: boolean;
-  handleSubmit: () => void;
+  initialValues?: Partial<WeightEntryValues>;
+  onSubmit: (data: WeightEntryValues) => Promise<any>;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
 }
 
 /**
- * Custom hook for weight entry form handling with proper typing
- * 
- * @param {UseWeightEntryFormProps} props Configuration options for the hook
- * @returns {UseWeightEntryFormResult} Form controller and helper functions
+ * Hook for weight entry form with validation
  */
-export const useWeightEntryForm = ({ 
-  dogId, 
-  puppyId, 
+export const useWeightEntryForm = ({
+  dogId,
+  puppyId,
   birthDate,
-  previousWeight,
-  onSave, 
-  initialData 
-}: UseWeightEntryFormProps): UseWeightEntryFormResult => {
-  const { loading: isSubmitting, withLoading } = useLoading();
+  initialValues = {},
+  onSubmit,
+  onSuccess,
+  onError
+}: UseWeightEntryFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Create form with default values
   const form = useForm<WeightEntryValues>({
     resolver: zodResolver(weightEntrySchema),
     defaultValues: {
-      date: initialData?.date || new Date(),
-      weight: initialData?.weight || 0,
-      unit: initialData?.unit || 'lb',
-      notes: initialData?.notes || '',
-    }
+      weight: initialValues.weight || 0,
+      unit: initialValues.unit || 'lb',
+      date: initialValues.date || new Date(),
+      notes: initialValues.notes || '',
+    },
   });
   
-  const handleSubmit = async (values: WeightEntryValues): Promise<boolean> => {
+  // Handle form submission
+  const handleSubmit = async (values: WeightEntryValues) => {
     try {
-      // Format the data for the API, safely converting Date to string
-      const formattedDate = values.date instanceof Date 
-        ? formatDateToYYYYMMDD(values.date) 
-        : new Date().toISOString().split('T')[0];
+      setIsSubmitting(true);
       
-      // Calculate percent change if previous weight exists
-      let percentChange: number | undefined = undefined;
-      
-      if (previousWeight) {
-        percentChange = calculatePercentChange(
-          previousWeight.weight,
-          values.weight
-        );
-      }
-      
-      // Include age_days if birthDate is available
-      let ageDays: number | undefined = undefined;
-      
+      // Calculate age in days if birth date is provided
+      let ageInDays: number | undefined;
       if (birthDate) {
-        const recordDate = values.date instanceof Date 
-          ? values.date 
-          : new Date();
-        const birthDateObj = new Date(birthDate);
-        ageDays = Math.floor((recordDate.getTime() - birthDateObj.getTime()) / (1000 * 60 * 60 * 24));
+        ageInDays = calculateAgeInDays(birthDate);
       }
       
-      const weightRecord: Partial<WeightRecord> = {
+      // Format data for submission
+      const formattedData = {
         dog_id: dogId,
         puppy_id: puppyId,
-        date: formattedDate,
         weight: values.weight,
         weight_unit: values.unit,
-        notes: values.notes,
-        percent_change: percentChange,
-        age_days: ageDays,
-        birth_date: birthDate
+        date: values.date.toISOString().split('T')[0],
+        notes: values.notes || null,
+        birth_date: birthDate,
+        age_days: ageInDays
       };
       
-      await onSave(weightRecord);
-      return true;
+      // Submit the data
+      await onSubmit(values);
+      
+      // Reset form
+      form.reset({
+        weight: 0,
+        unit: values.unit, // Keep the unit
+        date: new Date(),
+        notes: '',
+      });
+      
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      console.error('Error saving weight record:', error);
-      return false;
+      console.error('Error submitting weight entry:', error);
+      if (onError && error instanceof Error) {
+        onError(error);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
   return {
     form,
     isSubmitting,
-    handleSubmit: form.handleSubmit((values) => withLoading(() => handleSubmit(values)))
+    handleSubmit: form.handleSubmit(handleSubmit),
   };
 };
