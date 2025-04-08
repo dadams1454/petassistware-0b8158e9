@@ -1,275 +1,157 @@
 
-import React, { useEffect, useState } from 'react';
-import { useDogGenetics } from '@/hooks/useDogGenetics';
-import { HealthWarningCard } from './HealthWarningCard';
-import { HealthWarning } from '@/types/genetics';
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { 
+  CheckCircle, 
+  AlertTriangle, 
+  AlertCircle, 
+  Dna, 
+  Info 
+} from 'lucide-react';
+import { useGeneticPairing } from '@/hooks/useGeneticPairing';
 
-// TypeScript interfaces
-interface GeneticCompatibilityProps {
+interface GeneticCompatibilityAnalyzerProps {
   sireId: string;
   damId: string;
-  showProbabilities?: boolean;
   showHealthWarnings?: boolean;
 }
 
-interface CompatibilityAnalysis {
-  coi: number;
-  healthWarnings: HealthWarning[];
-  compatibleTests: string[];
-  incompatibleTests: string[];
-}
-
-export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityProps> = ({
+export const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityAnalyzerProps> = ({ 
   sireId,
   damId,
-  showProbabilities = true,
-  showHealthWarnings = true
+  showHealthWarnings = false
 }) => {
-  const { geneticData: sireGenetics, loading: sireLoading } = useDogGenetics(sireId);
-  const { geneticData: damGenetics, loading: damLoading } = useDogGenetics(damId);
-  const [analysis, setAnalysis] = useState<CompatibilityAnalysis | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    // Reset loading state when dog IDs change
-    setIsLoading(true);
-    
-    // Only proceed when both dogs' genetic data is loaded
-    if (!sireLoading && !damLoading && sireGenetics && damGenetics) {
-      // Perform compatibility analysis
-      const compatibilityAnalysis = analyzeGeneticCompatibility(sireGenetics, damGenetics);
-      setAnalysis(compatibilityAnalysis);
-      setIsLoading(false);
-    }
-  }, [sireId, damId, sireGenetics, damGenetics, sireLoading, damLoading]);
-  
-  // Helper function to analyze genetic compatibility
-  function analyzeGeneticCompatibility(sireGenetics: any, damGenetics: any): CompatibilityAnalysis {
-    // Start with empty results
-    const healthWarnings: HealthWarning[] = [];
-    const compatibleTests: string[] = [];
-    const incompatibleTests: string[] = [];
-    
-    // Calculate coefficient of inbreeding (COI)
-    // This would typically come from a more complex pedigree analysis
-    // For now, we'll use a placeholder value
-    const coi = calculateCOI(sireGenetics, damGenetics);
-    
-    // Check for health condition carrier status
-    for (const [condition, sireMarker] of Object.entries(sireGenetics.healthMarkers)) {
-      // Type assertion to access status property
-      const sireStatus = (sireMarker as any).status;
-      
-      // Check if both dogs have data for this condition
-      if (damGenetics.healthMarkers[condition]) {
-        const damMarker = damGenetics.healthMarkers[condition];
-        const damStatus = (damMarker as any).status;
-        
-        // Add to compatible tests list if both are clear
-        if (sireStatus === 'clear' && damStatus === 'clear') {
-          compatibleTests.push(condition);
-        }
-        
-        // Check for carrier × carrier scenarios
-        if (sireStatus === 'carrier' && damStatus === 'carrier') {
-          healthWarnings.push({
-            title: `${condition} Risk`,
-            condition,
-            description: `Both parents are carriers for ${condition}`,
-            action: 'Consider selecting different breeding pair',
-            severity: 'high',
-            riskLevel: 'critical',
-            affectedPercentage: 25
-          });
-          incompatibleTests.push(condition);
-        }
-        
-        // Check for affected × carrier scenarios
-        if ((sireStatus === 'affected' && damStatus === 'carrier') ||
-            (sireStatus === 'carrier' && damStatus === 'affected')) {
-          healthWarnings.push({
-            title: `${condition} Risk`,
-            condition,
-            description: `One parent is affected and one is a carrier for ${condition}`,
-            action: 'Avoid this breeding pair',
-            severity: 'critical',
-            riskLevel: 'high',
-            affectedPercentage: 50
-          });
-          incompatibleTests.push(condition);
-        }
-        
-        // Check for affected × affected scenarios
-        if (sireStatus === 'affected' && damStatus === 'affected') {
-          healthWarnings.push({
-            title: `${condition} Risk`,
-            condition,
-            description: `Both parents are affected with ${condition}`,
-            action: 'Do not breed these dogs',
-            severity: 'critical',
-            riskLevel: 'critical',
-            affectedPercentage: 100
-          });
-          incompatibleTests.push(condition);
-        }
-      }
-    }
-    
-    // Check COI level for warnings
-    if (coi > 12.5) {
-      healthWarnings.push({
-        title: 'High Inbreeding',
-        condition: 'High Inbreeding',
-        description: `COI of ${coi.toFixed(1)}% exceeds recommended maximum (12.5%)`,
-        action: 'Select breeding pair with lower COI',
-        severity: 'high',
-        riskLevel: 'high'
-      });
-    } else if (coi > 6.25) {
-      healthWarnings.push({
-        title: 'Moderate Inbreeding',
-        condition: 'Moderate Inbreeding',
-        description: `COI of ${coi.toFixed(1)}% is above ideal level (6.25%)`,
-        action: 'Consider genetic diversity in future breeding decisions',
-        severity: 'medium',
-        riskLevel: 'medium'
-      });
-    }
-    
-    return {
-      coi,
-      healthWarnings,
-      compatibleTests,
-      incompatibleTests
-    };
-  }
-  
-  // Helper function to calculate COI
-  // In a real implementation, this would analyze the full pedigree
-  function calculateCOI(sireGenetics: any, damGenetics: any): number {
-    // Placeholder for actual COI calculation
-    // This would normally involve tracking common ancestors
-    return 4.2; // Example value
-  }
-  
-  // Render loading state
+  const { 
+    hasData,
+    isLoading,
+    error,
+    compatibilityScore,
+    healthConcernCounts,
+    inbreedingCoefficient 
+  } = useGeneticPairing(sireId, damId);
+
   if (isLoading) {
     return (
-      <div className="p-4 bg-white rounded-lg shadow animate-pulse">
-        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2.5"></div>
-        <div className="h-4 bg-gray-200 rounded mb-2.5"></div>
-        <div className="h-4 bg-gray-200 rounded w-5/6 mb-2.5"></div>
-      </div>
+      <Card>
+        <CardContent className="py-6">
+          <div className="text-center">
+            <Dna className="h-10 w-10 mx-auto mb-4 animate-pulse text-gray-400" />
+            <p className="text-muted-foreground">Analyzing genetic compatibility...</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
-  
-  // Render analysis results
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          Failed to analyze genetic compatibility. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!hasData) {
+    return (
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertTitle>Missing Data</AlertTitle>
+        <AlertDescription>
+          Complete genetic data is not available for one or both of the selected dogs.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Helper function to get score color
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-500';
+    if (score >= 60) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
+  // Helper function to get progress color
+  const getProgressColor = (score: number) => {
+    if (score >= 80) return 'bg-green-500';
+    if (score >= 60) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-bold text-gray-800">Genetic Compatibility Analysis</h3>
-      </div>
-      
-      {/* COI Section */}
-      <div className="p-4 border-b border-gray-200">
-        <h4 className="text-md font-semibold mb-2">Coefficient of Inbreeding (COI)</h4>
-        
-        <div className="relative h-8 bg-gray-200 rounded-full overflow-hidden">
-          <div 
-            className={`absolute top-0 left-0 h-full rounded-full ${getCoiColorClass(analysis?.coi || 0)}`}
-            style={{ width: `${Math.min(100, ((analysis?.coi || 0) * 8))}%` }}
-          ></div>
-          <div className="absolute inset-0 flex items-center justify-center font-bold text-sm">
-            {analysis?.coi.toFixed(1)}%
-          </div>
-        </div>
-        
-        <div className="mt-2 text-sm text-gray-600">
-          {getCoiDescription(analysis?.coi || 0)}
-        </div>
-      </div>
-      
-      {/* Health Warnings Section */}
-      {showHealthWarnings && (
-        <div className="p-4 border-b border-gray-200">
-          <h4 className="text-md font-semibold mb-2">Health Considerations</h4>
-          
-          {analysis?.healthWarnings && analysis.healthWarnings.length > 0 ? (
-            <div className="space-y-2">
-              {analysis.healthWarnings.map((warning, index) => (
-                <HealthWarningCard key={index} warning={warning} />
-              ))}
-            </div>
-          ) : (
-            <div className="p-3 bg-green-50 text-green-800 rounded-md">
-              No genetic health concerns detected between these dogs.
-            </div>
-          )}
-        </div>
-      )}
-      
-      {/* Compatible Tests Section */}
-      <div className="p-4">
-        <h4 className="text-md font-semibold mb-2">Compatible Genetic Tests</h4>
-        
-        {analysis?.compatibleTests && analysis.compatibleTests.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {analysis.compatibleTests.map((test, index) => (
-              <span key={index} className="px-2 py-1 bg-green-100 text-green-800 rounded-md text-sm">
-                {formatConditionName(test)}: Clear
+    <Card>
+      <CardContent className="py-6">
+        <div className="space-y-6">
+          {/* Overall Compatibility Score */}
+          <div>
+            <div className="flex justify-between mb-2">
+              <h3 className="text-sm font-medium">Compatibility Score</h3>
+              <span className={`text-sm font-bold ${getScoreColor(compatibilityScore)}`}>
+                {compatibilityScore}/100
               </span>
-            ))}
+            </div>
+            <Progress 
+              value={compatibilityScore} 
+              max={100} 
+              className={`h-2 ${getProgressColor(compatibilityScore)}`} 
+            />
           </div>
-        ) : (
-          <div className="text-sm text-gray-600 italic">
-            No shared clear genetic tests found.
+
+          {/* Summary Stats */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="border rounded-md p-3 text-center">
+              <div className="flex justify-center mb-1">
+                <AlertCircle className={`h-5 w-5 ${healthConcernCounts.atRisk > 0 ? 'text-red-500' : 'text-gray-400'}`} />
+              </div>
+              <div className="text-xl font-bold">{healthConcernCounts.atRisk}</div>
+              <div className="text-xs text-muted-foreground">At Risk</div>
+            </div>
+            
+            <div className="border rounded-md p-3 text-center">
+              <div className="flex justify-center mb-1">
+                <AlertTriangle className={`h-5 w-5 ${healthConcernCounts.carrier > 0 ? 'text-amber-500' : 'text-gray-400'}`} />
+              </div>
+              <div className="text-xl font-bold">{healthConcernCounts.carrier}</div>
+              <div className="text-xs text-muted-foreground">Carrier</div>
+            </div>
+            
+            <div className="border rounded-md p-3 text-center">
+              <div className="flex justify-center mb-1">
+                <CheckCircle className={`h-5 w-5 ${healthConcernCounts.clear > 0 ? 'text-green-500' : 'text-gray-400'}`} />
+              </div>
+              <div className="text-xl font-bold">{healthConcernCounts.clear}</div>
+              <div className="text-xs text-muted-foreground">Clear</div>
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+
+          {/* Inbreeding coefficient */}
+          <div>
+            <h3 className="text-sm font-medium mb-1">Inbreeding Coefficient</h3>
+            <div className="flex items-center">
+              <span className="text-lg font-semibold">
+                {(inbreedingCoefficient * 100).toFixed(2)}%
+              </span>
+              {inbreedingCoefficient > 0.125 && (
+                <AlertTriangle className="h-4 w-4 ml-2 text-amber-500" />
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {inbreedingCoefficient < 0.03 
+                ? "Low inbreeding coefficient - excellent genetic diversity"
+                : inbreedingCoefficient < 0.125
+                  ? "Moderate inbreeding coefficient - acceptable for breeding"
+                  : "High inbreeding coefficient - consider genetic diversity concerns"}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
-
-// Helper function to get COI color class based on value
-function getCoiColorClass(coi: number): string {
-  if (coi < 3.125) return 'bg-green-500';
-  if (coi < 6.25) return 'bg-green-400';
-  if (coi < 12.5) return 'bg-yellow-400';
-  return 'bg-red-500';
-}
-
-// Helper function to get COI description
-function getCoiDescription(coi: number): string {
-  if (coi < 3.125) {
-    return 'Excellent - Very low inbreeding coefficient';
-  } else if (coi < 6.25) {
-    return 'Good - Acceptable inbreeding coefficient';
-  } else if (coi < 12.5) {
-    return 'Caution - Moderate inbreeding coefficient';
-  } else {
-    return 'Warning - High inbreeding coefficient';
-  }
-}
-
-// Helper function to format condition names
-function formatConditionName(condition: string): string {
-  // Convert common abbreviations
-  const abbreviations: Record<string, string> = {
-    'DM': 'Degenerative Myelopathy',
-    'DCM': 'Dilated Cardiomyopathy',
-    'vWD': 'von Willebrand Disease',
-    'PRA': 'Progressive Retinal Atrophy'
-  };
-  
-  if (abbreviations[condition]) {
-    return abbreviations[condition];
-  }
-  
-  // Otherwise capitalize each word
-  return condition
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 export default GeneticCompatibilityAnalyzer;

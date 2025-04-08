@@ -16,8 +16,8 @@ interface DogSelectorProps {
   onChange: (value: string) => void;
   placeholder?: string;
   genderFilter?: 'Male' | 'Female';
-  disabled?: boolean;
   filterSex?: string; // For backward compatibility
+  disabled?: boolean;
 }
 
 export const DogSelector: React.FC<DogSelectorProps> = ({

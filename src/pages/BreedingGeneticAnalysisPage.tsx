@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import PageContainer from '@/components/common/PageContainer';
 import BackButton from '@/components/common/BackButton';
 import DogSelector from '@/components/genetics/DogSelector';
-import GeneticCompatibilityAnalyzer from '@/components/breeding/GeneticCompatibilityAnalyzer';
+import GeneticCompatibilityAnalyzer from '@/components/genetics/GeneticCompatibilityAnalyzer';
 import PairingHealthSummary from '@/components/breeding/PairingHealthSummary';
 import PairingColorAnalysis from '@/components/breeding/PairingColorAnalysis';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
