@@ -1,77 +1,44 @@
 
-// Dog Genotype Types
-export interface DogGenotype {
-  dog_id: string;
-  id?: string;
-  name?: string;
-  breed?: string;
-  baseColor: string;
-  brownDilution: string;
-  dilution: string;
-  agouti?: string;
-  healthMarkers?: Record<string, HealthMarker>;
-  healthResults?: HealthResult[];
-  colorProbabilities?: ColorProbability[];
-  colorGenetics?: any;
-  traits?: any;
-  updated_at?: string;
-}
+/**
+ * Types for genetics and breeding analysis
+ */
 
-export interface HealthMarker {
-  name?: string;
-  status: GeneticHealthStatus;
-  testDate?: string;
-  lab?: string;
-  probability?: number;
-  source?: string;
-}
-
-export interface HealthResult {
-  condition: string;
-  result: string;
-  tested_date: string;
-  lab: string;
-  notes?: string;
-}
-
-export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'affected' | 'at risk' | 'unknown';
-
+/**
+ * Interface for color probability in breeding outcomes
+ */
 export interface ColorProbability {
   color: string;
   probability: number;
-  hex?: string;
+  hex?: string; // Optional hex code for displaying the color
 }
 
-// Import Result Types
-export interface GeneticImportResult {
-  success: boolean;
-  dogId: string;
-  provider?: string;
-  testsImported: number;
-  importedTests?: number;
-  errors?: string[];
+/**
+ * Interface for genotype data of a dog
+ */
+export interface DogGenotype {
+  id: string;
+  dog_id: string;
+  baseColor: string;
+  brownDilution: string;
+  dilution: string;
+  agouti: string;
+  healthMarkers: Record<string, string>;
+  updated_at: string;
 }
 
-// Health Risk Types
-export interface HealthRisk {
-  condition: string;
-  status: GeneticHealthStatus;
-  probability: number;
-  severity: 'high' | 'medium' | 'low';
+/**
+ * Interface for health marker in genetic testing
+ */
+export interface HealthMarker {
+  status: string; // 'clear', 'carrier', 'at_risk', 'affected', 'unknown'
+  testDate?: string;
+  notes?: string;
+  certified?: boolean;
 }
 
-export interface HealthWarning {
-  condition: string;
-  message?: string;
-  actionRequired?: boolean;
-  title?: string;
-  description?: string;
-  action?: string;
-  severity: 'high' | 'medium' | 'low' | 'critical';
-  riskLevel?: string;
-  affectedPercentage?: number;
-}
-
+/**
+ * Interface for health summary statistics
+ */
 export interface HealthSummary {
   atRiskCount: number;
   carrierCount: number;
@@ -80,50 +47,34 @@ export interface HealthSummary {
   totalTests: number;
 }
 
-// Component Props Types
-export interface CompactGenotypeViewProps {
-  genotype: DogGenotype;
-  title?: string;
-  showBreed?: boolean;
-  showColorTraits?: boolean;
-  showHealthTests?: boolean;
-  showTitle?: boolean;
-  showHealth?: boolean;
-  showColor?: boolean;
+/**
+ * Interface for color genetics data
+ */
+export interface ColorGenetics {
+  baseColor: string;
+  dilution: string;
+  brownDilution: string;
+  agouti: string;
+  patterns?: string[];
 }
 
-export interface HistoricalCOIChartProps {
-  dogId: string;
-  generations?: number[];
+/**
+ * Interface for breed composition data
+ */
+export interface BreedComposition {
+  primaryBreed: string;
+  primaryPercentage: number;
+  secondaryBreed?: string;
+  secondaryPercentage?: number;
+  otherBreeds?: Record<string, number>;
 }
 
-// Testing types
-export interface TestResult {
-  id: string;
-  name: string;
-  result: string;
-  date: string;
-}
-
-// Genetic Pairing Types
-export interface GeneticPairingResult {
-  sireGenotype: DogGenotype | null;
-  damGenotype: DogGenotype | null;
-  colorProbabilities: ColorProbability[];
-  healthRisks: Record<string, { status: string; probability: number }>;
-  inbreedingCoefficient: number;
-  compatibilityScore: number;
-  healthSummary: HealthSummary;
-  recommendations: string[];
-}
-
-export interface BreedingPlan {
-  id: string;
-  sireId: string;
-  damId: string;
-  plannedDate?: string;
-  notes?: string;
-  status: 'planned' | 'in-progress' | 'completed' | 'cancelled';
-  compatibilityScore?: number;
-  created_at: string;
+/**
+ * Interface for genetic trait results
+ */
+export interface GeneticTraitResults {
+  coat: Record<string, string>;
+  size: Record<string, string>;
+  performance: Record<string, string>;
+  behavior: Record<string, string>;
 }

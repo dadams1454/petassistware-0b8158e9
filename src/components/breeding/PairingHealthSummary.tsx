@@ -44,12 +44,16 @@ const PairingHealthSummary: React.FC<PairingHealthSummaryProps> = ({ healthRisks
     {} as Record<string, number>
   );
 
-  // Status display info
-  const statusInfo: Record<string, { label: string; icon: React.ReactNode; color: "default" | "destructive" | "warning" }> = {
+  // Status display info with corrected badge variants
+  const statusInfo: Record<string, { 
+    label: string; 
+    icon: React.ReactNode; 
+    color: "default" | "destructive" | "outline" | "secondary" 
+  }> = {
     at_risk: { label: 'At Risk', icon: <AlertTriangle className="h-4 w-4" />, color: "destructive" },
-    carrier: { label: 'Carrier', icon: <AlertTriangle className="h-4 w-4" />, color: "warning" },
+    carrier: { label: 'Carrier', icon: <AlertTriangle className="h-4 w-4" />, color: "secondary" },
     clear: { label: 'Clear', icon: <CheckCircle className="h-4 w-4" />, color: "default" },
-    unknown: { label: 'Unknown', icon: <HelpCircle className="h-4 w-4" />, color: "default" },
+    unknown: { label: 'Unknown', icon: <HelpCircle className="h-4 w-4" />, color: "outline" },
     affected: { label: 'Affected', icon: <AlertTriangle className="h-4 w-4" />, color: "destructive" }
   };
 
