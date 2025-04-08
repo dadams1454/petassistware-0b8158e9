@@ -12,31 +12,36 @@ import {
 import { Dog } from '@/types/dog';
 
 interface DogSelectorProps {
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   placeholder?: string;
   genderFilter?: 'Male' | 'Female';
   disabled?: boolean;
+  filterSex?: string; // For backward compatibility
 }
 
 export const DogSelector: React.FC<DogSelectorProps> = ({
-  value,
+  value = '',
   onChange,
   placeholder = "Select a dog",
   genderFilter,
+  filterSex, // Added for backward compatibility
   disabled = false
 }) => {
+  // Use filterSex as fallback for genderFilter for backward compatibility
+  const effectiveGenderFilter = genderFilter || (filterSex as 'Male' | 'Female' | undefined);
+  
   // Fetch all dogs, filtering by gender if specified
   const { data: dogs, isLoading } = useQuery({
-    queryKey: ['dogs', genderFilter],
+    queryKey: ['dogs', effectiveGenderFilter],
     queryFn: async () => {
       let query = supabase
         .from('dogs')
         .select('id, name, breed, gender, color, microchip_number')
         .order('name');
       
-      if (genderFilter) {
-        query = query.eq('gender', genderFilter);
+      if (effectiveGenderFilter) {
+        query = query.eq('gender', effectiveGenderFilter);
       }
       
       const { data, error } = await query;
@@ -46,7 +51,7 @@ export const DogSelector: React.FC<DogSelectorProps> = ({
         throw error;
       }
       
-      return data as Dog[];
+      return (data || []) as Dog[];
     }
   });
 

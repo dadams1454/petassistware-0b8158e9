@@ -1,29 +1,34 @@
 
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageContainer from '@/components/common/PageContainer';
 import { SectionHeader } from '@/components/ui/standardized';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getBreedingCompatibility } from '@/services/breedingRecommendationService';
+import { Loader2 } from 'lucide-react';
 
 const GeneticPairingPage: React.FC = () => {
-  // This is a stub for now, will be implemented fully in a separate task
+  const navigate = useNavigate();
+  
+  // Redirect to the new fixed page
+  useEffect(() => {
+    navigate('/reproduction/breeding/pairing-analysis');
+  }, [navigate]);
+  
   return (
     <PageContainer>
       <div className="container mx-auto py-6 space-y-6">
         <SectionHeader
           title="Genetic Pairing Analysis"
-          description="Analyze genetic compatibility between breeding pairs"
+          description="Redirecting to the genetic pairing analysis tool..."
         />
         
         <Card>
           <CardHeader>
-            <CardTitle>Select Dogs for Genetic Analysis</CardTitle>
+            <CardTitle>Redirecting</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              This feature will be implemented soon. It will allow you to select a dam and sire to analyze their genetic compatibility.
-            </p>
+          <CardContent className="flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </CardContent>
         </Card>
       </div>
