@@ -13,11 +13,11 @@ export function convertWeight(value: number, fromUnit: WeightUnit, toUnit: Weigh
 
   // Convert to grams first
   const fromInfo = getWeightUnitInfo(fromUnit);
-  const valueInGrams = value * fromInfo.toGrams;
+  const valueInGrams = value * fromInfo.conversionToGrams;
 
   // Then convert to target unit
   const toInfo = getWeightUnitInfo(toUnit);
-  return valueInGrams / toInfo.toGrams;
+  return valueInGrams / toInfo.conversionToGrams;
 }
 
 /**
@@ -28,7 +28,7 @@ export function convertWeight(value: number, fromUnit: WeightUnit, toUnit: Weigh
  */
 export function convertWeightToGrams(value: number, unit: WeightUnit): number {
   const unitInfo = getWeightUnitInfo(unit);
-  return value * unitInfo.toGrams;
+  return value * unitInfo.conversionToGrams;
 }
 
 /**

@@ -9,6 +9,16 @@
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
 /**
+ * Enum for weight units (for backward compatibility)
+ */
+export enum WeightUnitEnum {
+  OUNCES = 'oz',
+  GRAMS = 'g',
+  POUNDS = 'lb',
+  KILOGRAMS = 'kg'
+}
+
+/**
  * Weight unit information interface
  */
 export interface WeightUnitInfo {
@@ -18,6 +28,9 @@ export interface WeightUnitInfo {
   type: 'imperial' | 'metric';
   conversionToGrams: number;
   precision: number;
+  toGrams?: number; // For compatibility with existing code
+  value?: string;   // For compatibility with select components
+  label?: string;   // For compatibility with select components
 }
 
 /**
@@ -30,7 +43,9 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     abbreviation: 'oz',
     type: 'imperial',
     conversionToGrams: 28.3495,
-    precision: 1
+    precision: 1,
+    value: 'oz',
+    label: 'Ounces (oz)'
   },
   {
     id: 'g',
@@ -38,7 +53,9 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     abbreviation: 'g',
     type: 'metric',
     conversionToGrams: 1,
-    precision: 0
+    precision: 0,
+    value: 'g',
+    label: 'Grams (g)'
   },
   {
     id: 'lb',
@@ -46,7 +63,9 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     abbreviation: 'lb',
     type: 'imperial',
     conversionToGrams: 453.592,
-    precision: 1
+    precision: 1,
+    value: 'lb',
+    label: 'Pounds (lb)'
   },
   {
     id: 'kg',
@@ -54,9 +73,16 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     abbreviation: 'kg',
     type: 'metric',
     conversionToGrams: 1000,
-    precision: 2
+    precision: 2,
+    value: 'kg',
+    label: 'Kilograms (kg)'
   }
 ];
+
+// Add toGrams property for backward compatibility
+weightUnitInfos.forEach(unit => {
+  unit.toGrams = unit.conversionToGrams;
+});
 
 /**
  * Get weight unit info by unit ID
