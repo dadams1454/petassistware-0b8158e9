@@ -9,12 +9,6 @@ import {
 } from '@/types/genetics';
 import { calculateColorProbabilities, calculateHealthRisks } from '@/components/genetics/utils/geneticCalculations';
 
-interface GeneticPairingResult {
-  colorProbabilities: ColorProbability[];
-  healthRisks: Record<string, HealthRisk>;
-  inbreedingCoefficient: number;
-}
-
 export function useGeneticPairing(sireId: string, damId: string) {
   const [sireGenotype, setSireGenotype] = useState<DogGenotype | null>(null);
   const [damGenotype, setDamGenotype] = useState<DogGenotype | null>(null);
@@ -36,66 +30,50 @@ export function useGeneticPairing(sireId: string, damId: string) {
       setError(null);
       
       try {
-        // Fetch sire genotype
+        // This is a placeholder for the actual database fetch
+        // In a real implementation, we would fetch from dog_genotypes table
+        
+        // Fetch sire data to create a genotype
         const { data: sireData, error: sireError } = await supabase
-          .from('dog_genotypes')
-          .select('*')
-          .eq('dog_id', sireId)
-          .single();
-          
-        if (sireError) throw new Error(`Failed to fetch sire genetics: ${sireError.message}`);
-        
-        // Fetch dam genotype
-        const { data: damData, error: damError } = await supabase
-          .from('dog_genotypes')
-          .select('*')
-          .eq('dog_id', damId)
-          .single();
-          
-        if (damError) throw new Error(`Failed to fetch dam genetics: ${damError.message}`);
-        
-        // Fetch dog names for display
-        const { data: sireInfo, error: sireInfoError } = await supabase
           .from('dogs')
-          .select('name, breed')
+          .select('id, name, breed, color')
           .eq('id', sireId)
           .single();
           
-        if (sireInfoError) console.error("Error fetching sire info:", sireInfoError);
+        if (sireError) throw new Error(`Failed to fetch sire data: ${sireError.message}`);
         
-        const { data: damInfo, error: damInfoError } = await supabase
+        // Fetch dam data to create a genotype
+        const { data: damData, error: damError } = await supabase
           .from('dogs')
-          .select('name, breed')
+          .select('id, name, breed, color')
           .eq('id', damId)
           .single();
           
-        if (damInfoError) console.error("Error fetching dam info:", damInfoError);
+        if (damError) throw new Error(`Failed to fetch dam data: ${damError.message}`);
         
-        // Map database fields to our genotype structure
+        // Create placeholder genotypes until we have real genetic data
         const sireGenotype: DogGenotype = {
-          id: sireData.id,
-          dog_id: sireData.dog_id,
-          baseColor: sireData.base_color || 'unknown',
-          brownDilution: sireData.brown_dilution || 'unknown',
-          dilution: sireData.dilution || 'unknown',
-          agouti: sireData.agouti || 'unknown',
-          healthMarkers: sireData.health_markers || {},
-          updated_at: sireData.updated_at,
-          name: sireInfo?.name,
-          breed: sireInfo?.breed
+          dog_id: sireId,
+          baseColor: sireData.color || 'unknown',
+          brownDilution: 'unknown',
+          dilution: 'unknown',
+          agouti: 'unknown',
+          healthMarkers: {},
+          updated_at: new Date().toISOString(),
+          name: sireData.name,
+          breed: sireData.breed
         };
         
         const damGenotype: DogGenotype = {
-          id: damData.id,
-          dog_id: damData.dog_id,
-          baseColor: damData.base_color || 'unknown',
-          brownDilution: damData.brown_dilution || 'unknown',
-          dilution: damData.dilution || 'unknown',
-          agouti: damData.agouti || 'unknown',
-          healthMarkers: damData.health_markers || {},
-          updated_at: damData.updated_at,
-          name: damInfo?.name,
-          breed: damInfo?.breed
+          dog_id: damId,
+          baseColor: damData.color || 'unknown',
+          brownDilution: 'unknown',
+          dilution: 'unknown',
+          agouti: 'unknown',
+          healthMarkers: {},
+          updated_at: new Date().toISOString(),
+          name: damData.name,
+          breed: damData.breed
         };
         
         setSireGenotype(sireGenotype);

@@ -18,7 +18,9 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 14,
       minAge: 0,
       maxAge: 14,
-      milestones: ['Eyes closed', 'Requires heat', 'Minimal movement']
+      milestones: ['Eyes closed', 'Requires heat', 'Minimal movement'],
+      groupName: 'Newborn',
+      ageRange: '0-14 days'
     },
     {
       id: 'twoWeek',
@@ -33,7 +35,9 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 28,
       minAge: 15,
       maxAge: 28,
-      milestones: ['Eyes open', 'Beginning to walk', 'First socialization']
+      milestones: ['Eyes open', 'Beginning to walk', 'First socialization'],
+      groupName: 'Two Week',
+      ageRange: '15-28 days'
     },
     {
       id: 'fourWeek',
@@ -48,7 +52,9 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 42,
       minAge: 29,
       maxAge: 42,
-      milestones: ['Weaning begins', 'Play behavior', 'More stable temperature']
+      milestones: ['Weaning begins', 'Play behavior', 'More stable temperature'],
+      groupName: 'Four Week',
+      ageRange: '29-42 days'
     },
     {
       id: 'sixWeek',
@@ -63,7 +69,9 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 56,
       minAge: 43,
       maxAge: 56,
-      milestones: ['Fully weaned', 'Increased exploration', 'First vaccines']
+      milestones: ['Fully weaned', 'Increased exploration', 'First vaccines'],
+      groupName: 'Six Week',
+      ageRange: '43-56 days'
     },
     {
       id: 'eightWeek',
@@ -78,7 +86,9 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 70,
       minAge: 57,
       maxAge: 70,
-      milestones: ['Ready for homes', 'Structured play', 'Fear period begins']
+      milestones: ['Ready for homes', 'Structured play', 'Fear period begins'],
+      groupName: 'Eight Week',
+      ageRange: '57-70 days'
     },
     {
       id: 'tenWeek',
@@ -93,7 +103,9 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 84,
       minAge: 71,
       maxAge: 84,
-      milestones: ['Additional vaccines', 'Continued socialization', 'Training begins']
+      milestones: ['Additional vaccines', 'Continued socialization', 'Training begins'],
+      groupName: 'Ten Week',
+      ageRange: '71-84 days'
     },
     {
       id: 'twelveWeek',
@@ -108,7 +120,9 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 112,
       minAge: 85,
       maxAge: 112,
-      milestones: ['Final vaccines', 'More independence', 'Increased training']
+      milestones: ['Final vaccines', 'More independence', 'Increased training'],
+      groupName: 'Twelve Week',
+      ageRange: '85-112 days'
     },
     {
       id: 'older',
@@ -123,7 +137,9 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 365,
       minAge: 113,
       maxAge: 365,
-      milestones: ['Advanced training', 'Full exercise', 'Adult behaviors emerging']
+      milestones: ['Advanced training', 'Full exercise', 'Adult behaviors emerging'],
+      groupName: 'Older',
+      ageRange: '113+ days'
     }
   ], []);
 

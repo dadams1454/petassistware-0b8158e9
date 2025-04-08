@@ -16,7 +16,7 @@ export interface ColorProbability {
  * Interface for genotype data of a dog
  */
 export interface DogGenotype {
-  id: string;
+  id?: string;
   dog_id: string;
   baseColor: string;
   brownDilution: string;
@@ -106,6 +106,8 @@ export interface GeneticImportResult {
   genotypeId?: string;
   message: string;
   errors?: string[];
+  testsImported?: number;
+  provider?: string;
 }
 
 /**
@@ -120,7 +122,7 @@ export interface TestResult {
 /**
  * Interface for genetic health status
  */
-export interface GeneticHealthStatus {
+export type GeneticHealthStatus = {
   clear: string[];
   carrier: string[];
   atRisk: string[];
@@ -134,6 +136,8 @@ export interface GeneticHealthStatus {
 export interface HealthRisk {
   status: string;
   probability: number;
+  severity?: string;
+  condition?: string;
 }
 
 /**
@@ -145,6 +149,10 @@ export interface HealthWarning {
   description: string;
   recommendation: string;
   severity: 'low' | 'medium' | 'high';
+  riskLevel?: string;
+  title?: string;
+  affectedPercentage?: number;
+  action?: string;
 }
 
 /**
@@ -154,7 +162,12 @@ export interface GeneticPairingResult {
   inbreedingCoefficient: number;
   colorProbabilities: ColorProbability[];
   healthRisks: Record<string, HealthRisk>;
-  traits: GeneticTraitResults;
+  traits?: GeneticTraitResults;
+  sireGenotype?: DogGenotype;
+  damGenotype?: DogGenotype;
+  compatibilityScore?: number;
+  healthSummary?: HealthSummary;
+  recommendations?: string[];
 }
 
 /**
@@ -165,4 +178,6 @@ export interface HistoricalCOIChartProps {
     generation: number;
     coi: number;
   }[];
+  dogId?: string;
+  generations?: number;
 }

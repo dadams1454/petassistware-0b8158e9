@@ -22,13 +22,70 @@ const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityAnalyzerProps> 
   damId 
 }) => {
   const { 
-    hasData,
+    sireGenotype,
+    damGenotype,
+    colorProbabilities,
+    healthRisks,
+    inbreedingCoefficient,
     isLoading,
-    error,
-    compatibilityScore,
-    healthConcernCounts,
-    inbreedingCoefficient 
+    error
   } = useGeneticPairing(sireId, damId);
+
+  // Calculate derived values that were previously properties of the hook return
+  const hasData = !!(sireGenotype && damGenotype);
+  
+  // Calculate compatibility score based on health risks and inbreeding coefficient
+  const calculateCompatibilityScore = () => {
+    if (!hasData) return 0;
+    
+    // Base score starts at 100
+    let score = 100;
+    
+    // Deduct for health risks
+    Object.values(healthRisks || {}).forEach(risk => {
+      if (risk.status === 'at_risk') {
+        score -= 15 * risk.probability;
+      } else if (risk.status === 'carrier') {
+        score -= 5 * risk.probability;
+      }
+    });
+    
+    // Deduct for inbreeding
+    score -= (inbreedingCoefficient || 0) * 100;
+    
+    // Ensure score is between 0-100
+    return Math.max(0, Math.min(100, Math.round(score)));
+  };
+
+  const compatibilityScore = calculateCompatibilityScore();
+
+  // Calculate health concern counts for summary
+  const calculateHealthConcernCounts = () => {
+    if (!hasData || !healthRisks) {
+      return { atRisk: 0, carrier: 0, clear: 0, unknown: 0 };
+    }
+    
+    let atRiskCount = 0;
+    let carrierCount = 0;
+    let clearCount = 0;
+    let unknownCount = 0;
+    
+    Object.values(healthRisks).forEach(risk => {
+      if (risk.status === 'at_risk') {
+        atRiskCount++;
+      } else if (risk.status === 'carrier') {
+        carrierCount++;
+      } else if (risk.status === 'clear') {
+        clearCount++;
+      } else {
+        unknownCount++;
+      }
+    });
+    
+    return { atRisk: atRiskCount, carrier: carrierCount, clear: clearCount, unknown: unknownCount };
+  };
+
+  const healthConcernCounts = calculateHealthConcernCounts();
 
   if (isLoading) {
     return (
@@ -138,16 +195,16 @@ const GeneticCompatibilityAnalyzer: React.FC<GeneticCompatibilityAnalyzerProps> 
             <h3 className="text-sm font-medium mb-1">Inbreeding Coefficient</h3>
             <div className="flex items-center">
               <span className="text-lg font-semibold">
-                {(inbreedingCoefficient * 100).toFixed(2)}%
+                {((inbreedingCoefficient || 0) * 100).toFixed(2)}%
               </span>
-              {inbreedingCoefficient > 0.125 && (
+              {(inbreedingCoefficient || 0) > 0.125 && (
                 <AlertTriangle className="h-4 w-4 ml-2 text-amber-500" />
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {inbreedingCoefficient < 0.03 
+              {(inbreedingCoefficient || 0) < 0.03 
                 ? "Low inbreeding coefficient - excellent genetic diversity"
-                : inbreedingCoefficient < 0.125
+                : (inbreedingCoefficient || 0) < 0.125
                   ? "Moderate inbreeding coefficient - acceptable for breeding"
                   : "High inbreeding coefficient - consider genetic diversity concerns"}
             </p>
