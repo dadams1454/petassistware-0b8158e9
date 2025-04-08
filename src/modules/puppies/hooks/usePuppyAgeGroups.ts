@@ -1,15 +1,22 @@
 
+/**
+ * Hook for grouping puppies by age
+ */
 import { useMemo } from 'react';
-import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupInfo } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupInfo } from '../types';
 
-export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
-  // Define our age groups with all the required properties
+/**
+ * Hook to group puppies by development stage based on age
+ */
+export const usePuppyAgeGroups = (puppies: PuppyWithAge[] = []) => {
+  // Define the age groups
   const ageGroups: PuppyAgeGroupInfo[] = useMemo(() => [
     {
       id: 'newborn',
       name: 'newborn',
+      groupName: 'Newborn',
       displayName: 'Newborn',
-      description: 'Birth to 2 weeks',
+      description: 'Early puppyhood. Primarily sleeping and nursing.',
       minDays: 0,
       maxDays: 14,
       unit: 'days',
@@ -18,155 +25,157 @@ export const usePuppyAgeGroups = (puppies: PuppyWithAge[]) => {
       endDay: 14,
       minAge: 0,
       maxAge: 14,
-      milestones: ['Eyes closed', 'Requires heat', 'Minimal movement'],
-      groupName: 'Newborn',
-      ageRange: '0-14 days'
+      milestones: ['Eyes closed', 'Ears closed', 'Limited movement', 'Cannot regulate temperature']
     },
     {
       id: 'twoWeek',
       name: 'twoWeek',
+      groupName: 'Transitional',
       displayName: 'Two Week',
-      description: '2-4 weeks',
+      description: 'Eyes and ears beginning to open. Starting to crawl.',
       minDays: 15,
-      maxDays: 28,
+      maxDays: 21,
       unit: 'days',
-      color: 'blue',
+      color: 'red',
       startDay: 15,
-      endDay: 28,
+      endDay: 21,
       minAge: 15,
-      maxAge: 28,
-      milestones: ['Eyes open', 'Beginning to walk', 'First socialization'],
-      groupName: 'Two Week',
-      ageRange: '15-28 days'
+      maxAge: 21,
+      milestones: ['Eyes opening', 'Ears opening', 'First teeth appearing', 'Better mobility']
     },
     {
       id: 'fourWeek',
       name: 'fourWeek',
+      groupName: 'Socialization',
       displayName: 'Four Week',
-      description: '4-6 weeks',
-      minDays: 29,
-      maxDays: 42,
+      description: 'Beginning to play and interact with littermates. Starting to eat solid food.',
+      minDays: 22,
+      maxDays: 35,
       unit: 'days',
-      color: 'green',
-      startDay: 29,
-      endDay: 42,
-      minAge: 29,
-      maxAge: 42,
-      milestones: ['Weaning begins', 'Play behavior', 'More stable temperature'],
-      groupName: 'Four Week',
-      ageRange: '29-42 days'
+      color: 'orange',
+      startDay: 22,
+      endDay: 35,
+      minAge: 22,
+      maxAge: 35,
+      milestones: ['Walking well', 'Playing with littermates', 'Starting solid food', 'More alert']
     },
     {
       id: 'sixWeek',
       name: 'sixWeek',
+      groupName: 'Socialization',
       displayName: 'Six Week',
-      description: '6-8 weeks',
-      minDays: 43,
-      maxDays: 56,
+      description: 'Fully weaned. More active play. Beginning basic socialization.',
+      minDays: 36,
+      maxDays: 49,
       unit: 'days',
       color: 'yellow',
-      startDay: 43,
-      endDay: 56,
-      minAge: 43,
-      maxAge: 56,
-      milestones: ['Fully weaned', 'Increased exploration', 'First vaccines'],
-      groupName: 'Six Week',
-      ageRange: '43-56 days'
+      startDay: 36,
+      endDay: 49,
+      minAge: 36,
+      maxAge: 49,
+      milestones: ['Fully weaned', 'Active play', 'Curious about environment', 'Developing personality']
     },
     {
       id: 'eightWeek',
       name: 'eightWeek',
+      groupName: 'Juvenile',
       displayName: 'Eight Week',
-      description: '8-10 weeks',
-      minDays: 57,
-      maxDays: 70,
+      description: 'Ready for new homes. Learning basic commands and house training.',
+      minDays: 50,
+      maxDays: 63,
       unit: 'days',
-      color: 'orange',
-      startDay: 57,
-      endDay: 70,
-      minAge: 57,
-      maxAge: 70,
-      milestones: ['Ready for homes', 'Structured play', 'Fear period begins'],
-      groupName: 'Eight Week',
-      ageRange: '57-70 days'
+      color: 'green',
+      startDay: 50,
+      endDay: 63,
+      minAge: 50,
+      maxAge: 63,
+      milestones: ['Ready for adoption', 'Basic commands', 'Beginnings of house training', 'Full set of puppy teeth']
     },
     {
       id: 'tenWeek',
       name: 'tenWeek',
+      groupName: 'Juvenile',
       displayName: 'Ten Week',
-      description: '10-12 weeks',
-      minDays: 71,
-      maxDays: 84,
+      description: 'Critical socialization period. Gaining confidence. Training progress.',
+      minDays: 64,
+      maxDays: 77,
       unit: 'days',
-      color: 'red',
-      startDay: 71,
-      endDay: 84,
-      minAge: 71,
-      maxAge: 84,
-      milestones: ['Additional vaccines', 'Continued socialization', 'Training begins'],
-      groupName: 'Ten Week',
-      ageRange: '71-84 days'
+      color: 'teal',
+      startDay: 64,
+      endDay: 77,
+      minAge: 64,
+      maxAge: 77,
+      milestones: ['Socializing well', 'Developing confidence', 'Training progress', 'Better coordination']
     },
     {
       id: 'twelveWeek',
       name: 'twelveWeek',
+      groupName: 'Juvenile',
       displayName: 'Twelve Week',
-      description: '12-16 weeks',
-      minDays: 85,
-      maxDays: 112,
+      description: 'End of primary socialization period. More independent. Improved focus.',
+      minDays: 78,
+      maxDays: 91,
       unit: 'days',
-      color: 'purple',
-      startDay: 85,
-      endDay: 112,
-      minAge: 85,
-      maxAge: 112,
-      milestones: ['Final vaccines', 'More independence', 'Increased training'],
-      groupName: 'Twelve Week',
-      ageRange: '85-112 days'
+      color: 'blue',
+      startDay: 78,
+      endDay: 91,
+      minAge: 78,
+      maxAge: 91,
+      milestones: ['More independent', 'Better focus', 'Can learn more complex commands', 'Improved bladder control']
     },
     {
       id: 'older',
       name: 'older',
-      displayName: 'Older Puppy',
-      description: '16+ weeks',
-      minDays: 113,
+      groupName: 'Adolescent',
+      displayName: 'Older',
+      description: 'Adolescent phase. Beginning adult teeth. Testing boundaries.',
+      minDays: 92,
       maxDays: 365,
       unit: 'days',
-      color: 'gray',
-      startDay: 113,
+      color: 'purple',
+      startDay: 92,
       endDay: 365,
-      minAge: 113,
+      minAge: 92,
       maxAge: 365,
-      milestones: ['Advanced training', 'Full exercise', 'Adult behaviors emerging'],
-      groupName: 'Older',
-      ageRange: '113+ days'
+      milestones: ['Adult teeth coming in', 'Testing boundaries', 'Longer attention span', 'Physical growth']
     }
   ], []);
-
+  
   // Group puppies by age
   const puppiesByAgeGroup = useMemo(() => {
-    const groups: Record<string, PuppyWithAge[]> = {};
+    const groups: Record<string, PuppyWithAge[]> = {
+      newborn: [],
+      twoWeek: [],
+      fourWeek: [],
+      sixWeek: [],
+      eightWeek: [],
+      tenWeek: [],
+      twelveWeek: [],
+      older: []
+    };
     
-    // Initialize all groups with empty arrays
-    ageGroups.forEach(group => {
-      groups[group.id] = [];
-    });
-    
-    // Sort puppies into their respective groups
     puppies.forEach(puppy => {
-      const ageInDays = puppy.ageInDays || 0;
+      const ageInDays = puppy.ageInDays || puppy.age_days || 0;
       
-      // Find appropriate age group
-      for (const group of ageGroups) {
-        if (ageInDays >= group.minDays && ageInDays <= group.maxDays) {
-          groups[group.id].push(puppy);
-          break;
-        }
+      // Find the correct age group
+      const group = ageGroups.find(
+        group => ageInDays >= group.minDays && ageInDays <= group.maxDays
+      );
+      
+      if (group) {
+        const groupId = group.id as PuppyAgeGroup;
+        groups[groupId] = [...(groups[groupId] || []), puppy];
+      } else {
+        // If no matching group, put in older
+        groups.older = [...(groups.older || []), puppy];
       }
     });
     
     return groups;
   }, [puppies, ageGroups]);
-
-  return { ageGroups, puppiesByAgeGroup };
+  
+  return {
+    ageGroups,
+    puppiesByAgeGroup
+  };
 };

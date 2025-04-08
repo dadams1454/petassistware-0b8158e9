@@ -38,10 +38,13 @@ export const usePuppyStats = (puppies: PuppyWithAge[]): Partial<PuppyManagementS
     // Count puppies by age group (assuming standard age groups)
     const byAgeGroup: Record<string, number> = {
       'newborn': 0,
-      'transitional': 0,
-      'socialization': 0,
-      'juvenile': 0,
-      'adolescent': 0,
+      'twoWeek': 0,
+      'fourWeek': 0, 
+      'sixWeek': 0,
+      'eightWeek': 0,
+      'tenWeek': 0,
+      'twelveWeek': 0,
+      'older': 0
     };
     
     puppies.forEach(puppy => {
@@ -50,13 +53,19 @@ export const usePuppyStats = (puppies: PuppyWithAge[]): Partial<PuppyManagementS
       if (ageInDays <= 14) {
         byAgeGroup['newborn']++;
       } else if (ageInDays <= 21) {
-        byAgeGroup['transitional']++;
+        byAgeGroup['twoWeek']++;
+      } else if (ageInDays <= 35) {
+        byAgeGroup['fourWeek']++;
       } else if (ageInDays <= 49) {
-        byAgeGroup['socialization']++;
-      } else if (ageInDays <= 84) {
-        byAgeGroup['juvenile']++;
+        byAgeGroup['sixWeek']++;
+      } else if (ageInDays <= 63) {
+        byAgeGroup['eightWeek']++;
+      } else if (ageInDays <= 77) {
+        byAgeGroup['tenWeek']++;
+      } else if (ageInDays <= 91) {
+        byAgeGroup['twelveWeek']++;
       } else {
-        byAgeGroup['adolescent']++;
+        byAgeGroup['older']++;
       }
     });
     

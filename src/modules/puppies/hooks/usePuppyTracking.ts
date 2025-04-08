@@ -5,7 +5,12 @@
 import { usePuppyData } from './usePuppyData';
 import { usePuppyAgeGroups } from './usePuppyAgeGroups';
 import { usePuppyStats } from './usePuppyStats';
-import { PuppyManagementStats, PuppyWithAge, PuppyTrackingOptions } from '../types';
+import { 
+  PuppyManagementStats, 
+  PuppyWithAge, 
+  PuppyTrackingOptions,
+  PuppyAgeGroupData
+} from '../types';
 
 /**
  * Hook for tracking and managing puppy data
@@ -55,6 +60,8 @@ export const usePuppyTracking = (options?: PuppyTrackingOptions): PuppyManagemen
   const { ageGroups, puppiesByAgeGroup } = usePuppyAgeGroups(processedPuppies);
   
   // Get puppy statistics
+  const statsResult = usePuppyStats(processedPuppies);
+  
   const { 
     totalPuppies = 0,
     availablePuppies = 0,
@@ -68,25 +75,13 @@ export const usePuppyTracking = (options?: PuppyTrackingOptions): PuppyManagemen
       unavailable: 0
     },
     byAgeGroup = {} as Record<string, number>
-  } = usePuppyStats(processedPuppies) || {};
+  } = statsResult;
 
   // Convert PuppyAgeGroup[] to PuppyAgeGroupInfo[]
-  const ageGroupInfos = ageGroups.map(group => ({
-    id: group.id,
-    name: group.name,
-    groupName: group.displayName,
-    ageRange: `${group.minDays}-${group.maxDays} ${group.unit}`,
-    description: group.description,
-    startDay: group.startDay,
-    endDay: group.endDay,
-    color: group.color,
-    milestones: Array.isArray(group.milestones) ? group.milestones : [group.milestones],
-    minAge: group.minAge,
-    maxAge: group.maxAge
-  }));
+  const ageGroupInfos = ageGroups;
 
   // Set up puppy age group data structure with correct typing
-  const byAgeGroupData = {
+  const byAgeGroupData: PuppyAgeGroupData = {
     newborn: puppiesByAgeGroup.newborn || [],
     twoWeek: puppiesByAgeGroup.twoWeek || [],
     fourWeek: puppiesByAgeGroup.fourWeek || [],
@@ -95,7 +90,8 @@ export const usePuppyTracking = (options?: PuppyTrackingOptions): PuppyManagemen
     tenWeek: puppiesByAgeGroup.tenWeek || [],
     twelveWeek: puppiesByAgeGroup.twelveWeek || [],
     older: puppiesByAgeGroup.older || [],
-    all: processedPuppies
+    all: processedPuppies,
+    total: processedPuppies.length
   };
 
   // Construct PuppyManagementStats object

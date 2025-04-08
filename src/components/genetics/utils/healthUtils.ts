@@ -29,7 +29,7 @@ export function formatDate(dateString: string): string {
 /**
  * Get the color and background color for a health test result
  */
-export function getResultWithColorProps(status: GeneticHealthStatus) {
+export function getResultWithColorProps(status: GeneticHealthStatus): { color: string; bgColor: string } {
   switch (status) {
     case 'clear':
       return {
@@ -59,7 +59,7 @@ export function getResultWithColorProps(status: GeneticHealthStatus) {
 /**
  * Get a summary of health test results
  */
-export function getHealthSummary(healthMarkers: Record<string, { status: string }>) {
+export function getHealthSummary(healthMarkers: Record<string, { status: GeneticHealthStatus }>) {
   const summary = {
     atRiskCount: 0,
     carrierCount: 0,
@@ -69,7 +69,7 @@ export function getHealthSummary(healthMarkers: Record<string, { status: string 
   };
 
   Object.values(healthMarkers || {}).forEach((marker) => {
-    const status = marker.status as GeneticHealthStatus;
+    const status = marker.status;
     if (status === 'clear') {
       summary.clearCount += 1;
     } else if (status === 'carrier') {
@@ -87,7 +87,7 @@ export function getHealthSummary(healthMarkers: Record<string, { status: string 
 /**
  * Calculate a health score from 0-100 based on test results
  */
-export function calculateHealthScore(healthMarkers: Record<string, { status: string }>) {
+export function calculateHealthScore(healthMarkers: Record<string, { status: GeneticHealthStatus }>) {
   const summary = getHealthSummary(healthMarkers);
   const maxScore = summary.totalTests * 10;
   

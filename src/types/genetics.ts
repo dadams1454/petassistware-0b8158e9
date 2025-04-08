@@ -13,6 +13,22 @@ export interface ColorProbability {
 }
 
 /**
+ * Type for genetic health status as a string union type
+ */
+export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'affected' | 'unknown';
+
+/**
+ * Interface for health marker in genetic testing
+ */
+export interface HealthMarker {
+  status: GeneticHealthStatus;
+  testDate?: string;
+  notes?: string;
+  certified?: boolean;
+  name?: string; // Name of the health marker
+}
+
+/**
  * Interface for genotype data of a dog
  */
 export interface DogGenotype {
@@ -28,17 +44,6 @@ export interface DogGenotype {
   name?: string;
   breed?: string;
   colorProbabilities?: ColorProbability[];
-}
-
-/**
- * Interface for health marker in genetic testing
- */
-export interface HealthMarker {
-  status: 'clear' | 'carrier' | 'at_risk' | 'affected' | 'unknown';
-  testDate?: string;
-  notes?: string;
-  certified?: boolean;
-  name?: string; // Name of the health marker
 }
 
 /**
@@ -120,11 +125,6 @@ export interface TestResult {
   result: string;
   date: string;
 }
-
-/**
- * Type for genetic health status - this is now properly defined as a string union type
- */
-export type GeneticHealthStatus = 'clear' | 'carrier' | 'at_risk' | 'affected' | 'unknown';
 
 /**
  * Interface for health risk

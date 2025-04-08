@@ -1,19 +1,23 @@
 
 /**
- * Puppy Module - Provides functionality for tracking and managing puppies
- * 
- * This module centralizes all puppy-related functionality to ensure consistency
- * across the application.
+ * Main exports for the puppies module
  */
 
-// Export all types from the puppy module
-export * from './types';
+// Re-export types
+export type {
+  PuppyWithAge,
+  PuppyAgeGroup,
+  PuppyAgeGroupInfo,
+  PuppyAgeGroupData,
+  PuppyManagementStats,
+  PuppyTrackingOptions
+} from './types';
 
-// Export hooks with proper error handling
-export * from './hooks/usePuppyTracking';
-export * from './hooks/usePuppyData';
-export * from './hooks/usePuppyAgeGroups';
-export * from './hooks/usePuppyStats';
+// Re-export hooks
+export { usePuppyTracking } from './hooks/usePuppyTracking';
+export { usePuppyData } from './hooks/usePuppyData';
+export { usePuppyAgeGroups } from './hooks/usePuppyAgeGroups';
+export { usePuppyStats } from './hooks/usePuppyStats';
 
-// Export utility functions
-export * from './utils/puppyAgeCalculator';
+// Re-export utilities
+export { calculateAgeInDays, calculateAgeInWeeks } from './utils/puppyAgeCalculator';

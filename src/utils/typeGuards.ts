@@ -7,12 +7,12 @@ import {
   HealthRecordType, 
   AppetiteLevel, 
   EnergyLevel, 
-  StoolConsistency,
-  PuppyWithAge,
-  Puppy,
-  WeightRecord,
-  HealthRecord
+  StoolConsistency, 
+  GeneticHealthStatus
 } from '@/types';
+import { PuppyWithAge } from '@/modules/puppies/types';
+import { WeightRecord } from '@/modules/weight/types';
+import { HealthRecord } from '@/modules/health/types';
 
 /**
  * Type guard for WeightUnit
@@ -25,17 +25,13 @@ export function isWeightUnit(value: any): value is WeightUnit {
  * Type guard for HealthRecordType
  */
 export function isHealthRecordType(value: any): value is HealthRecordType {
-  return [
-    'vaccination', 
-    'examination', 
-    'treatment', 
-    'medication', 
-    'surgery', 
-    'injury', 
-    'allergy', 
-    'test', 
-    'other'
-  ].includes(value);
+  const validTypes = [
+    'vaccination', 'examination', 'treatment', 'medication', 
+    'surgery', 'injury', 'allergy', 'test', 'other', 'laboratory',
+    'imaging', 'preventive', 'deworming', 'observation', 'procedure',
+    'dental', 'grooming'
+  ];
+  return validTypes.includes(value);
 }
 
 /**
@@ -76,6 +72,19 @@ export function isStoolConsistency(value: any): value is StoolConsistency {
     'hard',
     'bloody',
     'mucus'
+  ].includes(value);
+}
+
+/**
+ * Type guard for GeneticHealthStatus
+ */
+export function isGeneticHealthStatus(value: any): value is GeneticHealthStatus {
+  return [
+    'clear',
+    'carrier',
+    'at_risk',
+    'affected',
+    'unknown'
   ].includes(value);
 }
 

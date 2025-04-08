@@ -95,7 +95,7 @@ export const CompactGenotypeView: React.FC<CompactGenotypeViewProps> = ({
           <div className="space-y-1">
             {Object.entries(dogGenetics.healthMarkers).map(([key, marker]) => (
               <div key={key} className="flex items-center p-1 rounded hover:bg-gray-50">
-                {getStatusIcon(marker.status as GeneticHealthStatus)}
+                {getStatusIcon(marker.status)}
                 <span className="ml-2 text-sm">{marker.name || key}</span>
                 <Badge variant="outline" className="ml-auto text-xs">
                   {marker.status.replace('_', ' ')}

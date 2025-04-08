@@ -25,27 +25,13 @@ export type HealthRecordType =
   | 'grooming';
 
 /**
- * Enum for health record types
- * This provides both string literals and an enum for flexibility
+ * Type for heat intensity
  */
-export enum HealthRecordTypeEnum {
-  VACCINATION = 'vaccination',
-  EXAMINATION = 'examination',
-  MEDICATION = 'medication',
-  SURGERY = 'surgery',
-  LABORATORY = 'laboratory',
-  TEST = 'test',
-  IMAGING = 'imaging',
-  PREVENTIVE = 'preventive',
-  DEWORMING = 'deworming',
-  OTHER = 'other',
-  INJURY = 'injury',
-  ALLERGY = 'allergy',
-  OBSERVATION = 'observation',
-  PROCEDURE = 'procedure',
-  DENTAL = 'dental',
-  GROOMING = 'grooming'
-}
+export type HeatIntensityType =
+  | 'mild'
+  | 'moderate'
+  | 'strong'
+  | 'severe';
 
 // Medication Status Enums
 export enum MedicationStatusEnum {
@@ -80,15 +66,6 @@ export type MedicationStatusResult =
       daysUntilDue?: number;
     };
 
-// Appetite Level Enums
-export enum AppetiteEnum {
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  FAIR = 'fair',
-  POOR = 'poor',
-  NONE = 'none'
-}
-
 // Export AppetiteLevel as a string union type
 export type AppetiteLevel = 
   | 'excellent'
@@ -97,32 +74,12 @@ export type AppetiteLevel =
   | 'poor'
   | 'none';
 
-// Energy Level Enums
-export enum EnergyEnum {
-  HYPERACTIVE = 'hyperactive',
-  HIGH = 'high',
-  NORMAL = 'normal',
-  LOW = 'low',
-  LETHARGIC = 'lethargic'
-}
-
 export type EnergyLevel = 
   | 'hyperactive'
   | 'high'
   | 'normal'
   | 'low'
   | 'lethargic';
-
-// Stool Consistency Enums
-export enum StoolConsistencyEnum {
-  NORMAL = 'normal',
-  SOFT = 'soft',
-  LOOSE = 'loose',
-  WATERY = 'watery',
-  HARD = 'hard',
-  BLOODY = 'bloody',
-  MUCUS = 'mucus'
-}
 
 export type StoolConsistency = 
   | 'normal'
@@ -137,15 +94,16 @@ export type StoolConsistency =
 export function stringToHealthRecordType(str: string): HealthRecordType {
   const normalized = str.toLowerCase().trim();
   
-  // Check if it's a valid health record type
-  for (const key in HealthRecordTypeEnum) {
-    if (HealthRecordTypeEnum[key as keyof typeof HealthRecordTypeEnum].toLowerCase() === normalized) {
-      return HealthRecordTypeEnum[key as keyof typeof HealthRecordTypeEnum] as HealthRecordType;
-    }
-  }
+  // Check against all valid health record types
+  const validTypes: HealthRecordType[] = [
+    'vaccination', 'examination', 'medication', 'surgery', 'laboratory',
+    'test', 'imaging', 'preventive', 'deworming', 'other', 'injury',
+    'allergy', 'observation', 'procedure', 'dental', 'grooming'
+  ];
   
-  // Default to 'other' if not found
-  return 'other';
+  return validTypes.includes(normalized as HealthRecordType) 
+    ? normalized as HealthRecordType 
+    : 'other';
 }
 
 export function getHealthRecordTypeDisplay(type: HealthRecordType): string {
