@@ -3,10 +3,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  HealthRecordType, 
-  AppetiteLevel,
-  EnergyLevel,
-  StoolConsistency 
+  HealthRecordTypeEnum, 
+  AppetiteEnum,
+  EnergyEnum,
+  StoolConsistencyEnum 
 } from '@/types/health-enums';
 
 const EnumPreviewCard: React.FC = () => {
@@ -21,10 +21,10 @@ const EnumPreviewCard: React.FC = () => {
   };
 
   // Get values from each enum
-  const healthRecordTypes = enumToArray(HealthRecordType);
-  const appetiteLevels = enumToArray(AppetiteLevel);
-  const energyLevels = enumToArray(EnergyLevel);
-  const stoolConsistencies = enumToArray(StoolConsistency);
+  const healthRecordTypes = enumToArray(HealthRecordTypeEnum);
+  const appetiteLevels = enumToArray(AppetiteEnum);
+  const energyLevels = enumToArray(EnergyEnum);
+  const stoolConsistencies = enumToArray(StoolConsistencyEnum);
 
   return (
     <div className="space-y-6">

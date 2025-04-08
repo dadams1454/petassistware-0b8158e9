@@ -25,6 +25,28 @@ export type HealthRecordType =
   | 'grooming';
 
 /**
+ * Health record type enum for backward compatibility
+ */
+export enum HealthRecordTypeEnum {
+  VACCINATION = 'vaccination',
+  EXAMINATION = 'examination',
+  MEDICATION = 'medication',
+  SURGERY = 'surgery',
+  LABORATORY = 'laboratory',
+  TEST = 'test',
+  IMAGING = 'imaging',
+  PREVENTIVE = 'preventive',
+  DEWORMING = 'deworming',
+  OTHER = 'other',
+  INJURY = 'injury',
+  ALLERGY = 'allergy',
+  OBSERVATION = 'observation',
+  PROCEDURE = 'procedure',
+  DENTAL = 'dental',
+  GROOMING = 'grooming'
+}
+
+/**
  * Type for heat intensity
  */
 export type HeatIntensityType =
@@ -74,12 +96,30 @@ export type AppetiteLevel =
   | 'poor'
   | 'none';
 
+// Add AppetiteEnum for backward compatibility
+export enum AppetiteEnum {
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  FAIR = 'fair',
+  POOR = 'poor',
+  NONE = 'none'
+}
+
 export type EnergyLevel = 
   | 'hyperactive'
   | 'high'
   | 'normal'
   | 'low'
   | 'lethargic';
+
+// Add EnergyEnum for backward compatibility
+export enum EnergyEnum {
+  HYPERACTIVE = 'hyperactive',
+  HIGH = 'high',
+  NORMAL = 'normal',
+  LOW = 'low',
+  LETHARGIC = 'lethargic'
+}
 
 export type StoolConsistency = 
   | 'normal'
@@ -89,6 +129,17 @@ export type StoolConsistency =
   | 'hard'
   | 'bloody'
   | 'mucus';
+
+// Add StoolConsistencyEnum for backward compatibility
+export enum StoolConsistencyEnum {
+  NORMAL = 'normal',
+  SOFT = 'soft',
+  LOOSE = 'loose',
+  WATERY = 'watery',
+  HARD = 'hard',
+  BLOODY = 'bloody',
+  MUCUS = 'mucus'
+}
 
 // Helper functions
 export function stringToHealthRecordType(str: string): HealthRecordType {
