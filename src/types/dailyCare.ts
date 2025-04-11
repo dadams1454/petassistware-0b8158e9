@@ -2,7 +2,6 @@
 /**
  * Daily care type definitions
  */
-import { DogFlag } from './dog';
 
 /**
  * Daily care log entry
@@ -39,6 +38,15 @@ export interface CareTaskPreset {
   task_name: string;
   created_at: string;
   created_by: string;
+}
+
+/**
+ * Dog flag for special status or conditions
+ */
+export interface DogFlag {
+  type: 'in_heat' | 'incompatible' | 'special_attention' | 'other';
+  value?: string;
+  incompatible_with?: string[];
 }
 
 /**

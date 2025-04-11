@@ -42,7 +42,8 @@ export type {
 // Export health enum objects and utility functions
 export {
   HealthRecordTypeEnum, 
-  MedicationStatusEnum, 
+  MedicationStatusEnum,
+  MedicationStatus,
   AppetiteEnum,
   EnergyEnum,
   StoolConsistencyEnum,
@@ -59,7 +60,14 @@ export type {
   PuppyMilestone,
   VaccinationScheduleItem,
   VaccinationRecord,
-  PuppyWithAge  // Added this export
+  PuppyWithAge,
+  SocializationCategory,
+  SocializationCategoryOption,
+  SocializationReactionType,
+  SocializationReaction,
+  SocializationReactionOption,
+  SocializationExperience,
+  SocializationProgress
 } from './puppyTracking';
 
 // Export puppy types

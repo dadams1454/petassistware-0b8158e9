@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { DogCareStatus, DogFlag } from '@/types/dailyCare';
+import { DogCareStatus, DogFlag } from '@/types';
 
 // Define the categories including new 'puppies'
 const CARE_CATEGORIES = [
@@ -45,11 +45,16 @@ export function useCareDashboard() {
           photo_url,
           requires_special_handling,
           potty_alert_threshold,
-          max_time_between_breaks
+          max_time_between_breaks,
+          created_at,
+          updated_at
         `)
         .order('name');
 
       if (error) throw error;
+
+      // Get current timestamp for created_at/updated_at if missing
+      const now = new Date().toISOString();
 
       // Transform dogs data for UI display
       const dogsWithCareStatus: DogCareStatus[] = data.map(dog => ({
@@ -67,7 +72,9 @@ export function useCareDashboard() {
         potty_alert_threshold: dog.potty_alert_threshold || 300,
         max_time_between_breaks: dog.max_time_between_breaks || 360,
         last_care: null,
-        flags: [] as DogFlag[]
+        flags: [] as DogFlag[],
+        created_at: dog.created_at || now,
+        updated_at: dog.updated_at || now
       }));
 
       setDogStatuses(dogsWithCareStatus);

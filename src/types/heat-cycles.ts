@@ -78,7 +78,7 @@ export interface HeatCycle {
   dog_id: string;
   start_date: string;
   end_date?: string;
-  intensity: HeatIntensityType;
+  intensity: HeatIntensityType; // This must be HeatIntensityType, not string
   symptoms?: string[];
   notes?: string;
   cycle_number?: number;

@@ -2,7 +2,7 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatusEnum } from '@/types';
+import { MedicationStatusEnum, MedicationStatus } from '@/types';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 interface MedicationStatusProps {

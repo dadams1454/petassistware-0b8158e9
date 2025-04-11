@@ -14,11 +14,28 @@ export const usePuppyTracking = (): PuppyManagementStats => {
   
   const puppyStats = useCanonicalPuppyTracking();
   
-  // Add the required properties if they're not present (they should be now)
+  // Add the required properties if they're not present
   return {
     ...puppyStats,
+    puppies: puppyStats.puppies || [],
+    ageGroups: puppyStats.ageGroups || [],
+    puppiesByAgeGroup: puppyStats.puppiesByAgeGroup || {},
+    byAgeGroup: puppyStats.byAgeGroup || {
+      newborn: [],
+      twoWeek: [],
+      fourWeek: [],
+      sixWeek: [],
+      eightWeek: [],
+      tenWeek: [],
+      twelveWeek: [],
+      older: [],
+      all: [],
+      total: 0
+    },
     maleCount: puppyStats.maleCount || puppyStats.byGender?.male || 0,
     femaleCount: puppyStats.femaleCount || puppyStats.byGender?.female || 0,
-    puppiesByStatus: puppyStats.puppiesByStatus || {}
+    puppiesByStatus: puppyStats.puppiesByStatus || {},
+    currentWeek: puppyStats.currentWeek || 0,
+    total: puppyStats.total || { count: 0, male: 0, female: 0 }
   };
 };

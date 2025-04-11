@@ -72,7 +72,7 @@ export enum MedicationStatusEnum {
   DISCONTINUED = 'discontinued'
 }
 
-// Define MedicationStatusResult as a string union type
+// Define MedicationStatusResult as a string union type or object type
 export type MedicationStatusResult = 
   | 'due'
   | 'upcoming'
@@ -139,6 +139,21 @@ export enum StoolConsistencyEnum {
   HARD = 'hard',
   BLOODY = 'bloody',
   MUCUS = 'mucus'
+}
+
+/**
+ * Medication Status for backward compatibility
+ */
+export enum MedicationStatus {
+  ACTIVE = 'active',
+  OVERDUE = 'overdue',
+  UPCOMING = 'upcoming',
+  COMPLETED = 'completed',
+  DISCONTINUED = 'discontinued',
+  NOT_STARTED = 'not_started',
+  DUE = 'due',
+  SKIPPED = 'skipped',
+  UNKNOWN = 'unknown'
 }
 
 // Helper functions

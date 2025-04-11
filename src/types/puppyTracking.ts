@@ -3,7 +3,6 @@
  * Puppy tracking type definitions
  */
 import { WeightUnit } from './weight-units';
-import { WeightRecord } from './weight';
 
 /**
  * Interface for puppy with age information
@@ -33,7 +32,12 @@ export interface PuppyWithAge {
 }
 
 /**
- * Extended PuppyAgeGroup interface with additional properties
+ * Type for identifying puppy age groups
+ */
+export type PuppyAgeGroup = PuppyAgeGroupInfo;
+
+/**
+ * Interface for detailed information about puppy age groups
  */
 export interface PuppyAgeGroupInfo {
   id: string;
@@ -54,11 +58,6 @@ export interface PuppyAgeGroupInfo {
 }
 
 /**
- * Type for identifying puppy age groups
- */
-export type PuppyAgeGroup = PuppyAgeGroupInfo | 'newborn' | 'twoWeek' | 'fourWeek' | 'sixWeek' | 'eightWeek' | 'tenWeek' | 'twelveWeek' | 'older';
-
-/**
  * Interface for grouped puppies by age
  */
 export interface PuppyAgeGroupData {
@@ -75,7 +74,7 @@ export interface PuppyAgeGroupData {
 }
 
 /**
- * Interface for puppy management stats
+ * Interface for puppy management stats - complete with all required properties
  */
 export interface PuppyManagementStats {
   // Core data
@@ -101,15 +100,15 @@ export interface PuppyManagementStats {
   availableCount: number;
   soldCount: number;
   
+  // Required properties
+  maleCount: number;
+  femaleCount: number;
+  puppiesByStatus: Record<string, PuppyWithAge[]>;
+  
   // Legacy properties
   availablePuppies: number;
   reservedPuppies: number;
   soldPuppies: number;
-  
-  // Added missing properties
-  maleCount: number;
-  femaleCount: number;
-  puppiesByStatus: Record<string, PuppyWithAge[]>;
   
   // Utility values
   currentWeek: number;
@@ -142,6 +141,7 @@ export interface PuppyMilestone {
   expectedAgeDays?: number;
   created_at?: string;
   notes?: string;
+  category?: string;
 }
 
 /**
@@ -154,6 +154,7 @@ export interface VaccinationScheduleItem {
   ageInWeeks: number;
   description: string;
   administered?: boolean;
+  notes?: string;
 }
 
 /**
@@ -167,4 +168,87 @@ export interface VaccinationRecord {
   administeredBy: string;
   notes?: string;
   created_at: string;
+}
+
+/**
+ * Socialization category
+ */
+export interface SocializationCategory {
+  id: string;
+  category: string;
+  displayName: string;
+  description: string;
+  targetCount: number;
+}
+
+/**
+ * Socialization category option
+ */
+export interface SocializationCategoryOption {
+  id: string;
+  category: string;
+  displayName: string;
+  description: string;
+  examples: string[];
+  targetCount: number;
+}
+
+/**
+ * Socialization reaction type
+ */
+export type SocializationReactionType =
+  | 'positive'
+  | 'neutral'
+  | 'cautious'
+  | 'fearful'
+  | 'very_positive'
+  | 'very_fearful';
+
+/**
+ * Socialization reaction
+ */
+export interface SocializationReaction {
+  id: string;
+  type: SocializationReactionType;
+  description: string;
+  color: string;
+}
+
+/**
+ * Socialization reaction option
+ */
+export interface SocializationReactionOption {
+  id: string;
+  type: SocializationReactionType;
+  description: string;
+  label: string;
+  value: string;
+}
+
+/**
+ * Socialization experience
+ */
+export interface SocializationExperience {
+  id: string;
+  puppy_id: string;
+  category: string;
+  experience: string;
+  reaction: SocializationReactionType;
+  notes?: string;
+  created_at: string;
+  date: string;
+}
+
+/**
+ * Socialization progress
+ */
+export interface SocializationProgress {
+  category: string;
+  categoryName: string;
+  total: number;
+  completed: number;
+  percentage: number;
+  count: number;
+  target: number;
+  completion_percentage: number;
 }
