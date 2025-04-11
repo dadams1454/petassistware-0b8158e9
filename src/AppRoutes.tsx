@@ -2,11 +2,8 @@
 import { Route, Routes } from "react-router-dom";
 
 // ✅ Auth Pages
-import Login from "@/pages/Auth/Login";
-import Register from "@/pages/Auth/Register";
-import ForgotPassword from "@/pages/Auth/ForgotPassword";
-import ResetPassword from "@/pages/Auth/ResetPassword";
-import LandingPage from "@/pages/Auth/LandingPage";
+// Use the Auth component directly, which already exports Login, Register, etc.
+import Auth from "@/pages/Auth";
 
 // ✅ Main Dashboard
 import DashboardPage from "@/pages/Dashboard/DashboardPage";
@@ -63,11 +60,11 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* 🔓 Public Routes */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/" element={<Auth />} />
+      <Route path="/login" element={<Auth />} />
+      <Route path="/register" element={<Auth />} />
+      <Route path="/forgot-password" element={<Auth />} />
+      <Route path="/reset-password" element={<Auth />} />
 
       {/* 🏠 Main App */}
       <Route path="/dashboard" element={<DashboardPage />} />
