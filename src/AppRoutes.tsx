@@ -27,17 +27,16 @@ import LitterManagementPage from "@/modules/Reproduction/pages/LitterManagementP
 import WhelpingLiveSession from "@/modules/Reproduction/components/welping/WhelpingLiveSession";
 import LitterDetail from "@/pages/LitterDetail";
 
-// ✅ Customer & Contracts - Updating these imports to use the correct paths
-import Customers from "@/pages/Customers";
+// ✅ Customer & Contracts
+import CustomersPage from "@/pages/Customers";
 import CustomerDialog from "@/components/customers/CustomerDialog";
 import CustomerDetails from "@/components/customers/CustomerDetails";
 import CustomerForm from "@/components/customers/CustomerForm";
-
 import ContractsList from "@/components/contracts/ContractsList";
 import ContractForm from "@/components/contracts/ContractForm";
 import ContractPreviewDialog from "@/components/contracts/ContractPreviewDialog";
 
-// ✅ Operations - Using placeholder components until real ones are created
+// ✅ Operations
 import CalendarPage from "@/modules/operations/pages/CalendarPage";
 import CommunicationsPage from "@/modules/operations/pages/CommunicationsPage";
 import FinancesPage from "@/modules/operations/pages/FinancesPage";
@@ -78,13 +77,36 @@ export function AppRoutes() {
       <Route path="/reproduction/whelping/:id/live" element={<WhelpingLiveSession />} />
 
       {/* 🧑‍🤝‍🧑 Customers & Reservations */}
-      <Route path="/customers" element={<Customers />} />
-      <Route path="/customers/new" element={<CustomerDialog />} />
+      <Route path="/customers" element={<CustomersPage />} />
+      <Route path="/customers/new" element={
+        <CustomerDialog 
+          isOpen={true} 
+          onClose={() => {}} 
+          customer={null} 
+        />
+      } />
       <Route path="/customers/:customerId" element={<CustomerDetails />} />
-      <Route path="/customers/:customerId/edit" element={<CustomerForm />} />
+      <Route path="/customers/:customerId/edit" element={
+        <CustomerForm 
+          onSubmit={() => {}} 
+          onCancel={() => {}} 
+        />
+      } />
       <Route path="/contracts" element={<ContractsList />} />
-      <Route path="/contracts/new" element={<ContractForm />} />
-      <Route path="/contracts/:contractId" element={<ContractPreviewDialog />} />
+      <Route path="/contracts/new" element={
+        <ContractForm 
+          puppyId={null} 
+          onSubmit={() => {}} 
+          onCancel={() => {}} 
+        />
+      } />
+      <Route path="/contracts/:contractId" element={
+        <ContractPreviewDialog 
+          isOpen={true} 
+          onOpenChange={() => {}} 
+          contractId="placeholder"
+        />
+      } />
 
       {/* 🧹 Ops: Calendar, Facility, Finances */}
       <Route path="/calendar" element={<CalendarPage />} />
