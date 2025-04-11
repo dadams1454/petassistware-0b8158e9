@@ -61,13 +61,8 @@ export type {
   VaccinationScheduleItem,
   VaccinationRecord,
   PuppyWithAge,
-  SocializationCategory,
-  SocializationCategoryOption,
-  SocializationReactionType,
-  SocializationReaction,
-  SocializationReactionOption,
-  SocializationExperience,
-  SocializationProgress
+  // Remove socialization types from puppyTracking export
+  // as they are exported from socialization file below
 } from './puppyTracking';
 
 // Export puppy types
@@ -117,7 +112,7 @@ export {
 // Export welping types
 export type { WelpingLog, WelpingObservation as WelpingObs, PostpartumCare, WelpingLogEntry as WelpingLog2 } from './welping';
 
-// Export socialization types
+// Export socialization types - only export these from one file
 export type {
   SocializationCategory,
   SocializationCategoryOption,
@@ -125,7 +120,8 @@ export type {
   SocializationExperience,
   SocializationProgress,
   SocializationReactionType,
-  SocializationReaction
+  SocializationReaction,
+  SocializationReactionOption
 } from './socialization';
 
 // Export enums
