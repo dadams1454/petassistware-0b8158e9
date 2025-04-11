@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Dog, Clipboard, Calendar, 
   MessageSquare, FileText, DollarSign, Building2,
   ShieldCheck, Heart, Baby, FileSpreadsheet, Settings,
-  PawPrint, AreaChart
+  PawPrint, AreaChart, Database, Lock, UserCog
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -46,9 +46,12 @@ const Sidebar = () => {
         <div className="p-4">
           <p className="text-xs text-gray-500 uppercase mb-4 font-medium">Administration</p>
           <nav className="space-y-2">
-            <SidebarLink to="/users" icon={<Users size={18} />} label="Users" />
-            <SidebarLink to="/audit-logs" icon={<FileSpreadsheet size={18} />} label="Audit Logs" />
-            <SidebarLink to="/settings" icon={<Settings size={18} />} label="Settings" />
+            <SidebarLink to="/admin/users" icon={<Users size={18} />} label="Users" />
+            <SidebarLink to="/admin/audit-logs" icon={<FileSpreadsheet size={18} />} label="Audit Logs" />
+            <SidebarLink to="/admin/settings" icon={<Settings size={18} />} label="Settings" />
+            <SidebarLink to="/admin/security" icon={<Lock size={18} />} label="Security" />
+            <SidebarLink to="/admin/schema" icon={<Database size={18} />} label="Schema" />
+            <SidebarLink to="/admin/roles" icon={<UserCog size={18} />} label="Roles" />
           </nav>
         </div>
       </div>

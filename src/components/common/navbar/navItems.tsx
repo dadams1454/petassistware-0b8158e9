@@ -16,7 +16,10 @@ import {
   ClipboardCheck,
   Scale,
   Baby,
-  UserCircle
+  UserCircle,
+  Database,
+  Lock,
+  Heart
 } from 'lucide-react';
 
 export const navItems = [
@@ -39,10 +42,10 @@ export const navItems = [
     description: 'Manage your dogs and puppies'
   },
   {
-    title: 'Litters',
-    href: '/litters',
-    icon: ClipboardList,
-    description: 'Manage your litters and puppies'
+    title: 'Reproduction',
+    href: '/reproduction',
+    icon: Heart,
+    description: 'Manage breeding, litters, and whelping'
   },
   {
     title: 'Reservations',
@@ -92,35 +95,48 @@ export const navItems = [
     icon: Scale,
     description: 'Manage licenses and regulatory requirements'
   },
-  {
-    title: 'Breeding Prep',
-    href: '/breeding-prep',
-    icon: ClipboardCheck,
-    description: 'Prepare for breeding cycles'
-  },
-  {
-    title: 'Welping',
-    href: '/welping',
-    icon: Baby,
-    description: 'Manage whelping and puppy care'
-  },
+  // Admin section
   {
     title: 'Users',
-    href: '/users',
+    href: '/admin/users',
     icon: Users,
-    description: 'Manage user accounts and permissions'
+    description: 'Manage user accounts and permissions',
+    admin: true
   },
   {
-    title: 'Audit Log',
-    href: '/audit-logs',
+    title: 'Audit Logs',
+    href: '/admin/audit-logs',
     icon: Shield,
-    description: 'View system activity logs'
+    description: 'View system activity logs',
+    admin: true
   },
   {
     title: 'Settings',
-    href: '/settings',
+    href: '/admin/settings',
     icon: Settings,
-    description: 'Configure your kennel settings'
+    description: 'Configure your application settings',
+    admin: true
+  },
+  {
+    title: 'Security',
+    href: '/admin/security',
+    icon: Lock,
+    description: 'Manage RLS and JWT security settings',
+    admin: true
+  },
+  {
+    title: 'Schema',
+    href: '/admin/schema',
+    icon: Database,
+    description: 'View database schema and relationships',
+    admin: true
+  },
+  {
+    title: 'Roles',
+    href: '/admin/roles',
+    icon: UserCog,
+    description: 'Configure role-based access control',
+    admin: true
   }
 ];
 
@@ -130,11 +146,15 @@ export const getNavItems = () => {
     name: item.title,
     to: item.href,
     icon: <item.icon className="h-5 w-5" />,
-    description: item.description
+    description: item.description,
+    admin: item.admin || false
   }));
 };
 
 export const filterNavItemsByRole = (items: ReturnType<typeof getNavItems>, role: string) => {
-  // For now, we're not filtering by role, but the function is here for future use
+  // Filter out admin items for non-admin roles
+  if (role !== 'admin' && role !== 'owner') {
+    return items.filter(item => !item.admin);
+  }
   return items;
 };

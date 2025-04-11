@@ -1,15 +1,12 @@
 
 import React from 'react';
-import { Routes } from 'react-router-dom';
+import { AppRoutes } from './AppRoutes';
 import ErrorBoundary from './components/ErrorBoundary';
-import { appRoutes } from './routes';
 
 const Router = () => {
   return (
     <ErrorBoundary>
-      <Routes>
-        {appRoutes}
-      </Routes>
+      <AppRoutes />
     </ErrorBoundary>
   );
 };

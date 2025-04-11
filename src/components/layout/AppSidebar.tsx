@@ -30,7 +30,10 @@ import {
   Scale,
   UserCircle,
   Baby,
-  Heart
+  Heart,
+  Database,
+  Lock,
+  UserCog
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
 
@@ -57,9 +60,12 @@ const AppSidebar = () => {
   ];
   
   const adminMenuItems = [
-    { title: 'Users', href: '/users', icon: Users },
-    { title: 'Audit Logs', href: '/audit-logs', icon: Shield },
-    { title: 'Settings', href: '/settings', icon: Settings },
+    { title: 'Users', href: '/admin/users', icon: Users },
+    { title: 'Audit Logs', href: '/admin/audit-logs', icon: Shield },
+    { title: 'Settings', href: '/admin/settings', icon: Settings },
+    { title: 'Security', href: '/admin/security', icon: Lock },
+    { title: 'Schema', href: '/admin/schema', icon: Database },
+    { title: 'Roles', href: '/admin/roles', icon: UserCog },
   ];
   
   // Only show admin items to admins or owners
