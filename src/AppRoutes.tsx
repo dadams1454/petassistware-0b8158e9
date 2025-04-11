@@ -27,17 +27,17 @@ import LitterManagementPage from "@/modules/Reproduction/pages/LitterManagementP
 import WhelpingLiveSession from "@/modules/Reproduction/components/welping/WhelpingLiveSession";
 import LitterDetail from "@/pages/LitterDetail";
 
-// ✅ Customer & Contracts
-import CustomersPage from "@/modules/customers/pages/CustomersPage";
-import CustomerDialog from "@/modules/customers/components/CustomerDialog";
-import CustomerDetails from "@/modules/customers/components/CustomerDetails";
-import CustomerForm from "@/modules/customers/components/CustomerForm";
+// ✅ Customer & Contracts - Updating these imports to use the correct paths
+import Customers from "@/pages/Customers";
+import CustomerDialog from "@/components/customers/CustomerDialog";
+import CustomerDetails from "@/components/customers/CustomerDetails";
+import CustomerForm from "@/components/customers/CustomerForm";
 
-import ContractsList from "@/modules/contracts/components/ContractsList";
-import ContractForm from "@/modules/contracts/components/ContractForm";
-import ContractPreviewDialog from "@/modules/contracts/components/ContractPreviewDialog";
+import ContractsList from "@/components/contracts/ContractsList";
+import ContractForm from "@/components/contracts/ContractForm";
+import ContractPreviewDialog from "@/components/contracts/ContractPreviewDialog";
 
-// ✅ Operations
+// ✅ Operations - Using placeholder components until real ones are created
 import CalendarPage from "@/modules/operations/pages/CalendarPage";
 import CommunicationsPage from "@/modules/operations/pages/CommunicationsPage";
 import FinancesPage from "@/modules/operations/pages/FinancesPage";
@@ -46,14 +46,7 @@ import ReservationsPage from "@/modules/operations/pages/ReservationsPage";
 import CompliancePage from "@/modules/operations/pages/CompliancePage";
 
 // ✅ Admin Tools
-import {
-  UsersPage,
-  AuditLogsPage,
-  SettingsPage,
-  AdminSecurityPage,
-  AdminSchemaPage,
-  AdminRolesPage,
-} from "@/pages/Admin";
+import { UsersPage, AuditLogsPage, SettingsPage, AdminSecurityPage, AdminSchemaPage, AdminRolesPage } from "@/pages/Admin";
 
 export function AppRoutes() {
   return (
@@ -82,13 +75,10 @@ export function AppRoutes() {
       <Route path="/reproduction/breeding" element={<BreedingManagementPage />} />
       <Route path="/reproduction/litters" element={<LitterManagementPage />} />
       <Route path="/reproduction/litters/:id" element={<LitterDetail />} />
-      {/* Temporarily comment out routes that reference components we couldn't find */}
-      {/* <Route path="/reproduction/litters/:id/add-puppies" element={<BatchPuppyEntryPage />} /> */}
-      {/* <Route path="/reproduction/litters/:id/puppy-testing" element={<PuppyTestingPage />} /> */}
       <Route path="/reproduction/whelping/:id/live" element={<WhelpingLiveSession />} />
 
       {/* 🧑‍🤝‍🧑 Customers & Reservations */}
-      <Route path="/customers" element={<CustomersPage />} />
+      <Route path="/customers" element={<Customers />} />
       <Route path="/customers/new" element={<CustomerDialog />} />
       <Route path="/customers/:customerId" element={<CustomerDetails />} />
       <Route path="/customers/:customerId/edit" element={<CustomerForm />} />
