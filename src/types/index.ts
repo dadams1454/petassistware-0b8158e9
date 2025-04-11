@@ -2,7 +2,7 @@
 // Export standard types from core type definitions
 export type { WeightUnit, WeightUnitInfo } from './weight-units';
 export { 
-  WeightUnitEnum,  // Re-add this export
+  WeightUnitEnum,  
   weightUnitInfos, 
   standardizeWeightUnit,
   getWeightUnitInfo
@@ -17,7 +17,8 @@ export {
   HeatIntensity, 
   HeatIntensityValues,
   mapHeatIntensityToType,
-  mapHeatIntensityTypeToDisplay
+  mapHeatIntensityTypeToDisplay,
+  stringToHeatIntensityType
 } from './heat-cycles';
 
 // Export health-related types
@@ -49,7 +50,7 @@ export {
   getHealthRecordTypeDisplay
 } from './health-enums';
 
-// Export puppy tracking types with explicit naming to avoid conflicts
+// Export puppy tracking types
 export type {
   PuppyAgeGroup,
   PuppyAgeGroupInfo,
@@ -57,11 +58,12 @@ export type {
   PuppyManagementStats,
   PuppyMilestone,
   VaccinationScheduleItem,
-  VaccinationRecord
+  VaccinationRecord,
+  PuppyWithAge  // Added this export
 } from './puppyTracking';
 
 // Export puppy types
-export type { Puppy, PuppyWithAge, PuppyPhoto, PuppyCareLog } from './puppy';
+export type { Puppy, PuppyPhoto, PuppyCareLog } from './puppy';
 
 // Export dog types and helpers
 export { 

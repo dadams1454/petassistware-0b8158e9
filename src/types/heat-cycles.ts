@@ -61,6 +61,16 @@ export const mapHeatIntensityTypeToDisplay = (type: HeatIntensityType): HeatInte
 };
 
 /**
+ * Convert string to HeatIntensityType with validation
+ */
+export const stringToHeatIntensityType = (value: string): HeatIntensityType => {
+  if (value === 'none' || value === 'mild' || value === 'moderate' || value === 'strong' || value === 'very_strong') {
+    return value as HeatIntensityType;
+  }
+  return 'none'; // default fallback
+};
+
+/**
  * Heat cycle interface
  */
 export interface HeatCycle {

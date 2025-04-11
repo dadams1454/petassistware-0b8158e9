@@ -59,6 +59,16 @@ export const usePuppyTracking = (options?: PuppyTrackingOptions): PuppyManagemen
   // Group puppies by age
   const { ageGroups, puppiesByAgeGroup } = usePuppyAgeGroups(processedPuppies);
   
+  // Group puppies by status
+  const puppiesByStatus: Record<string, PuppyWithAge[]> = {};
+  processedPuppies.forEach(puppy => {
+    const status = puppy.status?.toLowerCase() || 'unknown';
+    if (!puppiesByStatus[status]) {
+      puppiesByStatus[status] = [];
+    }
+    puppiesByStatus[status].push(puppy);
+  });
+  
   // Get puppy statistics
   const statsResult = usePuppyStats(processedPuppies);
   
@@ -76,6 +86,10 @@ export const usePuppyTracking = (options?: PuppyTrackingOptions): PuppyManagemen
     },
     byAgeGroup = {} as Record<string, number>
   } = statsResult;
+
+  // Set male and female counts
+  const maleCount = byGender.male || 0;
+  const femaleCount = byGender.female || 0;
 
   // Convert PuppyAgeGroup[] to PuppyAgeGroupInfo[]
   const ageGroupInfos = ageGroups;
@@ -114,6 +128,11 @@ export const usePuppyTracking = (options?: PuppyTrackingOptions): PuppyManagemen
     reservedCount: reservedPuppies,
     availableCount: availablePuppies,
     soldCount: soldPuppies,
+    
+    // Added properties that were missing
+    maleCount,
+    femaleCount,
+    puppiesByStatus,
     
     // Legacy properties
     availablePuppies,

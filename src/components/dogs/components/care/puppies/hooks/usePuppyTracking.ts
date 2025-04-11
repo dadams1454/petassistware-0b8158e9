@@ -12,5 +12,13 @@ export const usePuppyTracking = (): PuppyManagementStats => {
     'Please update your import to use "@/modules/puppies" instead.'
   );
   
-  return useCanonicalPuppyTracking();
+  const puppyStats = useCanonicalPuppyTracking();
+  
+  // Add the required properties if they're not present (they should be now)
+  return {
+    ...puppyStats,
+    maleCount: puppyStats.maleCount || puppyStats.byGender?.male || 0,
+    femaleCount: puppyStats.femaleCount || puppyStats.byGender?.female || 0,
+    puppiesByStatus: puppyStats.puppiesByStatus || {}
+  };
 };

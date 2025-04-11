@@ -107,6 +107,11 @@ export interface PuppyManagementStats {
   availableCount: number;
   soldCount: number;
   
+  // Added missing properties
+  maleCount: number;
+  femaleCount: number;
+  puppiesByStatus: Record<string, PuppyWithAge[]>;
+  
   // Legacy properties
   availablePuppies: number;
   reservedPuppies: number;

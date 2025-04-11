@@ -1,124 +1,79 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { PuppyWithAge, PuppyAgeGroup } from '@/types/puppyTracking';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpRight, Baby, Calendar, Ruler, Weight } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PencilIcon, PawPrint } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { PuppyWithAge, PuppyAgeGroupInfo } from '@/types';
 
 interface PuppyCardProps {
   puppy: PuppyWithAge;
-  ageGroup: PuppyAgeGroup;
+  ageGroup: PuppyAgeGroupInfo;
+  onRefresh?: () => void;
 }
 
-const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup }) => {
+const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => {
   const navigate = useNavigate();
   
-  const handleViewDetails = () => {
-    // Navigate to puppy details in the litter context
+  const handleGoToPuppy = () => {
     if (puppy.litter_id) {
       navigate(`/litters/${puppy.litter_id}/puppies/${puppy.id}`);
+    } else {
+      navigate(`/puppies/${puppy.id}`);
     }
   };
-  
-  const getGenderColor = (gender: string | null | undefined) => {
-    return gender?.toLowerCase() === 'male' ? 'text-blue-500' : 'text-pink-500';
-  };
-  
-  const getBirthDateFormatted = () => {
-    if (!puppy.birth_date) return 'Unknown';
-    return new Date(puppy.birth_date).toLocaleDateString();
-  };
-  
-  const getInitials = () => {
-    if (!puppy.name) return 'PUP';
-    return puppy.name.substring(0, 2).toUpperCase();
-  };
-  
-  const getStatusColor = () => {
-    switch (puppy.status?.toLowerCase()) {
-      case 'available':
-        return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'reserved':
-        return 'bg-amber-100 text-amber-800 hover:bg-amber-200';
-      case 'sold':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'kept':
-        return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
-      default:
-        return '';
-    }
-  };
-  
+
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
-      <div className="flex items-center border-b p-4 bg-muted/30">
-        <Avatar className="h-12 w-12 mr-3">
-          <AvatarImage src={puppy.photo_url as string || undefined} alt={puppy.name || 'Puppy'} />
-          <AvatarFallback className="bg-primary/10 text-primary">
-            {getInitials()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <h3 className="font-medium line-clamp-1">
-            {puppy.name || 'Unnamed Puppy'}
-          </h3>
-          <div className="flex gap-1 items-center text-xs text-muted-foreground">
-            <span className={getGenderColor(puppy.gender)}>
-              {puppy.gender || 'Unknown'}
-            </span>
-            <span>•</span>
-            <span>{puppy.color || 'Unknown color'}</span>
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-2 pt-4 px-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="font-medium">{puppy.name || `Puppy #${puppy.id.substring(0, 4)}`}</h3>
+            {puppy.litter_id && (
+              <p className="text-xs text-muted-foreground">Litter: {puppy.litter_id.substring(0, 8)}</p>
+            )}
           </div>
+          <Badge variant={puppy.status === 'Available' ? 'default' : 'secondary'} className="capitalize">
+            {puppy.status || 'Available'}
+          </Badge>
         </div>
-        <Badge variant="outline" className={getStatusColor()}>
-          {puppy.status || 'Available'}
-        </Badge>
-      </div>
+      </CardHeader>
       
-      <CardContent className="p-4">
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div className="flex items-center gap-1">
-            <Baby className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Age:</span>
-            <span className="font-medium">{puppy.ageInDays || puppy.age_days || 0} days</span>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Born:</span>
-            <span className="font-medium">{getBirthDateFormatted()}</span>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <Weight className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Weight:</span>
+      <CardContent className="p-4 pt-0">
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="text-sm">
+            <span className="text-muted-foreground">Age:</span>{' '}
             <span className="font-medium">
-              {puppy.current_weight ? `${puppy.current_weight}` : 'Not recorded'}
+              {puppy.ageInWeeks || 0} weeks ({puppy.ageInDays || 0} days)
             </span>
           </div>
           
-          <div className="flex items-center gap-1">
-            <Ruler className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Stage:</span>
-            <span className="font-medium">{ageGroup.name}</span>
+          <div className="text-sm">
+            <span className="text-muted-foreground">Gender:</span>{' '}
+            <span className="font-medium capitalize">{puppy.gender || 'Unknown'}</span>
           </div>
+          
+          {puppy.color && (
+            <div className="text-sm">
+              <span className="text-muted-foreground">Color:</span>{' '}
+              <span className="font-medium">{puppy.color}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex justify-between">
+          <Button size="sm" variant="outline" onClick={handleGoToPuppy}>
+            <PawPrint className="h-4 w-4 mr-1" />
+            {ageGroup.name} Care
+          </Button>
+          
+          <Button size="sm" variant="ghost" onClick={handleGoToPuppy}>
+            <PencilIcon className="h-4 w-4 mr-1" />
+            Details
+          </Button>
         </div>
       </CardContent>
-      
-      <CardFooter className="pt-0 pb-3 px-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="w-full flex items-center justify-center gap-1"
-          onClick={handleViewDetails}
-        >
-          <span>View Details</span>
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

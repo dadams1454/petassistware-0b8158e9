@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { PuppyWithAge, PuppyAgeGroup } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyAgeGroupInfo } from '@/types';
 import PuppyCard from './PuppyCard';
 import { Badge } from '@/components/ui/badge';
 import { ArrowDown, ArrowUp } from 'lucide-react';
@@ -9,7 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 interface PuppyAgeGroupListProps {
   puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
-  ageGroups: PuppyAgeGroup[];
+  ageGroups: PuppyAgeGroupInfo[];
 }
 
 const PuppyAgeGroupList: React.FC<PuppyAgeGroupListProps> = ({ 
