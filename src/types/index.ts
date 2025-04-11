@@ -60,9 +60,9 @@ export type {
   PuppyMilestone,
   VaccinationScheduleItem,
   VaccinationRecord,
-  PuppyWithAge,
+  PuppyWithAge
   // Remove socialization types from puppyTracking export
-  // as they are exported from socialization file below
+  // as they are exported from the socialization file below
 } from './puppyTracking';
 
 // Export puppy types
