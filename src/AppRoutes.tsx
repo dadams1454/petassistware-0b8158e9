@@ -6,16 +6,18 @@ import { Route, Routes } from "react-router-dom";
 import Auth from "@/pages/Auth";
 
 // ✅ Main Dashboard
-import DashboardPage from "@/pages/Dashboard/DashboardPage";
-import ProfilePage from "@/pages/Dashboard/ProfilePage";
+import DashboardPage from "@/modules/dashboard/pages/DashboardPage";
+import ProfilePage from "@/modules/dashboard/pages/ProfilePage";
 
 // ✅ Dog Management
-import DogListPage from "@/pages/Dogs/DogListPage";
-import DogAddPage from "@/pages/Dogs/DogAddPage";
-import DogDetailPage from "@/pages/Dogs/DogDetailPage";
-import DogEditPage from "@/pages/Dogs/DogEditPage";
-import DogWeightPage from "@/pages/Dogs/DogWeightPage";
-import ReproductiveCyclePage from "@/pages/Dogs/ReproductiveCyclePage";
+import { 
+  DogListPage,
+  DogAddPage,
+  DogDetailPage,
+  DogEditPage,
+  DogWeightPage,
+  ReproductiveCyclePage
+} from "@/modules/dogs";
 
 // ✅ Reproduction Module
 // Updated imports based on actual file locations
@@ -24,27 +26,24 @@ import BreedingManagementPage from "@/modules/Reproduction/pages/BreedingManagem
 import LitterManagementPage from "@/modules/Reproduction/pages/LitterManagementPage";
 import WhelpingLiveSession from "@/modules/Reproduction/components/welping/WhelpingLiveSession";
 import LitterDetail from "@/pages/LitterDetail";
-// Commented out imports for components that couldn't be found
-// import BatchPuppyEntryPage from "@/pages/BatchPuppyEntry";
-// import PuppyTestingPage from "@/pages/PuppyTestingDashboard";
 
 // ✅ Customer & Contracts
-import CustomersPage from "@/pages/Customers/CustomersPage";
-import CustomerDialog from "@/pages/Customers/CustomerDialog";
-import CustomerDetails from "@/pages/Customers/CustomerDetails";
-import CustomerForm from "@/pages/Customers/CustomerForm";
+import CustomersPage from "@/modules/customers/pages/CustomersPage";
+import CustomerDialog from "@/modules/customers/components/CustomerDialog";
+import CustomerDetails from "@/modules/customers/components/CustomerDetails";
+import CustomerForm from "@/modules/customers/components/CustomerForm";
 
-import ContractsList from "@/pages/Contracts/ContractsList";
-import ContractForm from "@/pages/Contracts/ContractForm";
-import ContractPreviewDialog from "@/pages/Contracts/ContractPreviewDialog";
+import ContractsList from "@/modules/contracts/components/ContractsList";
+import ContractForm from "@/modules/contracts/components/ContractForm";
+import ContractPreviewDialog from "@/modules/contracts/components/ContractPreviewDialog";
 
 // ✅ Operations
-import CalendarPage from "@/pages/Operations/CalendarPage";
-import CommunicationsPage from "@/pages/Operations/CommunicationsPage";
-import FinancesPage from "@/pages/Operations/FinancesPage";
-import FacilityPage from "@/pages/Operations/FacilityPage";
-import ReservationsPage from "@/pages/Operations/ReservationsPage";
-import CompliancePage from "@/pages/Operations/CompliancePage";
+import CalendarPage from "@/modules/operations/pages/CalendarPage";
+import CommunicationsPage from "@/modules/operations/pages/CommunicationsPage";
+import FinancesPage from "@/modules/operations/pages/FinancesPage";
+import FacilityPage from "@/modules/operations/pages/FacilityPage";
+import ReservationsPage from "@/modules/operations/pages/ReservationsPage";
+import CompliancePage from "@/modules/operations/pages/CompliancePage";
 
 // ✅ Admin Tools
 import {
@@ -83,7 +82,7 @@ export function AppRoutes() {
       <Route path="/reproduction/breeding" element={<BreedingManagementPage />} />
       <Route path="/reproduction/litters" element={<LitterManagementPage />} />
       <Route path="/reproduction/litters/:id" element={<LitterDetail />} />
-      {/* Commented out routes for components that couldn't be found */}
+      {/* Temporarily comment out routes that reference components we couldn't find */}
       {/* <Route path="/reproduction/litters/:id/add-puppies" element={<BatchPuppyEntryPage />} /> */}
       {/* <Route path="/reproduction/litters/:id/puppy-testing" element={<PuppyTestingPage />} /> */}
       <Route path="/reproduction/whelping/:id/live" element={<WhelpingLiveSession />} />
