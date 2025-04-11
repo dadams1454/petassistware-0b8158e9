@@ -2,61 +2,52 @@
 import { Route, Routes } from "react-router-dom";
 
 // ✅ Auth Pages
-import {
-  Login,
-  Register,
-  ForgotPassword,
-  ResetPassword,
-  LandingPage,
-} from "@/pages/Auth";
+import Login from "@/pages/Auth/Login";
+import Register from "@/pages/Auth/Register";
+import ForgotPassword from "@/pages/Auth/ForgotPassword";
+import ResetPassword from "@/pages/Auth/ResetPassword";
+import LandingPage from "@/pages/Auth/LandingPage";
 
 // ✅ Main Dashboard
-import { DashboardPage, ProfilePage } from "@/pages/Dashboard";
+import DashboardPage from "@/pages/Dashboard/DashboardPage";
+import ProfilePage from "@/pages/Dashboard/ProfilePage";
 
 // ✅ Dog Management
-import {
-  DogListPage,
-  DogAddPage,
-  DogDetailPage,
-  DogEditPage,
-  DogWeightPage,
-  ReproductiveCyclePage,
-} from "@/pages/Dogs";
+import DogListPage from "@/pages/Dogs/DogListPage";
+import DogAddPage from "@/pages/Dogs/DogAddPage";
+import DogDetailPage from "@/pages/Dogs/DogDetailPage";
+import DogEditPage from "@/pages/Dogs/DogEditPage";
+import DogWeightPage from "@/pages/Dogs/DogWeightPage";
+import ReproductiveCyclePage from "@/pages/Dogs/ReproductiveCyclePage";
 
 // ✅ Reproduction Module
-import {
-  WelpingManagementPage,
-  WhelpingLiveSession,
-  BreedingManagementPage,
-  LitterManagementPage,
-  LitterDetail,
-  BatchPuppyEntryPage,
-  PuppyTestingPage,
-} from "@/pages/Reproduction";
+// Updated imports based on actual file locations
+import WelpingManagementPage from "@/modules/Reproduction/pages/WelpingManagementPage";
+import BreedingManagementPage from "@/modules/Reproduction/pages/BreedingManagementPage";
+import LitterManagementPage from "@/modules/Reproduction/pages/LitterManagementPage";
+import WhelpingLiveSession from "@/modules/Reproduction/components/welping/WhelpingLiveSession";
+import LitterDetail from "@/pages/LitterDetail";
+// Commented out imports for components that couldn't be found
+// import BatchPuppyEntryPage from "@/pages/BatchPuppyEntry";
+// import PuppyTestingPage from "@/pages/PuppyTestingDashboard";
 
 // ✅ Customer & Contracts
-import {
-  CustomersPage,
-  CustomerDialog,
-  CustomerDetails,
-  CustomerForm,
-} from "@/pages/Customers";
+import CustomersPage from "@/pages/Customers/CustomersPage";
+import CustomerDialog from "@/pages/Customers/CustomerDialog";
+import CustomerDetails from "@/pages/Customers/CustomerDetails";
+import CustomerForm from "@/pages/Customers/CustomerForm";
 
-import {
-  ContractsList,
-  ContractForm,
-  ContractPreviewDialog,
-} from "@/pages/Contracts";
+import ContractsList from "@/pages/Contracts/ContractsList";
+import ContractForm from "@/pages/Contracts/ContractForm";
+import ContractPreviewDialog from "@/pages/Contracts/ContractPreviewDialog";
 
 // ✅ Operations
-import {
-  CalendarPage,
-  CommunicationsPage,
-  FinancesPage,
-  FacilityPage,
-  ReservationsPage,
-  CompliancePage,
-} from "@/pages/Operations";
+import CalendarPage from "@/pages/Operations/CalendarPage";
+import CommunicationsPage from "@/pages/Operations/CommunicationsPage";
+import FinancesPage from "@/pages/Operations/FinancesPage";
+import FacilityPage from "@/pages/Operations/FacilityPage";
+import ReservationsPage from "@/pages/Operations/ReservationsPage";
+import CompliancePage from "@/pages/Operations/CompliancePage";
 
 // ✅ Admin Tools
 import {
@@ -95,8 +86,9 @@ export function AppRoutes() {
       <Route path="/reproduction/breeding" element={<BreedingManagementPage />} />
       <Route path="/reproduction/litters" element={<LitterManagementPage />} />
       <Route path="/reproduction/litters/:id" element={<LitterDetail />} />
-      <Route path="/reproduction/litters/:id/add-puppies" element={<BatchPuppyEntryPage />} />
-      <Route path="/reproduction/litters/:id/puppy-testing" element={<PuppyTestingPage />} />
+      {/* Commented out routes for components that couldn't be found */}
+      {/* <Route path="/reproduction/litters/:id/add-puppies" element={<BatchPuppyEntryPage />} /> */}
+      {/* <Route path="/reproduction/litters/:id/puppy-testing" element={<PuppyTestingPage />} /> */}
       <Route path="/reproduction/whelping/:id/live" element={<WhelpingLiveSession />} />
 
       {/* 🧑‍🤝‍🧑 Customers & Reservations */}
