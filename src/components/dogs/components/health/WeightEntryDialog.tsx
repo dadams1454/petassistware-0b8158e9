@@ -1,143 +1,173 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
-import { format } from 'date-fns';
-import { WeightUnit } from '@/types/weight-units';
+import { WeightUnitEnum } from '@/types';
+
+// Form schema for weight entry
+const weightEntrySchema = z.object({
+  weight: z.coerce
+    .number()
+    .positive('Weight must be a positive number'),
+  weight_unit: z.enum(['g', 'kg', 'oz', 'lb'], {
+    required_error: 'Please select a weight unit',
+  }),
+  date: z.date({
+    required_error: 'Please select a date',
+  }),
+  notes: z.string().optional(),
+});
+
+type WeightEntryFormValues = z.infer<typeof weightEntrySchema>;
 
 interface WeightEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: any) => void;
   dogId: string;
-  initialData?: any;
+  onSave: (data: any) => void;
 }
 
-const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({ 
-  open, 
-  onOpenChange, 
-  onSave, 
+const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
+  open,
+  onOpenChange,
   dogId,
-  initialData
+  onSave,
 }) => {
-  const [weight, setWeight] = useState(initialData?.weight || '');
-  const [unit, setUnit] = useState<WeightUnit>(initialData?.weight_unit || 'lb');
-  const [notes, setNotes] = useState(initialData?.notes || '');
-  const [date, setDate] = useState(initialData?.date || format(new Date(), 'yyyy-MM-dd'));
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const weightData = {
-      dog_id: dogId,
-      weight: parseFloat(weight.toString()),
-      weight_unit: unit,
-      date: date || format(new Date(), 'yyyy-MM-dd'),
-      notes: notes,
-      ...(initialData?.id ? { id: initialData.id } : {})
-    };
-    
-    onSave(weightData);
-    resetForm();
-  };
-  
-  const resetForm = () => {
-    if (!initialData) {
-      setWeight('');
-      setUnit('lb');
-      setNotes('');
-      setDate(format(new Date(), 'yyyy-MM-dd'));
+  const form = useForm<WeightEntryFormValues>({
+    resolver: zodResolver(weightEntrySchema),
+    defaultValues: {
+      weight: undefined,
+      weight_unit: 'lb',
+      date: new Date(),
+      notes: '',
+    },
+  });
+
+  const handleSubmit = async (values: WeightEntryFormValues) => {
+    try {
+      await onSave({
+        ...values,
+        dog_id: dogId,
+      });
+      
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error saving weight:', error);
     }
   };
-  
-  const handleDialogClose = (open: boolean) => {
-    if (!open) {
-      resetForm();
-    }
-    onOpenChange(open);
-  };
-  
+
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{initialData ? 'Edit Weight Entry' : 'Add Weight Entry'}</DialogTitle>
+          <DialogTitle>Add Weight Record</DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                max={format(new Date(), 'yyyy-MM-dd')}
-                required
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number"
+                        step="0.1"
+                        placeholder="Enter weight" 
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.valueAsNumber || '');
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="weight_unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unit</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={WeightUnitEnum.LB}>Pounds (lb)</SelectItem>
+                        <SelectItem value={WeightUnitEnum.OZ}>Ounces (oz)</SelectItem>
+                        <SelectItem value={WeightUnitEnum.KG}>Kilograms (kg)</SelectItem>
+                        <SelectItem value={WeightUnitEnum.G}>Grams (g)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="weight">Weight</Label>
-              <Input
-                id="weight"
-                type="number"
-                step="0.01"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder="Enter weight"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="unit">Unit</Label>
-              <Select
-                value={unit}
-                onValueChange={(value) => setUnit(value as WeightUnit)}
-              >
-                <SelectTrigger id="unit">
-                  <SelectValue placeholder="Select unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lb">lb</SelectItem>
-                  <SelectItem value="kg">kg</SelectItem>
-                  <SelectItem value="oz">oz</SelectItem>
-                  <SelectItem value="g">g</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional notes about this weight entry"
-              rows={3}
+
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Date</FormLabel>
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="flex justify-end gap-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">{initialData ? 'Update' : 'Save'}</Button>
-          </div>
-        </form>
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (optional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter any additional notes"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                Save Weight
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

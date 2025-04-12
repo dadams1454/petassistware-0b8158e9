@@ -1,55 +1,69 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export interface ConfirmDialogProps {
-  children?: React.ReactNode;
-  title: string;
-  description?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
   onConfirm: () => void;
-  confirmText?: string;
-  confirmLabel?: string; // Added for backward compatibility
-  cancelText?: string;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  isLoading?: boolean;
+  destructive?: boolean;
+  isSubmitting?: boolean;
 }
 
-const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ 
-  children,
-  title,
-  description,
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   open,
   onOpenChange,
+  title,
+  description,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
   onConfirm,
-  confirmText,
-  confirmLabel,
-  cancelText = "Cancel",
-  variant = "destructive",
-  isLoading = false
+  destructive = false,
+  isSubmitting = false
 }) => {
-  // Use either confirmText or confirmLabel (for backward compatibility)
-  const buttonText = confirmText || confirmLabel || "Confirm";
-
   return (
-    <div>
-      {children}
-      {open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background p-6 rounded-lg max-w-md w-full">
-            <h3 className="text-lg font-medium mb-2">{title}</h3>
-            {description && <p className="text-muted-foreground mb-4">{description}</p>}
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>{cancelText}</Button>
-              <Button variant={variant} onClick={onConfirm} disabled={isLoading}>
-                {isLoading ? "Loading..." : buttonText}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {description}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isSubmitting}>
+            {cancelLabel}
+          </AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={onConfirm}
+            className={destructive ? "bg-destructive hover:bg-destructive/90" : ""}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <span>Processing...</span>
+              </div>
+            ) : (
+              confirmLabel
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

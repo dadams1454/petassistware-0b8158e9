@@ -1,83 +1,117 @@
 
-import { UserRole } from '@/contexts/AuthProvider';
+/**
+ * Permission utility functions
+ */
 
-// Define role hierarchy
-const ROLE_HIERARCHY: Record<UserRole, number> = {
-  'guest': 0,
-  'buyer': 1,
-  'user': 2,
-  'staff': 3,
-  'veterinarian': 4,
-  'manager': 5,
-  'admin': 6,
-  'owner': 7
-};
-
-// Define permissions for each resource
-export const PERMISSIONS: {
-  [key in 'dogs' | 'litters' | 'users' | 'adminSetup']: {
-    [key in 'view' | 'add' | 'edit' | 'delete']?: string[]
-  }
-} = {
-  dogs: {
-    view: ['user', 'staff', 'manager', 'admin', 'owner', 'veterinarian', 'buyer'],
-    add: ['staff', 'manager', 'admin', 'owner'],
-    edit: ['staff', 'manager', 'admin', 'owner'],
-    delete: ['manager', 'admin', 'owner']
-  },
-  litters: {
-    view: ['user', 'staff', 'manager', 'admin', 'owner', 'veterinarian', 'buyer'],
-    add: ['staff', 'manager', 'admin', 'owner'],
-    edit: ['staff', 'manager', 'admin', 'owner'],
-    delete: ['manager', 'admin', 'owner']
-  },
-  users: {
-    view: ['manager', 'admin', 'owner'],
-    add: ['admin', 'owner'],
-    edit: ['admin', 'owner'],
-    delete: ['admin', 'owner']
-  },
-  adminSetup: {
-    view: ['admin', 'owner'],
-    edit: ['admin', 'owner']
-  }
-};
-
-// Check if a user has minimum role level
-export const hasMinimumRole = (userRole: UserRole | null, requiredRole: UserRole): boolean => {
-  if (!userRole) return false;
-  return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole];
-};
-
-// Check if a user has permission for a specific action on a resource
-export const hasPermission = (
-  userRole: UserRole | null, 
-  resource: keyof typeof PERMISSIONS, 
-  action: 'view' | 'add' | 'edit' | 'delete'
-): boolean => {
-  if (!userRole) return false;
+/**
+ * Check if a user has permission for a resource action
+ */
+export function hasPermission(
+  role: string | null | undefined,
+  resource: string,
+  action: string
+): boolean {
+  if (!role) return false;
   
-  // Admin and owner have access to everything
-  if (userRole === 'admin' || userRole === 'owner') return true;
+  // For now, we'll implement a simple role-based permission system
+  // This can be expanded later with more granular permissions
   
-  // Check if the resource exists in permissions
-  if (!PERMISSIONS[resource]) {
-    console.warn(`Resource '${resource}' not found in permissions`);
+  // Admin role has access to everything
+  if (role === 'admin') return true;
+  
+  // Define permission matrix
+  const permissions: Record<string, Record<string, string[]>> = {
+    admin: {
+      dogs: ['view', 'add', 'edit', 'delete'],
+      litters: ['view', 'add', 'edit', 'delete'],
+      users: ['view', 'add', 'edit', 'delete'],
+      adminSetup: ['view', 'edit'],
+      
+      // Add additional resources as needed
+      breeding: ['view', 'add', 'edit', 'delete'],
+      customers: ['view', 'add', 'edit', 'delete'],
+      finance: ['view', 'add', 'edit', 'delete'],
+      kennel: ['view', 'add', 'edit', 'delete'],
+      settings: ['view', 'edit']
+    },
+    
+    staff: {
+      dogs: ['view', 'add', 'edit'],
+      litters: ['view', 'add', 'edit'],
+      users: ['view'],
+      
+      breeding: ['view', 'add', 'edit'],
+      customers: ['view', 'add'],
+      finance: ['view'],
+      kennel: ['view', 'add', 'edit']
+    },
+    
+    viewer: {
+      dogs: ['view'],
+      litters: ['view'],
+      breeding: ['view'],
+      customers: ['view']
+    }
+  };
+  
+  // Check if role exists in permission matrix
+  if (!(role in permissions)) {
+    console.warn(`Unknown role: ${role}`);
     return false;
   }
   
-  // Check if the action exists for this resource
-  if (!PERMISSIONS[resource][action]) {
-    console.warn(`Action '${action}' not found for resource '${resource}'`);
+  // Check if resource exists for this role
+  if (!(resource in permissions[role])) {
+    console.warn(`Resource ${resource} not defined for role ${role}`);
     return false;
   }
   
-  // Check if the user's role is in the list of allowed roles for this action on this resource
-  return PERMISSIONS[resource][action]?.includes(userRole) || false;
-};
+  // Check if action is allowed for this resource
+  return permissions[role][resource].includes(action);
+}
 
-export default {
-  hasMinimumRole,
-  hasPermission,
-  PERMISSIONS
-};
+/**
+ * Get all permissions for a role
+ */
+export function getRolePermissions(role: string): Record<string, string[]> {
+  if (role === 'admin') {
+    return {
+      dogs: ['view', 'add', 'edit', 'delete'],
+      litters: ['view', 'add', 'edit', 'delete'],
+      users: ['view', 'add', 'edit', 'delete'],
+      adminSetup: ['view', 'edit'],
+      
+      // Add additional resources as needed
+      breeding: ['view', 'add', 'edit', 'delete'],
+      customers: ['view', 'add', 'edit', 'delete'],
+      finance: ['view', 'add', 'edit', 'delete'],
+      kennel: ['view', 'add', 'edit', 'delete'],
+      settings: ['view', 'edit']
+    };
+  }
+  
+  if (role === 'staff') {
+    return {
+      dogs: ['view', 'add', 'edit'],
+      litters: ['view', 'add', 'edit'],
+      users: ['view'],
+      
+      breeding: ['view', 'add', 'edit'],
+      customers: ['view', 'add'],
+      finance: ['view'],
+      kennel: ['view', 'add', 'edit']
+    };
+  }
+  
+  if (role === 'viewer') {
+    return {
+      dogs: ['view'],
+      litters: ['view'],
+      breeding: ['view'],
+      customers: ['view']
+    };
+  }
+  
+  // Default empty permissions for unknown roles
+  return {};
+}

@@ -65,7 +65,7 @@ const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => 
         <div className="mt-4 flex justify-between">
           <Button size="sm" variant="outline" onClick={handleGoToPuppy}>
             <PawPrint className="h-4 w-4 mr-1" />
-            {ageGroup.name} Care
+            {ageGroup.displayName} Care
           </Button>
           
           <Button size="sm" variant="ghost" onClick={handleGoToPuppy}>

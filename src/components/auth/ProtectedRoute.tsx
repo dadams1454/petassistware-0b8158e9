@@ -2,7 +2,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthLoadingState, UnauthorizedState } from '@/components/ui/standardized';
+import { LoadingState, UnauthorizedState } from '@/components/ui/standardized';
 import { hasPermission } from '@/utils/permissions';
 
 interface ProtectedRouteProps {
@@ -32,7 +32,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Show loading state while auth state is loading
   if (loading) {
-    return <AuthLoadingState message="Checking permissions..." />;
+    return <LoadingState message="Checking permissions..." />;
   }
 
   // If user is not authenticated

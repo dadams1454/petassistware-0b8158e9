@@ -1,45 +1,25 @@
 
 import React from 'react';
-import { useFormContext, UseFormReturn } from 'react-hook-form';
-import { 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel 
-} from '@/components/ui/form';
+import { UseFormReturn } from 'react-hook-form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-interface TitleFieldProps {
-  disabled?: boolean;
-  form?: UseFormReturn<any>;
-  required?: boolean;
-  className?: string;
+export interface TitleFieldProps {
+  form: UseFormReturn<any>;
 }
 
-const TitleField: React.FC<TitleFieldProps> = ({ 
-  disabled = false, 
-  form,
-  required = false,
-  className
-}) => {
-  const formContext = useFormContext();
-  const formToUse = form || formContext;
-  
+const TitleField: React.FC<TitleFieldProps> = ({ form }) => {
   return (
     <FormField
-      control={formToUse.control}
+      control={form.control}
       name="title"
       render={({ field }) => (
-        <FormItem className={className}>
-          <FormLabel>{required ? "Title*" : "Title"}</FormLabel>
+        <FormItem>
+          <FormLabel>Title</FormLabel>
           <FormControl>
-            <Input 
-              placeholder="Enter a title for this record"
-              disabled={disabled}
-              {...field}
-              value={field.value || ''}
-            />
+            <Input placeholder="Enter record title" {...field} />
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />

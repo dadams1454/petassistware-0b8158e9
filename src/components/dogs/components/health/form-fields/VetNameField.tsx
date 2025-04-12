@@ -1,45 +1,25 @@
 
 import React from 'react';
-import { useFormContext, UseFormReturn } from 'react-hook-form';
-import { 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel 
-} from '@/components/ui/form';
+import { UseFormReturn } from 'react-hook-form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-interface VetNameFieldProps {
-  disabled?: boolean;
-  form?: UseFormReturn<any>;
-  required?: boolean;
-  className?: string;
+export interface VetNameFieldProps {
+  form: UseFormReturn<any>;
 }
 
-const VetNameField: React.FC<VetNameFieldProps> = ({
-  disabled = false,
-  form,
-  required = false,
-  className
-}) => {
-  const formContext = useFormContext();
-  const formToUse = form || formContext;
-
+const VetNameField: React.FC<VetNameFieldProps> = ({ form }) => {
   return (
     <FormField
-      control={formToUse.control}
+      control={form.control}
       name="vet_name"
       render={({ field }) => (
-        <FormItem className={className}>
-          <FormLabel>{required ? "Veterinarian*" : "Veterinarian"}</FormLabel>
+        <FormItem>
+          <FormLabel>Veterinarian Name</FormLabel>
           <FormControl>
-            <Input 
-              placeholder="Enter veterinarian name"
-              disabled={disabled}
-              {...field}
-              value={field.value || ''}
-            />
+            <Input placeholder="Enter veterinarian name" {...field} />
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />

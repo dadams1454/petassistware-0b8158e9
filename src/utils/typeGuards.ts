@@ -4,15 +4,11 @@
  */
 import { 
   WeightUnit, 
-  HealthRecordType, 
-  AppetiteLevel, 
-  EnergyLevel, 
-  StoolConsistency, 
-  GeneticHealthStatus
+  HealthRecordTypeEnum,
+  AppetiteEnum,
+  EnergyEnum,
+  StoolConsistencyEnum
 } from '@/types';
-import { PuppyWithAge } from '@/modules/puppies/types';
-import { WeightRecord } from '@/modules/weight/types';
-import { HealthRecord } from '@/modules/health/types';
 
 /**
  * Type guard for WeightUnit
@@ -22,122 +18,60 @@ export function isWeightUnit(value: any): value is WeightUnit {
 }
 
 /**
- * Type guard for HealthRecordType
+ * Type guard for HealthRecordTypeEnum
  */
-export function isHealthRecordType(value: any): value is HealthRecordType {
-  const validTypes = [
-    'vaccination', 'examination', 'treatment', 'medication', 
-    'surgery', 'injury', 'allergy', 'test', 'other', 'laboratory',
-    'imaging', 'preventive', 'deworming', 'observation', 'procedure',
-    'dental', 'grooming'
-  ];
-  return validTypes.includes(value);
+export function isHealthRecordType(value: any): value is HealthRecordTypeEnum {
+  return Object.values(HealthRecordTypeEnum).includes(value);
 }
 
 /**
- * Type guard for AppetiteLevel
+ * Type guard for AppetiteEnum
  */
-export function isAppetiteLevel(value: any): value is AppetiteLevel {
-  return [
-    'excellent',
-    'good',
-    'fair',
-    'poor',
-    'none'
-  ].includes(value);
+export function isAppetiteLevel(value: any): value is AppetiteEnum {
+  return Object.values(AppetiteEnum).includes(value);
 }
 
 /**
- * Type guard for EnergyLevel
+ * Type guard for EnergyEnum
  */
-export function isEnergyLevel(value: any): value is EnergyLevel {
-  return [
-    'hyperactive',
-    'high',
-    'normal',
-    'low',
-    'lethargic'
-  ].includes(value);
+export function isEnergyLevel(value: any): value is EnergyEnum {
+  return Object.values(EnergyEnum).includes(value);
 }
 
 /**
- * Type guard for StoolConsistency
+ * Type guard for StoolConsistencyEnum
  */
-export function isStoolConsistency(value: any): value is StoolConsistency {
-  return [
-    'normal',
-    'soft',
-    'loose',
-    'watery',
-    'hard',
-    'bloody',
-    'mucus'
-  ].includes(value);
+export function isStoolConsistency(value: any): value is StoolConsistencyEnum {
+  return Object.values(StoolConsistencyEnum).includes(value);
 }
 
 /**
- * Type guard for GeneticHealthStatus
+ * Type guard to check if a value is a valid date
  */
-export function isGeneticHealthStatus(value: any): value is GeneticHealthStatus {
-  return [
-    'clear',
-    'carrier',
-    'at_risk',
-    'affected',
-    'unknown'
-  ].includes(value);
+export function isValidDate(value: any): value is Date {
+  return value instanceof Date && !isNaN(value.getTime());
 }
 
 /**
- * Type guard for PuppyWithAge
+ * Type guard to check if a value is a valid ISO date string
  */
-export function isPuppyWithAge(value: any): value is PuppyWithAge {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    'id' in value &&
-    typeof value.id === 'string' &&
-    ('ageInDays' in value || 'age_days' in value || 'age' in value)
-  );
+export function isValidISODateString(value: any): boolean {
+  if (typeof value !== 'string') return false;
+  
+  // ISO date strings are in the format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.sssZ
+  const isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/;
+  
+  return isoDateRegex.test(value) && !isNaN(Date.parse(value));
 }
 
 /**
- * Type guard for WeightRecord
+ * Type guard to check if a value is a valid UUID
  */
-export function isWeightRecord(value: any): value is WeightRecord {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    'id' in value &&
-    typeof value.id === 'string' &&
-    'weight' in value &&
-    typeof value.weight === 'number' &&
-    'weight_unit' in value &&
-    isWeightUnit(value.weight_unit) &&
-    'date' in value &&
-    typeof value.date === 'string'
-  );
-}
-
-/**
- * Type guard for HealthRecord
- */
-export function isHealthRecord(value: any): value is HealthRecord {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    'id' in value &&
-    typeof value.id === 'string' &&
-    'record_type' in value &&
-    isHealthRecordType(value.record_type) &&
-    'date' in value &&
-    typeof value.date === 'string'
-  );
-}
-
-/**
- * Helper function to safely convert unknown values to a specific type
- */
-export function safelyConvertValue<T>(value: any, typeGuard: (val: any) => val is T, defaultValue: T): T {
-  return typeGuard(value) ? value : defaultValue;
+export function isValidUUID(value: any): boolean {
+  if (typeof value !== 'string') return false;
+  
+  // UUID v4 regex pattern
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  
+  return uuidRegex.test(value);
 }

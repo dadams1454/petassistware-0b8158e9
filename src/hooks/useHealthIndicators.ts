@@ -1,20 +1,20 @@
 
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { HealthIndicator, HealthAlert, AppetiteLevel, EnergyLevel, StoolConsistency } from '@/types/health';
+import { HealthIndicator } from '@/types';
 
-export const useHealthIndicators = (dogId: string) => {
+export function useHealthIndicators(dogId: string) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
-  const [indicators, setIndicators] = useState<HealthIndicator[]>([]);
-  const [recentIndicators, setRecentIndicators] = useState<HealthIndicator[]>([]);
-  const [abnormalIndicators, setAbnormalIndicators] = useState<HealthIndicator[]>([]);
-  const [healthAlerts, setHealthAlerts] = useState<HealthAlert[]>([]);
-  const [hasActiveAlerts, setHasActiveAlerts] = useState(false);
-  
+
   // Fetch health indicators
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { 
+    data: healthIndicators = [], 
+    isLoading, 
+    error 
+  } = useQuery({
     queryKey: ['healthIndicators', dogId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -25,90 +25,96 @@ export const useHealthIndicators = (dogId: string) => {
       
       if (error) throw error;
       return data as HealthIndicator[];
-    }
-  });
-  
-  // Fetch health alerts
-  const {
-    data: alertsData,
-    isLoading: isLoadingAlerts,
-    refetch: refetchAlerts
-  } = useQuery({
-    queryKey: ['healthAlerts', dogId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('health_alerts')
-        .select('*')
-        .eq('dog_id', dogId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as HealthAlert[];
-    }
+    },
+    enabled: !!dogId,
   });
 
-  // Update state based on query results
-  useEffect(() => {
-    if (data) {
-      setIndicators(data);
-      setRecentIndicators(data.slice(0, 5));
-      setAbnormalIndicators(data.filter(indicator => indicator.abnormal));
-    }
-  }, [data]);
-  
-  useEffect(() => {
-    if (alertsData) {
-      setHealthAlerts(alertsData);
-      setHasActiveAlerts(alertsData.some(alert => !alert.resolved));
-    }
-  }, [alertsData]);
-  
-  // Add health indicator
-  const { mutate: addHealthIndicator, isPending: isSubmitting } = useMutation({
-    mutationFn: async (indicator: Omit<HealthIndicator, "id" | "created_at">) => {
-      const { data, error } = await supabase
-        .from('health_indicators')
-        .insert(indicator)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+  // Add health indicator mutation
+  const { mutateAsync: addHealthIndicator } = useMutation({
+    mutationFn: async (newIndicator: Omit<HealthIndicator, 'id' | 'created_at'>) => {
+      setIsSubmitting(true);
+      try {
+        const { data, error } = await supabase
+          .from('health_indicators')
+          .insert([{
+            ...newIndicator,
+            created_at: new Date().toISOString()
+          }])
+          .select()
+          .single();
+        
+        if (error) throw error;
+        
+        // Show success message
+        toast({
+          title: 'Health indicators saved',
+          description: 'Your dog\'s health indicators have been recorded successfully.',
+        });
+        
+        return data;
+      } catch (error) {
+        console.error('Error adding health indicator:', error);
+        
+        // Show error message
+        toast({
+          title: 'Failed to save health indicators',
+          description: 'An error occurred while saving the health indicators. Please try again.',
+          variant: 'destructive',
+        });
+        
+        throw error;
+      } finally {
+        setIsSubmitting(false);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['healthIndicators', dogId] });
-      queryClient.invalidateQueries({ queryKey: ['healthAlerts', dogId] });
     },
-    onError: (error) => {
-      console.error('Error adding health indicator:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to add health indicator. Please try again.',
-        variant: 'destructive',
-      });
-    }
   });
-  
-  // Update health indicator
-  const { mutate: updateHealthIndicator } = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string } & Partial<HealthIndicator>) => {
-      const { data, error } = await supabase
-        .from('health_indicators')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+
+  // Update health indicator mutation
+  const { mutateAsync: updateHealthIndicator } = useMutation({
+    mutationFn: async (updatedIndicator: HealthIndicator) => {
+      setIsSubmitting(true);
+      try {
+        const { id, created_at, ...updatableFields } = updatedIndicator;
+        
+        const { data, error } = await supabase
+          .from('health_indicators')
+          .update(updatableFields)
+          .eq('id', id)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        
+        toast({
+          title: 'Health indicators updated',
+          description: 'Your dog\'s health indicators have been updated successfully.',
+        });
+        
+        return data;
+      } catch (error) {
+        console.error('Error updating health indicator:', error);
+        
+        toast({
+          title: 'Failed to update health indicators',
+          description: 'An error occurred while updating the health indicators. Please try again.',
+          variant: 'destructive',
+        });
+        
+        throw error;
+      } finally {
+        setIsSubmitting(false);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['healthIndicators', dogId] });
-    }
+    },
   });
-  
-  // Delete health indicator
-  const { mutate: deleteIndicator } = useMutation({
+
+  // Delete health indicator mutation
+  const { mutateAsync: deleteHealthIndicator } = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('health_indicators')
@@ -116,97 +122,26 @@ export const useHealthIndicators = (dogId: string) => {
         .eq('id', id);
       
       if (error) throw error;
+      
+      toast({
+        title: 'Health indicator deleted',
+        description: 'The health indicator has been deleted successfully.',
+      });
+      
       return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['healthIndicators', dogId] });
-      toast({
-        title: 'Success',
-        description: 'Health indicator deleted successfully.',
-      });
-    }
-  });
-  
-  // Resolve health alert
-  const { mutate: resolveAlert } = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('health_alerts')
-        .update({ resolved: true, resolved_at: new Date().toISOString() })
-        .eq('id', id);
-      
-      if (error) throw error;
-      return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['healthAlerts', dogId] });
-      toast({
-        title: 'Success',
-        description: 'Health alert resolved successfully.',
-      });
-    }
   });
-
-  // Helper functions to get display labels for enum values
-  const getAppetiteLevelLabel = (level?: string): string => {
-    if (!level) return 'Not recorded';
-    
-    switch (level) {
-      case AppetiteLevel.EXCELLENT: return 'Excellent';
-      case AppetiteLevel.GOOD: return 'Good';
-      case AppetiteLevel.FAIR: return 'Fair';
-      case AppetiteLevel.POOR: return 'Poor';
-      case AppetiteLevel.NONE: return 'None';
-      default: return level;
-    }
-  };
-  
-  const getEnergyLevelLabel = (level?: string): string => {
-    if (!level) return 'Not recorded';
-    
-    switch (level) {
-      case EnergyLevel.HYPERACTIVE: return 'Hyperactive';
-      case EnergyLevel.HIGH: return 'High';
-      case EnergyLevel.NORMAL: return 'Normal';
-      case EnergyLevel.LOW: return 'Low';
-      case EnergyLevel.LETHARGIC: return 'Lethargic';
-      default: return level;
-    }
-  };
-  
-  const getStoolConsistencyLabel = (consistency?: string): string => {
-    if (!consistency) return 'Not recorded';
-    
-    switch (consistency) {
-      case StoolConsistency.NORMAL: return 'Normal';
-      case StoolConsistency.SOFT: return 'Soft';
-      case StoolConsistency.LOOSE: return 'Loose';
-      case StoolConsistency.WATERY: return 'Watery';
-      case StoolConsistency.HARD: return 'Hard';
-      case StoolConsistency.MUCOUSY: return 'Mucousy';
-      case StoolConsistency.BLOODY: return 'Bloody';
-      default: return consistency;
-    }
-  };
 
   return {
-    indicators,
-    recentIndicators,
-    abnormalIndicators,
-    healthAlerts,
+    healthIndicators,
     isLoading,
-    isLoadingRecent: isLoading,
-    isLoadingAbnormal: isLoading,
-    isLoadingAlerts,
+    error,
     isSubmitting,
     addHealthIndicator,
     updateHealthIndicator,
-    deleteIndicator,
-    resolveAlert,
-    getAppetiteLevelLabel,
-    getEnergyLevelLabel,
-    getStoolConsistencyLabel,
-    hasActiveAlerts,
-    refetch
+    deleteHealthIndicator,
   };
-};
+}

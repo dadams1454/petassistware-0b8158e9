@@ -1,64 +1,8 @@
 
-/**
- * Puppy tracking type definitions
- */
-import { WeightUnit } from './weight-units';
+import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupInfo } from '@/modules/puppies/types';
 
 /**
- * Interface for puppy with age information
- */
-export interface PuppyWithAge {
-  id: string;
-  name: string;
-  birth_date: string;
-  gender: string;
-  color?: string;
-  status?: string;
-  litter_id?: string;
-  photo_url?: string;
-  age_days?: number;
-  ageInDays?: number;
-  ageInWeeks?: number;
-  ageDescription?: string;
-  // Additional optional fields
-  birth_weight?: string;
-  current_weight?: string;
-  microchip_number?: string;
-  akc_registration_number?: string;
-  akc_litter_number?: string;
-  reservation_date?: string;
-  // Additional fields may be present
-  [key: string]: any;
-}
-
-/**
- * Type for identifying puppy age groups
- */
-export type PuppyAgeGroup = PuppyAgeGroupInfo;
-
-/**
- * Interface for detailed information about puppy age groups
- */
-export interface PuppyAgeGroupInfo {
-  id: string;
-  name: string;
-  groupName: string;
-  displayName: string;
-  ageRange: string;
-  description: string;
-  startDay: number;
-  endDay: number;
-  minDays: number;
-  maxDays: number;
-  unit: string;
-  color: string;
-  milestones: string[];
-  minAge: number;
-  maxAge: number;
-}
-
-/**
- * Interface for grouped puppies by age
+ * Interface for puppy age group data
  */
 export interface PuppyAgeGroupData {
   newborn: PuppyWithAge[];
@@ -74,7 +18,49 @@ export interface PuppyAgeGroupData {
 }
 
 /**
- * Interface for puppy management stats - complete with all required properties
+ * Interface for vaccination schedule items
+ */
+export interface VaccinationScheduleItem {
+  id: string;
+  name: string;
+  dueDate?: string;
+  vaccinationType: string;
+  description?: string;
+  required: boolean;
+  ageWeeks: number;
+}
+
+/**
+ * Interface for vaccination records
+ */
+export interface VaccinationRecord {
+  id: string;
+  puppyId: string;
+  vaccinationType: string;
+  vaccinationDate: string;
+  administeredBy?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+/**
+ * Interface for puppy milestones
+ */
+export interface PuppyMilestone {
+  id: string;
+  puppyId: string;
+  title: string;
+  description?: string;
+  expectedAgeDays: number;
+  completionDate?: string;
+  isCompleted: boolean;
+  category?: string;
+  notes?: string;
+  photoUrl?: string;
+}
+
+/**
+ * Interface for puppy management statistics
  */
 export interface PuppyManagementStats {
   // Core data
@@ -99,13 +85,13 @@ export interface PuppyManagementStats {
   reservedCount: number;
   availableCount: number;
   soldCount: number;
-  
-  // Required properties
   maleCount: number;
   femaleCount: number;
+  
+  // Groupings by properties
   puppiesByStatus: Record<string, PuppyWithAge[]>;
   
-  // Legacy properties
+  // Legacy property names for backward compatibility
   availablePuppies: number;
   reservedPuppies: number;
   soldPuppies: number;
@@ -113,142 +99,63 @@ export interface PuppyManagementStats {
   // Utility values
   currentWeek: number;
   
-  // State
+  // State management
   isLoading: boolean;
   error: any;
   refetch: () => Promise<any>;
-  
-  // Extended statistics
-  total: {
-    count: number;
-    male: number;
-    female: number;
-  };
 }
 
-/**
- * Puppy milestone interface
- */
-export interface PuppyMilestone {
-  id: string;
-  puppy_id: string;
-  milestone_type: string;
-  milestone_date: string;
-  title: string;
-  description?: string;
-  is_completed: boolean;
-  completionDate?: string;
-  expectedAgeDays?: number;
-  created_at?: string;
-  notes?: string;
-  category?: string;
-}
+// Socialization Types
 
-/**
- * Vaccination schedule item
- */
-export interface VaccinationScheduleItem {
-  id: string;
-  vaccinationType: string;
-  dueDate: string;
-  ageInWeeks: number;
-  description: string;
-  administered?: boolean;
+export type SocializationReactionType = 'positive' | 'neutral' | 'fearful';
+
+export interface SocializationReaction {
+  type: SocializationReactionType;
+  date: string;
   notes?: string;
 }
 
-/**
- * Vaccination record
- */
-export interface VaccinationRecord {
+export interface SocializationReactionOption {
   id: string;
-  puppy_id: string;
-  vaccinationType: string;
-  vaccinationDate: string;
-  administeredBy: string;
-  notes?: string;
-  created_at: string;
+  label: string;
+  value: string;
+  type: SocializationReactionType | string;
+  icon: string;
+  name: string;
+  color?: string;
 }
 
-/**
- * Socialization category
- */
 export interface SocializationCategory {
   id: string;
   category: string;
   displayName: string;
   description: string;
   targetCount: number;
+  examples?: string[];
+  color?: string;
 }
 
-/**
- * Socialization category option
- */
-export interface SocializationCategoryOption {
-  id: string;
-  category: string;
-  displayName: string;
-  description: string;
-  examples: string[];
-  targetCount: number;
-}
-
-/**
- * Socialization reaction type
- */
-export type SocializationReactionType =
-  | 'positive'
-  | 'neutral'
-  | 'cautious'
-  | 'fearful'
-  | 'very_positive'
-  | 'very_fearful';
-
-/**
- * Socialization reaction
- */
-export interface SocializationReaction {
-  id: string;
-  type: SocializationReactionType;
-  description: string;
-  color: string;
-}
-
-/**
- * Socialization reaction option
- */
-export interface SocializationReactionOption {
-  id: string;
-  type: SocializationReactionType;
-  description: string;
-  label: string;
+export interface SocializationCategoryOption extends SocializationCategory {
   value: string;
+  label: string;
 }
 
-/**
- * Socialization experience
- */
 export interface SocializationExperience {
   id: string;
   puppy_id: string;
   category: string;
+  categoryName?: string;
   experience: string;
-  reaction: SocializationReactionType;
+  experience_date?: string;
+  reaction?: SocializationReactionType;
   notes?: string;
   created_at: string;
-  date: string;
 }
 
-/**
- * Socialization progress
- */
 export interface SocializationProgress {
   category: string;
   categoryName: string;
   total: number;
   completed: number;
   percentage: number;
-  count: number;
-  target: number;
-  completion_percentage: number;
 }

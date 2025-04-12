@@ -1,42 +1,33 @@
 
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import React from 'react';
+import { Button } from '@/components/ui/button';
 
-interface DialogFooterButtonsProps {
+export interface DialogFooterButtonsProps {
   onCancel: () => void;
-  isSubmitting: boolean;
-  isEdit?: boolean;
-  disabled?: boolean;
-  submitLabel?: string; // Added for compatibility
+  isSubmitting?: boolean;
+  submitLabel?: string;
 }
 
-const DialogFooterButtons = ({
+const DialogFooterButtons: React.FC<DialogFooterButtonsProps> = ({
   onCancel,
-  isSubmitting,
-  isEdit = false,
-  disabled = false,
-  submitLabel
-}: DialogFooterButtonsProps) => {
+  isSubmitting = false,
+  submitLabel = 'Save'
+}) => {
   return (
-    <div className="flex justify-end space-x-2 mt-4">
+    <div className="flex justify-end space-x-2 pt-4">
       <Button
         type="button"
         variant="outline"
         onClick={onCancel}
-        disabled={isSubmitting || disabled}
+        disabled={isSubmitting}
       >
         Cancel
       </Button>
-      <Button
-        type="submit"
-        disabled={isSubmitting || disabled}
+      <Button 
+        type="submit" 
+        disabled={isSubmitting}
       >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Saving...
-          </>
-        ) : submitLabel || (isEdit ? 'Update' : 'Save')}
+        {isSubmitting ? 'Saving...' : submitLabel}
       </Button>
     </div>
   );

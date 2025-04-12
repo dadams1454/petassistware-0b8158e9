@@ -1,40 +1,21 @@
 
-import { useFormContext } from 'react-hook-form';
-import { 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel 
-} from '@/components/ui/form';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { HealthRecordType, HealthRecordTypeEnum } from '@/types/health-enums';
+import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { HealthRecordTypeEnum } from '@/types';
 
-interface RecordTypeFieldProps {
+export interface RecordTypeFieldProps {
+  form: UseFormReturn<any>;
+  onTypeChange: (value: string) => void;
   disabled?: boolean;
 }
 
-const RecordTypeField = ({ disabled = false }: RecordTypeFieldProps) => {
-  const form = useFormContext();
-
-  const recordTypes = [
-    { label: 'Examination', value: HealthRecordTypeEnum.EXAMINATION },
-    { label: 'Vaccination', value: HealthRecordTypeEnum.VACCINATION },
-    { label: 'Medication', value: HealthRecordTypeEnum.MEDICATION },
-    { label: 'Surgery', value: HealthRecordTypeEnum.SURGERY },
-    { label: 'Laboratory', value: HealthRecordTypeEnum.LABORATORY },
-    { label: 'Preventative', value: HealthRecordTypeEnum.PREVENTIVE },
-    { label: 'Test', value: HealthRecordTypeEnum.TEST },
-    { label: 'Imaging', value: HealthRecordTypeEnum.IMAGING },
-    { label: 'Deworming', value: HealthRecordTypeEnum.DEWORMING },
-    { label: 'Other', value: HealthRecordTypeEnum.OTHER }
-  ];
-
+const RecordTypeField: React.FC<RecordTypeFieldProps> = ({ 
+  form, 
+  onTypeChange, 
+  disabled = false 
+}) => {
   return (
     <FormField
       control={form.control}
@@ -42,25 +23,34 @@ const RecordTypeField = ({ disabled = false }: RecordTypeFieldProps) => {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Record Type</FormLabel>
-          <FormControl>
-            <Select
-              disabled={disabled}
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-              value={field.value}
-            >
+          <Select
+            onValueChange={(value) => {
+              field.onChange(value);
+              onTypeChange(value);
+            }}
+            defaultValue={field.value}
+            disabled={disabled}
+          >
+            <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select record type" />
               </SelectTrigger>
-              <SelectContent>
-                {recordTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormControl>
+            </FormControl>
+            <SelectContent>
+              <SelectItem value={HealthRecordTypeEnum.VACCINATION}>Vaccination</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.EXAMINATION}>Examination</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.MEDICATION}>Medication</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.SURGERY}>Surgery</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.LABORATORY}>Laboratory</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.IMAGING}>Imaging</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.DENTAL}>Dental</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.PREVENTIVE}>Preventive</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.DEWORMING}>Deworming</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.GROOMING}>Grooming</SelectItem>
+              <SelectItem value={HealthRecordTypeEnum.OTHER}>Other</SelectItem>
+            </SelectContent>
+          </Select>
+          <FormMessage />
         </FormItem>
       )}
     />

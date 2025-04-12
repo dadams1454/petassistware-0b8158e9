@@ -1,102 +1,92 @@
 
 import { PuppyAgeGroupInfo } from '@/types/puppyTracking';
 
-// Extended version of DEFAULT_AGE_GROUPS with color property
-export const DEFAULT_AGE_GROUPS: PuppyAgeGroupInfo[] = [
+export const puppyAgeGroups: PuppyAgeGroupInfo[] = [
   {
     id: 'newborn',
     name: 'Newborn',
     groupName: 'Newborn',
+    displayName: 'Newborn',
+    description: 'Newborn puppies require intensive care and monitoring. Focus on ensuring they're nursing, maintaining body temperature, and monitoring weight gain.',
     ageRange: '0-14 days',
-    description: 'Newborn puppies need constant care and monitoring.',
     startDay: 0,
     endDay: 14,
+    minDays: 0,
+    maxDays: 14,
+    unit: 'days',
     color: 'pink',
-    milestones: [
-      'Eyes begin to open (10-14 days)',
-      'Crawling begins',
-      'Needs help with elimination'
-    ],
     minAge: 0,
-    maxAge: 14
+    maxAge: 14,
+    milestones: 'Eyes closed, ears folded, crawling only, sleeping 90% of time, needs help eliminating'
   },
   {
-    id: 'transitional',
-    name: 'Transitional',
-    groupName: 'Transitional',
-    ageRange: '15-21 days',
-    description: 'Puppies start to become more aware of their surroundings.',
+    id: 'twoWeek',
+    name: '2-Week',
+    groupName: 'Two-Week',
+    displayName: '2-Week Old',
+    description: 'Eyes opening, beginning to hear sounds, and starting to show personality. Still need temperature monitoring and dam assistance.',
+    ageRange: '15-28 days',
     startDay: 15,
-    endDay: 21,
-    color: 'purple',
-    milestones: [
-      'Eyes fully open',
-      'Ears begin to open',
-      'First teeth appear',
-      'Beginning to stand and walk'
-    ],
-    minAge: 15,
-    maxAge: 21
-  },
-  {
-    id: 'socialization',
-    name: 'Socialization',
-    groupName: 'Socialization',
-    ageRange: '22-49 days',
-    description: 'Critical period for socialization and learning.',
-    startDay: 22,
-    endDay: 49,
+    endDay: 28,
+    minDays: 15,
+    maxDays: 28,
+    unit: 'days',
     color: 'blue',
-    milestones: [
-      'Playing with littermates',
-      'Learning bite inhibition',
-      'Beginning to eat solid food',
-      'Able to regulate body temperature'
-    ],
-    minAge: 22,
-    maxAge: 49
+    minAge: 15,
+    maxAge: 28,
+    milestones: 'Eyes opening, beginning to hear, first teeth, wobbling around, starting to play'
   },
   {
-    id: 'juvenile',
-    name: 'Juvenile',
-    groupName: 'Juvenile',
-    ageRange: '50-84 days',
-    description: 'Ready for their new homes and further socialization.',
-    startDay: 50,
-    endDay: 84,
+    id: 'fourWeek',
+    name: '4-Week',
+    groupName: 'Four-Week',
+    displayName: '4-Week Old',
+    description: 'Starting to eat solid food, playing more actively. Beginning simple training and socialization activities.',
+    ageRange: '29-42 days',
+    startDay: 29,
+    endDay: 42,
+    minDays: 29,
+    maxDays: 42,
+    unit: 'days',
     color: 'green',
-    milestones: [
-      'Fully weaned',
-      'All puppy vaccinations started',
-      'Ready for new home (after 8 weeks)',
-      'Continuing socialization with people and other animals'
-    ],
-    minAge: 50,
-    maxAge: 84
+    minAge: 29,
+    maxAge: 42,
+    milestones: 'Weaning begins, more steady walking, playing with littermates, exploring environment'
   },
   {
-    id: 'adolescent',
-    name: 'Adolescent',
-    groupName: 'Adolescent',
-    ageRange: '85-180 days',
-    description: 'Testing boundaries and requiring consistent training.',
-    startDay: 85,
-    endDay: 180,
-    color: 'amber',
-    milestones: [
-      'Adult teeth coming in',
-      'Increased energy and playfulness',
-      'May begin testing boundaries',
-      'Critical time for continued training and socialization'
-    ],
-    minAge: 85,
-    maxAge: 180
+    id: 'sixWeek',
+    name: '6-Week',
+    groupName: 'Six-Week',
+    displayName: '6-Week Old',
+    description: 'Fully weaned, active play, developing social skills with littermates and people. Starting structured training.',
+    ageRange: '43-56 days',
+    startDay: 43,
+    endDay: 56,
+    minDays: 43,
+    maxDays: 56,
+    unit: 'days',
+    color: 'yellow',
+    minAge: 43,
+    maxAge: 56,
+    milestones: 'Fully weaned, active play, first vaccinations, learning bite inhibition, early training'
+  },
+  {
+    id: 'eightWeek',
+    name: '8-Week',
+    groupName: 'Eight-Week',
+    displayName: '8-Week Old',
+    description: 'Ready for new homes, continued socialization, house training, and basic commands. Critical socialization period.',
+    ageRange: '57-70 days',
+    startDay: 57,
+    endDay: 70,
+    minDays: 57,
+    maxDays: 70,
+    unit: 'days',
+    color: 'orange',
+    minAge: 57,
+    maxAge: 70,
+    milestones: 'Go-home ready, continued vaccinations, basic training, critical socialization period'
   }
 ];
 
-// Export a function to get age group by puppy age
-export const getAgeGroupByDays = (ageInDays: number): PuppyAgeGroupInfo | undefined => {
-  return DEFAULT_AGE_GROUPS.find(group => 
-    ageInDays >= group.startDay && ageInDays <= group.endDay
-  );
-};
+export default puppyAgeGroups;

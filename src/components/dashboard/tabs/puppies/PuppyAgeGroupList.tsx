@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { PuppyWithAge, PuppyAgeGroupInfo } from '@/types';
 import PuppyCard from './PuppyCard';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDown, ArrowUp } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface PuppyAgeGroupListProps {
@@ -38,7 +36,7 @@ const PuppyAgeGroupList: React.FC<PuppyAgeGroupListProps> = ({
             <AccordionTrigger className="px-4 py-3 hover:no-underline bg-muted/30">
               <div className="flex justify-between items-center w-full pr-4">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{group.name}</span>
+                  <span className="font-semibold">{group.displayName}</span>
                   <Badge variant="outline" className="ml-2">
                     {puppiesInGroup.length} {puppiesInGroup.length === 1 ? 'puppy' : 'puppies'}
                   </Badge>

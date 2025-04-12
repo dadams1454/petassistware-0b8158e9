@@ -1,59 +1,55 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import * as React from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
+} from "@/components/ui/popover";
 
 export interface DatePickerProps {
-  date?: Date;
-  onSelect: (date: Date) => void;
-  popoverTrigger?: React.ReactNode;
-  triggerButtonClassName?: string;
+  value?: Date | null;
+  onChange: (date: Date | null) => void;
+  disabled?: boolean;
+  placeholder?: string;
   className?: string;
 }
 
-export function DatePicker({ 
-  date,
-  onSelect,
-  popoverTrigger,
-  triggerButtonClassName,
-  className
+export function DatePicker({
+  value,
+  onChange,
+  disabled = false,
+  placeholder = "Pick a date",
+  className,
 }: DatePickerProps) {
   return (
-    <div className={cn("grid gap-2", className)}>
-      <Popover>
-        <PopoverTrigger asChild>
-          {popoverTrigger || (
-            <Button
-              variant={"outline"}
-              className={cn(
-                "w-[240px] justify-start text-left font-normal",
-                !date && "text-muted-foreground",
-                triggerButtonClassName
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, 'PPP') : <span>Pick a date</span>}
-            </Button>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !value && "text-muted-foreground",
+            className
           )}
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={(date) => date && onSelect(date)}
-            initialFocus
-            className="pointer-events-auto"
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
+          disabled={disabled}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {value ? format(value, "PPP") : placeholder}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={value || undefined}
+          onSelect={onChange}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
   );
 }

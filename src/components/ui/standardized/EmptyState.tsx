@@ -2,19 +2,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
-interface EmptyStateAction {
-  label: string;
-  onClick: () => void;
-  icon?: React.ReactNode;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  disabled?: boolean;
-}
-
-interface EmptyStateProps {
+export interface EmptyStateProps {
   title: string;
   description: string;
   icon?: React.ReactNode;
-  action?: EmptyStateAction;
+  action?: {
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+  };
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
@@ -24,22 +20,22 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   action
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-8 my-8">
+    <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
       {icon && (
-        <div className="mb-4 text-muted-foreground">
+        <div className="mb-2 text-muted-foreground">
           {icon}
         </div>
       )}
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      
+      <h3 className="text-lg font-medium">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-md">{description}</p>
       
       {action && (
         <Button 
           onClick={action.onClick}
-          variant={action.variant}
           disabled={action.disabled}
+          className="mt-4"
         >
-          {action.icon}
           {action.label}
         </Button>
       )}

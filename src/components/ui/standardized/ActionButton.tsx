@@ -1,42 +1,35 @@
 
 import React from 'react';
 import { Button, ButtonProps } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 
-interface ActionButtonProps extends ButtonProps {
-  loading?: boolean;
-  isLoading?: boolean; // Added this property for compatibility
+export interface ActionButtonProps extends ButtonProps {
+  label: string;
+  onClick: () => void;
   icon?: React.ReactNode;
-  children: React.ReactNode;
-  loadingText?: string; // Added property for loading text
+  disabled?: boolean;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
-  loading = false,
-  isLoading = false, // Default to false
+  label,
+  onClick,
   icon,
-  children,
-  disabled,
-  loadingText,
+  disabled = false,
+  variant = "default",
+  size = "default",
+  className,
   ...props
 }) => {
-  // Use either loading or isLoading
-  const isLoadingState = loading || isLoading;
-  
-  // Display either the loading text or the children when in loading state
-  const displayText = isLoadingState && loadingText ? loadingText : children;
-  
   return (
     <Button
-      disabled={isLoadingState || disabled}
+      variant={variant}
+      size={size}
+      onClick={onClick}
+      disabled={disabled}
+      className={className}
       {...props}
     >
-      {isLoadingState ? (
-        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-      ) : icon ? (
-        <div className="mr-2">{icon}</div>
-      ) : null}
-      {displayText}
+      {icon && <span className="mr-2">{icon}</span>}
+      {label}
     </Button>
   );
 };

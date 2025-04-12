@@ -1,42 +1,28 @@
 
-import { useFormContext } from 'react-hook-form';
-import { 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel 
-} from '@/components/ui/form';
+import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 
-interface NotesFieldProps {
-  disabled?: boolean;
-  label?: string;
-  name?: string;
+export interface NotesFieldProps {
+  form: UseFormReturn<any>;
 }
 
-const NotesField = ({ 
-  disabled = false, 
-  label = "Notes",
-  name = "record_notes"
-}: NotesFieldProps) => {
-  const form = useFormContext();
-
+const NotesField: React.FC<NotesFieldProps> = ({ form }) => {
   return (
     <FormField
       control={form.control}
-      name={name}
+      name="record_notes"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          <FormLabel>Notes</FormLabel>
           <FormControl>
             <Textarea 
-              placeholder="Enter notes"
-              disabled={disabled}
-              {...field}
-              value={field.value || ''}
-              rows={4}
+              placeholder="Enter any additional notes or observations" 
+              {...field} 
             />
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />

@@ -1,29 +1,14 @@
 
-import { useFormContext } from 'react-hook-form';
-import { 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel 
-} from '@/components/ui/form';
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
+import { FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { DatePicker } from '@/components/ui/date-picker';
 
-interface VisitDateFieldProps {
-  disabled?: boolean;
+export interface VisitDateFieldProps {
+  form: UseFormReturn<any>;
 }
 
-const VisitDateField = ({ disabled = false }: VisitDateFieldProps) => {
-  const form = useFormContext();
-
+const VisitDateField: React.FC<VisitDateFieldProps> = ({ form }) => {
   return (
     <FormField
       control={form.control}
@@ -31,36 +16,11 @@ const VisitDateField = ({ disabled = false }: VisitDateFieldProps) => {
       render={({ field }) => (
         <FormItem className="flex flex-col">
           <FormLabel>Visit Date</FormLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full pl-3 text-left font-normal",
-                    !field.value && "text-muted-foreground"
-                  )}
-                  disabled={disabled}
-                >
-                  {field.value ? (
-                    format(new Date(field.value), "PPP")
-                  ) : (
-                    <span>Select date</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={field.value ? new Date(field.value) : undefined}
-                onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
-                disabled={disabled}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <DatePicker
+            value={field.value}
+            onChange={field.onChange}
+          />
+          <FormMessage />
         </FormItem>
       )}
     />

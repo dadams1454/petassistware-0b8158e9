@@ -1,122 +1,132 @@
 
 import { SocializationCategory, SocializationCategoryOption } from '@/types/puppyTracking';
 
+// Create correctly typed socialization categories
 export const socializationCategories: SocializationCategory[] = [
   {
     id: 'sounds',
-    name: 'Sounds',
+    category: 'sounds',
+    displayName: 'Sounds',
     description: 'Different sounds the puppy might encounter',
     targetCount: 5,
-    color: 'blue',
-    examples: ['Doorbell', 'Vacuum', 'Thunder']
+    examples: ['Doorbell', 'Vacuum', 'Thunder'],
+    color: 'blue'
   },
   {
     id: 'people',
-    name: 'People',
+    category: 'people',
+    displayName: 'People',
     description: 'Different types of people',
     targetCount: 5,
-    color: 'green',
-    examples: ['Children', 'Men with hats', 'Elderly']
+    examples: ['Children', 'Men with hats', 'Elderly'],
+    color: 'green'
   },
   {
     id: 'animals',
-    name: 'Animals',
+    category: 'animals',
+    displayName: 'Animals',
     description: 'Other animals the puppy might encounter',
     targetCount: 5,
-    color: 'purple',
-    examples: ['Cats', 'Birds', 'Other dogs']
+    examples: ['Cats', 'Birds', 'Other dogs'],
+    color: 'purple'
   },
   {
     id: 'environments',
-    name: 'Environments',
+    category: 'environments',
+    displayName: 'Environments',
     description: 'Different places and environments',
     targetCount: 5,
-    color: 'orange',
-    examples: ['Park', 'Car ride', 'Busy street']
+    examples: ['Park', 'Car ride', 'Busy street'],
+    color: 'orange'
   },
   {
     id: 'handling',
-    name: 'Handling',
+    category: 'handling',
+    displayName: 'Handling',
     description: 'Different ways of handling the puppy',
     targetCount: 5,
-    color: 'pink',
-    examples: ['Nail trimming', 'Ear cleaning', 'Brushing']
+    examples: ['Nail trimming', 'Ear cleaning', 'Brushing'],
+    color: 'pink'
   },
   {
     id: 'objects',
-    name: 'Objects',
+    category: 'objects',
+    displayName: 'Objects',
     description: 'Different objects the puppy might encounter',
     targetCount: 5,
-    color: 'red',
-    examples: ['Umbrella', 'Bicycle', 'Stroller']
+    examples: ['Umbrella', 'Bicycle', 'Stroller'],
+    color: 'red'
   }
 ];
 
+// Create socialization category options with the correct shape
 export const socializationCategoryOptions: SocializationCategoryOption[] = [
   {
     id: 'sounds',
-    categoryId: 'sounds',
-    name: 'Sounds',
+    category: 'sounds',
+    displayName: 'Sounds',
     description: 'Different sounds the puppy might encounter',
     targetCount: 5,
+    examples: ['Doorbell', 'Vacuum', 'Thunder'],
     color: 'blue',
     value: 'sounds',
-    label: 'Sounds',
-    examples: ['Doorbell', 'Vacuum', 'Thunder']
+    label: 'Sounds'
   },
   {
     id: 'people',
-    categoryId: 'people',
-    name: 'People',
+    category: 'people',
+    displayName: 'People',
     description: 'Different types of people',
     targetCount: 5,
+    examples: ['Children', 'Men with hats', 'Elderly'],
     color: 'green',
     value: 'people',
-    label: 'People',
-    examples: ['Children', 'Men with hats', 'Elderly']
+    label: 'People'
   },
   {
     id: 'animals',
-    categoryId: 'animals',
-    name: 'Animals',
+    category: 'animals',
+    displayName: 'Animals',
     description: 'Other animals the puppy might encounter',
     targetCount: 5,
+    examples: ['Cats', 'Birds', 'Other dogs'],
     color: 'purple',
     value: 'animals',
-    label: 'Animals',
-    examples: ['Cats', 'Birds', 'Other dogs']
+    label: 'Animals'
   },
   {
     id: 'environments',
-    categoryId: 'environments',
-    name: 'Environments',
+    category: 'environments',
+    displayName: 'Environments',
     description: 'Different places and environments',
     targetCount: 5,
+    examples: ['Park', 'Car ride', 'Busy street'],
     color: 'orange',
     value: 'environments',
-    label: 'Environments',
-    examples: ['Park', 'Car ride', 'Busy street']
+    label: 'Environments'
   },
   {
     id: 'handling',
-    categoryId: 'handling',
-    name: 'Handling',
+    category: 'handling',
+    displayName: 'Handling',
     description: 'Different ways of handling the puppy',
     targetCount: 5,
+    examples: ['Nail trimming', 'Ear cleaning', 'Brushing'],
     color: 'pink',
     value: 'handling',
-    label: 'Handling',
-    examples: ['Nail trimming', 'Ear cleaning', 'Brushing']
+    label: 'Handling'
   },
   {
     id: 'objects',
-    categoryId: 'objects',
-    name: 'Objects',
+    category: 'objects',
+    displayName: 'Objects',
     description: 'Different objects the puppy might encounter',
     targetCount: 5,
+    examples: ['Umbrella', 'Bicycle', 'Stroller'],
     color: 'red',
     value: 'objects',
-    label: 'Objects',
-    examples: ['Umbrella', 'Bicycle', 'Stroller']
+    label: 'Objects'
   }
 ];
+
+export default socializationCategories;

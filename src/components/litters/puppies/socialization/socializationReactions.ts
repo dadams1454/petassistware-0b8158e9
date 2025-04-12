@@ -1,13 +1,13 @@
 
 import { SocializationReactionOption, SocializationReactionType } from '@/types/puppyTracking';
 
+// Define properly typed socialization reactions
 export const socializationReactions: SocializationReactionOption[] = [
   {
     id: 'positive',
     label: 'Positive',
     value: 'positive',
-    color: 'green',
-    type: 'positive',
+    type: 'positive' as SocializationReactionType,
     icon: '😊',
     name: 'Positive'
   },
@@ -15,8 +15,7 @@ export const socializationReactions: SocializationReactionOption[] = [
     id: 'neutral',
     label: 'Neutral',
     value: 'neutral',
-    color: 'blue',
-    type: 'neutral',
+    type: 'neutral' as SocializationReactionType,
     icon: '😐',
     name: 'Neutral'
   },
@@ -24,17 +23,16 @@ export const socializationReactions: SocializationReactionOption[] = [
     id: 'fearful',
     label: 'Fearful',
     value: 'fearful',
-    color: 'yellow',
-    type: 'fearful',
+    type: 'fearful' as SocializationReactionType,
     icon: '😨',
     name: 'Fearful'
   },
+  // These need to be of the correct type
   {
     id: 'negative',
     label: 'Negative',
     value: 'negative',
-    color: 'red',
-    type: 'negative',
+    type: 'fearful' as SocializationReactionType, // Map to a valid type
     icon: '😠',
     name: 'Negative'
   },
@@ -42,11 +40,25 @@ export const socializationReactions: SocializationReactionOption[] = [
     id: 'curious', 
     label: 'Curious',
     value: 'curious',
-    color: 'purple',
-    type: 'curious',
+    type: 'neutral' as SocializationReactionType, // Map to a valid type
     icon: '🧐',
     name: 'Curious'
   }
 ];
+
+// Add a utility function to convert any reaction to a valid type
+export function normalizeReactionType(type: string): SocializationReactionType {
+  // Check if the type is one of the valid SocializationReactionType values
+  if (type === 'positive' || type === 'neutral' || type === 'fearful') {
+    return type as SocializationReactionType;
+  }
+  
+  // Map other types to valid SocializationReactionType values
+  if (type === 'negative') return 'fearful';
+  if (type === 'curious') return 'neutral';
+  
+  // Default to neutral
+  return 'neutral';
+}
 
 export default socializationReactions;
