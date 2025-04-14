@@ -1,92 +1,93 @@
 
+/**
+ * Age group definitions for puppies
+ */
 import { PuppyAgeGroupInfo } from '@/types/puppyTracking';
 
-export const puppyAgeGroups: PuppyAgeGroupInfo[] = [
+export const PUPPY_AGE_GROUPS: PuppyAgeGroupInfo[] = [
   {
     id: 'newborn',
     name: 'Newborn',
     groupName: 'Newborn',
-    displayName: 'Newborn',
-    description: 'Newborn puppies require intensive care and monitoring. Focus on ensuring they're nursing, maintaining body temperature, and monitoring weight gain.',
     ageRange: '0-14 days',
+    description: 'Brand new puppies requiring intensive care and monitoring',
     startDay: 0,
     endDay: 14,
-    minDays: 0,
-    maxDays: 14,
-    unit: 'days',
     color: 'pink',
+    milestones: ['Eyes Open', 'Ears Open', 'First Weights'],
     minAge: 0,
     maxAge: 14,
-    milestones: 'Eyes closed, ears folded, crawling only, sleeping 90% of time, needs help eliminating'
+    displayName: 'Newborn (0-14 days)',
+    minDays: 0,
+    maxDays: 14,
+    unit: 'days'
   },
   {
     id: 'twoWeek',
-    name: '2-Week',
-    groupName: 'Two-Week',
-    displayName: '2-Week Old',
-    description: 'Eyes opening, beginning to hear sounds, and starting to show personality. Still need temperature monitoring and dam assistance.',
+    name: 'Two Week',
+    groupName: 'Two Week',
     ageRange: '15-28 days',
+    description: 'Starting to explore and interact with environment',
     startDay: 15,
     endDay: 28,
-    minDays: 15,
-    maxDays: 28,
-    unit: 'days',
     color: 'blue',
+    milestones: ['First Steps', 'First Solid Food', 'Beginning Socialization'],
     minAge: 15,
     maxAge: 28,
-    milestones: 'Eyes opening, beginning to hear, first teeth, wobbling around, starting to play'
+    displayName: 'Two Week (15-28 days)',
+    minDays: 15,
+    maxDays: 28,
+    unit: 'days'
   },
   {
     id: 'fourWeek',
-    name: '4-Week',
-    groupName: 'Four-Week',
-    displayName: '4-Week Old',
-    description: 'Starting to eat solid food, playing more actively. Beginning simple training and socialization activities.',
+    name: 'Four Week',
+    groupName: 'Four Week',
     ageRange: '29-42 days',
+    description: 'Growing rapidly and becoming more independent',
     startDay: 29,
     endDay: 42,
-    minDays: 29,
-    maxDays: 42,
-    unit: 'days',
     color: 'green',
+    milestones: ['Weaning', 'Group Play', 'Temp Testing'],
     minAge: 29,
     maxAge: 42,
-    milestones: 'Weaning begins, more steady walking, playing with littermates, exploring environment'
+    displayName: 'Four Week (29-42 days)',
+    minDays: 29,
+    maxDays: 42,
+    unit: 'days'
   },
   {
     id: 'sixWeek',
-    name: '6-Week',
-    groupName: 'Six-Week',
-    displayName: '6-Week Old',
-    description: 'Fully weaned, active play, developing social skills with littermates and people. Starting structured training.',
+    name: 'Six Week',
+    groupName: 'Six Week',
     ageRange: '43-56 days',
+    description: 'Social development and intensive socialization period',
     startDay: 43,
     endDay: 56,
-    minDays: 43,
-    maxDays: 56,
-    unit: 'days',
-    color: 'yellow',
+    color: 'purple',
+    milestones: ['Deworming', 'First Vaccines', 'Personality Assessment'],
     minAge: 43,
     maxAge: 56,
-    milestones: 'Fully weaned, active play, first vaccinations, learning bite inhibition, early training'
+    displayName: 'Six Week (43-56 days)',
+    minDays: 43,
+    maxDays: 56,
+    unit: 'days'
   },
   {
     id: 'eightWeek',
-    name: '8-Week',
-    groupName: 'Eight-Week',
-    displayName: '8-Week Old',
-    description: 'Ready for new homes, continued socialization, house training, and basic commands. Critical socialization period.',
+    name: 'Eight Week',
+    groupName: 'Eight Week',
     ageRange: '57-70 days',
+    description: 'Preparing for new homes and final assessments',
     startDay: 57,
     endDay: 70,
-    minDays: 57,
-    maxDays: 70,
-    unit: 'days',
     color: 'orange',
+    milestones: ['Final Vet Check', 'Microchip', 'Go Home Prep'],
     minAge: 57,
     maxAge: 70,
-    milestones: 'Go-home ready, continued vaccinations, basic training, critical socialization period'
+    displayName: 'Eight Week (57-70 days)',
+    minDays: 57,
+    maxDays: 70,
+    unit: 'days'
   }
 ];
-
-export default puppyAgeGroups;
