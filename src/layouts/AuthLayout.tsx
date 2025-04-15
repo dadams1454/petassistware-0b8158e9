@@ -2,7 +2,7 @@
 import React from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthLoadingState } from '@/components/ui/standardized/AuthLoadingState'; // Updated import path
+import AuthLoadingState from '@/components/ui/standardized/AuthLoadingState'; // Fixed import statement
 
 const AuthLayout: React.FC = () => {
   const { user, loading } = useAuth();
@@ -38,7 +38,7 @@ const AuthLayout: React.FC = () => {
   // Brief loading state
   if (loading) {
     console.log('AuthLayout: showing loading state');
-    return <AuthLoadingState fullPage={true} message="Verifying authentication..." />;
+    return <AuthLoadingState message="Verifying authentication..." />;
   }
   
   // For any protected route: if no user, redirect to auth
