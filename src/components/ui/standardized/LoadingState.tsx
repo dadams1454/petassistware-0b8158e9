@@ -1,32 +1,29 @@
 
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface LoadingStateProps {
+export interface LoadingStateProps {
   message?: string;
+  className?: string;
   size?: 'small' | 'medium' | 'large';
 }
 
-const LoadingState: React.FC<LoadingStateProps> = ({
-  message = 'Loading...',
+const LoadingState: React.FC<LoadingStateProps> = ({ 
+  message = 'Loading...', 
+  className,
   size = 'medium'
 }) => {
-  const getSizeClass = () => {
-    switch (size) {
-      case 'small':
-        return 'h-5 w-5';
-      case 'large':
-        return 'h-12 w-12';
-      case 'medium':
-      default:
-        return 'h-8 w-8';
-    }
+  const sizeClasses = {
+    small: 'h-6 w-6',
+    medium: 'h-10 w-10',
+    large: 'h-16 w-16'
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-8">
-      <Loader2 className={`${getSizeClass()} animate-spin text-primary mb-2`} />
-      <p className="text-muted-foreground text-center">{message}</p>
+    <div className={cn("flex flex-col items-center justify-center py-12", className)}>
+      <Loader2 className={cn(sizeClasses[size], "text-primary animate-spin mb-4")} />
+      <p className="text-lg text-muted-foreground">{message}</p>
     </div>
   );
 };

@@ -1,12 +1,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { mockUsers, findUserByEmail, MockUser } from '@/mockData/users';
 
 // Define UserRole type that's needed across the app
-export type UserRole = 'guest' | 'user' | 'staff' | 'manager' | 'admin' | 'owner' | 'veterinarian' | 'buyer';
+export type UserRole = 'guest' | 'user' | 'staff' | 'manager' | 'admin' | 'owner' | 'veterinarian' | 'buyer' | 'viewer';
 
 // Define AuthContextType
 export type AuthContextType = {
-  user: any | null;
+  user: MockUser | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   signOut: () => Promise<void>; // Alias for logout but as a Promise
@@ -33,7 +34,7 @@ export const useAuth = () => useContext(AuthContext);
 
 // Create the provider component
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<MockUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
@@ -41,7 +42,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   // Check for existing user session on load
   useEffect(() => {
-    // Simulate loading existing user from localStorage or cookies
+    // Check localStorage for existing user
     const checkAuth = async () => {
       try {
         const storedUser = localStorage.getItem('user');
@@ -76,27 +77,34 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     console.log('AuthProvider: Login attempt with email', email);
 
     try {
-      // Mock API call - replace with actual authentication logic
-      if (email && password) {
-        // Simulate a successful login
-        const mockUser = { 
-          id: '1', 
-          email, 
-          name: 'Demo User', 
-          role: 'admin' as UserRole,
-          tenantId: '00000000-0000-0000-0000-000000000000'
-        };
-        
-        // Store user in localStorage for persistence
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        
-        setUser(mockUser);
-        setUserRole(mockUser.role);
-        setTenantId(mockUser.tenantId);
-        console.log('AuthProvider: Login successful, user set');
-      } else {
-        throw new Error('Email and password are required');
+      // Simulate authentication delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      if (!email) {
+        throw new Error('Email is required');
       }
+      
+      if (!password) {
+        throw new Error('Password is required');
+      }
+      
+      // Find user from mock data
+      const foundUser = findUserByEmail(email);
+      
+      if (!foundUser) {
+        throw new Error('Invalid email or password');
+      }
+      
+      // In a real app, we would check password here
+      // For this mock version, any password works for testing
+
+      // Store user in localStorage for persistence
+      localStorage.setItem('user', JSON.stringify(foundUser));
+      
+      setUser(foundUser);
+      setUserRole(foundUser.role);
+      setTenantId(foundUser.tenantId);
+      console.log('AuthProvider: Login successful, user set');
     } catch (err: any) {
       console.error('AuthProvider: Login error', err);
       setError(err.message || 'Failed to authenticate');

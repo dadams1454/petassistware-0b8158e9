@@ -37,7 +37,8 @@ export const useAuthForm = () => {
         });
         navigate('/dashboard');
       } else {
-        // For the mock implementation, we'll just simulate a signup
+        // For the mock implementation, we'll simulate a signup
+        await new Promise(resolve => setTimeout(resolve, 1000));
         toast({
           title: "Account created!",
           description: "You can now sign in with your credentials.",

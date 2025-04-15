@@ -9,7 +9,10 @@ const AuthLayout: React.FC = () => {
   const location = useLocation();
   
   // Check if we're on public paths that don't require authentication
-  const isAuthPage = location.pathname === '/auth';
+  const isAuthPage = location.pathname === '/auth' || 
+                    location.pathname === '/login' || 
+                    location.pathname === '/register' || 
+                    location.pathname === '/forgot-password';
   const isPublicPage = location.pathname === '/'; // Landing page is public
   
   console.log('AuthLayout: Current auth state:', { 

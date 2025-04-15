@@ -17,7 +17,7 @@ export function hasPermission(
   // This can be expanded later with more granular permissions
   
   // Admin role has access to everything
-  if (role === 'admin') return true;
+  if (role === 'admin' || role === 'owner') return true;
   
   // Define permission matrix
   const permissions: Record<string, Record<string, string[]>> = {
@@ -35,6 +35,30 @@ export function hasPermission(
       settings: ['view', 'edit']
     },
     
+    owner: {
+      dogs: ['view', 'add', 'edit', 'delete'],
+      litters: ['view', 'add', 'edit', 'delete'],
+      users: ['view', 'add', 'edit', 'delete'],
+      adminSetup: ['view', 'edit'],
+      
+      breeding: ['view', 'add', 'edit', 'delete'],
+      customers: ['view', 'add', 'edit', 'delete'],
+      finance: ['view', 'add', 'edit', 'delete'],
+      kennel: ['view', 'add', 'edit', 'delete'],
+      settings: ['view', 'edit']
+    },
+    
+    manager: {
+      dogs: ['view', 'add', 'edit', 'delete'],
+      litters: ['view', 'add', 'edit'],
+      users: ['view'],
+      
+      breeding: ['view', 'add', 'edit'],
+      customers: ['view', 'add', 'edit'],
+      finance: ['view', 'add'],
+      kennel: ['view', 'add', 'edit', 'delete']
+    },
+    
     staff: {
       dogs: ['view', 'add', 'edit'],
       litters: ['view', 'add', 'edit'],
@@ -44,6 +68,13 @@ export function hasPermission(
       customers: ['view', 'add'],
       finance: ['view'],
       kennel: ['view', 'add', 'edit']
+    },
+    
+    veterinarian: {
+      dogs: ['view', 'edit'],
+      litters: ['view'],
+      breeding: ['view'],
+      health: ['view', 'add', 'edit', 'delete']
     },
     
     viewer: {
@@ -74,24 +105,49 @@ export function hasPermission(
  * Get all permissions for a role
  */
 export function getRolePermissions(role: string): Record<string, string[]> {
-  if (role === 'admin') {
-    return {
+  // Default empty permissions for unknown roles
+  const defaultPerms = {};
+  
+  // Define permission matrix (same as above)
+  const permissions: Record<string, Record<string, string[]>> = {
+    admin: {
       dogs: ['view', 'add', 'edit', 'delete'],
       litters: ['view', 'add', 'edit', 'delete'],
       users: ['view', 'add', 'edit', 'delete'],
       adminSetup: ['view', 'edit'],
       
-      // Add additional resources as needed
       breeding: ['view', 'add', 'edit', 'delete'],
       customers: ['view', 'add', 'edit', 'delete'],
       finance: ['view', 'add', 'edit', 'delete'],
       kennel: ['view', 'add', 'edit', 'delete'],
       settings: ['view', 'edit']
-    };
-  }
-  
-  if (role === 'staff') {
-    return {
+    },
+    
+    owner: {
+      dogs: ['view', 'add', 'edit', 'delete'],
+      litters: ['view', 'add', 'edit', 'delete'],
+      users: ['view', 'add', 'edit', 'delete'],
+      adminSetup: ['view', 'edit'],
+      
+      breeding: ['view', 'add', 'edit', 'delete'],
+      customers: ['view', 'add', 'edit', 'delete'],
+      finance: ['view', 'add', 'edit', 'delete'],
+      kennel: ['view', 'add', 'edit', 'delete'],
+      settings: ['view', 'edit']
+    },
+    
+    manager: {
+      dogs: ['view', 'add', 'edit', 'delete'],
+      litters: ['view', 'add', 'edit'],
+      users: ['view'],
+      
+      breeding: ['view', 'add', 'edit'],
+      customers: ['view', 'add', 'edit'],
+      finance: ['view', 'add'],
+      kennel: ['view', 'add', 'edit', 'delete']
+    },
+    
+    staff: {
       dogs: ['view', 'add', 'edit'],
       litters: ['view', 'add', 'edit'],
       users: ['view'],
@@ -100,18 +156,22 @@ export function getRolePermissions(role: string): Record<string, string[]> {
       customers: ['view', 'add'],
       finance: ['view'],
       kennel: ['view', 'add', 'edit']
-    };
-  }
-  
-  if (role === 'viewer') {
-    return {
+    },
+    
+    veterinarian: {
+      dogs: ['view', 'edit'],
+      litters: ['view'],
+      breeding: ['view'],
+      health: ['view', 'add', 'edit', 'delete']
+    },
+    
+    viewer: {
       dogs: ['view'],
       litters: ['view'],
       breeding: ['view'],
       customers: ['view']
-    };
-  }
+    }
+  };
   
-  // Default empty permissions for unknown roles
-  return {};
+  return permissions[role] || defaultPerms;
 }

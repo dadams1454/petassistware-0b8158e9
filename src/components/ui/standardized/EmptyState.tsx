@@ -1,6 +1,7 @@
 
 import React, { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export interface EmptyStateProps {
   title: string;
@@ -11,31 +12,26 @@ export interface EmptyStateProps {
     onClick: () => void;
     disabled?: boolean;
   };
+  className?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   icon,
-  action
+  action,
+  className
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4">
-      {icon && (
-        <div className="mb-4">
-          {icon}
-        </div>
-      )}
-      <h3 className="text-xl font-semibold text-center">{title}</h3>
-      <p className="mt-2 text-center text-muted-foreground max-w-sm">
-        {description}
-      </p>
+    <div className={cn(
+      "flex flex-col items-center justify-center text-center py-16 px-4",
+      className
+    )}>
+      {icon && <div className="mb-4">{icon}</div>}
+      <h3 className="text-lg font-medium mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-md mb-6">{description}</p>
       {action && (
-        <Button
-          onClick={action.onClick}
-          className="mt-6"
-          disabled={action.disabled}
-        >
+        <Button onClick={action.onClick} disabled={action.disabled}>
           {action.label}
         </Button>
       )}
