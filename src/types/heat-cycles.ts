@@ -1,101 +1,111 @@
 
 /**
- * Heat intensity types
+ * Heat cycle related types
  */
-export type HeatIntensityType = 'none' | 'mild' | 'moderate' | 'strong' | 'very_strong';
 
 /**
- * Heat intensity enum for display purposes
+ * Heat intensity type - string literal
+ */
+export type HeatIntensityType = 'none' | 'mild' | 'moderate' | 'strong';
+
+/**
+ * Heat intensity enum for easy reference
  */
 export enum HeatIntensity {
-  NONE = "None",
-  MILD = "Mild",
-  MODERATE = "Moderate",
-  STRONG = "Strong",
-  VERY_STRONG = "Very Strong"
+  NONE = 'none',
+  MILD = 'mild',
+  MODERATE = 'moderate',
+  STRONG = 'strong'
 }
 
 /**
- * Heat intensity values for form options
+ * Heat intensity values array
  */
-export const HeatIntensityValues: readonly HeatIntensityType[] = ['none', 'mild', 'moderate', 'strong', 'very_strong'] as const;
+export const HeatIntensityValues: HeatIntensityType[] = [
+  'none',
+  'mild',
+  'moderate',
+  'strong'
+];
 
 /**
- * Convert HeatIntensity to HeatIntensityType
+ * Heat stage type
  */
-export const mapHeatIntensityToType = (intensity: HeatIntensity): HeatIntensityType => {
-  switch (intensity) {
-    case HeatIntensity.NONE:
-      return 'none';
-    case HeatIntensity.MILD:
-      return 'mild';
-    case HeatIntensity.MODERATE:
-      return 'moderate';
-    case HeatIntensity.STRONG:
-      return 'strong';
-    case HeatIntensity.VERY_STRONG:
-      return 'very_strong';
-    default:
-      return 'none';
-  }
-};
+export interface HeatStage {
+  id: string;
+  name: string;
+  description: string;
+  duration: {
+    min: number;
+    max: number;
+    unit: string;
+  };
+  signs: string[];
+  color: string;
+}
 
 /**
- * Convert HeatIntensityType to HeatIntensity
- */
-export const mapHeatIntensityTypeToDisplay = (type: HeatIntensityType): HeatIntensity => {
-  switch (type) {
-    case 'none':
-      return HeatIntensity.NONE;
-    case 'mild':
-      return HeatIntensity.MILD;
-    case 'moderate':
-      return HeatIntensity.MODERATE;
-    case 'strong':
-      return HeatIntensity.STRONG;
-    case 'very_strong':
-      return HeatIntensity.VERY_STRONG;
-    default:
-      return HeatIntensity.NONE;
-  }
-};
-
-/**
- * Convert string to HeatIntensityType with validation
- */
-export const stringToHeatIntensityType = (value: string): HeatIntensityType => {
-  if (value === 'none' || value === 'mild' || value === 'moderate' || value === 'strong' || value === 'very_strong') {
-    return value as HeatIntensityType;
-  }
-  return 'none'; // default fallback
-};
-
-/**
- * Heat cycle interface
+ * Heat cycle record
  */
 export interface HeatCycle {
   id: string;
   dog_id: string;
   start_date: string;
   end_date?: string;
-  intensity: HeatIntensityType; // This must be HeatIntensityType, not string
-  symptoms?: string[];
-  notes?: string;
-  cycle_number?: number;
+  cycle_number: number;
   cycle_length?: number;
+  intensity: HeatIntensityType;
+  notes?: string;
+  symptoms?: string[];
   fertility_indicators?: any;
+  recorded_by?: string;
   created_at: string;
   updated_at?: string;
-  recorded_by?: string;
 }
 
 /**
- * Heat stage interface
+ * Map string to heat intensity type
  */
-export interface HeatStage {
-  name: string;
-  description: string;
-  days: number[];
-  signs: string[];
-  recommendations: string[];
+export function stringToHeatIntensityType(value: string): HeatIntensityType {
+  const normalized = value.toLowerCase().trim();
+  
+  if (HeatIntensityValues.includes(normalized as HeatIntensityType)) {
+    return normalized as HeatIntensityType;
+  }
+  
+  if (normalized === 'high' || normalized === 'heavy') {
+    return 'strong';
+  }
+  
+  if (normalized === 'medium') {
+    return 'moderate';
+  }
+  
+  if (normalized === 'low' || normalized === 'light') {
+    return 'mild';
+  }
+  
+  return 'none';
+}
+
+/**
+ * Map heat intensity to type
+ */
+export function mapHeatIntensityToType(intensity: string | null | undefined): HeatIntensityType {
+  if (!intensity) return 'none';
+  return stringToHeatIntensityType(intensity);
+}
+
+/**
+ * Map heat intensity type to display name
+ */
+export function mapHeatIntensityTypeToDisplay(type: HeatIntensityType): string {
+  const displayMap: Record<HeatIntensityType, string> = {
+    'none': 'None',
+    'mild': 'Mild',
+    'moderate': 'Moderate',
+    'strong': 'Strong'
+  };
+  
+  return displayMap[type] || 'Unknown';
 }

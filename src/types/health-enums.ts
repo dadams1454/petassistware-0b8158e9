@@ -1,61 +1,42 @@
 
 /**
- * Health Record Type Enums
- */
-
-/**
- * String literal type for health record types
+ * Health record type string literal type
  */
 export type HealthRecordType = 
-  | 'vaccination'
-  | 'examination'
-  | 'medication'
-  | 'surgery'
-  | 'laboratory'
-  | 'test'
-  | 'imaging'
-  | 'preventive'
-  | 'deworming'
-  | 'other'
-  | 'injury'
-  | 'allergy'
-  | 'observation'
-  | 'procedure'
-  | 'dental'
-  | 'grooming';
+  | 'examination' 
+  | 'vaccination' 
+  | 'treatment' 
+  | 'surgery' 
+  | 'diagnostic' 
+  | 'medication' 
+  | 'injury' 
+  | 'allergy' 
+  | 'weight' 
+  | 'diet' 
+  | 'general' 
+  | 'other';
 
 /**
- * Health record type enum for backward compatibility
+ * Health record type enum
  */
 export enum HealthRecordTypeEnum {
-  VACCINATION = 'vaccination',
   EXAMINATION = 'examination',
-  MEDICATION = 'medication',
+  VACCINATION = 'vaccination',
+  TREATMENT = 'treatment',
   SURGERY = 'surgery',
-  LABORATORY = 'laboratory',
-  TEST = 'test',
-  IMAGING = 'imaging',
-  PREVENTIVE = 'preventive',
-  DEWORMING = 'deworming',
-  OTHER = 'other',
+  DIAGNOSTIC = 'diagnostic',
+  MEDICATION = 'medication',
   INJURY = 'injury',
   ALLERGY = 'allergy',
-  OBSERVATION = 'observation',
-  PROCEDURE = 'procedure',
-  DENTAL = 'dental',
-  GROOMING = 'grooming'
+  WEIGHT = 'weight',
+  DIET = 'diet',
+  GENERAL = 'general',
+  OTHER = 'other'
 }
 
 /**
- * Type for heat intensity
+ * Medication status enum
  */
-export type HeatIntensityType =
-  | 'mild'
-  | 'moderate'
-  | 'strong'
-  | 'severe';
-
-// Medication Status Enums
 export enum MedicationStatusEnum {
   DUE = 'due',
   UPCOMING = 'upcoming',
@@ -63,7 +44,6 @@ export enum MedicationStatusEnum {
   COMPLETED = 'completed',
   SKIPPED = 'skipped',
   UNKNOWN = 'unknown',
-  // For backward compatibility
   ACTIVE = 'active',
   PAUSED = 'paused',
   STOPPED = 'stopped',
@@ -72,31 +52,50 @@ export enum MedicationStatusEnum {
   DISCONTINUED = 'discontinued'
 }
 
-// Define MedicationStatusResult as a string union type or object type
+/**
+ * Medication status object for referencing as values
+ */
+export const MedicationStatus = {
+  DUE: 'due',
+  UPCOMING: 'upcoming',
+  OVERDUE: 'overdue',
+  COMPLETED: 'completed',
+  SKIPPED: 'skipped',
+  UNKNOWN: 'unknown',
+  ACTIVE: 'active',
+  PAUSED: 'paused',
+  STOPPED: 'stopped',
+  SCHEDULED: 'scheduled',
+  NOT_STARTED: 'not_started',
+  DISCONTINUED: 'discontinued'
+} as const;
+
+/**
+ * Medication status result type
+ */
 export type MedicationStatusResult = 
+  | MedicationStatusEnum
   | 'due'
   | 'upcoming'
   | 'overdue'
   | 'completed'
   | 'skipped'
   | 'unknown'
-  | {
-      status: string;
-      message: string;
-      nextDue?: Date | string | null;
-      daysOverdue?: number;
-      daysUntilDue?: number;
-    };
+  | 'active'
+  | 'paused'
+  | 'stopped'
+  | 'scheduled'
+  | 'not_started'
+  | 'discontinued';
 
-// Export AppetiteLevel as a string union type
-export type AppetiteLevel = 
-  | 'excellent'
-  | 'good'
-  | 'fair'
-  | 'poor'
-  | 'none';
+/**
+ * Appetite level string literal type
+ */
+export type AppetiteLevel = 'excellent' | 'good' | 'fair' | 'poor' | 'none';
 
-// Add AppetiteEnum for backward compatibility
+/**
+ * Appetite enum
+ */
 export enum AppetiteEnum {
   EXCELLENT = 'excellent',
   GOOD = 'good',
@@ -105,14 +104,14 @@ export enum AppetiteEnum {
   NONE = 'none'
 }
 
-export type EnergyLevel = 
-  | 'hyperactive'
-  | 'high'
-  | 'normal'
-  | 'low'
-  | 'lethargic';
+/**
+ * Energy level string literal type
+ */
+export type EnergyLevel = 'hyperactive' | 'high' | 'normal' | 'low' | 'lethargic';
 
-// Add EnergyEnum for backward compatibility
+/**
+ * Energy enum
+ */
 export enum EnergyEnum {
   HYPERACTIVE = 'hyperactive',
   HIGH = 'high',
@@ -121,58 +120,53 @@ export enum EnergyEnum {
   LETHARGIC = 'lethargic'
 }
 
-export type StoolConsistency = 
-  | 'normal'
-  | 'soft'
-  | 'loose'
-  | 'watery'
-  | 'hard'
-  | 'bloody'
-  | 'mucus';
+/**
+ * Stool consistency string literal type
+ */
+export type StoolConsistency = 'normal' | 'soft' | 'loose' | 'watery' | 'hard';
 
-// Add StoolConsistencyEnum for backward compatibility
+/**
+ * Stool consistency enum
+ */
 export enum StoolConsistencyEnum {
   NORMAL = 'normal',
   SOFT = 'soft',
   LOOSE = 'loose',
   WATERY = 'watery',
-  HARD = 'hard',
-  BLOODY = 'bloody',
-  MUCUS = 'mucus'
+  HARD = 'hard'
 }
 
 /**
- * Medication Status for backward compatibility
+ * Convert string to HealthRecordType
  */
-export enum MedicationStatus {
-  ACTIVE = 'active',
-  OVERDUE = 'overdue',
-  UPCOMING = 'upcoming',
-  COMPLETED = 'completed',
-  DISCONTINUED = 'discontinued',
-  NOT_STARTED = 'not_started',
-  DUE = 'due',
-  SKIPPED = 'skipped',
-  UNKNOWN = 'unknown'
+export function stringToHealthRecordType(value: string): HealthRecordType {
+  const normalized = value.toLowerCase().trim();
+  
+  if (Object.values(HealthRecordTypeEnum).includes(normalized as any)) {
+    return normalized as HealthRecordType;
+  }
+  
+  return 'other';
 }
 
-// Helper functions
-export function stringToHealthRecordType(str: string): HealthRecordType {
-  const normalized = str.toLowerCase().trim();
-  
-  // Check against all valid health record types
-  const validTypes: HealthRecordType[] = [
-    'vaccination', 'examination', 'medication', 'surgery', 'laboratory',
-    'test', 'imaging', 'preventive', 'deworming', 'other', 'injury',
-    'allergy', 'observation', 'procedure', 'dental', 'grooming'
-  ];
-  
-  return validTypes.includes(normalized as HealthRecordType) 
-    ? normalized as HealthRecordType 
-    : 'other';
-}
-
+/**
+ * Get display name for a health record type
+ */
 export function getHealthRecordTypeDisplay(type: HealthRecordType): string {
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  return capitalize(type);
+  const displayNames: Record<HealthRecordType, string> = {
+    examination: 'Examination',
+    vaccination: 'Vaccination',
+    treatment: 'Treatment',
+    surgery: 'Surgery',
+    diagnostic: 'Diagnostic',
+    medication: 'Medication',
+    injury: 'Injury',
+    allergy: 'Allergy',
+    weight: 'Weight Check',
+    diet: 'Diet Change',
+    general: 'General',
+    other: 'Other'
+  };
+  
+  return displayNames[type] || 'Unknown';
 }

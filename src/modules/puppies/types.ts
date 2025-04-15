@@ -126,7 +126,7 @@ export interface PuppyManagementStats {
   refetch: () => Promise<any>;
   
   // Extended statistics
-  total: {
+  total?: {
     count: number;
     male: number;
     female: number;

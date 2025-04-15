@@ -1,21 +1,12 @@
 
-import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupInfo } from '@/modules/puppies/types';
+import { PuppyWithAge as ModulePuppyWithAge, PuppyAgeGroup, PuppyAgeGroupInfo, PuppyAgeGroupData as ModulePuppyAgeGroupData } from '@/modules/puppies/types';
 
 /**
- * Interface for puppy age group data
+ * Re-export core types from modules/puppies/types
  */
-export interface PuppyAgeGroupData {
-  newborn: PuppyWithAge[];
-  twoWeek: PuppyWithAge[];
-  fourWeek: PuppyWithAge[];
-  sixWeek: PuppyWithAge[];
-  eightWeek: PuppyWithAge[];
-  tenWeek: PuppyWithAge[];
-  twelveWeek: PuppyWithAge[];
-  older: PuppyWithAge[];
-  all: PuppyWithAge[];
-  total: number;
-}
+export type PuppyWithAge = ModulePuppyWithAge;
+export type { PuppyAgeGroup, PuppyAgeGroupInfo };
+export type PuppyAgeGroupData = ModulePuppyAgeGroupData;
 
 /**
  * Interface for vaccination schedule items
@@ -103,6 +94,13 @@ export interface PuppyManagementStats {
   isLoading: boolean;
   error: any;
   refetch: () => Promise<any>;
+  
+  // Extended statistics (added to fix type errors)
+  total?: {
+    count: number;
+    male: number;
+    female: number;
+  };
 }
 
 // Socialization Types
