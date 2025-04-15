@@ -1,4 +1,3 @@
-
 /**
  * Weight unit type definitions
  */
@@ -7,6 +6,16 @@
  * String literal type for weight units
  */
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
+
+/**
+ * Enum for weight units to maintain backward compatibility
+ */
+export enum WeightUnitEnum {
+  OUNCES = 'oz',
+  GRAMS = 'g', 
+  POUNDS = 'lb',
+  KILOGRAMS = 'kg'
+}
 
 /**
  * Weight unit information interface
