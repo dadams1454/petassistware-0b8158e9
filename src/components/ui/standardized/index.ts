@@ -1,9 +1,9 @@
 
 // Standardized UI Components Exports
 export { default as AuthLoadingState } from './AuthLoadingState';
-export type { default as AuthLoadingStateProps } from './AuthLoadingState';
+export type { AuthLoadingStateProps } from './AuthLoadingState';
 export { default as UnauthorizedState } from './UnauthorizedState';
-export type { default as UnauthorizedStateProps } from './UnauthorizedState';
+export type { UnauthorizedStateProps } from './UnauthorizedState';
 export { default as EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
 
