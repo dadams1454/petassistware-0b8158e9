@@ -9,53 +9,67 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
+import { Button } from '@/components/ui/button';
 
 interface ConfirmDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
-  open: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
   confirmLabel?: string;
   cancelLabel?: string;
-  isLoading?: boolean;
+  onConfirm: () => void;
+  onCancel?: () => void;
   variant?: 'default' | 'destructive';
+  isLoading?: boolean;
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+  open,
+  onOpenChange,
   title,
   description,
-  open,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
   onConfirm,
   onCancel,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
-  isLoading = false,
   variant = 'default',
+  isLoading = false
 }) => {
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    onOpenChange(false);
+  };
+
+  const handleConfirm = () => {
+    onConfirm();
+    // Don't automatically close if loading state is managed externally
+    if (!isLoading) {
+      onOpenChange(false);
+    }
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogDescription>
+            {description}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={(e) => {
-              e.preventDefault();
-              onConfirm();
-            }}
-            className={variant === 'destructive' ? 'bg-destructive hover:bg-destructive/90' : ''}
+          <AlertDialogCancel onClick={handleCancel}>
+            {cancelLabel}
+          </AlertDialogCancel>
+          <Button
+            variant={variant === 'destructive' ? 'destructive' : 'default'}
+            onClick={handleConfirm}
             disabled={isLoading}
           >
-            {isLoading && (
-              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            )}
-            {confirmLabel}
-          </AlertDialogAction>
+            {isLoading ? "Processing..." : confirmLabel}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

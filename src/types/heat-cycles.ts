@@ -73,7 +73,7 @@ export function stringToHeatIntensityType(value: string): HeatIntensityType {
     return normalized as HeatIntensityType;
   }
   
-  if (normalized === 'high' || normalized === 'heavy') {
+  if (normalized === 'high' || normalized === 'heavy' || normalized === 'very_strong') {
     return 'strong';
   }
   

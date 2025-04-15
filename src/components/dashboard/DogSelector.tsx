@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dog } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
