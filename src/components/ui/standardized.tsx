@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from 'react';
 import { AlertTriangle, Loader2, Ban } from 'lucide-react';
 import { Button } from './button';
@@ -105,33 +104,6 @@ export interface UnauthorizedStateProps {
   backPath?: string;
   showAdminSetupLink?: boolean;
 }
-
-export const UnauthorizedState: React.FC<UnauthorizedStateProps> = ({
-  title = 'Access Denied',
-  description = 'You do not have permission to access this resource.',
-  backPath = '/',
-  showAdminSetupLink = false
-}) => {
-  const navigate = useNavigate();
-  
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Ban className="h-12 w-12 text-destructive mb-4" />
-      <h2 className="text-2xl font-semibold mb-2">{title}</h2>
-      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
-      <div className="flex gap-4">
-        <Button variant="default" onClick={() => navigate(backPath)}>
-          Back to Safety
-        </Button>
-        {showAdminSetupLink && (
-          <Button variant="outline" onClick={() => navigate('/admin/setup')}>
-            Admin Setup
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-};
 
 // Empty state component
 export interface EmptyStateProps {
