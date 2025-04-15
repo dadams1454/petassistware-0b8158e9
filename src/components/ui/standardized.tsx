@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from 'react';
 import { AlertTriangle, Loader2, Ban } from 'lucide-react';
 import { Button } from './button';
@@ -169,31 +168,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           {action.label}
         </Button>
       )}
-    </div>
-  );
-};
-
-// SectionHeader component
-export interface SectionHeaderProps {
-  title: string;
-  description?: string;
-  action?: ReactNode;
-  className?: string;
-}
-
-export const SectionHeader: React.FC<SectionHeaderProps> = ({
-  title,
-  description,
-  action,
-  className
-}) => {
-  return (
-    <div className={cn("flex justify-between items-start mb-4", className)}>
-      <div>
-        <h3 className="text-lg font-medium">{title}</h3>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      </div>
-      {action && <div>{action}</div>}
     </div>
   );
 };
