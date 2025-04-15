@@ -1,109 +1,67 @@
 
 import { Dog, DogGender, DogStatus } from '@/types/dog';
-import { v4 as uuidv4 } from 'uuid';
 
-// Helper to get a random date within the past few years
-const getRandomBirthdate = (minYears = 1, maxYears = 8): string => {
-  const now = new Date();
-  const minAgo = new Date(now.getFullYear() - maxYears, now.getMonth(), now.getDate());
-  const maxAgo = new Date(now.getFullYear() - minYears, now.getMonth(), now.getDate());
-  const randomTime = minAgo.getTime() + Math.random() * (maxAgo.getTime() - minAgo.getTime());
-  return new Date(randomTime).toISOString().split('T')[0];
-};
-
-// Create mock data for dogs
 export const mockDogs: Dog[] = [
   {
-    id: uuidv4(),
-    name: "Luna",
-    breed: "Newfoundland",
-    gender: DogGender.FEMALE,
-    color: "Black",
-    birthdate: getRandomBirthdate(2, 4),
+    id: '1',
+    name: 'Luna',
+    breed: 'Newfoundland',
+    gender: DogGender.FEMALE_LOWER,
+    color: 'Black',
+    birthdate: '2021-05-15',
     status: DogStatus.ACTIVE,
-    photo_url: "https://example.com/photos/luna.jpg",
-    is_pregnant: false,
-    weight: 120,
-    weight_unit: "lb",
-    pedigree: true,
-    requires_special_handling: false,
-    created_at: new Date().toISOString(),
+    created_at: '2021-05-20T12:00:00Z',
+    photo_url: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1296&q=80',
+    is_pregnant: false
   },
   {
-    id: uuidv4(),
-    name: "Bear",
-    breed: "Newfoundland",
-    gender: DogGender.MALE,
-    color: "Brown",
-    birthdate: getRandomBirthdate(3, 5),
+    id: '2',
+    name: 'Max',
+    breed: 'Newfoundland',
+    gender: DogGender.MALE_LOWER,
+    color: 'Brown',
+    birthdate: '2020-02-10',
     status: DogStatus.ACTIVE,
-    photo_url: "https://example.com/photos/bear.jpg",
-    weight: 150,
-    weight_unit: "lb",
-    pedigree: true,
-    requires_special_handling: false,
-    created_at: new Date().toISOString(),
+    created_at: '2020-03-01T12:00:00Z',
+    photo_url: 'https://images.unsplash.com/photo-1598133894008-61f7fdb8cc3a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80',
+    is_pregnant: false
   },
   {
-    id: uuidv4(),
-    name: "Daisy",
-    breed: "Newfoundland",
-    gender: DogGender.FEMALE,
-    color: "Landseer",
-    birthdate: getRandomBirthdate(1, 3),
+    id: '3',
+    name: 'Bella',
+    breed: 'Newfoundland',
+    gender: DogGender.FEMALE_LOWER,
+    color: 'Black & White',
+    birthdate: '2022-10-22',
     status: DogStatus.ACTIVE,
-    photo_url: "https://example.com/photos/daisy.jpg",
+    created_at: '2022-11-15T12:00:00Z',
+    photo_url: 'https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=662&q=80',
     is_pregnant: true,
-    weight: 110,
-    weight_unit: "lb",
-    pedigree: true,
-    requires_special_handling: true,
-    created_at: new Date().toISOString(),
+    last_heat_date: '2023-01-15T12:00:00Z',
+    tie_date: '2023-01-18T12:00:00Z'
   },
   {
-    id: uuidv4(),
-    name: "Max",
-    breed: "Newfoundland",
-    gender: DogGender.MALE,
-    color: "Gray",
-    birthdate: getRandomBirthdate(4, 6),
+    id: '4',
+    name: 'Rocky',
+    breed: 'Newfoundland',
+    gender: DogGender.MALE_LOWER,
+    color: 'Gray',
+    birthdate: '2019-08-05',
+    status: DogStatus.INACTIVE,
+    created_at: '2019-09-01T12:00:00Z',
+    photo_url: 'https://images.unsplash.com/photo-1579534095153-aeca3cf0b937?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=688&q=80'
+  },
+  {
+    id: '5',
+    name: 'Daisy',
+    breed: 'Newfoundland',
+    gender: DogGender.FEMALE_LOWER,
+    color: 'Chocolate',
+    birthdate: '2021-11-30',
     status: DogStatus.GUARDIAN,
-    photo_url: "https://example.com/photos/max.jpg",
-    weight: 145,
-    weight_unit: "lb",
-    pedigree: true,
-    requires_special_handling: false,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: uuidv4(),
-    name: "Rosie",
-    breed: "Newfoundland",
-    gender: DogGender.FEMALE,
-    color: "Black",
-    birthdate: getRandomBirthdate(5, 7),
-    status: DogStatus.RETIRED,
-    photo_url: "https://example.com/photos/rosie.jpg",
-    is_pregnant: false,
-    weight: 105,
-    weight_unit: "lb",
-    pedigree: true,
-    requires_special_handling: false,
-    created_at: new Date().toISOString(),
-  },
+    created_at: '2022-01-15T12:00:00Z',
+    photo_url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=764&q=80'
+  }
 ];
 
-// Get a single dog by ID
-export const getMockDogById = (dogId: string): Dog | undefined => {
-  return mockDogs.find(dog => dog.id === dogId);
-};
-
-// Get all dogs
-export const getAllMockDogs = (): Dog[] => {
-  return mockDogs;
-};
-
-// Filter dogs by status
-export const filterMockDogsByStatus = (status: DogStatus | string): Dog[] => {
-  return mockDogs.filter(dog => dog.status === status);
-};
+export default mockDogs;

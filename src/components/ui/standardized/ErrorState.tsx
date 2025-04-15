@@ -7,21 +7,26 @@ import { cn } from '@/lib/utils';
 export interface ErrorStateProps {
   title?: string;
   description?: string;
+  message?: string; // Added for backward compatibility
   onRetry?: () => void;
   className?: string;
 }
 
 const ErrorState: React.FC<ErrorStateProps> = ({
   title = 'An error occurred',
-  description = 'Failed to load the requested data.',
+  description,
+  message, // Support both description and message props
   onRetry,
   className
 }) => {
+  // Use message as fallback if description is not provided
+  const displayText = description || message || 'Failed to load the requested data.';
+  
   return (
     <div className={cn("flex flex-col items-center justify-center py-12 text-center", className)}>
       <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      <p className="text-muted-foreground mb-6 max-w-md">{displayText}</p>
       {onRetry && (
         <Button onClick={onRetry} variant="default">
           Try Again

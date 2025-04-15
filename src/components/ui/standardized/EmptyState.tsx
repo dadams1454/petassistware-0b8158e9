@@ -15,7 +15,7 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   icon,
@@ -31,10 +31,15 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <h3 className="text-lg font-medium mb-2">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-md mb-6">{description}</p>
       {action && (
-        <Button onClick={action.onClick} disabled={action.disabled}>
+        <Button 
+          onClick={action.onClick} 
+          disabled={action.disabled}
+        >
           {action.label}
         </Button>
       )}
     </div>
   );
 };
+
+export default EmptyState;

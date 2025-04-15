@@ -1,8 +1,10 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { ApiError, ErrorType } from './errors';
 
-// Type for table names to ensure type safety with Supabase
+// Mock database for development
+const mockDatabase: Record<string, any[]> = {};
+
+// Type for table names to ensure type safety
 type TableName = string;
 
 /**
@@ -25,62 +27,53 @@ export const apiClient = {
     } = {}
   ): Promise<T> {
     try {
-      // Using the any type here to bypass the strict table name checking in Supabase
-      // We're doing this because we're in mock data mode according to the project context
-      let query = supabase.from(table as any).select(options.columns || '*');
+      // Initialize table if it doesn't exist
+      if (!mockDatabase[table]) {
+        mockDatabase[table] = [];
+      }
       
-      // Apply equality filters
+      // Get data from mock database
+      let results = [...mockDatabase[table]];
+      
+      // Apply filters
       if (options.eq) {
         for (const [column, value] of options.eq) {
-          query = query.eq(column, value);
+          results = results.filter(record => record[column] === value);
         }
       }
       
       // Apply ordering
       if (options.order) {
         for (const [column, { ascending }] of options.order) {
-          query = query.order(column, { ascending });
+          results.sort((a, b) => {
+            if (ascending) {
+              return a[column] > b[column] ? 1 : -1;
+            } else {
+              return a[column] < b[column] ? 1 : -1;
+            }
+          });
         }
       }
       
       // Apply limit
       if (options.limit) {
-        query = query.limit(options.limit);
+        results = results.slice(0, options.limit);
       }
       
-      // Get single record if requested
+      // Handle single record request
       if (options.single) {
-        const { data, error } = await query.single();
-        
-        if (error) {
-          if (error.code === 'PGRST116') {
-            throw new ApiError({
-              type: ErrorType.NOT_FOUND,
-              message: `No record found in ${table}`,
-              originalError: error
-            });
-          }
+        if (results.length === 0) {
           throw new ApiError({
-            type: ErrorType.DATABASE,
-            message: error.message,
-            originalError: error
+            type: ErrorType.NOT_FOUND,
+            message: `No record found in ${table}`,
+            originalError: new Error('Record not found')
           });
         }
         
-        return data as T;
-      } else {
-        const { data, error } = await query;
-        
-        if (error) {
-          throw new ApiError({
-            type: ErrorType.DATABASE,
-            message: error.message,
-            originalError: error
-          });
-        }
-        
-        return data as T;
+        return results[0] as T;
       }
+      
+      return results as T;
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
@@ -106,50 +99,35 @@ export const apiClient = {
     } = {}
   ): Promise<R | null> {
     try {
-      let query = supabase.from(table as any).insert(data);
-      
-      if (options.returnData !== false) {
-        query = query.select();
-        
-        if (options.single) {
-          const { data: responseData, error } = await query.single();
-          
-          if (error) {
-            throw new ApiError({
-              type: ErrorType.DATABASE,
-              message: error.message,
-              originalError: error
-            });
-          }
-          
-          return responseData as R;
-        } else {
-          const { data: responseData, error } = await query;
-          
-          if (error) {
-            throw new ApiError({
-              type: ErrorType.DATABASE,
-              message: error.message,
-              originalError: error
-            });
-          }
-          
-          // Handle potentially null responseData safely
-          return (responseData && responseData.length > 0) ? responseData[0] as R : null;
-        }
-      } else {
-        const { error } = await query;
-        
-        if (error) {
-          throw new ApiError({
-            type: ErrorType.DATABASE,
-            message: error.message,
-            originalError: error
-          });
-        }
-        
-        return null;
+      // Initialize table if it doesn't exist
+      if (!mockDatabase[table]) {
+        mockDatabase[table] = [];
       }
+      
+      // Generate ID if not provided
+      const recordWithId = {
+        ...data,
+        id: (data as any).id || crypto.randomUUID()
+      };
+      
+      // Add timestamp if not provided
+      if (!(recordWithId as any).created_at) {
+        (recordWithId as any).created_at = new Date().toISOString();
+      }
+      
+      // Add to mock database
+      mockDatabase[table].push(recordWithId);
+      
+      // Return data if requested
+      if (options.returnData !== false) {
+        if (options.single) {
+          return recordWithId as R;
+        } else {
+          return [recordWithId] as R;
+        }
+      }
+      
+      return null;
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
@@ -176,55 +154,49 @@ export const apiClient = {
     }
   ): Promise<R | null> {
     try {
-      let query = supabase.from(table as any).update(updates);
-      
-      // Apply equality filters
-      for (const [column, value] of options.eq) {
-        query = query.eq(column, value);
+      // Initialize table if it doesn't exist
+      if (!mockDatabase[table]) {
+        mockDatabase[table] = [];
       }
       
+      // Find records to update
+      let recordsToUpdate: any[] = [];
+      for (const record of mockDatabase[table]) {
+        let shouldUpdate = true;
+        
+        // Check all equality filters
+        for (const [column, value] of options.eq) {
+          if (record[column] !== value) {
+            shouldUpdate = false;
+            break;
+          }
+        }
+        
+        if (shouldUpdate) {
+          recordsToUpdate.push(record);
+        }
+      }
+      
+      // Update records
+      for (const record of recordsToUpdate) {
+        Object.assign(record, updates);
+        
+        // Add updated_at if not provided
+        if (!(record as any).updated_at) {
+          (record as any).updated_at = new Date().toISOString();
+        }
+      }
+      
+      // Return data if requested
       if (options.returnData !== false) {
-        query = query.select();
-        
         if (options.single) {
-          const { data: responseData, error } = await query.single();
-          
-          if (error) {
-            throw new ApiError({
-              type: ErrorType.DATABASE,
-              message: error.message,
-              originalError: error
-            });
-          }
-          
-          return responseData as R;
+          return recordsToUpdate[0] as R;
         } else {
-          const { data: responseData, error } = await query;
-          
-          if (error) {
-            throw new ApiError({
-              type: ErrorType.DATABASE,
-              message: error.message,
-              originalError: error
-            });
-          }
-          
-          // Handle potentially null responseData safely
-          return (responseData && responseData.length > 0) ? responseData[0] as R : null;
+          return recordsToUpdate as R;
         }
-      } else {
-        const { error } = await query;
-        
-        if (error) {
-          throw new ApiError({
-            type: ErrorType.DATABASE,
-            message: error.message,
-            originalError: error
-          });
-        }
-        
-        return null;
       }
+      
+      return null;
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
@@ -248,22 +220,24 @@ export const apiClient = {
     }
   ): Promise<void> {
     try {
-      let query = supabase.from(table as any).delete();
-      
-      // Apply equality filters
-      for (const [column, value] of options.eq) {
-        query = query.eq(column, value);
+      // Initialize table if it doesn't exist
+      if (!mockDatabase[table]) {
+        mockDatabase[table] = [];
+        return;
       }
       
-      const { error } = await query;
+      // Find records to delete
+      const newRecords = mockDatabase[table].filter(record => {
+        for (const [column, value] of options.eq) {
+          if (record[column] === value) {
+            return false; // Filter out record to delete
+          }
+        }
+        return true; // Keep record
+      });
       
-      if (error) {
-        throw new ApiError({
-          type: ErrorType.DATABASE,
-          message: error.message,
-          originalError: error
-        });
-      }
+      // Update table
+      mockDatabase[table] = newRecords;
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
@@ -278,9 +252,17 @@ export const apiClient = {
   },
   
   /**
-   * Execute a raw query (for complex operations)
+   * Access to mock database for testing
    */
-  raw: {
-    supabase
+  _mock: {
+    getDatabase: () => mockDatabase,
+    setDatabase: (data: Record<string, any[]>) => {
+      Object.assign(mockDatabase, data);
+    },
+    clearDatabase: () => {
+      for (const table in mockDatabase) {
+        delete mockDatabase[table];
+      }
+    }
   }
 };
