@@ -2,7 +2,7 @@
 import React from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthLoadingState } from '@/components/ui/standardized';
+import { AuthLoadingState } from '@/components/ui/standardized/AuthLoadingState'; // Updated import path
 
 const AuthLayout: React.FC = () => {
   const { user, loading } = useAuth();
