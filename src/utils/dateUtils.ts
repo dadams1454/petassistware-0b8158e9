@@ -1,4 +1,3 @@
-
 /**
  * Date utility functions
  */
@@ -98,6 +97,34 @@ export function formatDateAsISOString(date: Date | string | null | undefined): s
 }
 
 /**
+ * Format a date to YYYY-MM-DD format
+ * @param date Date or date string to format
+ * @returns Formatted date string in YYYY-MM-DD format or null if invalid
+ */
+export function formatDateToYYYYMMDD(date: Date | string | null | undefined): string | null {
+  if (!date) return null;
+  
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    // Validate date
+    if (isNaN(dateObj.getTime())) {
+      console.warn('Invalid date for YYYY-MM-DD formatting:', date);
+      return null;
+    }
+    
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error('Error formatting date to YYYY-MM-DD:', error);
+    return null;
+  }
+}
+
+/**
  * Get a description of time elapsed or remaining
  */
 export function getTimeDescription(
@@ -143,3 +170,4 @@ export function getTimeDescription(
     return 'Date error';
   }
 }
+
