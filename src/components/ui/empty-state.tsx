@@ -3,24 +3,26 @@ import React, { ReactNode } from 'react';
 import { FolderSearch, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface EmptyStateProps {
-  icon?: ReactNode;
+export interface EmptyStateProps {
   title: string;
   description: string;
+  icon?: ReactNode;
   action?: {
     label: string;
     onClick: () => void;
   };
+  className?: string;
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
-  icon = <FolderSearch className="h-12 w-12 text-muted-foreground" />,
   title,
   description,
-  action
+  icon = <FolderSearch className="h-12 w-12 text-muted-foreground" />,
+  action,
+  className
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-10 text-center">
+    <div className={`flex flex-col items-center justify-center py-10 text-center ${className || ''}`}>
       <div className="mb-4">
         {icon}
       </div>

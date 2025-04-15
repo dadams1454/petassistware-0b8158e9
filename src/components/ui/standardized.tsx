@@ -1,118 +1,122 @@
-import React from 'react';
-import SectionHeader from './standardized/SectionHeader';
 
-export { SectionHeader };
+import React, { ReactNode } from 'react';
+import { AlertTriangle, Loader2, Ban } from 'lucide-react';
+import { Button } from './button';
+import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
-// Other existing exports can remain the same if needed
-interface PageHeaderProps {
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
+// Loading state component
+interface LoadingStateProps {
+  message?: string;
   className?: string;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ 
-  title, 
-  subtitle, 
-  action,
-  className = ""
-}) => {
-  return (
-    <div className={`flex justify-between items-start ${className}`}>
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
-      </div>
-      {action && <div>{action}</div>}
-    </div>
-  );
-};
-
-interface LoadingStateProps {
-  message?: string;
-  size?: 'small' | 'medium' | 'large';
-}
-
 export const LoadingState: React.FC<LoadingStateProps> = ({ 
-  message = "Loading...", 
-  size = "medium" 
+  message = 'Loading...', 
+  className 
 }) => {
-  const sizeClasses = {
-    small: "h-4 w-4",
-    medium: "h-8 w-8",
-    large: "h-12 w-12"
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center py-12">
-      <div className={`animate-spin rounded-full border-b-2 border-primary ${sizeClasses[size]} mb-4`}></div>
-      <p className="text-muted-foreground">{message}</p>
+    <div className={cn("flex flex-col items-center justify-center py-12", className)}>
+      <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+      <p className="text-lg text-muted-foreground">{message}</p>
     </div>
   );
 };
 
+// Error state component
 interface ErrorStateProps {
   title?: string;
-  message: string;
-  onRetry?: () => void;
+  description?: string;
+  retryAction?: () => void;
+  className?: string;
 }
 
-export const ErrorState: React.FC<ErrorStateProps> = ({ 
-  title = "An error occurred", 
-  message, 
-  onRetry 
+export const ErrorState: React.FC<ErrorStateProps> = ({
+  title = 'An error occurred',
+  description = 'Failed to load the requested data.',
+  retryAction,
+  className
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="bg-red-50 text-red-800 p-4 rounded-full mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      </div>
-      <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-4">{message}</p>
-      {onRetry && (
-        <button 
-          onClick={onRetry}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-        >
+    <div className={cn("flex flex-col items-center justify-center py-12 text-center", className)}>
+      <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      {retryAction && (
+        <Button onClick={retryAction} variant="default">
           Try Again
-        </button>
+        </Button>
       )}
     </div>
   );
 };
 
-interface EmptyStateProps {
+// Unauthorized state component
+interface UnauthorizedStateProps {
+  title?: string;
+  description?: string;
+  backPath?: string;
+  showAdminSetupLink?: boolean;
+}
+
+export const UnauthorizedState: React.FC<UnauthorizedStateProps> = ({
+  title = 'Access Denied',
+  description = 'You do not have permission to access this resource.',
+  backPath = '/',
+  showAdminSetupLink = false
+}) => {
+  const navigate = useNavigate();
+  
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <Ban className="h-12 w-12 text-destructive mb-4" />
+      <h2 className="text-2xl font-semibold mb-2">{title}</h2>
+      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      <div className="flex gap-4">
+        <Button variant="default" onClick={() => navigate(backPath)}>
+          Back to Safety
+        </Button>
+        {showAdminSetupLink && (
+          <Button variant="outline" onClick={() => navigate('/admin/setup')}>
+            Admin Setup
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Empty state component
+export interface EmptyStateProps {
   title: string;
   description: string;
+  icon?: ReactNode;
   action?: {
     label: string;
     onClick: () => void;
   };
+  className?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
-  action
+  icon,
+  action,
+  className
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="bg-gray-100 p-4 rounded-full mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-        </svg>
-      </div>
+    <div className={cn(
+      "flex flex-col items-center justify-center text-center py-16 px-4",
+      className
+    )}>
+      {icon && <div className="mb-4">{icon}</div>}
       <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-4">{description}</p>
+      <p className="text-sm text-muted-foreground max-w-md mb-6">{description}</p>
       {action && (
-        <button 
-          onClick={action.onClick}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-        >
+        <Button onClick={action.onClick}>
           {action.label}
-        </button>
+        </Button>
       )}
     </div>
   );

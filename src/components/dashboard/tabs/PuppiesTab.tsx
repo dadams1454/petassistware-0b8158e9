@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle, Baby } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { usePuppyTracking } from '@/modules/puppies';
+import { usePuppyTracking } from '@/modules/puppies/hooks/usePuppyTracking';
 import PuppyAgeGroupList from './puppies/PuppyAgeGroupList';
 import PuppyStatCards from './puppies/PuppyStatCards';
 
@@ -13,45 +13,7 @@ interface PuppiesTabProps {
 }
 
 const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
-  const { 
-    puppies = [], 
-    ageGroups = [], 
-    puppiesByAgeGroup = {},
-    totalPuppies = 0,
-    availablePuppies = 0,
-    reservedPuppies = 0,
-    soldPuppies = 0,
-    maleCount = 0,
-    femaleCount = 0,
-    puppiesByStatus = {},
-    isLoading, 
-    error,
-    refetch,
-    byAgeGroup = {
-      newborn: [],
-      twoWeek: [],
-      fourWeek: [],
-      sixWeek: [], 
-      eightWeek: [],
-      tenWeek: [],
-      twelveWeek: [],
-      older: [],
-      all: [],
-      total: 0
-    },
-    byGender = { 
-      male: 0, 
-      female: 0, 
-      unknown: 0 
-    },
-    byStatus = {
-      available: 0,
-      reserved: 0,
-      sold: 0,
-      unavailable: 0
-    }
-  } = usePuppyTracking();
-  
+  const puppyStats = usePuppyTracking();
   const navigate = useNavigate();
   
   const handleNavigateToLitters = useCallback(() => {
@@ -59,15 +21,15 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   }, [navigate]);
   
   const handleRefresh = useCallback(() => {
-    if (refetch) {
-      refetch();
+    if (puppyStats.refetch) {
+      puppyStats.refetch().catch(console.error);
     }
     if (onRefresh) {
       onRefresh();
     }
-  }, [refetch, onRefresh]);
+  }, [puppyStats.refetch, onRefresh]);
 
-  if (isLoading) {
+  if (puppyStats.isLoading) {
     return (
       <div className="space-y-6">
         <Card>
@@ -81,7 +43,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     );
   }
 
-  if (error) {
+  if (puppyStats.error) {
     return (
       <div className="space-y-6">
         <Card>
@@ -99,7 +61,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   }
 
   // No puppies case
-  if (!puppies || puppies.length === 0) {
+  if (!puppyStats.puppies || puppyStats.puppies.length === 0) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -116,40 +78,15 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     );
   }
 
-  // Complete stats object with all required properties from PuppyManagementStats
-  const stats = {
-    puppies,
-    ageGroups,
-    puppiesByAgeGroup,
-    byAgeGroup,
-    totalPuppies,
-    availablePuppies,
-    reservedPuppies,
-    soldPuppies,
-    maleCount,
-    femaleCount,
-    puppiesByStatus,
-    byGender,
-    byStatus,
-    activeCount: availablePuppies,
-    reservedCount: reservedPuppies,
-    availableCount: availablePuppies,
-    soldCount: soldPuppies,
-    currentWeek: 0,
-    isLoading: false,
-    error: null,
-    refetch: handleRefresh
-  };
-
   return (
     <div className="space-y-6">
       {/* Stats cards */}
-      <PuppyStatCards stats={stats} />
+      <PuppyStatCards stats={puppyStats} />
       
       {/* Age group sections */}
       <PuppyAgeGroupList 
-        puppiesByAgeGroup={puppiesByAgeGroup}
-        ageGroups={ageGroups}
+        puppiesByAgeGroup={puppyStats.puppiesByAgeGroup}
+        ageGroups={puppyStats.ageGroups}
       />
     </div>
   );

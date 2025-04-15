@@ -2,6 +2,7 @@
 import { apiClient } from '@/api/core/apiClient';
 import { DogProfile } from '../types/dog';
 import { errorHandlers } from '@/api/core/errors';
+import { mockDogs, getMockDogById, getAllMockDogs, filterMockDogsByStatus } from '@/mockData/dogs';
 
 interface DogFilterOptions {
   includeArchived?: boolean;
@@ -20,33 +21,35 @@ export async function fetchDogs({
   searchTerm = '',
 }: DogFilterOptions = {}): Promise<DogProfile[]> {
   try {
-    // Use raw client for complex queries
-    let query = apiClient.raw.supabase
-      .from('dogs')
-      .select('*');
+    // Use mock data
+    console.log('Using mock data for dogs');
+    let filteredDogs = [...mockDogs];
     
     // Apply filters
     if (!includeArchived) {
-      query = query.eq('archived', false);
+      filteredDogs = filteredDogs.filter(dog => dog.status !== 'archived');
     }
     
     if (filterByStatus.length > 0) {
-      query = query.in('status', filterByStatus);
+      filteredDogs = filteredDogs.filter(dog => filterByStatus.includes(dog.status as string));
     }
     
     if (filterByGender.length > 0) {
-      query = query.in('gender', filterByGender);
+      filteredDogs = filteredDogs.filter(dog => filterByGender.includes(dog.gender as string));
     }
     
     if (searchTerm) {
-      query = query.ilike('name', `%${searchTerm}%`);
+      const term = searchTerm.toLowerCase();
+      filteredDogs = filteredDogs.filter(dog => 
+        dog.name.toLowerCase().includes(term) || 
+        (dog.breed && dog.breed.toLowerCase().includes(term))
+      );
     }
     
-    const { data, error } = await query.order('name');
+    // Sort by name
+    filteredDogs.sort((a, b) => a.name.localeCompare(b.name));
     
-    if (error) throw error;
-    
-    return data as DogProfile[];
+    return filteredDogs as DogProfile[];
   } catch (error) {
     throw errorHandlers.handleError(error, 'fetchDogs');
   }
@@ -57,12 +60,15 @@ export async function fetchDogs({
  */
 export async function fetchDogById(dogId: string): Promise<DogProfile> {
   try {
-    const dog = await apiClient.select<DogProfile>('dogs', {
-      eq: [['id', dogId]],
-      single: true
-    });
+    // Use mock data
+    console.log(`Using mock data to fetch dog with ID: ${dogId}`);
+    const dog = getMockDogById(dogId);
     
-    return dog;
+    if (!dog) {
+      throw new Error(`Dog with ID ${dogId} not found`);
+    }
+    
+    return dog as DogProfile;
   } catch (error) {
     throw errorHandlers.handleError(error, 'fetchDogById');
   }
@@ -73,13 +79,15 @@ export async function fetchDogById(dogId: string): Promise<DogProfile> {
  */
 export async function createDog(dogData: Partial<DogProfile>): Promise<DogProfile> {
   try {
-    const newDog = await apiClient.insert<Partial<DogProfile>, DogProfile>(
-      'dogs',
-      dogData,
-      { returnData: true, single: true }
-    );
+    console.log('Create dog called with mock data:', dogData);
+    // In mock mode, just log and return the data with a fake ID
+    const newDog = {
+      ...dogData,
+      id: `mock-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
     
-    return newDog;
+    return newDog as DogProfile;
   } catch (error) {
     throw errorHandlers.handleError(error, 'createDog');
   }
@@ -90,17 +98,21 @@ export async function createDog(dogData: Partial<DogProfile>): Promise<DogProfil
  */
 export async function updateDog(dogId: string, dogData: Partial<DogProfile>): Promise<DogProfile> {
   try {
-    const updatedDog = await apiClient.update<Partial<DogProfile>, DogProfile>(
-      'dogs',
-      dogData,
-      { 
-        eq: [['id', dogId]],
-        returnData: true,
-        single: true
-      }
-    );
+    console.log(`Update dog called with mock data for ID: ${dogId}`, dogData);
+    // In mock mode, just log and return the combined data
+    const dog = getMockDogById(dogId);
     
-    return updatedDog;
+    if (!dog) {
+      throw new Error(`Dog with ID ${dogId} not found`);
+    }
+    
+    const updatedDog = {
+      ...dog,
+      ...dogData,
+      id: dogId
+    };
+    
+    return updatedDog as DogProfile;
   } catch (error) {
     throw errorHandlers.handleError(error, 'updateDog');
   }
@@ -111,10 +123,8 @@ export async function updateDog(dogId: string, dogData: Partial<DogProfile>): Pr
  */
 export async function deleteDog(dogId: string): Promise<string> {
   try {
-    await apiClient.delete('dogs', {
-      eq: [['id', dogId]]
-    });
-    
+    console.log(`Delete dog called with ID: ${dogId}`);
+    // In mock mode, just log and return the ID
     return dogId;
   } catch (error) {
     throw errorHandlers.handleError(error, 'deleteDog');

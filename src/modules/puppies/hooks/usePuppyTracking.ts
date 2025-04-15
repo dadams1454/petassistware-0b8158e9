@@ -1,173 +1,196 @@
 
-import { useQuery } from '@tanstack/react-query';
-import { PuppyWithAge, PuppyManagementStats, PuppyTrackingOptions } from '../types';
-import { puppyAgeGroups } from '@/data/puppyAgeGroups';
+import { useState, useEffect, useMemo } from 'react';
 import { fetchPuppies } from '../services/puppyService';
+import { PuppyWithAge, PuppyAgeGroup, PuppyAgeGroupInfo, PuppyAgeGroupData, PuppyManagementStats } from '../types';
+
+// Constants for puppy age groups
+export const PUPPY_AGE_GROUPS: PuppyAgeGroupInfo[] = [
+  {
+    id: 'newborn',
+    name: 'Newborn',
+    description: 'Birth to 2 weeks',
+    ageRange: '0-2 weeks',
+    minDays: 0,
+    maxDays: 14,
+    color: 'bg-pink-100'
+  },
+  {
+    id: 'twoWeek',
+    name: '2-4 Weeks',
+    description: 'Eyes open & first walk',
+    ageRange: '2-4 weeks',
+    minDays: 15,
+    maxDays: 28,
+    color: 'bg-blue-100'
+  },
+  {
+    id: 'fourWeek',
+    name: '4-6 Weeks',
+    description: 'Starting to wean',
+    ageRange: '4-6 weeks',
+    minDays: 29,
+    maxDays: 42,
+    color: 'bg-green-100'
+  },
+  {
+    id: 'sixWeek',
+    name: '6-8 Weeks',
+    description: 'Socialization period',
+    ageRange: '6-8 weeks',
+    minDays: 43,
+    maxDays: 56,
+    color: 'bg-yellow-100'
+  },
+  {
+    id: 'eightWeek',
+    name: '8-10 Weeks',
+    description: 'Adoption ready',
+    ageRange: '8-10 weeks',
+    minDays: 57,
+    maxDays: 70,
+    color: 'bg-orange-100'
+  },
+  {
+    id: 'tenWeek',
+    name: '10-12 Weeks',
+    description: 'Social confidence',
+    ageRange: '10-12 weeks',
+    minDays: 71,
+    maxDays: 84,
+    color: 'bg-red-100'
+  },
+  {
+    id: 'twelveWeek',
+    name: '12-16 Weeks',
+    description: 'Pre-adolescence',
+    ageRange: '12-16 weeks',
+    minDays: 85,
+    maxDays: 112,
+    color: 'bg-purple-100'
+  },
+  {
+    id: 'older',
+    name: '16+ Weeks',
+    description: 'Older puppies',
+    ageRange: '16+ weeks',
+    minDays: 113,
+    maxDays: 999,
+    color: 'bg-gray-100'
+  }
+];
 
 /**
- * Group puppies by their status
+ * Hook for tracking and organizing puppies by age groups
  */
-function groupPuppiesByStatus(puppies: PuppyWithAge[]): Record<string, PuppyWithAge[]> {
-  const result: Record<string, PuppyWithAge[]> = {};
-  
-  puppies.forEach(puppy => {
-    const status = puppy.status || 'Unknown';
-    if (!result[status]) {
-      result[status] = [];
-    }
-    result[status].push(puppy);
-  });
-  
-  return result;
-}
+export function usePuppyTracking(): PuppyManagementStats {
+  const [puppies, setPuppies] = useState<PuppyWithAge[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
 
-/**
- * Count puppies by status
- */
-function countPuppiesByStatus(puppies: PuppyWithAge[]): Record<string, number> {
-  const result: Record<string, number> = {};
-  
-  puppies.forEach(puppy => {
-    const status = puppy.status || 'Unknown';
-    if (!result[status]) {
-      result[status] = 0;
-    }
-    result[status]++;
-  });
-  
-  return result;
-}
-
-/**
- * Count puppies by gender
- */
-function countPuppiesByGender(puppies: PuppyWithAge[]): { male: number; female: number; unknown: number } {
-  const result = { male: 0, female: 0, unknown: 0 };
-  
-  puppies.forEach(puppy => {
-    const gender = (puppy.gender || '').toLowerCase();
-    if (gender === 'male') {
-      result.male++;
-    } else if (gender === 'female') {
-      result.female++;
-    } else {
-      result.unknown++;
-    }
-  });
-  
-  return result;
-}
-
-/**
- * Group puppies by age group
- */
-function groupPuppiesByAgeGroup(puppies: PuppyWithAge[]): Record<string, PuppyWithAge[]> {
-  const result: Record<string, PuppyWithAge[]> = {};
-  
-  // Initialize groups
-  puppyAgeGroups.forEach(group => {
-    result[group.id] = [];
-  });
-  
-  // Default "older" group for puppies that don't fit in other categories
-  result.older = [];
-  
-  puppies.forEach(puppy => {
-    // Skip puppies without age
-    if (!puppy.ageInDays && puppy.ageInDays !== 0) return;
-    
-    // Find matching age group
-    let matched = false;
-    
-    for (const group of puppyAgeGroups) {
-      if (puppy.ageInDays >= group.minDays && puppy.ageInDays <= group.maxDays) {
-        result[group.id].push(puppy);
-        matched = true;
-        break;
+  // Fetch puppies on mount
+  useEffect(() => {
+    const loadPuppies = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedPuppies = await fetchPuppies();
+        setPuppies(fetchedPuppies);
+      } catch (err) {
+        console.error('Error fetching puppies:', err);
+        setError(err instanceof Error ? err : new Error('Failed to fetch puppies'));
+      } finally {
+        setIsLoading(false);
       }
-    }
-    
-    // If no match found, add to "older" group
-    if (!matched) {
-      result.older.push(puppy);
-    }
-  });
-  
-  return result;
-}
+    };
 
-/**
- * Hook for tracking puppy data with metrics and filtering
- */
-export function usePuppyTracking(options: PuppyTrackingOptions = {}): PuppyManagementStats {
-  const {
-    includeArchived = false,
-    filterByStatus = [],
-    filterByGender = [],
-    filterByAgeGroup = ''
-  } = options;
-  
-  // Query puppies from database
-  const { 
-    data: puppies = [], 
-    isLoading, 
-    error,
-    refetch 
-  } = useQuery({
-    queryKey: ['puppies', { includeArchived, filterByStatus, filterByGender, filterByAgeGroup }],
-    queryFn: async () => {
-      // Fetch puppies with filtering
-      const puppiesWithAge = await fetchPuppies({
-        includeArchived,
-        filterByStatus,
-        filterByGender
-      });
+    loadPuppies();
+  }, []);
+
+  // Memoized calculations for puppies by age group
+  const puppiesByAgeGroup = useMemo(() => {
+    const result: Record<string, PuppyWithAge[]> = {};
+    
+    // Initialize groups
+    PUPPY_AGE_GROUPS.forEach(group => {
+      result[group.id] = [];
+    });
+    
+    // Add each puppy to appropriate group
+    puppies.forEach(puppy => {
+      const ageInDays = puppy.ageInDays || 0;
       
-      // Filter by age group if specified
-      if (filterByAgeGroup) {
-        const group = puppyAgeGroups.find(g => g.id === filterByAgeGroup);
-        if (group) {
-          return puppiesWithAge.filter(
-            p => p.ageInDays >= group.minDays && p.ageInDays <= group.maxDays
-          );
+      for (const group of PUPPY_AGE_GROUPS) {
+        if (ageInDays >= group.minDays && ageInDays <= group.maxDays) {
+          result[group.id].push(puppy);
+          break;
         }
       }
-      
-      return puppiesWithAge;
-    }
-  });
-  
-  // Process puppies for stats
-  const puppiesWithAge = puppies || [];
-  const totalPuppies = puppiesWithAge.length;
-  
-  // Group by status
-  const puppiesByStatus = groupPuppiesByStatus(puppiesWithAge);
-  
-  // Count by status
-  const byStatus = countPuppiesByStatus(puppiesWithAge);
-  
-  // Count by gender
-  const byGender = countPuppiesByGender(puppiesWithAge);
-  
-  // Group by age
-  const puppiesByAgeGroup = groupPuppiesByAgeGroup(puppiesWithAge);
-  
-  // Specific status counts
-  const availablePuppies = byStatus['Available'] || 0;
-  const reservedPuppies = byStatus['Reserved'] || 0;
-  const soldPuppies = byStatus['Sold'] || 0;
-  
-  // Create the stats object
-  const stats: PuppyManagementStats = {
-    // Core data
-    puppies: puppiesWithAge,
-    totalPuppies,
+    });
     
-    // Age grouping data
-    ageGroups: puppyAgeGroups,
-    puppiesByAgeGroup,
-    byAgeGroup: {
+    return result;
+  }, [puppies]);
+
+  // Calculate stats about puppies
+  const stats = useMemo(() => {
+    // Count by status
+    const byStatus = {
+      available: 0,
+      reserved: 0,
+      sold: 0,
+      unavailable: 0
+    };
+    
+    // Count by gender
+    const byGender = {
+      male: 0,
+      female: 0,
+      unknown: 0
+    };
+    
+    // Group by status
+    const puppiesByStatus: Record<string, PuppyWithAge[]> = {
+      Available: [],
+      Reserved: [],
+      Sold: [],
+      Unavailable: []
+    };
+    
+    // Process each puppy
+    puppies.forEach(puppy => {
+      // Count by status
+      const status = puppy.status || 'Available';
+      switch (status) {
+        case 'Available':
+          byStatus.available++;
+          puppiesByStatus.Available.push(puppy);
+          break;
+        case 'Reserved':
+          byStatus.reserved++;
+          puppiesByStatus.Reserved.push(puppy);
+          break;
+        case 'Sold':
+          byStatus.sold++;
+          puppiesByStatus.Sold.push(puppy);
+          break;
+        default:
+          byStatus.unavailable++;
+          puppiesByStatus.Unavailable.push(puppy);
+      }
+      
+      // Count by gender
+      switch (puppy.gender) {
+        case 'Male':
+          byGender.male++;
+          break;
+        case 'Female':
+          byGender.female++;
+          break;
+        default:
+          byGender.unknown++;
+      }
+    });
+    
+    // Construct age group data
+    const byAgeGroup: PuppyAgeGroupData = {
       newborn: puppiesByAgeGroup.newborn || [],
       twoWeek: puppiesByAgeGroup.twoWeek || [],
       fourWeek: puppiesByAgeGroup.fourWeek || [],
@@ -176,36 +199,62 @@ export function usePuppyTracking(options: PuppyTrackingOptions = {}): PuppyManag
       tenWeek: puppiesByAgeGroup.tenWeek || [],
       twelveWeek: puppiesByAgeGroup.twelveWeek || [],
       older: puppiesByAgeGroup.older || [],
-      all: puppiesWithAge,
-      total: totalPuppies
-    },
+      all: puppies,
+      total: puppies.length
+    };
     
-    // Status grouping
-    byStatus,
-    byGender,
-    puppiesByStatus,
-    
-    // Named counts
-    activeCount: byStatus['Active'] || 0,
-    availableCount: availablePuppies,
-    reservedCount: reservedPuppies,
-    soldCount: soldPuppies,
-    maleCount: byGender.male,
-    femaleCount: byGender.female,
-    
-    // Legacy property names
-    availablePuppies,
-    reservedPuppies,
-    soldPuppies,
-    
-    // Utility values
-    currentWeek: 8, // Default value
-    
-    // State
+    return {
+      byStatus,
+      byGender,
+      puppiesByStatus,
+      byAgeGroup,
+      totalPuppies: puppies.length,
+      availablePuppies: byStatus.available,
+      reservedPuppies: byStatus.reserved,
+      soldPuppies: byStatus.sold,
+      maleCount: byGender.male,
+      femaleCount: byGender.female
+    };
+  }, [puppies, puppiesByAgeGroup]);
+
+  // Refetch function
+  const refetch = async (): Promise<any> => {
+    try {
+      setIsLoading(true);
+      const fetchedPuppies = await fetchPuppies();
+      setPuppies(fetchedPuppies);
+      return fetchedPuppies;
+    } catch (err) {
+      console.error('Error refetching puppies:', err);
+      setError(err instanceof Error ? err : new Error('Failed to refetch puppies'));
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Return complete stats
+  return {
+    puppies,
+    ageGroups: PUPPY_AGE_GROUPS,
+    puppiesByAgeGroup,
+    byAgeGroup: stats.byAgeGroup,
+    totalPuppies: stats.totalPuppies,
+    availablePuppies: stats.availablePuppies,
+    reservedPuppies: stats.reservedPuppies,
+    soldPuppies: stats.soldPuppies,
+    maleCount: stats.maleCount,
+    femaleCount: stats.femaleCount,
+    puppiesByStatus: stats.puppiesByStatus,
+    byGender: stats.byGender,
+    byStatus: stats.byStatus,
+    activeCount: stats.availablePuppies,
+    reservedCount: stats.reservedPuppies,
+    availableCount: stats.availablePuppies,
+    soldCount: stats.soldPuppies,
+    currentWeek: 0,
     isLoading,
     error,
     refetch
   };
-  
-  return stats;
 }

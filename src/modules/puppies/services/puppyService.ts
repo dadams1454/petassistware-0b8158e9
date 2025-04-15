@@ -1,8 +1,7 @@
 
-import { apiClient } from '@/api/core/apiClient';
 import { PuppyWithAge } from '../types';
-import { calculateAgeInDays } from '../utils/puppyAgeCalculator';
 import { errorHandlers } from '@/api/core/errors';
+import { mockPuppies, getMockPuppyById, getUpdatedPuppies } from '@/mockData/puppies';
 
 interface PuppyFilterOptions {
   includeArchived?: boolean;
@@ -21,35 +20,37 @@ export async function fetchPuppies({
   searchTerm = '',
 }: PuppyFilterOptions = {}): Promise<PuppyWithAge[]> {
   try {
-    // Build complex query using raw client for now
-    // In the future, this could be refactored to use the abstracted client
-    let query = apiClient.raw.supabase
-      .from('puppies')
-      .select('*');
+    // Use mock data
+    console.log('Using mock data for puppies');
+    let filteredPuppies = getUpdatedPuppies();
     
     // Apply filters
-    if (!includeArchived) {
-      query = query.eq('archived', false);
-    }
-    
     if (filterByStatus.length > 0) {
-      query = query.in('status', filterByStatus);
+      filteredPuppies = filteredPuppies.filter(puppy => 
+        filterByStatus.includes(puppy.status || 'Available')
+      );
     }
     
     if (filterByGender.length > 0) {
-      query = query.in('gender', filterByGender);
+      filteredPuppies = filteredPuppies.filter(puppy => 
+        filterByGender.includes(puppy.gender)
+      );
     }
     
     if (searchTerm) {
-      query = query.ilike('name', `%${searchTerm}%`);
+      const term = searchTerm.toLowerCase();
+      filteredPuppies = filteredPuppies.filter(puppy => 
+        puppy.name.toLowerCase().includes(term) || 
+        (puppy.color && puppy.color.toLowerCase().includes(term))
+      );
     }
     
-    const { data, error } = await query.order('birth_date', { ascending: false });
+    // Sort by birth_date descending (newest first)
+    filteredPuppies.sort((a, b) => 
+      new Date(b.birth_date).getTime() - new Date(a.birth_date).getTime()
+    );
     
-    if (error) throw error;
-    
-    // Calculate age for each puppy
-    return data.map(calculatePuppyAge);
+    return filteredPuppies;
   } catch (error) {
     throw errorHandlers.handleError(error, 'fetchPuppies');
   }
@@ -60,61 +61,18 @@ export async function fetchPuppies({
  */
 export async function fetchPuppyById(puppyId: string): Promise<PuppyWithAge> {
   try {
-    const puppy = await apiClient.select<any>('puppies', {
-      eq: [['id', puppyId]],
-      single: true
-    });
+    // Use mock data
+    console.log(`Using mock data to fetch puppy with ID: ${puppyId}`);
+    const puppy = getMockPuppyById(puppyId);
     
     if (!puppy) {
-      throw new Error('Puppy not found');
+      throw new Error(`Puppy with ID ${puppyId} not found`);
     }
     
-    return calculatePuppyAge(puppy);
+    return puppy;
   } catch (error) {
     throw errorHandlers.handleError(error, 'fetchPuppyById');
   }
-}
-
-/**
- * Calculate age information for a puppy
- */
-function calculatePuppyAge(puppy: any): PuppyWithAge {
-  const birthDate = puppy.birth_date;
-  
-  // Skip if no birth date
-  if (!birthDate) {
-    return {
-      ...puppy,
-      ageInDays: 0,
-      ageInWeeks: 0,
-      ageDescription: 'Unknown'
-    };
-  }
-  
-  // Calculate age in days
-  const ageInDays = calculateAgeInDays(birthDate) || 0;
-  const ageInWeeks = Math.floor(ageInDays / 7);
-  
-  // Determine age description
-  let ageDescription = '';
-  if (ageInDays < 7) {
-    ageDescription = `${ageInDays} days`;
-  } else if (ageInDays < 14) {
-    ageDescription = `1 week, ${ageInDays % 7} days`;
-  } else {
-    ageDescription = `${ageInWeeks} weeks`;
-    const remainingDays = ageInDays % 7;
-    if (remainingDays > 0) {
-      ageDescription += `, ${remainingDays} days`;
-    }
-  }
-  
-  return {
-    ...puppy,
-    ageInDays,
-    ageInWeeks,
-    ageDescription
-  };
 }
 
 /**
@@ -122,13 +80,32 @@ function calculatePuppyAge(puppy: any): PuppyWithAge {
  */
 export async function createPuppy(puppyData: Partial<PuppyWithAge>): Promise<PuppyWithAge> {
   try {
-    const newPuppy = await apiClient.insert<Partial<PuppyWithAge>, any>(
-      'puppies',
-      puppyData,
-      { returnData: true, single: true }
-    );
+    console.log('Create puppy called with mock data:', puppyData);
     
-    return calculatePuppyAge(newPuppy);
+    // Create a new mock puppy with required fields
+    const birthDate = puppyData.birth_date || new Date().toISOString();
+    const ageInDays = Math.floor((Date.now() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24));
+    const ageInWeeks = Math.floor(ageInDays / 7);
+    
+    const newPuppy: PuppyWithAge = {
+      id: `mock-puppy-${Date.now()}`,
+      name: puppyData.name || 'Unnamed Puppy',
+      gender: puppyData.gender || 'Male',
+      birth_date: birthDate,
+      litter_id: puppyData.litter_id || 'mock-litter',
+      color: puppyData.color || '',
+      status: puppyData.status || 'Available',
+      birth_weight: puppyData.birth_weight,
+      weight_unit: puppyData.weight_unit || 'g',
+      current_weight: puppyData.current_weight || puppyData.birth_weight,
+      created_at: new Date().toISOString(),
+      ageInDays,
+      ageInWeeks,
+      ageDescription: `${ageInWeeks} weeks, ${ageInDays % 7} days`,
+      ...puppyData
+    };
+    
+    return newPuppy;
   } catch (error) {
     throw errorHandlers.handleError(error, 'createPuppy');
   }
@@ -139,17 +116,23 @@ export async function createPuppy(puppyData: Partial<PuppyWithAge>): Promise<Pup
  */
 export async function updatePuppy(puppyId: string, puppyData: Partial<PuppyWithAge>): Promise<PuppyWithAge> {
   try {
-    const updatedPuppy = await apiClient.update<Partial<PuppyWithAge>, any>(
-      'puppies',
-      puppyData,
-      { 
-        eq: [['id', puppyId]],
-        returnData: true,
-        single: true
-      }
-    );
+    console.log(`Update puppy called with mock data for ID: ${puppyId}`, puppyData);
     
-    return calculatePuppyAge(updatedPuppy);
+    // Get existing puppy
+    const puppy = getMockPuppyById(puppyId);
+    
+    if (!puppy) {
+      throw new Error(`Puppy with ID ${puppyId} not found`);
+    }
+    
+    // Update the puppy
+    const updatedPuppy = {
+      ...puppy,
+      ...puppyData,
+      id: puppyId
+    };
+    
+    return updatedPuppy;
   } catch (error) {
     throw errorHandlers.handleError(error, 'updatePuppy');
   }
@@ -160,10 +143,8 @@ export async function updatePuppy(puppyId: string, puppyData: Partial<PuppyWithA
  */
 export async function deletePuppy(puppyId: string): Promise<string> {
   try {
-    await apiClient.delete('puppies', {
-      eq: [['id', puppyId]]
-    });
-    
+    console.log(`Delete puppy called with ID: ${puppyId}`);
+    // In mock mode, just log and return the ID
     return puppyId;
   } catch (error) {
     throw errorHandlers.handleError(error, 'deletePuppy');

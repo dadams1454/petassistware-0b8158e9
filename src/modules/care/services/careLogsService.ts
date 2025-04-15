@@ -1,7 +1,14 @@
 
-import { apiClient } from '@/api/core/apiClient';
-import { DailyCarelog, CareLogFormData } from '@/types/dailyCare';
+import { DailyCarelog, CareLogFormData, CareTaskPreset } from '@/types/dailyCare';
 import { errorHandlers } from '@/api/core/errors';
+import { 
+  mockCareLogs, 
+  getMockCareLogsForDog, 
+  getMockCareLogsByCategory, 
+  getLatestMockCareLogsByCategory,
+  mockCareTaskPresets 
+} from '@/mockData/careLogs';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Fetch care logs for a specific dog
@@ -10,12 +17,8 @@ import { errorHandlers } from '@/api/core/errors';
  */
 export const fetchDogCareLogs = async (dogId: string): Promise<DailyCarelog[]> => {
   try {
-    const logs = await apiClient.select<DailyCarelog[]>('daily_care_logs', {
-      eq: [['dog_id', dogId]],
-      order: [['timestamp', { ascending: false }]]
-    });
-    
-    return logs || [];
+    console.log(`Using mock data to fetch care logs for dog ID: ${dogId}`);
+    return getMockCareLogsForDog(dogId);
   } catch (error) {
     return errorHandlers.handleError(error, 'fetchDogCareLogs').details?.logs || [];
   }
@@ -29,16 +32,8 @@ export const fetchDogCareLogs = async (dogId: string): Promise<DailyCarelog[]> =
  */
 export const fetchDogCareLogsByCategory = async (dogId: string, category: string): Promise<DailyCarelog[]> => {
   try {
-    const logs = await apiClient.raw.supabase
-      .from('daily_care_logs')
-      .select('*')
-      .eq('dog_id', dogId)
-      .eq('category', category)
-      .order('timestamp', { ascending: false });
-      
-    if (logs.error) throw logs.error;
-    
-    return logs.data as DailyCarelog[] || [];
+    console.log(`Using mock data to fetch ${category} care logs for dog ID: ${dogId}`);
+    return getMockCareLogsByCategory(dogId, category);
   } catch (error) {
     return errorHandlers.handleError(error, `fetchDogCareLogsByCategory:${category}`).details?.logs || [];
   }
@@ -55,27 +50,22 @@ export const addCareLog = async (data: CareLogFormData, userId: string): Promise
     // Format the timestamp to ISO string if it's a Date object
     const timestamp = data.timestamp instanceof Date
       ? data.timestamp.toISOString()
-      : data.timestamp;
+      : data.timestamp || new Date().toISOString();
       
-    const careLog = {
+    const careLog: DailyCarelog = {
+      id: uuidv4(),
       dog_id: data.dog_id,
       category: data.category,
       task_name: data.task_name,
       timestamp,
       notes: data.notes || null,
-      created_by: userId
+      created_by: userId,
+      created_at: new Date().toISOString()
     };
     
-    console.log('Adding care log:', careLog);
+    console.log('Adding mock care log:', careLog);
     
-    const newLog = await apiClient.insert<typeof careLog, DailyCarelog>(
-      'daily_care_logs',
-      careLog,
-      { returnData: true, single: true }
-    );
-    
-    console.log('Care log added successfully:', newLog);
-    return newLog;
+    return careLog;
   } catch (error) {
     errorHandlers.handleError(error, 'addCareLog');
     return null;
@@ -89,10 +79,7 @@ export const addCareLog = async (data: CareLogFormData, userId: string): Promise
  */
 export const deleteCareLog = async (id: string): Promise<boolean> => {
   try {
-    await apiClient.delete('daily_care_logs', {
-      eq: [['id', id]]
-    });
-    
+    console.log(`Delete care log called with ID: ${id}`);
     return true;
   } catch (error) {
     errorHandlers.handleError(error, 'deleteCareLog');
@@ -120,28 +107,51 @@ export const getLatestCareLogsByCategory = async (
   ]
 ): Promise<Record<string, DailyCarelog | null>> => {
   try {
-    // Create a query to fetch the latest log for each category
-    const promises = categories.map(async (category) => {
-      try {
-        const logs = await apiClient.raw.supabase
-          .from('daily_care_logs')
-          .select('*')
-          .eq('dog_id', dogId)
-          .eq('category', category)
-          .order('timestamp', { ascending: false })
-          .limit(1);
-          
-        return [category, logs.data && logs.data.length > 0 ? logs.data[0] : null];
-      } catch (error) {
-        console.error(`Error fetching latest ${category} log:`, error);
-        return [category, null];
-      }
-    });
-    
-    const results = await Promise.all(promises);
-    return Object.fromEntries(results);
+    console.log(`Using mock data to fetch latest care logs by category for dog ID: ${dogId}`);
+    return getLatestMockCareLogsByCategory(dogId, categories);
   } catch (error) {
     errorHandlers.handleError(error, 'getLatestCareLogsByCategory');
     return {};
+  }
+};
+
+/**
+ * Fetch all care task presets
+ * @returns Array of care task presets
+ */
+export const fetchCareTaskPresets = async (): Promise<CareTaskPreset[]> => {
+  try {
+    console.log('Using mock data to fetch care task presets');
+    return mockCareTaskPresets;
+  } catch (error) {
+    errorHandlers.handleError(error, 'fetchCareTaskPresets');
+    return [];
+  }
+};
+
+/**
+ * Add a new care task preset
+ * @param preset The preset to add
+ * @returns The newly created preset, or null if error
+ */
+export const addCareTaskPreset = async (
+  preset: Pick<CareTaskPreset, 'category' | 'task_name'>, 
+  userId: string
+): Promise<CareTaskPreset | null> => {
+  try {
+    const careTaskPreset: CareTaskPreset = {
+      id: uuidv4(),
+      category: preset.category,
+      task_name: preset.task_name,
+      created_by: userId,
+      created_at: new Date().toISOString()
+    };
+    
+    console.log('Adding mock care task preset:', careTaskPreset);
+    
+    return careTaskPreset;
+  } catch (error) {
+    errorHandlers.handleError(error, 'addCareTaskPreset');
+    return null;
   }
 };
