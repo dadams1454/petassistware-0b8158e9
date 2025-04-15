@@ -1,7 +1,15 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/api/core/apiClient';
 import { PuppyWithAge } from '../types';
 import { calculateAgeInDays } from '../utils/puppyAgeCalculator';
+import { errorHandlers } from '@/api/core/errors';
+
+interface PuppyFilterOptions {
+  includeArchived?: boolean;
+  filterByStatus?: string[];
+  filterByGender?: string[];
+  searchTerm?: string;
+}
 
 /**
  * Fetch puppies with optional filtering
@@ -10,53 +18,61 @@ export async function fetchPuppies({
   includeArchived = false,
   filterByStatus = [],
   filterByGender = [],
-}: {
-  includeArchived?: boolean;
-  filterByStatus?: string[];
-  filterByGender?: string[];
-}) {
-  let query = supabase
-    .from('puppies')
-    .select('*');
-  
-  // Apply filters
-  if (!includeArchived) {
-    query = query.eq('archived', false);
+  searchTerm = '',
+}: PuppyFilterOptions = {}): Promise<PuppyWithAge[]> {
+  try {
+    // Build complex query using raw client for now
+    // In the future, this could be refactored to use the abstracted client
+    let query = apiClient.raw.supabase
+      .from('puppies')
+      .select('*');
+    
+    // Apply filters
+    if (!includeArchived) {
+      query = query.eq('archived', false);
+    }
+    
+    if (filterByStatus.length > 0) {
+      query = query.in('status', filterByStatus);
+    }
+    
+    if (filterByGender.length > 0) {
+      query = query.in('gender', filterByGender);
+    }
+    
+    if (searchTerm) {
+      query = query.ilike('name', `%${searchTerm}%`);
+    }
+    
+    const { data, error } = await query.order('birth_date', { ascending: false });
+    
+    if (error) throw error;
+    
+    // Calculate age for each puppy
+    return data.map(calculatePuppyAge);
+  } catch (error) {
+    throw errorHandlers.handleError(error, 'fetchPuppies');
   }
-  
-  if (filterByStatus.length > 0) {
-    query = query.in('status', filterByStatus);
-  }
-  
-  if (filterByGender.length > 0) {
-    query = query.in('gender', filterByGender);
-  }
-  
-  const { data, error } = await query.order('birth_date', { ascending: false });
-  
-  if (error) throw error;
-  
-  // Calculate age for each puppy
-  return data.map(calculatePuppyAge);
 }
 
 /**
  * Fetch a single puppy by ID
  */
-export async function fetchPuppyById(puppyId: string) {
-  const { data, error } = await supabase
-    .from('puppies')
-    .select('*')
-    .eq('id', puppyId)
-    .single();
+export async function fetchPuppyById(puppyId: string): Promise<PuppyWithAge> {
+  try {
+    const puppy = await apiClient.select<any>('puppies', {
+      eq: [['id', puppyId]],
+      single: true
+    });
     
-  if (error) throw error;
-  
-  if (!data) {
-    throw new Error('Puppy not found');
+    if (!puppy) {
+      throw new Error('Puppy not found');
+    }
+    
+    return calculatePuppyAge(puppy);
+  } catch (error) {
+    throw errorHandlers.handleError(error, 'fetchPuppyById');
   }
-  
-  return calculatePuppyAge(data);
 }
 
 /**
@@ -104,44 +120,52 @@ function calculatePuppyAge(puppy: any): PuppyWithAge {
 /**
  * Create a new puppy
  */
-export async function createPuppy(puppyData: Partial<PuppyWithAge>) {
-  const { data, error } = await supabase
-    .from('puppies')
-    .insert(puppyData)
-    .select()
-    .single();
+export async function createPuppy(puppyData: Partial<PuppyWithAge>): Promise<PuppyWithAge> {
+  try {
+    const newPuppy = await apiClient.insert<Partial<PuppyWithAge>, any>(
+      'puppies',
+      puppyData,
+      { returnData: true, single: true }
+    );
     
-  if (error) throw error;
-  
-  return calculatePuppyAge(data);
+    return calculatePuppyAge(newPuppy);
+  } catch (error) {
+    throw errorHandlers.handleError(error, 'createPuppy');
+  }
 }
 
 /**
  * Update an existing puppy
  */
-export async function updatePuppy(puppyId: string, puppyData: Partial<PuppyWithAge>) {
-  const { data, error } = await supabase
-    .from('puppies')
-    .update(puppyData)
-    .eq('id', puppyId)
-    .select()
-    .single();
+export async function updatePuppy(puppyId: string, puppyData: Partial<PuppyWithAge>): Promise<PuppyWithAge> {
+  try {
+    const updatedPuppy = await apiClient.update<Partial<PuppyWithAge>, any>(
+      'puppies',
+      puppyData,
+      { 
+        eq: [['id', puppyId]],
+        returnData: true,
+        single: true
+      }
+    );
     
-  if (error) throw error;
-  
-  return calculatePuppyAge(data);
+    return calculatePuppyAge(updatedPuppy);
+  } catch (error) {
+    throw errorHandlers.handleError(error, 'updatePuppy');
+  }
 }
 
 /**
  * Delete a puppy
  */
-export async function deletePuppy(puppyId: string) {
-  const { error } = await supabase
-    .from('puppies')
-    .delete()
-    .eq('id', puppyId);
+export async function deletePuppy(puppyId: string): Promise<string> {
+  try {
+    await apiClient.delete('puppies', {
+      eq: [['id', puppyId]]
+    });
     
-  if (error) throw error;
-  
-  return puppyId;
+    return puppyId;
+  } catch (error) {
+    throw errorHandlers.handleError(error, 'deletePuppy');
+  }
 }
