@@ -1,62 +1,8 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { PuppyWithAge, PuppyManagementStats } from '@/types/puppyTracking';
+import { PuppyWithAge, PuppyManagementStats, PuppyTrackingOptions } from '../types';
 import { puppyAgeGroups } from '@/data/puppyAgeGroups';
-import { calculateAgeInDays } from '@/utils/dateUtils';
-import { adaptPuppyStats } from '@/adapters/puppyStatsAdapter';
-
-/**
- * Options for the puppy tracking hook
- */
-export interface PuppyTrackingOptions {
-  includeArchived?: boolean;
-  filterByStatus?: string[];
-  filterByGender?: string[];
-  filterByAgeGroup?: string;
-}
-
-/**
- * Calculate the age for a puppy
- */
-function calculatePuppyAge(puppy: any): PuppyWithAge {
-  const birthDate = puppy.birth_date;
-  
-  // Skip if no birth date
-  if (!birthDate) {
-    return {
-      ...puppy,
-      ageInDays: 0,
-      ageInWeeks: 0,
-      ageDescription: 'Unknown'
-    };
-  }
-  
-  // Calculate age in days
-  const ageInDays = calculateAgeInDays(birthDate) || 0;
-  const ageInWeeks = Math.floor(ageInDays / 7);
-  
-  // Determine age description
-  let ageDescription = '';
-  if (ageInDays < 7) {
-    ageDescription = `${ageInDays} days`;
-  } else if (ageInDays < 14) {
-    ageDescription = `1 week, ${ageInDays % 7} days`;
-  } else {
-    ageDescription = `${ageInWeeks} weeks`;
-    const remainingDays = ageInDays % 7;
-    if (remainingDays > 0) {
-      ageDescription += `, ${remainingDays} days`;
-    }
-  }
-  
-  return {
-    ...puppy,
-    ageInDays,
-    ageInWeeks,
-    ageDescription
-  };
-}
+import { fetchPuppies } from '../services/puppyService';
 
 /**
  * Group puppies by their status
@@ -170,29 +116,12 @@ export function usePuppyTracking(options: PuppyTrackingOptions = {}): PuppyManag
   } = useQuery({
     queryKey: ['puppies', { includeArchived, filterByStatus, filterByGender, filterByAgeGroup }],
     queryFn: async () => {
-      let query = supabase
-        .from('puppies')
-        .select('*');
-      
-      // Apply filters
-      if (!includeArchived) {
-        query = query.eq('archived', false);
-      }
-      
-      if (filterByStatus.length > 0) {
-        query = query.in('status', filterByStatus);
-      }
-      
-      if (filterByGender.length > 0) {
-        query = query.in('gender', filterByGender);
-      }
-      
-      const { data, error } = await query.order('birth_date', { ascending: false });
-      
-      if (error) throw error;
-      
-      // Calculate age for each puppy
-      const puppiesWithAge = data.map(calculatePuppyAge);
+      // Fetch puppies with filtering
+      const puppiesWithAge = await fetchPuppies({
+        includeArchived,
+        filterByStatus,
+        filterByGender
+      });
       
       // Filter by age group if specified
       if (filterByAgeGroup) {

@@ -1,22 +1,24 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DogProfile } from '../types/dog';
+import { fetchDogs, createDog, deleteDog } from '../services/dogService';
 
 export const useDogsData = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const { data: dogs, isLoading, error, refetch } = useQuery({
+  const { 
+    data: dogs, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
     queryKey: ['dogs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*')
-        .order('name');
-      
-      if (error) {
+      try {
+        return await fetchDogs();
+      } catch (error: any) {
         toast({
           title: 'Error fetching dogs',
           description: error.message,
@@ -24,21 +26,12 @@ export const useDogsData = () => {
         });
         throw error;
       }
-      
-      return data as DogProfile[];
     },
   });
 
   const addDog = useMutation({
     mutationFn: async (newDog: Partial<DogProfile>) => {
-      const { data, error } = await supabase
-        .from('dogs')
-        .insert(newDog)
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
+      return await createDog(newDog);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
@@ -56,6 +49,26 @@ export const useDogsData = () => {
     },
   });
 
+  const removeDog = useMutation({
+    mutationFn: async (dogId: string) => {
+      return await deleteDog(dogId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dogs'] });
+      toast({
+        title: 'Success',
+        description: 'Dog removed successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to remove dog: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     dogs,
     isLoading,
@@ -63,5 +76,7 @@ export const useDogsData = () => {
     refetch,
     addDog: addDog.mutate,
     isAdding: addDog.isPending,
+    removeDog: removeDog.mutate,
+    isRemoving: removeDog.isPending,
   };
 };

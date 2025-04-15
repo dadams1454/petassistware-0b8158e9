@@ -1,8 +1,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Dog, DogProfile } from '../types/dog';
+import { fetchDogById, updateDog, deleteDog } from '../services/dogService';
 
 export const useDogData = (dogId: string | undefined) => {
   const { toast } = useToast();
@@ -18,13 +18,9 @@ export const useDogData = (dogId: string | undefined) => {
     queryFn: async () => {
       if (!dogId) return null;
       
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*')
-        .eq('id', dogId)
-        .single();
-      
-      if (error) {
+      try {
+        return await fetchDogById(dogId);
+      } catch (error: any) {
         toast({
           title: 'Error fetching dog details',
           description: error.message,
@@ -32,25 +28,14 @@ export const useDogData = (dogId: string | undefined) => {
         });
         throw error;
       }
-      
-      return data as DogProfile;
     },
     enabled: !!dogId,
   });
 
-  const updateDog = useMutation({
+  const updateDogMutation = useMutation({
     mutationFn: async (updatedDog: Partial<Dog>) => {
       if (!dogId) throw new Error('Dog ID is required');
-      
-      const { data, error } = await supabase
-        .from('dogs')
-        .update(updatedDog)
-        .eq('id', dogId)
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
+      return await updateDog(dogId, updatedDog);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dog', dogId] });
@@ -68,17 +53,10 @@ export const useDogData = (dogId: string | undefined) => {
     },
   });
 
-  const deleteDog = useMutation({
+  const deleteDogMutation = useMutation({
     mutationFn: async () => {
       if (!dogId) throw new Error('Dog ID is required');
-      
-      const { error } = await supabase
-        .from('dogs')
-        .delete()
-        .eq('id', dogId);
-        
-      if (error) throw error;
-      return dogId;
+      return await deleteDog(dogId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
@@ -101,9 +79,9 @@ export const useDogData = (dogId: string | undefined) => {
     isLoading,
     error,
     refetch,
-    updateDog: updateDog.mutate,
-    deleteDog: deleteDog.mutate,
-    isUpdating: updateDog.isPending,
-    isDeleting: deleteDog.isPending,
+    updateDog: updateDogMutation.mutate,
+    deleteDog: deleteDogMutation.mutate,
+    isUpdating: updateDogMutation.isPending,
+    isDeleting: deleteDogMutation.isPending,
   };
 };

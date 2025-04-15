@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Dog, RefreshCw } from 'lucide-react';
+import { Dog } from 'lucide-react';
 import { EmptyState } from '@/components/ui/standardized';
 
 interface NoDogsStateProps {

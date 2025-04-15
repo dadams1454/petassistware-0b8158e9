@@ -1,40 +1,27 @@
 
 import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ErrorStateProps {
   title?: string;
-  message: string;
+  message?: string;
   onRetry?: () => void;
-  icon?: React.ReactNode;
-  className?: string;
 }
 
-/**
- * ErrorState - A standardized error display component with retry option
- */
 const ErrorState: React.FC<ErrorStateProps> = ({
-  title = "Something went wrong",
-  message,
+  title = 'Error',
+  message = 'Something went wrong. Please try again.',
   onRetry,
-  icon = <AlertTriangle className="h-10 w-10 text-destructive" />,
-  className
 }) => {
   return (
-    <div className={`flex flex-col items-center justify-center py-8 text-center ${className}`}>
-      <div className="mb-4">
-        {icon}
-      </div>
-      <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <p className="text-muted-foreground max-w-md mb-4">{message}</p>
+    <div className="flex flex-col items-center justify-center p-6 text-center">
+      <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-6 max-w-md">{message}</p>
       {onRetry && (
-        <Button 
-          onClick={onRetry}
-          variant="outline"
-          size="sm"
-        >
-          <RefreshCw className="mr-2 h-4 w-4" />
+        <Button onClick={onRetry} variant="outline">
+          <RefreshCw className="h-4 w-4 mr-2" />
           Try Again
         </Button>
       )}

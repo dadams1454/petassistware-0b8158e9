@@ -9,8 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from '@/components/ui/button';
+} from '@/components/ui/alert-dialog';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -21,8 +20,7 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel?: () => void;
-  variant?: 'default' | 'destructive';
-  isLoading?: boolean;
+  destructive?: boolean;
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -30,24 +28,20 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
   onConfirm,
   onCancel,
-  variant = 'default',
-  isLoading = false
+  destructive = false,
 }) => {
   const handleCancel = () => {
-    if (onCancel) onCancel();
     onOpenChange(false);
+    if (onCancel) onCancel();
   };
 
   const handleConfirm = () => {
+    onOpenChange(false);
     onConfirm();
-    // Don't automatically close if loading state is managed externally
-    if (!isLoading) {
-      onOpenChange(false);
-    }
   };
 
   return (
@@ -63,13 +57,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <AlertDialogCancel onClick={handleCancel}>
             {cancelLabel}
           </AlertDialogCancel>
-          <Button
-            variant={variant === 'destructive' ? 'destructive' : 'default'}
+          <AlertDialogAction
             onClick={handleConfirm}
-            disabled={isLoading}
+            className={destructive ? 'bg-destructive hover:bg-destructive/90' : ''}
           >
-            {isLoading ? "Processing..." : confirmLabel}
-          </Button>
+            {confirmLabel}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -2,7 +2,7 @@
 import React, { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 
-interface EmptyStateProps {
+export interface EmptyStateProps {
   title: string;
   description: string;
   icon?: ReactNode;
@@ -11,28 +11,29 @@ interface EmptyStateProps {
     onClick: () => void;
     disabled?: boolean;
   };
-  className?: string;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({
+export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   icon,
-  action,
-  className
+  action
 }) => {
   return (
-    <div className={`flex flex-col items-center justify-center py-12 text-center ${className || ''}`}>
+    <div className="flex flex-col items-center justify-center py-12 px-4">
       {icon && (
-        <div className="bg-muted/50 p-4 rounded-full mb-4">
+        <div className="mb-4">
           {icon}
         </div>
       )}
-      <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-4 max-w-md mx-auto">{description}</p>
+      <h3 className="text-xl font-semibold text-center">{title}</h3>
+      <p className="mt-2 text-center text-muted-foreground max-w-sm">
+        {description}
+      </p>
       {action && (
-        <Button 
+        <Button
           onClick={action.onClick}
+          className="mt-6"
           disabled={action.disabled}
         >
           {action.label}
@@ -41,5 +42,3 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     </div>
   );
 };
-
-export default EmptyState;

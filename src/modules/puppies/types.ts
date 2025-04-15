@@ -45,6 +45,7 @@ export type PuppyAgeGroupName =
 
 /**
  * Interface for puppy age group used in components
+ * Now matches PuppyAgeGroupInfo for consistency
  */
 export interface PuppyAgeGroup {
   id: string;
