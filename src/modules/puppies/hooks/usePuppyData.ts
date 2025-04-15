@@ -1,108 +1,52 @@
 
-/**
- * Hook for fetching puppy data from Supabase
- */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { PuppyWithAge } from '../types';
-import { differenceInDays } from 'date-fns';
-import { mapPuppyWithAgeFromDB } from '@/lib/mappers/puppyMapper';
-import { mapWeightRecordFromDB } from '@/lib/mappers/weightMapper';
-import { toast } from '@/components/ui/use-toast';
+import { PuppyWithAge } from '@/types/puppyTracking';
+import { calculateAgeInDays } from '@/utils/dateUtils';
 
 /**
- * Hook to fetch puppy data from Supabase
- * @returns Puppies, loading state, error state, and refetch function
+ * Hook to fetch puppy data with age calculations
  */
-export const usePuppyData = () => {
-  const { 
-    data: puppies, 
-    isLoading, 
-    error,
-    refetch 
-  } = useQuery({
-    queryKey: ['puppies'],
-    queryFn: async (): Promise<PuppyWithAge[]> => {
-      try {
-        // Fetch all puppies
-        const { data: puppiesData, error: puppiesError } = await supabase
-          .from('puppies')
-          .select(`
-            *,
-            litter:litter_id(
-              birth_date,
-              dam:dam_id(
-                name,
-                breed
-              ),
-              sire:sire_id(
-                name,
-                breed
-              )
-            )
-          `)
-          .order('birth_date', { ascending: false });
-          
-        if (puppiesError) {
-          console.error('Error fetching puppies:', puppiesError);
-          toast({
-            title: 'Error fetching puppies',
-            description: puppiesError.message,
-            variant: 'destructive',
-          });
-          return [];
-        }
+export function usePuppyData(puppyId: string) {
+  return useQuery({
+    queryKey: ['puppy', puppyId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('puppies')
+        .select('*')
+        .eq('id', puppyId)
+        .single();
         
-        // Enhance puppies with age data
-        const enhancedPuppies = await Promise.all((puppiesData || []).map(async (puppy) => {
-          // Calculate age
-          const birthDate = puppy.birth_date || puppy.litter?.birth_date;
-          let age = 0;
-          
-          if (birthDate) {
-            age = differenceInDays(new Date(), new Date(birthDate));
-          }
-          
-          // Fetch weight records
-          const { data: weightRecordsData } = await supabase
-            .from('puppy_weights')
-            .select('*')
-            .eq('puppy_id', puppy.id)
-            .order('date', { ascending: false });
-            
-          const mappedWeightRecords = (weightRecordsData || []).map(mapWeightRecordFromDB);
-          
-          // Create a puppy record with all necessary fields for mapping
-          const puppyWithAgeData = {
-            ...puppy,
-            age,
-            age_days: age,
-            age_weeks: Math.floor(age / 7),
-            weightHistory: mappedWeightRecords
-          };
-          
-          // Use our mapper to get a properly typed PuppyWithAge
-          return mapPuppyWithAgeFromDB(puppyWithAgeData);
-        }));
-        
-        return enhancedPuppies;
-      } catch (err) {
-        console.error('Exception in usePuppyData:', err);
-        const error = err instanceof Error ? err : new Error('Unknown error fetching puppies');
-        toast({
-          title: 'Error fetching puppies',
-          description: error.message,
-          variant: 'destructive',
-        });
-        return [];
+      if (error) throw error;
+      
+      if (!data) {
+        throw new Error('Puppy not found');
       }
+      
+      // Calculate age in days
+      const ageInDays = calculateAgeInDays(data.birth_date);
+      const ageInWeeks = Math.floor(ageInDays / 7);
+      
+      // Create age description
+      let ageDescription = '';
+      if (ageInDays < 7) {
+        ageDescription = `${ageInDays} days`;
+      } else if (ageInDays < 14) {
+        ageDescription = `1 week, ${ageInDays % 7} days`;
+      } else {
+        ageDescription = `${ageInWeeks} weeks`;
+        if (ageInDays % 7 > 0) {
+          ageDescription += `, ${ageInDays % 7} days`;
+        }
+      }
+      
+      // Return puppy with age data
+      return {
+        ...data,
+        ageInDays,
+        ageInWeeks,
+        ageDescription
+      } as PuppyWithAge;
     }
   });
-  
-  return {
-    puppies: puppies || [],
-    isLoading,
-    error,
-    refetch
-  };
-};
+}

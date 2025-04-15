@@ -1,64 +1,61 @@
 
 import React from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
-export interface SkeletonLoaderProps {
+interface SkeletonLoaderProps {
+  variant?: 'text' | 'circle' | 'rect' | 'card' | 'table' | 'profile';
+  width?: string | number;
+  height?: string | number;
+  className?: string;
   count?: number;
-  variant?: 'default' | 'card' | 'table' | 'text' | 'banner';
+  inline?: boolean;
 }
 
 const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
-  count = 3,
-  variant = 'default'
+  variant = 'text',
+  width,
+  height,
+  className,
+  count = 1,
+  inline = false,
 }) => {
-  const renderSkeleton = (index: number) => {
+  const skeletons = Array(count).fill(0);
+  
+  const getSkeletonStyles = () => {
     switch (variant) {
+      case 'circle':
+        return 'rounded-full aspect-square';
+      case 'rect':
+        return 'rounded';
       case 'card':
-        return (
-          <div key={index} className="rounded-lg border p-4 mb-4">
-            <Skeleton className="h-4 w-1/3 mb-2" />
-            <Skeleton className="h-4 w-2/3 mb-4" />
-            <Skeleton className="h-20 w-full mb-2" />
-            <div className="flex justify-end">
-              <Skeleton className="h-8 w-20" />
-            </div>
-          </div>
-        );
+        return 'rounded-lg h-[200px]';
       case 'table':
-        return (
-          <div key={index} className="flex border-b py-4">
-            <Skeleton className="h-5 w-1/6 mr-4" />
-            <Skeleton className="h-5 w-4/6 mr-4" />
-            <Skeleton className="h-5 w-1/6" />
-          </div>
-        );
+        return 'h-10 rounded';
+      case 'profile':
+        return 'rounded-full w-12 h-12';
       case 'text':
-        return (
-          <div key={index} className="mb-3">
-            <Skeleton className="h-4 w-4/5 mb-2" />
-            <Skeleton className="h-4 w-2/3 mb-2" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
-        );
-      case 'banner':
-        return (
-          <div key={index} className="mb-4 rounded-lg">
-            <Skeleton className="h-40 w-full" />
-          </div>
-        );
       default:
-        return (
-          <div key={index} className="py-2">
-            <Skeleton className="h-6 w-full mb-2" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-        );
+        return 'h-4 rounded';
     }
   };
-
+  
+  const baseStyles = cn(
+    'bg-muted/60 animate-pulse',
+    getSkeletonStyles(),
+    className
+  );
+  
+  const containerStyles = inline ? 'flex gap-2' : 'space-y-2';
+  
+  const style: React.CSSProperties = {};
+  if (width) style.width = width;
+  if (height) style.height = height;
+  
   return (
-    <div className="w-full">
-      {Array.from({ length: count }).map((_, index) => renderSkeleton(index))}
+    <div className={containerStyles}>
+      {skeletons.map((_, index) => (
+        <div key={index} className={baseStyles} style={style} />
+      ))}
     </div>
   );
 };

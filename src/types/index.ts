@@ -2,7 +2,6 @@
 // Export standard types from core type definitions
 export type { WeightUnit, WeightUnitInfo } from './weight-units';
 export { 
-  WeightUnitEnum,  
   weightUnitInfos, 
   standardizeWeightUnit,
   getWeightUnitInfo
@@ -61,8 +60,6 @@ export type {
   VaccinationScheduleItem,
   VaccinationRecord,
   PuppyWithAge
-  // Remove socialization types from puppyTracking export
-  // as they are exported from the socialization file below
 } from './puppyTracking';
 
 // Export puppy types
@@ -112,7 +109,7 @@ export {
 // Export welping types
 export type { WelpingLog, WelpingObservation as WelpingObs, PostpartumCare, WelpingLogEntry as WelpingLog2 } from './welping';
 
-// Export socialization types - only export these from one file
+// Export socialization types
 export type {
   SocializationCategory,
   SocializationCategoryOption,

@@ -1,51 +1,37 @@
 
 import React from 'react';
 import { Loader2 } from 'lucide-react';
-import SkeletonLoader from './SkeletonLoader';
 
 interface LoadingStateProps {
   message?: string;
   size?: 'small' | 'medium' | 'large';
   fullPage?: boolean;
-  showSkeleton?: boolean;
-  skeletonCount?: number;
-  skeletonVariant?: 'default' | 'card' | 'table' | 'text' | 'banner';
+  className?: string;
 }
 
-const LoadingState: React.FC<LoadingStateProps> = ({ 
-  message = 'Loading data...', 
+/**
+ * LoadingState - A standardized loading indicator component
+ */
+const LoadingState: React.FC<LoadingStateProps> = ({
+  message = "Loading...",
   size = 'medium',
   fullPage = false,
-  showSkeleton = false,
-  skeletonCount = 3,
-  skeletonVariant = 'default'
+  className = ""
 }) => {
-  const sizeClasses = {
+  const sizeMap = {
     small: 'h-4 w-4',
     medium: 'h-8 w-8',
     large: 'h-12 w-12'
   };
-
-  const container = fullPage 
-    ? "fixed inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-50"
-    : "flex flex-col items-center justify-center p-6 h-full";
-
+  
+  const containerClass = fullPage 
+    ? 'fixed inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm z-50'
+    : 'flex flex-col items-center justify-center py-8';
+    
   return (
-    <div className={container}>
-      {showSkeleton ? (
-        <div className="w-full max-w-3xl">
-          <SkeletonLoader 
-            count={skeletonCount} 
-            variant={skeletonVariant} 
-          />
-          {message && <p className="text-sm text-muted-foreground mt-4 text-center">{message}</p>}
-        </div>
-      ) : (
-        <>
-          <Loader2 className={`animate-spin text-primary ${sizeClasses[size]}`} />
-          <p className="text-sm text-muted-foreground mt-4">{message}</p>
-        </>
-      )}
+    <div className={`${containerClass} ${className}`}>
+      <Loader2 className={`animate-spin text-primary mb-4 ${sizeMap[size]}`} />
+      {message && <p className="text-muted-foreground">{message}</p>}
     </div>
   );
 };

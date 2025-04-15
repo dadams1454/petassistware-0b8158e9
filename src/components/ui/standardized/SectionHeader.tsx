@@ -1,44 +1,32 @@
 
 import React from 'react';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface SectionHeaderProps {
   title: string;
   description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-    variant?: ButtonProps['variant'];
-    disabled?: boolean;
-    icon?: React.ReactNode;
-  };
+  action?: React.ReactNode;
+  icon?: React.ReactNode;
+  className?: string;
 }
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   description,
-  action
+  action,
+  icon,
+  className,
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-4">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
-        {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        )}
+    <div className={cn('flex items-start justify-between mb-4', className)}>
+      <div className="flex items-center">
+        {icon && <div className="mr-2">{icon}</div>}
+        <div>
+          <h3 className="text-lg font-medium">{title}</h3>
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        </div>
       </div>
-      
-      {action && (
-        <Button
-          onClick={action.onClick}
-          variant={action.variant || "default"}
-          disabled={action.disabled}
-          className="sm:self-start"
-        >
-          {action.icon}
-          {action.label}
-        </Button>
-      )}
+      {action && <div>{action}</div>}
     </div>
   );
 };

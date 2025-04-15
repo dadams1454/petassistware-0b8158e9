@@ -9,16 +9,6 @@
 export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
 /**
- * Weight unit enum for backward compatibility
- */
-export enum WeightUnitEnum {
-  OZ = 'oz',
-  G = 'g',
-  LB = 'lb',
-  KG = 'kg'
-}
-
-/**
  * Weight unit information interface
  */
 export interface WeightUnitInfo {
