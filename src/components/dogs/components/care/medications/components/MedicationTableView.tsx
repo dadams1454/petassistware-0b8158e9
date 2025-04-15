@@ -67,7 +67,7 @@ const MedicationTableView: React.FC<MedicationTableViewProps> = ({
               <TableCell>
                 {medication.lastAdministered ? (
                   <TimeManager 
-                    frequency={medication.frequency}
+                    frequency={medication.frequency || 'daily'}
                     lastTime={medication.lastAdministered}
                     showFrequency={false}
                   />
@@ -105,13 +105,23 @@ const getStatusBadge = (status: any) => {
   }
   
   if (typeof status === 'string') {
-    // Handle string status (convert to enum)
-    const upperStatus = status.toUpperCase();
-    const medicationEnumKeys = Object.keys(MedicationStatusEnum);
-    const enumStatus = medicationEnumKeys.includes(upperStatus) 
-      ? MedicationStatusEnum[upperStatus as keyof typeof MedicationStatusEnum] 
-      : MedicationStatusEnum.UNKNOWN;
-    return getStatusLabelBadge(enumStatus);
+    const normalizedStatus = status.toLowerCase();
+    // Map to a valid value
+    let mappedStatus = "unknown";
+    
+    if (["due", "active", "current"].includes(normalizedStatus)) {
+      mappedStatus = "due";
+    } else if (["overdue", "expired", "late"].includes(normalizedStatus)) {
+      mappedStatus = "overdue";
+    } else if (["upcoming", "scheduled", "pending"].includes(normalizedStatus)) {
+      mappedStatus = "upcoming";
+    } else if (["completed", "finished", "done"].includes(normalizedStatus)) {
+      mappedStatus = "completed";
+    } else if (["skipped", "discontinued", "cancelled"].includes(normalizedStatus)) {
+      mappedStatus = "skipped";
+    }
+    
+    return getStatusLabelBadge(mappedStatus);
   } 
   
   if (typeof status === 'object' && status && 'status' in status) {
@@ -128,19 +138,15 @@ const getStatusBadge = (status: any) => {
 };
 
 const getStatusLabelBadge = (status: string) => {
-  // Normalize string status to enum
-  let statusString = status;
-  if (typeof status === 'string') {
-    const upperStatus = status.toUpperCase();
-    const medicationEnumKeys = Object.keys(MedicationStatusEnum);
-    if (!medicationEnumKeys.includes(upperStatus)) {
-      statusString = MedicationStatusEnum.UNKNOWN;
-    } else {
-      statusString = MedicationStatusEnum[upperStatus as keyof typeof MedicationStatusEnum];
-    }
+  // Normalize string status to a valid value
+  let mappedStatus = status;
+  
+  // Ensure we're using a valid status value
+  if (!["due", "overdue", "upcoming", "completed", "skipped", "unknown"].includes(mappedStatus)) {
+    mappedStatus = "unknown";
   }
   
-  const statusInfo = getStatusLabel(statusString);
+  const statusInfo = getStatusLabel(mappedStatus);
   
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.statusColor}`}>

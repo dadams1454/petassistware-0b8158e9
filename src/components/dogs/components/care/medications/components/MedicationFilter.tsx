@@ -1,23 +1,31 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MedicationFilterProps } from '../types/medicationTypes';
 
-const MedicationFilter: React.FC<MedicationFilterProps> = ({ value, onChange }) => {
+const MedicationFilter: React.FC<MedicationFilterProps> = ({ 
+  activeFilter, 
+  onChange, 
+  counts,
+  value  // For backward compatibility
+}) => {
+  // Use either activeFilter or value (for backward compatibility)
+  const currentFilter = value || activeFilter;
+  
   return (
-    <div className="flex items-center space-x-2">
-      <span className="text-sm text-muted-foreground">Filter:</span>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Filter medications" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Dogs</SelectItem>
-          <SelectItem value="withMeds">With Medications</SelectItem>
-          <SelectItem value="withoutMeds">Without Medications</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <Tabs value={currentFilter} onValueChange={onChange} className="w-full">
+      <TabsList className="grid grid-cols-3 w-full">
+        <TabsTrigger value="all">
+          All ({counts.all})
+        </TabsTrigger>
+        <TabsTrigger value="preventative">
+          Preventative ({counts.preventative})
+        </TabsTrigger>
+        <TabsTrigger value="other">
+          Other ({counts.other})
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 };
 

@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { HeatIntensityType, HeatIntensityValues } from '@/types';
 import { Calendar } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { Calendar as CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 
 export interface HeatCycleDialogProps {
@@ -128,7 +128,6 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
             <div>
               <Label htmlFor="startDate">Start Date</Label>
               <DatePicker
-                mode="single"
                 selected={startDate}
                 onSelect={setStartDate}
                 placeholder="Select date"
@@ -138,7 +137,6 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
             <div>
               <Label htmlFor="endDate">End Date</Label>
               <DatePicker
-                mode="single"
                 selected={endDate}
                 onSelect={setEndDate}
                 placeholder="Select date"

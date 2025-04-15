@@ -36,18 +36,19 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
         
       if (error) throw error;
       
-      const typedData = (data || []).map(cycle => ({
+      // Process heat cycles data
+      const formattedCycles = data.map(cycle => ({
         ...cycle,
-        intensity: (cycle.intensity || 'moderate') as HeatIntensityType
+        intensity: cycle.intensity as HeatIntensityType
       }));
       
-      setHeatCycles(typedData);
+      setHeatCycles(formattedCycles);
     } catch (error) {
       console.error('Error fetching heat cycles:', error);
       toast({
         title: 'Error',
-        description: 'Could not fetch heat cycles',
-        variant: 'destructive',
+        description: 'Failed to load heat cycles',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -59,150 +60,184 @@ const HeatCycleManagement: React.FC<HeatCycleManagementProps> = ({ dogId }) => {
     setDialogOpen(true);
   };
   
-  const handleViewHeatCycle = (cycle: HeatCycle) => {
+  const handleEditHeatCycle = (cycle: HeatCycle) => {
     setSelectedCycle(cycle);
     setDialogOpen(true);
   };
   
-  const handleSaveHeatCycle = async (cycle: HeatCycle) => {
+  const handleSaveHeatCycle = async (cycleData: any) => {
     try {
-      if (cycle.id) {
-        // Update existing cycle
+      if (cycleData.id) {
+        // Update existing heat cycle
         const { error } = await supabase
           .from('heat_cycles')
           .update({
-            start_date: cycle.start_date,
-            end_date: cycle.end_date,
-            intensity: cycle.intensity,
-            symptoms: cycle.symptoms,
-            notes: cycle.notes,
+            start_date: cycleData.start_date,
+            end_date: cycleData.end_date,
+            intensity: cycleData.intensity,
+            symptoms: cycleData.symptoms,
+            notes: cycleData.notes
           })
-          .eq('id', cycle.id);
+          .eq('id', cycleData.id);
           
         if (error) throw error;
         
         toast({
-          title: 'Heat cycle updated',
-          description: 'The heat cycle has been updated successfully.',
+          title: 'Success',
+          description: 'Heat cycle updated successfully'
         });
       } else {
-        // Add new cycle
+        // Add new heat cycle
         const { error } = await supabase
           .from('heat_cycles')
-          .insert({
+          .insert([{
             dog_id: dogId,
-            start_date: cycle.start_date,
-            end_date: cycle.end_date,
-            intensity: cycle.intensity,
-            symptoms: cycle.symptoms,
-            notes: cycle.notes,
-          });
+            start_date: cycleData.start_date,
+            end_date: cycleData.end_date,
+            intensity: cycleData.intensity,
+            symptoms: cycleData.symptoms,
+            notes: cycleData.notes,
+            cycle_number: heatCycles.length + 1
+          }]);
           
         if (error) throw error;
         
         toast({
-          title: 'Heat cycle added',
-          description: 'The new heat cycle has been added successfully.',
+          title: 'Success',
+          description: 'Heat cycle added successfully'
         });
+        
+        // Update the dog's last heat date
+        await supabase
+          .from('dogs')
+          .update({ last_heat_date: cycleData.start_date })
+          .eq('id', dogId);
       }
       
+      // Refresh the heat cycles list
       fetchHeatCycles();
-      setDialogOpen(false);
     } catch (error) {
       console.error('Error saving heat cycle:', error);
       toast({
         title: 'Error',
-        description: 'Could not save heat cycle',
-        variant: 'destructive',
+        description: 'Failed to save heat cycle',
+        variant: 'destructive'
       });
     }
   };
   
-  const getIntensityLabel = (intensity: HeatIntensityType) => {
-    return intensity.charAt(0).toUpperCase() + intensity.slice(1);
-  };
-  
-  const getIntensityColor = (intensity: HeatIntensityType) => {
-    switch(intensity) {
-      case 'none':
-        return 'bg-gray-100 text-gray-800';
-      case 'mild':
-        return 'bg-blue-100 text-blue-800';
-      case 'moderate':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'strong':
-        return 'bg-orange-100 text-orange-800';
-      case 'very_strong':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const renderHeatCycles = () => {
+    if (loading) {
+      return <div className="p-4 text-center">Loading heat cycles...</div>;
+    }
+    
+    if (heatCycles.length === 0) {
+      return (
+        <div className="p-4 text-center">
+          <p className="text-muted-foreground mb-2">No heat cycles recorded yet</p>
+          <Button onClick={handleAddHeatCycle}>Record Heat Cycle</Button>
+        </div>
+      );
+    }
+    
+    if (viewMode === 'grid') {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {heatCycles.map(cycle => (
+            <Card key={cycle.id} className="h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex justify-between">
+                  Heat Cycle #{cycle.cycle_number}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {format(new Date(cycle.start_date), 'MMM d, yyyy')}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pb-2">
+                <div className="grid gap-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Duration:</span>
+                    <span className="font-medium">
+                      {cycle.end_date ? 
+                        `${differenceInDays(new Date(cycle.end_date), new Date(cycle.start_date))} days` : 
+                        'Ongoing'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Intensity:</span>
+                    <span className="font-medium capitalize">{cycle.intensity}</span>
+                  </div>
+                  {cycle.symptoms && cycle.symptoms.length > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Symptoms:</span>
+                      <span className="font-medium">{cycle.symptoms.join(', ')}</span>
+                    </div>
+                  )}
+                  {cycle.notes && (
+                    <div className="text-sm mt-2">
+                      <span className="text-muted-foreground">Notes:</span>
+                      <p className="mt-1">{cycle.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" size="sm" onClick={() => handleEditHeatCycle(cycle)}>
+                  Edit Cycle
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      );
+    } else {
+      // List view implementation
+      return (
+        <div className="space-y-2">
+          {heatCycles.map(cycle => (
+            <div key={cycle.id} className="flex justify-between items-center border-b pb-2">
+              <div>
+                <span className="font-medium">Cycle #{cycle.cycle_number}</span>
+                <span className="text-sm text-muted-foreground ml-2">
+                  {format(new Date(cycle.start_date), 'MMM d, yyyy')}
+                </span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => handleEditHeatCycle(cycle)}>
+                Edit
+              </Button>
+            </div>
+          ))}
+        </div>
+      );
     }
   };
   
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Heat Cycles</CardTitle>
-        <Button onClick={handleAddHeatCycle} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> Add Heat Cycle
-        </Button>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="flex justify-center py-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : heatCycles.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-2" />
-            <p>No heat cycles recorded yet.</p>
-            <p className="text-sm">Add a heat cycle to start tracking the dog's reproductive cycle.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {heatCycles.map((cycle) => (
-              <div 
-                key={cycle.id} 
-                className="border rounded-lg p-3 hover:border-primary cursor-pointer transition-colors"
-                onClick={() => handleViewHeatCycle(cycle)}
-              >
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-                  <div className="font-medium">
-                    {format(new Date(cycle.start_date), 'MMMM d, yyyy')}
-                  </div>
-                  <div className={`rounded-full px-2 py-0.5 text-xs ${getIntensityColor(cycle.intensity)}`}>
-                    {getIntensityLabel(cycle.intensity)}
-                  </div>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {cycle.end_date ? (
-                    <span>
-                      Duration: {differenceInDays(new Date(cycle.end_date), new Date(cycle.start_date))} days 
-                      (Ended: {format(new Date(cycle.end_date), 'MMM d, yyyy')})
-                    </span>
-                  ) : (
-                    <span className="text-primary">In progress</span>
-                  )}
-                </div>
-                {cycle.notes && <p className="text-sm mt-2">{cycle.notes}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="border-t px-6 py-4">
-        <p className="text-sm text-muted-foreground">
-          Heat cycles typically occur every 6-8 months for most breeds. Tracking these cycles helps predict future heats.
-        </p>
-      </CardFooter>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-base font-semibold">Heat Cycles</h3>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}>
+            {viewMode === 'grid' ? 'List View' : 'Grid View'}
+          </Button>
+          <Button size="sm" onClick={handleAddHeatCycle}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Cycle
+          </Button>
+        </div>
+      </div>
       
-      <HeatCycleDialog
-        open={dialogOpen}
+      {renderHeatCycles()}
+      
+      <HeatCycleDialog 
+        open={dialogOpen} 
+        setOpen={setDialogOpen}
         onOpenChange={setDialogOpen}
+        dogId={dogId}
         cycle={selectedCycle}
         onSave={handleSaveHeatCycle}
       />
-    </Card>
+    </div>
   );
 };
 

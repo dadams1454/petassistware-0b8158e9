@@ -13,12 +13,31 @@ export interface DogInfoProps {
   dogName?: string;
   breed?: string;
   photoUrl?: string;
+  dogPhoto?: string; // Added for backward compatibility
+}
+
+// Basic medication information interface
+export interface MedicationInfo {
+  id: string;
+  name: string;
+  dosage?: number;
+  dosage_unit?: string;
+  frequency?: string;
+  start_date?: string;
+  end_date?: string;
+  status?: string | any;
+  lastAdministered?: string;
+  notes?: string;
 }
 
 // Props for LastMedicationInfo component
 export interface LastMedicationInfoProps {
   medication: Medication;
   lastAdministeredDate?: string;
+  // For backward compatibility:
+  name?: string;
+  lastAdministered?: string; 
+  frequency?: string;
 }
 
 // Props for MedicationCard component
@@ -38,12 +57,15 @@ export interface MedicationFilterProps {
     preventative: number;
     other: number;
   };
+  value?: string; // Added for backward compatibility
 }
 
 // Props for MedicationHeader component
 export interface MedicationHeaderProps {
   title: string;
   count: number;
+  description?: string; // Added for backward compatibility
+  isLoading?: boolean; // Added for backward compatibility
 }
 
 // Heat intensity type for breeding
