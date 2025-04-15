@@ -1,6 +1,9 @@
-
 import React from 'react';
+import SectionHeader from './standardized/SectionHeader';
 
+export { SectionHeader };
+
+// Other existing exports can remain the same if needed
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
