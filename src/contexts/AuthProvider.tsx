@@ -30,6 +30,15 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
+// Export the useAuth hook directly from this file
+export const useAuth = (): AuthContextType => {
+  const context = React.useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
 // Mock user data
 const mockUsers: MockUser[] = [
   {

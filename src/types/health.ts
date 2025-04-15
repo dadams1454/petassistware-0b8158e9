@@ -3,14 +3,62 @@
  * Health-related type definitions
  */
 
-import { 
-  HealthRecordType,
-  AppetiteLevel,
-  EnergyLevel,
-  StoolConsistency,
-  MedicationStatusResult
-} from './health-enums';
-import { WeightUnit } from './weight-units';
+// Define enums that are used throughout the app
+export enum HealthRecordTypeEnum {
+  VACCINATION = 'VACCINATION',
+  EXAMINATION = 'EXAMINATION',
+  MEDICATION = 'MEDICATION',
+  SURGERY = 'SURGERY',
+  TEST = 'TEST',
+  OTHER = 'OTHER',
+  Examination = 'EXAMINATION', // For backwards compatibility
+  Vaccination = 'VACCINATION'  // For backwards compatibility
+}
+
+export enum AppetiteLevel {
+  NORMAL = 'NORMAL',
+  REDUCED = 'REDUCED',
+  INCREASED = 'INCREASED',
+  NONE = 'NONE'
+}
+
+export enum EnergyLevel {
+  NORMAL = 'NORMAL',
+  LOW = 'LOW',
+  HIGH = 'HIGH',
+  LETHARGIC = 'LETHARGIC'
+}
+
+export enum StoolConsistency {
+  NORMAL = 'NORMAL',
+  LOOSE = 'LOOSE',
+  WATERY = 'WATERY',
+  HARD = 'HARD',
+  BLOODY = 'BLOODY',
+  NONE = 'NONE'
+}
+
+export enum MedicationStatusEnum {
+  DUE = 'due',
+  OVERDUE = 'overdue',
+  UPCOMING = 'upcoming',
+  COMPLETED = 'completed',
+  SKIPPED = 'skipped',
+  UNKNOWN = 'unknown'
+}
+
+export enum WeightUnitEnum {
+  LB = 'lb',
+  OZ = 'oz',
+  KG = 'kg',
+  G = 'g'
+}
+
+// For backwards compatibility
+export type HealthRecordType = HealthRecordTypeEnum;
+
+// Weight units
+export type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
 
 // Health record interface
 export interface HealthRecord {
@@ -22,6 +70,7 @@ export interface HealthRecord {
   date: string;
   visit_date?: string;
   record_notes?: string;
+  description?: string; // Add for backward compatibility
   document_url?: string;
   created_at: string;
   updated_at?: string;
@@ -143,18 +192,21 @@ export interface HealthAlert {
   record_id?: string;
 }
 
-// Re-export WeightRecord here for backwards compatibility
-export { WeightUnit };
-export type WeightRecord = {
+// Weight record
+export interface WeightRecord {
   id: string;
   dog_id: string;
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
   created_at: string;
   age_days?: number;
   birth_date?: string;
-};
+}
+
+// Export everything needed
+export { WeightUnit };

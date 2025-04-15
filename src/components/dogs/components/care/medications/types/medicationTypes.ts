@@ -1,52 +1,102 @@
 
-export interface MedicationInfo {
-  id: string;
-  name: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency: string;
-  instructions?: string;
-  lastAdministered?: string | Date;
-  nextDue?: string | Date;
-  status: string | {
-    status: string;
-    message: string;
-    nextDue?: string | Date | null;
-    daysOverdue?: number;
-    daysUntilDue?: number;
+import { Medication } from '@/types/health';
+
+// Props for the MedicationsLog component
+export interface MedicationsLogProps {
+  dogId?: string;
+  onRefresh?: () => void;
+}
+
+// Props for the DogInfo component
+export interface DogInfoProps {
+  dogId: string;
+  dogName?: string;
+  breed?: string;
+  photoUrl?: string;
+}
+
+// Props for LastMedicationInfo component
+export interface LastMedicationInfoProps {
+  medication: Medication;
+  lastAdministeredDate?: string;
+}
+
+// Props for MedicationCard component
+export interface MedicationCardProps {
+  dogId: string;
+  preventativeMeds: Medication[];
+  otherMeds: Medication[];
+  onSuccess?: () => void;
+}
+
+// Props for MedicationFilter component
+export interface MedicationFilterProps {
+  activeFilter: string;
+  onChange: (filter: string) => void;
+  counts: {
+    all: number;
+    preventative: number;
+    other: number;
   };
-  start_date?: string | Date;
-  end_date?: string | Date;
-  active: boolean;
-  dog_id: string;
-  vet_id?: string;
-  vet_name?: string;
-  rx_number?: string;
-  notes?: string;
 }
 
-export interface MedicationAdministrationInfo {
+// Props for MedicationHeader component
+export interface MedicationHeaderProps {
+  title: string;
+  count: number;
+}
+
+// Heat intensity type for breeding
+export enum HeatIntensityType {
+  MILD = 'mild',
+  MODERATE = 'moderate',
+  STRONG = 'strong'
+}
+
+// Heat cycle interface
+export interface HeatCycle {
   id: string;
-  medication_id: string;
-  administered_by: string;
-  administered_at: string | Date;
-  dosage?: number;
-  dosage_unit?: string;
-  notes?: string;
-  effectiveness?: 'effective' | 'partially_effective' | 'not_effective' | 'unknown';
-  side_effects?: string[];
+  dog_id: string;
+  cycle_number: number;
+  start_date: string;
+  end_date: string;
+  cycle_length: number;
+  intensity: HeatIntensityType;
+  symptoms: string[];
+  notes: string;
+  fertility_indicators: any;
+  recorded_by: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface MedicationFormData {
+// Props for HeatCycleDialog
+export interface HeatCycleDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
+  cycle: HeatCycle;
+  onSave: (cycle: HeatCycle) => Promise<void>;
+}
+
+// Props for DatePicker component
+export interface DatePickerProps {
+  selected: Date;
+  onSelect: (date: Date) => void;
+  onChange?: (date: Date) => void;
+  date?: Date;
+  placeholder?: string;
+  className?: string;
+  mode?: string;
+}
+
+// Care status interfaces
+export interface DogCareStatus {
+  id: string;
   name: string;
-  dosage?: number;
-  dosage_unit?: string;
-  frequency: string;
-  instructions?: string;
-  start_date?: string | Date;
-  end_date?: string | Date;
-  vet_id?: string;
-  vet_name?: string;
-  rx_number?: string;
-  notes?: string;
+  dog_id: string;
+  dog_name?: string; // For compatibility
+  status: string;
+  last_updated: string;
+  flags?: string[]; // For compatibility
 }

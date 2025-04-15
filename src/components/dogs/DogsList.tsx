@@ -53,7 +53,7 @@ const DogsList = () => {
     <div>
       <PageHeader 
         title="Dogs"
-        subtitle="Manage your kennel's dogs"
+        description="Manage your kennel's dogs"
         action={
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
