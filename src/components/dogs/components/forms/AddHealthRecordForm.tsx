@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordTypeEnum } from '@/types/health-enums';
 import {
   Form,
   FormControl,
@@ -95,7 +95,7 @@ const AddHealthRecordForm: React.FC<AddHealthRecordFormProps> = ({ onSubmit, onC
                 <SelectContent>
                   {Object.entries(HealthRecordTypeEnum).map(([key, value]) => (
                     <SelectItem key={value} value={value}>
-                      {key.charAt(0) + key.slice(1).toLowerCase()}
+                      {key.charAt(0) + key.slice(1).toLowerCase().replace('_', ' ')}
                     </SelectItem>
                   ))}
                 </SelectContent>

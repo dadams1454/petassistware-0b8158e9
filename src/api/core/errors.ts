@@ -91,3 +91,57 @@ export class ApiError extends Error {
     }
   }
 }
+
+// Error Handlers object for various error handling operations
+export const errorHandlers = {
+  /**
+   * Handle API errors and show a toast message if needed
+   */
+  showErrorToast: (error: unknown, context = 'api') => {
+    // For now just log to console in mock mode
+    console.error(`Error in ${context}:`, error);
+    
+    // Here we would integrate with a toast system
+    // toast({
+    //   title: "Error",
+    //   description: error instanceof ApiError ? error.getFriendlyMessage() : "An unexpected error occurred",
+    //   variant: "destructive",
+    // });
+  },
+  
+  /**
+   * Parse and transform error from API response
+   */
+  parseApiError: (error: any, context?: string): ApiError => {
+    if (error instanceof ApiError) {
+      return error;
+    }
+    
+    // Parse common error patterns
+    const message = error?.message || error?.error?.message || 'An unknown error occurred';
+    const code = error?.code || error?.error?.code;
+    const details = error?.details || error?.error?.details;
+    
+    // Determine error type
+    let type = ErrorType.UNKNOWN;
+    
+    // Try to infer type from status code or message
+    if (error?.status === 404 || error?.code === 'not_found') {
+      type = ErrorType.NOT_FOUND;
+    } else if (error?.status === 401 || error?.code === 'unauthorized') {
+      type = ErrorType.UNAUTHORIZED;
+    } else if (error?.status === 403 || error?.code === 'forbidden') {
+      type = ErrorType.FORBIDDEN;
+    } else if (error?.status === 400 || error?.code === 'validation') {
+      type = ErrorType.VALIDATION;
+    }
+    
+    return new ApiError({
+      type,
+      message,
+      code,
+      details,
+      originalError: error
+    });
+  }
+};

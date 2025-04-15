@@ -1,94 +1,52 @@
 
-import { MedicationStatusEnum, MedicationStatusResult } from '@/types/health-enums';
-
 export interface MedicationInfo {
   id: string;
   name: string;
-  dosage?: string | number;
+  dosage?: number;
   dosage_unit?: string;
   frequency: string;
-  lastAdministered: string;
-  nextDue?: string;
-  status?: MedicationStatusEnum | string | MedicationStatusResult;
-  notes?: string;
-  isPreventative?: boolean;
-  startDate?: string;
-}
-
-export interface ProcessedMedicationLogs {
-  [dogId: string]: {
-    preventative: MedicationInfo[];
-    other: MedicationInfo[];
-  }
-}
-
-export interface MedicationsLogProps {
-  dogId?: string;
-  onRefresh?: () => void;
-}
-
-export interface MedicationFilterProps {
-  activeFilter: string;
-  onChange: (filter: string) => void;
-  counts?: {
-    all: number;
-    preventative: number;
-    other: number;
+  instructions?: string;
+  lastAdministered?: string | Date;
+  nextDue?: string | Date;
+  status: string | {
+    status: string;
+    message: string;
+    nextDue?: string | Date | null;
+    daysOverdue?: number;
+    daysUntilDue?: number;
   };
-  value?: string;
-}
-
-export interface MedicationHeaderProps {
-  title: string;
-  count: number;
-  type: 'preventative' | 'other';
-  onAdd?: () => void;
-  description?: string;
-  isLoading?: boolean;
-}
-
-export interface DogCareStatus {
+  start_date?: string | Date;
+  end_date?: string | Date;
+  active: boolean;
   dog_id: string;
-  dog_name: string;
-  dog_photo: string;
-  breed: string;
-  color?: string;
-  sex?: string;
-  last_care?: {
-    category: string;
-    task_name: string;
-    timestamp: string;
-  };
-  flags?: string[];
-  incompatible_with?: string[];
-  dog_weight?: number;
+  vet_id?: string;
+  vet_name?: string;
+  rx_number?: string;
+  notes?: string;
 }
 
-export interface DogInfoProps {
-  dogId: string;
-  dogName: string;
-  dogPhoto: string;
-  breed: string;
+export interface MedicationAdministrationInfo {
+  id: string;
+  medication_id: string;
+  administered_by: string;
+  administered_at: string | Date;
+  dosage?: number;
+  dosage_unit?: string;
+  notes?: string;
+  effectiveness?: 'effective' | 'partially_effective' | 'not_effective' | 'unknown';
+  side_effects?: string[];
 }
 
-export interface LastMedicationInfoProps {
-  dogId: string;
+export interface MedicationFormData {
   name: string;
-  lastAdministered: string;
+  dosage?: number;
+  dosage_unit?: string;
   frequency: string;
-}
-
-export interface MedicationCardProps {
-  dogId: string;
-  preventativeMeds: MedicationInfo[];
-  otherMeds: MedicationInfo[];
-  onSuccess: () => void;
-}
-
-export interface MedicationFormProps {
-  dogId: string;
-  onSave: (data: any) => Promise<boolean>;
-  onCancel: () => void;
-  isEditing?: boolean;
-  initialData?: any;
+  instructions?: string;
+  start_date?: string | Date;
+  end_date?: string | Date;
+  vet_id?: string;
+  vet_name?: string;
+  rx_number?: string;
+  notes?: string;
 }

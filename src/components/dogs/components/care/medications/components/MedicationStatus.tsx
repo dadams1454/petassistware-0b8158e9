@@ -2,7 +2,7 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatusEnum } from '@/types';
+import { MedicationStatusEnum } from '@/types/health-enums';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 // Define the props interface
@@ -64,7 +64,7 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
     statusValue = status;
     
     // Map legacy string status if needed
-    if (!Object.values(MedicationStatusEnum).includes(statusValue as any)) {
+    if (!Object.values(MedicationStatusEnum).includes(statusValue)) {
       switch (status.toLowerCase()) {
         case 'active': statusValue = 'due'; break;
         case 'overdue': statusValue = 'overdue'; break;

@@ -1,5 +1,6 @@
 
 import React, { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 export interface PageHeaderProps {
   title: string;
@@ -15,11 +16,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex justify-between items-start mb-6 ${className}`}>
+    <div className={cn("flex justify-between items-start mb-6", className)}>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <h1 className="text-2xl font-bold">{title}</h1>
         {subtitle && (
-          <p className="text-muted-foreground mt-1">{subtitle}</p>
+          <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
         )}
       </div>
       {action && <div>{action}</div>}

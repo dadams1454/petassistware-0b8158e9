@@ -1,126 +1,116 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 
-// Simple mock user interface
+// Define mock user type
 export interface MockUser {
   id: string;
-  email: string;
   name: string;
-  photoURL?: string; // Added to fix UserMenu.tsx error
-  role: 'admin' | 'manager' | 'staff' | 'viewer';
+  email: string;
+  role: 'admin' | 'breeder' | 'staff' | 'guest';
+  photoURL?: string;
 }
 
-// Test users for development
-const MOCK_USERS: MockUser[] = [
-  {
-    id: '1',
-    email: 'admin@example.com',
-    name: 'Admin User',
-    photoURL: 'https://randomuser.me/api/portraits/women/43.jpg',
-    role: 'admin'
-  },
-  {
-    id: '2',
-    email: 'manager@example.com',
-    name: 'Manager User',
-    photoURL: 'https://randomuser.me/api/portraits/men/32.jpg',
-    role: 'manager'
-  },
-  {
-    id: '3',
-    email: 'staff@example.com',
-    name: 'Staff User',
-    photoURL: 'https://randomuser.me/api/portraits/women/56.jpg',
-    role: 'staff'
-  }
-];
-
-interface AuthContextType {
+// Define auth context type
+export interface AuthContextType {
   user: MockUser | null;
+  userRole: string;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  isAuthenticated: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create context with default values
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  userRole: '',
+  loading: false,
+  error: null,
+  login: async () => {},
+  logout: () => {},
+});
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+// Mock user data
+const mockUsers: MockUser[] = [
+  {
+    id: '1',
+    name: 'Admin User',
+    email: 'admin@example.com',
+    role: 'admin',
+    photoURL: 'https://via.placeholder.com/150'
+  },
+  {
+    id: '2',
+    name: 'Breeder User',
+    email: 'breeder@example.com',
+    role: 'breeder',
+    photoURL: 'https://via.placeholder.com/150'
+  },
+  {
+    id: '3',
+    name: 'Staff Member',
+    email: 'staff@example.com',
+    role: 'staff',
   }
-  return context;
-};
+];
 
-const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// Auth provider props
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+// Auth provider component
+const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<MockUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check for existing user in localStorage on mount
+  // Check for stored user on mount
   useEffect(() => {
-    const checkStoredUser = () => {
-      const storedUser = localStorage.getItem('paw_user');
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch (e) {
-          console.error('Error parsing stored user:', e);
-          localStorage.removeItem('paw_user');
-        }
-      }
-      setLoading(false);
-    };
-
-    checkStoredUser();
+    const storedUser = localStorage.getItem('paw_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  // Mock login function
+  // Login function
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     
     try {
-      // Simulate API call
+      // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Find matching user
-      const matchedUser = MOCK_USERS.find(u => u.email === email);
+      // Find user by email (password is ignored in mock)
+      const foundUser = mockUsers.find(u => u.email === email);
       
-      if (matchedUser && password === 'password') {
-        // Store user in state and localStorage
-        setUser(matchedUser);
-        localStorage.setItem('paw_user', JSON.stringify(matchedUser));
+      if (foundUser) {
+        setUser(foundUser);
+        localStorage.setItem('paw_user', JSON.stringify(foundUser));
       } else {
         throw new Error('Invalid email or password');
       }
-    } catch (e: any) {
-      setError(e.message);
-      throw e;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Mock logout function
+  // Logout function
   const logout = () => {
     setUser(null);
     localStorage.removeItem('paw_user');
   };
 
-  const value = {
-    user,
-    loading,
-    error,
-    login,
-    logout,
-    isAuthenticated: !!user
-  };
+  // Get user role
+  const userRole = user?.role || '';
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, userRole, loading, error, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

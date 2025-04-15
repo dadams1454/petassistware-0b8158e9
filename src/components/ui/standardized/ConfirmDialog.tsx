@@ -1,30 +1,30 @@
 
 import React from 'react';
-import {
+import { 
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
 
 interface ConfirmDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
   title: string;
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel?: () => void;
-  destructive?: boolean;
+  danger?: boolean;
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  open,
+  isOpen,
   onOpenChange,
   title,
   description,
@@ -32,34 +32,32 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelLabel = 'Cancel',
   onConfirm,
   onCancel,
-  destructive = false,
+  danger = false
 }) => {
-  const handleCancel = () => {
+  const handleConfirm = () => {
+    onConfirm();
     onOpenChange(false);
-    if (onCancel) onCancel();
   };
 
-  const handleConfirm = () => {
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
     onOpenChange(false);
-    onConfirm();
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel}>
-            {cancelLabel}
-          </AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogCancel onClick={handleCancel}>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogAction 
             onClick={handleConfirm}
-            className={destructive ? 'bg-destructive hover:bg-destructive/90' : ''}
+            className={danger ? 'bg-destructive hover:bg-destructive/90' : undefined}
           >
             {confirmLabel}
           </AlertDialogAction>
