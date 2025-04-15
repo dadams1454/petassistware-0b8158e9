@@ -118,28 +118,71 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export const UnauthorizedState: React.FC<UnauthorizedStateProps> = ({ title = "Unauthorized", description = "You are not authorized to view this page.", backPath = "/dashboard", showAdminSetupLink = false }) => {
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    navigate(backPath);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center py-12">
+      <Ban className="h-10 w-10 text-red-500 mb-4" />
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-6 max-w-md text-center">{description}</p>
+      <Button onClick={handleGoBack} variant="outline">
+        Go Back
+      </Button>
+      {showAdminSetupLink && (
+        <Button variant="link" onClick={() => navigate('/admin/setup')}>
+          Admin Setup
+        </Button>
+      )}
+    </div>
+  );
+};
+// Confirm dialog component
+export interface ConfirmDialogProps {
+  title: string;
+  description: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   title,
   description,
-  icon,
-  action,
-  className
+  onConfirm,
+  onCancel,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+  isOpen,
+  onOpenChange,
 }) => {
   return (
-    <div className={cn(
-      "flex flex-col items-center justify-center text-center py-16 px-4",
-      className
-    )}>
-      {icon && <div className="mb-4">{icon}</div>}
-      <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-md mb-6">{description}</p>
-      {action && (
-        <Button 
-          onClick={action.onClick}
-          disabled={action.disabled}
-        >
-          {action.label}
-        </Button>
+    <div className="relative">
+      {/* Dialog */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="bg-white rounded-lg shadow-xl p-6">
+              <h3 className="text-lg font-semibold mb-2">{title}</h3>
+              <p className="text-muted-foreground mb-4">{description}</p>
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={onCancel}>
+                  {cancelLabel}
+                </Button>
+                <Button variant="primary" onClick={onConfirm}>
+                  {confirmLabel}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
