@@ -7,6 +7,7 @@ export type { EmptyStateProps } from './EmptyState';
 
 // Explicitly export PageHeader
 export { default as PageHeader } from './PageHeader';
+export type PageHeaderProps = import('./PageHeader').default;
 
 // Add exports for other standardized components
 export { default as ConfirmDialog } from './ConfirmDialog';
