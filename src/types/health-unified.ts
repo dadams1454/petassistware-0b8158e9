@@ -15,16 +15,18 @@ export interface HealthRecordBase {
   date: string;
   created_at: string;
   updated_at?: string;
+  description?: string; // Added for backward compatibility
   record_notes?: string;
   next_due_date?: string;
   performed_by?: string;
   vet_name?: string;
   document_url?: string;
+  visit_date?: string; // Added for backward compatibility
 }
 
 // Extended health record types
 export interface VaccinationRecord extends HealthRecordBase {
-  record_type: 'VACCINATION';
+  record_type: HealthRecordType.VACCINATION;
   vaccine_name?: string;
   manufacturer?: string;
   lot_number?: string;
@@ -32,7 +34,7 @@ export interface VaccinationRecord extends HealthRecordBase {
 }
 
 export interface ExaminationRecord extends HealthRecordBase {
-  record_type: 'EXAMINATION';
+  record_type: HealthRecordType.EXAMINATION;
   examination_type?: string;
   findings?: string;
   recommendations?: string;
@@ -40,7 +42,7 @@ export interface ExaminationRecord extends HealthRecordBase {
 }
 
 export interface MedicationRecord extends HealthRecordBase {
-  record_type: 'MEDICATION';
+  record_type: HealthRecordType.MEDICATION;
   medication_name?: string;
   dosage?: number;
   dosage_unit?: string;
@@ -73,6 +75,7 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // Added for backward compatibility
   date: string;
   notes?: string;
   percent_change?: number;
@@ -111,3 +114,6 @@ export interface HealthRecordOptions {
   endDate?: string;
   includeArchived?: boolean;
 }
+
+// For backward compatibility, re-export types as aliases
+export type HealthRecord = HealthRecordBase;

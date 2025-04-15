@@ -24,6 +24,13 @@ export type { EmptyStateProps } from './standardized/EmptyState';
 export { default as ConfirmDialog } from './standardized/ConfirmDialog';
 export type { ConfirmDialogProps } from './standardized/ConfirmDialog';
 
+export { default as ErrorState } from './standardized/ErrorState';
+export type { ErrorStateProps } from './standardized/ErrorState';
+
+export { default as LoadingState } from './standardized/LoadingState';
+export type { LoadingStateProps } from './standardized/LoadingState';
+
+// Also export the components directly for backward compatibility
 // Loading state component
 export interface LoadingStateProps {
   message?: string;
@@ -134,6 +141,7 @@ export interface EmptyStateProps {
   action?: {
     label: string;
     onClick: () => void;
+    disabled?: boolean; // Added for backward compatibility
   };
   className?: string;
 }
@@ -154,7 +162,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <h3 className="text-lg font-medium mb-2">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-md mb-6">{description}</p>
       {action && (
-        <Button onClick={action.onClick}>
+        <Button 
+          onClick={action.onClick}
+          disabled={action.disabled}
+        >
           {action.label}
         </Button>
       )}

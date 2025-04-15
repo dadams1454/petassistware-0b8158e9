@@ -1,7 +1,7 @@
 
 import React, { ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export interface EmptyStateProps {
   title: string;
@@ -10,7 +10,7 @@ export interface EmptyStateProps {
   action?: {
     label: string;
     onClick: () => void;
-    disabled?: boolean;
+    disabled?: boolean; // Add disabled prop for backward compatibility
   };
   className?: string;
 }
