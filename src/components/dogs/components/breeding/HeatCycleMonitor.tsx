@@ -46,11 +46,22 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, refreshKey }
   const calculateNextHeatDate = () => {
     if (!lastHeatCycle || !averageCycleLength) return null;
     
-    const lastStartDate = parseISO(lastHeatCycle.start_date);
+    const lastStartDate = typeof lastHeatCycle.start_date === 'string' 
+      ? parseISO(lastHeatCycle.start_date) 
+      : lastHeatCycle.start_date;
+      
     return addDays(lastStartDate, averageCycleLength);
   };
   
   const nextHeatDate = calculateNextHeatDate();
+  
+  // Helper function to safely format dates
+  const formatDateValue = (dateValue: string | Date | undefined) => {
+    if (!dateValue) return '';
+    
+    const dateObj = typeof dateValue === 'string' ? parseISO(dateValue) : dateValue;
+    return format(dateObj, 'MMM d, yyyy');
+  };
   
   return (
     <Card className="mt-4">
@@ -65,14 +76,14 @@ const HeatCycleMonitor: React.FC<HeatCycleMonitorProps> = ({ dogId, refreshKey }
           {lastHeatCycle && (
             <div className="text-sm grid grid-cols-2">
               <span className="text-muted-foreground">Last Heat Started:</span>
-              <span className="font-medium">{format(parseISO(lastHeatCycle.start_date), 'MMM d, yyyy')}</span>
+              <span className="font-medium">{formatDateValue(lastHeatCycle.start_date)}</span>
             </div>
           )}
           
           {lastHeatCycle?.end_date && (
             <div className="text-sm grid grid-cols-2">
               <span className="text-muted-foreground">Last Heat Ended:</span>
-              <span className="font-medium">{format(parseISO(lastHeatCycle.end_date), 'MMM d, yyyy')}</span>
+              <span className="font-medium">{formatDateValue(lastHeatCycle.end_date)}</span>
             </div>
           )}
           

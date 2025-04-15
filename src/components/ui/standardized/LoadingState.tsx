@@ -5,25 +5,31 @@ import { cn } from '@/lib/utils';
 
 export interface LoadingStateProps {
   message?: string;
-  className?: string;
   size?: 'small' | 'medium' | 'large';
+  fullPage?: boolean;
+  className?: string;
 }
 
 const LoadingState: React.FC<LoadingStateProps> = ({ 
   message = 'Loading...', 
-  className,
-  size = 'medium'
+  size = 'medium',
+  fullPage = false,
+  className 
 }) => {
   const sizeClasses = {
-    small: 'h-6 w-6',
-    medium: 'h-10 w-10',
-    large: 'h-16 w-16'
+    small: 'h-4 w-4',
+    medium: 'h-8 w-8',
+    large: 'h-12 w-12'
   };
 
+  const containerClasses = fullPage 
+    ? "flex flex-col items-center justify-center min-h-screen bg-background"
+    : cn("flex flex-col items-center justify-center py-8", className);
+
   return (
-    <div className={cn("flex flex-col items-center justify-center py-12", className)}>
-      <Loader2 className={cn(sizeClasses[size], "text-primary animate-spin mb-4")} />
-      <p className="text-lg text-muted-foreground">{message}</p>
+    <div className={containerClasses}>
+      <Loader2 className={`${sizeClasses[size]} text-primary animate-spin mb-4`} />
+      <p className="text-lg font-medium text-muted-foreground">{message}</p>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthProvider';
+import useAuth from '@/hooks/useAuth';
 import Logo from '../Logo';
 import NavLinks from './NavLinks';
 import MobileMenu from './MobileMenu';

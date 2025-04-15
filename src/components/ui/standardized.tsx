@@ -6,44 +6,59 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 // Loading state component
-interface LoadingStateProps {
+export interface LoadingStateProps {
   message?: string;
+  size?: 'small' | 'medium' | 'large';
   className?: string;
 }
 
 export const LoadingState: React.FC<LoadingStateProps> = ({ 
   message = 'Loading...', 
+  size = 'medium',
   className 
 }) => {
+  const sizeClasses = {
+    small: 'h-4 w-4',
+    medium: 'h-8 w-8',
+    large: 'h-10 w-10'
+  };
+
   return (
     <div className={cn("flex flex-col items-center justify-center py-12", className)}>
-      <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+      <Loader2 className={`${sizeClasses[size]} text-primary animate-spin mb-4`} />
       <p className="text-lg text-muted-foreground">{message}</p>
     </div>
   );
 };
 
 // Error state component
-interface ErrorStateProps {
+export interface ErrorStateProps {
   title?: string;
   description?: string;
+  message?: string; // Adding alternative property name for compatibility
   retryAction?: () => void;
+  onRetry?: () => void; // Adding alternative property name for compatibility
   className?: string;
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
   title = 'An error occurred',
-  description = 'Failed to load the requested data.',
+  description,
+  message, // Allow either message or description
   retryAction,
+  onRetry, // Allow either onRetry or retryAction
   className
 }) => {
+  const errorMessage = description || message || 'Failed to load the requested data.';
+  const retryHandler = retryAction || onRetry;
+  
   return (
     <div className={cn("flex flex-col items-center justify-center py-12 text-center", className)}>
       <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
-      {retryAction && (
-        <Button onClick={retryAction} variant="default">
+      <p className="text-muted-foreground mb-6 max-w-md">{errorMessage}</p>
+      {retryHandler && (
+        <Button onClick={retryHandler} variant="default">
           Try Again
         </Button>
       )}
@@ -52,7 +67,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 };
 
 // Unauthorized state component
-interface UnauthorizedStateProps {
+export interface UnauthorizedStateProps {
   title?: string;
   description?: string;
   backPath?: string;
@@ -121,3 +136,29 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     </div>
   );
 };
+
+// SectionHeader component (adding since it was mentioned in errors)
+export interface SectionHeaderProps {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  className?: string;
+}
+
+export const SectionHeader: React.FC<SectionHeaderProps> = ({
+  title,
+  description,
+  action,
+  className
+}) => {
+  return (
+    <div className={cn("flex justify-between items-start mb-4", className)}>
+      <div>
+        <h3 className="text-lg font-medium">{title}</h3>
+        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      </div>
+      {action && <div>{action}</div>}
+    </div>
+  );
+};
+

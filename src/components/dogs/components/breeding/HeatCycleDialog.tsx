@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -17,54 +18,48 @@ import { format, parseISO } from 'date-fns';
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 
-interface HeatCycleDialogProps {
+export interface HeatCycleDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  dogId: string;
-  onSubmit: (values: {
-    id: string;
-    dog_id: string;
-    start_date: string;
-    end_date: string;
-    intensity: HeatIntensityType;
-    symptoms: string[];
-    notes: string;
-    created_at: string;
-    cycle_number: number;
-  }) => Promise<void>;
-  existingCycle?: {
-    id: string;
-    dog_id: string;
-    start_date: string;
-    end_date: string;
-    intensity: HeatIntensityType;
-    symptoms: string[];
-    notes: string;
-    created_at: string;
-  };
+  onOpenChange?: (open: boolean) => void;
+  dogId?: string;
+  cycle: any | null;
+  onSubmit?: (values: any) => Promise<void>;
+  onSave?: (values: any) => Promise<void>;
+  existingCycle?: any;
 }
 
 const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
   open,
   setOpen,
+  onOpenChange,
   dogId,
+  cycle,
   onSubmit,
+  onSave,
   existingCycle
 }) => {
-  const [startDate, setStartDate] = useState<Date | undefined>(existingCycle ? parseISO(existingCycle.start_date) : undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(existingCycle ? parseISO(existingCycle.end_date) : undefined);
-  const [intensity, setIntensity] = useState<HeatIntensityType>(existingCycle ? existingCycle.intensity : 'none');
-  const [symptoms, setSymptoms] = useState<string[]>(existingCycle ? existingCycle.symptoms : []);
-  const [notes, setNotes] = useState(existingCycle ? existingCycle.notes : '');
+  const cycleData = cycle || existingCycle;
+  const dogIdentifier = dogId || (cycleData ? cycleData.dog_id : '');
+  
+  const [startDate, setStartDate] = useState<Date | undefined>(cycleData && cycleData.start_date ? 
+    (typeof cycleData.start_date === 'string' ? parseISO(cycleData.start_date) : cycleData.start_date) : undefined);
+  
+  const [endDate, setEndDate] = useState<Date | undefined>(cycleData && cycleData.end_date ? 
+    (typeof cycleData.end_date === 'string' ? parseISO(cycleData.end_date) : cycleData.end_date) : undefined);
+  
+  const [intensity, setIntensity] = useState<HeatIntensityType>(cycleData ? cycleData.intensity : 'none');
+  const [symptoms, setSymptoms] = useState<string[]>(cycleData ? cycleData.symptoms : []);
+  const [notes, setNotes] = useState(cycleData ? cycleData.notes : '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (existingCycle) {
-      setStartDate(parseISO(existingCycle.start_date));
-      setEndDate(parseISO(existingCycle.end_date));
-      setIntensity(existingCycle.intensity);
-      setSymptoms(existingCycle.symptoms);
-      setNotes(existingCycle.notes);
+    if (cycleData) {
+      setStartDate(typeof cycleData.start_date === 'string' ? parseISO(cycleData.start_date) : cycleData.start_date);
+      setEndDate(cycleData.end_date ? (typeof cycleData.end_date === 'string' ? parseISO(cycleData.end_date) : cycleData.end_date) : undefined);
+      setIntensity(cycleData.intensity);
+      setSymptoms(cycleData.symptoms || []);
+      setNotes(cycleData.notes || '');
     } else {
       // Reset form when opening for a new cycle
       setStartDate(undefined);
@@ -73,7 +68,14 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
       setSymptoms([]);
       setNotes('');
     }
-  }, [existingCycle, open]);
+  }, [cycleData, open]);
+
+  const handleDialogChange = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    }
+    setOpen(newOpen);
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -83,18 +85,24 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     const endDateString = endDate ? format(endDate, 'yyyy-MM-dd') : '';
 
     try {
-      await onSubmit({
-        id: existingCycle?.id || '',
-        dog_id: dogId,
+      const cycleData = {
+        id: cycle?.id || existingCycle?.id || '',
+        dog_id: dogIdentifier,
         start_date: startDateString,
         end_date: endDateString,
         intensity: intensity,
         symptoms: symptoms,
         notes: notes,
         created_at: new Date().toISOString(),
-        cycle_number: 1  // Add this default value for the required property
-      });
-      setOpen(false);
+        cycle_number: cycle?.cycle_number || existingCycle?.cycle_number || 1
+      };
+
+      if (onSave) {
+        await onSave(cycleData);
+      } else if (onSubmit) {
+        await onSubmit(cycleData);
+      }
+      handleDialogChange(false);
     } catch (error) {
       console.error("Error submitting heat cycle:", error);
     } finally {
@@ -102,13 +110,17 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     }
   };
 
+  const handleIntensityChange = (value: string) => {
+    setIntensity(value as HeatIntensityType);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{existingCycle ? "Edit Heat Cycle" : "Add Heat Cycle"}</DialogTitle>
+          <DialogTitle>{cycleData ? "Edit Heat Cycle" : "Add Heat Cycle"}</DialogTitle>
           <DialogDescription>
-            {existingCycle ? "Update the heat cycle details." : "Enter the details for the new heat cycle."}
+            {cycleData ? "Update the heat cycle details." : "Enter the details for the new heat cycle."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
@@ -116,7 +128,6 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
             <div>
               <Label htmlFor="startDate">Start Date</Label>
               <DatePicker
-                id="startDate"
                 mode="single"
                 selected={startDate}
                 onSelect={setStartDate}
@@ -127,7 +138,6 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
             <div>
               <Label htmlFor="endDate">End Date</Label>
               <DatePicker
-                id="endDate"
                 mode="single"
                 selected={endDate}
                 onSelect={setEndDate}
@@ -138,14 +148,14 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
           </div>
           <div>
             <Label htmlFor="intensity">Intensity</Label>
-            <Select value={intensity} onValueChange={setIntensity}>
+            <Select value={intensity} onValueChange={handleIntensityChange}>
               <SelectTrigger id="intensity">
                 <SelectValue placeholder="Select intensity" />
               </SelectTrigger>
               <SelectContent>
                 {HeatIntensityValues.map((intensity) => (
                   <SelectItem key={intensity} value={intensity}>
-                    {intensity}
+                    {intensity.charAt(0).toUpperCase() + intensity.slice(1).replace('_', ' ')}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -25,4 +25,4 @@ export type { ErrorStateProps } from './ErrorState';
 
 // Export other standardized components
 export { default as ConfirmDialog } from './ConfirmDialog';
-export type { default as ConfirmDialogProps } from './ConfirmDialog';
+export type { ConfirmDialogProps } from './ConfirmDialog';
