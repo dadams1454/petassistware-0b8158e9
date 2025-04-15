@@ -2,12 +2,12 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-interface AuthLoadingStateProps {
+export interface AuthLoadingStateProps {
   message?: string;
   fullPage?: boolean;
 }
 
-const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({ 
+export const AuthLoadingState: React.FC<AuthLoadingStateProps> = ({ 
   message = 'Loading...', 
   fullPage = false 
 }) => {
