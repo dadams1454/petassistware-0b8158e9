@@ -5,8 +5,9 @@ export { default as UnauthorizedState } from './UnauthorizedState';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
 
-// Ensure proper export of PageHeader
-export { default as PageHeader } from './PageHeader';
+// Explicitly export PageHeader
+import PageHeader from './PageHeader';
+export { PageHeader };
 
 // Add exports for other standardized components
 export { default as ConfirmDialog } from './ConfirmDialog';
