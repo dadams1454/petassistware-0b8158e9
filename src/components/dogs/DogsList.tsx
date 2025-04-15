@@ -36,14 +36,14 @@ const DogsList = () => {
   };
 
   if (isLoading) {
-    return <LoadingState message="Loading dogs..." size="large" />;
+    return <LoadingState message="Loading dogs..." size="large" fullPage />;
   }
 
   if (error) {
     return (
       <ErrorState 
         title="Error Loading Dogs" 
-        message="There was a problem loading the dog data." 
+        description="There was a problem loading the dog data." 
         onRetry={() => refetch()} 
       />
     );

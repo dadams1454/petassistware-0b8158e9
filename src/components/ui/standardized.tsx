@@ -5,16 +5,37 @@ import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
+// Re-export the individual component files
+export { default as PageHeader } from './standardized/PageHeader';
+export type { PageHeaderProps } from './standardized/PageHeader';
+
+export { default as SectionHeader } from './standardized/SectionHeader';
+export type { SectionHeaderProps } from './standardized/SectionHeader';
+
+export { default as AuthLoadingState } from './standardized/AuthLoadingState';
+export type { AuthLoadingStateProps } from './standardized/AuthLoadingState';
+
+export { default as UnauthorizedState } from './standardized/UnauthorizedState';
+export type { UnauthorizedStateProps } from './standardized/UnauthorizedState';
+
+export { default as EmptyState } from './standardized/EmptyState';
+export type { EmptyStateProps } from './standardized/EmptyState';
+
+export { default as ConfirmDialog } from './standardized/ConfirmDialog';
+export type { ConfirmDialogProps } from './standardized/ConfirmDialog';
+
 // Loading state component
 export interface LoadingStateProps {
   message?: string;
   size?: 'small' | 'medium' | 'large';
+  fullPage?: boolean;
   className?: string;
 }
 
 export const LoadingState: React.FC<LoadingStateProps> = ({ 
   message = 'Loading...', 
   size = 'medium',
+  fullPage = false,
   className 
 }) => {
   const sizeClasses = {
@@ -23,8 +44,12 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
     large: 'h-10 w-10'
   };
 
+  const containerClasses = fullPage 
+    ? "flex flex-col items-center justify-center min-h-screen bg-background"
+    : cn("flex flex-col items-center justify-center py-12", className);
+
   return (
-    <div className={cn("flex flex-col items-center justify-center py-12", className)}>
+    <div className={containerClasses}>
       <Loader2 className={`${sizeClasses[size]} text-primary animate-spin mb-4`} />
       <p className="text-lg text-muted-foreground">{message}</p>
     </div>
@@ -137,7 +162,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   );
 };
 
-// SectionHeader component (adding since it was mentioned in errors)
+// SectionHeader component
 export interface SectionHeaderProps {
   title: string;
   description?: string;
@@ -161,4 +186,3 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
     </div>
   );
 };
-

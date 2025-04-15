@@ -9,7 +9,7 @@ export const AppRoutes: React.FC = () => {
   const { loading } = useAuth();
 
   if (loading) {
-    return <LoadingState message="Loading application..." size="large" />;
+    return <LoadingState message="Loading application..." size="large" fullPage />;
   }
 
   return <Routes>{appRoutes}</Routes>;
