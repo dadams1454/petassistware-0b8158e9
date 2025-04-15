@@ -5,6 +5,7 @@ import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
 import { MedicationStatusEnum } from '@/types';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
+// Define the props interface
 interface MedicationStatusProps {
   status: string | {
     status: string;
@@ -78,7 +79,7 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   }
   
   // Get status label and color
-  const { statusLabel, statusColor } = getStatusLabel(statusValue);
+  const { statusLabel, statusColor } = getStatusLabel(statusValue.toString());
   
   // Determine the icon based on status
   const getIcon = () => {

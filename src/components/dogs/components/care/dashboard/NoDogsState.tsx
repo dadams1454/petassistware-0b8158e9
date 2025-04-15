@@ -12,9 +12,9 @@ const NoDogsState: React.FC<NoDogsStateProps> = ({ onRefresh }) => {
     <EmptyState
       icon={<Dog className="h-12 w-12 text-muted-foreground" />}
       title="No dogs found"
-      description="No dogs found in the system. Please add dogs to start tracking their care."
+      description="No dogs found in the care system. Please refresh or add dogs to start tracking their care."
       action={{
-        label: "Refresh",
+        label: "Refresh Dogs",
         onClick: onRefresh
       }}
     />

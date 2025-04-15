@@ -116,8 +116,12 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     );
   }
 
-  // Create a stats object for the stat cards
+  // Complete stats object with all required properties from PuppyManagementStats
   const stats = {
+    puppies,
+    ageGroups,
+    puppiesByAgeGroup,
+    byAgeGroup,
     totalPuppies,
     availablePuppies,
     reservedPuppies,
@@ -126,7 +130,15 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     femaleCount,
     puppiesByStatus,
     byGender,
-    byStatus
+    byStatus,
+    activeCount: availablePuppies,
+    reservedCount: reservedPuppies,
+    availableCount: availablePuppies,
+    soldCount: soldPuppies,
+    currentWeek: 0,
+    isLoading: false,
+    error: null,
+    refetch: handleRefresh
   };
 
   return (

@@ -16,7 +16,8 @@ const NoDogsState: React.FC<NoDogsStateProps> = ({ onRefresh, isRefreshing = fal
       description="No dogs found in the care system. Please refresh or add dogs to start tracking their care."
       action={{
         label: isRefreshing ? "Refreshing..." : "Refresh Dogs",
-        onClick: onRefresh
+        onClick: onRefresh,
+        disabled: isRefreshing
       }}
     />
   );

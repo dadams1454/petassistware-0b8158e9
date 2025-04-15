@@ -15,10 +15,10 @@ const NoDogsFound = ({ hasSearch = false, onAddClick }: NoDogsFoundProps) => {
         title="No matching dogs"
         description="No dogs found matching your search criteria. Try adjusting your filters."
         icon={<SearchX className="h-12 w-12 text-muted-foreground" />}
-        action={{
+        action={onAddClick ? {
           label: "Clear Filters",
-          onClick: onAddClick || (() => {})
-        }}
+          onClick: onAddClick
+        } : undefined}
       />
     );
   }

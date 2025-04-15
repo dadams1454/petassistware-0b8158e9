@@ -33,7 +33,7 @@ export interface PuppyWithAge {
 /**
  * Type for identifying puppy age groups
  */
-export type PuppyAgeGroup = 
+export type PuppyAgeGroupName = 
   | 'newborn'
   | 'twoWeek'
   | 'fourWeek' 
@@ -42,6 +42,27 @@ export type PuppyAgeGroup =
   | 'tenWeek'
   | 'twelveWeek'
   | 'older';
+
+/**
+ * Interface for puppy age group used in components
+ */
+export interface PuppyAgeGroup {
+  id: string;
+  name: string;
+  groupName: string;
+  displayName: string;
+  description: string;
+  color: string;
+  ageRange: string;
+  startDay: number;
+  endDay: number;
+  minDays: number;
+  maxDays: number;
+  minAge: number;
+  maxAge: number;
+  unit: string;
+  milestones: string[];
+}
 
 /**
  * Interface for detailed information about puppy age groups
@@ -89,7 +110,7 @@ export interface PuppyManagementStats {
   totalPuppies: number;
   
   // Age grouping data
-  ageGroups: PuppyAgeGroupInfo[];
+  ageGroups: PuppyAgeGroup[];
   puppiesByAgeGroup: Record<string, PuppyWithAge[]>;
   byAgeGroup: PuppyAgeGroupData;
   

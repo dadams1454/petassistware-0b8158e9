@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PuppyAgeGroup, PuppyWithAge } from '@/types';
+import { PuppyAgeGroup, PuppyWithAge } from '@/modules/puppies/types';
 import PuppyCard from './PuppyCard';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

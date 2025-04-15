@@ -45,9 +45,7 @@ export function useCareDashboard() {
           photo_url,
           requires_special_handling,
           potty_alert_threshold,
-          max_time_between_breaks,
-          created_at,
-          updated_at
+          max_time_between_breaks
         `)
         .order('name');
 
@@ -56,25 +54,25 @@ export function useCareDashboard() {
       // Get current timestamp for created_at/updated_at if missing
       const now = new Date().toISOString();
 
-      // Transform dogs data for UI display
-      const dogsWithCareStatus: DogCareStatus[] = data.map(dog => ({
-        dog_id: dog.id,
-        dog_name: dog.name,
-        breed: dog.breed,
-        sex: dog.gender || '',
-        color: dog.color || '',
-        dog_photo: dog.photo_url || '',
-        birthdate: dog.birthdate,
-        requires_special_handling: dog.requires_special_handling || false,
+      // Transform dogs data for UI display with error handling
+      const dogsWithCareStatus: DogCareStatus[] = (data || []).map(dog => ({
+        dog_id: dog?.id || '',
+        dog_name: dog?.name || '',
+        breed: dog?.breed || '',
+        sex: dog?.gender || '',
+        color: dog?.color || '',
+        dog_photo: dog?.photo_url || '',
+        birthdate: dog?.birthdate || '',
+        requires_special_handling: dog?.requires_special_handling || false,
         last_potty_time: null,
         last_feeding_time: null,
         last_medication_time: null,
-        potty_alert_threshold: dog.potty_alert_threshold || 300,
-        max_time_between_breaks: dog.max_time_between_breaks || 360,
+        potty_alert_threshold: dog?.potty_alert_threshold || 300,
+        max_time_between_breaks: dog?.max_time_between_breaks || 360,
         last_care: null,
         flags: [] as DogFlag[],
-        created_at: dog.created_at || now,
-        updated_at: dog.updated_at || now
+        created_at: now,
+        updated_at: now
       }));
 
       setDogStatuses(dogsWithCareStatus);

@@ -1,242 +1,179 @@
-
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { Calendar as CalendarIcon } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { HeatCycle, HeatIntensityValues, HeatIntensityType } from '@/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { HeatIntensityType, HeatIntensityValues } from '@/types';
+import { Calendar } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { Calendar as CalendarIcon } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface HeatCycleDialogProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  cycle: HeatCycle | null;
-  onSave: (cycle: HeatCycle) => void;
+  setOpen: (open: boolean) => void;
+  dogId: string;
+  onSubmit: (values: {
+    id: string;
+    dog_id: string;
+    start_date: string;
+    end_date: string;
+    intensity: HeatIntensityType;
+    symptoms: string[];
+    notes: string;
+    created_at: string;
+    cycle_number: number;
+  }) => Promise<void>;
+  existingCycle?: {
+    id: string;
+    dog_id: string;
+    start_date: string;
+    end_date: string;
+    intensity: HeatIntensityType;
+    symptoms: string[];
+    notes: string;
+    created_at: string;
+  };
 }
 
 const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
   open,
-  onOpenChange,
-  cycle,
-  onSave
+  setOpen,
+  dogId,
+  onSubmit,
+  existingCycle
 }) => {
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [intensity, setIntensity] = useState<HeatIntensityType>('moderate');
-  const [notes, setNotes] = useState<string>('');
-  const [symptoms, setSymptoms] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Set form values when cycle changes
+  const [startDate, setStartDate] = useState<Date | undefined>(existingCycle ? parseISO(existingCycle.start_date) : undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(existingCycle ? parseISO(existingCycle.end_date) : undefined);
+  const [intensity, setIntensity] = useState<HeatIntensityType>(existingCycle ? existingCycle.intensity : 'none');
+  const [symptoms, setSymptoms] = useState<string[]>(existingCycle ? existingCycle.symptoms : []);
+  const [notes, setNotes] = useState(existingCycle ? existingCycle.notes : '');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
-    if (cycle) {
-      setStartDate(cycle.start_date ? new Date(cycle.start_date) : new Date());
-      setEndDate(cycle.end_date ? new Date(cycle.end_date) : undefined);
-      setIntensity(cycle.intensity || 'moderate');
-      setNotes(cycle.notes || '');
-      setSymptoms(cycle.symptoms || []);
+    if (existingCycle) {
+      setStartDate(parseISO(existingCycle.start_date));
+      setEndDate(parseISO(existingCycle.end_date));
+      setIntensity(existingCycle.intensity);
+      setSymptoms(existingCycle.symptoms);
+      setNotes(existingCycle.notes);
     } else {
-      // Reset form for new cycle
-      setStartDate(new Date());
+      // Reset form when opening for a new cycle
+      setStartDate(undefined);
       setEndDate(undefined);
-      setIntensity('moderate');
-      setNotes('');
+      setIntensity('none');
       setSymptoms([]);
+      setNotes('');
     }
-  }, [cycle, open]);
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    const heatCycle: HeatCycle = {
-      id: cycle?.id || '',
-      dog_id: cycle?.dog_id || '',
-      start_date: startDate ? format(startDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-      end_date: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
-      intensity: intensity,
-      symptoms: symptoms,
-      notes: notes,
-      created_at: cycle?.created_at || new Date().toISOString()
-    };
-    
-    onSave(heatCycle);
-    setIsLoading(false);
-  };
-  
-  const handleSymptomToggle = (symptom: string) => {
-    if (symptoms.includes(symptom)) {
-      setSymptoms(symptoms.filter(s => s !== symptom));
-    } else {
-      setSymptoms([...symptoms, symptom]);
+  }, [existingCycle, open]);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    const startDateString = startDate ? format(startDate, 'yyyy-MM-dd') : '';
+    const endDateString = endDate ? format(endDate, 'yyyy-MM-dd') : '';
+
+    try {
+      await onSubmit({
+        id: existingCycle?.id || '',
+        dog_id: dogId,
+        start_date: startDateString,
+        end_date: endDateString,
+        intensity: intensity,
+        symptoms: symptoms,
+        notes: notes,
+        created_at: new Date().toISOString(),
+        cycle_number: 1  // Add this default value for the required property
+      });
+      setOpen(false);
+    } catch (error) {
+      console.error("Error submitting heat cycle:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{cycle?.id ? 'Edit' : 'Add'} Heat Cycle</DialogTitle>
+          <DialogTitle>{existingCycle ? "Edit Heat Cycle" : "Add Heat Cycle"}</DialogTitle>
+          <DialogDescription>
+            {existingCycle ? "Update the heat cycle details." : "Enter the details for the new heat cycle."}
+          </DialogDescription>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="startDate">Start Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, 'PPP') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="startDate">Start Date</Label>
+              <DatePicker
+                id="startDate"
+                mode="single"
+                selected={startDate}
+                onSelect={setStartDate}
+                placeholder="Select date"
+                className="w-full"
+              />
+            </div>
+            <div>
+              <Label htmlFor="endDate">End Date</Label>
+              <DatePicker
+                id="endDate"
+                mode="single"
+                selected={endDate}
+                onSelect={setEndDate}
+                placeholder="Select date"
+                className="w-full"
+              />
+            </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="endDate">End Date (leave empty if still in heat)</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, 'PPP') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                  disabled={(date) => date < (startDate || new Date())}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="intensity">Intensity</Label>
-            <Select 
-              value={intensity} 
-              onValueChange={(value) => setIntensity(value as HeatIntensityType)}
-            >
+            <Select value={intensity} onValueChange={setIntensity}>
               <SelectTrigger id="intensity">
                 <SelectValue placeholder="Select intensity" />
               </SelectTrigger>
               <SelectContent>
-                {HeatIntensityValues.map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {value.charAt(0).toUpperCase() + value.slice(1)}
+                {HeatIntensityValues.map((intensity) => (
+                  <SelectItem key={intensity} value={intensity}>
+                    {intensity}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          
-          <div className="space-y-2">
-            <Label>Symptoms</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="bleeding" 
-                  checked={symptoms.includes('bleeding')} 
-                  onCheckedChange={() => handleSymptomToggle('bleeding')}
-                />
-                <label htmlFor="bleeding" className="text-sm">Bleeding</label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="swelling" 
-                  checked={symptoms.includes('swelling')} 
-                  onCheckedChange={() => handleSymptomToggle('swelling')}
-                />
-                <label htmlFor="swelling" className="text-sm">Swelling</label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="behavioral" 
-                  checked={symptoms.includes('behavioral')} 
-                  onCheckedChange={() => handleSymptomToggle('behavioral')}
-                />
-                <label htmlFor="behavioral" className="text-sm">Behavioral Changes</label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="discharge" 
-                  checked={symptoms.includes('discharge')} 
-                  onCheckedChange={() => handleSymptomToggle('discharge')}
-                />
-                <label htmlFor="discharge" className="text-sm">Discharge</label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="appetite" 
-                  checked={symptoms.includes('appetite')} 
-                  onCheckedChange={() => handleSymptomToggle('appetite')}
-                />
-                <label htmlFor="appetite" className="text-sm">Change in Appetite</label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="nesting" 
-                  checked={symptoms.includes('nesting')} 
-                  onCheckedChange={() => handleSymptomToggle('nesting')}
-                />
-                <label htmlFor="nesting" className="text-sm">Nesting Behavior</label>
-              </div>
-            </div>
+          <div>
+            <Label htmlFor="symptoms">Symptoms</Label>
+            <Input
+              type="text"
+              id="symptoms"
+              value={symptoms.join(', ')}
+              onChange={(e) => setSymptoms(e.target.value.split(',').map(s => s.trim()))}
+            />
           </div>
-          
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="notes">Notes</Label>
-            <Textarea
+            <Input
+              type="text"
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add any additional notes about this heat cycle"
-              rows={3}
             />
           </div>
-          
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
-              Cancel
+          <DialogFooter>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Save changes"}
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : (cycle?.id ? 'Update' : 'Save')}
-            </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

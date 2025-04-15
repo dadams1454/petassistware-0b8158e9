@@ -6,7 +6,7 @@
 /**
  * Heat intensity type - string literal
  */
-export type HeatIntensityType = 'none' | 'mild' | 'moderate' | 'strong';
+export type HeatIntensityType = 'none' | 'mild' | 'moderate' | 'strong' | 'very_strong';
 
 /**
  * Heat intensity enum for easy reference
@@ -15,7 +15,8 @@ export enum HeatIntensity {
   NONE = 'none',
   MILD = 'mild',
   MODERATE = 'moderate',
-  STRONG = 'strong'
+  STRONG = 'strong',
+  VERY_STRONG = 'very_strong'
 }
 
 /**
@@ -25,7 +26,8 @@ export const HeatIntensityValues: HeatIntensityType[] = [
   'none',
   'mild',
   'moderate',
-  'strong'
+  'strong',
+  'very_strong'
 ];
 
 /**
@@ -104,7 +106,8 @@ export function mapHeatIntensityTypeToDisplay(type: HeatIntensityType): string {
     'none': 'None',
     'mild': 'Mild',
     'moderate': 'Moderate',
-    'strong': 'Strong'
+    'strong': 'Strong',
+    'very_strong': 'Very Strong'
   };
   
   return displayMap[type] || 'Unknown';
