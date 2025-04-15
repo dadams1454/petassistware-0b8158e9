@@ -1,3 +1,4 @@
+
 import React, { ReactNode } from 'react';
 import { AlertTriangle, Loader2, Ban } from 'lucide-react';
 import { Button } from './button';
@@ -29,8 +30,7 @@ export type { ErrorStateProps } from './standardized/ErrorState';
 export { default as LoadingState } from './standardized/LoadingState';
 export type { LoadingStateProps } from './standardized/LoadingState';
 
-// Also export the components directly for backward compatibility
-// Loading state component
+// Loading state component - for backward compatibility
 export interface LoadingStateProps {
   message?: string;
   size?: 'small' | 'medium' | 'large';
@@ -62,7 +62,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   );
 };
 
-// Error state component
+// Error state component - for backward compatibility
 export interface ErrorStateProps {
   title?: string;
   description?: string;
@@ -97,7 +97,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   );
 };
 
-// Unauthorized state component
+// Interfaces for backward compatibility
 export interface UnauthorizedStateProps {
   title?: string;
   description?: string;
@@ -105,7 +105,6 @@ export interface UnauthorizedStateProps {
   showAdminSetupLink?: boolean;
 }
 
-// Empty state component
 export interface EmptyStateProps {
   title: string;
   description: string;
@@ -118,30 +117,6 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-export const UnauthorizedState: React.FC<UnauthorizedStateProps> = ({ title = "Unauthorized", description = "You are not authorized to view this page.", backPath = "/dashboard", showAdminSetupLink = false }) => {
-  const navigate = useNavigate();
-
-  const handleGoBack = () => {
-    navigate(backPath);
-  };
-
-  return (
-    <div className="flex flex-col items-center justify-center py-12">
-      <Ban className="h-10 w-10 text-red-500 mb-4" />
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-6 max-w-md text-center">{description}</p>
-      <Button onClick={handleGoBack} variant="outline">
-        Go Back
-      </Button>
-      {showAdminSetupLink && (
-        <Button variant="link" onClick={() => navigate('/admin/setup')}>
-          Admin Setup
-        </Button>
-      )}
-    </div>
-  );
-};
-// Confirm dialog component
 export interface ConfirmDialogProps {
   title: string;
   description: string;
@@ -152,38 +127,3 @@ export interface ConfirmDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  title,
-  description,
-  onConfirm,
-  onCancel,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
-  isOpen,
-  onOpenChange,
-}) => {
-  return (
-    <div className="relative">
-      {/* Dialog */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="bg-white rounded-lg shadow-xl p-6">
-              <h3 className="text-lg font-semibold mb-2">{title}</h3>
-              <p className="text-muted-foreground mb-4">{description}</p>
-              <div className="flex justify-end gap-2">
-                <Button variant="ghost" onClick={onCancel}>
-                  {cancelLabel}
-                </Button>
-                <Button variant="primary" onClick={onConfirm}>
-                  {confirmLabel}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
