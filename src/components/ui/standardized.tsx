@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from 'react';
 import { AlertTriangle, Loader2, Ban } from 'lucide-react';
 import { Button } from './button';
@@ -29,6 +28,10 @@ export type { ConfirmDialogProps } from './standardized/ConfirmDialog';
 
 export { default as LoadingState } from './standardized/LoadingState';
 export type { LoadingStateProps } from './standardized/LoadingState';
+
+// Add ActionButton export
+export { default as ActionButton } from './standardized/ActionButton';
+export type { ActionButtonProps } from './standardized/ActionButton';
 
 // Interfaces for backward compatibility
 export interface LoadingStateProps {
