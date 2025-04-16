@@ -86,4 +86,3 @@ export interface HeatStage {
   created_at: string;
   updated_at?: string;
 }
-

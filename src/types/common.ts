@@ -8,7 +8,7 @@ export * from './weight-units';
 
 // Re-export HeatIntensity and HeatIntensityType from heat-cycles
 export type { HeatIntensityType, HeatCycle, HeatStage } from './heat-cycles';
-export { HeatIntensity, HeatIntensityValues, mapHeatIntensityToType } from './heat-cycles';
+export { HeatIntensity, HeatIntensityValues, mapHeatIntensityToType, stringToHeatIntensityType, mapHeatIntensityTypeToDisplay } from './heat-cycles';
 
 // Re-export reproductive status from reproductive
 export { ReproductiveStatus } from './reproductive';

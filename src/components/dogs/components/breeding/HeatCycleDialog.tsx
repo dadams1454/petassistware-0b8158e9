@@ -8,13 +8,14 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { HeatIntensityType, HeatIntensityValues, mapHeatIntensityTypeToDisplay } from '@/types/heat-cycles';
+import { HeatCycle, HeatIntensityType, HeatIntensityValues, mapHeatIntensityTypeToDisplay } from '@/types/heat-cycles';
 
 interface HeatCycleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dogId: string;
   cycleNumber?: number;
+  cycle?: HeatCycle;
   onSave: (cycleData: any) => Promise<void>;
 }
 
@@ -23,10 +24,11 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
   onOpenChange,
   dogId,
   cycleNumber = 1,
+  cycle,
   onSave,
 }) => {
   const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [intensity, setIntensity] = useState<HeatIntensityType>('moderate');
   const [symptoms, setSymptoms] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
@@ -34,14 +36,23 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
 
   useEffect(() => {
     if (open) {
-      // Reset form when dialog opens
-      setStartDate(new Date());
-      setEndDate(new Date());
-      setIntensity('moderate');
-      setSymptoms('');
-      setNotes('');
+      if (cycle) {
+        // If we're editing an existing cycle, populate the form
+        setStartDate(new Date(cycle.start_date));
+        setEndDate(cycle.end_date ? new Date(cycle.end_date) : null);
+        setIntensity(cycle.intensity);
+        setSymptoms(cycle.symptoms ? cycle.symptoms.join(', ') : '');
+        setNotes(cycle.notes || '');
+      } else {
+        // Reset form when dialog opens for a new cycle
+        setStartDate(new Date());
+        setEndDate(null);
+        setIntensity('moderate');
+        setSymptoms('');
+        setNotes('');
+      }
     }
-  }, [open]);
+  }, [open, cycle]);
 
   const handleSave = async () => {
     try {
@@ -51,7 +62,7 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
         dog_id: dogId,
         cycle_number: cycleNumber,
         start_date: format(startDate, 'yyyy-MM-dd'),
-        end_date: format(endDate, 'yyyy-MM-dd'),
+        end_date: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
         intensity,
         symptoms: symptoms.split(',').map(s => s.trim()).filter(Boolean),
         notes,
@@ -80,9 +91,9 @@ const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Record Heat Cycle</DialogTitle>
+          <DialogTitle>{cycle ? 'Edit Heat Cycle' : 'Record Heat Cycle'}</DialogTitle>
           <DialogDescription>
-            Record a new heat cycle for this dog.
+            {cycle ? 'Update heat cycle details' : 'Record a new heat cycle for this dog.'}
           </DialogDescription>
         </DialogHeader>
         

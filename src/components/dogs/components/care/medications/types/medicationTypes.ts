@@ -1,6 +1,6 @@
 
 import { Medication } from '@/types/health';
-import { MedicationStatusResult } from '@/types/medication-status';
+import { MedicationStatusResult, MedicationStatusDetail } from '@/types/medication-status';
 
 // Props for the MedicationsLog component
 export interface MedicationsLogProps {
@@ -98,10 +98,11 @@ export interface HeatCycle {
 // Props for HeatCycleDialog
 export interface HeatCycleDialogProps {
   open: boolean;
-  setOpen: (open: boolean) => void;
   onOpenChange: (open: boolean) => void;
-  cycle: HeatCycle;
-  onSave: (cycle: HeatCycle) => Promise<void>;
+  cycle?: HeatCycle;
+  dogId: string;
+  cycleNumber?: number;
+  onSave: (cycle: any) => Promise<void>;
 }
 
 // Props for DatePicker component

@@ -1,106 +1,82 @@
 
 /**
- * Medication status related types
+ * Medication status types and utility functions
  */
 
-/**
- * Medication status enum
- */
+// Base status enum for medications
 export enum MedicationStatusEnum {
   DUE = 'due',
-  UPCOMING = 'upcoming',
   OVERDUE = 'overdue',
-  COMPLETED = 'completed',
-  SKIPPED = 'skipped',
-  UNKNOWN = 'unknown',
-  ACTIVE = 'active',
+  UPCOMING = 'upcoming',
+  ADMINISTERED = 'administered',
   PAUSED = 'paused',
-  STOPPED = 'stopped',
-  SCHEDULED = 'scheduled',
-  NOT_STARTED = 'not_started',
-  DISCONTINUED = 'discontinued'
+  COMPLETED = 'completed',
+  PENDING = 'pending'
 }
 
-/**
- * Medication status result interface for detailed status information
- */
+// Detailed status result, with optional message and other properties
 export interface MedicationStatusDetail {
-  status: string;
-  message: string;
-  nextDue?: Date | string | null;
+  status: MedicationStatusEnum;
+  message?: string;
   daysOverdue?: number;
   daysUntilDue?: number;
+  nextDue?: string | Date | null;
+}
+
+// Union type for simple strings or detailed objects
+export type MedicationStatusResult = MedicationStatusEnum | MedicationStatusDetail;
+
+/**
+ * Determines if the status is a detailed object or just an enum value
+ */
+export function isDetailedStatus(
+  status: MedicationStatusResult
+): status is MedicationStatusDetail {
+  return typeof status === 'object' && status !== null && 'status' in status;
 }
 
 /**
- * Medication status result type
- * Can be either a simple status string or a detailed status object
+ * Gets the string status value regardless of input type
  */
-export type MedicationStatusResult = 
-  | MedicationStatusEnum
-  | 'due'
-  | 'upcoming'
-  | 'overdue'
-  | 'completed'
-  | 'skipped'
-  | 'unknown'
-  | 'active'
-  | 'paused'
-  | 'stopped'
-  | 'scheduled'
-  | 'not_started'
-  | 'discontinued'
-  | MedicationStatusDetail;
-
-/**
- * Helper to check if a status result is a detailed object
- */
-export function isDetailedStatus(result: MedicationStatusResult): result is MedicationStatusDetail {
-  return typeof result === 'object' && result !== null && 'status' in result;
-}
-
-/**
- * Get the status string from a medication status result
- */
-export function getStatusString(result: MedicationStatusResult): string {
-  if (isDetailedStatus(result)) {
-    return result.status;
+export function getStatusString(status: MedicationStatusResult): MedicationStatusEnum {
+  if (isDetailedStatus(status)) {
+    return status.status;
   }
-  return result;
+  return status;
 }
 
 /**
- * Get the display message for a medication status
+ * Gets the message for a status, if available
  */
-export function getStatusMessage(result: MedicationStatusResult): string {
-  if (isDetailedStatus(result)) {
-    return result.message;
+export function getStatusMessage(status: MedicationStatusResult): string {
+  if (isDetailedStatus(status) && status.message) {
+    return status.message;
   }
   
-  // Default messages for simple status strings
-  switch (result) {
-    case 'due':
+  // Default messages based on status
+  const statusStr = getStatusString(status);
+  
+  switch (statusStr) {
+    case MedicationStatusEnum.DUE:
       return 'Due today';
-    case 'upcoming':
-      return 'Coming up soon';
-    case 'overdue':
-      return 'Overdue';
-    case 'completed':
-      return 'Completed';
-    case 'skipped':
-      return 'Skipped';
-    case 'active':
-      return 'Active';
-    case 'paused':
+    case MedicationStatusEnum.OVERDUE:
+      const days = isDetailedStatus(status) && status.daysOverdue 
+        ? status.daysOverdue 
+        : undefined;
+      return days ? `Overdue by ${days} day${days !== 1 ? 's' : ''}` : 'Overdue';
+    case MedicationStatusEnum.UPCOMING:
+      const daysUntil = isDetailedStatus(status) && status.daysUntilDue 
+        ? status.daysUntilDue 
+        : undefined;
+      return daysUntil ? `Due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}` : 'Upcoming';
+    case MedicationStatusEnum.ADMINISTERED:
+      return 'Administered';
+    case MedicationStatusEnum.PAUSED:
       return 'Paused';
-    case 'stopped':
-      return 'Stopped';
-    case 'scheduled':
-      return 'Scheduled';
-    case 'not_started':
-      return 'Not started';
-    case 'discontinued':
-      return 'Discontinued';
+    case MedicationStatusEnum.COMPLETED:
+      return 'Completed';
+    case MedicationStatusEnum.PENDING:
+      return 'Pending';
     default:
       return 'Unknown status';
   }

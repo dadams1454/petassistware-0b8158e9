@@ -1,290 +1,177 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pill, Check, Calendar, Clock, Info, AlertTriangle, MoreHorizontal, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Medication, MedicationStatusEnum, MedicationStatusResult, isDetailedStatus } from '@/types';
-import { formatDateForDisplay } from '@/utils/dateUtils';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/components/ui/use-toast';
+import { Check, AlertCircle, Clock, Pill } from 'lucide-react';
+import { format } from 'date-fns';
+import { Medication } from '@/types/health';
+import { MedicationStatusEnum, isDetailedStatus, getStatusString, getStatusMessage } from '@/types/medication-status';
 
 interface MedicationItemProps {
   medication: Medication;
-  onUpdate: (medication: Medication) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
-  onLogAdministration: (medicationId: string, notes: string) => Promise<void>;
-  isSubmitting?: boolean;
+  onAdminister: (medicationId: string) => void;
+  isAdministering?: boolean;
 }
 
 const MedicationItem: React.FC<MedicationItemProps> = ({
   medication,
-  onUpdate,
-  onDelete,
-  onLogAdministration,
-  isSubmitting = false
+  onAdminister,
+  isAdministering = false,
 }) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showAdministerDialog, setShowAdministerDialog] = useState(false);
-  const [administrationNotes, setAdministrationNotes] = useState('');
-  const [localSubmitting, setLocalSubmitting] = useState(false);
+  const {
+    id,
+    name,
+    medication_name,
+    dosage,
+    dosage_unit,
+    frequency,
+    administration_route,
+    status,
+    notes,
+    last_administered,
+    nextDue
+  } = medication;
+
+  // Use medication_name as fallback if name is not provided
+  const displayName = name || medication_name || 'Unnamed Medication';
   
-  // Helper functions for status display
-  const getStatusBadgeVariant = (status: MedicationStatusResult) => {
-    const statusStr = typeof status === 'object' ? status.status : status;
-    
-    switch (statusStr) {
-      case MedicationStatusEnum.OVERDUE:
-        return 'destructive';
+  // Normalize status
+  const statusValue = status || MedicationStatusEnum.PENDING;
+  const statusString = getStatusString(statusValue);
+  
+  // Get the UI elements based on status
+  const getStatusUI = () => {
+    switch (statusString) {
       case MedicationStatusEnum.DUE:
-        return 'warning';
-      case MedicationStatusEnum.UPCOMING:
-        return 'secondary';
-      case MedicationStatusEnum.COMPLETED:
-        return 'default';
-      case MedicationStatusEnum.ACTIVE:
-        return 'default';
-      default:
-        return 'outline';
-    }
-  };
-  
-  const getStatusIcon = (status: MedicationStatusResult) => {
-    const statusStr = typeof status === 'object' ? status.status : status;
-    
-    switch (statusStr) {
+        return {
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+          icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
+          actionText: 'Administer Now',
+          showAction: true,
+        };
       case MedicationStatusEnum.OVERDUE:
-        return <AlertTriangle className="h-4 w-4" />;
-      case MedicationStatusEnum.DUE:
-        return <Clock className="h-4 w-4" />;
+        return {
+          color: 'bg-red-100 text-red-800 border-red-300',
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+          actionText: 'Administer Now',
+          showAction: true,
+        };
       case MedicationStatusEnum.UPCOMING:
-        return <Calendar className="h-4 w-4" />;
+        return {
+          color: 'bg-blue-100 text-blue-800 border-blue-300',
+          icon: <Clock className="h-5 w-5 text-blue-500" />,
+          actionText: 'Administer Early',
+          showAction: true,
+        };
+      case MedicationStatusEnum.ADMINISTERED:
+        return {
+          color: 'bg-green-100 text-green-800 border-green-300',
+          icon: <Check className="h-5 w-5 text-green-500" />,
+          actionText: 'Administer Again',
+          showAction: false,
+        };
       case MedicationStatusEnum.COMPLETED:
-        return <Check className="h-4 w-4" />;
-      case MedicationStatusEnum.ACTIVE:
-        return <Info className="h-4 w-4" />;
+        return {
+          color: 'bg-gray-100 text-gray-800 border-gray-300',
+          icon: <Check className="h-5 w-5 text-gray-500" />,
+          actionText: 'Restart',
+          showAction: false,
+        };
+      case MedicationStatusEnum.PAUSED:
+        return {
+          color: 'bg-purple-100 text-purple-800 border-purple-300',
+          icon: <Clock className="h-5 w-5 text-purple-500" />,
+          actionText: 'Resume',
+          showAction: false,
+        };
       default:
-        return null;
+        return {
+          color: 'bg-gray-100 text-gray-800 border-gray-300',
+          icon: <Pill className="h-5 w-5 text-gray-500" />,
+          actionText: 'Administer',
+          showAction: true,
+        };
     }
   };
+
+  const { color, icon, actionText, showAction } = getStatusUI();
   
-  // Convert medication status to display text
-  const getStatusDisplay = (status: MedicationStatusResult) => {
-    if (isDetailedStatus(status)) {
-      return status.message;
-    }
-    
-    switch (status) {
-      case MedicationStatusEnum.OVERDUE:
-        return 'Overdue';
-      case MedicationStatusEnum.DUE:
-        return 'Due now';
-      case MedicationStatusEnum.UPCOMING:
-        return 'Upcoming';
-      case MedicationStatusEnum.COMPLETED:
-        return 'Completed';
-      case MedicationStatusEnum.ACTIVE:
-        return 'Active';
-      default:
-        return 'Unknown';
-    }
-  };
-  
-  // Handle deleting a medication
-  const handleDelete = async () => {
-    try {
-      setLocalSubmitting(true);
-      await onDelete(medication.id);
-      setShowDeleteDialog(false);
-      toast({
-        title: 'Medication deleted',
-        description: 'The medication has been deleted successfully.',
-      });
-    } catch (error) {
-      console.error('Error deleting medication:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete the medication. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLocalSubmitting(false);
-    }
-  };
-  
-  // Handle logging an administration
-  const handleLogAdministration = async () => {
-    try {
-      setLocalSubmitting(true);
-      await onLogAdministration(medication.id, administrationNotes);
-      setShowAdministerDialog(false);
-      setAdministrationNotes('');
-      toast({
-        title: 'Medication administered',
-        description: 'The medication administration has been logged successfully.',
-      });
-    } catch (error) {
-      console.error('Error logging administration:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to log the medication administration. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLocalSubmitting(false);
-    }
-  };
-  
-  // Format the next due date
-  const getNextDueText = (status: MedicationStatusResult) => {
-    if (isDetailedStatus(status) && status.nextDue) {
-      return `Next dose: ${formatDateForDisplay(status.nextDue)}`;
-    }
-    return '';
-  };
-  
+  // Get message from status
+  const message = isDetailedStatus(status) && status.message 
+    ? status.message 
+    : getStatusMessage(statusValue);
+
+  // Format the next due date if available
+  const formattedNextDue = nextDue 
+    ? (typeof nextDue === 'string' 
+      ? format(new Date(nextDue), 'MMM d, yyyy') 
+      : format(nextDue, 'MMM d, yyyy'))
+    : null;
+
   return (
-    <Card>
-      <CardHeader className="px-4 py-3 flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base font-medium flex items-center">
-          <Pill className="h-4 w-4 mr-2 text-primary" />
-          {medication.name || medication.medication_name}
-        </CardTitle>
-        
-        <div className="flex items-center space-x-2">
-          <Badge variant={getStatusBadgeVariant(medication.status as MedicationStatusEnum)} className="h-6 flex items-center gap-1">
-            {getStatusIcon(medication.status as MedicationStatusEnum)}
-            {getStatusDisplay(medication.status as MedicationStatusEnum)}
-          </Badge>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setShowAdministerDialog(true)}>
-                Log Administration
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive focus:text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="px-4 py-2 pb-3 text-sm">
-        <div className="grid grid-cols-2 gap-1">
-          <div className="text-muted-foreground">Dosage:</div>
-          <div>{medication.dosage} {medication.dosage_unit}</div>
-          
-          <div className="text-muted-foreground">Frequency:</div>
-          <div>{medication.frequency}</div>
-          
-          {medication.start_date && (
-            <>
-              <div className="text-muted-foreground">Start Date:</div>
-              <div>{formatDateForDisplay(medication.start_date)}</div>
-            </>
-          )}
-          
-          {medication.end_date && (
-            <>
-              <div className="text-muted-foreground">End Date:</div>
-              <div>{formatDateForDisplay(medication.end_date)}</div>
-            </>
-          )}
-        </div>
-        
-        {(isDetailedStatus(medication.status as MedicationStatusResult) && 
-          (medication.status as any).nextDue) && (
-          <div className="mt-2 text-xs text-muted-foreground">
-            {getNextDueText(medication.status as MedicationStatusResult)}
-          </div>
-        )}
-      </CardContent>
-      
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Medication</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>Are you sure you want to delete this medication?</p>
-            <p className="mt-1 text-sm text-muted-foreground">This action cannot be undone.</p>
-          </div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={localSubmitting || isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDelete}
-              disabled={localSubmitting || isSubmitting}
-            >
-              {(localSubmitting || isSubmitting) ? 'Deleting...' : 'Delete'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Administer Medication Dialog */}
-      <Dialog open={showAdministerDialog} onOpenChange={setShowAdministerDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Log Medication Administration</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div>
-              <p className="font-medium">{medication.name || medication.medication_name}</p>
-              <p className="text-sm text-muted-foreground">
-                {medication.dosage} {medication.dosage_unit}, {medication.frequency}
-              </p>
+    <Card className={`border ${color} shadow-sm`}>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              {icon}
+              <h3 className="font-semibold text-base">{displayName}</h3>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
-              <Textarea
-                id="notes"
-                placeholder="Enter any notes about this administration"
-                value={administrationNotes}
-                onChange={(e) => setAdministrationNotes(e.target.value)}
-              />
+            <p className="text-sm font-medium mb-2">{message}</p>
+            
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+              {dosage && dosage_unit && (
+                <div>
+                  <span className="text-gray-500">Dosage:</span> {dosage} {dosage_unit}
+                </div>
+              )}
+              
+              {frequency && (
+                <div>
+                  <span className="text-gray-500">Frequency:</span> {frequency}
+                </div>
+              )}
+              
+              {administration_route && (
+                <div>
+                  <span className="text-gray-500">Route:</span> {administration_route}
+                </div>
+              )}
+              
+              {last_administered && (
+                <div>
+                  <span className="text-gray-500">Last given:</span> {format(new Date(last_administered), 'MMM d')}
+                </div>
+              )}
+              
+              {formattedNextDue && (
+                <div>
+                  <span className="text-gray-500">Next due:</span> {formattedNextDue}
+                </div>
+              )}
             </div>
+            
+            {notes && (
+              <p className="text-xs text-gray-600 border-t border-gray-200 mt-2 pt-2">
+                {notes}
+              </p>
+            )}
           </div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowAdministerDialog(false)}
-              disabled={localSubmitting || isSubmitting}
+          
+          {showAction && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onAdminister(id)}
+              disabled={isAdministering}
+              className="ml-4 h-8"
             >
-              Cancel
+              {isAdministering ? 'Saving...' : actionText}
             </Button>
-            <Button 
-              onClick={handleLogAdministration}
-              disabled={localSubmitting || isSubmitting}
-            >
-              {(localSubmitting || isSubmitting) ? 'Logging...' : 'Log Administration'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          )}
+        </div>
+      </CardContent>
     </Card>
   );
 };
