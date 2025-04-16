@@ -1,370 +1,324 @@
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { format, addDays, differenceInDays } from 'date-fns';
-import { useDogStatus } from '@/components/dogs/hooks/useDogStatus';
-import { Calendar, Heart, AlertTriangle, Plus, LineChart, Clock } from 'lucide-react';
-import { SectionHeader } from '@/components/ui/standardized';
-import { useToast } from '@/hooks/use-toast';
-import HeatCycleChart from './HeatCycleChart';
-import BreedingTimingOptimizer from './BreedingTimingOptimizer';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Calendar,
+  Clock,
+  AlertTriangle,
+  Info,
+  Droplets,
+  Plus,
+  CalendarDays,
+  History,
+} from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import StatusIndicator from '@/components/ui/status-indicator';
+import ReproductiveStatusBadge from '../common/ReproductiveStatusBadge';
+import HeatCycleVisualizer from '../components/HeatCycleVisualizer';
+import HeatCycleHistoryTable from '../components/HeatCycleHistoryTable';
+import HeatCycleDialog from '@/components/dogs/components/breeding/HeatCycleDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { HintCard } from '@/components/ui/hint-card';
+import { supabase } from '@/integrations/supabase/client';
+import { HeatCycle, HeatIntensityType, mapHeatIntensityToType } from '@/types/unified';
+import type { Dog } from '@/types/unified';
+import type { Json } from '@/integrations/supabase/types';
 
 interface ReproductiveCycleDashboardProps {
-  dog: any;
+  dog: Dog;
+  reproStatus?: string;
+  statusDate?: string;
+  onAddHeatCycle?: () => void;
 }
 
-const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({ dog }) => {
-  const [showAddCycleDialog, setShowAddCycleDialog] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState('overview');
-  const { toast } = useToast();
-  
-  const { 
-    heatCycle,
-    isPregnant
-  } = useDogStatus(dog);
-  
-  const { data: heatCycles, isLoading: isLoadingCycles, refetch } = useQuery({
-    queryKey: ['heat-cycles', dog.id],
-    queryFn: async () => {
+const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({
+  dog,
+  reproStatus = 'unknown',
+  statusDate,
+  onAddHeatCycle,
+}) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isHeatDialogOpen, setIsHeatDialogOpen] = useState(false);
+  const [heatCycles, setHeatCycles] = useState<HeatCycle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+
+  // Fetch heat cycle data
+  useEffect(() => {
+    const fetchHeatCycles = async () => {
+      try {
+        setLoading(true);
+        if (!dog?.id) return;
+
+        const { data, error } = await supabase
+          .from('heat_cycles')
+          .select('*')
+          .eq('dog_id', dog.id)
+          .order('start_date', { ascending: false });
+
+        if (error) throw error;
+
+        // Map the data to HeatCycle[] type
+        const mappedData: HeatCycle[] = data.map(cycle => ({
+          ...cycle,
+          intensity: mapHeatIntensityToType(cycle.intensity)
+        }));
+
+        setHeatCycles(mappedData);
+      } catch (error) {
+        console.error('Error fetching heat cycles:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHeatCycles();
+  }, [dog?.id]);
+
+  const handleAddHeatCycle = async (cycleData: Partial<HeatCycle>) => {
+    try {
       const { data, error } = await supabase
         .from('heat_cycles')
-        .select('*')
-        .eq('dog_id', dog.id)
-        .order('start_date', { ascending: false });
-        
+        .insert(cycleData)
+        .select()
+        .single();
+
       if (error) throw error;
-      return data || [];
-    }
-  });
-  
-  const handleAddCycle = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    
-    const startDate = formData.get('start_date')?.toString() || '';
-    const endDate = formData.get('end_date')?.toString() || null;
-    const notes = formData.get('notes')?.toString() || null;
-    
-    if (!startDate) {
-      toast({
-        title: "Error",
-        description: "Start date is required",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const cycleData = {
-      dog_id: dog.id,
-      start_date: startDate,
-      end_date: endDate === '' ? null : endDate,
-      notes: notes
-    };
-    
-    try {
-      const { error } = await supabase
-        .from('heat_cycles')
-        .insert(cycleData);
-        
-      if (error) throw error;
+
+      // Add the new cycle to the state
+      const newCycle: HeatCycle = {
+        ...data,
+        intensity: mapHeatIntensityToType(data.intensity)
+      };
       
-      // Also update the dog's last heat date
-      await supabase
-        .from('dogs')
-        .update({ last_heat_date: startDate })
-        .eq('id', dog.id);
-      
-      toast({
-        title: "Success",
-        description: "Heat cycle recorded successfully"
-      });
-      
-      setShowAddCycleDialog(false);
-      refetch(); // Refetch heat cycles data
+      setHeatCycles(prev => [newCycle, ...prev]);
+
+      if (onAddHeatCycle) {
+        onAddHeatCycle();
+      }
     } catch (error) {
       console.error('Error adding heat cycle:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save heat cycle",
-        variant: "destructive"
-      });
+      throw error;
     }
   };
+
+  // Get the next cycle number
+  const nextCycleNumber = heatCycles.length > 0 ? Math.max(...heatCycles.map(c => c.cycle_number)) + 1 : 1;
+
+  // Calculate fertility and in-heat status
+  const isInHeat = reproStatus === 'in_heat';
+  const isFertile = isInHeat; // Simplified - in a real app would be more complex
+  const lastHeatDate = heatCycles[0]?.start_date ? format(parseISO(heatCycles[0].start_date), 'MMM d, yyyy') : 'Unknown';
   
-  // Determine reproductive status for display
-  const getReproductiveStatus = () => {
-    if (isPregnant) {
-      return { label: 'Pregnant', color: 'bg-pink-500' };
-    }
-    
-    if (heatCycle.isInHeat) {
-      return { label: `In Heat (${heatCycle.currentStage?.name || 'Active'})`, color: 'bg-red-500' };
-    }
-    
-    if (heatCycle.isPreHeat) {
-      return { label: 'Heat Approaching', color: 'bg-amber-500' };
-    }
-    
-    return { label: 'Not in Heat', color: 'bg-blue-500' };
-  };
-  
-  const status = getReproductiveStatus();
-  
+  // Get current heat cycle
+  const currentHeatCycle = heatCycles.find(cycle => !cycle.end_date);
+
+  const infoContent = (
+    <div className="space-y-4">
+      <p>
+        The reproductive cycle dashboard helps track a female dog's heat cycles, 
+        fertility windows, and reproductive status.
+      </p>
+      <div>
+        <h4 className="font-medium">Reproductive Status:</h4>
+        <ul className="list-disc list-inside pl-4 mt-2">
+          <li><span className="font-medium">In Heat</span> - Currently in estrus cycle</li>
+          <li><span className="font-medium">Not In Heat</span> - Between cycles</li>
+          <li><span className="font-medium">Pregnant</span> - Confirmed pregnancy</li>
+          <li><span className="font-medium">Nursing</span> - Caring for puppies</li>
+        </ul>
+      </div>
+      <p>
+        Track heat cycles to predict future cycles and optimize breeding windows.
+      </p>
+    </div>
+  );
+
+  // Function to get the total count of heat cycles
+  const getTotalCyclesCount = () => heatCycles.length;
+
   return (
-    <div className="space-y-6">
-      <SectionHeader 
-        title="Reproductive Cycle Management" 
-        description="Track heat cycles and optimize breeding timing"
-        action={{
-          label: "Record Heat Cycle",
-          onClick: () => setShowAddCycleDialog(true),
-          icon: <Plus className="h-4 w-4 mr-2" />
-        }}
-      />
-      
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CardTitle>Current Status</CardTitle>
-            <span className={`text-xs font-medium px-3 py-1 rounded-full ${status.color} text-white`}>
-              {status.label}
-            </span>
-          </div>
-          <CardDescription>
-            {isPregnant 
-              ? 'Currently pregnant - see pregnancy tab for details'
-              : heatCycle.isInHeat 
-                ? 'Active heat cycle - optimal breeding recommendations available' 
-                : 'Monitoring reproductive status'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <StatusCard 
-              title="Last Heat Cycle"
-              value={dog.last_heat_date ? format(new Date(dog.last_heat_date), 'MMM d, yyyy') : 'Not recorded'}
-              icon={<Calendar className="h-5 w-5 text-blue-500" />}
-              description={dog.last_heat_date ? `${differenceInDays(new Date(), new Date(dog.last_heat_date))} days ago` : 'No data'}
-            />
-            
-            {!isPregnant && heatCycle.nextHeatDate && (
-              <StatusCard 
-                title="Next Expected Heat"
-                value={format(heatCycle.nextHeatDate, 'MMM d, yyyy')}
-                icon={<Calendar className="h-5 w-5 text-red-500" />}
-                description={heatCycle.daysUntilNextHeat ? `In ${heatCycle.daysUntilNextHeat} days` : 'Calculating...'}
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center">
+            Reproductive Cycle
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setInfoDialogOpen(true)}
+              className="ml-2"
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+          </h2>
+          <p className="text-muted-foreground">Track heat cycles and reproductive status</p>
+        </div>
+        <Button onClick={() => setIsHeatDialogOpen(true)} size="sm">
+          <Plus className="h-4 w-4 mr-2" />
+          Record Heat Cycle
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Current Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <ReproductiveStatusBadge status={reproStatus as any} showIcon className="text-lg px-3 py-1" />
+              {statusDate && (
+                <div className="flex items-center text-muted-foreground text-sm">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  {format(parseISO(statusDate), 'MMM d, yyyy')}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Fertility Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <StatusIndicator 
+                status={isFertile ? 'active' : 'inactive'} 
+                labels={{active: 'Fertile', inactive: 'Not Fertile'}}
+                showIcon
+                className="text-lg"
               />
-            )}
-            
-            {heatCycle.isInHeat && heatCycle.currentStage && (
-              <StatusCard 
-                title="Current Cycle Stage"
-                value={heatCycle.currentStage.name}
-                icon={<Clock className="h-5 w-5 text-purple-500" />}
-                description={heatCycle.currentStage.description}
-                className="md:col-span-2"
-              />
-            )}
-            
-            {heatCycle.fertileDays?.start && heatCycle.fertileDays?.end && heatCycle.isInHeat && (
-              <StatusCard 
-                title="Fertile Window"
-                value={`${format(heatCycle.fertileDays.start, 'MMM d')} - ${format(heatCycle.fertileDays.end, 'MMM d')}`}
-                icon={<Heart className="h-5 w-5 text-red-500" />}
-                description="Period when breeding has highest chance of success"
-                className="md:col-span-2"
-              />
-            )}
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
-        <TabsList className="grid grid-cols-3 w-full md:w-auto">
-          <TabsTrigger value="overview">Cycle History</TabsTrigger>
-          <TabsTrigger value="chart">Analysis</TabsTrigger>
-          <TabsTrigger value="optimizer">Breeding Optimizer</TabsTrigger>
+              {currentHeatCycle && (
+                <div className="flex items-center text-muted-foreground text-sm">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Started {format(parseISO(currentHeatCycle.start_date), 'MMM d, yyyy')}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Heat Cycle History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <div className="text-3xl font-bold">{getTotalCyclesCount()}</div>
+              <div className="text-muted-foreground text-sm">Recorded Cycles</div>
+              {heatCycles.length > 0 && (
+                <div className="flex items-center text-muted-foreground text-sm">
+                  <CalendarDays className="h-3 w-3 mr-1" />
+                  Last heat: {lastHeatDate}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="cycles">Heat Cycles</TabsTrigger>
+          <TabsTrigger value="statistics">Statistics</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="overview" className="space-y-4 mt-4">
+        <TabsContent value="overview" className="space-y-4">
+          {heatCycles.length === 0 ? (
+            <HintCard 
+              icon={<Droplets className="h-5 w-5" />}
+              title="No Heat Cycles Recorded"
+              description="Record heat cycles to track reproductive history and predict future cycles."
+              action={
+                <Button size="sm" onClick={() => setIsHeatDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Record First Cycle
+                </Button>
+              }
+            />
+          ) : (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Heat Cycle Timeline</CardTitle>
+                  <CardDescription>Visual representation of recorded heat cycles</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <HeatCycleVisualizer cycles={heatCycles} />
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </TabsContent>
+        <TabsContent value="cycles">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Heat Cycle History</CardTitle>
+              <CardTitle>Heat Cycle History</CardTitle>
+              <CardDescription>Record of all heat cycles</CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoadingCycles ? (
-                <div className="py-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="mt-2 text-sm text-muted-foreground">Loading cycle history...</p>
-                </div>
-              ) : heatCycles && heatCycles.length > 0 ? (
-                <div className="space-y-6">
-                  <div className="relative">
-                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800"></div>
-                    <ul className="space-y-6 relative z-10">
-                      {heatCycles.map((cycle) => (
-                        <li key={cycle.id} className="relative pl-10">
-                          <div className="absolute left-0 top-1 rounded-full bg-primary h-8 w-8 flex items-center justify-center">
-                            <Calendar className="h-4 w-4 text-primary-foreground" />
-                          </div>
-                          <div className="bg-card rounded-lg border p-4">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-semibold">Started: {format(new Date(cycle.start_date), 'MMM d, yyyy')}</h4>
-                                {cycle.end_date && (
-                                  <p className="text-sm text-muted-foreground">
-                                    Ended: {format(new Date(cycle.end_date), 'MMM d, yyyy')}
-                                    <span className="ml-2">
-                                      ({differenceInDays(new Date(cycle.end_date), new Date(cycle.start_date))} days)
-                                    </span>
-                                  </p>
-                                )}
-                              </div>
-                              <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
-                                {cycle.end_date ? 'Complete' : 'Ongoing'}
-                              </span>
-                            </div>
-                            {cycle.notes && (
-                              <p className="mt-2 text-sm border-t pt-2 text-muted-foreground">
-                                {cycle.notes}
-                              </p>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ) : (
+              {heatCycles.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-amber-500" />
-                  <p>No heat cycles recorded yet.</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-4"
-                    onClick={() => setShowAddCycleDialog(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Record First Heat Cycle
+                  <History className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p>No heat cycles have been recorded yet.</p>
+                  <Button className="mt-4" size="sm" onClick={() => setIsHeatDialogOpen(true)}>
+                    Record First Cycle
                   </Button>
                 </div>
+              ) : (
+                <HeatCycleHistoryTable cycles={heatCycles} />
               )}
             </CardContent>
           </Card>
         </TabsContent>
-        
-        <TabsContent value="chart" className="mt-4">
+        <TabsContent value="statistics">
           <Card>
             <CardHeader>
-              <CardTitle>Cycle Analysis</CardTitle>
-              <CardDescription>
-                Visual analysis of heat cycle patterns and duration
-              </CardDescription>
+              <CardTitle>Reproductive Statistics</CardTitle>
+              <CardDescription>Analysis of heat cycle patterns</CardDescription>
             </CardHeader>
-            <CardContent className="h-[400px]">
-              <HeatCycleChart dogId={dog.id} heatCycles={heatCycles || []} />
+            <CardContent>
+              <div className="text-center py-8 text-muted-foreground">
+                <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>Not enough data to show statistics.</p>
+                <p className="text-sm mt-2">Record more heat cycles to see pattern analysis.</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
-        <TabsContent value="optimizer" className="mt-4">
-          <BreedingTimingOptimizer dog={dog} heatCycle={heatCycle} />
-        </TabsContent>
       </Tabs>
-      
-      {/* Add Heat Cycle Dialog */}
-      <Dialog open={showAddCycleDialog} onOpenChange={setShowAddCycleDialog}>
-        <DialogContent className="sm:max-w-md">
+
+      {/* Heat Cycle Dialog */}
+      <HeatCycleDialog
+        open={isHeatDialogOpen}
+        onOpenChange={setIsHeatDialogOpen}
+        dogId={dog.id}
+        cycleNumber={nextCycleNumber}
+        onSave={handleAddHeatCycle}
+      />
+
+      {/* Info Dialog */}
+      <Dialog open={infoDialogOpen} onOpenChange={setInfoDialogOpen}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Record Heat Cycle</DialogTitle>
-            <DialogDescription>
-              Enter the details of the heat cycle for accurate tracking and predictions.
-            </DialogDescription>
+            <DialogTitle>About Reproductive Tracking</DialogTitle>
           </DialogHeader>
-          
-          <form onSubmit={handleAddCycle} className="space-y-4 pt-4">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <label htmlFor="start_date" className="text-sm font-medium">
-                  Start Date <span className="text-destructive">*</span>
-                </label>
-                <input
-                  id="start_date"
-                  name="start_date"
-                  type="date"
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={format(new Date(), 'yyyy-MM-dd')}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="end_date" className="text-sm font-medium">
-                  End Date (Optional)
-                </label>
-                <input
-                  id="end_date"
-                  name="end_date"
-                  type="date"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Leave blank if the cycle is ongoing.
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="notes" className="text-sm font-medium">
-                  Notes
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  rows={3}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  placeholder="Any observations or special notes for this cycle"
-                ></textarea>
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowAddCycleDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">Save Heat Cycle</Button>
-            </div>
-          </form>
+          {infoContent}
         </DialogContent>
       </Dialog>
     </div>
   );
 };
-
-interface StatusCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  description: string;
-  className?: string;
-}
-
-const StatusCard: React.FC<StatusCardProps> = ({ title, value, icon, description, className }) => (
-  <div className={`bg-card rounded-lg border p-4 ${className || ''}`}>
-    <div className="flex items-start">
-      <div className="mr-3">{icon}</div>
-      <div>
-        <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
-        <p className="text-base font-semibold">{value}</p>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
-      </div>
-    </div>
-  </div>
-);
 
 export default ReproductiveCycleDashboard;

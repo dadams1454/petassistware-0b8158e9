@@ -12,6 +12,6 @@ export {
   mapToCorePuppy,
   mapToWeightRecord,
   mapToModuleDog,
+  mapToHealthRecord,
   mapToHeatCycle
 } from './typeMapper';
-

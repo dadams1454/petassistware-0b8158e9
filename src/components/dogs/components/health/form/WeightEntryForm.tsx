@@ -41,9 +41,9 @@ const WeightEntryForm: React.FC<WeightEntryFormProps> = ({
   const { errors } = formState;
   
   // Format the weight units array for the select component
-  const weightUnitOptions = Object.entries(weightUnitInfos).map(([code, info]) => ({
-    value: code,
-    label: info.name
+  const weightUnitOptions = weightUnitInfos.map(info => ({
+    value: info.id,
+    label: info.label
   }));
   
   return (

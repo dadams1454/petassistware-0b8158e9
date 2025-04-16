@@ -2,227 +2,152 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
-import { UserRound, Clock, Calendar, Plus, Save } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-// Mock staff data - in a real app, would come from your database
-const mockStaffMembers = [
-  { id: '1', name: 'John Smith', role: 'Caretaker' },
-  { id: '2', name: 'Emma Johnson', role: 'Veterinarian' },
-  { id: '3', name: 'Michael Brown', role: 'Trainer' },
-  { id: '4', name: 'Sarah Davis', role: 'Groomer' },
-  { id: '5', name: 'David Wilson', role: 'Assistant' },
-];
-
-// Mock staff hours data
-const mockStaffHours = [
-  { id: '1', staffId: '1', date: new Date('2023-10-01'), clockIn: '09:00', clockOut: '17:00', hoursWorked: 8, notes: 'Regular shift' },
-  { id: '2', staffId: '2', date: new Date('2023-10-01'), clockIn: '08:30', clockOut: '16:30', hoursWorked: 8, notes: 'Veterinary check-ups' },
-  { id: '3', staffId: '3', date: new Date('2023-10-01'), clockIn: '10:00', clockOut: '15:00', hoursWorked: 5, notes: 'Training sessions' },
+const staffMembers = [
+  { id: 'staff1', name: 'Jane Smith' },
+  { id: 'staff2', name: 'John Doe' },
+  { id: 'staff3', name: 'Emma Wilson' },
+  { id: 'staff4', name: 'Mike Johnson' },
 ];
 
 const StaffHoursTracker: React.FC = () => {
+  const [staffId, setStaffId] = useState('');
+  const [date, setDate] = useState<Date>(new Date());
+  const [hours, setHours] = useState('');
+  const [notes, setNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [staffHours, setStaffHours] = useState(mockStaffHours);
-  const [selectedStaff, setSelectedStaff] = useState<string>('');
-  const [clockIn, setClockIn] = useState<string>('');
-  const [clockOut, setClockOut] = useState<string>('');
-  const [notes, setNotes] = useState<string>('');
-  const [isAddingHours, setIsAddingHours] = useState(false);
 
-  const handleSaveHours = () => {
-    if (!selectedStaff || !clockIn) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!staffId || !hours || isNaN(Number(hours)) || Number(hours) <= 0) {
       toast({
-        title: "Error",
-        description: "Please select a staff member and enter clock in time",
+        title: "Validation Error",
+        description: "Please fill out all required fields correctly",
         variant: "destructive"
       });
       return;
     }
-
-    // Calculate hours worked
-    let hoursWorked = 0;
-    if (clockIn && clockOut) {
-      const [inHours, inMinutes] = clockIn.split(':').map(Number);
-      const [outHours, outMinutes] = clockOut.split(':').map(Number);
-      hoursWorked = (outHours - inHours) + (outMinutes - inMinutes) / 60;
-    }
-
-    const newEntry = {
-      id: `temp-${Date.now()}`,
-      staffId: selectedStaff,
-      date: selectedDate || new Date(),
-      clockIn,
-      clockOut,
-      hoursWorked: parseFloat(hoursWorked.toFixed(2)),
-      notes
-    };
-
-    setStaffHours([...staffHours, newEntry]);
     
-    // Reset form
-    setSelectedStaff('');
-    setClockIn('');
-    setClockOut('');
-    setNotes('');
-    setIsAddingHours(false);
-
-    toast({
-      title: "Hours saved",
-      description: "Staff hours have been recorded successfully"
-    });
+    setIsSubmitting(true);
+    
+    try {
+      // Format the date to ISO string
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      // Get staff name from the selected ID
+      const staffMember = staffMembers.find(s => s.id === staffId);
+      
+      const staffHoursData = {
+        staff_id: staffId,
+        staff_name: staffMember?.name || '',
+        date: formattedDate,
+        hours: Number(hours),
+        notes,
+        created_at: new Date().toISOString()
+      };
+      
+      // Insert into database
+      const { error } = await supabase
+        .from('staff_hours')
+        .insert(staffHoursData);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Staff hours have been recorded"
+      });
+      
+      // Reset form
+      setStaffId('');
+      setDate(new Date());
+      setHours('');
+      setNotes('');
+    } catch (error) {
+      console.error('Error recording staff hours:', error);
+      toast({
+        title: "Error",
+        description: "Failed to record staff hours",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const filteredHours = selectedDate 
-    ? staffHours.filter(entry => 
-        entry.date.toDateString() === selectedDate.toDateString()
-      )
-    : staffHours;
-
-  const getStaffName = (staffId: string) => {
-    const staff = mockStaffMembers.find(s => s.id === staffId);
-    return staff ? staff.name : 'Unknown';
-  };
-
+  
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl flex items-center">
-            <Clock className="mr-2 h-5 w-5" />
-            Staff Hours Tracker
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-end mb-6">
-            <div className="flex items-center gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Select Date</label>
-                <DatePicker 
-                  date={selectedDate} 
-                  onSelect={setSelectedDate} 
-                  className="w-[240px]"
-                />
-              </div>
-            </div>
-            <Button onClick={() => setIsAddingHours(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Hours
-            </Button>
+    <Card>
+      <CardHeader>
+        <CardTitle>Record Staff Hours</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="staff">Staff Member</Label>
+            <Select value={staffId} onValueChange={setStaffId}>
+              <SelectTrigger id="staff">
+                <SelectValue placeholder="Select staff member" />
+              </SelectTrigger>
+              <SelectContent>
+                {staffMembers.map(staff => (
+                  <SelectItem key={staff.id} value={staff.id}>
+                    {staff.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-
-          {isAddingHours && (
-            <Card className="mb-6 border-dashed">
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Staff Member</label>
-                    <Select value={selectedStaff} onValueChange={setSelectedStaff}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select staff member" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {mockStaffMembers.map(staff => (
-                          <SelectItem key={staff.id} value={staff.id}>
-                            {staff.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Clock In</label>
-                    <Input 
-                      type="time" 
-                      value={clockIn} 
-                      onChange={(e) => setClockIn(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Clock Out</label>
-                    <Input 
-                      type="time" 
-                      value={clockOut} 
-                      onChange={(e) => setClockOut(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Notes</label>
-                    <Input 
-                      placeholder="Enter optional notes" 
-                      value={notes} 
-                      onChange={(e) => setNotes(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsAddingHours(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveHours} className="gap-2">
-                    <Save className="h-4 w-4" />
-                    Save Hours
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Staff</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Clock In</TableHead>
-                <TableHead>Clock Out</TableHead>
-                <TableHead>Hours</TableHead>
-                <TableHead>Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredHours.length > 0 ? (
-                filteredHours.map(entry => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                          {getStaffName(entry.staffId).charAt(0)}
-                        </div>
-                        <span>{getStaffName(entry.staffId)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {entry.date.toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{entry.clockIn}</TableCell>
-                    <TableCell>{entry.clockOut || "-"}</TableCell>
-                    <TableCell>{entry.hoursWorked}</TableCell>
-                    <TableCell>{entry.notes || "-"}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No hours recorded for the selected date
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="date">Date</Label>
+            <div className="max-w-[280px]">
+              <DatePicker 
+                value={date}
+                onChange={setDate}
+                className="w-full"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="hours">Hours Worked</Label>
+            <Input
+              id="hours"
+              type="number"
+              placeholder="Enter hours"
+              min="0.5"
+              step="0.5"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              placeholder="Any additional notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+          
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Hours'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 

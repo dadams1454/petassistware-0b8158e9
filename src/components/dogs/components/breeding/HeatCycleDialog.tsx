@@ -1,191 +1,188 @@
 
 import React, { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { HeatIntensityType, HeatIntensityValues } from '@/types';
-import { CalendarIcon } from "lucide-react";
-import { format, parseISO } from 'date-fns';
-import { DatePicker } from "@/components/ui/date-picker";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { HeatIntensityType, HeatIntensityValues, mapHeatIntensityTypeToDisplay } from '@/types/heat-cycles';
 
-export interface HeatCycleDialogProps {
+interface HeatCycleDialogProps {
   open: boolean;
-  setOpen: (open: boolean) => void;
-  onOpenChange?: (open: boolean) => void;
-  dogId?: string;
-  cycle: any | null;
-  onSubmit?: (values: any) => Promise<void>;
-  onSave?: (values: any) => Promise<void>;
-  existingCycle?: any;
+  onOpenChange: (open: boolean) => void;
+  dogId: string;
+  cycleNumber?: number;
+  onSave: (cycleData: any) => Promise<void>;
 }
 
 const HeatCycleDialog: React.FC<HeatCycleDialogProps> = ({
   open,
-  setOpen,
   onOpenChange,
   dogId,
-  cycle,
-  onSubmit,
+  cycleNumber = 1,
   onSave,
-  existingCycle
 }) => {
-  const cycleData = cycle || existingCycle;
-  const dogIdentifier = dogId || (cycleData ? cycleData.dog_id : '');
-  
-  const [startDate, setStartDate] = useState<Date | undefined>(cycleData && cycleData.start_date ? 
-    (typeof cycleData.start_date === 'string' ? parseISO(cycleData.start_date) : cycleData.start_date) : undefined);
-  
-  const [endDate, setEndDate] = useState<Date | undefined>(cycleData && cycleData.end_date ? 
-    (typeof cycleData.end_date === 'string' ? parseISO(cycleData.end_date) : cycleData.end_date) : undefined);
-  
-  const [intensity, setIntensity] = useState<HeatIntensityType>(cycleData ? cycleData.intensity : 'none');
-  const [symptoms, setSymptoms] = useState<string[]>(cycleData ? cycleData.symptoms : []);
-  const [notes, setNotes] = useState(cycleData ? cycleData.notes : '');
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [intensity, setIntensity] = useState<HeatIntensityType>('moderate');
+  const [symptoms, setSymptoms] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (cycleData) {
-      setStartDate(typeof cycleData.start_date === 'string' ? parseISO(cycleData.start_date) : cycleData.start_date);
-      setEndDate(cycleData.end_date ? (typeof cycleData.end_date === 'string' ? parseISO(cycleData.end_date) : cycleData.end_date) : undefined);
-      setIntensity(cycleData.intensity);
-      setSymptoms(cycleData.symptoms || []);
-      setNotes(cycleData.notes || '');
-    } else {
-      // Reset form when opening for a new cycle
-      setStartDate(undefined);
-      setEndDate(undefined);
-      setIntensity('none');
-      setSymptoms([]);
+    if (open) {
+      // Reset form when dialog opens
+      setStartDate(new Date());
+      setEndDate(new Date());
+      setIntensity('moderate');
+      setSymptoms('');
       setNotes('');
     }
-  }, [cycleData, open]);
+  }, [open]);
 
-  const handleDialogChange = (newOpen: boolean) => {
-    if (onOpenChange) {
-      onOpenChange(newOpen);
-    }
-    setOpen(newOpen);
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
-    const startDateString = startDate ? format(startDate, 'yyyy-MM-dd') : '';
-    const endDateString = endDate ? format(endDate, 'yyyy-MM-dd') : '';
-
+  const handleSave = async () => {
     try {
+      setIsSubmitting(true);
+      
       const cycleData = {
-        id: cycle?.id || existingCycle?.id || '',
-        dog_id: dogIdentifier,
-        start_date: startDateString,
-        end_date: endDateString,
-        intensity: intensity,
-        symptoms: symptoms,
-        notes: notes,
-        created_at: new Date().toISOString(),
-        cycle_number: cycle?.cycle_number || existingCycle?.cycle_number || 1
+        dog_id: dogId,
+        cycle_number: cycleNumber,
+        start_date: format(startDate, 'yyyy-MM-dd'),
+        end_date: format(endDate, 'yyyy-MM-dd'),
+        intensity,
+        symptoms: symptoms.split(',').map(s => s.trim()).filter(Boolean),
+        notes,
       };
-
-      if (onSave) {
-        await onSave(cycleData);
-      } else if (onSubmit) {
-        await onSubmit(cycleData);
-      }
-      handleDialogChange(false);
+      
+      await onSave(cycleData);
+      onOpenChange(false);
+      
+      toast({
+        title: 'Success',
+        description: 'Heat cycle recorded successfully',
+      });
     } catch (error) {
-      console.error("Error submitting heat cycle:", error);
+      console.error('Error saving heat cycle:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save heat cycle',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleIntensityChange = (value: string) => {
-    setIntensity(value as HeatIntensityType);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleDialogChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{cycleData ? "Edit Heat Cycle" : "Add Heat Cycle"}</DialogTitle>
+          <DialogTitle>Record Heat Cycle</DialogTitle>
           <DialogDescription>
-            {cycleData ? "Update the heat cycle details." : "Enter the details for the new heat cycle."}
+            Record a new heat cycle for this dog.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="startDate">Start Date</Label>
+        
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="cycle-number" className="text-right">
+              Cycle #
+            </Label>
+            <Input
+              id="cycle-number"
+              value={cycleNumber}
+              className="col-span-3"
+              readOnly
+            />
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="start-date" className="text-right">
+              Start Date
+            </Label>
+            <div className="col-span-3">
               <DatePicker
-                date={startDate}
-                onDateChange={setStartDate}
-                placeholder="Select date"
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Label htmlFor="endDate">End Date</Label>
-              <DatePicker
-                date={endDate}
-                onDateChange={setEndDate}
-                placeholder="Select date"
+                value={startDate}
+                onChange={setStartDate}
+                placeholder="Select start date"
                 className="w-full"
               />
             </div>
           </div>
-          <div>
-            <Label htmlFor="intensity">Intensity</Label>
-            <Select value={intensity} onValueChange={handleIntensityChange}>
-              <SelectTrigger id="intensity">
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="end-date" className="text-right">
+              End Date
+            </Label>
+            <div className="col-span-3">
+              <DatePicker
+                value={endDate}
+                onChange={setEndDate}
+                placeholder="Select end date"
+                className="w-full"
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="intensity" className="text-right">
+              Intensity
+            </Label>
+            <Select
+              value={intensity}
+              onValueChange={(value: HeatIntensityType) => setIntensity(value)}
+            >
+              <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select intensity" />
               </SelectTrigger>
               <SelectContent>
-                {HeatIntensityValues.map((intensity) => (
-                  <SelectItem key={intensity} value={intensity}>
-                    {intensity.charAt(0).toUpperCase() + intensity.slice(1).replace('_', ' ')}
+                {HeatIntensityValues.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {mapHeatIntensityTypeToDisplay(value)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label htmlFor="symptoms">Symptoms</Label>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="symptoms" className="text-right">
+              Symptoms
+            </Label>
             <Input
-              type="text"
               id="symptoms"
-              value={symptoms.join(', ')}
-              onChange={(e) => setSymptoms(e.target.value.split(',').map(s => s.trim()))}
+              value={symptoms}
+              onChange={(e) => setSymptoms(e.target.value)}
+              placeholder="Swelling, discharge, etc. (comma separated)"
+              className="col-span-3"
             />
           </div>
-          <div>
-            <Label htmlFor="notes">Notes</Label>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="notes" className="text-right">
+              Notes
+            </Label>
             <Input
-              type="text"
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any additional notes"
+              className="col-span-3"
             />
           </div>
-          <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Save changes"}
-            </Button>
-          </DialogFooter>
-        </form>
+        </div>
+        
+        <DialogFooter>
+          <Button onClick={handleSave} disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save Cycle'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
 
 export default HeatCycleDialog;
-

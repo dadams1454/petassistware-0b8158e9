@@ -1,3 +1,4 @@
+
 /**
  * Weight unit type definitions
  */
@@ -24,6 +25,7 @@ export interface WeightUnitInfo {
   id: WeightUnit;
   label: string;
   displayName: string;
+  name: string; // Added for backward compatibility
   toGrams: number;
   precision: number;
   isImperial: boolean;
@@ -37,6 +39,7 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     id: 'g',
     label: 'Grams',
     displayName: 'g',
+    name: 'Grams',
     toGrams: 1,
     precision: 0,
     isImperial: false
@@ -45,6 +48,7 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     id: 'kg',
     label: 'Kilograms',
     displayName: 'kg',
+    name: 'Kilograms',
     toGrams: 1000,
     precision: 2,
     isImperial: false
@@ -53,6 +57,7 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     id: 'oz',
     label: 'Ounces',
     displayName: 'oz',
+    name: 'Ounces',
     toGrams: 28.3495,
     precision: 1,
     isImperial: true
@@ -61,6 +66,7 @@ export const weightUnitInfos: WeightUnitInfo[] = [
     id: 'lb',
     label: 'Pounds',
     displayName: 'lb',
+    name: 'Pounds',
     toGrams: 453.592,
     precision: 1,
     isImperial: true

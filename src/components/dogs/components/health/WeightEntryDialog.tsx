@@ -10,7 +10,7 @@ import * as z from 'zod';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
-import { WeightUnitEnum } from '@/types';
+import { WeightUnit } from '@/types/unified';
 
 // Form schema for weight entry
 const weightEntrySchema = z.object({
@@ -110,10 +110,10 @@ const WeightEntryDialog: React.FC<WeightEntryDialogProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value={WeightUnitEnum.LB}>Pounds (lb)</SelectItem>
-                        <SelectItem value={WeightUnitEnum.OZ}>Ounces (oz)</SelectItem>
-                        <SelectItem value={WeightUnitEnum.KG}>Kilograms (kg)</SelectItem>
-                        <SelectItem value={WeightUnitEnum.G}>Grams (g)</SelectItem>
+                        <SelectItem value="lb">Pounds (lb)</SelectItem>
+                        <SelectItem value="oz">Ounces (oz)</SelectItem>
+                        <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                        <SelectItem value="g">Grams (g)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
