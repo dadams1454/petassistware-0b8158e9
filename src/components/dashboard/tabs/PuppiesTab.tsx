@@ -14,22 +14,23 @@ interface PuppiesTabProps {
 
 const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   const navigate = useNavigate();
-  const { 
-    allPuppies, 
-    ageGroups, 
-    byAgeGroup, 
-    totalPuppies, 
-    loading 
-  } = usePuppyTracking();
+  const puppyStats = usePuppyTracking();
+  
+  // Extract properties with fallbacks to handle potential undefined values
+  const allPuppies = puppyStats.allPuppies || puppyStats.puppies || [];
+  const ageGroups = puppyStats.ageGroups || [];
+  const byAgeGroup = puppyStats.byAgeGroup || {};
+  const totalPuppies = puppyStats.totalPuppies || 0;
+  const isLoading = puppyStats.isLoading || puppyStats.loading || false;
   
   // Add a loading state until puppy data is available
-  const [isLoading, setIsLoading] = useState(true);
+  const [localLoading, setLocalLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading) {
-      setIsLoading(false);
+    if (!isLoading) {
+      setLocalLoading(false);
     }
-  }, [loading]);
+  }, [isLoading]);
 
   const handleAddPuppy = () => {
     navigate('/puppies/new');
@@ -39,7 +40,7 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
     navigate(`/puppies/${puppyId}`);
   };
 
-  if (isLoading) {
+  if (localLoading) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -70,7 +71,12 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
   }
 
   // Sort age groups by their sort_order property
-  const sortedAgeGroups = [...ageGroups].sort((a, b) => a.sort_order - b.sort_order);
+  const sortedAgeGroups = [...ageGroups].sort((a, b) => {
+    // Ensure sort_order exists, fallback to 0 if it doesn't
+    const sortOrderA = a.sort_order !== undefined ? a.sort_order : 0;
+    const sortOrderB = b.sort_order !== undefined ? b.sort_order : 0;
+    return sortOrderA - sortOrderB;
+  });
 
   return (
     <div className="space-y-4">

@@ -1,6 +1,6 @@
 
 // Heat intensity definitions
-export type HeatIntensityType = 'none' | 'light' | 'moderate' | 'heavy' | 'mild' | 'strong' | 'very_strong';
+export type HeatIntensityType = 'none' | 'light' | 'moderate' | 'heavy' | 'mild' | 'strong' | 'very_strong' | 'medium';
 
 export const HeatIntensity = {
   NONE: 'none',
@@ -9,7 +9,8 @@ export const HeatIntensity = {
   HEAVY: 'heavy',
   MILD: 'mild',
   STRONG: 'strong',
-  VERY_STRONG: 'very_strong'
+  VERY_STRONG: 'very_strong',
+  MEDIUM: 'medium'
 } as const;
 
 export const HeatIntensityValues: HeatIntensityType[] = [
@@ -19,7 +20,8 @@ export const HeatIntensityValues: HeatIntensityType[] = [
   HeatIntensity.HEAVY,
   HeatIntensity.MILD,
   HeatIntensity.STRONG, 
-  HeatIntensity.VERY_STRONG
+  HeatIntensity.VERY_STRONG,
+  HeatIntensity.MEDIUM
 ];
 
 export function mapHeatIntensityToType(value: string): HeatIntensityType {
@@ -54,9 +56,16 @@ export function mapHeatIntensityTypeToDisplay(type: HeatIntensityType): string {
       return 'Strong';
     case HeatIntensity.VERY_STRONG:
       return 'Very Strong';
+    case HeatIntensity.MEDIUM:
+      return 'Medium';
     default:
       return 'Unknown';
   }
+}
+
+// Type guard to check if a value is a valid HeatIntensityType
+export function isHeatIntensityType(value: any): value is HeatIntensityType {
+  return typeof value === 'string' && HeatIntensityValues.includes(value as HeatIntensityType);
 }
 
 // Heat cycle and stage definitions
@@ -85,4 +94,17 @@ export interface HeatStage {
   notes?: string;
   created_at: string;
   updated_at?: string;
+}
+
+// Type guard to check if a value is a valid HeatCycle
+export function isHeatCycle(value: any): value is HeatCycle {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'dog_id' in value &&
+    'start_date' in value &&
+    'intensity' in value &&
+    Array.isArray(value.symptoms)
+  );
 }

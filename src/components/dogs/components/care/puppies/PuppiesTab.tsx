@@ -128,7 +128,8 @@ const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
         return (
           <PuppyAgeGroupSection
             key={ageGroup.id}
-            ageGroup={ageGroup}
+            name={ageGroup.name || ''}
+            description={ageGroup.description}
             puppies={puppiesInGroup as PuppyWithAge[]}
             onRefresh={onRefresh}
           />

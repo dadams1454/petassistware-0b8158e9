@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useDailyCare } from '@/contexts/dailyCare';
 import { CareLogFormValues } from './useCareLogFormState';
-import { DogFlag } from '@/types/dailyCare';
+import { DogFlag, CareLogFormData } from '@/types/dailyCare';
 
 interface UseFormSubmissionProps {
   dogId: string;
@@ -22,13 +22,15 @@ export const useFormSubmission = ({ dogId, onSuccess }: UseFormSubmissionProps) 
         : values.timestamp;
       
       // Create a properly typed CareLogFormData object
-      const careLogData = {
+      const careLogData: CareLogFormData = {
         dog_id: dogId,
         category: values.category,
-        task_name: values.task_name,
+        task: values.task_name, // Map task_name to task
+        task_name: values.task_name, // Keep task_name for compatibility
         timestamp: timestamp,
         notes: values.notes,
-        flags: flags.length > 0 ? flags : undefined
+        flags: flags.length > 0 ? flags.map(f => f.id) : undefined, // Send flag IDs for compatibility
+        metadata: flags.length > 0 ? { flags } : undefined // Store full flag objects for rich data
       };
       
       console.log('Submitting care log:', careLogData);

@@ -6,12 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CalendarIcon, FilePlus, ListFilter } from 'lucide-react';
 import { StatusIndicator } from '@/components/ui/status-indicator';
 import { ReproductiveStatusBadge } from '../common/ReproductiveStatusBadge';
-import { HeatCycleVisualizer } from '../components/HeatCycleVisualizer';
-import { HeatCycleHistoryTable } from '../components/HeatCycleHistoryTable';
+import HeatCycleVisualizer from '../components/HeatCycleVisualizer';
+import HeatCycleHistoryTable from '../components/HeatCycleHistoryTable';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { HintCard } from '@/components/ui/hint-card';
-import { HeatCycle, HeatIntensityType } from '@/types/heat-cycles';
+import { HeatCycle, HeatIntensityType, stringToHeatIntensityType } from '@/types/heat-cycles';
 
 interface ReproductiveCycleDashboardProps {
   dogId: string;
@@ -47,11 +47,17 @@ const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({
           
         if (cyclesError) throw cyclesError;
         
-        setHeatCycles(cyclesData || []);
+        // Convert string intensity to HeatIntensityType
+        const formattedCycles = (cyclesData || []).map(cycle => ({
+          ...cycle,
+          intensity: stringToHeatIntensityType(cycle.intensity)
+        })) as HeatCycle[];
+        
+        setHeatCycles(formattedCycles);
         
         // Determine if dog is currently in heat
         const today = new Date();
-        const currentCycle = cyclesData?.find(cycle => {
+        const currentCycle = formattedCycles.find(cycle => {
           const startDate = new Date(cycle.start_date);
           const endDate = cycle.end_date ? new Date(cycle.end_date) : null;
           
@@ -61,9 +67,9 @@ const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({
         if (currentCycle) {
           setDogStatus('in_heat');
           setLastHeatDate(currentCycle.start_date);
-        } else if (cyclesData && cyclesData.length > 0) {
+        } else if (formattedCycles && formattedCycles.length > 0) {
           setDogStatus('normal');
-          setLastHeatDate(cyclesData[0].start_date);
+          setLastHeatDate(formattedCycles[0].start_date);
         }
       } catch (err) {
         console.error('Error fetching heat cycles:', err);
@@ -86,10 +92,11 @@ const ReproductiveCycleDashboard: React.FC<ReproductiveCycleDashboardProps> = ({
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      const newCycle: Partial<HeatCycle> = {
+      const newCycle = {
         dog_id: dogId,
         start_date: today,
         intensity: 'medium' as HeatIntensityType,
+        symptoms: [] as string[]
       };
       
       const { error } = await supabase

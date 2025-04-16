@@ -74,11 +74,19 @@ export const useFlagHandling = ({
     const flags: DogFlag[] = [];
     
     if (selectedFlags.in_heat) {
-      flags.push({ type: 'in_heat' });
+      flags.push({ 
+        id: `in_heat_${dogId}`,
+        name: 'In Heat', 
+        color: 'red',
+        type: 'in_heat' 
+      });
     }
     
     if (selectedFlags.incompatible && incompatibleDogs.length > 0) {
       flags.push({ 
+        id: `incompatible_${dogId}`,
+        name: 'Incompatible',
+        color: 'orange',
         type: 'incompatible',
         incompatible_with: incompatibleDogs
       });
@@ -86,6 +94,9 @@ export const useFlagHandling = ({
     
     if (selectedFlags.special_attention && specialAttentionNote) {
       flags.push({
+        id: `special_attention_${dogId}`,
+        name: 'Special Attention',
+        color: 'yellow',
         type: 'special_attention',
         value: specialAttentionNote
       });
@@ -93,6 +104,9 @@ export const useFlagHandling = ({
     
     if (selectedFlags.other && otherFlagNote) {
       flags.push({
+        id: `other_flag_${dogId}`,
+        name: 'Other',
+        color: 'gray',
         type: 'other',
         value: otherFlagNote
       });

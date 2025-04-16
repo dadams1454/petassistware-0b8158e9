@@ -1,4 +1,3 @@
-
 /**
  * Core type definitions for puppies module
  */
@@ -18,6 +17,7 @@ export interface PuppyWithAge {
   birth_weight?: number;
   birth_weight_unit?: string;
   birthdate: string;
+  birth_date?: string; // For compatibility with some components
   status: string;
   markings?: string;
   microchip_id?: string;
@@ -30,8 +30,11 @@ export interface PuppyWithAge {
   
   // Age-related calculated fields
   age_days?: number;
+  ageInDays?: number; // For compatibility with some components
   age_weeks?: number;
+  ageInWeeks?: number; // For compatibility with some components
   age_description?: string;
+  ageDescription?: string; // For compatibility with some components
   weight_current?: number;
   weight_unit?: string;
 }
@@ -46,6 +49,18 @@ export interface PuppyAgeGroup {
   min_days: number;
   max_days: number;
   sort_order: number;
+  groupName?: string; // For compatibility with some components
+  displayName?: string;
+  ageRange?: string;
+  startDay?: number;
+  endDay?: number;
+  minDays?: number; // For compatibility with min_days
+  maxDays?: number; // For compatibility with max_days
+  unit?: string;
+  color?: string;
+  milestones?: string[];
+  minAge?: number;
+  maxAge?: number;
 }
 
 /**
@@ -80,6 +95,38 @@ export interface PuppyManagementStats {
   byGender: Record<string, PuppyWithAge[]>;
   ageGroups: PuppyAgeGroup[];
   allPuppies: PuppyWithAge[];
+  
+  // For compatibility with existing components
+  puppies?: PuppyWithAge[];
+  isLoading?: boolean;
+  loading?: boolean;
+  error?: any;
+  refetch?: () => Promise<any>;
+  
+  // Status counts
+  activeCount?: number;
+  reservedCount?: number;
+  availableCount?: number;
+  soldCount?: number;
+  maleCount?: number;
+  femaleCount?: number;
+  
+  // Status groupings
+  puppiesByAgeGroup?: Record<string, PuppyWithAge[]>;
+  puppiesByStatus?: Record<string, PuppyWithAge[]>;
+  
+  // Backward compatibility
+  availablePuppies?: number;
+  reservedPuppies?: number;
+  soldPuppies?: number;
+  currentWeek?: number;
+  
+  // Other stats
+  total?: {
+    count: number;
+    male: number;
+    female: number;
+  };
 }
 
 /**

@@ -13,12 +13,16 @@ interface MedicationStatusProps {
   status: MedicationStatusResult;
   showLabel?: boolean;
   className?: string;
+  showIcon?: boolean;
+  nextDue?: string | Date; // Optional for backward compatibility
 }
 
 const MedicationStatus: React.FC<MedicationStatusProps> = ({
   status,
   showLabel = true,
   className = '',
+  showIcon = false,
+  nextDue, // Not used directly but accepted for compatibility
 }) => {
   const statusValue = getStatusString(status);
   const label = getStatusLabel(status);

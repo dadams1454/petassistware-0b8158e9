@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PuppyCard from './PuppyCard';
-import { PuppyWithAge } from '@/modules/puppies/types';
+import { PuppyWithAge, PuppyAgeGroup } from '@/modules/puppies/types';
 
 interface PuppyAgeGroupSectionProps {
   name: string;
@@ -10,6 +10,8 @@ interface PuppyAgeGroupSectionProps {
   description?: string;
   onPuppyClick?: (puppyId: string) => void;
   emptyState?: React.ReactNode;
+  ageGroup?: PuppyAgeGroup; // Optional, for compatibility with dogs/components/care/puppies/PuppiesTab
+  onRefresh?: () => void; // Optional, for compatibility with dogs/components/care/puppies/PuppiesTab
 }
 
 const PuppyAgeGroupSection: React.FC<PuppyAgeGroupSectionProps> = ({
@@ -18,6 +20,8 @@ const PuppyAgeGroupSection: React.FC<PuppyAgeGroupSectionProps> = ({
   description,
   onPuppyClick,
   emptyState,
+  ageGroup, // Not used directly but accepted for compatibility
+  onRefresh, // Not used directly but accepted for compatibility
 }) => {
   if (!puppies || puppies.length === 0) {
     return (

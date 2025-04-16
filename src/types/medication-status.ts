@@ -1,53 +1,49 @@
 
 /**
- * Medication status types and utility functions
+ * Medication status type definitions
  */
 
-// Base status enum for medications
+// Main medication status enum
 export enum MedicationStatusEnum {
   DUE = 'due',
   OVERDUE = 'overdue',
-  UPCOMING = 'upcoming',
   ADMINISTERED = 'administered',
   PAUSED = 'paused',
   COMPLETED = 'completed',
-  PENDING = 'pending'
+  PENDING = 'pending',
+  UPCOMING = 'upcoming'
 }
 
-// Detailed status result, with optional message and other properties
+// Extended medication status enum with additional statuses
+export enum ExtendedMedicationStatusEnum {
+  SKIPPED = 'skipped',
+  UNKNOWN = 'unknown'
+}
+
+// Detailed status object with message
 export interface MedicationStatusDetail {
-  status: MedicationStatusEnum;
+  status: MedicationStatusEnum | ExtendedMedicationStatusEnum | string;
   message?: string;
-  daysOverdue?: number;
-  daysUntilDue?: number;
-  nextDue?: string | Date | null;
+  nextDue?: string | Date; // Future due date for medications
 }
 
-// Union type for simple strings or detailed objects
-export type MedicationStatusResult = MedicationStatusEnum | MedicationStatusDetail;
+// Union type for medication status result
+export type MedicationStatusResult = MedicationStatusEnum | ExtendedMedicationStatusEnum | MedicationStatusDetail | string;
 
-/**
- * Determines if the status is a detailed object or just an enum value
- */
-export function isDetailedStatus(
-  status: MedicationStatusResult
-): status is MedicationStatusDetail {
+// Type guard to check if a status has detailed information
+export function isDetailedStatus(status: MedicationStatusResult): status is MedicationStatusDetail {
   return typeof status === 'object' && status !== null && 'status' in status;
 }
 
-/**
- * Gets the string status value regardless of input type
- */
-export function getStatusString(status: MedicationStatusResult): MedicationStatusEnum {
+// Get the string value of a status
+export function getStatusString(status: MedicationStatusResult): string {
   if (isDetailedStatus(status)) {
-    return status.status;
+    return status.status.toString();
   }
-  return status;
+  return status.toString();
 }
 
-/**
- * Gets the message for a status, if available
- */
+// Get a user-friendly message for a status
 export function getStatusMessage(status: MedicationStatusResult): string {
   if (isDetailedStatus(status) && status.message) {
     return status.message;
@@ -55,29 +51,24 @@ export function getStatusMessage(status: MedicationStatusResult): string {
   
   // Default messages based on status
   const statusStr = getStatusString(status);
-  
   switch (statusStr) {
     case MedicationStatusEnum.DUE:
-      return 'Due today';
+      return 'Medication needs to be administered now';
     case MedicationStatusEnum.OVERDUE:
-      const days = isDetailedStatus(status) && status.daysOverdue 
-        ? status.daysOverdue 
-        : undefined;
-      return days ? `Overdue by ${days} day${days !== 1 ? 's' : ''}` : 'Overdue';
-    case MedicationStatusEnum.UPCOMING:
-      const daysUntil = isDetailedStatus(status) && status.daysUntilDue 
-        ? status.daysUntilDue 
-        : undefined;
-      return daysUntil ? `Due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}` : 'Upcoming';
+      return 'Medication is overdue';
     case MedicationStatusEnum.ADMINISTERED:
-      return 'Administered';
+      return 'Medication has been administered';
     case MedicationStatusEnum.PAUSED:
-      return 'Paused';
+      return 'Medication is temporarily paused';
     case MedicationStatusEnum.COMPLETED:
-      return 'Completed';
+      return 'Medication course is completed';
     case MedicationStatusEnum.PENDING:
-      return 'Pending';
+      return 'Medication is scheduled';
+    case MedicationStatusEnum.UPCOMING:
+      return 'Medication is coming up soon';
+    case ExtendedMedicationStatusEnum.SKIPPED:
+      return 'Medication dose was skipped';
     default:
-      return 'Unknown status';
+      return '';
   }
 }
