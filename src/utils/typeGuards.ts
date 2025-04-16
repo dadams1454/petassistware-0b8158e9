@@ -4,11 +4,16 @@
  */
 import { 
   WeightUnit, 
-  HealthRecordTypeEnum,
+  HealthRecord,
+  Dog,
+  Puppy,
+  AnimalGender,
+  DogStatus,
+  PuppyStatus,
   AppetiteEnum,
   EnergyEnum,
   StoolConsistencyEnum
-} from '@/types';
+} from '@/types/unified';
 
 /**
  * Type guard for WeightUnit
@@ -18,10 +23,56 @@ export function isWeightUnit(value: any): value is WeightUnit {
 }
 
 /**
- * Type guard for HealthRecordTypeEnum
+ * Type guard for AnimalGender
  */
-export function isHealthRecordType(value: any): value is HealthRecordTypeEnum {
-  return Object.values(HealthRecordTypeEnum).includes(value);
+export function isAnimalGender(value: any): value is AnimalGender {
+  return Object.values(AnimalGender).includes(value as AnimalGender);
+}
+
+/**
+ * Type guard for DogStatus
+ */
+export function isDogStatus(value: any): value is DogStatus {
+  return Object.values(DogStatus).includes(value as DogStatus);
+}
+
+/**
+ * Type guard for PuppyStatus
+ */
+export function isPuppyStatus(value: any): value is PuppyStatus {
+  return Object.values(PuppyStatus).includes(value as PuppyStatus);
+}
+
+/**
+ * Type guard for Dog
+ */
+export function isDog(animal: any): animal is Dog {
+  return animal && 
+    typeof animal === 'object' && 
+    'id' in animal && 
+    'name' in animal && 
+    'breed' in animal;
+}
+
+/**
+ * Type guard for Puppy
+ */
+export function isPuppy(animal: any): animal is Puppy {
+  return animal && 
+    typeof animal === 'object' && 
+    'id' in animal && 
+    'name' in animal && 
+    'litter_id' in animal;
+}
+
+/**
+ * Type guard for HealthRecord
+ */
+export function isHealthRecord(record: any): record is HealthRecord {
+  return record && 
+    typeof record === 'object' && 
+    'id' in record && 
+    'record_type' in record;
 }
 
 /**
