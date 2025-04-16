@@ -1,20 +1,10 @@
 
 /**
  * Health Module - Provides functionality for tracking and managing health records
- * 
- * This module centralizes all health-related functionality to ensure consistency
- * across the application.
  */
 
 // Export all types from the health module
-export * from './types';
-
-// Export hooks with proper error handling
-export * from './hooks/useHealthRecords';
-export * from './hooks/useWeightRecords';
-
-// Export utility functions
-export * from './utils/healthRecordUtils';
+export * from './types/medicationTypes';
 
 // Re-export constants and enums for easier access
 export {
@@ -25,3 +15,12 @@ export {
   stringToHealthRecordType,
   getHealthRecordTypeDisplay
 } from '@/types/health-enums';
+
+// Re-export medication utilities
+export {
+  MedicationFrequencyConstants,
+  ExtendedMedicationStatusEnum,
+  getStatusLabel,
+  processMedicationLogs,
+  calculateMedicationStatus
+} from '@/utils/medicationUtils';

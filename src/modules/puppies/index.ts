@@ -1,23 +1,13 @@
 
 /**
- * Main exports for the puppies module
+ * Puppies Module - Central location for puppy management functionality
  */
 
-// Re-export types
-export type {
-  PuppyWithAge,
-  PuppyAgeGroup,
-  PuppyAgeGroupInfo,
-  PuppyAgeGroupData,
-  PuppyManagementStats,
-  PuppyTrackingOptions
-} from './types';
+// Export all types
+export * from './types';
 
-// Re-export hooks
-export { usePuppyTracking } from './hooks/usePuppyTracking';
-export { usePuppyData } from './hooks/usePuppyData';
-export { usePuppyAgeGroups } from './hooks/usePuppyAgeGroups';
-export { usePuppyStats } from './hooks/usePuppyStats';
+// Export hooks
+export * from './hooks/usePuppyTracking';
 
-// Re-export utilities
-export { calculateAgeInDays, calculateAgeInWeeks } from './utils/puppyAgeCalculator';
+// Export mock data (only in development)
+export * from './mockData/puppies';

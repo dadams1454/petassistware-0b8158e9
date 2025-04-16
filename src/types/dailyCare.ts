@@ -1,106 +1,90 @@
 
 /**
- * Daily care type definitions
+ * Daily care-related types
  */
 
-/**
- * Daily care log entry
- */
+// Daily care log entry
 export interface DailyCarelog {
   id: string;
   dog_id: string;
-  category: string;
-  task_name: string;
-  notes?: string;
-  created_by: string;
   timestamp: string;
+  category: string;
+  task: string;
+  notes?: string;
+  flags?: string[];
+  completed_by?: string;
+  metadata?: Record<string, any>;
   created_at: string;
   updated_at?: string;
 }
 
-/**
- * Care log form data
- */
+// Form data for creating a care log
 export interface CareLogFormData {
   dog_id: string;
+  timestamp: string | Date;
   category: string;
-  task_name: string;
+  task: string;
   notes?: string;
-  timestamp?: string;
+  flags?: string[];
+  metadata?: Record<string, any>;
 }
 
-/**
- * Care task preset
- */
+// Preset care tasks
 export interface CareTaskPreset {
   id: string;
   category: string;
   task_name: string;
+  is_default: boolean;
+  breeder_id?: string;
   created_at: string;
-  created_by: string;
+  updated_at?: string;
 }
 
-/**
- * Dog flag for special status or conditions
- */
+// Care status for a dog
+export interface DogCareStatus {
+  id: string;
+  dog_id: string;
+  name: string;
+  dog_name?: string;
+  status: string;
+  last_updated: string;
+  flags?: string[];
+}
+
+// Flag for marking special conditions for a dog
 export interface DogFlag {
-  type: 'in_heat' | 'incompatible' | 'special_attention' | 'other';
-  value?: string;
-  incompatible_with?: string[];
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
 }
 
-/**
- * Dog care observation
- */
+// Observation made during care
 export interface DogCareObservation {
   id: string;
   dog_id: string;
-  type: string;
-  value: string;
+  category: string;
+  observation_type: string;
   timestamp: string;
-  created_by: string;
+  notes?: string;
+  severity?: 'low' | 'medium' | 'high';
+  resolved: boolean;
+  resolved_at?: string;
   created_at: string;
+  updated_at?: string;
 }
 
-/**
- * Care schedule item
- */
+// Scheduled care item
 export interface CareScheduleItem {
   id: string;
-  dog_id: string;
+  dog_id?: string;
+  puppy_id?: string;
+  title: string;
   category: string;
-  task_name: string;
-  frequency: string;
-  due_date: string;
+  scheduled_time: string;
+  frequency?: string;
   completed: boolean;
-  completed_date?: string;
+  completed_at?: string;
   created_at: string;
-}
-
-/**
- * Dog care status
- */
-export interface DogCareStatus {
-  dog_id: string;
-  dog_name: string;
-  breed?: string;
-  sex?: string;
-  color?: string;
-  dog_photo?: string;
-  birthdate?: string;
-  requires_special_handling?: boolean;
-  potty_alert_threshold?: number;
-  max_time_between_breaks?: number;
-  last_potty_time?: string | null;
-  last_feeding_time?: string | null;
-  last_medication_time?: string | null;
-  flags: DogFlag[];
-  created_at: string;
-  updated_at: string;
-  last_care?: {
-    category: string;
-    task_name: string;
-    timestamp: string;
-    notes?: string;
-  } | null;
+  updated_at?: string;
 }

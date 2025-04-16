@@ -1,121 +1,84 @@
 
 import React from 'react';
-import { format, parseISO, differenceInDays } from 'date-fns';
-import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatusEnum, isDetailedStatus } from '@/types/medication-status';
-import { getStatusLabel } from '@/utils/medicationUtils';
+import { Badge } from '@/components/ui/badge';
+import { 
+  MedicationStatusEnum, 
+  MedicationStatusResult, 
+  isDetailedStatus,
+  getStatusString
+} from '@/types/medication-status';
+import { getStatusLabel, ExtendedMedicationStatusEnum } from '@/utils/medicationUtils';
 
-// Define the props interface
 interface MedicationStatusProps {
-  status: string | {
-    status: string;
-    message: string;
-    nextDue?: string | Date | null;
-    daysOverdue?: number;
-    daysUntilDue?: number;
-  } | null;
-  nextDue?: string | Date | null;
-  showIcon?: boolean;
+  status: MedicationStatusResult;
   showLabel?: boolean;
-  showNextDue?: boolean;
+  className?: string;
 }
 
 const MedicationStatus: React.FC<MedicationStatusProps> = ({
   status,
-  nextDue,
-  showIcon = true,
   showLabel = true,
-  showNextDue = false
+  className = '',
 }) => {
-  if (!status) return null;
-  
-  // Helper function to calculate time until next dose
-  const getTimeUntilNextDose = (date: Date | string) => {
-    const nextDueDate = typeof date === 'string' ? parseISO(date) : date;
-    const today = new Date();
-    
-    const days = differenceInDays(nextDueDate, today);
-    
-    if (days === 0) {
-      return 'Today';
-    } else if (days === 1) {
-      return 'Tomorrow';
-    } else if (days > 1) {
-      return `In ${days} days`;
-    } else {
-      return `${Math.abs(days)} days ago`;
-    }
-  };
-  
-  // Convert different status types to a standard string
-  let statusValue: string = 'unknown';
-  let statusObject: any = null;
-  let nextDueDate: string | Date | null = nextDue;
-  
-  if (typeof status === 'object' && status !== null && 'status' in status) {
-    // Handle complex status object
-    statusObject = status;
-    statusValue = statusObject.status;
-    if (!nextDueDate && statusObject.nextDue) {
-      nextDueDate = statusObject.nextDue;
-    }
-  } else if (typeof status === 'string') {
-    // Handle status as string
-    statusValue = status;
-    
-    // Map legacy string status if needed
-    if (!Object.values(MedicationStatusEnum).includes(statusValue as any)) {
-      switch (status.toLowerCase()) {
-        case 'active': statusValue = MedicationStatusEnum.DUE; break;
-        case 'overdue': statusValue = MedicationStatusEnum.OVERDUE; break;
-        case 'discontinued': statusValue = MedicationStatusEnum.SKIPPED; break;
-        case 'upcoming': 
-        case 'scheduled': statusValue = MedicationStatusEnum.UPCOMING; break;
-        case 'not_started': statusValue = MedicationStatusEnum.DUE; break;
-        case 'completed': statusValue = MedicationStatusEnum.COMPLETED; break;
-        default: statusValue = MedicationStatusEnum.UNKNOWN;
-      }
-    }
-  }
-  
-  // Get status label and color
-  const { statusLabel, statusColor } = getStatusLabel(statusValue.toString());
-  
-  // Determine the icon based on status
-  const getIcon = () => {
+  const statusValue = getStatusString(status);
+  const label = getStatusLabel(status);
+  const message = isDetailedStatus(status) ? status.message : '';
+
+  const getVariant = () => {
     switch (statusValue) {
       case MedicationStatusEnum.DUE:
-        return <Check className="h-4 w-4 text-green-500" />;
+        return 'warning';
       case MedicationStatusEnum.OVERDUE:
-      case MedicationStatusEnum.SKIPPED:
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case MedicationStatusEnum.UPCOMING:
-        return <Calendar className="h-4 w-4 text-blue-500" />;
+        return 'destructive';
+      case MedicationStatusEnum.ADMINISTERED:
+        return 'success';
+      case MedicationStatusEnum.PAUSED:
+        return 'outline';
       case MedicationStatusEnum.COMPLETED:
-        return <Check className="h-4 w-4 text-green-500" />;
+        return 'default';
+      case MedicationStatusEnum.PENDING:
+        return 'secondary';
+      case MedicationStatusEnum.UPCOMING:
+        return 'info';
+      case ExtendedMedicationStatusEnum.SKIPPED:
+        return 'outline';
       default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
+        return 'secondary';
     }
   };
-  
+
+  const getClassNames = () => {
+    const baseClass = className || '';
+    
+    switch (statusValue) {
+      case MedicationStatusEnum.DUE:
+        return `${baseClass} bg-yellow-100 text-yellow-800 hover:bg-yellow-200`;
+      case MedicationStatusEnum.OVERDUE:
+        return `${baseClass} bg-red-100 text-red-800 hover:bg-red-200`;
+      case MedicationStatusEnum.ADMINISTERED:
+        return `${baseClass} bg-green-100 text-green-800 hover:bg-green-200`;
+      case MedicationStatusEnum.PAUSED:
+        return `${baseClass} bg-gray-100 text-gray-800 hover:bg-gray-200`;
+      case MedicationStatusEnum.COMPLETED:
+        return `${baseClass} bg-blue-100 text-blue-800 hover:bg-blue-200`;
+      case MedicationStatusEnum.PENDING:
+        return `${baseClass} bg-purple-100 text-purple-800 hover:bg-purple-200`;
+      case MedicationStatusEnum.UPCOMING:
+        return `${baseClass} bg-indigo-100 text-indigo-800 hover:bg-indigo-200`;
+      case ExtendedMedicationStatusEnum.SKIPPED:
+        return `${baseClass} bg-gray-100 text-gray-800 border border-gray-300`;
+      case ExtendedMedicationStatusEnum.UNKNOWN:
+      default:
+        return `${baseClass} bg-gray-100 text-gray-800`;
+    }
+  };
+
   return (
-    <div className="flex items-center space-x-2">
-      {showIcon && getIcon()}
-      
-      {showLabel && (
-        <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor}`}>
-          {statusLabel}
-        </span>
-      )}
-      
-      {showNextDue && nextDueDate && (
-        <span className="text-xs text-muted-foreground">
-          {typeof nextDueDate === 'string' ? 
-            getTimeUntilNextDose(parseISO(nextDueDate)) : 
-            getTimeUntilNextDose(nextDueDate)}
-        </span>
-      )}
-    </div>
+    <Badge variant={getVariant()} className={getClassNames()}>
+      {showLabel ? label : ''}
+      {showLabel && message ? ': ' : ''}
+      {message}
+    </Badge>
   );
 };
 

@@ -1,67 +1,67 @@
 
 import React from 'react';
-import { User } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { DogFlag } from '@/types/dailyCare';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface DogAvatarProps {
-  photoUrl?: string;
   name: string;
+  photo?: string;
+  status?: string;
   size?: 'sm' | 'md' | 'lg';
-  flags?: DogFlag[];
-  dog?: any;
-  onClick?: (e: React.MouseEvent) => void;
 }
 
-const DogAvatar: React.FC<DogAvatarProps> = ({ 
-  photoUrl,
+const DogAvatar: React.FC<DogAvatarProps> = ({
   name,
+  photo,
+  status,
   size = 'md',
-  flags = [],
-  dog,
-  onClick
 }) => {
-  const sizeClasses = {
-    sm: 'h-8 w-8 text-xs',
-    md: 'h-10 w-10 text-sm',
-    lg: 'h-12 w-12 text-base'
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
   };
-  
-  // Check if dog has any flags
-  const inHeatFlag = flags.find(flag => flag.type === 'in_heat');
-  const pregnantFlag = flags.find(flag => flag.type === 'pregnant');
-  
-  // Determine border color based on flags
-  let borderClass = '';
-  
-  if (inHeatFlag) {
-    borderClass = 'ring-2 ring-red-500 dark:ring-red-400';
-  } else if (pregnantFlag) {
-    borderClass = 'ring-2 ring-purple-500 dark:ring-purple-400';
-  }
-  
+
+  const getSizeClass = () => {
+    switch (size) {
+      case 'sm':
+        return 'h-8 w-8';
+      case 'lg':
+        return 'h-12 w-12';
+      case 'md':
+      default:
+        return 'h-10 w-10';
+    }
+  };
+
+  const getStatusClass = () => {
+    if (!status) return '';
+
+    switch (status.toLowerCase()) {
+      case 'in_heat':
+        return 'ring-2 ring-red-500';
+      case 'pregnant':
+        return 'ring-2 ring-purple-500';
+      case 'special_attention':
+        return 'ring-2 ring-yellow-500';
+      case 'incompatible':
+        return 'ring-2 ring-orange-500';
+      case 'other':
+        return 'ring-2 ring-blue-500';
+      default:
+        return '';
+    }
+  };
+
   return (
-    <div 
-      className={cn(
-        'relative rounded-full bg-muted flex items-center justify-center overflow-hidden',
-        sizeClasses[size],
-        borderClass
-      )}
-      onClick={onClick}
-    >
-      {photoUrl ? (
-        <img 
-          src={photoUrl} 
-          alt={name} 
-          className="object-cover w-full h-full"
-        />
-      ) : (
-        <User className={cn(
-          'text-muted-foreground',
-          size === 'sm' ? 'h-4 w-4' : size === 'md' ? 'h-5 w-5' : 'h-6 w-6'
-        )} />
-      )}
-    </div>
+    <Avatar className={`${getSizeClass()} ${getStatusClass()}`}>
+      {photo && <AvatarImage src={photo} alt={name} />}
+      <AvatarFallback className="bg-primary/10 text-primary">
+        {getInitials(name)}
+      </AvatarFallback>
+    </Avatar>
   );
 };
 

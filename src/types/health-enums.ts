@@ -1,50 +1,57 @@
 
-// Health Record Types
-export type HealthRecordType = 
-  | 'EXAMINATION'
-  | 'VACCINATION'
-  | 'MEDICATION'
-  | 'SURGERY'
-  | 'INJURY'
-  | 'PARASITE_TREATMENT'
-  | 'LAB_WORK'
-  | 'X_RAY'
-  | 'DENTAL'
-  | 'ALLERGY'
-  | 'OTHER';
+/**
+ * Health record type definitions and enums
+ */
 
-export const HealthRecordTypeEnum: Record<string, HealthRecordType> = {
-  EXAMINATION: 'EXAMINATION',
-  VACCINATION: 'VACCINATION',
-  MEDICATION: 'MEDICATION',
-  SURGERY: 'SURGERY',
-  INJURY: 'INJURY',
-  PARASITE_TREATMENT: 'PARASITE_TREATMENT',
-  LAB_WORK: 'LAB_WORK',
-  X_RAY: 'X_RAY',
-  DENTAL: 'DENTAL',
-  ALLERGY: 'ALLERGY',
-  OTHER: 'OTHER'
-};
-
-export function stringToHealthRecordType(value: string): HealthRecordType {
-  // Try to match directly first
-  if (Object.values(HealthRecordTypeEnum).includes(value as HealthRecordType)) {
-    return value as HealthRecordType;
-  }
-  
-  // Try to match by normalizing case
-  const normalizedValue = value.toUpperCase();
-  const match = Object.keys(HealthRecordTypeEnum).find(key => key === normalizedValue);
-  
-  if (match) {
-    return HealthRecordTypeEnum[match];
-  }
-  
-  // Default fallback
-  return HealthRecordTypeEnum.OTHER;
+// Health record types enum
+export enum HealthRecordTypeEnum {
+  EXAMINATION = 'examination',
+  VACCINATION = 'vaccination',
+  MEDICATION = 'medication',
+  SURGERY = 'surgery',
+  INJURY = 'injury',
+  ALLERGY = 'allergy',
+  LAB_RESULT = 'lab_result',
+  PARASITE_TREATMENT = 'parasite_treatment',
+  DENTAL = 'dental',
+  OTHER = 'other'
 }
 
+// Type for health record type (string literal type)
+export type HealthRecordType = 
+  | 'examination'
+  | 'vaccination'
+  | 'medication'
+  | 'surgery'
+  | 'injury'
+  | 'allergy'
+  | 'lab_result'
+  | 'parasite_treatment'
+  | 'dental'
+  | 'other';
+
+// Convert string to health record type
+export function stringToHealthRecordType(value: string): HealthRecordType {
+  const normalized = value.toLowerCase();
+  
+  switch (normalized) {
+    case HealthRecordTypeEnum.EXAMINATION:
+    case HealthRecordTypeEnum.VACCINATION:
+    case HealthRecordTypeEnum.MEDICATION:
+    case HealthRecordTypeEnum.SURGERY:
+    case HealthRecordTypeEnum.INJURY:
+    case HealthRecordTypeEnum.ALLERGY:
+    case HealthRecordTypeEnum.LAB_RESULT:
+    case HealthRecordTypeEnum.PARASITE_TREATMENT:
+    case HealthRecordTypeEnum.DENTAL:
+    case HealthRecordTypeEnum.OTHER:
+      return normalized as HealthRecordType;
+    default:
+      return 'other';
+  }
+}
+
+// Get display name for health record type
 export function getHealthRecordTypeDisplay(type: HealthRecordType): string {
   switch (type) {
     case HealthRecordTypeEnum.EXAMINATION:
@@ -57,16 +64,14 @@ export function getHealthRecordTypeDisplay(type: HealthRecordType): string {
       return 'Surgery';
     case HealthRecordTypeEnum.INJURY:
       return 'Injury';
-    case HealthRecordTypeEnum.PARASITE_TREATMENT:
-      return 'Parasite Treatment';
-    case HealthRecordTypeEnum.LAB_WORK:
-      return 'Lab Work';
-    case HealthRecordTypeEnum.X_RAY:
-      return 'X-Ray';
-    case HealthRecordTypeEnum.DENTAL:
-      return 'Dental';
     case HealthRecordTypeEnum.ALLERGY:
       return 'Allergy';
+    case HealthRecordTypeEnum.LAB_RESULT:
+      return 'Lab Result';
+    case HealthRecordTypeEnum.PARASITE_TREATMENT:
+      return 'Parasite Treatment';
+    case HealthRecordTypeEnum.DENTAL:
+      return 'Dental';
     case HealthRecordTypeEnum.OTHER:
       return 'Other';
     default:
@@ -74,41 +79,57 @@ export function getHealthRecordTypeDisplay(type: HealthRecordType): string {
   }
 }
 
-// Re-export types from medication-status.ts
-export type { MedicationStatusResult, MedicationStatusDetail } from './medication-status';
-export { MedicationStatusEnum } from './medication-status';
+// Medication status result interface for detailed status information
+export interface MedicationStatusResult {
+  status: string;
+  message?: string;
+  daysOverdue?: number;
+  daysUntilDue?: number;
+  nextDue?: string | Date | null;
+}
 
-// Appetite Level
+// More detailed version of medication status
+export interface MedicationStatusDetail {
+  status: string;
+  message?: string;
+  daysOverdue?: number;
+  daysUntilDue?: number;
+  nextDue?: string | Date | null;
+}
+
+// Appetite level enum
+export enum AppetiteEnum {
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  FAIR = 'fair',
+  POOR = 'poor',
+  NONE = 'none'
+}
+
+// Appetite level type
 export type AppetiteLevel = 'excellent' | 'good' | 'fair' | 'poor' | 'none';
 
-export const AppetiteEnum = {
-  EXCELLENT: 'excellent',
-  GOOD: 'good',
-  FAIR: 'fair',
-  POOR: 'poor',
-  NONE: 'none'
-} as const;
+// Energy level enum
+export enum EnergyEnum {
+  VERY_HIGH = 'very_high',
+  HIGH = 'high',
+  NORMAL = 'normal',
+  LOW = 'low',
+  VERY_LOW = 'very_low'
+}
 
-// Energy Level
-export type EnergyLevel = 'hyperactive' | 'high' | 'normal' | 'low' | 'lethargic';
+// Energy level type
+export type EnergyLevel = 'very_high' | 'high' | 'normal' | 'low' | 'very_low';
 
-export const EnergyEnum = {
-  HYPERACTIVE: 'hyperactive',
-  HIGH: 'high',
-  NORMAL: 'normal',
-  LOW: 'low',
-  LETHARGIC: 'lethargic'
-} as const;
+// Stool consistency enum
+export enum StoolConsistencyEnum {
+  NORMAL = 'normal',
+  SOFT = 'soft',
+  LOOSE = 'loose',
+  WATERY = 'watery',
+  HARD = 'hard',
+  NONE = 'none'
+}
 
-// Stool Consistency
-export type StoolConsistency = 'normal' | 'soft' | 'loose' | 'watery' | 'hard' | 'bloody' | 'mucus';
-
-export const StoolConsistencyEnum = {
-  NORMAL: 'normal',
-  SOFT: 'soft',
-  LOOSE: 'loose',
-  WATERY: 'watery',
-  HARD: 'hard',
-  BLOODY: 'bloody',
-  MUCUS: 'mucus'
-} as const;
+// Stool consistency type
+export type StoolConsistency = 'normal' | 'soft' | 'loose' | 'watery' | 'hard' | 'none';

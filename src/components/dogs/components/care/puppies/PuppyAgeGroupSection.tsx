@@ -1,71 +1,65 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PuppyAgeGroup, PuppyWithAge } from '@/modules/puppies/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PuppyCard from './PuppyCard';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { PuppyWithAge } from '@/modules/puppies/types';
 
 interface PuppyAgeGroupSectionProps {
-  ageGroup: PuppyAgeGroup;
+  name: string;
   puppies: PuppyWithAge[];
-  onRefresh?: () => void;
+  description?: string;
+  onPuppyClick?: (puppyId: string) => void;
+  emptyState?: React.ReactNode;
 }
 
 const PuppyAgeGroupSection: React.FC<PuppyAgeGroupSectionProps> = ({
-  ageGroup,
+  name,
   puppies,
-  onRefresh
+  description,
+  onPuppyClick,
+  emptyState,
 }) => {
-  const navigate = useNavigate();
-  
-  const handleViewAll = () => {
-    navigate(`/puppies/age-group/${ageGroup.id}`);
-  };
-  
+  if (!puppies || puppies.length === 0) {
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">
+            {name}
+          </CardTitle>
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        </CardHeader>
+        <CardContent>
+          {emptyState || (
+            <div className="text-center py-4 text-muted-foreground">
+              No puppies in this age group
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className={cn("relative overflow-hidden border-t-4", `border-t-[${ageGroup.color}]`)}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">
-          {ageGroup.name}
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">
+          {name}
+          <span className="ml-2 text-sm font-normal text-muted-foreground">
+            ({puppies.length} {puppies.length === 1 ? 'puppy' : 'puppies'})
+          </span>
         </CardTitle>
-        <CardDescription>
-          {ageGroup.description}
-        </CardDescription>
+        {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </CardHeader>
       <CardContent>
-        {puppies.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            No puppies in this age group
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {puppies.slice(0, 4).map((puppy) => (
-              <PuppyCard
-                key={puppy.id}
-                puppy={puppy}
-                ageGroup={ageGroup}
-                onRefresh={onRefresh}
-              />
-            ))}
-          </div>
-        )}
-        
-        {puppies.length > 4 && (
-          <div className="mt-4 flex justify-end">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs" 
-              onClick={handleViewAll}
-            >
-              View all {puppies.length} puppies
-              <ChevronRight className="ml-1 h-3 w-3" />
-            </Button>
-          </div>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {puppies.map((puppy) => (
+            <PuppyCard
+              key={puppy.id}
+              puppy={puppy}
+              onClick={() => onPuppyClick && onPuppyClick(puppy.id)}
+            />
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
