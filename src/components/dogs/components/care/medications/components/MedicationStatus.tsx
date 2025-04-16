@@ -2,7 +2,7 @@
 import React from 'react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { Check, AlertTriangle, Clock, Calendar } from 'lucide-react';
-import { MedicationStatusEnum } from '@/types/health-enums';
+import { MedicationStatusEnum, isDetailedStatus } from '@/types/medication-status';
 import { getStatusLabel } from '@/utils/medicationUtils';
 
 // Define the props interface
@@ -64,16 +64,16 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
     statusValue = status;
     
     // Map legacy string status if needed
-    if (!Object.values(MedicationStatusEnum).includes(statusValue)) {
+    if (!Object.values(MedicationStatusEnum).includes(statusValue as any)) {
       switch (status.toLowerCase()) {
-        case 'active': statusValue = 'due'; break;
-        case 'overdue': statusValue = 'overdue'; break;
-        case 'discontinued': statusValue = 'skipped'; break;
+        case 'active': statusValue = MedicationStatusEnum.DUE; break;
+        case 'overdue': statusValue = MedicationStatusEnum.OVERDUE; break;
+        case 'discontinued': statusValue = MedicationStatusEnum.SKIPPED; break;
         case 'upcoming': 
-        case 'scheduled': statusValue = 'upcoming'; break;
-        case 'not_started': statusValue = 'due'; break;
-        case 'completed': statusValue = 'completed'; break;
-        default: statusValue = 'unknown';
+        case 'scheduled': statusValue = MedicationStatusEnum.UPCOMING; break;
+        case 'not_started': statusValue = MedicationStatusEnum.DUE; break;
+        case 'completed': statusValue = MedicationStatusEnum.COMPLETED; break;
+        default: statusValue = MedicationStatusEnum.UNKNOWN;
       }
     }
   }
@@ -84,14 +84,14 @@ const MedicationStatus: React.FC<MedicationStatusProps> = ({
   // Determine the icon based on status
   const getIcon = () => {
     switch (statusValue) {
-      case 'due':
+      case MedicationStatusEnum.DUE:
         return <Check className="h-4 w-4 text-green-500" />;
-      case 'overdue':
-      case 'skipped':
+      case MedicationStatusEnum.OVERDUE:
+      case MedicationStatusEnum.SKIPPED:
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'upcoming':
+      case MedicationStatusEnum.UPCOMING:
         return <Calendar className="h-4 w-4 text-blue-500" />;
-      case 'completed':
+      case MedicationStatusEnum.COMPLETED:
         return <Check className="h-4 w-4 text-green-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;

@@ -74,19 +74,9 @@ export function getHealthRecordTypeDisplay(type: HealthRecordType): string {
   }
 }
 
-// Medication Status
-export type MedicationStatusResult = 'due' | 'overdue' | 'upcoming' | 'completed' | 'skipped' | 'unknown';
-
-export const MedicationStatusEnum = {
-  DUE: 'due',
-  OVERDUE: 'overdue',
-  UPCOMING: 'upcoming',
-  COMPLETED: 'completed',
-  SKIPPED: 'skipped',
-  UNKNOWN: 'unknown'
-} as const;
-
-export type MedicationStatus = typeof MedicationStatusEnum[keyof typeof MedicationStatusEnum];
+// Re-export types from medication-status.ts
+export type { MedicationStatusResult, MedicationStatusDetail } from './medication-status';
+export { MedicationStatusEnum } from './medication-status';
 
 // Appetite Level
 export type AppetiteLevel = 'excellent' | 'good' | 'fair' | 'poor' | 'none';

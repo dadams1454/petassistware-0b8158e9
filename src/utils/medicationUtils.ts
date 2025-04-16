@@ -1,5 +1,5 @@
 
-import { MedicationStatusEnum } from '@/types/health';
+import { MedicationStatusEnum } from '@/types/medication-status';
 import { format, parseISO, isAfter, isBefore, differenceInDays } from 'date-fns';
 
 // Constants for medication frequency
@@ -45,15 +45,86 @@ export type MedicationStatus = {
 // Function to get status label and color for UI
 export const getStatusLabel = (status: string) => {
   const statusMap: Record<string, { statusLabel: string; statusColor: string }> = {
-    due: { statusLabel: 'Due Today', statusColor: 'bg-green-100 text-green-800' },
-    overdue: { statusLabel: 'Overdue', statusColor: 'bg-red-100 text-red-800' },
-    upcoming: { statusLabel: 'Upcoming', statusColor: 'bg-blue-100 text-blue-800' },
-    completed: { statusLabel: 'Completed', statusColor: 'bg-green-100 text-green-800' },
-    skipped: { statusLabel: 'Skipped', statusColor: 'bg-amber-100 text-amber-800' },
-    unknown: { statusLabel: 'Unknown', statusColor: 'bg-gray-100 text-gray-800' }
+    [MedicationStatusEnum.DUE]: { 
+      statusLabel: 'Due Today', 
+      statusColor: 'bg-green-100 text-green-800' 
+    },
+    [MedicationStatusEnum.OVERDUE]: { 
+      statusLabel: 'Overdue', 
+      statusColor: 'bg-red-100 text-red-800' 
+    },
+    [MedicationStatusEnum.UPCOMING]: { 
+      statusLabel: 'Upcoming', 
+      statusColor: 'bg-blue-100 text-blue-800' 
+    },
+    [MedicationStatusEnum.COMPLETED]: { 
+      statusLabel: 'Completed', 
+      statusColor: 'bg-green-100 text-green-800' 
+    },
+    [MedicationStatusEnum.SKIPPED]: { 
+      statusLabel: 'Skipped', 
+      statusColor: 'bg-amber-100 text-amber-800' 
+    },
+    [MedicationStatusEnum.UNKNOWN]: { 
+      statusLabel: 'Unknown', 
+      statusColor: 'bg-gray-100 text-gray-800' 
+    },
+    [MedicationStatusEnum.ACTIVE]: { 
+      statusLabel: 'Active', 
+      statusColor: 'bg-green-100 text-green-800' 
+    },
+    [MedicationStatusEnum.PAUSED]: { 
+      statusLabel: 'Paused', 
+      statusColor: 'bg-amber-100 text-amber-800' 
+    },
+    [MedicationStatusEnum.STOPPED]: { 
+      statusLabel: 'Stopped', 
+      statusColor: 'bg-red-100 text-red-800' 
+    },
+    [MedicationStatusEnum.SCHEDULED]: { 
+      statusLabel: 'Scheduled', 
+      statusColor: 'bg-blue-100 text-blue-800' 
+    },
+    [MedicationStatusEnum.NOT_STARTED]: { 
+      statusLabel: 'Not Started', 
+      statusColor: 'bg-gray-100 text-gray-800' 
+    },
+    [MedicationStatusEnum.DISCONTINUED]: { 
+      statusLabel: 'Discontinued', 
+      statusColor: 'bg-red-100 text-red-800' 
+    },
+    // Fallbacks for string values
+    'due': { 
+      statusLabel: 'Due Today', 
+      statusColor: 'bg-green-100 text-green-800' 
+    },
+    'overdue': { 
+      statusLabel: 'Overdue', 
+      statusColor: 'bg-red-100 text-red-800' 
+    },
+    'upcoming': { 
+      statusLabel: 'Upcoming', 
+      statusColor: 'bg-blue-100 text-blue-800' 
+    },
+    'completed': { 
+      statusLabel: 'Completed', 
+      statusColor: 'bg-green-100 text-green-800' 
+    },
+    'skipped': { 
+      statusLabel: 'Skipped', 
+      statusColor: 'bg-amber-100 text-amber-800' 
+    },
+    'unknown': { 
+      statusLabel: 'Unknown', 
+      statusColor: 'bg-gray-100 text-gray-800' 
+    }
   };
 
-  return statusMap[status.toLowerCase()] || statusMap.unknown;
+  // Default fallback
+  return statusMap[status.toLowerCase()] || { 
+    statusLabel: 'Unknown', 
+    statusColor: 'bg-gray-100 text-gray-800' 
+  };
 };
 
 export interface PetMedication {

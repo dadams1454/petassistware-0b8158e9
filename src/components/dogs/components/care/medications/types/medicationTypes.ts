@@ -1,5 +1,6 @@
 
 import { Medication } from '@/types/health';
+import { MedicationStatusResult } from '@/types/medication-status';
 
 // Props for the MedicationsLog component
 export interface MedicationsLogProps {
@@ -25,9 +26,11 @@ export interface MedicationInfo {
   frequency?: string;
   start_date?: string;
   end_date?: string;
-  status?: string | any;
+  status?: MedicationStatusResult;
   lastAdministered?: string;
   notes?: string;
+  nextDue?: string | Date | null;
+  message?: string;
 }
 
 // Props for LastMedicationInfo component

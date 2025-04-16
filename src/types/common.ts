@@ -19,18 +19,23 @@ export type { WeightRecord, GrowthStats } from './weight';
 // Re-export health enums
 export {
   HealthRecordTypeEnum,
-  MedicationStatusEnum,
-  AppetiteEnum,
-  EnergyEnum,
-  StoolConsistencyEnum,
   stringToHealthRecordType,
   getHealthRecordTypeDisplay
 } from './health-enums';
+
+// Re-export medication status from medication-status
+export { 
+  MedicationStatusEnum,
+  isDetailedStatus,
+  getStatusString,
+  getStatusMessage
+} from './medication-status';
 
 // Re-export health types
 export type {
   HealthRecordType,
   MedicationStatusResult,
+  MedicationStatusDetail,
   AppetiteLevel,
   EnergyLevel,
   StoolConsistency
