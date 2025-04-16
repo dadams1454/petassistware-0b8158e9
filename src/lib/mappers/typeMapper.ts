@@ -1,8 +1,8 @@
-
 import { Dog as CoreDog, DogGender, DogStatus } from '@/types/dog';
 import { Puppy as CorePuppy } from '@/types/puppy';
 import { WeightRecord as CoreWeightRecord } from '@/types/weight';
 import { standardizeWeightUnit, WeightUnit } from '@/types/weight-units';
+import { HeatCycle, HeatIntensityType, stringToHeatIntensityType } from '@/types/heat-cycles';
 
 /**
  * Maps between different Dog type definitions in the codebase 
@@ -193,5 +193,41 @@ export function mapToModuleDog(dog: CoreDog): any {
     photo_url: dog.photo_url,
     weight: dog.weight,
     weight_unit: dog.weight_unit
+  };
+}
+
+/**
+ * Maps any heat cycle object to the standardized HeatCycle type
+ */
+export function mapToHeatCycle(cycle: any): HeatCycle {
+  if (!cycle) return null as unknown as HeatCycle;
+  
+  // Ensure the intensity is a valid HeatIntensityType
+  const intensityValue = stringToHeatIntensityType(cycle.intensity || 'none');
+  
+  // Convert symptoms to array if needed
+  let symptoms: string[] = [];
+  if (cycle.symptoms) {
+    if (Array.isArray(cycle.symptoms)) {
+      symptoms = cycle.symptoms;
+    } else if (typeof cycle.symptoms === 'string') {
+      symptoms = cycle.symptoms.split(',').map(s => s.trim());
+    }
+  }
+  
+  return {
+    id: cycle.id || '',
+    dog_id: cycle.dog_id || '',
+    cycle_number: cycle.cycle_number || 1,
+    start_date: cycle.start_date || '',
+    end_date: cycle.end_date || undefined,
+    cycle_length: cycle.cycle_length || undefined,
+    intensity: intensityValue,
+    symptoms: symptoms,
+    fertility_indicators: cycle.fertility_indicators || undefined,
+    notes: cycle.notes || '',
+    recorded_by: cycle.recorded_by || undefined,
+    created_at: cycle.created_at || new Date().toISOString(),
+    updated_at: cycle.updated_at || undefined
   };
 }

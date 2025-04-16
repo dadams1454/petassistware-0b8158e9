@@ -16,6 +16,27 @@ export {
   getWeightUnitInfo
 } from './weight-units';
 
+// Heat cycle types for compatibility
+export type { 
+  HeatIntensityType, 
+  HeatCycle,
+  HeatStage 
+} from './heat-cycles';
+
+export { 
+  HeatIntensity, 
+  HeatIntensityValues,
+  mapHeatIntensityToType,
+  stringToHeatIntensityType,
+  mapHeatIntensityTypeToDisplay
+} from './heat-cycles';
+
+// Export additional type guards
+export {
+  isHeatIntensityType,
+  isHeatCycle
+} from '../utils/typeGuards';
+
 // Legacy health-related exports
 export type { 
   HealthRecord,
@@ -97,3 +118,4 @@ export {
   isValidISODateString,
   isValidUUID
 } from '../utils/typeGuards';
+

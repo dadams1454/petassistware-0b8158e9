@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays } from 'date-fns';
-import { HeatCycle, HeatIntensityType, HeatIntensityValues } from '@/types';
+import { HeatCycle, HeatIntensityType, HeatIntensityValues, mapHeatIntensityToType } from '@/types';
 
 // Helper to ensure intensity is a valid HeatIntensity value
 const validateHeatIntensity = (intensity: string | null): HeatIntensityType => {
@@ -170,3 +170,4 @@ export const useHeatCycles = (dogId: string) => {
     updateHeatCycle: updateHeatCycle.mutateAsync
   };
 };
+

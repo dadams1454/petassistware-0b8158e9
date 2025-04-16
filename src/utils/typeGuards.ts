@@ -12,7 +12,9 @@ import {
   PuppyStatus,
   AppetiteEnum,
   EnergyEnum,
-  StoolConsistencyEnum
+  StoolConsistencyEnum,
+  HeatIntensityType,
+  HeatCycle
 } from '@/types/unified';
 
 /**
@@ -76,6 +78,26 @@ export function isHealthRecord(record: any): record is HealthRecord {
 }
 
 /**
+ * Type guard for HeatIntensityType
+ */
+export function isHeatIntensityType(value: any): value is HeatIntensityType {
+  return ['none', 'light', 'moderate', 'heavy', 'mild', 'strong', 'very_strong'].includes(value);
+}
+
+/**
+ * Type guard for HeatCycle
+ */
+export function isHeatCycle(cycle: any): cycle is HeatCycle {
+  return cycle &&
+    typeof cycle === 'object' &&
+    'id' in cycle &&
+    'dog_id' in cycle &&
+    'start_date' in cycle &&
+    'intensity' in cycle &&
+    isHeatIntensityType(cycle.intensity);
+}
+
+/**
  * Type guard for AppetiteEnum
  */
 export function isAppetiteLevel(value: any): value is AppetiteEnum {
@@ -126,3 +148,4 @@ export function isValidUUID(value: any): boolean {
   
   return uuidRegex.test(value);
 }
+

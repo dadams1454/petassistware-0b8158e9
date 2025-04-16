@@ -5,3 +5,13 @@ export * from './puppyMapper';
 export * from './dogMapper';
 export * from './healthMapper';
 export * from './typeMapper';
+
+// Export the individual mappers for direct import
+export { 
+  mapToCoreDog,
+  mapToCorePuppy,
+  mapToWeightRecord,
+  mapToModuleDog,
+  mapToHeatCycle
+} from './typeMapper';
+

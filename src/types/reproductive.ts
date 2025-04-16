@@ -7,7 +7,7 @@ import type { HeatIntensityType, HeatCycle, HeatStage } from './heat-cycles';
 
 // Re-export heat cycle types
 export type { HeatIntensityType, HeatCycle, HeatStage };
-export { HeatIntensityValues } from './heat-cycles';
+export { HeatIntensity, HeatIntensityValues } from './heat-cycles';
 
 // Reproductive status enum
 export enum ReproductiveStatus {
@@ -118,3 +118,4 @@ export interface ReproductiveCycleData {
   pregnancyLost: boolean;
   gestationDays: number;
 }
+
