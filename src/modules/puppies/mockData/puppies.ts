@@ -1,142 +1,212 @@
 
+import { v4 as uuidv4 } from 'uuid';
 import { PuppyWithAge } from '../types';
 
-// Mock data for puppies
-export const mockData: PuppyWithAge[] = [
+// Helper function to get a date X days ago
+const getDaysAgo = (days: number): string => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().split('T')[0];
+};
+
+// Helper function to get a random weight within a range
+const getRandomWeight = (min: number, max: number): number => {
+  return parseFloat((Math.random() * (max - min) + min).toFixed(2));
+};
+
+/**
+ * Mock puppy data for development
+ */
+export const mockPuppies: PuppyWithAge[] = [
+  // Newborn puppies (0-2 weeks)
   {
-    id: 'p001',
-    name: 'Buddy',
-    litter_id: 'l001',
-    gender: 'male',
+    id: uuidv4(),
+    name: 'Luna',
+    litter_id: 'litter-1',
+    gender: 'female',
     color: 'Black',
-    collar_color: 'Red',
-    birth_date: '2023-12-01',
-    weight: 2.5,
-    weight_unit: 'lb',
+    collar_color: 'Pink',
+    birth_weight: 0.45,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(5),
     status: 'available',
     markings: 'White chest patch',
-    microchip_id: 'MC12345',
-    notes: 'Very playful and friendly',
-    created_at: '2023-12-01T10:00:00Z',
-    updated_at: '2024-01-15T14:30:00Z'
+    notes: 'Strong nursing instinct',
+    photo_url: null,
+    created_at: getDaysAgo(5),
+    weight_current: 0.65,
+    weight_unit: 'kg'
   },
   {
-    id: 'p002',
-    name: 'Luna',
-    litter_id: 'l001',
-    gender: 'female',
+    id: uuidv4(),
+    name: 'Atlas',
+    litter_id: 'litter-1',
+    gender: 'male',
     color: 'Brown',
     collar_color: 'Blue',
-    birth_date: '2023-12-01',
-    weight: 2.2,
-    weight_unit: 'lb',
-    status: 'reserved',
-    markings: 'None',
-    microchip_id: 'MC12346',
-    notes: 'Calm and gentle',
-    created_at: '2023-12-01T10:05:00Z',
-    updated_at: '2024-01-15T14:35:00Z'
-  },
-  {
-    id: 'p003',
-    name: 'Max',
-    litter_id: 'l001',
-    gender: 'male',
-    color: 'Black and White',
-    collar_color: 'Green',
-    birth_date: '2023-12-01',
-    weight: 2.7,
-    weight_unit: 'lb',
+    birth_weight: 0.52,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(5),
     status: 'available',
     markings: 'White paws',
-    microchip_id: 'MC12347',
-    notes: 'Energetic and loves to play fetch',
-    created_at: '2023-12-01T10:10:00Z',
-    updated_at: '2024-01-15T14:40:00Z'
+    notes: 'Very vocal',
+    photo_url: null,
+    created_at: getDaysAgo(5),
+    weight_current: 0.72,
+    weight_unit: 'kg'
   },
+  
+  // Transitional puppies (2-4 weeks)
   {
-    id: 'p004',
-    name: 'Daisy',
-    litter_id: 'l002',
+    id: uuidv4(),
+    name: 'Maple',
+    litter_id: 'litter-2',
     gender: 'female',
-    color: 'Golden',
-    collar_color: 'Yellow',
-    birth_date: '2024-01-15',
-    weight: 1.2,
-    weight_unit: 'lb',
-    status: 'available',
-    markings: 'None',
-    microchip_id: 'MC12348',
-    notes: 'Sweet and loves cuddling',
-    created_at: '2024-01-15T09:00:00Z',
-    updated_at: '2024-02-01T11:20:00Z'
-  },
-  {
-    id: 'p005',
-    name: 'Charlie',
-    litter_id: 'l002',
-    gender: 'male',
     color: 'Red',
     collar_color: 'Purple',
-    birth_date: '2024-01-15',
-    weight: 1.4,
-    weight_unit: 'lb',
-    status: 'sold',
-    markings: 'White chest and tail tip',
-    microchip_id: 'MC12349',
-    notes: 'Very intelligent and quick learner',
-    created_at: '2024-01-15T09:05:00Z',
-    updated_at: '2024-02-01T11:25:00Z'
+    birth_weight: 0.48,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(18),
+    status: 'reserved',
+    markings: 'White tail tip',
+    notes: 'Eyes opening, starting to walk',
+    photo_url: null,
+    created_at: getDaysAgo(18),
+    weight_current: 1.2,
+    weight_unit: 'kg'
   },
   {
-    id: 'p006',
-    name: 'Bella',
-    litter_id: 'l002',
+    id: uuidv4(),
+    name: 'Bear',
+    litter_id: 'litter-2',
+    gender: 'male',
+    color: 'Black and Tan',
+    collar_color: 'Green',
+    birth_weight: 0.55,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(18),
+    status: 'available',
+    markings: 'Tan eyebrows',
+    notes: 'Active, curious about surroundings',
+    photo_url: null,
+    created_at: getDaysAgo(18),
+    weight_current: 1.35,
+    weight_unit: 'kg'
+  },
+  
+  // Socialization puppies (4-8 weeks)
+  {
+    id: uuidv4(),
+    name: 'Daisy',
+    litter_id: 'litter-3',
     gender: 'female',
     color: 'Cream',
-    collar_color: 'Orange',
-    birth_date: '2024-01-15',
-    weight: 1.3,
-    weight_unit: 'lb',
+    collar_color: 'Yellow',
+    birth_weight: 0.5,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(40),
     status: 'reserved',
     markings: 'None',
-    microchip_id: 'MC12350',
-    notes: 'Shy at first but warms up quickly',
-    created_at: '2024-01-15T09:10:00Z',
-    updated_at: '2024-02-01T11:30:00Z'
+    notes: 'Playing with toys, socializing well',
+    photo_url: null,
+    created_at: getDaysAgo(40),
+    weight_current: 2.8,
+    weight_unit: 'kg'
   },
   {
-    id: 'p007',
+    id: uuidv4(),
     name: 'Rocky',
-    litter_id: 'l003',
+    litter_id: 'litter-3',
     gender: 'male',
-    color: 'Black',
-    collar_color: 'White',
-    birth_date: '2024-03-10',
-    weight: 0.6,
-    weight_unit: 'lb',
+    color: 'Gray',
+    collar_color: 'Red',
+    birth_weight: 0.58,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(40),
     status: 'available',
-    markings: 'White spot on forehead',
-    microchip_id: 'MC12351',
-    notes: 'Strong and determined',
-    created_at: '2024-03-10T08:00:00Z',
-    updated_at: '2024-03-15T10:15:00Z'
+    markings: 'Black mask',
+    notes: 'Very confident, loves exploring',
+    photo_url: null,
+    created_at: getDaysAgo(40),
+    weight_current: 3.2,
+    weight_unit: 'kg'
+  },
+  
+  // Juvenile puppies (8-12 weeks)
+  {
+    id: uuidv4(),
+    name: 'Piper',
+    litter_id: 'litter-4',
+    gender: 'female',
+    color: 'Tricolor',
+    collar_color: 'Orange',
+    birth_weight: 0.53,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(65),
+    status: 'sold',
+    markings: 'White blaze on face',
+    notes: 'Good with children, house training well',
+    photo_url: null,
+    created_at: getDaysAgo(65),
+    weight_current: 5.4,
+    weight_unit: 'kg'
   },
   {
-    id: 'p008',
-    name: 'Sophie',
-    litter_id: 'l003',
+    id: uuidv4(),
+    name: 'Scout',
+    litter_id: 'litter-4',
+    gender: 'male',
+    color: 'Brindle',
+    collar_color: 'Black',
+    birth_weight: 0.62,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(65),
+    status: 'keeping',
+    markings: 'Brindle pattern',
+    notes: 'Starting leash training, smart',
+    photo_url: null,
+    created_at: getDaysAgo(65),
+    weight_current: 6.1,
+    weight_unit: 'kg'
+  },
+  
+  // Adolescent puppies (12+ weeks)
+  {
+    id: uuidv4(),
+    name: 'Willow',
+    litter_id: 'litter-5',
     gender: 'female',
-    color: 'Grey',
-    collar_color: 'Pink',
-    birth_date: '2024-03-10',
-    weight: 0.5,
-    weight_unit: 'lb',
-    status: 'available',
+    color: 'Fawn',
+    collar_color: 'Teal',
+    birth_weight: 0.51,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(90),
+    status: 'sold',
+    markings: 'Black mask',
+    notes: 'Well-socialized, great with other dogs',
+    photo_url: null,
+    created_at: getDaysAgo(90),
+    weight_current: 8.7,
+    weight_unit: 'kg'
+  },
+  {
+    id: uuidv4(),
+    name: 'Oakley',
+    litter_id: 'litter-5',
+    gender: 'male',
+    color: 'White',
+    collar_color: 'Brown',
+    birth_weight: 0.6,
+    birth_weight_unit: 'kg',
+    birthdate: getDaysAgo(90),
+    status: 'reserved',
     markings: 'None',
-    microchip_id: 'MC12352',
-    notes: 'Delicate and gentle',
-    created_at: '2024-03-10T08:05:00Z',
-    updated_at: '2024-03-15T10:20:00Z'
+    notes: 'Good recall, learning advanced commands',
+    photo_url: null,
+    created_at: getDaysAgo(90),
+    weight_current: 9.5,
+    weight_unit: 'kg'
   }
 ];
+
+export default mockPuppies;

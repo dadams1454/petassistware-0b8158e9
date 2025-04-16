@@ -10,6 +10,7 @@ export interface DailyCarelog {
   timestamp: string;
   category: string;
   task: string;
+  task_name?: string; // Added this to fix compatibility issues
   notes?: string;
   flags?: string[];
   completed_by?: string;
@@ -45,10 +46,32 @@ export interface DogCareStatus {
   id: string;
   dog_id: string;
   name: string;
-  dog_name?: string;
+  dog_name?: string; // For compatibility with both naming conventions
   status: string;
   last_updated: string;
-  flags?: string[];
+  flags?: DogFlag[];
+  
+  // Extended properties for compatibility
+  breed?: string;
+  sex?: string;
+  color?: string;
+  dog_photo?: string;
+  photo_url?: string;
+  birthdate?: string;
+  requires_special_handling?: boolean;
+  last_potty_time?: string | null;
+  last_feeding_time?: string | null;
+  last_medication_time?: string | null;
+  potty_alert_threshold?: number;
+  max_time_between_breaks?: number;
+  last_care?: {
+    category: string;
+    task_name: string;
+    timestamp: string;
+    notes?: string;
+  } | null;
+  created_at: string;
+  updated_at?: string;
 }
 
 // Flag for marking special conditions for a dog
@@ -57,6 +80,9 @@ export interface DogFlag {
   name: string;
   color: string;
   description?: string;
+  type?: string;
+  value?: string;
+  incompatible_with?: string[];
 }
 
 // Observation made during care

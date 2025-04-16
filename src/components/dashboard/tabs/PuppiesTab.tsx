@@ -1,93 +1,103 @@
 
-import React, { useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Baby } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { PuppyAgeGroup, PuppyWithAge } from '@/modules/puppies/types';
 import { usePuppyTracking } from '@/modules/puppies/hooks/usePuppyTracking';
-import PuppyAgeGroupList from './puppies/PuppyAgeGroupList';
-import PuppyStatCards from './puppies/PuppyStatCards';
+import PuppyAgeGroupSection from '@/components/dogs/components/care/puppies/PuppyAgeGroupSection';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PuppiesTabProps {
   onRefresh?: () => void;
 }
 
 const PuppiesTab: React.FC<PuppiesTabProps> = ({ onRefresh }) => {
-  const puppyStats = usePuppyTracking();
   const navigate = useNavigate();
+  const { 
+    allPuppies, 
+    ageGroups, 
+    byAgeGroup, 
+    totalPuppies, 
+    loading 
+  } = usePuppyTracking();
   
-  const handleNavigateToLitters = useCallback(() => {
-    navigate('/litters');
-  }, [navigate]);
-  
-  const handleRefresh = useCallback(() => {
-    if (puppyStats.refetch) {
-      puppyStats.refetch().catch(console.error);
-    }
-    if (onRefresh) {
-      onRefresh();
-    }
-  }, [puppyStats.refetch, onRefresh]);
+  // Add a loading state until puppy data is available
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (puppyStats.isLoading) {
+  useEffect(() => {
+    if (!loading) {
+      setIsLoading(false);
+    }
+  }, [loading]);
+
+  const handleAddPuppy = () => {
+    navigate('/puppies/new');
+  };
+
+  const handlePuppyClick = (puppyId: string) => {
+    navigate(`/puppies/${puppyId}`);
+  };
+
+  if (isLoading) {
     return (
       <div className="space-y-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-9 w-32" />
+        </div>
+        
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-64 w-full" />
+        ))}
       </div>
     );
   }
 
-  if (puppyStats.error) {
+  if (!allPuppies || allPuppies.length === 0) {
     return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Failed to Load Puppies</h3>
-              <p className="text-muted-foreground mb-4">We couldn't load the puppy data. Please try again.</p>
-              <Button onClick={handleRefresh} variant="default">Try Again</Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="text-center py-12">
+        <h3 className="text-xl font-medium mb-2">No Puppies Found</h3>
+        <p className="text-muted-foreground mb-6">
+          Start tracking puppies by adding your first puppy.
+        </p>
+        <Button onClick={handleAddPuppy}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add First Puppy
+        </Button>
       </div>
     );
   }
 
-  // No puppies case
-  if (!puppyStats.puppies || puppyStats.puppies.length === 0) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Baby className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Puppies Found</h3>
-            <p className="text-muted-foreground mb-4">
-              There are no active litters with puppies in the system.
-            </p>
-            <Button onClick={handleNavigateToLitters}>Manage Litters</Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Sort age groups by their sort_order property
+  const sortedAgeGroups = [...ageGroups].sort((a, b) => a.sort_order - b.sort_order);
 
   return (
-    <div className="space-y-6">
-      {/* Stats cards */}
-      <PuppyStatCards stats={puppyStats} />
-      
-      {/* Age group sections */}
-      <PuppyAgeGroupList 
-        puppiesByAgeGroup={puppyStats.puppiesByAgeGroup}
-        ageGroups={puppyStats.ageGroups}
-      />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">
+          Puppies ({totalPuppies})
+        </h3>
+        <Button onClick={handleAddPuppy}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add Puppy
+        </Button>
+      </div>
+
+      {sortedAgeGroups.map((ageGroup: PuppyAgeGroup) => (
+        <PuppyAgeGroupSection
+          key={ageGroup.id}
+          name={ageGroup.name}
+          description={ageGroup.description}
+          puppies={byAgeGroup[ageGroup.id] || []}
+          onPuppyClick={handlePuppyClick}
+          emptyState={
+            <div className="text-center py-6">
+              <p className="text-muted-foreground">No puppies in this age group</p>
+            </div>
+          }
+        />
+      ))}
     </div>
   );
 };

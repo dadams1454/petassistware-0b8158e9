@@ -1,86 +1,85 @@
 
-import { Puppy } from '@/types/puppy';
-import { WeightRecord } from '@/types/weight';
+/**
+ * Core type definitions for puppies module
+ */
+
+import { BaseEntity } from '@/types/core';
 
 /**
- * Extended puppy interface with age and weight data
+ * Extended Puppy interface with age calculations
  */
-export interface PuppyWithAge extends Puppy {
-  age?: number;          // Alias for age_days for compatibility
-  age_days?: number;     // Age in days
-  age_weeks?: number;    // Age in weeks
-  ageInDays?: number;    // Legacy compatibility
-  ageInWeeks?: number;   // Legacy compatibility
-  created_at?: string;   // For compatibility with legacy code
-  updated_at?: string;   // For compatibility with legacy code
-  weightHistory?: WeightRecord[];
-  lastWeight?: WeightRecord;
+export interface PuppyWithAge {
+  id: string;
+  name: string;
+  litter_id: string;
+  gender: string;
+  color: string;
+  collar_color?: string;
+  birth_weight?: number;
+  birth_weight_unit?: string;
+  birthdate: string;
+  status: string;
+  markings?: string;
+  microchip_id?: string;
+  notes?: string;
+  photo_url?: string;
+  reserve_status?: string;
+  customer_id?: string;
+  created_at: string;
+  updated_at?: string;
+  
+  // Age-related calculated fields
+  age_days?: number;
+  age_weeks?: number;
+  age_description?: string;
+  weight_current?: number;
+  weight_unit?: string;
 }
 
 /**
- * Puppy age group information
+ * Puppy age group definitions
  */
 export interface PuppyAgeGroup {
   id: string;
   name: string;
-  minAge: number;
-  maxAge: number;
   description?: string;
+  min_days: number;
+  max_days: number;
+  sort_order: number;
 }
 
 /**
- * PuppyAgeGroupInfo for compatibility with older components
+ * Age group info with puppies
  */
 export interface PuppyAgeGroupInfo {
   id: string;
   name: string;
-  minAge: number;
-  maxAge: number;
   description?: string;
+  min_days: number;
+  max_days: number;
+  sort_order: number;
   puppies: PuppyWithAge[];
 }
 
 /**
- * Group data structure for organizing puppies by age
+ * Grouped puppy data structure
  */
 export interface PuppyAgeGroupData {
-  [key: string]: PuppyWithAge[];
+  byAgeGroup: Record<string, PuppyWithAge[]>;
+  ageGroups: PuppyAgeGroup[];
+  allPuppies: PuppyWithAge[];
 }
 
 /**
- * Statistics and data for puppy management
+ * Overall puppy management statistics
  */
 export interface PuppyManagementStats {
-  puppies: PuppyWithAge[];
-  byAgeGroup: PuppyAgeGroupData;
-  ageGroups?: PuppyAgeGroup[];
   totalPuppies: number;
-  availablePuppies: number;
-  reservedPuppies: number;
-  soldPuppies: number;
-  currentWeek?: number;
-  activeCount?: number;
-  availableCount?: number;
-  reservedCount?: number;
-  soldCount?: number;
-  total?: {
-    count: number;
-    male?: number;
-    female?: number;
-  };
-  byGender?: {
-    male: number;
-    female: number;
-    unknown: number;
-  };
-  byStatus?: {
-    available: number;
-    reserved: number;
-    sold: number;
-    unavailable: number;
-  };
-  isLoading: boolean;
-  error: Error | null;
+  byAgeGroup: Record<string, PuppyWithAge[]>;
+  byStatus: Record<string, PuppyWithAge[]>;
+  byGender: Record<string, PuppyWithAge[]>;
+  ageGroups: PuppyAgeGroup[];
+  allPuppies: PuppyWithAge[];
 }
 
 /**

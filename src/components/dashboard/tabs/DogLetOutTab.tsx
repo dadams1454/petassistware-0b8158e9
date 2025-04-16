@@ -1,158 +1,124 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import { DogCareStatus } from '@/types/dailyCare';
-import { Dog, Clock, AlertTriangle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
+import { mockDogs } from '@/mockData/dogs';
+import { v4 as uuidv4 } from 'uuid';
 
-interface DogLetOutTabProps {
-  onRefresh?: () => void;
-  dogStatuses?: DogCareStatus[];
-}
-
-interface DogBreakStatus {
-  dogId: string;
-  dogName: string;
-  lastBreakTime: string | null;
-  needsBreak: boolean;
-}
-
-const DogLetOutTab: React.FC<DogLetOutTabProps> = ({ 
-  onRefresh,
-  dogStatuses = []
-}) => {
-  const navigate = useNavigate();
-  const [breakStatuses, setBreakStatuses] = useState<DogBreakStatus[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const DogLetOutTab: React.FC = () => {
+  const [dogs, setDogs] = useState<DogCareStatus[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPottyBreaks = async () => {
-      setIsLoading(true);
+    // Simulate API call to get dogs
+    const fetchDogs = async () => {
+      setLoading(true);
       try {
-        // Get all active dogs if dogStatuses is empty
-        let dogsToCheck = dogStatuses;
-        if (dogsToCheck.length === 0) {
-          const { data } = await supabase
-            .from('dogs')
-            .select('id, name')
-            .eq('status', 'active');
-          
-          if (data) {
-            dogsToCheck = data.map(dog => ({
-              dog_id: dog.id,
-              dog_name: dog.name,
-              flags: [],
-              created_at: '',
-              updated_at: ''
-            }));
-          }
-        }
-
-        // For each dog, get their last potty break
-        const statuses = await Promise.all(
-          dogsToCheck.map(async (dog) => {
-            const { data: pottyData } = await supabase
-              .from('daily_care_logs')
-              .select('timestamp')
-              .eq('dog_id', dog.dog_id)
-              .eq('category', 'pottybreaks')
-              .order('timestamp', { ascending: false })
-              .limit(1);
-
-            const lastBreakTime = pottyData && pottyData.length > 0 
-              ? pottyData[0].timestamp 
-              : null;
-            
-            // Determine if dog needs a break (no break in 6+ hours)
-            const needsBreak = !lastBreakTime || 
-              (new Date().getTime() - new Date(lastBreakTime).getTime() > 6 * 60 * 60 * 1000);
-            
-            return {
-              dogId: dog.dog_id,
-              dogName: dog.dog_name,
-              lastBreakTime,
-              needsBreak
-            };
-          })
-        );
-
-        setBreakStatuses(statuses);
+        // Mock data - in real app, this would be an API call
+        const dogsWithCareStatus: DogCareStatus[] = mockDogs.map(dog => ({
+          id: dog.id,
+          dog_id: dog.id,
+          name: dog.name,
+          dog_name: dog.name,
+          status: 'active',
+          last_updated: new Date().toISOString(),
+          flags: [],
+          breed: dog.breed,
+          color: dog.color,
+          sex: dog.gender,
+          photo_url: dog.photo_url,
+          dog_photo: dog.photo_url,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+        
+        setDogs(dogsWithCareStatus);
       } catch (error) {
-        console.error('Error fetching potty break data:', error);
+        console.error('Error fetching dogs:', error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchPottyBreaks();
-  }, [dogStatuses]);
+    fetchDogs();
+  }, []);
 
-  // Count dogs that need breaks
-  const dogsNeedingBreaks = breakStatuses.filter(status => status.needsBreak).length;
-  
-  // Get time since text with formatting
-  const getTimeSinceText = (lastBreakTime: string | null) => {
-    if (!lastBreakTime) return 'No record';
-    
-    try {
-      return formatDistanceToNow(new Date(lastBreakTime), { addSuffix: true });
-    } catch (e) {
-      return 'Invalid date';
-    }
+  // Generate a random timestamp in the last 4 hours
+  const randomRecentTimestamp = () => {
+    const now = new Date();
+    const hoursAgo = Math.floor(Math.random() * 4);
+    const minutesAgo = Math.floor(Math.random() * 60);
+    now.setHours(now.getHours() - hoursAgo);
+    now.setMinutes(now.getMinutes() - minutesAgo);
+    return now.toISOString();
   };
 
-  return (
-    <Card>
-      <CardContent className="flex flex-col items-center p-6">
-        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-          <Dog className="h-6 w-6 text-blue-600" />
-        </div>
-        
-        <h3 className="text-xl font-semibold mb-2">Dog Let Out Tracking</h3>
-        
-        {isLoading ? (
-          <p className="text-muted-foreground">Loading dog break status...</p>
-        ) : (
-          <>
-            <div className="w-full max-w-md space-y-3 my-4">
-              {breakStatuses.slice(0, 3).map(status => (
-                <div 
-                  key={status.dogId}
-                  className={`flex items-center justify-between p-3 rounded-md ${
-                    status.needsBreak ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50 border border-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <span className="font-medium">{status.dogName}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm">
-                    {status.needsBreak && <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />}
-                    <Clock className="h-4 w-4 mr-1 text-gray-500" />
-                    <span className={status.needsBreak ? 'text-amber-700' : 'text-gray-600'}>
-                      {getTimeSinceText(status.lastBreakTime)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+  // Simulate recording a dog potty break
+  const recordDogPottyBreak = (dogId: string) => {
+    console.log(`Recording potty break for dog ${dogId}`);
+    // In a real app, this would call an API to log the potty break
+    
+    // For demo purposes, update the local state to show the break was recorded
+    setDogs(prevDogs => 
+      prevDogs.map(dog => 
+        dog.dog_id === dogId 
+          ? { 
+              ...dog, 
+              last_updated: new Date().toISOString(),
+              last_potty_time: new Date().toISOString(),
+              last_care: {
+                category: 'pottybreaks',
+                task_name: 'Dog let out',
+                timestamp: new Date().toISOString(),
+                notes: 'Recorded from dashboard'
+              }
+            } 
+          : dog
+      )
+    );
+  };
 
-            {dogsNeedingBreaks > 0 && (
-              <div className="text-amber-600 font-medium mb-4">
-                {dogsNeedingBreaks} dog{dogsNeedingBreaks !== 1 ? 's' : ''} need{dogsNeedingBreaks === 1 ? 's' : ''} to be let out
+  if (loading) {
+    return <div className="flex items-center justify-center h-40">Loading dogs...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {dogs.map((dog) => (
+          <Card key={dog.dog_id} className="overflow-hidden">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center">
+                {dog.photo_url && (
+                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+                    <img src={dog.photo_url} alt={dog.name} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                {dog.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="text-sm text-muted-foreground">
+                  Last potty break: {dog.last_potty_time 
+                    ? new Date(dog.last_potty_time).toLocaleTimeString() 
+                    : 'Not recorded today'}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => recordDogPottyBreak(dog.dog_id)}
+                >
+                  Record Potty Break
+                </Button>
               </div>
-            )}
-          </>
-        )}
-        
-        <Button onClick={() => navigate("/facility")} className="mt-2">
-          Go to Dog Let Out
-        </Button>
-      </CardContent>
-    </Card>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
   );
 };
 

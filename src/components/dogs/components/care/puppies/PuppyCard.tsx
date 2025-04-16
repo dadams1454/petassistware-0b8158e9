@@ -1,77 +1,108 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { PencilIcon, PawPrint } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { PuppyWithAge } from '@/types/puppyTracking';
+import { PuppyWithAge } from '@/modules/puppies/types';
 
 interface PuppyCardProps {
   puppy: PuppyWithAge;
-  ageGroup: string;
-  onRefresh: () => void;
+  onClick?: () => void;
 }
 
-const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, ageGroup, onRefresh }) => {
-  const navigate = useNavigate();
-  
-  const handleGoToPuppy = () => {
-    if (puppy.litter_id) {
-      navigate(`/litters/${puppy.litter_id}/puppies/${puppy.id}`);
-    } else {
-      navigate(`/puppies/${puppy.id}`);
+const PuppyCard: React.FC<PuppyCardProps> = ({ puppy, onClick }) => {
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const getGenderColor = (gender: string) => {
+    switch (gender.toLowerCase()) {
+      case 'male':
+        return 'text-blue-500';
+      case 'female':
+        return 'text-pink-500';
+      default:
+        return 'text-gray-500';
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default';
+    
+    switch (status.toLowerCase()) {
+      case 'available':
+        variant = 'default';
+        break;
+      case 'reserved':
+        variant = 'secondary';
+        break;
+      case 'sold':
+        variant = 'outline';
+        break;
+      case 'keeping':
+        variant = 'secondary';
+        break;
+      case 'deceased':
+        variant = 'destructive';
+        break;
+      default:
+        variant = 'outline';
+    }
+    
+    return (
+      <Badge variant={variant} className="ml-2">
+        {status}
+      </Badge>
+    );
+  };
+
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2 pt-4 px-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="font-medium">{puppy.name || `Puppy #${puppy.id.substring(0, 4)}`}</h3>
-            {puppy.litter_id && (
-              <p className="text-xs text-muted-foreground">Litter: {puppy.litter_id.substring(0, 8)}</p>
+    <Card 
+      className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <CardHeader className="p-3 pb-0">
+        <div className="flex items-center space-x-2">
+          <Avatar className="h-10 w-10 border">
+            {puppy.photo_url && (
+              <AvatarImage src={puppy.photo_url} alt={puppy.name} />
             )}
+            <AvatarFallback>{getInitials(puppy.name)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="font-medium">
+              {puppy.name}
+              {puppy.status && getStatusBadge(puppy.status)}
+            </h3>
+            <p className="text-xs text-muted-foreground flex items-center">
+              <span className={getGenderColor(puppy.gender)}>
+                {puppy.gender}
+              </span>
+              {puppy.collar_color && (
+                <span className="ml-2">
+                  • {puppy.collar_color} collar
+                </span>
+              )}
+            </p>
           </div>
-          <Badge variant={puppy.status === 'Available' ? 'default' : 'secondary'} className="capitalize">
-            {puppy.status || 'Available'}
-          </Badge>
         </div>
       </CardHeader>
-      
-      <CardContent className="p-4 pt-0">
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="text-sm">
-            <span className="text-muted-foreground">Age:</span>{' '}
-            <span className="font-medium">
-              {puppy.ageInWeeks || 0} weeks ({puppy.ageInDays || 0} days)
-            </span>
+      <CardContent className="p-3">
+        <div className="text-sm grid grid-cols-2 gap-2">
+          <div>
+            <p className="text-xs text-muted-foreground">Age</p>
+            <p>{puppy.age_description || `${puppy.age_weeks || 0} weeks`}</p>
           </div>
-          
-          <div className="text-sm">
-            <span className="text-muted-foreground">Gender:</span>{' '}
-            <span className="font-medium capitalize">{puppy.gender || 'Unknown'}</span>
+          <div>
+            <p className="text-xs text-muted-foreground">Color</p>
+            <p>{puppy.color || 'Unknown'}</p>
           </div>
-          
-          {puppy.color && (
-            <div className="text-sm">
-              <span className="text-muted-foreground">Color:</span>{' '}
-              <span className="font-medium">{puppy.color}</span>
+          {puppy.weight_current && puppy.weight_unit && (
+            <div className="col-span-2">
+              <p className="text-xs text-muted-foreground">Weight</p>
+              <p>{puppy.weight_current} {puppy.weight_unit}</p>
             </div>
           )}
-        </div>
-
-        <div className="mt-4 flex justify-between">
-          <Button size="sm" variant="outline" onClick={handleGoToPuppy}>
-            <PawPrint className="h-4 w-4 mr-1" />
-            {ageGroup} Care
-          </Button>
-          
-          <Button size="sm" variant="ghost" onClick={handleGoToPuppy}>
-            <PencilIcon className="h-4 w-4 mr-1" />
-            Details
-          </Button>
         </div>
       </CardContent>
     </Card>
