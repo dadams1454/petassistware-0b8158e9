@@ -3,38 +3,38 @@ import React from 'react';
 import { format } from 'date-fns';
 import { FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { HealthRecord, HealthRecordTypeEnum } from '@/types/health';
+import { HealthRecordType, HealthRecordTypeEnum } from '@/types/health-enums';
 import { getHealthRecordIcon } from '../utils/healthRecordUtils';
 
 interface HealthRecordCardProps {
-  record: HealthRecord;
+  record: any; // Using any for simplicity
   onClick: () => void;
 }
 
 const HealthRecordCard: React.FC<HealthRecordCardProps> = ({ record, onClick }) => {
-  const getIcon = (recordType: string | HealthRecordTypeEnum) => {
-    const type = typeof recordType === 'string' 
-      ? recordType.toUpperCase() as HealthRecordTypeEnum
-      : recordType;
+  const getIcon = (recordType: string) => {
+    // Convert the string record type to the enum value if needed
+    let type = recordType.toLowerCase();
     
+    // Get the appropriate icon component
     const Icon = getHealthRecordIcon(type);
     
     let iconColor = 'text-gray-500';
     
     switch (type) {
-      case HealthRecordTypeEnum.VACCINATION:
+      case 'vaccination':
         iconColor = 'text-green-500';
         break;
-      case HealthRecordTypeEnum.EXAMINATION:
+      case 'examination':
         iconColor = 'text-blue-500';
         break;
-      case HealthRecordTypeEnum.MEDICATION:
+      case 'medication':
         iconColor = 'text-purple-500';
         break;
-      case HealthRecordTypeEnum.SURGERY:
+      case 'surgery':
         iconColor = 'text-red-500';
         break;
-      case HealthRecordTypeEnum.OBSERVATION:
+      case 'observation':
         iconColor = 'text-amber-500';
         break;
       default:

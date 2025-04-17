@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { HealthRecord, HealthRecordTypeEnum, stringToHealthRecordType } from '@/types/health';
+import { HealthRecord, HealthRecordType, HealthRecordTypeEnum } from '@/types/health-enums';
 import RecordTypeField from './form-fields/RecordTypeField';
 import TitleField from './form-fields/TitleField';
 import VisitDateField from './form-fields/VisitDateField';
@@ -15,6 +15,9 @@ import NotesField from './form-fields/NotesField';
 import NextDueDateField from './form-fields/NextDueDateField';
 import DocumentUrlField from './form-fields/DocumentUrlField';
 import DialogFooterButtons from './form-fields/DialogFooterButtons';
+
+// Import the stringToHealthRecordType function from health-enums
+import { stringToHealthRecordType } from '@/types/health-enums';
 
 // Health record form schema
 const healthRecordSchema = z.object({
@@ -61,10 +64,10 @@ const healthRecordSchema = z.object({
 });
 
 interface HealthRecordFormProps {
-  onSubmit: (data: Partial<HealthRecord>) => void;
+  onSubmit: (data: Partial<any>) => void; // Using any for simplicity here
   onCancel: () => void;
   isSubmitting?: boolean;
-  initialData?: Partial<HealthRecord>;
+  initialData?: Partial<any>; // Using any for simplicity
   dogId?: string;
 }
 
@@ -122,7 +125,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
   
   const handleFormSubmit = (values: z.infer<typeof healthRecordSchema>) => {
     // Format dates to ISO strings
-    const formattedData: Partial<HealthRecord> = {
+    const formattedData: Partial<any> = {
       ...values,
       dog_id: dogId || initialData?.dog_id,
       record_type: stringToHealthRecordType(values.record_type),
@@ -131,6 +134,7 @@ const HealthRecordForm: React.FC<HealthRecordFormProps> = ({
       start_date: values.start_date ? values.start_date.toISOString().split('T')[0] : undefined,
       end_date: values.end_date ? values.end_date.toISOString().split('T')[0] : undefined,
       follow_up_date: values.follow_up_date ? values.follow_up_date.toISOString().split('T')[0] : null,
+      performed_by: initialData?.performed_by || undefined
     };
     
     onSubmit(formattedData);

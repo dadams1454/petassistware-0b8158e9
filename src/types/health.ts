@@ -25,6 +25,7 @@ export interface HealthRecord {
   created_by?: string;
   created_at: string;
   updated_at?: string;
+  performed_by?: string; // Added this property
   
   // For upcoming health records
   next_due_date?: string;
@@ -115,13 +116,15 @@ export interface WeightRecord {
   puppy_id?: string;
   weight: number;
   weight_unit: WeightUnit;
+  unit?: WeightUnit; // For backwards compatibility
   date: string;
   notes?: string;
   percent_change?: number;
   created_at: string;
 }
 
-// Export WeightUnit from here for compatibility
-export { WeightUnit } from './weight-units';
-// Export HealthRecordTypeEnum from health-enums
-export { HealthRecordTypeEnum } from './health-enums';
+// Re-export the WeightUnit type 
+export type { WeightUnit } from './weight-units';
+
+// Re-export HealthRecordTypeEnum from health-enums
+export { HealthRecordTypeEnum, stringToHealthRecordType } from './health-enums';

@@ -9,7 +9,7 @@ export interface DogAvatarProps {
   flags?: DogFlag[];
   onClick?: (e: React.MouseEvent) => void;
   size?: 'sm' | 'md' | 'lg';
-  dog?: DogCareStatus; // Added dog property for compatibility
+  dog?: DogCareStatus; // This property is now explicitly declared
 }
 
 const DogAvatar: React.FC<DogAvatarProps> = ({
@@ -18,7 +18,7 @@ const DogAvatar: React.FC<DogAvatarProps> = ({
   flags = [],
   onClick,
   size = 'md',
-  dog // We're not using this directly, but keeping for compatibility
+  dog // We're now properly handling this prop
 }) => {
   // Determine size class
   const sizeClass = {

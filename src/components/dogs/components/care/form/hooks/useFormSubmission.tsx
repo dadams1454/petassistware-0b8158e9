@@ -25,7 +25,7 @@ export const useFormSubmission = ({ dogId, onSuccess }: UseFormSubmissionProps) 
       const careLogData: CareLogFormData = {
         dog_id: dogId,
         category: values.category,
-        task: values.task_name, // Map task_name to task
+        task: values.task_name, // Map task_name to task property
         timestamp: timestamp,
         notes: values.notes,
         flags: flags.length > 0 ? flags.map(f => f.id) : undefined, // Send flag IDs for compatibility

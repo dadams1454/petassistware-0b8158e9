@@ -1,3 +1,4 @@
+
 /**
  * Enums for health record types
  */
@@ -68,7 +69,38 @@ export enum MedicationStatusResult {
   PENDING = 'pending',
   UPCOMING = 'upcoming',
   SKIPPED = 'skipped',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
+  ACTIVE = 'active' // Added ACTIVE status that was missing
 }
 
 export const MedicationStatusEnum = MedicationStatusResult;
+
+// Helper function to convert string to health record type
+export function stringToHealthRecordType(value: string): HealthRecordType {
+  // Attempt to parse the value directly
+  if (Object.values(HealthRecordType).includes(value as HealthRecordType)) {
+    return value as HealthRecordType;
+  }
+  
+  // Try to match by uppercasing if needed
+  const upperValue = value.toUpperCase();
+  if (Object.keys(HealthRecordType).includes(upperValue)) {
+    return HealthRecordType[upperValue as keyof typeof HealthRecordType];
+  }
+  
+  // Default to OTHER if not found
+  console.warn(`Unknown health record type: ${value}, defaulting to OTHER`);
+  return HealthRecordType.OTHER;
+}
+
+// Helper function to get display text for record types
+export function getHealthRecordTypeDisplay(type: string | HealthRecordType): string {
+  // Handle case where type is already capitalized
+  if (typeof type === 'string') {
+    // Capitalize first letter and lowercase the rest
+    return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+  }
+  
+  // Handle enum value
+  return String(type).charAt(0).toUpperCase() + String(type).slice(1).toLowerCase();
+}

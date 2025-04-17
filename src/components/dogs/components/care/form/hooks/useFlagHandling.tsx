@@ -6,14 +6,34 @@ import { toast } from '@/hooks/use-toast';
 export interface UseFlagHandlingProps {
   initialFlags?: DogFlag[];
   onFlagChange?: (flags: DogFlag[]) => void;
+  dogId?: string; // Added missing property
+  setOtherDogs?: React.Dispatch<React.SetStateAction<any[]>>;
+  incompatibleDogs?: string[];
+  setIncompatibleDogs?: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedFlags?: DogFlag[];
+  setSelectedFlags?: React.Dispatch<React.SetStateAction<DogFlag[]>>;
+  specialAttentionNote?: string;
+  otherFlagNote?: string;
 }
 
 export const useFlagHandling = ({
+  dogId,
+  setOtherDogs,
+  incompatibleDogs = [],
+  setIncompatibleDogs,
+  selectedFlags: propSelectedFlags,
+  setSelectedFlags: propSetSelectedFlags,
+  specialAttentionNote,
+  otherFlagNote,
   initialFlags = [],
   onFlagChange
 }: UseFlagHandlingProps) => {
-  const [selectedFlags, setSelectedFlags] = useState<DogFlag[]>(initialFlags);
+  const [localSelectedFlags, setLocalSelectedFlags] = useState<DogFlag[]>(initialFlags);
   const [hasConflict, setHasConflict] = useState(false);
+  
+  // Use props values if provided, otherwise use local state
+  const selectedFlags = propSelectedFlags || localSelectedFlags;
+  const setSelectedFlags = propSetSelectedFlags || setLocalSelectedFlags;
 
   useEffect(() => {
     // Run conflict detection whenever flags change
@@ -71,6 +91,57 @@ export const useFlagHandling = ({
       
       setSelectedFlags(newFlags);
     }
+  };
+
+  // Add the missing handler for incompatible dog toggling
+  const handleIncompatibleDogToggle = (dogId: string) => {
+    if (!setIncompatibleDogs) return;
+    
+    if (incompatibleDogs.includes(dogId)) {
+      setIncompatibleDogs(incompatibleDogs.filter(id => id !== dogId));
+    } else {
+      setIncompatibleDogs([...incompatibleDogs, dogId]);
+    }
+  };
+
+  // Add the missing compileFlags function
+  const compileFlags = (): DogFlag[] => {
+    const flags: DogFlag[] = [...selectedFlags];
+    
+    // Add special attention flag if note exists
+    if (specialAttentionNote && specialAttentionNote.trim()) {
+      flags.push({
+        id: 'special-attention-' + Date.now(),
+        name: 'Special Attention',
+        color: '#FF5733',
+        type: 'special_attention',
+        value: specialAttentionNote
+      });
+    }
+    
+    // Add other flag note if exists
+    if (otherFlagNote && otherFlagNote.trim()) {
+      flags.push({
+        id: 'other-' + Date.now(),
+        name: 'Other',
+        color: '#808080',
+        type: 'other',
+        value: otherFlagNote
+      });
+    }
+    
+    // Add incompatible dogs flag if any are selected
+    if (incompatibleDogs && incompatibleDogs.length > 0) {
+      flags.push({
+        id: 'incompatible-' + Date.now(),
+        name: 'Incompatible Dogs',
+        color: '#FF0000',
+        type: 'incompatible',
+        value: incompatibleDogs.join(',')
+      });
+    }
+    
+    return flags;
   };
 
   const createNoteFlag = () => {
@@ -131,6 +202,8 @@ export const useFlagHandling = ({
     createNoteFlag,
     createUrgentFlag,
     createFollowUpFlag,
-    createAbnormalFlag
+    createAbnormalFlag,
+    handleIncompatibleDogToggle, // Added missing function
+    compileFlags // Added missing function
   };
 };

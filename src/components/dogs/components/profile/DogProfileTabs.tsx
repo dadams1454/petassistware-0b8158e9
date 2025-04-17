@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DogProfile } from '@/types/dog';
@@ -36,7 +37,7 @@ export interface CareTabProps {
 
 export interface BreedingTabProps {
   dog: DogProfile;
-  form?: UseFormReturn<any>; // Made this optional
+  form?: UseFormReturn<any>; // This is now explicitly optional
   lastHeatDate?: Date | null;
   isPregnant?: boolean;
   nextHeatDate?: Date | null;
