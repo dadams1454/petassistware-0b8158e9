@@ -1,4 +1,3 @@
-
 // Define flag types for dogs in care dashboard
 export interface DogFlag {
   id: string;

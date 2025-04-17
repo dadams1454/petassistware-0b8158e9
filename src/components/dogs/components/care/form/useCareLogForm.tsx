@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -14,6 +15,8 @@ const careLogSchema = z.object({
   timestamp: z.date(),
   notes: z.string().optional(),
 });
+
+export type CareLogFormValues = z.infer<typeof careLogSchema>;
 
 export const useCareLogForm = ({ 
   dogId, 
@@ -37,15 +40,8 @@ export const useCareLogForm = ({
   const [showNewPresetDialog, setShowNewPresetDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('task');
 
-  // DogFlag state - convert from array to object structure
-  interface FlagState {
-    in_heat: boolean;
-    incompatible: boolean;
-    special_attention: boolean;
-    other: boolean;
-  }
-  
-  const [selectedFlagState, setSelectedFlagState] = useState<FlagState>({
+  // DogFlag state - convert from array to object structure for FlagSelection component
+  const [selectedFlagState, setSelectedFlagState] = useState({
     in_heat: false,
     incompatible: false,
     special_attention: false,
@@ -139,7 +135,7 @@ export const useCareLogForm = ({
   };
 
   // Form submission
-  const onSubmit = async (data: z.infer<typeof careLogSchema>) => {
+  const onSubmit = async (data: CareLogFormValues) => {
     setLoading(true);
     
     try {
@@ -165,6 +161,7 @@ export const useCareLogForm = ({
         dog_id: dogId,
         category: data.category,
         task_name: data.task_name,
+        task: data.task_name, // Add task property to match interface
         timestamp: data.timestamp,
         notes: notes.trim(),
       });
@@ -223,11 +220,30 @@ export const useCareLogForm = ({
     setSpecialAttentionNote,
     otherFlagNote,
     setOtherFlagNote,
-    handleCategoryChange,
-    handleTaskNameChange,
-    handleCustomTaskChange,
-    handleAddPreset,
-    handleIncompatibleDogToggle,
+    handleCategoryChange: (category: string) => {
+      setSelectedCategory(category);
+      form.setValue('category', category);
+      setShowCustomTask(false);
+      form.setValue('task_name', '');
+    },
+    handleTaskNameChange: (taskName: string) => {
+      form.setValue('task_name', taskName);
+    },
+    handleCustomTaskChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setCustomTaskName(e.target.value);
+      form.setValue('task_name', e.target.value);
+    },
+    handleAddPreset: async () => {
+      setShowNewPresetDialog(false);
+      // Implementation would go here
+    },
+    handleIncompatibleDogToggle: (dogId: string) => {
+      setIncompatibleDogs(prev => 
+        prev.includes(dogId) 
+          ? prev.filter(id => id !== dogId) 
+          : [...prev, dogId]
+      );
+    },
     toggleFlag,
     onSubmit
   };

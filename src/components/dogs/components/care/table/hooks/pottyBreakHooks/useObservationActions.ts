@@ -34,13 +34,14 @@ export const useObservationActions = (): UseObservationActionsResult => {
       now.setMilliseconds(0);
       
       const timestamp = now.toISOString();
+      const taskValue = `${category} at ${timeSlot}`;
       
-      // Create an observation log
+      // Create an observation log with both task and task_name
       const observationData: CareLogFormData = {
         dog_id: dog.dog_id,
         category,
-        task_name: `${category} at ${timeSlot}`,
-        task: `${category} at ${timeSlot}`, // Adding task as well
+        task_name: taskValue,
+        task: taskValue, // Adding task property to match interface
         timestamp,
         notes: `Automatic ${category} observation at ${timeSlot}`
       };

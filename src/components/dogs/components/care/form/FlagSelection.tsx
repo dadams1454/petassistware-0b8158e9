@@ -3,7 +3,6 @@ import React from 'react';
 import { Check } from 'lucide-react';
 import { FormLabel } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
@@ -11,11 +10,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DogFlag } from '@/types/dailyCare';
 
 interface FlagSelectionProps {
-  selectedFlags: {
-    in_heat: boolean;
-    incompatible: boolean;
-    special_attention: boolean;
-    other: boolean;
+  selectedFlags: DogFlag[] | { 
+    in_heat: boolean; 
+    incompatible: boolean; 
+    special_attention: boolean; 
+    other: boolean; 
   };
   toggleFlag: (flagType: 'in_heat' | 'incompatible' | 'special_attention' | 'other') => void;
   otherDogs: { id: string; name: string }[];
@@ -42,6 +41,16 @@ const FlagSelection: React.FC<FlagSelectionProps> = ({
   showFlagsSection,
   setShowFlagsSection,
 }) => {
+  // Convert array to object if needed for backward compatibility
+  const flagsState = Array.isArray(selectedFlags) 
+    ? {
+        in_heat: selectedFlags.some(f => f.type === 'in_heat'),
+        incompatible: selectedFlags.some(f => f.type === 'incompatible'),
+        special_attention: selectedFlags.some(f => f.type === 'special_attention'),
+        other: selectedFlags.some(f => f.type === 'other')
+      } 
+    : selectedFlags;
+
   return (
     <div className="space-y-4">
       <Collapsible
@@ -60,7 +69,7 @@ const FlagSelection: React.FC<FlagSelectionProps> = ({
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="in-heat"
-                checked={selectedFlags.in_heat}
+                checked={flagsState.in_heat}
                 onCheckedChange={() => toggleFlag('in_heat')}
               />
               <label
