@@ -33,12 +33,18 @@ export enum AppetiteLevel {
   NONE = 'none'
 }
 
+// Alias for backward compatibility
+export const AppetiteEnum = AppetiteLevel;
+
 export enum EnergyLevel {
   HIGH = 'high',
   NORMAL = 'normal',
   LOW = 'low',
   LETHARGIC = 'lethargic'
 }
+
+// Add similar aliases for other enums
+export const EnergyEnum = EnergyLevel;
 
 export enum StoolConsistency {
   NORMAL = 'normal',
@@ -51,6 +57,8 @@ export enum StoolConsistency {
   OTHER = 'other'
 }
 
+export const StoolConsistencyEnum = StoolConsistency;
+
 export enum MedicationStatusResult {
   DUE = 'due',
   OVERDUE = 'overdue',
@@ -62,3 +70,5 @@ export enum MedicationStatusResult {
   SKIPPED = 'skipped',
   UNKNOWN = 'unknown'
 }
+
+export const MedicationStatusEnum = MedicationStatusResult;
