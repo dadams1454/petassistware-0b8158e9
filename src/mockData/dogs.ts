@@ -1,7 +1,6 @@
+import { Dog, DogGender, DogStatus } from '@/types/dog';
 
-import { Dog } from '@/types/dog';
-
-export const mockDogs: Dog[] = [
+export const mockDogs = [
   {
     id: '1',
     name: 'Luna',
@@ -23,7 +22,7 @@ export const mockDogs: Dog[] = [
     birthdate: '2020-02-10',
     status: DogStatus.ACTIVE,
     created_at: '2020-03-01T12:00:00Z',
-    photo_url: 'https://images.unsplash.com/photo-1598133894008-61f7fdb8cc3a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80',
+    photo_url: 'https://images.unsplash.com/photo-1598133894008-61f7fdb8cc3a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80',
     is_pregnant: false
   },
   {
@@ -60,7 +59,7 @@ export const mockDogs: Dog[] = [
     birthdate: '2021-11-30',
     status: DogStatus.GUARDIAN,
     created_at: '2022-01-15T12:00:00Z',
-    photo_url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=764&q=80'
+    photo_url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D&auto=format&fit=crop&w=764&q=80'
   }
 ];
 
